@@ -1,0 +1,707 @@
+export type TemplateCategory =
+  | "Cleaning"
+  | "HVAC & Plumbing"
+  | "Renovation & Construction"
+  | "Interior Design"
+  | "Restaurant & Cafe"
+  | "Health & Beauty"
+  | "Fitness & Sports"
+  | "Legal & Finance"
+  | "Real Estate"
+  | "Photography"
+  | "Education"
+  | "Retail & Shop"
+  | "Automotive"
+  | "Events"
+  | "Tech & Agency"
+  | "General Business";
+
+export interface Template {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  category: TemplateCategory;
+  tags: string[];
+  /** Tailwind gradient class pair for the thumbnail bg */
+  gradient: string;
+  /** Accent color for this template's theme */
+  accentColor: string;
+  accentColorHex: string;
+  /** Mock sections shown in the preview */
+  primaryColor: string;
+  secondaryColor: string;
+  /** Thumbnail card gradient colors */
+  thumbFrom: string;
+  thumbTo: string;
+  /** Demo page count */
+  pages: number;
+  /** Whether it ships with demo content */
+  hasDemo: boolean;
+  /** Industry badge text */
+  badge?: string;
+  /** Featured / popular */
+  featured?: boolean;
+  /** Mock hero headline for preview */
+  heroHeadline: string;
+  heroSubline: string;
+}
+
+export const TEMPLATES: Template[] = [
+  // ── Cleaning ─────────────────────────────────────────────────────────────────
+  {
+    id: "tpl-001", slug: "clean-pro", name: "CleanPro", category: "Cleaning",
+    description: "Professional cleaning services with booking form, pricing, and before/after gallery.",
+    tags: ["cleaning", "booking", "gallery", "pricing"],
+    gradient: "from-sky-500 to-cyan-500", accentColor: "sky", accentColorHex: "#0ea5e9",
+    primaryColor: "#0ea5e9", secondaryColor: "#06b6d4",
+    thumbFrom: "#0ea5e9", thumbTo: "#06b6d4",
+    pages: 5, hasDemo: true, featured: true,
+    heroHeadline: "Professional Cleaning You Can Trust",
+    heroSubline: "Residential & commercial cleaning across the city.",
+  },
+  {
+    id: "tpl-002", slug: "sparkle", name: "Sparkle", category: "Cleaning",
+    description: "Bright, modern template for home cleaning businesses with testimonials and WhatsApp button.",
+    tags: ["cleaning", "residential", "testimonials"],
+    gradient: "from-emerald-400 to-teal-500", accentColor: "emerald", accentColorHex: "#10b981",
+    primaryColor: "#10b981", secondaryColor: "#14b8a6",
+    thumbFrom: "#10b981", thumbTo: "#14b8a6",
+    pages: 4, hasDemo: true,
+    heroHeadline: "A Cleaner Home. A Happier You.",
+    heroSubline: "Book online in 60 seconds. Same-day availability.",
+  },
+  {
+    id: "tpl-003", slug: "deep-clean", name: "DeepClean", category: "Cleaning",
+    description: "Dark, premium look for deep cleaning and disinfection specialists.",
+    tags: ["deep cleaning", "disinfection", "corporate"],
+    gradient: "from-slate-700 to-gray-800", accentColor: "cyan", accentColorHex: "#22d3ee",
+    primaryColor: "#1e293b", secondaryColor: "#22d3ee",
+    thumbFrom: "#1e293b", thumbTo: "#0e7490",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Hospital-Grade Cleaning for Your Space",
+    heroSubline: "Certified disinfection. Guaranteed results.",
+  },
+
+  // ── HVAC & Plumbing ──────────────────────────────────────────────────────────
+  {
+    id: "tpl-004", slug: "cool-air", name: "CoolAir", category: "HVAC & Plumbing",
+    description: "HVAC installation, maintenance, and repair with emergency contact and service booking.",
+    tags: ["hvac", "air conditioning", "booking", "emergency"],
+    gradient: "from-blue-600 to-indigo-600", accentColor: "blue", accentColorHex: "#3b82f6",
+    primaryColor: "#3b82f6", secondaryColor: "#6366f1",
+    thumbFrom: "#3b82f6", thumbTo: "#6366f1",
+    pages: 5, hasDemo: true, featured: true, badge: "Popular",
+    heroHeadline: "Fast AC Repair & Installation",
+    heroSubline: "Available 24/7 · All brands serviced.",
+  },
+  {
+    id: "tpl-005", slug: "flow-right", name: "FlowRight", category: "HVAC & Plumbing",
+    description: "Plumbing services template with emergency hotline, photo gallery, and pricing tiers.",
+    tags: ["plumbing", "emergency", "residential"],
+    gradient: "from-blue-400 to-cyan-500", accentColor: "blue", accentColorHex: "#60a5fa",
+    primaryColor: "#2563eb", secondaryColor: "#06b6d4",
+    thumbFrom: "#2563eb", thumbTo: "#06b6d4",
+    pages: 4, hasDemo: true,
+    heroHeadline: "Your Local Plumbing Experts",
+    heroSubline: "24/7 emergency plumbing. Fixed price quotes.",
+  },
+  {
+    id: "tpl-006", slug: "climate-zone", name: "ClimateZone", category: "HVAC & Plumbing",
+    description: "Full HVAC company with multi-service layout, team section, and area coverage map.",
+    tags: ["hvac", "commercial", "team", "services"],
+    gradient: "from-orange-500 to-amber-500", accentColor: "orange", accentColorHex: "#f97316",
+    primaryColor: "#f97316", secondaryColor: "#f59e0b",
+    thumbFrom: "#f97316", thumbTo: "#f59e0b",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Commercial & Residential HVAC Solutions",
+    heroSubline: "Licensed. Insured. Trusted by 500+ clients.",
+  },
+
+  // ── Renovation & Construction ─────────────────────────────────────────────
+  {
+    id: "tpl-007", slug: "build-bold", name: "BuildBold", category: "Renovation & Construction",
+    description: "Bold construction company template with project portfolio, team, and quote request form.",
+    tags: ["construction", "portfolio", "quote"],
+    gradient: "from-yellow-500 to-orange-600", accentColor: "yellow", accentColorHex: "#eab308",
+    primaryColor: "#ca8a04", secondaryColor: "#ea580c",
+    thumbFrom: "#ca8a04", thumbTo: "#ea580c",
+    pages: 7, hasDemo: true, featured: true, badge: "Best Seller",
+    heroHeadline: "Building Your Vision From the Ground Up",
+    heroSubline: "20 years of quality construction. Licensed & insured.",
+  },
+  {
+    id: "tpl-008", slug: "renovate-pro", name: "RenovatePro", category: "Renovation & Construction",
+    description: "Home renovation specialist with before/after gallery, service areas, and financing info.",
+    tags: ["renovation", "home", "gallery", "financing"],
+    gradient: "from-amber-400 to-yellow-500", accentColor: "amber", accentColorHex: "#f59e0b",
+    primaryColor: "#d97706", secondaryColor: "#f59e0b",
+    thumbFrom: "#d97706", thumbTo: "#f59e0b",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Transform Your Space. Love Your Home.",
+    heroSubline: "Full home renovations with 5-year warranty.",
+  },
+  {
+    id: "tpl-009", slug: "fitout-hub", name: "FitOut Hub", category: "Renovation & Construction",
+    description: "Commercial fit-out and interior construction with 3D rendering showcase.",
+    tags: ["fitout", "commercial", "interior", "3d"],
+    gradient: "from-stone-600 to-zinc-700", accentColor: "stone", accentColorHex: "#78716c",
+    primaryColor: "#292524", secondaryColor: "#d97706",
+    thumbFrom: "#292524", thumbTo: "#b45309",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Premium Fit-out Solutions",
+    heroSubline: "From concept to completion. On time. On budget.",
+  },
+  {
+    id: "tpl-010", slug: "hacking-pro", name: "Hacking & Demolition", category: "Renovation & Construction",
+    description: "Specialist demolition and hacking services with certifications and safety highlights.",
+    tags: ["demolition", "hacking", "construction", "safety"],
+    gradient: "from-red-600 to-orange-600", accentColor: "red", accentColorHex: "#dc2626",
+    primaryColor: "#dc2626", secondaryColor: "#ea580c",
+    thumbFrom: "#dc2626", thumbTo: "#c2410c",
+    pages: 4, hasDemo: true,
+    heroHeadline: "Certified Hacking & Demolition Specialists",
+    heroSubline: "HDB approved. Fully insured. Same-week service.",
+  },
+
+  // ── Interior Design ───────────────────────────────────────────────────────
+  {
+    id: "tpl-011", slug: "luxe-interior", name: "Luxe Interior", category: "Interior Design",
+    description: "High-end interior design studio with full-bleed portfolio and mood board gallery.",
+    tags: ["interior design", "luxury", "portfolio"],
+    gradient: "from-rose-900 to-pink-800", accentColor: "rose", accentColorHex: "#e11d48",
+    primaryColor: "#881337", secondaryColor: "#be123c",
+    thumbFrom: "#881337", thumbTo: "#9f1239",
+    pages: 8, hasDemo: true, featured: true,
+    heroHeadline: "Interiors That Tell Your Story",
+    heroSubline: "Bespoke residential & commercial design.",
+  },
+  {
+    id: "tpl-012", slug: "curtain-drape", name: "Curtains & Drapes", category: "Interior Design",
+    description: "Curtain and blinds specialist with room-by-room gallery, fabric options, and booking.",
+    tags: ["curtains", "blinds", "fabric", "home decor"],
+    gradient: "from-violet-500 to-purple-600", accentColor: "violet", accentColorHex: "#7c3aed",
+    primaryColor: "#7c3aed", secondaryColor: "#9333ea",
+    thumbFrom: "#7c3aed", thumbTo: "#a21caf",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Beautiful Curtains, Perfect Fit",
+    heroSubline: "Custom made for every window. Free measurement.",
+  },
+  {
+    id: "tpl-013", slug: "floor-craft", name: "FloorCraft", category: "Interior Design",
+    description: "Flooring specialist with material selector, project gallery, and quote form.",
+    tags: ["flooring", "tiles", "parquet", "gallery"],
+    gradient: "from-amber-700 to-yellow-600", accentColor: "amber", accentColorHex: "#b45309",
+    primaryColor: "#78350f", secondaryColor: "#b45309",
+    thumbFrom: "#78350f", thumbTo: "#b45309",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Premium Flooring for Every Space",
+    heroSubline: "Supply & install. Tiles, vinyl, parquet & more.",
+  },
+  {
+    id: "tpl-014", slug: "shutter-craft", name: "ShutterCraft", category: "Interior Design",
+    description: "Window shutters, blinds, and awnings with product showcase and home visit booking.",
+    tags: ["shutters", "blinds", "awnings"],
+    gradient: "from-teal-600 to-emerald-600", accentColor: "teal", accentColorHex: "#0d9488",
+    primaryColor: "#0d9488", secondaryColor: "#059669",
+    thumbFrom: "#0d9488", thumbTo: "#047857",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Elegant Window Shutters & Blinds",
+    heroSubline: "Custom crafted. Professionally installed.",
+  },
+  {
+    id: "tpl-015", slug: "paint-masters", name: "Paint Masters", category: "Interior Design",
+    description: "Painting and decorating company with color palette selector and project showcase.",
+    tags: ["painting", "decorating", "colors", "residential"],
+    gradient: "from-fuchsia-500 to-pink-500", accentColor: "fuchsia", accentColorHex: "#d946ef",
+    primaryColor: "#a21caf", secondaryColor: "#db2777",
+    thumbFrom: "#a21caf", thumbTo: "#db2777",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Your Home, Our Canvas",
+    heroSubline: "Premium paints. Flawless finish. Guaranteed.",
+  },
+
+  // ── Restaurant & Cafe ────────────────────────────────────────────────────
+  {
+    id: "tpl-016", slug: "savour", name: "Savour", category: "Restaurant & Cafe",
+    description: "Elegant restaurant with online menu, reservations, and chef's specials section.",
+    tags: ["restaurant", "menu", "reservation", "dining"],
+    gradient: "from-red-600 to-rose-700", accentColor: "red", accentColorHex: "#dc2626",
+    primaryColor: "#991b1b", secondaryColor: "#be123c",
+    thumbFrom: "#991b1b", thumbTo: "#be123c",
+    pages: 6, hasDemo: true, featured: true,
+    heroHeadline: "An Unforgettable Dining Experience",
+    heroSubline: "Fresh ingredients. Inspired recipes. Warm ambiance.",
+  },
+  {
+    id: "tpl-017", slug: "brew-bar", name: "Brew Bar", category: "Restaurant & Cafe",
+    description: "Specialty coffee shop with menu, loyalty card sign-up, and location map.",
+    tags: ["cafe", "coffee", "menu"],
+    gradient: "from-amber-800 to-yellow-700", accentColor: "amber", accentColorHex: "#92400e",
+    primaryColor: "#451a03", secondaryColor: "#92400e",
+    thumbFrom: "#451a03", thumbTo: "#92400e",
+    pages: 4, hasDemo: true,
+    heroHeadline: "Where Every Cup Tells a Story",
+    heroSubline: "Specialty coffee. Freshly baked. Daily.",
+  },
+  {
+    id: "tpl-018", slug: "grill-house", name: "GrillHouse", category: "Restaurant & Cafe",
+    description: "BBQ and grill restaurant with bold visuals, party booking, and catering services.",
+    tags: ["grill", "bbq", "catering", "booking"],
+    gradient: "from-orange-700 to-red-700", accentColor: "orange", accentColorHex: "#c2410c",
+    primaryColor: "#7c2d12", secondaryColor: "#c2410c",
+    thumbFrom: "#7c2d12", thumbTo: "#c2410c",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Wood-Fired Flavours You'll Never Forget",
+    heroSubline: "Dine-in, takeaway & private catering.",
+  },
+
+  // ── Health & Beauty ───────────────────────────────────────────────────────
+  {
+    id: "tpl-019", slug: "glow-salon", name: "GlowSalon", category: "Health & Beauty",
+    description: "Hair salon and beauty studio with service menu, stylists profiles, and appointment booking.",
+    tags: ["salon", "hair", "beauty", "booking"],
+    gradient: "from-pink-400 to-rose-500", accentColor: "pink", accentColorHex: "#ec4899",
+    primaryColor: "#9d174d", secondaryColor: "#f43f5e",
+    thumbFrom: "#9d174d", thumbTo: "#f43f5e",
+    pages: 6, hasDemo: true, featured: true,
+    heroHeadline: "Feel Beautiful. Look Radiant.",
+    heroSubline: "Expert stylists. Premium products. Walk-ins welcome.",
+  },
+  {
+    id: "tpl-020", slug: "zen-spa", name: "Zen Spa", category: "Health & Beauty",
+    description: "Luxury spa and wellness center with treatment menu, gift vouchers, and online booking.",
+    tags: ["spa", "wellness", "massage", "luxury"],
+    gradient: "from-green-700 to-teal-700", accentColor: "green", accentColorHex: "#166534",
+    primaryColor: "#14532d", secondaryColor: "#134e4a",
+    thumbFrom: "#14532d", thumbTo: "#134e4a",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Relax. Restore. Renew.",
+    heroSubline: "Holistic spa treatments in a tranquil setting.",
+  },
+  {
+    id: "tpl-021", slug: "dental-care", name: "DentalCare", category: "Health & Beauty",
+    description: "Modern dental clinic with services, team, insurance info, and online appointment.",
+    tags: ["dental", "clinic", "medical", "appointment"],
+    gradient: "from-sky-400 to-blue-500", accentColor: "sky", accentColorHex: "#38bdf8",
+    primaryColor: "#0369a1", secondaryColor: "#2563eb",
+    thumbFrom: "#0369a1", thumbTo: "#1d4ed8",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Healthy Smiles Start Here",
+    heroSubline: "Gentle, modern dental care for the whole family.",
+  },
+  {
+    id: "tpl-022", slug: "nail-studio", name: "Nail Studio", category: "Health & Beauty",
+    description: "Nail art salon with gallery, service prices, loyalty program, and click-to-book.",
+    tags: ["nails", "nail art", "beauty", "gallery"],
+    gradient: "from-purple-400 to-fuchsia-500", accentColor: "purple", accentColorHex: "#a855f7",
+    primaryColor: "#7e22ce", secondaryColor: "#c026d3",
+    thumbFrom: "#7e22ce", thumbTo: "#c026d3",
+    pages: 4, hasDemo: true,
+    heroHeadline: "Perfect Nails. Every Time.",
+    heroSubline: "Gel, acrylic, nail art & more. Walk-ins welcome.",
+  },
+
+  // ── Fitness & Sports ─────────────────────────────────────────────────────
+  {
+    id: "tpl-023", slug: "iron-gym", name: "Iron Gym", category: "Fitness & Sports",
+    description: "Fitness center with class schedule, membership plans, trainer profiles, and waiver form.",
+    tags: ["gym", "fitness", "membership", "classes"],
+    gradient: "from-gray-800 to-zinc-900", accentColor: "yellow", accentColorHex: "#fbbf24",
+    primaryColor: "#111827", secondaryColor: "#fbbf24",
+    thumbFrom: "#111827", thumbTo: "#78350f",
+    pages: 7, hasDemo: true, featured: true,
+    heroHeadline: "Train Hard. Live Strong.",
+    heroSubline: "State-of-the-art equipment. Expert coaching.",
+  },
+  {
+    id: "tpl-024", slug: "yoga-flow", name: "Yoga Flow", category: "Fitness & Sports",
+    description: "Yoga studio with class timetable, instructor bios, retreat booking, and online store.",
+    tags: ["yoga", "studio", "wellness", "classes"],
+    gradient: "from-violet-400 to-indigo-500", accentColor: "violet", accentColorHex: "#8b5cf6",
+    primaryColor: "#4c1d95", secondaryColor: "#3730a3",
+    thumbFrom: "#4c1d95", thumbTo: "#312e81",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Find Balance. Find Peace.",
+    heroSubline: "Yoga for all levels. Drop-in or membership.",
+  },
+  {
+    id: "tpl-025", slug: "sports-coach", name: "Sports Coach", category: "Fitness & Sports",
+    description: "Personal trainer / sports coach with testimonials, packages, and booking calendar.",
+    tags: ["personal trainer", "coaching", "sports"],
+    gradient: "from-green-500 to-emerald-600", accentColor: "green", accentColorHex: "#22c55e",
+    primaryColor: "#166534", secondaryColor: "#15803d",
+    thumbFrom: "#166534", thumbTo: "#14532d",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Reach Your Fitness Goals Faster",
+    heroSubline: "1-on-1 coaching tailored to your body and lifestyle.",
+  },
+
+  // ── Legal & Finance ───────────────────────────────────────────────────────
+  {
+    id: "tpl-026", slug: "lexis-law", name: "Lexis Law", category: "Legal & Finance",
+    description: "Law firm template with practice areas, attorney profiles, case results, and contact form.",
+    tags: ["law firm", "legal", "attorney", "professional"],
+    gradient: "from-slate-700 to-gray-800", accentColor: "slate", accentColorHex: "#475569",
+    primaryColor: "#0f172a", secondaryColor: "#1e3a5f",
+    thumbFrom: "#0f172a", thumbTo: "#1e3a5f",
+    pages: 8, hasDemo: true,
+    heroHeadline: "Protecting Your Rights. Delivering Results.",
+    heroSubline: "Experienced attorneys in family, criminal & corporate law.",
+  },
+  {
+    id: "tpl-027", slug: "wealth-advisor", name: "Wealth Advisor", category: "Legal & Finance",
+    description: "Financial advisory firm with investment calculator, team, blog, and consultation booking.",
+    tags: ["finance", "investment", "wealth management", "advisory"],
+    gradient: "from-emerald-700 to-green-800", accentColor: "emerald", accentColorHex: "#059669",
+    primaryColor: "#064e3b", secondaryColor: "#065f46",
+    thumbFrom: "#064e3b", thumbTo: "#065f46",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Your Financial Future, Secured",
+    heroSubline: "Expert financial planning for families & businesses.",
+  },
+  {
+    id: "tpl-028", slug: "tax-pro", name: "TaxPro", category: "Legal & Finance",
+    description: "Tax consultancy and accounting firm with services list, FAQ, and appointment booking.",
+    tags: ["tax", "accounting", "CPA", "finance"],
+    gradient: "from-blue-700 to-slate-700", accentColor: "blue", accentColorHex: "#1d4ed8",
+    primaryColor: "#1e3a8a", secondaryColor: "#1e40af",
+    thumbFrom: "#1e3a8a", thumbTo: "#1e40af",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Stress-Free Tax & Accounting",
+    heroSubline: "For small businesses, freelancers, and individuals.",
+  },
+
+  // ── Real Estate ───────────────────────────────────────────────────────────
+  {
+    id: "tpl-029", slug: "prime-property", name: "Prime Property", category: "Real Estate",
+    description: "Real estate agency with property listings, search filters, agent profiles, and inquiry form.",
+    tags: ["real estate", "property", "listings", "agent"],
+    gradient: "from-amber-600 to-orange-600", accentColor: "amber", accentColorHex: "#d97706",
+    primaryColor: "#78350f", secondaryColor: "#c2410c",
+    thumbFrom: "#78350f", thumbTo: "#9a3412",
+    pages: 8, hasDemo: true, featured: true,
+    heroHeadline: "Find Your Dream Property",
+    heroSubline: "Residential & commercial listings. Expert agents.",
+  },
+  {
+    id: "tpl-030", slug: "rent-ease", name: "RentEase", category: "Real Estate",
+    description: "Property rental management with available units, tenant portal link, and maintenance request.",
+    tags: ["rental", "property management", "tenant"],
+    gradient: "from-sky-600 to-blue-600", accentColor: "sky", accentColorHex: "#0284c7",
+    primaryColor: "#0c4a6e", secondaryColor: "#075985",
+    thumbFrom: "#0c4a6e", thumbTo: "#075985",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Hassle-Free Property Management",
+    heroSubline: "We handle it all so you don't have to.",
+  },
+
+  // ── Photography ───────────────────────────────────────────────────────────
+  {
+    id: "tpl-031", slug: "lens-craft", name: "LensCraft", category: "Photography",
+    description: "Photography portfolio with full-bleed gallery, packages, testimonials, and booking form.",
+    tags: ["photography", "portfolio", "gallery", "booking"],
+    gradient: "from-gray-900 to-slate-900", accentColor: "yellow", accentColorHex: "#fbbf24",
+    primaryColor: "#0f172a", secondaryColor: "#fbbf24",
+    thumbFrom: "#0f172a", thumbTo: "#1c1917",
+    pages: 6, hasDemo: true, featured: true,
+    heroHeadline: "Capturing Moments That Last Forever",
+    heroSubline: "Wedding, portrait & commercial photography.",
+  },
+  {
+    id: "tpl-032", slug: "event-shots", name: "EventShots", category: "Photography",
+    description: "Event photography and videography with package pricing and reel embed.",
+    tags: ["event photography", "videography", "corporate"],
+    gradient: "from-purple-700 to-indigo-700", accentColor: "purple", accentColorHex: "#7e22ce",
+    primaryColor: "#3b0764", secondaryColor: "#4338ca",
+    thumbFrom: "#3b0764", thumbTo: "#312e81",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Your Special Moments, Beautifully Captured",
+    heroSubline: "Events, weddings, corporate & product shoots.",
+  },
+
+  // ── Education ──────────────────────────────────────────────────────────────
+  {
+    id: "tpl-033", slug: "learn-hub", name: "LearnHub", category: "Education",
+    description: "Tutoring center with course catalog, tutor profiles, pricing, and trial class booking.",
+    tags: ["tutoring", "education", "courses", "booking"],
+    gradient: "from-blue-500 to-indigo-600", accentColor: "blue", accentColorHex: "#3b82f6",
+    primaryColor: "#1e3a8a", secondaryColor: "#4338ca",
+    thumbFrom: "#1e3a8a", thumbTo: "#3730a3",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Unlock Your Learning Potential",
+    heroSubline: "Expert tutors. Personalized programs. Real results.",
+  },
+  {
+    id: "tpl-034", slug: "code-school", name: "CodeSchool", category: "Education",
+    description: "Coding bootcamp with course roadmap, outcomes, alumni network, and enrollment form.",
+    tags: ["coding", "bootcamp", "tech", "enrollment"],
+    gradient: "from-violet-600 to-purple-700", accentColor: "violet", accentColorHex: "#7c3aed",
+    primaryColor: "#2e1065", secondaryColor: "#4c1d95",
+    thumbFrom: "#2e1065", thumbTo: "#3b0764",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Launch Your Tech Career in 12 Weeks",
+    heroSubline: "Full-stack coding bootcamp. Job guaranteed.",
+  },
+  {
+    id: "tpl-035", slug: "language-school", name: "Language School", category: "Education",
+    description: "Language institute with class schedules, levels, instructor bios, and enrollment.",
+    tags: ["language", "school", "courses", "english"],
+    gradient: "from-green-500 to-teal-500", accentColor: "green", accentColorHex: "#22c55e",
+    primaryColor: "#14532d", secondaryColor: "#134e4a",
+    thumbFrom: "#14532d", thumbTo: "#115e59",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Learn a New Language. Open New Doors.",
+    heroSubline: "Online & in-person classes. All levels welcome.",
+  },
+
+  // ── Retail & Shop ─────────────────────────────────────────────────────────
+  {
+    id: "tpl-036", slug: "shopify-lite", name: "ShopLite", category: "Retail & Shop",
+    description: "Simple product shop with category pages, cart, and checkout. Great for small retailers.",
+    tags: ["shop", "ecommerce", "products", "retail"],
+    gradient: "from-pink-500 to-rose-500", accentColor: "pink", accentColorHex: "#ec4899",
+    primaryColor: "#9d174d", secondaryColor: "#be123c",
+    thumbFrom: "#9d174d", thumbTo: "#881337",
+    pages: 6, hasDemo: true, featured: true,
+    heroHeadline: "Shop the Latest Collection",
+    heroSubline: "Free delivery on orders over $50.",
+  },
+  {
+    id: "tpl-037", slug: "gift-box", name: "GiftBox", category: "Retail & Shop",
+    description: "Gift shop and hamper business with custom order form, gallery, and WhatsApp CTA.",
+    tags: ["gifts", "hampers", "custom orders"],
+    gradient: "from-fuchsia-400 to-pink-500", accentColor: "fuchsia", accentColorHex: "#d946ef",
+    primaryColor: "#701a75", secondaryColor: "#be185d",
+    thumbFrom: "#701a75", thumbTo: "#9d174d",
+    pages: 5, hasDemo: true,
+    heroHeadline: "The Perfect Gift for Every Occasion",
+    heroSubline: "Customised hampers & gift sets. Same-day delivery.",
+  },
+  {
+    id: "tpl-038", slug: "auto-parts", name: "AutoParts", category: "Retail & Shop",
+    description: "Automotive parts and accessories shop with category listings, search, and inquiry.",
+    tags: ["automotive", "parts", "shop", "accessories"],
+    gradient: "from-zinc-700 to-gray-800", accentColor: "zinc", accentColorHex: "#71717a",
+    primaryColor: "#18181b", secondaryColor: "#dc2626",
+    thumbFrom: "#18181b", thumbTo: "#7f1d1d",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Quality Auto Parts. Fast Delivery.",
+    heroSubline: "10,000+ parts in stock. Same-day dispatch.",
+  },
+
+  // ── Automotive ───────────────────────────────────────────────────────────
+  {
+    id: "tpl-039", slug: "drive-care", name: "DriveCare", category: "Automotive",
+    description: "Auto repair workshop with services, booking, technician team, and testimonials.",
+    tags: ["auto repair", "workshop", "car service"],
+    gradient: "from-red-700 to-orange-700", accentColor: "red", accentColorHex: "#b91c1c",
+    primaryColor: "#7f1d1d", secondaryColor: "#9a3412",
+    thumbFrom: "#7f1d1d", thumbTo: "#9a3412",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Your Car in Expert Hands",
+    heroSubline: "Full-service auto repair & maintenance center.",
+  },
+  {
+    id: "tpl-040", slug: "car-wash-pro", name: "CarWash Pro", category: "Automotive",
+    description: "Car wash and detailing with package tiers, before/after gallery, and booking.",
+    tags: ["car wash", "detailing", "booking"],
+    gradient: "from-blue-400 to-sky-500", accentColor: "blue", accentColorHex: "#60a5fa",
+    primaryColor: "#0369a1", secondaryColor: "#0284c7",
+    thumbFrom: "#0369a1", thumbTo: "#0c4a6e",
+    pages: 4, hasDemo: true,
+    heroHeadline: "Showroom Shine. Every Time.",
+    heroSubline: "Professional car wash & detailing packages.",
+  },
+
+  // ── Events ────────────────────────────────────────────────────────────────
+  {
+    id: "tpl-041", slug: "event-flow", name: "EventFlow", category: "Events",
+    description: "Event management company with portfolio, services, team, and inquiry form.",
+    tags: ["events", "management", "weddings", "corporate"],
+    gradient: "from-purple-500 to-pink-500", accentColor: "purple", accentColorHex: "#a855f7",
+    primaryColor: "#581c87", secondaryColor: "#831843",
+    thumbFrom: "#581c87", thumbTo: "#831843",
+    pages: 7, hasDemo: true, featured: true,
+    heroHeadline: "Creating Unforgettable Events",
+    heroSubline: "Weddings, corporate events & private parties.",
+  },
+  {
+    id: "tpl-042", slug: "wedding-planner", name: "Wedding Planner", category: "Events",
+    description: "Elegant wedding planning studio with packages, gallery, vendors, and free consultation.",
+    tags: ["wedding", "planner", "bridal", "luxury"],
+    gradient: "from-rose-300 to-pink-400", accentColor: "rose", accentColorHex: "#fb7185",
+    primaryColor: "#881337", secondaryColor: "#9f1239",
+    thumbFrom: "#881337", thumbTo: "#be123c",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Your Dream Wedding Starts Here",
+    heroSubline: "Full-service wedding planning. Every detail perfect.",
+  },
+  {
+    id: "tpl-043", slug: "catering-co", name: "CaterCo", category: "Events",
+    description: "Catering company with menu showcase, dietary options, event types, and quote form.",
+    tags: ["catering", "food", "events", "corporate"],
+    gradient: "from-orange-400 to-amber-500", accentColor: "orange", accentColorHex: "#fb923c",
+    primaryColor: "#7c2d12", secondaryColor: "#92400e",
+    thumbFrom: "#7c2d12", thumbTo: "#78350f",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Exceptional Food. Every Event.",
+    heroSubline: "Corporate lunches to grand weddings. We cater all.",
+  },
+
+  // ── Tech & Agency ─────────────────────────────────────────────────────────
+  {
+    id: "tpl-044", slug: "pixel-agency", name: "Pixel Agency", category: "Tech & Agency",
+    description: "Digital marketing and design agency with case studies, services, and proposal request.",
+    tags: ["agency", "digital marketing", "design", "SEO"],
+    gradient: "from-indigo-600 to-violet-600", accentColor: "indigo", accentColorHex: "#6366f1",
+    primaryColor: "#1e1b4b", secondaryColor: "#2e1065",
+    thumbFrom: "#1e1b4b", thumbTo: "#2e1065",
+    pages: 8, hasDemo: true, featured: true,
+    heroHeadline: "We Grow Brands Digitally",
+    heroSubline: "SEO, ads, social media & web design.",
+  },
+  {
+    id: "tpl-045", slug: "software-co", name: "SoftwareCo", category: "Tech & Agency",
+    description: "Software development company with services, technologies, portfolio, and contact.",
+    tags: ["software", "development", "tech", "SaaS"],
+    gradient: "from-cyan-600 to-blue-700", accentColor: "cyan", accentColorHex: "#0891b2",
+    primaryColor: "#083344", secondaryColor: "#0c4a6e",
+    thumbFrom: "#083344", thumbTo: "#0c4a6e",
+    pages: 7, hasDemo: true,
+    heroHeadline: "Software That Powers Your Business",
+    heroSubline: "Custom apps, APIs & automation. Built to scale.",
+  },
+  {
+    id: "tpl-046", slug: "it-support", name: "IT Support", category: "Tech & Agency",
+    description: "IT support and managed services for SMBs with service tiers, SLA, and remote help.",
+    tags: ["IT", "support", "managed services", "helpdesk"],
+    gradient: "from-sky-600 to-cyan-600", accentColor: "sky", accentColorHex: "#0284c7",
+    primaryColor: "#0c4a6e", secondaryColor: "#155e75",
+    thumbFrom: "#0c4a6e", thumbTo: "#164e63",
+    pages: 6, hasDemo: true,
+    heroHeadline: "IT Solutions That Keep You Running",
+    heroSubline: "24/7 helpdesk. Proactive monitoring. No downtime.",
+  },
+
+  // ── General Business ──────────────────────────────────────────────────────
+  {
+    id: "tpl-047", slug: "biz-minimal", name: "BizMinimal", category: "General Business",
+    description: "Clean minimal business template — works for any service company. Easy to customize.",
+    tags: ["minimal", "clean", "general", "services"],
+    gradient: "from-gray-100 to-gray-200", accentColor: "gray", accentColorHex: "#6b7280",
+    primaryColor: "#111827", secondaryColor: "#374151",
+    thumbFrom: "#374151", thumbTo: "#1f2937",
+    pages: 4, hasDemo: false,
+    heroHeadline: "Professional Services You Can Trust",
+    heroSubline: "Quality. Reliability. Results.",
+  },
+  {
+    id: "tpl-048", slug: "corporate-one", name: "Corporate One", category: "General Business",
+    description: "Full corporate website with about us, team, news/blog, partners, and contact.",
+    tags: ["corporate", "business", "team", "blog"],
+    gradient: "from-blue-800 to-slate-800", accentColor: "blue", accentColorHex: "#1d4ed8",
+    primaryColor: "#1e3a8a", secondaryColor: "#1e40af",
+    thumbFrom: "#1e3a8a", thumbTo: "#0f172a",
+    pages: 9, hasDemo: true, featured: true,
+    heroHeadline: "Building Business Relationships That Last",
+    heroSubline: "Trusted by companies across the globe.",
+  },
+  {
+    id: "tpl-049", slug: "startup-launch", name: "StartupLaunch", category: "Tech & Agency",
+    description: "SaaS / startup landing page with feature highlights, pricing, waitlist, and social proof.",
+    tags: ["startup", "SaaS", "landing page", "waitlist"],
+    gradient: "from-violet-600 to-fuchsia-600", accentColor: "violet", accentColorHex: "#7c3aed",
+    primaryColor: "#2e1065", secondaryColor: "#701a75",
+    thumbFrom: "#2e1065", thumbTo: "#4c1d95",
+    pages: 3, hasDemo: true, badge: "New",
+    heroHeadline: "The Product Your Customers Have Been Waiting For",
+    heroSubline: "Launch faster. Grow smarter. Scale confidently.",
+  },
+  {
+    id: "tpl-050", slug: "consultant-pro", name: "ConsultantPro", category: "General Business",
+    description: "Business consultant and coach with credentials, testimonials, free strategy call booking.",
+    tags: ["consultant", "coaching", "business", "strategy"],
+    gradient: "from-teal-600 to-cyan-700", accentColor: "teal", accentColorHex: "#0d9488",
+    primaryColor: "#134e4a", secondaryColor: "#164e63",
+    thumbFrom: "#134e4a", thumbTo: "#0c4a6e",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Scale Your Business With Confidence",
+    heroSubline: "Strategic consulting for growth-focused entrepreneurs.",
+  },
+  {
+    id: "tpl-051", slug: "logistics-co", name: "LogisticsCo", category: "General Business",
+    description: "Freight and logistics company with service areas, tracking info, and quote form.",
+    tags: ["logistics", "freight", "shipping", "transport"],
+    gradient: "from-yellow-600 to-orange-600", accentColor: "yellow", accentColorHex: "#ca8a04",
+    primaryColor: "#78350f", secondaryColor: "#b45309",
+    thumbFrom: "#713f12", thumbTo: "#92400e",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Delivering On Time. Every Time.",
+    heroSubline: "Domestic & international freight solutions.",
+  },
+  {
+    id: "tpl-052", slug: "security-guard", name: "SecureGuard", category: "General Business",
+    description: "Security services company with service types, certifications, quote request, and patrol coverage.",
+    tags: ["security", "guarding", "CCTV", "patrol"],
+    gradient: "from-gray-900 to-slate-900", accentColor: "red", accentColorHex: "#dc2626",
+    primaryColor: "#0f172a", secondaryColor: "#dc2626",
+    thumbFrom: "#0f172a", thumbTo: "#450a0a",
+    pages: 5, hasDemo: true,
+    heroHeadline: "Protecting What Matters Most",
+    heroSubline: "Licensed security guards & CCTV monitoring.",
+  },
+  {
+    id: "tpl-053", slug: "pest-control", name: "PestAway", category: "Cleaning",
+    description: "Pest control services with treatment types, eco-friendly options, and booking form.",
+    tags: ["pest control", "extermination", "booking"],
+    gradient: "from-green-600 to-lime-600", accentColor: "green", accentColorHex: "#16a34a",
+    primaryColor: "#14532d", secondaryColor: "#365314",
+    thumbFrom: "#14532d", thumbTo: "#1a2e05",
+    pages: 4, hasDemo: true,
+    heroHeadline: "Pest-Free. Guaranteed.",
+    heroSubline: "Safe, effective pest control for home and business.",
+  },
+  {
+    id: "tpl-054", slug: "childcare-center", name: "KidsCare", category: "Education",
+    description: "Childcare and daycare center with programs, age groups, gallery, and enrollment form.",
+    tags: ["childcare", "daycare", "kids", "education"],
+    gradient: "from-yellow-400 to-orange-400", accentColor: "yellow", accentColorHex: "#fbbf24",
+    primaryColor: "#78350f", secondaryColor: "#b45309",
+    thumbFrom: "#f59e0b", thumbTo: "#f97316",
+    pages: 6, hasDemo: true,
+    heroHeadline: "A Safe Place to Learn, Play & Grow",
+    heroSubline: "Nurturing childcare for ages 2–12.",
+  },
+  {
+    id: "tpl-055", slug: "veterinary-clinic", name: "PetCare Vet", category: "Health & Beauty",
+    description: "Veterinary clinic with pet services, doctors, vaccination schedule, and online booking.",
+    tags: ["veterinary", "vet", "pets", "clinic"],
+    gradient: "from-teal-500 to-green-500", accentColor: "teal", accentColorHex: "#14b8a6",
+    primaryColor: "#134e4a", secondaryColor: "#14532d",
+    thumbFrom: "#0f766e", thumbTo: "#166534",
+    pages: 6, hasDemo: true,
+    heroHeadline: "Caring for Pets Like Family",
+    heroSubline: "Comprehensive veterinary care. Compassionate team.",
+  },
+];
+
+export const TEMPLATE_CATEGORIES = [
+  "All",
+  "Cleaning",
+  "HVAC & Plumbing",
+  "Renovation & Construction",
+  "Interior Design",
+  "Restaurant & Cafe",
+  "Health & Beauty",
+  "Fitness & Sports",
+  "Legal & Finance",
+  "Real Estate",
+  "Photography",
+  "Education",
+  "Retail & Shop",
+  "Automotive",
+  "Events",
+  "Tech & Agency",
+  "General Business",
+] as const;

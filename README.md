@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CMS Studio
+
+A powerful, open-source CMS built with Next.js 15 and Supabase — designed for profile and portfolio websites but extensible to any use case.
+
+## Features
+
+### Page Builder
+- Drag-and-drop block editor with live preview
+- 14+ built-in blocks: Hero, Slider, Navigation, Text, Services, Blog, Gallery, CTA, Testimonials, Divider, Spacer, Ecommerce Products, Donation Feed, Custom HTML
+- Responsive preview — desktop, tablet, mobile
+- Undo/Redo history (50 steps)
+- Per-block settings — layout, background (color/gradient/image), padding, margin, animation
+
+### Pages & Posts
+- Full CRUD with live page builder
+- URL slug management, SEO meta tags, Open Graph
+- Status: Draft → Published → Scheduled → Archived
+- One-click duplicate
+
+### Themes
+- 6 built-in themes: Aurora, Minimal, Ocean, Sunset, Forest, Midnight
+- Install & activate with one click
+- Per-theme color, font, border radius settings
+
+### Plugins
+- 10 built-in plugins (SEO, Analytics, Contact Forms, Newsletter, Portfolio Pro, Booking, Live Chat, etc.)
+- Install & activate/deactivate per plugin
+
+### Ecommerce
+- Simple, variable, and digital products
+- Full inventory management
+- 7 payment gateways: Manual, Stripe, PayPal, SSLCommerz, ShurjoPay, bKash, Nagad
+- Per-gateway toggle, test mode, and credential management
+
+### Accounting
+- Daily bookkeeping with income/expense/donation types
+- Public transaction feed (donation pages, transparency reports)
+- Frontend blocks for displaying transactions publicly
 
 ## Getting Started
 
-First, run the development server:
-
+### 1. Install dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Set up Supabase
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run the migration in **SQL Editor**: `supabase/migrations/001_initial_schema.sql`
+3. Copy your API keys from **Settings → API**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Configure environment
+```bash
+cp .env.local.example .env.local
+# Fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Create your admin user
+In Supabase → Authentication → Users → Add user, then:
+```sql
+UPDATE public.profiles SET role = 'admin' WHERE email = 'your@email.com';
+```
 
-## Learn More
+### 5. Run
+```bash
+npm run dev
+# Visit http://localhost:3000/admin/dashboard
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Framework**: Next.js 15 (App Router)
+- **Database**: Supabase (PostgreSQL + Auth + Storage)
+- **UI**: Tailwind CSS v4 + Radix UI primitives
+- **State**: Zustand + Immer
+- **Drag & Drop**: @dnd-kit
+- **Forms**: React Hook Form + Zod
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/(admin)/      # Protected admin routes
+├── app/(auth)/       # Login pages
+├── app/(site)/       # Public pages
+├── components/
+│   ├── admin/page-builder/  # Builder canvas, panels
+│   ├── blocks/              # Block components
+│   └── ui/                  # UI primitives
+├── lib/supabase/     # DB client helpers
+├── lib/store/        # Zustand stores
+├── modules/          # Block registry, themes, plugins
+└── types/cms.ts      # All TypeScript types
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
