@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import ContactForm from "./contact-form";
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
@@ -13,7 +14,9 @@ export default function ContactPage() {
           <h1 className="text-3xl font-extrabold text-gray-900">Get in touch</h1>
           <p className="mt-3 text-gray-600">Questions about pricing? Need a custom plan? We're here to help.</p>
         </div>
-        <ContactForm />
+        <Suspense fallback={<div className="h-96" />}>
+          <ContactForm />
+        </Suspense>
       </main>
       <FooterSection />
     </div>
