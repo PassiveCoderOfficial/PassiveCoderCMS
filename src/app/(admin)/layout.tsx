@@ -11,8 +11,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user || authError) redirect("/login");
 
-  // Use service role to fetch profile — bypasses RLS
   const adminClient = await createAdminClient();
+
+  // Always check super_admins FIRST — super admins have no tenant and must never reach tenant-gated pages
+  const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
+  if (sa) redirect("/super-admin");
+
+  // Use service role to fetch profile — bypasses RLS
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("*")
@@ -27,16 +32,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  // Super admins redirect to their own panel
-  if (!profile) {
-    const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).single();
-    if (sa) redirect("/super-admin");
-    redirect("/login?error=unauthorized");
-  }
+  if (!profile) redirect("/login?error=unauthorized");
 
   if (!["admin", "editor", "author", "super_admin"].includes(profile.role)) {
-    const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).single();
-    if (sa) redirect("/super-admin");
     redirect("/login?error=unauthorized");
   }
 

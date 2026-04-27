@@ -6,23 +6,22 @@ export async function getCurrentTenantId(): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Super admin check first — they have no tenant_members row
+  const adminClient = await createAdminClient();
+  const { data: sa } = await adminClient
+    .from("super_admins")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (sa) redirect("/super-admin");
+
   const { data } = await supabase
     .from("tenant_members")
     .select("tenant_id")
     .eq("user_id", user.id)
     .single();
 
-  if (!data?.tenant_id) {
-    // Check if super admin — redirect to super-admin panel instead of error
-    const adminClient = await createAdminClient();
-    const { data: sa } = await adminClient
-      .from("super_admins")
-      .select("user_id")
-      .eq("user_id", user.id)
-      .single();
-    if (sa) redirect("/super-admin");
-    redirect("/login?error=no_tenant");
-  }
+  if (!data?.tenant_id) redirect("/login?error=no_tenant");
 
   return data.tenant_id;
 }
