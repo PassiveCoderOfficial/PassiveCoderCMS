@@ -50,7 +50,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-gray-800">
               {["Site", "Plan", "Status", "Provider", "Amount", "Period End", "Created"].map(h => (
@@ -88,7 +88,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
               <tr><td colSpan={7} className="px-5 py-10 text-center text-gray-600">No subscriptions found</td></tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

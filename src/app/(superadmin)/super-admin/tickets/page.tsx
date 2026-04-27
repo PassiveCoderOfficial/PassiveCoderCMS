@@ -94,7 +94,7 @@ export default function TicketsPage() {
         <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[580px]">
             <thead>
               <tr className="border-b border-gray-800">
                 {["#", "Subject", "From", "Dept", "Priority", "Status", "Date", ""].map(h => (
@@ -130,7 +130,7 @@ export default function TicketsPage() {
                 <tr><td colSpan={8} className="px-5 py-10 text-center text-gray-600">No tickets found</td></tr>
               )}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>

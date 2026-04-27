@@ -3,29 +3,34 @@
 import React, { useState } from "react";
 import type { NewsletterBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
-import { Send, CheckCircle } from "lucide-react";
+import { Send, CheckCircle, AlertCircle } from "lucide-react";
 
 export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
   const { data } = block;
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
+    setError("");
     try {
       if (data.webhookUrl) {
-        await fetch(data.webhookUrl, {
+        const res = await fetch(data.webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
         });
+        if (!res.ok) { setError("Subscription failed. Please try again."); setLoading(false); return; }
       }
+      setSubmitted(true);
+    } catch {
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
-      setSubmitted(true);
     }
   }
 
@@ -67,6 +72,11 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
           {loading ? "…" : data.submitLabel || "Subscribe"}
         </button>
       </form>
+      {error && (
+        <p className="flex items-center gap-1.5 text-sm text-red-500 mt-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />{error}
+        </p>
+      )}
     </div>
   );
 }

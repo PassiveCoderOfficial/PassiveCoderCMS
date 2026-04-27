@@ -36,8 +36,8 @@ export default async function PagesListPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="p-0">
-            <table className="w-full">
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full min-w-[480px]">
               <thead>
                 <tr className="border-b text-xs text-muted-foreground">
                   <th className="px-4 py-3 text-left font-medium">Title</th>
@@ -51,7 +51,7 @@ export default async function PagesListPage() {
                 {pages.map((page) => (
                   <tr key={page.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
-                      <Link href={`/admin/pages/${page.id}`} className="font-medium hover:text-primary text-sm">
+                      <Link href={`/dashboard/pages/${page.id}`} className="font-medium hover:text-primary text-sm">
                         {page.title}
                       </Link>
                     </td>

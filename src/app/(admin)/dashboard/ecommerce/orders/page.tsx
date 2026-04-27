@@ -97,7 +97,7 @@ export default function OrdersPage() {
         <Card>
           <CardContent className="p-5 space-y-4">
             <h3 className="font-semibold text-sm">New Manual Order</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs mb-1 block">Customer Name *</Label>
                 <Input value={form.customer_name} onChange={e => set("customer_name", e.target.value)} placeholder="John Smith" />

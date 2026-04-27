@@ -25,7 +25,7 @@ export function PricingBlock({ block }: { block: PricingBlockProps }) {
           <div key={plan.id} className={cn(
             "relative flex flex-col rounded-2xl border p-8",
             plan.highlighted
-              ? "border-primary bg-primary text-primary-foreground shadow-xl scale-105"
+              ? "border-primary bg-primary text-primary-foreground shadow-xl lg:scale-105"
               : "border-border bg-white shadow-sm",
           )}>
             {plan.badge && (

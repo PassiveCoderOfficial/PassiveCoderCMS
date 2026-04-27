@@ -56,7 +56,7 @@ export default async function SuperAdminOverview() {
           <h2 className="font-semibold text-white text-sm">Recent Sites</h2>
           <Link href="/super-admin/sites" className="text-xs text-indigo-400 hover:text-indigo-300">View all →</Link>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full text-sm min-w-[480px]">
           <thead>
             <tr className="border-b border-gray-800">
               <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Site</th>
@@ -81,7 +81,7 @@ export default async function SuperAdminOverview() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

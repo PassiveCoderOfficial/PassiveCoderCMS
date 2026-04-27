@@ -33,7 +33,7 @@ export async function BlogBlock({ block }: { block: BlogBlockProps }) {
             {title && <h2 className="text-3xl font-bold">{title}</h2>}
           </div>
           {viewAllUrl && (
-            <Link href={viewAllUrl} className="hidden md:flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+            <Link href={viewAllUrl} className="flex items-center gap-1 text-sm text-primary hover:underline font-medium">
               {viewAllLabel ?? "View All"} <ArrowRight className="h-4 w-4" />
             </Link>
           )}

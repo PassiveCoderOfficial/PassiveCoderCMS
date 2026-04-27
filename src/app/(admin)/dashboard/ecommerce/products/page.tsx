@@ -108,8 +108,8 @@ export default function ProductsPage() {
           {!filter && <Button asChild><Link href="/dashboard/ecommerce/products/new"><Plus className="h-4 w-4 mr-2" /> Add First Product</Link></Button>}
         </div>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-xl border overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[520px]">
             <thead>
               <tr className="border-b bg-muted/40">
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Product</th>

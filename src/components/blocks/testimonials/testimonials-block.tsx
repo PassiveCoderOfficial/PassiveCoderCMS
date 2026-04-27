@@ -10,6 +10,11 @@ export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) 
   return (
     <div className="max-w-7xl mx-auto">
       {title && <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>}
+      {!items.length && (
+        <div className="text-center py-12 border-2 border-dashed rounded-xl text-muted-foreground text-sm">
+          No testimonials added yet.
+        </div>
+      )}
       <div className={cn("grid grid-cols-1 gap-6", layout !== "carousel" && "md:grid-cols-3")}>
         {items.map((item) => (
           <div key={item.id} className="bg-white border rounded-xl p-6 shadow-sm flex flex-col">

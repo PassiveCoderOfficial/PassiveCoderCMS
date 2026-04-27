@@ -27,7 +27,7 @@ export default async function AgentsPage() {
         {!agents?.length ? (
           <div className="p-10 text-center text-gray-500 text-sm">No agents registered yet.</div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-800">
                 {["Name", "Email", "Company", "Code", "Commission", "Sites", "Status", "Joined", "Actions"].map(h => (
@@ -62,7 +62,7 @@ export default async function AgentsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

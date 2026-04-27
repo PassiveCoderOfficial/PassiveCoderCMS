@@ -27,7 +27,8 @@ export default async function UsersPage() {
           <h2 className="font-semibold text-white text-sm">All Users</h2>
           <span className="text-xs text-gray-500">({users.length})</span>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-800">
               {["Email", "Created", "Last Sign In", "Role", "Actions"].map(h => (
@@ -62,6 +63,7 @@ export default async function UsersPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

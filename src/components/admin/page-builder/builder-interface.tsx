@@ -38,6 +38,14 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page.id]);
 
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) { e.preventDefault(); e.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
   const handleSave = async () => {
     setSaving(true);
     try {
