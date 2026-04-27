@@ -57,7 +57,7 @@ export default async function AllSitesPage({ searchParams }: { searchParams: Pro
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-800">
-              {["Site", "Slug / Domain", "Status", "Onboarded", "Created", ""].map(h => (
+              {["Site Name", "Domain", "Status", "Onboarded", "Created", ""].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs text-gray-500 font-medium">{h}</th>
               ))}
             </tr>
@@ -67,8 +67,17 @@ export default async function AllSitesPage({ searchParams }: { searchParams: Pro
               <tr key={site.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                 <td className="px-5 py-3 text-white font-medium">{site.name}</td>
                 <td className="px-5 py-3">
-                  <div className="text-gray-300">{site.slug}</div>
-                  {site.custom_domain && <div className="text-xs text-indigo-400">{site.custom_domain}</div>}
+                  {site.custom_domain ? (
+                    <a href={`https://${site.custom_domain}`} target="_blank" rel="noopener noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 hover:underline text-sm">
+                      {site.custom_domain}
+                    </a>
+                  ) : (
+                    <a href={`https://${site.slug}.passivecoder.com`} target="_blank" rel="noopener noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 hover:underline text-sm">
+                      {site.slug}.passivecoder.com
+                    </a>
+                  )}
                 </td>
                 <td className="px-5 py-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
