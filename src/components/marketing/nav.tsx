@@ -8,9 +8,8 @@ const LOGO = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/
 const links = [
   { label: "Features", href: "#features" },
   { label: "Templates", href: "#templates" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Clients", href: "#clients" },
   { label: "Pricing", href: "#pricing" },
+  { label: "Agents", href: "/agents" },
   { label: "FAQ", href: "#faq" },
 ];
 

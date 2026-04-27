@@ -40,6 +40,7 @@ export default function FooterSection() {
               <li><a href="#clients" className="hover:text-orange-400 transition-colors">Our Clients</a></li>
               <li><Link href="/contact" className="hover:text-orange-400 transition-colors">Contact</Link></li>
               <li><Link href="/contact?dept=sales" className="hover:text-orange-400 transition-colors">Sales</Link></li>
+              <li><Link href="/agents" className="hover:text-orange-400 transition-colors">Agent Program</Link></li>
               <li><a href="#faq" className="hover:text-orange-400 transition-colors">FAQ</a></li>
             </ul>
           </div>

@@ -9,6 +9,7 @@ import PricingSection from "@/components/marketing/pricing";
 import TestimonialsSection from "@/components/marketing/testimonials";
 import FaqSection from "@/components/marketing/faq";
 import CtaSection from "@/components/marketing/cta";
+import AgentCtaSection from "@/components/marketing/agent-cta";
 import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 
@@ -37,6 +38,7 @@ export default async function MarketingHomePage() {
         <PricingSection plans={plans ?? []} />
         <TestimonialsSection testimonials={settings?.testimonials ?? []} />
         <FaqSection faq={settings?.faq ?? []} />
+        <AgentCtaSection />
         <CtaSection settings={settings} />
       </main>
       <FooterSection />
