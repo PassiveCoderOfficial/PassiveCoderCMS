@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, Star as StarIcon, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, Star as StarIcon, Eye, EyeOff, Copy } from "lucide-react";
 
 interface Testimonial {
   id: string;
@@ -162,6 +162,17 @@ function GroupCard({ group, onUpdate, onDelete }: {
     onUpdate({ ...group, testimonials: group.testimonials.filter(t => t.id !== id) });
   }
 
+  async function duplicateItem(item: Testimonial) {
+    const res = await api("POST", {
+      _type: "item", group_id: group.id,
+      source: item.source, name: item.name + " (copy)", role: item.role,
+      company: item.company, avatar: item.avatar, content: item.content,
+      rating: item.rating, published: false, sort_order: group.testimonials.length,
+    });
+    const data = await res.json();
+    onUpdate({ ...group, testimonials: [...group.testimonials, data as Testimonial] });
+  }
+
   async function savePlatformSettings(settings: Partial<TestimonialGroup>) {
     await api("PATCH", { _type: "group", id: group.id, ...settings });
     onUpdate({ ...group, ...settings });
@@ -270,6 +281,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                       {item.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                     </button>
                     <button onClick={() => setEditingItem(item.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => duplicateItem(item)} className="text-gray-400 hover:text-green-400 p-1" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
                     <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>

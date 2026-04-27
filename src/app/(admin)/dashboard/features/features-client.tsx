@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronRight, GripVertical, Pencil, Check, X, Loader2, Sparkles } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, GripVertical, Pencil, Check, X, Loader2, Sparkles, Copy } from "lucide-react";
+import { IconPicker } from "@/components/ui/icon-picker";
 
 type IconType = "lucide" | "image" | "emoji";
 
@@ -77,12 +78,17 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
           </select>
         </div>
       </div>
-      {item.icon_type !== "image" ? (
+      {item.icon_type === "lucide" ? (
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{item.icon_type === "emoji" ? "Emoji" : "Icon Name"}</label>
+          <label className="block text-xs text-gray-400 mb-1">Icon</label>
+          <IconPicker value={item.icon ?? ""} onChange={v => set("icon", v)} />
+        </div>
+      ) : item.icon_type === "emoji" ? (
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Emoji</label>
           <input value={item.icon ?? ""} onChange={e => set("icon", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
-            placeholder={item.icon_type === "emoji" ? "✨" : "Sparkles"} />
+            placeholder="✨" />
         </div>
       ) : (
         <div>
@@ -149,6 +155,23 @@ function GroupCard({ group, onUpdate, onDelete }: {
     onUpdate({ ...group, feature_items: group.feature_items.filter(i => i.id !== id) });
   }
 
+  async function duplicateItem(item: FeatureItem) {
+    const res = await api("POST", {
+      _type: "item",
+      group_id: group.id,
+      title: item.title + " (copy)",
+      description: item.description,
+      icon_type: item.icon_type,
+      icon: item.icon,
+      image_url: item.image_url,
+      link: item.link,
+      link_label: item.link_label,
+      sort_order: group.feature_items.length,
+    });
+    const data = await res.json();
+    onUpdate({ ...group, feature_items: [...group.feature_items, data as FeatureItem] });
+  }
+
   function handleItemSaved(item: FeatureItem, isNew: boolean) {
     if (isNew) {
       onUpdate({ ...group, feature_items: [...group.feature_items, item] });
@@ -203,6 +226,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                   <button onClick={() => setEditingItem(item.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => duplicateItem(item)} className="text-gray-400 hover:text-green-400 p-1" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
                   <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               </div>

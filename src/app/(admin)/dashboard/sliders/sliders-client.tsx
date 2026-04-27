@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, SlidersHorizontal, Save, CheckCircle } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, SlidersHorizontal, Save, CheckCircle, Copy } from "lucide-react";
 
 interface SliderSlide {
   id: string;
@@ -158,6 +158,19 @@ function GroupCard({ group, onUpdate, onDelete }: {
     onUpdate({ ...group, slider_slides: group.slider_slides.filter(s => s.id !== id) });
   }
 
+  async function duplicateSlide(slide: SliderSlide) {
+    const res = await api("POST", {
+      _type: "slide", group_id: group.id,
+      title: (slide.title ?? "") + " (copy)", subtitle: slide.subtitle,
+      description: slide.description, image_url: slide.image_url,
+      button_label: slide.button_label, button_url: slide.button_url,
+      text_color: slide.text_color, overlay: slide.overlay,
+      sort_order: group.slider_slides.length,
+    });
+    const data = await res.json();
+    onUpdate({ ...group, slider_slides: [...group.slider_slides, data as SliderSlide] });
+  }
+
   function handleSlideSaved(slide: SliderSlide, isNew: boolean) {
     if (isNew) { onUpdate({ ...group, slider_slides: [...group.slider_slides, slide] }); setAddingSlide(false); }
     else { onUpdate({ ...group, slider_slides: group.slider_slides.map(s => s.id === slide.id ? slide : s) }); setEditingSlide(null); }
@@ -245,6 +258,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover/slide:opacity-100 transition-opacity">
                     <button onClick={() => setEditingSlide(slide.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => duplicateSlide(slide)} className="text-gray-400 hover:text-green-400 p-1" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
                     <button onClick={() => deleteSlide(slide.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>

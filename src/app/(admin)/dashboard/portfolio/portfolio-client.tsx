@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, FolderOpen, Tag } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, FolderOpen, Copy } from "lucide-react";
 
 interface PortfolioItem {
   id: string;
@@ -123,6 +123,17 @@ function GroupCard({ group, onUpdate, onDelete }: {
     onUpdate({ ...group, portfolio_items: group.portfolio_items.filter(i => i.id !== id) });
   }
 
+  async function duplicateItem(item: PortfolioItem) {
+    const res = await api("POST", {
+      _type: "item", group_id: group.id,
+      title: item.title + " (copy)", description: item.description,
+      image_url: item.image_url, link: item.link, tags: item.tags,
+      sort_order: group.portfolio_items.length,
+    });
+    const data = await res.json();
+    onUpdate({ ...group, portfolio_items: [...group.portfolio_items, data as PortfolioItem] });
+  }
+
   function handleItemSaved(item: PortfolioItem, isNew: boolean) {
     if (isNew) { onUpdate({ ...group, portfolio_items: [...group.portfolio_items, item] }); setAddingItem(false); }
     else { onUpdate({ ...group, portfolio_items: group.portfolio_items.map(i => i.id === item.id ? item : i) }); setEditingItem(null); }
@@ -166,6 +177,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity flex flex-col justify-between p-2">
                     <div className="flex gap-1 justify-end">
                       <button onClick={() => setEditingItem(item.id)} className="bg-white/20 hover:bg-white/30 p-1 rounded"><Pencil className="w-3 h-3 text-white" /></button>
+                      <button onClick={() => duplicateItem(item)} className="bg-white/20 hover:bg-green-500/80 p-1 rounded" title="Duplicate"><Copy className="w-3 h-3 text-white" /></button>
                       <button onClick={() => deleteItem(item.id)} className="bg-red-500/80 hover:bg-red-500 p-1 rounded"><Trash2 className="w-3 h-3 text-white" /></button>
                     </div>
                     <div>
