@@ -1,19 +1,20 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
 import { AdminTopbar } from "@/components/admin/topbar/topbar";
+import { SABanner } from "@/components/admin/sa-banner";
+import { SA_VIEWING_COOKIE } from "@/lib/tenant/current";
 import type { CMSUser } from "@/types/cms";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-
   if (!user || authError) redirect("/login");
 
   const adminClient = await createAdminClient();
 
-  // Use service role to fetch profile — bypasses RLS
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("*")
@@ -30,8 +31,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!profile) redirect("/login?error=unauthorized");
 
-  // Super admins can access /dashboard to manage their own root site.
-  // Check super_admins table — if SA, allow through (getCurrentTenantId handles tenant resolution).
   const { data: sa } = await adminClient
     .from("super_admins")
     .select("user_id")
@@ -40,6 +39,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!sa && !["admin", "editor", "author"].includes(profile.role)) {
     redirect("/login?error=unauthorized");
+  }
+
+  // Check if SA is impersonating a tenant
+  const cookieStore = await cookies();
+  const viewingTenantId = sa ? cookieStore.get(SA_VIEWING_COOKIE)?.value : undefined;
+
+  let viewingTenantName: string | null = null;
+  if (viewingTenantId) {
+    const { data: tenant } = await adminClient
+      .from("tenants")
+      .select("name")
+      .eq("id", viewingTenantId)
+      .single();
+    viewingTenantName = tenant?.name ?? null;
   }
 
   const cmsUser: CMSUser = {
@@ -53,13 +66,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <AdminSidebar isSuperAdmin={!!sa} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminTopbar user={cmsUser} />
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+    <div className="flex h-screen overflow-hidden bg-background flex-col">
+      {viewingTenantId && viewingTenantName && (
+        <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
+      )}
+      <div className="flex flex-1 overflow-hidden">
+        <AdminSidebar isSuperAdmin={!!sa} />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <AdminTopbar user={cmsUser} />
+          <main className="flex-1 overflow-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

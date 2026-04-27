@@ -1,5 +1,8 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+
+export const SA_VIEWING_COOKIE = "sa_viewing_tenant";
 
 export async function getCurrentTenantId(): Promise<string> {
   const supabase = await createClient();
@@ -8,7 +11,7 @@ export async function getCurrentTenantId(): Promise<string> {
 
   const adminClient = await createAdminClient();
 
-  // Check super_admins table first — SA manages their own root tenant via owner_id
+  // Check if SA is impersonating a tenant
   const { data: sa } = await adminClient
     .from("super_admins")
     .select("user_id")
@@ -16,7 +19,12 @@ export async function getCurrentTenantId(): Promise<string> {
     .maybeSingle();
 
   if (sa) {
-    // Find the tenant owned by this SA user
+    // SA impersonating a specific tenant via cookie
+    const cookieStore = await cookies();
+    const viewing = cookieStore.get(SA_VIEWING_COOKIE)?.value;
+    if (viewing) return viewing;
+
+    // SA managing their own root tenant
     const { data: ownedTenant } = await adminClient
       .from("tenants")
       .select("id")
@@ -26,8 +34,6 @@ export async function getCurrentTenantId(): Promise<string> {
       .maybeSingle();
 
     if (ownedTenant?.id) return ownedTenant.id;
-
-    // SA has no owned tenant yet — redirect to create one
     redirect("/onboarding");
   }
 

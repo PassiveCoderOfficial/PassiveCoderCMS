@@ -1,9 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { SA_VIEWING_COOKIE } from "./current";
 
 /**
  * Resolve tenant ID for API routes.
+ * SA impersonating: uses sa_viewing_tenant cookie.
+ * SA own site: first tenant owned by user.
  * Regular users: tenant_members lookup.
- * Super admins: first tenant owned by user.
  */
 export async function apiTenantId(): Promise<string | null> {
   const supabase = await createClient();
@@ -17,7 +20,11 @@ export async function apiTenantId(): Promise<string | null> {
     .single();
   if (membership?.tenant_id) return membership.tenant_id;
 
-  // SA fallback: find tenant by owner_id
+  // SA fallback: check impersonation cookie first, then owned tenant
+  const cookieStore = await cookies();
+  const viewing = cookieStore.get(SA_VIEWING_COOKIE)?.value;
+  if (viewing) return viewing;
+
   const { data: owned } = await supabase
     .from("tenants")
     .select("id")
