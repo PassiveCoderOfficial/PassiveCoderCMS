@@ -13,10 +13,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const adminClient = await createAdminClient();
 
-  // Always check super_admins FIRST — super admins have no tenant and must never reach tenant-gated pages
-  const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-  if (sa) redirect("/super-admin");
-
   // Use service role to fetch profile — bypasses RLS
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
@@ -32,9 +28,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
+  // Super admin profile role OR entry in super_admins table → redirect to super-admin panel
+  if (profile?.role === "super_admin") redirect("/super-admin");
+
   if (!profile) redirect("/login?error=unauthorized");
 
-  if (!["admin", "editor", "author", "super_admin"].includes(profile.role)) {
+  // Check super_admins table as a fallback (catches users who were granted SA without profile update)
+  const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
+  if (sa) redirect("/super-admin");
+
+  if (!["admin", "editor", "author"].includes(profile.role)) {
     redirect("/login?error=unauthorized");
   }
 

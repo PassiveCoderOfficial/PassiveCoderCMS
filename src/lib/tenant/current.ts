@@ -6,8 +6,16 @@ export async function getCurrentTenantId(): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Super admin check first — they have no tenant_members row
+  // Check profile role — super_admin role means no tenant
   const adminClient = await createAdminClient();
+  const { data: profile } = await adminClient
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.role === "super_admin") redirect("/super-admin");
+
+  // Also check super_admins table (users granted SA without profile update)
   const { data: sa } = await adminClient
     .from("super_admins")
     .select("user_id")
