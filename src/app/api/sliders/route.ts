@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { apiTenantId } from "@/lib/tenant/api";
 
-async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).single();
-  return data?.tenant_id ?? null;
-}
 
 export async function GET() {
   const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data } = await supabase
@@ -24,7 +19,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
@@ -50,7 +45,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { _type, id, ...fields } = await req.json();
@@ -61,7 +56,7 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);

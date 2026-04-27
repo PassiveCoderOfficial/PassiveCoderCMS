@@ -1,17 +1,11 @@
-import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
-import { isSaaS } from "@/lib/flags";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import DomainSettingsClient from "./domain-client";
 
 export const metadata = { title: "Domain Settings" };
 
 export default async function DomainSettingsPage() {
-  if (!isSaaS) notFound();
-
-  const hdrs = await headers();
-  const tenantId = hdrs.get("x-tenant-id");
-  if (!tenantId) notFound();
+  const tenantId = await getCurrentTenantId();
 
   const supabase = await createAdminClient();
   const { data: tenant } = await supabase

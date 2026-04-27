@@ -20,9 +20,18 @@ export default function GeneralSettingsPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      // Try membership first, fall back to owned tenant (super admin)
+      let tenantId: string | null = null;
       const { data: membership } = await supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).single();
-      if (!membership) return;
-      const { data } = await supabase.from("site_settings").select("*").eq("tenant_id", membership.tenant_id).single();
+      if (membership?.tenant_id) {
+        tenantId = membership.tenant_id;
+      } else {
+        const { data: owned } = await supabase.from("tenants").select("id").eq("owner_id", user.id)
+          .order("created_at", { ascending: true }).limit(1).single();
+        tenantId = owned?.id ?? null;
+      }
+      if (!tenantId) return;
+      const { data } = await supabase.from("site_settings").select("*").eq("tenant_id", tenantId).single();
       if (data) setSettings(data);
     })();
   }, []);

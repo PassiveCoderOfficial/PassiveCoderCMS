@@ -3,16 +3,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, CreditCard, Users, TicketIcon,
-  Settings, Edit3, LogOut, ShieldCheck, Zap, Plus,
+  Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Overview",        href: "/super-admin",              icon: LayoutDashboard, exact: true },
   { label: "All Sites",       href: "/super-admin/sites",        icon: Globe,           add: "/super-admin/sites/new" },
-  { label: "Subscriptions",   href: "/super-admin/subscriptions",icon: CreditCard },
+  { label: "Subscriptions",   href: "/super-admin/subscriptions",icon: CreditCard,    add: "/super-admin/subscriptions/new" },
   { label: "Plans & Pricing", href: "/super-admin/plans",        icon: CreditCard,      add: "/super-admin/plans/new" },
   { label: "Support Tickets", href: "/super-admin/tickets",      icon: TicketIcon },
+  { label: "Departments",     href: "/super-admin/departments",  icon: Settings2 },
   { label: "Users & Roles",   href: "/super-admin/users",        icon: Users,           add: "/super-admin/users/new" },
   { label: "Agents",          href: "/super-admin/agents",       icon: Zap },
   { label: "Homepage Editor", href: "/super-admin/homepage",     icon: Edit3 },
