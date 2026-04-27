@@ -36,7 +36,7 @@ export function AdminTopbar({ user }: TopbarProps) {
     : user?.email?.slice(0, 2).toUpperCase() ?? "??";
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b px-4 bg-background">
+    <header className="flex h-14 items-center gap-4 border-b px-4 bg-background pl-14 lg:pl-4">
       {/* Search */}
       <div className="relative flex-1 max-w-sm">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

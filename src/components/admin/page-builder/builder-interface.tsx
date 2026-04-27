@@ -156,13 +156,25 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
         </div>
 
         {/* Main */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Blocks panel */}
-          {showBlocks && (
-            <div className="w-52 border-r shrink-0 overflow-hidden flex flex-col">
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* Blocks panel — slide drawer on mobile, sidebar on desktop */}
+          <>
+            {showBlocks && (
+              <div
+                className="fixed inset-y-0 left-0 z-30 lg:hidden bg-background border-r w-64 shadow-xl flex flex-col"
+                style={{ top: "auto", bottom: 0, height: "calc(100% - 45px)" }}
+              >
+                <div className="flex items-center justify-between px-3 py-2 border-b">
+                  <span className="text-xs font-semibold">Blocks</span>
+                  <button onClick={() => setShowBlocks(false)} className="p-1 rounded hover:bg-muted"><span className="text-muted-foreground text-xs">✕</span></button>
+                </div>
+                <BlocksPanel />
+              </div>
+            )}
+            <div className="hidden lg:flex w-52 border-r shrink-0 overflow-hidden flex-col">
               <BlocksPanel />
             </div>
-          )}
+          </>
 
           {/* Canvas */}
           <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900">
@@ -178,12 +190,26 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
             </div>
           </div>
 
-          {/* Settings panel */}
-          {showSettings && mode === "edit" && (
-            <div className="w-64 border-l shrink-0 overflow-hidden flex flex-col">
-              <SettingsPanel />
-            </div>
-          )}
+          {/* Settings panel — slide drawer on mobile, sidebar on desktop */}
+          <>
+            {showSettings && mode === "edit" && (
+              <div
+                className="fixed inset-y-0 right-0 z-30 lg:hidden bg-background border-l w-72 shadow-xl flex flex-col"
+                style={{ top: "auto", bottom: 0, height: "calc(100% - 45px)" }}
+              >
+                <div className="flex items-center justify-between px-3 py-2 border-b">
+                  <span className="text-xs font-semibold">Settings</span>
+                  <button onClick={() => setShowSettings(false)} className="p-1 rounded hover:bg-muted"><span className="text-muted-foreground text-xs">✕</span></button>
+                </div>
+                <SettingsPanel />
+              </div>
+            )}
+            {showSettings && mode === "edit" && (
+              <div className="hidden lg:flex w-64 border-l shrink-0 overflow-hidden flex-col">
+                <SettingsPanel />
+              </div>
+            )}
+          </>
         </div>
       </div>
     </TooltipProvider>

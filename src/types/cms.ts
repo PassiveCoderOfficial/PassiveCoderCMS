@@ -44,7 +44,14 @@ export type BlockType =
   | "ecommerce_products"
   | "ecommerce_cart"
   | "accounting_feed"
-  | "custom_html";
+  | "custom_html"
+  | "timeline"
+  | "columns"
+  | "newsletter"
+  | "countdown"
+  | "steps"
+  | "icon_grid"
+  | "video";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -289,6 +296,233 @@ export type CustomHtmlBlockProps = BlockBase & {
   };
 };
 
+export type TeamMember = {
+  id: string;
+  name: string;
+  role?: string;
+  bio?: string;
+  avatar?: string;
+  email?: string;
+  social?: { platform: string; url: string }[];
+};
+
+export type TeamBlockProps = BlockBase & {
+  type: "team";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "grid" | "list" | "cards";
+    columns: 2 | 3 | 4;
+    members: TeamMember[];
+    showBio: boolean;
+    showSocial: boolean;
+  };
+};
+
+export type FAQItem = { id: string; question: string; answer: string };
+
+export type FAQBlockProps = BlockBase & {
+  type: "faq";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "accordion" | "grid" | "simple";
+    items: FAQItem[];
+    allowMultiple: boolean;
+  };
+};
+
+export type PricingPlan = {
+  id: string;
+  name: string;
+  price: string;
+  period?: string;
+  description?: string;
+  features: string[];
+  highlighted?: boolean;
+  badge?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+};
+
+export type PricingBlockProps = BlockBase & {
+  type: "pricing";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "cards" | "comparison";
+    billingToggle: boolean;
+    plans: PricingPlan[];
+  };
+};
+
+export type FeatureItem = {
+  id: string;
+  icon?: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+};
+
+export type FeaturesBlockProps = BlockBase & {
+  type: "features";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "grid" | "alternating" | "icon-list" | "centered";
+    columns: 2 | 3 | 4;
+    items: FeatureItem[];
+    style: "minimal" | "card" | "gradient";
+  };
+};
+
+export type StatItem = { id: string; value: string; label: string; prefix?: string; suffix?: string; icon?: string };
+
+export type StatsBlockProps = BlockBase & {
+  type: "stats";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "row" | "grid";
+    columns: 2 | 3 | 4;
+    items: StatItem[];
+    style: "plain" | "cards" | "colored";
+    animate: boolean;
+  };
+};
+
+export type ContactBlockProps = BlockBase & {
+  type: "contact";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "left" | "centered" | "split";
+    showMap: boolean;
+    mapEmbedUrl?: string;
+    fields: Array<{ id: string; label: string; type: "text" | "email" | "tel" | "textarea" | "select"; required: boolean; options?: string[] }>;
+    submitLabel: string;
+    successMessage: string;
+    recipientEmail?: string;
+    showContactInfo: boolean;
+    phone?: string;
+    email?: string;
+    address?: string;
+  };
+};
+
+export type EmbedBlockProps = BlockBase & {
+  type: "embed";
+  data: {
+    url: string;
+    embedType: "youtube" | "vimeo" | "iframe" | "spotify" | "twitter" | "instagram";
+    aspectRatio: "16:9" | "4:3" | "1:1" | "9:16";
+    autoplay?: boolean;
+    caption?: string;
+  };
+};
+
+export type EcommerceCartBlockProps = BlockBase & {
+  type: "ecommerce_cart";
+  data: {
+    title?: string;
+    showOrderSummary: boolean;
+    showCouponField: boolean;
+    layout: "default" | "minimal";
+  };
+};
+
+export type TimelineItem = { id: string; date?: string; title: string; description?: string; icon?: string; imageUrl?: string };
+
+export type TimelineBlockProps = BlockBase & {
+  type: "timeline";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "vertical" | "horizontal" | "alternating";
+    items: TimelineItem[];
+    style: "simple" | "card" | "colored";
+  };
+};
+
+export type ColumnsBlockProps = BlockBase & {
+  type: "columns";
+  data: {
+    columns: 2 | 3 | 4;
+    gap: "sm" | "md" | "lg";
+    content: string[];
+    verticalAlign: "top" | "middle" | "bottom";
+  };
+};
+
+export type NewsletterBlockProps = BlockBase & {
+  type: "newsletter";
+  data: {
+    title?: string;
+    description?: string;
+    placeholder: string;
+    submitLabel: string;
+    layout: "inline" | "stacked" | "card";
+    successMessage: string;
+    provider?: "mailchimp" | "custom";
+    webhookUrl?: string;
+  };
+};
+
+export type CountdownBlockProps = BlockBase & {
+  type: "countdown";
+  data: {
+    title?: string;
+    targetDate: string;
+    layout: "boxes" | "minimal" | "flip";
+    labels: { days: string; hours: string; minutes: string; seconds: string };
+    expiredMessage?: string;
+    showSeconds: boolean;
+  };
+};
+
+export type StepItem = { id: string; number?: string; title: string; description?: string; icon?: string; imageUrl?: string };
+
+export type StepsBlockProps = BlockBase & {
+  type: "steps";
+  data: {
+    title?: string;
+    subtitle?: string;
+    layout: "horizontal" | "vertical" | "numbered";
+    items: StepItem[];
+    style: "plain" | "connected" | "card";
+  };
+};
+
+export type IconGridItem = { id: string; icon: string; label: string; description?: string; url?: string; color?: string };
+
+export type IconGridBlockProps = BlockBase & {
+  type: "icon_grid";
+  data: {
+    title?: string;
+    subtitle?: string;
+    columns: 3 | 4 | 5 | 6;
+    items: IconGridItem[];
+    style: "plain" | "card" | "colored";
+    iconSize: "sm" | "md" | "lg";
+  };
+};
+
+export type VideoBlockProps = BlockBase & {
+  type: "video";
+  data: {
+    url: string;
+    videoType: "youtube" | "vimeo" | "mp4";
+    autoplay: boolean;
+    muted: boolean;
+    loop: boolean;
+    controls: boolean;
+    aspectRatio: "16:9" | "4:3" | "1:1";
+    poster?: string;
+    caption?: string;
+    maxWidth?: string;
+  };
+};
+
 export type Block =
   | HeroBlockProps
   | SliderBlockProps
@@ -303,7 +537,22 @@ export type Block =
   | AccountingFeedBlockProps
   | DividerBlockProps
   | SpacerBlockProps
-  | CustomHtmlBlockProps;
+  | CustomHtmlBlockProps
+  | TeamBlockProps
+  | FAQBlockProps
+  | PricingBlockProps
+  | FeaturesBlockProps
+  | StatsBlockProps
+  | ContactBlockProps
+  | EmbedBlockProps
+  | EcommerceCartBlockProps
+  | TimelineBlockProps
+  | ColumnsBlockProps
+  | NewsletterBlockProps
+  | CountdownBlockProps
+  | StepsBlockProps
+  | IconGridBlockProps
+  | VideoBlockProps;
 
 // ─── Page Types ───────────────────────────────────────────────────────────
 

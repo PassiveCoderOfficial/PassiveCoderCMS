@@ -74,7 +74,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminSidebar isSuperAdmin={!!sa} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <AdminTopbar user={cmsUser} />
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto pl-0 lg:pl-0">
             {children}
           </main>
         </div>

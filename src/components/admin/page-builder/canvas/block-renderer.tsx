@@ -13,6 +13,20 @@ import { TestimonialsBlock } from "@/components/blocks/testimonials/testimonials
 import { DividerBlock } from "@/components/blocks/divider/divider-block";
 import { SpacerBlock } from "@/components/blocks/spacer/spacer-block";
 import { CustomHtmlBlock } from "@/components/blocks/custom-html/custom-html-block";
+import { TeamBlock } from "@/components/blocks/team/team-block";
+import { FAQBlock } from "@/components/blocks/faq/faq-block";
+import { PricingBlock } from "@/components/blocks/pricing/pricing-block";
+import { FeaturesBlock } from "@/components/blocks/features/features-block";
+import { StatsBlock } from "@/components/blocks/stats/stats-block";
+import { ContactBlock } from "@/components/blocks/contact/contact-block";
+import { EmbedBlock } from "@/components/blocks/embed/embed-block";
+import { VideoBlock } from "@/components/blocks/video/video-block";
+import { TimelineBlock } from "@/components/blocks/timeline/timeline-block";
+import { ColumnsBlock } from "@/components/blocks/columns/columns-block";
+import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block";
+import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
+import { StepsBlock } from "@/components/blocks/steps/steps-block";
+import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
 
@@ -56,7 +70,23 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
       case "divider": return <DividerBlock block={block} />;
       case "spacer": return <SpacerBlock block={block} />;
       case "custom_html": return <CustomHtmlBlock block={block} />;
+      case "team": return <TeamBlock block={block} />;
+      case "faq": return <FAQBlock block={block} />;
+      case "pricing": return <PricingBlock block={block} />;
+      case "features": return <FeaturesBlock block={block} />;
+      case "stats": return <StatsBlock block={block} />;
+      case "contact": return <ContactBlock block={block} />;
+      case "embed": return <EmbedBlock block={block} />;
+      case "video": return <VideoBlock block={block} />;
+      case "timeline": return <TimelineBlock block={block} />;
+      case "columns": return <ColumnsBlock block={block} />;
+      case "newsletter": return <NewsletterBlock block={block} />;
+      case "countdown": return <CountdownBlock block={block} />;
+      case "steps": return <StepsBlock block={block} />;
+      case "icon_grid": return <IconGridBlock block={block} />;
       // Server data blocks show placeholders in builder
+      case "ecommerce_cart":
+        return <DataBlockPlaceholder icon={ShoppingBag} label="Shopping Cart — live cart on the public site" />;
       case "blog":
         return <DataBlockPlaceholder icon={BookOpen} label="Blog Posts Block — live data in preview" />;
       case "ecommerce_products":

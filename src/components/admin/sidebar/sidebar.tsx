@@ -1,21 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navSections } from "./nav-items";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShieldCheck } from "lucide-react";
+import { ExternalLink, ShieldCheck, Menu, X } from "lucide-react";
 import { isSaaS } from "@/lib/flags";
 
-export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+function SidebarContent({ isSuperAdmin, onClose }: { isSuperAdmin: boolean; onClose?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 flex-col border-r bg-sidebar">
+    <>
       {/* Logo */}
-      <div className="flex h-14 items-center px-4 border-b">
+      <div className="flex h-14 items-center justify-between px-4 border-b">
         <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -24,6 +25,11 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
             className="h-7 w-auto"
           />
         </a>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -50,6 +56,7 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
                       <Link
                         href={item.href}
                         target={isExternal ? "_blank" : undefined}
+                        onClick={onClose}
                         className={cn(
                           "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",
                           isActive
@@ -81,6 +88,7 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
         {isSuperAdmin && (
           <Link
             href="/super-admin"
+            onClick={onClose}
             className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-indigo-500 hover:bg-accent hover:text-indigo-400 transition-colors"
           >
             <ShieldCheck className="h-4 w-4 shrink-0" />
@@ -89,6 +97,44 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
         )}
         <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v1.0.0</p>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile hamburger — shown in topbar via this exported button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-3.5 left-3 z-40 p-2 rounded-md bg-background border shadow-sm"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 flex flex-col w-60 border-r bg-sidebar transition-transform duration-200 lg:hidden",
+        open ? "translate-x-0" : "-translate-x-full",
+      )}>
+        <SidebarContent isSuperAdmin={isSuperAdmin} onClose={() => setOpen(false)} />
+      </aside>
+
+      {/* Desktop sidebar — always visible */}
+      <aside className="hidden lg:flex h-screen w-60 flex-col border-r bg-sidebar flex-shrink-0">
+        <SidebarContent isSuperAdmin={isSuperAdmin} />
+      </aside>
+    </>
   );
 }
