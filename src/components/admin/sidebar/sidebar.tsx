@@ -15,11 +15,15 @@ export function AdminSidebar() {
   return (
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar">
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2 px-4 border-b">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
-          <span className="text-xs font-bold text-primary-foreground">C</span>
-        </div>
-        <span className="font-semibold text-sm">Passive Coder</span>
+      <div className="flex h-14 items-center px-4 border-b">
+        <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"
+            alt="Passive Coder"
+            className="h-7 w-auto"
+          />
+        </a>
       </div>
 
       {/* Nav */}

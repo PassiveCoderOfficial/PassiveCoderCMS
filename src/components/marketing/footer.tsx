@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Code2 } from "lucide-react";
+
+const LOGO = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
 
 export default function FooterSection() {
   return (
@@ -8,14 +9,11 @@ export default function FooterSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-rose-500 rounded-xl flex items-center justify-center">
-                <Code2 className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-white text-base">Passive</span>
-                <span className="font-extrabold text-orange-400 text-base -mt-0.5">Coder</span>
-              </div>
+            <div className="mb-4">
+              <a href="https://passivecoder.com">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={LOGO} alt="Passive Coder" className="h-9 w-auto brightness-0 invert" />
+              </a>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
               Professional website builder for local service businesses. Built and trusted by teams across 8 countries.

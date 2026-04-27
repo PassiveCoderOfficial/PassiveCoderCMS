@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, Code2 } from "lucide-react";
+import { Menu, X } from "lucide-react";
+
+const LOGO = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
 
 const links = [
   { label: "Features", href: "#features" },
@@ -17,15 +19,10 @@ export default function MarketingNav() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-rose-500 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-orange-200 transition-shadow">
-            <Code2 className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="font-extrabold text-gray-900 text-base tracking-tight">Passive</span>
-            <span className="font-extrabold text-orange-500 text-base tracking-tight -mt-0.5">Coder</span>
-          </div>
-        </Link>
+        <a href="https://passivecoder.com" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO} alt="Passive Coder" className="h-9 w-auto" />
+        </a>
 
         <nav className="hidden md:flex items-center gap-6">
           {links.map(l => (
