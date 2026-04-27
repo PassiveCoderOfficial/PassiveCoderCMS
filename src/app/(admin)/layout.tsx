@@ -28,16 +28,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  // Super admin profile role OR entry in super_admins table → redirect to super-admin panel
-  if (profile?.role === "super_admin") redirect("/super-admin");
-
   if (!profile) redirect("/login?error=unauthorized");
 
-  // Check super_admins table as a fallback (catches users who were granted SA without profile update)
-  const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-  if (sa) redirect("/super-admin");
+  // Super admins can access /dashboard to manage their own root site.
+  // Check super_admins table — if SA, allow through (getCurrentTenantId handles tenant resolution).
+  const { data: sa } = await adminClient
+    .from("super_admins")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-  if (!["admin", "editor", "author"].includes(profile.role)) {
+  if (!sa && !["admin", "editor", "author"].includes(profile.role)) {
     redirect("/login?error=unauthorized");
   }
 
@@ -53,7 +54,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <AdminSidebar />
+      <AdminSidebar isSuperAdmin={!!sa} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminTopbar user={cmsUser} />
         <main className="flex-1 overflow-auto">

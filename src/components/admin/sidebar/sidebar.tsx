@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 import { navSections } from "./nav-items";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ShieldCheck } from "lucide-react";
 import { isSaaS } from "@/lib/flags";
 
-export function AdminSidebar() {
+export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -77,8 +77,17 @@ export function AdminSidebar() {
 
       {/* Footer */}
       <Separator />
-      <div className="p-3">
-        <p className="text-[10px] text-muted-foreground text-center">Passive Coder v1.0.0</p>
+      <div className="p-3 space-y-1">
+        {isSuperAdmin && (
+          <Link
+            href="/super-admin"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-indigo-500 hover:bg-accent hover:text-indigo-400 transition-colors"
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            Super Admin Panel
+          </Link>
+        )}
+        <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v1.0.0</p>
       </div>
     </aside>
   );
