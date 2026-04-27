@@ -145,11 +145,11 @@ const sections: Record<string, React.ReactNode> = {
 
   overview: (
     <div>
-      <H1>CMS Studio</H1>
+      <H1>Passive Coder</H1>
       <p className="text-muted-foreground text-sm mb-6">A modern, open-source Content Management System built with Next.js 15 and Supabase.</p>
-      <Note type="success">CMS Studio is designed to be reused across client websites. It follows a WordPress-inspired architecture but is built on modern, type-safe technology.</Note>
-      <H2>What is CMS Studio?</H2>
-      <P>CMS Studio is a full-featured headless CMS with a built-in visual page builder. It provides everything you need to build and manage professional websites — pages, blog posts, ecommerce, accounting, themes, and plugins — all from a single admin panel.</P>
+      <Note type="success">Passive Coder is designed to be reused across client websites. It follows a WordPress-inspired architecture but is built on modern, type-safe technology.</Note>
+      <H2>What is Passive Coder?</H2>
+      <P>Passive Coder is a full-featured headless CMS with a built-in visual page builder. It provides everything you need to build and manage professional websites — pages, blog posts, ecommerce, accounting, themes, and plugins — all from a single admin panel.</P>
       <H2>Key Features</H2>
       <Table
         headers={["Feature", "Description"]}
@@ -552,7 +552,7 @@ export const builtInThemes: BuiltInTheme[] = [
     slug: "aurora",
     name: "Aurora",
     description: "Vibrant gradient theme with modern typography.",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     settings: {
       primaryColor: "#7C3AED",
@@ -627,7 +627,7 @@ const vars = theme ? \`
       <P>Once the entry is in <Code>built-in-themes.ts</Code>, it appears automatically in <Code>Dashboard → Themes → Available Themes</Code>. Click Install → Activate.</P>
 
       <Note type="info">
-        Themes only style the <strong>public site</strong>. The admin panel always uses the CMS Studio design system with its own independent dark/light mode (toggled in the top-right corner of the admin header).
+        Themes only style the <strong>public site</strong>. The admin panel always uses the Passive Coder design system with its own independent dark/light mode (toggled in the top-right corner of the admin header).
       </Note>
 
       <H2>Theme Customization Without Code</H2>
@@ -646,7 +646,7 @@ h1, h2, h3 { font-family: "Georgia", serif; }
   plugins: (
     <div>
       <H1>Plugins</H1>
-      <P>Plugins extend CMS Studio with additional features — SEO tools, contact forms, analytics, booking systems, and more. They can be installed and toggled on/off from <Code>Dashboard → Plugins</Code> without touching code.</P>
+      <P>Plugins extend Passive Coder with additional features — SEO tools, contact forms, analytics, booking systems, and more. They can be installed and toggled on/off from <Code>Dashboard → Plugins</Code> without touching code.</P>
 
       <H2>How the Plugin System Works</H2>
       <P>Each plugin is a TypeScript definition object (<Code>PluginDefinition</Code>) that declares what it provides: new block types, admin pages, hooks, and settings fields. The database stores which plugins are installed and their active state. Application code reads <Code>plugins.is_active</Code> to gate feature execution:</P>
@@ -774,7 +774,7 @@ const apiKey = plugin.settings?.api_key as string;
 // ... run plugin logic`}</Pre>
 
       <H3>Step 4 — Implement hooks (optional)</H3>
-      <P>CMS Studio uses a simple hook bus. Register listeners in a server-side module:</P>
+      <P>Passive Coder uses a simple hook bus. Register listeners in a server-side module:</P>
       <Pre>{`// src/modules/plugins/hooks.ts
 type Hook = "on_page_publish" | "on_order_created" | "on_media_upload";
 type HookHandler = (payload: unknown) => Promise<void>;
@@ -1022,7 +1022,7 @@ export default async function MyPluginSettings() {
   "blocks-dev": (
     <div>
       <H1>Creating Custom Blocks</H1>
-      <P>CMS Studio uses a block registry pattern. Each block type is defined once and can be used anywhere in the builder.</P>
+      <P>Passive Coder uses a block registry pattern. Each block type is defined once and can be used anywhere in the builder.</P>
       <H2>Step 1 — Define the Block Type</H2>
       <P>Add your block's data type to <Code>src/types/cms.ts</Code>:</P>
       <Pre>{`// In types/cms.ts
@@ -1177,7 +1177,7 @@ CREATE POLICY "Editors manage pages" ON public.pages
   api: (
     <div>
       <H1>API Reference</H1>
-      <P>CMS Studio uses Supabase's auto-generated REST API for all data operations. You can also create custom Next.js API routes in <Code>src/app/api/</Code>.</P>
+      <P>Passive Coder uses Supabase's auto-generated REST API for all data operations. You can also create custom Next.js API routes in <Code>src/app/api/</Code>.</P>
       <H2>Supabase Client Usage</H2>
       <Pre>{`// Server components / API routes
 import { createClient } from "@/lib/supabase/server";
@@ -1409,7 +1409,7 @@ export default function DocsPage() {
           )}
           {/* Footer */}
           <div className="mt-16 pt-6 border-t flex items-center justify-between text-xs text-muted-foreground">
-            <span>CMS Studio Documentation</span>
+            <span>Passive Coder Documentation</span>
             <a
               href="https://github.com"
               target="_blank"

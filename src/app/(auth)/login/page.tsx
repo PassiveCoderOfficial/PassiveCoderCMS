@@ -9,7 +9,7 @@ export default function LoginPage() {
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary mb-4">
             <span className="text-xl font-bold text-primary-foreground">C</span>
           </div>
-          <h1 className="text-2xl font-bold">CMS Studio</h1>
+          <h1 className="text-2xl font-bold">Passive Coder</h1>
           <p className="text-muted-foreground text-sm mt-1">Sign in to your account</p>
         </div>
         <Suspense>

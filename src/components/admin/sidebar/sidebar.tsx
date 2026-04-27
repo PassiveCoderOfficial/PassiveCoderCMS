@@ -19,7 +19,7 @@ export function AdminSidebar() {
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
           <span className="text-xs font-bold text-primary-foreground">C</span>
         </div>
-        <span className="font-semibold text-sm">CMS Studio</span>
+        <span className="font-semibold text-sm">Passive Coder</span>
       </div>
 
       {/* Nav */}
@@ -74,7 +74,7 @@ export function AdminSidebar() {
       {/* Footer */}
       <Separator />
       <div className="p-3">
-        <p className="text-[10px] text-muted-foreground text-center">CMS Studio v1.0.0</p>
+        <p className="text-[10px] text-muted-foreground text-center">Passive Coder v1.0.0</p>
       </div>
     </aside>
   );

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { seedTemplate } from "@/lib/templates/seed-template";
 
 export async function POST(req: Request) {
-  const { siteName, slug, userId, templateId, templateMode } = await req.json();
+  const { siteName, slug, userId, templateId, templateMode, referralCode } = await req.json();
 
   if (!siteName || !slug || !userId)
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -27,9 +27,16 @@ export async function POST(req: Request) {
     // Slug owned by this user (previous incomplete attempt) → reuse
     tenant = { id: existing.id, slug: existing.slug };
   } else {
+    // Resolve referral code to agent id
+    let referredByAgentId: string | null = null;
+    if (referralCode) {
+      const { data: agentRow } = await supabase.from("agents").select("id").eq("referral_code", referralCode).eq("status", "active").maybeSingle();
+      referredByAgentId = agentRow?.id ?? null;
+    }
+
     const { data: created, error } = await supabase
       .from("tenants")
-      .insert({ slug, name: siteName, owner_id: userId, status: "trial" })
+      .insert({ slug, name: siteName, owner_id: userId, status: "trial", referred_by_agent_id: referredByAgentId })
       .select("id,slug")
       .single();
 

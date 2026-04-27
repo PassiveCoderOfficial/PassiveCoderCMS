@@ -8,7 +8,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "CMS Studio",
+  title: "Passive Coder",
   description: "Modern CMS built with Next.js and Supabase",
 };
 

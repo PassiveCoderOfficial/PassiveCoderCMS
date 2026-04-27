@@ -25,7 +25,7 @@ export const BUILT_IN_THEMES: BuiltInTheme[] = [
     slug: "aurora",
     name: "Aurora",
     description: "Clean, modern theme with vibrant gradients perfect for portfolios",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     preview_gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     settings: {
@@ -44,7 +44,7 @@ export const BUILT_IN_THEMES: BuiltInTheme[] = [
     slug: "minimal",
     name: "Minimal",
     description: "Ultra-clean minimalist design, perfect for professional portfolios",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     preview_gradient: "linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)",
     settings: {
@@ -63,7 +63,7 @@ export const BUILT_IN_THEMES: BuiltInTheme[] = [
     slug: "ocean",
     name: "Ocean",
     description: "Cool blue tones inspired by the ocean, great for tech companies",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     preview_gradient: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)",
     settings: {
@@ -82,7 +82,7 @@ export const BUILT_IN_THEMES: BuiltInTheme[] = [
     slug: "sunset",
     name: "Sunset",
     description: "Warm, energetic theme with orange and red accents",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     preview_gradient: "linear-gradient(135deg, #f97316 0%, #ef4444 100%)",
     settings: {
@@ -101,7 +101,7 @@ export const BUILT_IN_THEMES: BuiltInTheme[] = [
     slug: "forest",
     name: "Forest",
     description: "Natural green tones, perfect for eco-friendly brands",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     preview_gradient: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
     settings: {
@@ -120,7 +120,7 @@ export const BUILT_IN_THEMES: BuiltInTheme[] = [
     slug: "midnight",
     name: "Midnight",
     description: "Dark theme with electric accents for creative agencies",
-    author: "CMS Studio",
+    author: "Passive Coder",
     version: "1.0.0",
     preview_gradient: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)",
     settings: {

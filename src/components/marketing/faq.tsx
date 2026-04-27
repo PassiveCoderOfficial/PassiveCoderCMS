@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 interface FaqItem { q: string; a: string; }
 
 const DEFAULT_FAQ: FaqItem[] = [
-  { q: "Do I need any technical skills?", a: "None at all. If you can type and click, you can build a site with CMS Studio. Our visual editor lets you see changes as you make them." },
+  { q: "Do I need any technical skills?", a: "None at all. If you can type and click, you can build a site with Passive Coder. Our visual editor lets you see changes as you make them." },
   { q: "Can I try before paying?", a: "Yes — every plan comes with a 24-hour free trial. Full access, no credit card required. You only pay when you decide to keep it." },
   { q: "What happens to my site if I cancel?", a: "We'll notify you before any suspension. You can export all your data (JSON, CSV, WordPress format) at any time from your backups page." },
   { q: "Can I use my own domain?", a: "Absolutely. You can buy a domain through us (included in your plan) or connect one you already own. We'll walk you through the DNS setup step by step." },

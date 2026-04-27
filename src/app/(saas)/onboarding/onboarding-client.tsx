@@ -609,11 +609,12 @@ function Step5({ onNext, initialSlug, initialMode }: {
 // ─── Step 6: Launching ────────────────────────────────────────────────────────
 
 function Step6({
-  siteName, slug, domainChoice, planId, payMethod, templateId, templateMode,
+  siteName, slug, domainChoice, planId, payMethod, templateId, templateMode, referralCode,
 }: {
   siteName: string; slug: string;
   domainChoice: { type: DomainOption; domain?: string };
   planId: string; payMethod: PayMethod; templateId: string; templateMode: "theme" | "full";
+  referralCode?: string;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<"creating" | "done" | "error">("creating");
@@ -630,7 +631,7 @@ function Step6({
         const res = await fetch("/api/onboarding/create-tenant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ siteName, slug, userId: user.id, planId, payMethod, templateId, templateMode }),
+          body: JSON.stringify({ siteName, slug, userId: user.id, planId, payMethod, templateId, templateMode, referralCode }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -743,6 +744,7 @@ export default function OnboardingClient() {
   const [domainChoice, setDomainChoice] = useState<{ type: DomainOption; domain?: string }>({ type: "subdomain" });
   const [templateId, setTemplateId] = useState(params.get("template") ?? "blank");
   const [templateMode, setTemplateMode] = useState<"theme" | "full">((params.get("mode") as "theme" | "full") ?? "full");
+  const referralCode = params.get("ref") ?? undefined;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -770,6 +772,7 @@ export default function OnboardingClient() {
               siteName={siteName} slug={slug} domainChoice={domainChoice}
               planId={planId} payMethod={payMethod}
               templateId={templateId} templateMode={templateMode}
+              referralCode={referralCode}
             />
           )}
         </div>

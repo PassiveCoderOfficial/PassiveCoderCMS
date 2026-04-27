@@ -27,7 +27,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  if (!profile || !["admin", "editor", "author"].includes(profile.role)) {
+  // Super admins redirect to their own panel
+  if (!profile) {
+    const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).single();
+    if (sa) redirect("/super-admin");
+    redirect("/login?error=unauthorized");
+  }
+
+  if (!["admin", "editor", "author", "super_admin"].includes(profile.role)) {
+    const { data: sa } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).single();
+    if (sa) redirect("/super-admin");
     redirect("/login?error=unauthorized");
   }
 

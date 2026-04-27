@@ -16,10 +16,15 @@ export default function GeneralSettingsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.from("site_settings").select("*").single().then(({ data }) => {
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: membership } = await supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).single();
+      if (!membership) return;
+      const { data } = await supabase.from("site_settings").select("*").eq("tenant_id", membership.tenant_id).single();
       if (data) setSettings(data);
-    });
+    })();
   }, []);
 
   const update = (key: string, value: unknown) => setSettings((s) => s ? { ...s, [key]: value } : s);

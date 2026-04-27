@@ -3,7 +3,7 @@ import ContactForm from "./contact-form";
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
 
-export const metadata = { title: "Contact — CMS Studio" };
+export const metadata = { title: "Contact — Passive Coder" };
 
 export default function ContactPage() {
   return (

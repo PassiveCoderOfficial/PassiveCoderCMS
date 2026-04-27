@@ -15,7 +15,7 @@ export async function generatePdfSummary(
   const totalRecords = Object.values(data).reduce((sum, rows) => sum + rows.length, 0);
 
   doc.setFontSize(22);
-  doc.text("CMS Studio — Site Backup", 20, 20);
+  doc.text("Passive Coder — Site Backup", 20, 20);
 
   doc.setFontSize(11);
   doc.setTextColor(100);

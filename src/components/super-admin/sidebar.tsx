@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, CreditCard, Users, TicketIcon,
-  Settings, Edit3, LogOut, ShieldCheck,
+  Settings, Edit3, LogOut, ShieldCheck, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ const NAV = [
   { label: "Plans & Pricing", href: "/super-admin/plans", icon: CreditCard },
   { label: "Support Tickets", href: "/super-admin/tickets", icon: TicketIcon },
   { label: "Users & Roles", href: "/super-admin/users", icon: Users },
+  { label: "Agents", href: "/super-admin/agents", icon: Zap },
   { label: "Homepage Editor", href: "/super-admin/homepage", icon: Edit3 },
   { label: "Settings", href: "/super-admin/settings", icon: Settings },
 ];

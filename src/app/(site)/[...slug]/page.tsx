@@ -76,7 +76,7 @@ export default async function SitePage({ params }: Props) {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 text-white px-6">
         <div className="max-w-lg text-center space-y-6">
           <div className="text-6xl">🚀</div>
-          <h1 className="text-4xl font-bold">CMS Studio is ready</h1>
+          <h1 className="text-4xl font-bold">Passive Coder is ready</h1>
           <p className="text-slate-400 text-lg">
             Your site is set up. Head to the admin panel to create your first page and publish it as <code className="text-blue-400 bg-slate-700 px-1.5 py-0.5 rounded text-sm">home</code>.
           </p>

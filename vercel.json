@@ -1,0 +1,15 @@
+{
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<subdomain>[^.]+)\\.passivecoder\\.com"
+        }
+      ],
+      "destination": "/$1"
+    }
+  ]
+}

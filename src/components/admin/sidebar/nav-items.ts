@@ -76,7 +76,7 @@ export const navSections: NavSection[] = [
   {
     label: "Appearance",
     items: [
-      { label: "Themes", href: "/dashboard/themes", icon: Palette },
+      { label: "Templates", href: "/dashboard/templates", icon: Palette },
       { label: "Plugins", href: "/dashboard/plugins", icon: Puzzle },
     ],
   },
@@ -96,6 +96,13 @@ export const navSections: NavSection[] = [
       { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
       { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
       { label: "Accounts", href: "/dashboard/accounting/accounts", icon: BookMarked },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard, saasOnly: true },
+      { label: "Support", href: "/dashboard/support", icon: BookMarked },
     ],
   },
   {

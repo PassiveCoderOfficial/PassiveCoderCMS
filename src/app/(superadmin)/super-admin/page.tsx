@@ -34,7 +34,7 @@ export default async function SuperAdminOverview() {
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <TrendingUp className="w-6 h-6 text-indigo-400" /> Platform Overview
         </h1>
-        <p className="text-gray-500 text-sm mt-1">All systems and metrics across CMS Studio.</p>
+        <p className="text-gray-500 text-sm mt-1">All systems and metrics across Passive Coder.</p>
       </div>
 
       {/* Stats */}

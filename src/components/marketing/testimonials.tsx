@@ -23,7 +23,7 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Te
     <section className="py-24 bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Local businesses love CMS Studio</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Local businesses love Passive Coder</h2>
           <p className="mt-4 text-gray-600 text-lg">Real results from real business owners.</p>
         </div>
 
