@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { resolveTenant } from "@/lib/tenant/resolve";
 import { isSaaS, ROOT_DOMAIN } from "@/lib/flags";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
 
