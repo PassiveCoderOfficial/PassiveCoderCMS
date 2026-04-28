@@ -72,21 +72,23 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       </nav>
 
       <div className="p-3 border-t border-gray-800 space-y-1">
-        <Link
-          href="/dashboard"
-          onClick={onClose}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
-        >
-          <Edit3 className="w-3.5 h-3.5" />
-          Site Admin
-        </Link>
-        <Link
-          href="/api/auth/signout"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-800 hover:text-red-400 transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          Sign Out
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link
+            href="/dashboard"
+            onClick={onClose}
+            className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            Site Admin
+          </Link>
+          <Link
+            href="/api/auth/signout"
+            title="Sign Out"
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-800 hover:text-red-400 transition-colors shrink-0"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
     </>
   );
