@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select("title, seo")
     .eq("slug", pageSlug)
     .eq("status", "published")
-    .single();
+    .maybeSingle();
 
   if (!page) return { title: "Not Found" };
 
@@ -52,7 +52,16 @@ export default async function SitePage({ params }: Props) {
   const isRoot = !slug || slug.length === 0;
 
   if (isSaaS && !tenantId && !isRoot) {
-    notFound();
+    // Check if this is a root-level page (tenant_id IS NULL) before 404ing
+    const supabaseCheck = await createClient();
+    const { data: rootCheck } = await supabaseCheck
+      .from("pages")
+      .select("id")
+      .eq("slug", pageSlug)
+      .eq("status", "published")
+      .is("tenant_id", null)
+      .maybeSingle();
+    if (!rootCheck) notFound();
   }
 
   if (!isSaaS && !isRoot) {
@@ -62,12 +71,18 @@ export default async function SitePage({ params }: Props) {
   }
 
   const supabase = await createClient();
-  const { data: page } = await supabase
+  // Tenant pages when tenantId present; root pages (tenant_id IS NULL) otherwise
+  let pageQuery = supabase
     .from("pages")
     .select("*")
     .eq("slug", pageSlug)
-    .eq("status", "published")
-    .single();
+    .eq("status", "published");
+  if (tenantId) {
+    pageQuery = pageQuery.eq("tenant_id", tenantId);
+  } else {
+    pageQuery = pageQuery.is("tenant_id", null);
+  }
+  const { data: page } = await pageQuery.maybeSingle();
 
   if (!page && !isRoot) notFound();
 

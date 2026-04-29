@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, CreditCard, Users, TicketIcon,
-  Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, Plus, Menu, X,
+  Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, Plus, Menu, X, FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,7 @@ const NAV = [
   { label: "Users & Roles",   href: "/super-admin/users",        icon: Users,           add: "/super-admin/users/new" },
   { label: "Agents",          href: "/super-admin/agents",       icon: Zap },
   { label: "Homepage Editor", href: "/super-admin/homepage",     icon: Edit3 },
+  { label: "Root Pages",     href: "/super-admin/root-pages",   icon: FileText, add: "/super-admin/root-pages/new" },
   { label: "Settings",        href: "/super-admin/settings",     icon: Settings },
 ];
 

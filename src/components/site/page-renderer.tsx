@@ -14,6 +14,20 @@ import { SpacerBlock } from "@/components/blocks/spacer/spacer-block";
 import { CustomHtmlBlock } from "@/components/blocks/custom-html/custom-html-block";
 import { EcommerceProductsBlock } from "@/components/blocks/ecommerce/ecommerce-products-block";
 import { AccountingFeedBlock } from "@/components/blocks/accounting/accounting-feed-block";
+import { TeamBlock } from "@/components/blocks/team/team-block";
+import { FAQBlock } from "@/components/blocks/faq/faq-block";
+import { PricingBlock } from "@/components/blocks/pricing/pricing-block";
+import { FeaturesBlock } from "@/components/blocks/features/features-block";
+import { StatsBlock } from "@/components/blocks/stats/stats-block";
+import { ContactBlock } from "@/components/blocks/contact/contact-block";
+import { EmbedBlock } from "@/components/blocks/embed/embed-block";
+import { VideoBlock } from "@/components/blocks/video/video-block";
+import { TimelineBlock } from "@/components/blocks/timeline/timeline-block";
+import { ColumnsBlock } from "@/components/blocks/columns/columns-block";
+import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block";
+import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
+import { StepsBlock } from "@/components/blocks/steps/steps-block";
+import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -23,31 +37,46 @@ interface PageBlockProps {
 async function ServerBlock({ block }: PageBlockProps) {
   const bgStyle = getBlockBackground(block.background);
   const paddingStyle = {
-    paddingTop: block.padding.top,
-    paddingRight: block.padding.right,
-    paddingBottom: block.padding.bottom,
-    paddingLeft: block.padding.left,
-    marginTop: block.margin.top,
-    marginBottom: block.margin.bottom,
+    paddingTop: block.padding?.top,
+    paddingRight: block.padding?.right,
+    paddingBottom: block.padding?.bottom,
+    paddingLeft: block.padding?.left,
+    marginTop: block.margin?.top,
+    marginBottom: block.margin?.bottom,
   };
 
   let content: React.ReactNode;
   switch (block.type) {
-    case "hero": content = <HeroBlock block={block} />; break;
-    case "slider": content = <SliderBlock block={block} />; break;
-    case "navigation": content = <NavigationBlock block={block} />; break;
-    case "text": content = <TextBlock block={block} />; break;
-    case "services": content = <ServicesBlock block={block} />; break;
-    case "blog": content = await BlogBlock({ block }); break;
-    case "gallery": content = <GalleryBlock block={block} />; break;
-    case "cta": content = <CTABlock block={block} />; break;
-    case "testimonials": content = <TestimonialsBlock block={block} />; break;
-    case "divider": content = <DividerBlock block={block} />; break;
-    case "spacer": content = <SpacerBlock block={block} />; break;
-    case "custom_html": content = <CustomHtmlBlock block={block} />; break;
+    case "hero":             content = <HeroBlock block={block} />; break;
+    case "slider":           content = <SliderBlock block={block} />; break;
+    case "navigation":       content = <NavigationBlock block={block} />; break;
+    case "text":             content = <TextBlock block={block} />; break;
+    case "services":         content = <ServicesBlock block={block} />; break;
+    case "blog":             content = await BlogBlock({ block }); break;
+    case "gallery":          content = <GalleryBlock block={block} />; break;
+    case "cta":              content = <CTABlock block={block} />; break;
+    case "testimonials":     content = <TestimonialsBlock block={block} />; break;
+    case "divider":          content = <DividerBlock block={block} />; break;
+    case "spacer":           content = <SpacerBlock block={block} />; break;
+    case "custom_html":      content = <CustomHtmlBlock block={block} />; break;
     case "ecommerce_products": content = await EcommerceProductsBlock({ block }); break;
-    case "accounting_feed": content = await AccountingFeedBlock({ block }); break;
-    default: content = null;
+    case "accounting_feed":  content = await AccountingFeedBlock({ block }); break;
+    case "team":             content = <TeamBlock block={block} />; break;
+    case "faq":              content = <FAQBlock block={block} />; break;
+    case "pricing":          content = <PricingBlock block={block} />; break;
+    case "features":         content = <FeaturesBlock block={block} />; break;
+    case "stats":            content = <StatsBlock block={block} />; break;
+    case "contact":          content = <ContactBlock block={block} />; break;
+    case "embed":            content = <EmbedBlock block={block} />; break;
+    case "video":            content = <VideoBlock block={block} />; break;
+    case "timeline":         content = <TimelineBlock block={block} />; break;
+    case "columns":          content = <ColumnsBlock block={block} />; break;
+    case "newsletter":       content = <NewsletterBlock block={block} />; break;
+    case "countdown":        content = <CountdownBlock block={block} />; break;
+    case "steps":            content = <StepsBlock block={block} />; break;
+    case "icon_grid":        content = <IconGridBlock block={block} />; break;
+    case "ecommerce_cart":   content = null; break; // cart is injected by layout
+    default:                 content = null;
   }
 
   if (!content) return null;
