@@ -25,6 +25,17 @@ export async function POST(req: Request) {
     announcement_url: body.announcement_url,
     meta_title: body.meta_title,
     meta_description: body.meta_description,
+    cta_headline: body.cta_headline ?? "",
+    cta_subheadline: body.cta_subheadline ?? "",
+    features_headline: body.features_headline ?? "",
+    features_subheadline: body.features_subheadline ?? "",
+    hiw_headline: body.hiw_headline ?? "",
+    hiw_subheadline: body.hiw_subheadline ?? "",
+    testimonials_headline: body.testimonials_headline ?? "",
+    agent_headline: body.agent_headline ?? "",
+    agent_subheadline: body.agent_subheadline ?? "",
+    testimonials: body.testimonials ?? [],
+    faq: body.faq ?? [],
     updated_at: new Date().toISOString(),
   };
 

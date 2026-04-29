@@ -9,8 +9,8 @@ export async function register() {
   try {
     const { createClient } = await import("@supabase/supabase-js");
     const supabase = createClient(url, key);
-    // Calls apply_migration_009() — idempotent, no-op after first run
     await supabase.rpc("apply_migration_009");
+    await supabase.rpc("apply_migration_010");
   } catch {
     // Non-fatal — migration may already be applied or RPC not yet deployed
   }
