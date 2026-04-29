@@ -32,7 +32,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
         .from("tenants")
         .select("id,slug,name,plan,status,custom_domain,domain_status,onboarding_completed")
         .eq("slug", slug)
-        .in("status", ["active", "trial"])
+        .in("status", ["active", "trial", "suspended"])
         .maybeSingle();
       tenant = data ?? null;
     }
@@ -43,6 +43,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
       .select("id,slug,name,plan,status,custom_domain,domain_status,onboarding_completed")
       .eq("custom_domain", hostname)
       .eq("domain_status", "active")
+      .in("status", ["active", "trial", "suspended"])
       .maybeSingle();
     tenant = data ?? null;
   }

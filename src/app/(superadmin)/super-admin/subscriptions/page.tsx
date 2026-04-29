@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import { CreditCard, Plus } from "lucide-react";
+import { CreditCard, Plus, Pencil } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = { title: "Subscriptions — Super Admin" };
@@ -53,7 +53,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
         <div className="overflow-x-auto"><table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-gray-800">
-              {["Site", "Plan", "Status", "Provider", "Amount", "Period End", "Created"].map(h => (
+              {["Site", "Plan", "Status", "Provider", "Amount", "Period End", "Created", ""].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
               ))}
             </tr>
@@ -81,6 +81,12 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
                      sub.trial_ends_at ? `Trial: ${new Date(sub.trial_ends_at).toLocaleDateString()}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-xs">{new Date(sub.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3">
+                    <Link href={`/super-admin/subscriptions/${sub.id}/edit`}
+                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-400 transition-colors">
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </Link>
+                  </td>
                 </tr>
               );
             })}

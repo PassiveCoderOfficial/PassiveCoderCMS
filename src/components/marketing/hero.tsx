@@ -74,17 +74,17 @@ export default function HeroSection({ settings }: { settings: Settings | null })
             <ArrowRight className="w-5 h-5" />
           </Link>
           <a
-            href="#templates"
+            href="#pricing"
             className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-colors text-base"
           >
-            {s.hero_secondary_cta ?? "Browse Templates"}
+            {s.hero_secondary_cta ?? "See Pricing"}
           </a>
         </div>
 
         {/* Trust line */}
         <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500">
           <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> No credit card required</span>
-          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> 24-hour free trial</span>
+          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> 7-day free trial</span>
           <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Cancel anytime</span>
         </div>
 

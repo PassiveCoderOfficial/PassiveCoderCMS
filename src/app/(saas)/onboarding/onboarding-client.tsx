@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import {
   CheckCircle, Circle, Loader2, Search, Globe, ArrowRight,
   Sparkles, ExternalLink, AlertCircle, Star, CreditCard,
-  Clock, MessageSquare, Zap, Layout, Eye,
+  Clock, MessageSquare, Zap, Layout, Eye, User, LogOut,
 } from "lucide-react";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 
@@ -54,6 +54,98 @@ function StepBar({ current }: { current: number }) {
   );
 }
 
+// ─── Auth gate ────────────────────────────────────────────────────────────────
+
+function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => void }) {
+  const supabase = createClient();
+  const [mode, setMode] = useState<"signup" | "login">("signup");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSignup() {
+    if (!email || !password) { toast.error("Email and password required"); return; }
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { phone_whatsapp: phone } },
+    });
+    setLoading(false);
+    if (error) { toast.error(error.message); return; }
+    if (data.user) onAuthed(data.user.id, email);
+  }
+
+  async function handleLogin() {
+    if (!email || !password) { toast.error("Email and password required"); return; }
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) { toast.error(error.message); return; }
+    if (data.user) onAuthed(data.user.id, data.user.email ?? email);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold">{mode === "signup" ? "Create your account" : "Welcome back"}</h2>
+        <p className="text-muted-foreground mt-1">
+          {mode === "signup" ? "Takes 10 seconds. No credit card." : "Sign in to continue building your site."}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <Label>Email</Label>
+          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="h-11" autoFocus />
+        </div>
+        {mode === "signup" && (
+          <div className="space-y-1.5">
+            <Label>WhatsApp / Phone <span className="text-muted-foreground font-normal text-xs">(optional)</span></Label>
+            <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+880 1700 000000" className="h-11" />
+          </div>
+        )}
+        <div className="space-y-1.5">
+          <Label>Password</Label>
+          <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" className="h-11"
+            onKeyDown={e => e.key === "Enter" && (mode === "signup" ? handleSignup() : handleLogin())} />
+        </div>
+      </div>
+
+      <Button size="lg" className="w-full" onClick={mode === "signup" ? handleSignup : handleLogin} disabled={loading}>
+        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+        {mode === "signup" ? "Create Account & Continue" : "Sign In & Continue"}
+        <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+
+      <p className="text-center text-sm text-muted-foreground">
+        {mode === "signup" ? "Already have an account?" : "Don't have an account?"}{" "}
+        <button className="text-primary font-medium hover:underline" onClick={() => setMode(mode === "signup" ? "login" : "signup")}>
+          {mode === "signup" ? "Sign in" : "Sign up"}
+        </button>
+      </p>
+    </div>
+  );
+}
+
+function AuthedBanner({ email, onSwitch }: { email: string; onSwitch: () => void }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border bg-muted/40 px-4 py-3 text-sm">
+      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+        <User className="w-4 h-4 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate">Logged in as {email}</p>
+        <p className="text-xs text-muted-foreground">Your site will be linked to this account.</p>
+      </div>
+      <button onClick={onSwitch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground shrink-0">
+        <LogOut className="w-3.5 h-3.5" /> Switch
+      </button>
+    </div>
+  );
+}
+
 // ─── Step 0: Plan selection ───────────────────────────────────────────────────
 
 interface Plan { id: string; name: string; price_yearly: number; storage_gb: number; features: string[] }
@@ -81,7 +173,7 @@ function Step0({ onNext }: { onNext: (planId: string) => void }) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Choose your plan</h2>
-        <p className="text-muted-foreground mt-1">Start with a 24-hour free trial — no payment needed upfront.</p>
+        <p className="text-muted-foreground mt-1">Start with a 7-day free trial — no payment needed upfront.</p>
       </div>
 
       <div className="space-y-3">
@@ -147,8 +239,8 @@ function Step1({
     {
       id: "trial",
       icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: "Start 24-hour Free Trial",
-      desc: "Full access for 24 hours. Pay when you're ready to keep it.",
+      title: "Start 7-Day Free Trial",
+      desc: "Full access for 7 days. Pay when you're ready to keep it.",
       badge: "No card needed",
     },
     {
@@ -183,7 +275,7 @@ function Step1({
       <div>
         <h2 className="text-2xl font-bold">How would you like to pay?</h2>
         <p className="text-muted-foreground mt-1">
-          {isCustom ? "Custom plans require contacting our sales team." : "Try free for 24 hours, or pay now to lock in your plan."}
+          {isCustom ? "Custom plans require contacting our sales team." : "Try free for 7 days, or pay now to lock in your plan."}
         </p>
       </div>
 
@@ -215,14 +307,14 @@ function Step1({
       {method === "trial" && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
           <Zap className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-          <span>Your site will be fully functional for 24 hours. You'll get a reminder before it expires. No auto-charge.</span>
+          <span>Your site will be fully functional for 7 days. You'll get a reminder before it expires. No auto-charge.</span>
         </div>
       )}
 
       {method === "manual" && (
         <div className="rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 p-3 text-xs text-purple-800 dark:text-purple-400 flex items-start gap-2">
           <MessageSquare className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>A support ticket will be created for our sales team. They'll contact you within 1 business day. You'll have a 24-hour trial while you wait.</span>
+          <span>A support ticket will be created for our sales team. They'll contact you within 1 business day. You'll have a 7-day trial while you wait.</span>
         </div>
       )}
 
@@ -609,29 +701,27 @@ function Step5({ onNext, initialSlug, initialMode }: {
 // ─── Step 6: Launching ────────────────────────────────────────────────────────
 
 function Step6({
-  siteName, slug, domainChoice, planId, payMethod, templateId, templateMode, referralCode,
+  siteName, slug, domainChoice, planId, payMethod, templateId, templateMode, referralCode, userId,
 }: {
   siteName: string; slug: string;
   domainChoice: { type: DomainOption; domain?: string };
   planId: string; payMethod: PayMethod; templateId: string; templateMode: "theme" | "full";
-  referralCode?: string;
+  referralCode?: string; userId: string;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<"creating" | "done" | "error">("creating");
   const [siteUrl, setSiteUrl] = useState("");
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
+        if (!userId || userId === "skip") throw new Error("Not authenticated. Please sign in first.");
 
         const res = await fetch("/api/onboarding/create-tenant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ siteName, slug, userId: user.id, planId, payMethod, templateId, templateMode, referralCode }),
+          body: JSON.stringify({ siteName, slug, userId, planId, payMethod, templateId, templateMode, referralCode }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -703,7 +793,7 @@ function Step6({
         <h2 className="text-2xl font-bold">🎉 {siteName} is live!</h2>
         <p className="text-muted-foreground">
           {payMethod === "trial"
-            ? "Your 24-hour trial has started. You'll get a reminder before it ends."
+            ? "Your 7-day trial has started. You'll get a reminder before it ends."
             : payMethod === "manual"
             ? "Our sales team will reach out within 1 business day. Your trial is active."
             : "Your site is ready. Start building your pages."}
@@ -736,6 +826,9 @@ function Step6({
 
 export default function OnboardingClient() {
   const params = useSearchParams();
+  const supabase = createClient();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authedUser, setAuthedUser] = useState<{ id: string; email: string } | null>(null);
   const [step, setStep] = useState(0);
   const [planId, setPlanId] = useState("standard");
   const [payMethod, setPayMethod] = useState<PayMethod>("trial");
@@ -746,6 +839,29 @@ export default function OnboardingClient() {
   const [templateMode, setTemplateMode] = useState<"theme" | "full">((params.get("mode") as "theme" | "full") ?? "full");
   const referralCode = params.get("ref") ?? undefined;
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setAuthedUser({ id: user.id, email: user.email ?? "" });
+      setAuthChecked(true);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleSwitch() {
+    await supabase.auth.signOut();
+    setAuthedUser(null);
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const showAuthGate = !authedUser && step === 0;
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
@@ -754,8 +870,14 @@ export default function OnboardingClient() {
           <p className="text-sm text-muted-foreground mt-1">Let&apos;s get your site live in minutes</p>
         </div>
         <div className="bg-card border rounded-2xl p-8 shadow-sm">
-          <StepBar current={step} />
-          {step === 0 && <Step0 onNext={p => { setPlanId(p); setStep(1); }} />}
+          {!showAuthGate && <StepBar current={step} />}
+          {authedUser && step === 0 && (
+            <div className="mb-6">
+              <AuthedBanner email={authedUser.email} onSwitch={handleSwitch} />
+            </div>
+          )}
+          {showAuthGate && <AuthGate onAuthed={(id, email) => setAuthedUser({ id, email })} />}
+          {!showAuthGate && step === 0 && <Step0 onNext={p => { setPlanId(p); setStep(1); }} />}
           {step === 1 && <Step1 planId={planId} onNext={m => { setPayMethod(m); setStep(2); }} />}
           {step === 2 && <Step2 onNext={n => { setSiteName(n); setStep(3); }} />}
           {step === 3 && <Step3 siteName={siteName} onNext={s => { setSlug(s); setStep(4); }} />}
@@ -767,18 +889,24 @@ export default function OnboardingClient() {
               onNext={(slug, m) => { setTemplateId(slug); setTemplateMode(m); setStep(6); }}
             />
           )}
-          {step === 6 && (
+          {step === 6 && authedUser && (
             <Step6
               siteName={siteName} slug={slug} domainChoice={domainChoice}
               planId={planId} payMethod={payMethod}
               templateId={templateId} templateMode={templateMode}
               referralCode={referralCode}
+              userId={authedUser.id}
             />
           )}
         </div>
-        {step > 0 && step < 6 && (
+        {!showAuthGate && step > 0 && step < 6 && (
           <button onClick={() => setStep(step - 1)} className="block mx-auto mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
             ← Back
+          </button>
+        )}
+        {showAuthGate && (
+          <button onClick={() => setAuthedUser({ id: "skip", email: "" })} className="block mx-auto mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Continue as guest (sign in later)
           </button>
         )}
       </div>

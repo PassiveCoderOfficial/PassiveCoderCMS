@@ -21,7 +21,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             One annual price. Everything included. No monthly surprises.
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-medium px-3 py-1.5 rounded-full border border-green-200">
-            <CheckCircle className="w-4 h-4" /> 24-hour free trial — no credit card needed
+            <CheckCircle className="w-4 h-4" /> 7-day free trial — no credit card needed
           </div>
         </div>
 

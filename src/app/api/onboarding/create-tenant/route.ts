@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { seedTemplate } from "@/lib/templates/seed-template";
 
 export async function POST(req: Request) {
-  const { siteName, slug, userId, templateId, templateMode, referralCode } = await req.json();
+  const { siteName, slug, userId, planId, templateId, templateMode, referralCode } = await req.json();
 
   if (!siteName || !slug || !userId)
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -34,9 +34,10 @@ export async function POST(req: Request) {
       referredByAgentId = agentRow?.id ?? null;
     }
 
+    const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: created, error } = await supabase
       .from("tenants")
-      .insert({ slug, name: siteName, owner_id: userId, status: "trial", referred_by_agent_id: referredByAgentId })
+      .insert({ slug, name: siteName, owner_id: userId, status: "trial", trial_ends_at: trialEndsAt, referred_by_agent_id: referredByAgentId })
       .select("id,slug")
       .single();
 
@@ -65,6 +66,13 @@ export async function POST(req: Request) {
   await supabase.from("tenant_members").upsert(
     { tenant_id: tenant.id, user_id: userId, role: "owner", joined_at: new Date().toISOString() },
     { onConflict: "tenant_id,user_id" },
+  );
+
+  // Upsert subscription row with trial end date
+  const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await supabase.from("subscriptions").upsert(
+    { tenant_id: tenant.id, plan_id: planId ?? "standard", status: "trial", trial_ends_at: trialEnd },
+    { onConflict: "tenant_id" },
   );
 
   // Upsert site_settings (idempotent)

@@ -30,9 +30,15 @@ export async function proxy(request: NextRequest) {
   const tenant = await resolveTenant(host);
 
   if (!tenant) {
-    // Unknown subdomain or custom domain — show 404-style page
     const url = request.nextUrl.clone();
     url.pathname = "/not-found";
+    return NextResponse.rewrite(url);
+  }
+
+  // Suspended (trial expired) — redirect to upgrade page
+  if (tenant.status === "suspended") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/trial-expired";
     return NextResponse.rewrite(url);
   }
 
