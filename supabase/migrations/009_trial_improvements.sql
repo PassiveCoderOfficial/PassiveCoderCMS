@@ -1,18 +1,37 @@
--- Trial system improvements
--- 1. Unique constraint on subscriptions(tenant_id) for upsert support
--- 2. Add 'suspended' to subscriptions status enum
+-- Migration 009: Trial system improvements
+-- Idempotent — safe to run multiple times
 
--- Unique constraint (one active subscription per tenant)
-ALTER TABLE subscriptions
-  ADD CONSTRAINT IF NOT EXISTS subscriptions_tenant_id_unique UNIQUE (tenant_id);
+-- 1. Unique constraint on subscriptions(tenant_id)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'subscriptions_tenant_id_unique'
+  ) THEN
+    ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_tenant_id_unique UNIQUE (tenant_id);
+  END IF;
+END $$;
 
--- Allow 'suspended' status on subscriptions
-ALTER TABLE subscriptions
-  DROP CONSTRAINT IF EXISTS subscriptions_status_check;
-
-ALTER TABLE subscriptions
-  ADD CONSTRAINT subscriptions_status_check
+-- 2. Expand subscriptions.status to include 'suspended'
+ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_status_check;
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_status_check
   CHECK (status IN ('trial','active','past_due','cancelled','expired','suspended'));
 
--- Default trial_ends_at to 7 days from now when not set on tenants
--- (existing rows without trial_ends_at will stay NULL — SA can set via edit page)
+-- 3. Helper function called by the app on startup to self-apply this migration
+CREATE OR REPLACE FUNCTION apply_migration_009()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Unique constraint
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'subscriptions_tenant_id_unique'
+  ) THEN
+    ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_tenant_id_unique UNIQUE (tenant_id);
+  END IF;
+
+  -- Status check
+  ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_status_check;
+  ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_status_check
+    CHECK (status IN ('trial','active','past_due','cancelled','expired','suspended'));
+END;
+$$;

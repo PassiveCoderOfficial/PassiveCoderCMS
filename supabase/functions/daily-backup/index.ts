@@ -29,6 +29,16 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 
+  // Expire trials first
+  try {
+    await fetch(`${APP_URL}/api/cron/expire-trials`, {
+      method: "POST",
+      headers: { "x-cron-secret": INTERNAL_CRON_SECRET },
+    });
+  } catch (err) {
+    console.error("[daily-backup] expire-trials call failed:", err);
+  }
+
   const results: Array<{ tenantId: string; ok: boolean; error?: string }> = [];
 
   for (const tenant of tenants ?? []) {
