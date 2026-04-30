@@ -11,6 +11,7 @@ export async function register() {
     const supabase = createClient(url, key);
     await supabase.rpc("apply_migration_009");
     await supabase.rpc("apply_migration_010");
+    await supabase.rpc("apply_migration_011");
   } catch {
     // Non-fatal — migration may already be applied or RPC not yet deployed
   }
