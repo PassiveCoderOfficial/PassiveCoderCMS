@@ -31,8 +31,6 @@ export async function middleware(request: NextRequest) {
             Authorization: `Bearer ${serviceKey}`,
             "Content-Type": "application/json",
           },
-          // Cache for 10 s at the edge to reduce DB round-trips
-          next: { revalidate: 10 },
         },
       );
 
