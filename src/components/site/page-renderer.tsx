@@ -1,4 +1,6 @@
 import React from "react";
+import { headers } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/server";
 import type { Block } from "@/types/cms";
 import { HeroBlock } from "@/components/blocks/hero/hero-block";
 import { SliderBlock } from "@/components/blocks/slider/slider-block";
@@ -32,9 +34,11 @@ import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
   block: Block;
+  identityLogo?: string | null;
+  identityLogoDark?: string | null;
 }
 
-async function ServerBlock({ block }: PageBlockProps) {
+async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockProps) {
   const bgStyle = getBlockBackground(block.background);
   const paddingStyle = {
     paddingTop: block.padding?.top,
@@ -49,7 +53,7 @@ async function ServerBlock({ block }: PageBlockProps) {
   switch (block.type) {
     case "hero":             content = <HeroBlock block={block} />; break;
     case "slider":           content = <SliderBlock block={block} />; break;
-    case "navigation":       content = <NavigationBlock block={block} />; break;
+    case "navigation":       content = <NavigationBlock block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />; break;
     case "text":             content = <TextBlock block={block} />; break;
     case "services":         content = <ServicesBlock block={block} />; break;
     case "blog":             content = await BlogBlock({ block }); break;
@@ -89,9 +93,30 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
     .filter((b) => b.visible !== false)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
+  // Fetch identity logo once for nav block fallback (only if page has a nav block)
+  let identityLogo: string | null = null;
+  let identityLogoDark: string | null = null;
+  const hasNav = visible.some((b) => b.type === "navigation");
+  if (hasNav) {
+    const reqHeaders = await headers();
+    const tenantId = reqHeaders.get("x-tenant-id");
+    if (tenantId) {
+      const admin = await createAdminClient();
+      const { data } = await admin
+        .from("site_identity")
+        .select("logo_url, logo_dark_url")
+        .eq("tenant_id", tenantId)
+        .single();
+      identityLogo = data?.logo_url ?? null;
+      identityLogoDark = data?.logo_dark_url ?? null;
+    }
+  }
+
   return (
     <>
-      {await Promise.all(visible.map((block) => <ServerBlock key={block.id} block={block} />))}
+      {await Promise.all(visible.map((block) => (
+        <ServerBlock key={block.id} block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />
+      )))}
     </>
   );
 }

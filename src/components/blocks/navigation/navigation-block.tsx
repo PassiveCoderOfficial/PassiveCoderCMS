@@ -7,9 +7,16 @@ import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function NavigationBlock({ block }: { block: NavigationBlockProps }) {
+export function NavigationBlock({ block, identityLogo, identityLogoDark }: {
+  block: NavigationBlockProps;
+  identityLogo?: string | null;
+  identityLogoDark?: string | null;
+}) {
   const { data } = block;
-  const { logo, logoText, logoUrl, items, sticky, transparent, style, backgroundColor, textColor, showCta, ctaLabel, ctaUrl } = data;
+  const { logoText, logoUrl, items, sticky, transparent, style, backgroundColor, textColor, showCta, ctaLabel, ctaUrl } = data;
+  // Block-level logo takes priority; fall back to site identity logo
+  const logo = data.logo || identityLogo || null;
+  const logoDark = identityLogoDark || logo;
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navStyle = {

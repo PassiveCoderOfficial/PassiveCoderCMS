@@ -1,12 +1,31 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createClient();
-  const { data: settings } = await supabase.from("site_settings").select("*").single();
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+
+  const [{ data: settings }, identityResult] = await Promise.all([
+    supabase.from("site_settings").select("site_name, meta_description, site_description").single(),
+    tenantId
+      ? createAdminClient().then(admin =>
+          admin.from("site_identity").select("site_name, favicon_url").eq("tenant_id", tenantId).single()
+        )
+      : Promise.resolve({ data: null }),
+  ]);
+  const identity = identityResult?.data ?? null;
+
+  const siteName = identity?.site_name ?? settings?.site_name ?? "CMS Site";
+  const faviconUrl = identity?.favicon_url ?? null;
+
   return {
-    title: { default: settings?.site_name ?? "CMS Site", template: `%s | ${settings?.site_name ?? "CMS Site"}` },
+    title: { default: siteName, template: `%s | ${siteName}` },
     description: settings?.meta_description ?? settings?.site_description,
+    ...(faviconUrl && {
+      icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
+    }),
   };
 }
 

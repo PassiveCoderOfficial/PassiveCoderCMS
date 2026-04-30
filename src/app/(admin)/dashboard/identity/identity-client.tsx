@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, Pencil, Check, X, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
+import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
 
 interface SiteIdentity {
   id?: string;
@@ -160,27 +160,6 @@ export default function IdentityClient({ initialIdentity, initialMenus }: {
   const [saved, setSaved] = useState(false);
   const [creatingMenu, setCreatingMenu] = useState(false);
   const [newMenuName, setNewMenuName] = useState("");
-  const [uploading, setUploading] = useState<"logo" | "logo_dark" | "favicon" | null>(null);
-  const logoRef = useRef<HTMLInputElement>(null);
-  const logoDarkRef = useRef<HTMLInputElement>(null);
-  const faviconRef = useRef<HTMLInputElement>(null);
-
-  async function uploadLogo(file: File, field: "logo_url" | "logo_dark_url" | "favicon_url") {
-    setUploading(field === "logo_url" ? "logo" : field === "logo_dark_url" ? "logo_dark" : "favicon");
-    try {
-      const supabase = createClient();
-      const ext = file.name.split(".").pop();
-      const path = `uploads/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const { error } = await supabase.storage.from("media").upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
-      set(field, publicUrl);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUploading(null);
-    }
-  }
 
   const set = (k: keyof SiteIdentity, v: unknown) => { setIdentity(p => ({ ...p, [k]: v })); setSaved(false); };
 
@@ -233,44 +212,24 @@ export default function IdentityClient({ initialIdentity, initialMenus }: {
 
           {/* Logo light */}
           <div className="col-span-2">
-            <label className="block text-xs text-gray-400 mb-1">Logo (light mode)</label>
-            <div className="flex gap-2">
-              <input value={identity.logo_url ?? ""} onChange={e => set("logo_url", e.target.value || null)}
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://..." />
-              <input ref={logoRef} type="file" accept="image/*" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo(f, "logo_url"); }} />
-              <button onClick={() => logoRef.current?.click()} disabled={uploading === "logo"}
-                className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs px-3 py-2 rounded whitespace-nowrap transition-colors">
-                {uploading === "logo" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                Upload
-              </button>
-            </div>
-            {identity.logo_url && (
-              <div className="mt-2 bg-white inline-block rounded p-2">
-                <img src={identity.logo_url} alt="Logo preview" style={{ width: identity.logo_width ?? 160 }} className="h-10 object-contain" />
-              </div>
-            )}
+            <label className="block text-xs text-gray-400 mb-2">Logo (light mode)</label>
+            <MediaPickerInput
+              value={identity.logo_url ?? ""}
+              onChange={url => set("logo_url", url || null)}
+              placeholder="https://..."
+            />
           </div>
 
           {/* Logo dark */}
           <div className="col-span-2">
-            <label className="block text-xs text-gray-400 mb-1">Logo (dark mode) <span className="text-gray-600">— optional, leave blank to use same logo</span></label>
-            <div className="flex gap-2">
-              <input value={identity.logo_dark_url ?? ""} onChange={e => set("logo_dark_url", e.target.value || null)}
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://..." />
-              <input ref={logoDarkRef} type="file" accept="image/*" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo(f, "logo_dark_url"); }} />
-              <button onClick={() => logoDarkRef.current?.click()} disabled={uploading === "logo_dark"}
-                className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs px-3 py-2 rounded whitespace-nowrap transition-colors">
-                {uploading === "logo_dark" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                Upload
-              </button>
-            </div>
-            {identity.logo_dark_url && (
-              <div className="mt-2 bg-gray-950 border border-gray-700 inline-block rounded p-2">
-                <img src={identity.logo_dark_url} alt="Dark logo preview" style={{ width: identity.logo_width ?? 160 }} className="h-10 object-contain" />
-              </div>
-            )}
+            <label className="block text-xs text-gray-400 mb-2">
+              Logo (dark mode) <span className="text-gray-600">— optional, leave blank to use same logo</span>
+            </label>
+            <MediaPickerInput
+              value={identity.logo_dark_url ?? ""}
+              onChange={url => set("logo_dark_url", url || null)}
+              placeholder="https://..."
+            />
           </div>
 
           <div>
@@ -286,23 +245,12 @@ export default function IdentityClient({ initialIdentity, initialMenus }: {
 
           {/* Favicon */}
           <div className="col-span-2">
-            <label className="block text-xs text-gray-400 mb-1">Favicon</label>
-            <div className="flex gap-2">
-              <input value={identity.favicon_url ?? ""} onChange={e => set("favicon_url", e.target.value || null)}
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://..." />
-              <input ref={faviconRef} type="file" accept="image/*,.ico" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo(f, "favicon_url"); }} />
-              <button onClick={() => faviconRef.current?.click()} disabled={uploading === "favicon"}
-                className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs px-3 py-2 rounded whitespace-nowrap transition-colors">
-                {uploading === "favicon" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                Upload
-              </button>
-            </div>
-            {identity.favicon_url && (
-              <div className="mt-2">
-                <img src={identity.favicon_url} alt="Favicon preview" className="w-8 h-8 object-contain rounded" />
-              </div>
-            )}
+            <label className="block text-xs text-gray-400 mb-2">Favicon</label>
+            <MediaPickerInput
+              value={identity.favicon_url ?? ""}
+              onChange={url => set("favicon_url", url || null)}
+              placeholder="https://..."
+            />
           </div>
         </div>
       </section>
