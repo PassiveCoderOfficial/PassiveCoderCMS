@@ -105,7 +105,7 @@ export default function NewSATicketPage() {
 
       for (const p of (profileRes.data ?? [])) {
         const membership = memberships?.find(m => m.user_id === p.id);
-        const t = membership?.tenants as { id: string; name: string; slug: string; custom_domain: string | null } | null ?? null;
+        const t = (membership?.tenants as unknown) as { id: string; name: string; slug: string; custom_domain: string | null } | null ?? null;
         // Skip if already have this tenant from above
         const alreadyHasTenant = t && combined.some(c => c.tenant_id === t.id);
         if (alreadyHasTenant) continue;
