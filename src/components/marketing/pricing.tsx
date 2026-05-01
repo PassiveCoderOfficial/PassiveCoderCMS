@@ -25,6 +25,18 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
           </div>
         </div>
 
+        {!plans.length && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            {["Standard", "Premium", "Custom"].map(name => (
+              <div key={name} className="rounded-2xl border border-gray-200 bg-white p-8 animate-pulse">
+                <div className="h-5 w-24 bg-gray-100 rounded mb-4" />
+                <div className="h-10 w-20 bg-gray-100 rounded mb-6" />
+                {[1,2,3,4].map(i => <div key={i} className="h-4 bg-gray-100 rounded mb-3 w-full" />)}
+                <div className="h-10 bg-gray-100 rounded mt-8" />
+              </div>
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {plans.map((plan) => {
             const isPremium = plan.id === "premium";

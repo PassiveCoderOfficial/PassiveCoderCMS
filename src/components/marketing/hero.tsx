@@ -46,7 +46,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
         <div className="flex justify-center mb-8">
           <span className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-5 py-2.5 rounded-full border border-orange-500/20">
             <Star className="w-3.5 h-3.5 fill-current" />
-            17+ live businesses · 8 countries · built by real developers
+            {s.stat_sites ?? "17+"} live businesses · {s.stat_businesses ?? "8"} countries · built by real developers
           </span>
         </div>
 
@@ -86,12 +86,12 @@ export default function HeroSection({ settings }: { settings: Settings | null })
             {s.hero_cta_text ?? "Start Your Free Trial"}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <a
-            href="#pricing"
+          <Link
+            href="/#pricing"
             className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-gray-300 font-semibold px-8 py-4 rounded-xl hover:border-orange-400/30 hover:bg-orange-500/5 hover:text-white transition-all text-base"
           >
             {s.hero_secondary_cta ?? "See Pricing"}
-          </a>
+          </Link>
         </div>
 
         {/* Trust line */}

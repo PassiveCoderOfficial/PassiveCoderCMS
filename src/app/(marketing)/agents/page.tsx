@@ -65,7 +65,7 @@ const FAQS = [
 export default function AgentsPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <MarketingNav />
+      <MarketingNav dark />
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-20 pb-28">

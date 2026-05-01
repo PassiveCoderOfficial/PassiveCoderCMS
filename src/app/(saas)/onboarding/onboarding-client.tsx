@@ -352,7 +352,16 @@ function Step2({ onNext }: { onNext: (name: string) => void }) {
 // ─── Step 3: Subdomain ────────────────────────────────────────────────────────
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "cmsstudio.io";
-function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""); }
+function slugify(s: string) {
+  const result = s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return result || "my-site";
+}
 
 function Step3({ siteName, onNext }: { siteName: string; onNext: (slug: string) => void }) {
   const [slug, setSlug] = useState(() => slugify(siteName));

@@ -27,7 +27,7 @@ type ResetValues = z.infer<typeof resetSchema>;
 const ERROR_MESSAGES: Record<string, string> = {
   no_tenant: "Your account isn't linked to a site yet. Complete onboarding or contact support.",
   unauthorized: "You don't have permission to access this area.",
-  agent_suspended: "Your agent account has been suspended. Contact support for assistance.",
+  agent_suspended: "Your agent account has been suspended.",
   "Invalid login credentials": "Incorrect email or password.",
 };
 
@@ -135,6 +135,9 @@ export function LoginForm() {
           {displayError && (
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">
               {displayError}
+              {displayError === ERROR_MESSAGES.agent_suspended && (
+                <a href="/contact" className="ml-1 underline font-medium">Contact support</a>
+              )}
             </div>
           )}
           <div className="space-y-1.5">
