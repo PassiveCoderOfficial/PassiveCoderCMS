@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import type { ContactBlockProps } from "@/types/cms";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 export function ContactSettings({ block }: { block: ContactBlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -44,7 +45,7 @@ export function ContactSettings({ block }: { block: ContactBlockProps }) {
       {block.data.showContactInfo && (
         <>
           <div><Label className="text-xs">Email</Label><Input value={block.data.email ?? ""} onChange={e => update("email", e.target.value)} className="h-8 text-xs mt-1" /></div>
-          <div><Label className="text-xs">Phone</Label><Input value={block.data.phone ?? ""} onChange={e => update("phone", e.target.value)} className="h-8 text-xs mt-1" /></div>
+          <div><Label className="text-xs">Phone</Label><PhoneInput value={block.data.phone ?? ""} onChange={v => update("phone", v)} className="mt-1" inputClassName="h-8 text-xs" /></div>
           <div><Label className="text-xs">Address</Label><Input value={block.data.address ?? ""} onChange={e => update("address", e.target.value)} className="h-8 text-xs mt-1" /></div>
         </>
       )}

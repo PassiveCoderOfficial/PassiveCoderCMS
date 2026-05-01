@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Phone, MapPin, Mail, MessageSquare, Plus, Trash2, Pencil, Check, X, Loader2, Inbox, Eye } from "lucide-react";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 interface ContactDetail {
   id: string;
@@ -75,13 +76,11 @@ function DetailEditor({ detail: initial, onSave, onCancel }: {
         </div>
         <div>
           <label className="block text-xs text-gray-400 mb-1">Phone</label>
-          <input value={d.phone ?? ""} onChange={e => set("phone", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="+1 555 000 0000" />
+          <PhoneInput value={d.phone ?? ""} onChange={v => set("phone", v)} inputClassName="bg-gray-800 border-gray-700 text-white" />
         </div>
         <div>
           <label className="block text-xs text-gray-400 mb-1">WhatsApp Number</label>
-          <input value={d.whatsapp ?? ""} onChange={e => set("whatsapp", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="+1 555 000 0000" />
+          <PhoneInput value={d.whatsapp ?? ""} onChange={v => set("whatsapp", v)} inputClassName="bg-gray-800 border-gray-700 text-white" />
         </div>
         <div>
           <label className="block text-xs text-gray-400 mb-1">Email</label>

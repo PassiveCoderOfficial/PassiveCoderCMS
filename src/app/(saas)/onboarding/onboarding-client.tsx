@@ -13,6 +13,7 @@ import {
   Sparkles, ExternalLink, AlertCircle, Star, CreditCard,
   Clock, MessageSquare, Zap, Layout, Eye, User, LogOut,
 } from "lucide-react";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 
 // ─── Step bar ─────────────────────────────────────────────────────────────────
@@ -103,7 +104,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
         {mode === "signup" && (
           <div className="space-y-1.5">
             <Label>WhatsApp / Phone <span className="text-muted-foreground font-normal text-xs">(optional)</span></Label>
-            <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 234 567 8900" className="h-11" />
+            <PhoneInput value={phone} onChange={setPhone} inputClassName="h-11" />
           </div>
         )}
         <div className="space-y-1.5">
