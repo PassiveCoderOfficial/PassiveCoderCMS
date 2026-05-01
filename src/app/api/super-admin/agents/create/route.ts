@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   if (!caller) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
-  const { full_name, email, password, company, website, bio, commission_rate, notes, existing_user_id } = body as {
+  const { full_name, email, password, company, website, bio, commission_rate, commission_type, notes, existing_user_id } = body as {
     full_name: string;
     email: string;
     password?: string;
@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     website?: string;
     bio?: string;
     commission_rate?: number;
+    commission_type?: "recurring" | "one_time";
     notes?: string;
     existing_user_id?: string;
   };
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
     website: website?.trim() || null,
     bio: bio?.trim() || null,
     commission_rate: commission_rate ?? 20,
+    commission_type: commission_type ?? "recurring",
     notes: notes?.trim() || null,
     status: "active",
   }).select("id").single();

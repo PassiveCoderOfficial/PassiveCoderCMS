@@ -190,7 +190,7 @@ export default function ClientsSection() {
 
               {/* Domain */}
               <div className="flex items-center gap-1.5 mt-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                <Globe className="w-3 h-3 text-gray-300" />
                 <span className="text-xs text-gray-400 font-mono">{client.domain}</span>
               </div>
 
@@ -203,10 +203,10 @@ export default function ClientsSection() {
         {/* Stats row */}
         <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { value: "17", label: "Live websites" },
+            { value: "17+", label: "Live websites" },
             { value: "8", label: "Countries" },
             { value: "9", label: "Industries" },
-            { value: "100%", label: "Sites online today" },
+            { value: "24/7", label: "Uptime monitoring" },
           ].map(stat => (
             <div key={stat.label} className="text-center p-5 bg-orange-50 rounded-2xl border border-orange-100">
               <div className="text-3xl font-extrabold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">{stat.value}</div>

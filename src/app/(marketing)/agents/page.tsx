@@ -41,8 +41,8 @@ const PERKS = [
   },
   {
     icon: Shield,
-    title: "Regulated & Trusted",
-    desc: "Super admin oversight ensures quality. Your account is monitored and protected.",
+    title: "Dedicated Support",
+    desc: "Direct access to our team for onboarding help, client questions, and anything you need.",
     color: "text-indigo-400 bg-indigo-500/10",
   },
 ];

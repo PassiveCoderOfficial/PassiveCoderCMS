@@ -58,6 +58,7 @@ export default function NewAgentPage() {
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
   const [commissionRate, setCommissionRate] = useState("20");
+  const [commissionType, setCommissionType] = useState<"recurring" | "one_time">("recurring");
   const [notes, setNotes] = useState("");
 
   const doSearch = useCallback(async (q: string) => {
@@ -101,6 +102,7 @@ export default function NewAgentPage() {
         website,
         bio,
         commission_rate: parseFloat(commissionRate) || 20,
+        commission_type: commissionType,
         notes,
         existing_user_id: mode === "existing" && selectedUser ? selectedUser.id : undefined,
       }),
@@ -225,21 +227,46 @@ export default function NewAgentPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-white text-sm">Commission & Notes</h2>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">Commission Rate (%)</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.5"
-                value={commissionRate}
-                onChange={e => setCommissionRate(e.target.value)}
-                className="w-32 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-              />
-              <span className="text-gray-500 text-sm">% of subscription revenue</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Commission Rate (%)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value={commissionRate}
+                  onChange={e => setCommissionRate(e.target.value)}
+                  className="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                />
+                <span className="text-gray-500 text-sm">%</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">Default 20%. Changeable later.</p>
             </div>
-            <p className="text-xs text-gray-600 mt-1">Default is 20%. Can be changed later.</p>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Commission Type</label>
+              <div className="flex gap-2">
+                {(["recurring", "one_time"] as const).map(type => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setCommissionType(type)}
+                    className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
+                      commissionType === type
+                        ? "bg-indigo-600 border-indigo-500 text-white"
+                        : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500"
+                    }`}
+                  >
+                    {type === "recurring" ? "Recurring" : "One-Time"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-600 mt-1">
+                {commissionType === "recurring" ? "Paid every renewal cycle." : "Paid once on first payment only."}
+              </p>
+            </div>
           </div>
 
           <div>

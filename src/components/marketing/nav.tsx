@@ -3,14 +3,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
-const LOGO = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
+const LOGO = process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
 
 const links = [
-  { label: "Features", href: "#features" },
-  { label: "Templates", href: "#templates" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Features", href: "/#features" },
+  { label: "Templates", href: "/#templates" },
+  { label: "Pricing", href: "/#pricing" },
   { label: "Agents", href: "/agents" },
-  { label: "FAQ", href: "#faq" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export default function MarketingNav() {
@@ -18,14 +18,14 @@ export default function MarketingNav() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="https://passivecoder.com" className="flex items-center">
+        <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={LOGO} alt="Passive Coder" className="h-9 w-auto" />
-        </a>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-6">
           {links.map(l => (
-            <a key={l.href} href={l.href} className="text-sm text-gray-600 hover:text-orange-500 transition-colors font-medium">{l.label}</a>
+            <Link key={l.href} href={l.href} className="text-sm text-gray-600 hover:text-orange-500 transition-colors font-medium">{l.label}</Link>
           ))}
         </nav>
 
@@ -44,7 +44,7 @@ export default function MarketingNav() {
       {open && (
         <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-3">
           {links.map(l => (
-            <a key={l.href} href={l.href} className="block text-sm text-gray-600 py-1.5 font-medium" onClick={() => setOpen(false)}>{l.label}</a>
+            <Link key={l.href} href={l.href} className="block text-sm text-gray-600 py-1.5 font-medium" onClick={() => setOpen(false)}>{l.label}</Link>
           ))}
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
             <Link href="/login" className="text-sm text-center text-gray-600 py-2">Sign In</Link>

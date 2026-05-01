@@ -6,11 +6,12 @@ export async function POST(req: Request) {
   const user = await requireSuperAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { agentId, action, status, commission_rate } = await req.json() as {
+  const { agentId, action, status, commission_rate, commission_type } = await req.json() as {
     agentId: string;
     action: "status" | "commission";
     status?: string;
     commission_rate?: number;
+    commission_type?: "recurring" | "one_time";
   };
 
   if (!agentId || !action) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -29,7 +30,11 @@ export async function POST(req: Request) {
     if (typeof commission_rate !== "number" || commission_rate < 0 || commission_rate > 100) {
       return NextResponse.json({ error: "Invalid commission rate" }, { status: 400 });
     }
-    const { error } = await supabase.from("agents").update({ commission_rate, updated_at: new Date().toISOString() }).eq("id", agentId);
+    const updatePayload: Record<string, unknown> = { commission_rate, updated_at: new Date().toISOString() };
+    if (commission_type && ["recurring", "one_time"].includes(commission_type)) {
+      updatePayload.commission_type = commission_type;
+    }
+    const { error } = await supabase.from("agents").update(updatePayload).eq("id", agentId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

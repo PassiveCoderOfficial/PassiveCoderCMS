@@ -37,7 +37,7 @@ export default async function AgentsPage() {
           <div className="overflow-x-auto"><table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-800">
-                {["Name", "Email", "Company", "Code", "Commission", "Sites", "Status", "Joined", "Actions"].map(h => (
+                {["Name", "Email", "Company", "Code", "Commission", "Type", "Sites", "Status", "Joined", "Actions"].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
                 ))}
               </tr>
@@ -52,6 +52,15 @@ export default async function AgentsPage() {
                     <span className="font-mono text-xs text-yellow-400">{agent.referral_code}</span>
                   </td>
                   <td className="px-4 py-3 text-gray-300 text-xs">{agent.commission_rate}%</td>
+                  <td className="px-4 py-3 text-xs">
+                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                      agent.commission_type === "one_time"
+                        ? "bg-amber-900/40 text-amber-400"
+                        : "bg-indigo-900/40 text-indigo-400"
+                    }`}>
+                      {agent.commission_type === "one_time" ? "One-Time" : "Recurring"}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-gray-300 text-xs">{agent.total_sites}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -64,7 +73,7 @@ export default async function AgentsPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{new Date(agent.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
-                    <AgentActions agentId={agent.id} currentStatus={agent.status} currentCommission={agent.commission_rate} />
+                    <AgentActions agentId={agent.id} currentStatus={agent.status} currentCommission={agent.commission_rate} currentCommissionType={agent.commission_type ?? "recurring"} />
                   </td>
                 </tr>
               ))}

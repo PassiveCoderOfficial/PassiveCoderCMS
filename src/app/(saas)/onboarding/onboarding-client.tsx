@@ -103,7 +103,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
         {mode === "signup" && (
           <div className="space-y-1.5">
             <Label>WhatsApp / Phone <span className="text-muted-foreground font-normal text-xs">(optional)</span></Label>
-            <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+880 1700 000000" className="h-11" />
+            <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 234 567 8900" className="h-11" />
           </div>
         )}
         <div className="space-y-1.5">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const LOGO = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
+const LOGO = process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
 
 export default function FooterSection() {
   return (
@@ -10,10 +10,10 @@ export default function FooterSection() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
-              <a href="https://passivecoder.com">
+              <Link href="/">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={LOGO} alt="Passive Coder" className="h-9 w-auto brightness-0 invert" />
-              </a>
+              </Link>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
               Professional website builder for local service businesses. Built and trusted by teams across 8 countries.
@@ -25,9 +25,9 @@ export default function FooterSection() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#features" className="hover:text-orange-400 transition-colors">Features</a></li>
-              <li><a href="#templates" className="hover:text-orange-400 transition-colors">Templates</a></li>
-              <li><a href="#pricing" className="hover:text-orange-400 transition-colors">Pricing</a></li>
+              <li><Link href="/#features" className="hover:text-orange-400 transition-colors">Features</Link></li>
+              <li><Link href="/#templates" className="hover:text-orange-400 transition-colors">Templates</Link></li>
+              <li><Link href="/#pricing" className="hover:text-orange-400 transition-colors">Pricing</Link></li>
               <li><Link href="/onboarding" className="hover:text-orange-400 transition-colors">Get Started</Link></li>
               <li><Link href="/dashboard" className="hover:text-orange-400 transition-colors">Dashboard</Link></li>
             </ul>
@@ -37,11 +37,11 @@ export default function FooterSection() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#clients" className="hover:text-orange-400 transition-colors">Our Clients</a></li>
+              <li><Link href="/#clients" className="hover:text-orange-400 transition-colors">Our Clients</Link></li>
               <li><Link href="/contact" className="hover:text-orange-400 transition-colors">Contact</Link></li>
               <li><Link href="/contact?dept=sales" className="hover:text-orange-400 transition-colors">Sales</Link></li>
               <li><Link href="/agents" className="hover:text-orange-400 transition-colors">Agent Program</Link></li>
-              <li><a href="#faq" className="hover:text-orange-400 transition-colors">FAQ</a></li>
+              <li><Link href="/#faq" className="hover:text-orange-400 transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
@@ -59,10 +59,8 @@ export default function FooterSection() {
         <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <p>© {new Date().getFullYear()} Passive Coder. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              All systems operational
-            </span>
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
           </div>
         </div>
       </div>
