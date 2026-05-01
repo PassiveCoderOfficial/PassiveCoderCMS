@@ -83,7 +83,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
       )}
       <div className="flex flex-1 overflow-hidden">
-        <AdminSidebar isSuperAdmin={!!sa} />
+        <AdminSidebar isSuperAdmin={!!sa} isAgent={profile.role === "agent"} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <AdminTopbar user={cmsUser} sites={userSites} />
           <main className="flex-1 overflow-auto pl-0 lg:pl-0">

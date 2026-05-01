@@ -7,12 +7,12 @@ import { cn } from "@/lib/utils";
 import { navSections } from "./nav-items";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShieldCheck, Menu, X, LogOut } from "lucide-react";
+import { ExternalLink, ShieldCheck, Menu, X, LogOut, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
 
-function SidebarContent({ isSuperAdmin, onClose }: { isSuperAdmin: boolean; onClose?: () => void }) {
+function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: boolean; isAgent: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -105,6 +105,16 @@ function SidebarContent({ isSuperAdmin, onClose }: { isSuperAdmin: boolean; onCl
               Super Admin Panel
             </Link>
           )}
+          {isAgent && !isSuperAdmin && (
+            <Link
+              href="/agent"
+              onClick={onClose}
+              className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-yellow-500 hover:bg-accent hover:text-yellow-400 transition-colors"
+            >
+              <Zap className="h-4 w-4 shrink-0" />
+              Agent Panel
+            </Link>
+          )}
           <button
             onClick={handleLogout}
             title="Logout"
@@ -119,7 +129,7 @@ function SidebarContent({ isSuperAdmin, onClose }: { isSuperAdmin: boolean; onCl
   );
 }
 
-export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSuperAdmin?: boolean; isAgent?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -146,12 +156,12 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
         "fixed inset-y-0 left-0 z-50 flex flex-col w-60 border-r bg-sidebar transition-transform duration-200 lg:hidden",
         open ? "translate-x-0" : "-translate-x-full",
       )}>
-        <SidebarContent isSuperAdmin={isSuperAdmin} onClose={() => setOpen(false)} />
+        <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} onClose={() => setOpen(false)} />
       </aside>
 
       {/* Desktop sidebar — always visible */}
       <aside className="hidden lg:flex h-screen w-60 flex-col border-r bg-sidebar flex-shrink-0">
-        <SidebarContent isSuperAdmin={isSuperAdmin} />
+        <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} />
       </aside>
     </>
   );
