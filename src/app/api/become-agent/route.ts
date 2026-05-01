@@ -17,6 +17,7 @@ async function uniqueCode(supabase: Awaited<ReturnType<typeof createAdminClient>
 }
 
 export async function POST(req: Request) {
+  const origin = new URL(req.url).origin;
   const { full_name, email, password, company, website, bio } = await req.json() as {
     full_name: string; email: string; password: string;
     company?: string; website?: string; bio?: string;
@@ -44,8 +45,8 @@ export async function POST(req: Request) {
 
   const commissionRate = settings?.default_commission_rate ?? 20;
   const commissionType = settings?.default_commission_type ?? "recurring";
-  const autoApprove = settings?.agent_auto_approve !== false;
-  const status = autoApprove ? "active" : "pending";
+  // Self-signup always pending — email confirmation or SA activation required
+  const status = "pending";
 
   // Check if email already registered as agent
   const { data: existingAgent } = await supabase
@@ -69,8 +70,9 @@ export async function POST(req: Request) {
     const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
       email: email.trim(),
       password,
-      email_confirm: false, // send confirmation email
+      email_confirm: false,
       user_metadata: { full_name: full_name.trim() },
+      options: { emailRedirectTo: `${origin}/api/auth/callback?next=/agent` },
     });
     if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
     userId = authData.user.id;

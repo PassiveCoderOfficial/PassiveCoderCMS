@@ -57,17 +57,17 @@ export default function BecomeAgentPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-md w-full text-center space-y-4">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle className="w-8 h-8 text-yellow-600" />
           </div>
-          <h1 className="text-2xl font-bold">You&apos;re in!</h1>
-          <p className="text-muted-foreground">Check your email to confirm your account, then sign in to access your Agent dashboard.</p>
+          <h1 className="text-2xl font-bold">Application received!</h1>
+          <p className="text-muted-foreground">Check your email to confirm your account. Once confirmed, your agent dashboard will be activated.</p>
           {referralCode && (
             <div className="bg-muted rounded-lg px-4 py-3 text-sm">
               Your referral code: <span className="font-mono font-bold text-primary">{referralCode}</span>
             </div>
           )}
-          <Link href="/login"><Button className="w-full">Sign In to Agent Dashboard</Button></Link>
+          <Link href="/login"><Button className="w-full">Sign In</Button></Link>
         </div>
       </div>
     );
