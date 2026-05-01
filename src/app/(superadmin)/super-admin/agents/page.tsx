@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import { Users, Zap, Plus } from "lucide-react";
+import { Users, Zap, Plus, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import AgentActions from "./agent-actions";
 
@@ -34,22 +34,30 @@ export default async function AgentsPage() {
         {!agents?.length ? (
           <div className="p-10 text-center text-gray-500 text-sm">No agents registered yet.</div>
         ) : (
-          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[700px]">
+          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr className="border-b border-gray-800">
-                {["Name", "Email", "Company", "Code", "Commission", "Type", "Sites", "Status", "Joined", "Actions"].map(h => (
+                {["Name", "Email", "Company", "Referral Code", "Commission", "Type", "Sites", "Status", "Joined", "Actions"].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {agents.map(agent => (
-                <tr key={agent.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                  <td className="px-4 py-3 text-white font-medium">{agent.full_name}</td>
+                <tr key={agent.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors align-top">
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="text-white font-medium">{agent.full_name}</p>
+                      <Link href={`/super-admin/agents/${agent.id}`}
+                        className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 mt-0.5">
+                        <ExternalLink className="w-2.5 h-2.5" /> View Dashboard
+                      </Link>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-gray-400 text-xs">{agent.email}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{agent.company ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <span className="font-mono text-xs text-yellow-400">{agent.referral_code}</span>
+                    <span className="font-mono text-xs text-yellow-400 bg-yellow-900/20 px-1.5 py-0.5 rounded">{agent.referral_code}</span>
                   </td>
                   <td className="px-4 py-3 text-gray-300 text-xs">{agent.commission_rate}%</td>
                   <td className="px-4 py-3 text-xs">
@@ -73,7 +81,13 @@ export default async function AgentsPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{new Date(agent.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
-                    <AgentActions agentId={agent.id} currentStatus={agent.status} currentCommission={agent.commission_rate} currentCommissionType={agent.commission_type ?? "recurring"} />
+                    <AgentActions
+                      agentId={agent.id}
+                      currentStatus={agent.status}
+                      currentCommission={agent.commission_rate}
+                      currentCommissionType={agent.commission_type ?? "recurring"}
+                      currentReferralCode={agent.referral_code}
+                    />
                   </td>
                 </tr>
               ))}

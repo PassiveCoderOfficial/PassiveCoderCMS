@@ -2,6 +2,21 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireSuperAdmin } from "@/lib/super-admin";
 
+function nameToCode(name: string): string {
+  return name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "").slice(0, 20) || "agent";
+}
+
+async function uniqueCode(supabase: Awaited<ReturnType<typeof createAdminClient>>, base: string): Promise<string> {
+  let code = base;
+  let attempt = 0;
+  while (true) {
+    const { data } = await supabase.from("agents").select("id").eq("referral_code", code).maybeSingle();
+    if (!data) return code;
+    attempt++;
+    code = `${base}${attempt}`;
+  }
+}
+
 export async function POST(req: Request) {
   const caller = await requireSuperAdmin();
   if (!caller) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -47,6 +62,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This user is already an agent" }, { status: 409 });
   }
 
+  // Generate name-based referral code, ensure unique
+  const referral_code = await uniqueCode(supabase, nameToCode(full_name.trim()));
+
   const { data: agent, error: agentErr } = await supabase.from("agents").insert({
     user_id: userId,
     full_name: full_name.trim(),
@@ -58,6 +76,7 @@ export async function POST(req: Request) {
     commission_type: commission_type ?? "recurring",
     notes: notes?.trim() || null,
     status: "active",
+    referral_code,
   }).select("id").single();
 
   if (agentErr) return NextResponse.json({ error: agentErr.message }, { status: 400 });

@@ -1,9 +1,14 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { seedTemplate } from "@/lib/templates/seed-template";
 
 export async function POST(req: Request) {
-  const { siteName, slug, userId, planId, templateId, templateMode, referralCode } = await req.json();
+  const body = await req.json();
+  const { siteName, slug, userId, planId, templateId, templateMode } = body;
+  // URL param wins; fallback to persistent cookie (last-ref-wins affiliate tracking)
+  const cookieStore = await cookies();
+  const referralCode: string | undefined = body.referralCode || cookieStore.get("ref_code")?.value || undefined;
 
   if (!siteName || !slug || !userId)
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });

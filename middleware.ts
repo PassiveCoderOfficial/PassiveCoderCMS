@@ -5,6 +5,10 @@ const CMS_MODE = process.env.NEXT_PUBLIC_CMS_MODE ?? "standalone";
 const isSaaS = CMS_MODE === "saas";
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3000";
 
+const REF_COOKIE = "ref_code";
+// 2 years in seconds — "no expiry" affiliate cookie
+const REF_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
+
 async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -32,6 +36,20 @@ async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdminRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
+
+  // Capture ?ref= param and store as persistent cookie (last-ref-wins: always overwrite)
+  const refParam = request.nextUrl.searchParams.get("ref");
+  if (refParam) {
+    const cleaned = refParam.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 32);
+    if (cleaned.length >= 3) {
+      supabaseResponse.cookies.set(REF_COOKIE, cleaned, {
+        maxAge: REF_COOKIE_MAX_AGE,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: false, // readable by client for display
+      });
+    }
+  }
 
   if (isAdminRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
