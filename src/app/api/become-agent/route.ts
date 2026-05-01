@@ -17,7 +17,6 @@ async function uniqueCode(supabase: Awaited<ReturnType<typeof createAdminClient>
 }
 
 export async function POST(req: Request) {
-  const origin = new URL(req.url).origin;
   const { full_name, email, password, company, website, bio } = await req.json() as {
     full_name: string; email: string; password: string;
     company?: string; website?: string; bio?: string;
@@ -72,7 +71,6 @@ export async function POST(req: Request) {
       password,
       email_confirm: false,
       user_metadata: { full_name: full_name.trim() },
-      options: { emailRedirectTo: `${origin}/api/auth/callback?next=/agent` },
     });
     if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
     userId = authData.user.id;
