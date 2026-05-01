@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { Users, ShieldCheck } from "lucide-react";
 import GrantSuperAdminButton from "./grant-button";
 
@@ -6,6 +6,8 @@ export const metadata = { title: "Users & Roles — Super Admin" };
 
 export default async function UsersPage() {
   const supabase = await createAdminClient();
+  const authClient = await createClient();
+  const { data: { user: currentUser } } = await authClient.auth.getUser();
 
   const [{ data: superAdmins }, { data: recentUsers }] = await Promise.all([
     supabase.from("super_admins").select("user_id,granted_at"),
@@ -56,7 +58,7 @@ export default async function UsersPage() {
                     )}
                   </td>
                   <td className="px-5 py-3">
-                    <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} />
+                    <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
                   </td>
                 </tr>
               );
