@@ -7,11 +7,20 @@ import { cn } from "@/lib/utils";
 import { navSections } from "./nav-items";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShieldCheck, Menu, X } from "lucide-react";
+import { ExternalLink, ShieldCheck, Menu, X, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
 
 function SidebarContent({ isSuperAdmin, onClose }: { isSuperAdmin: boolean; onClose?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
 
   return (
     <>
@@ -85,16 +94,25 @@ function SidebarContent({ isSuperAdmin, onClose }: { isSuperAdmin: boolean; onCl
       {/* Footer */}
       <Separator />
       <div className="p-3 space-y-1">
-        {isSuperAdmin && (
-          <Link
-            href="/super-admin"
-            onClick={onClose}
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-indigo-500 hover:bg-accent hover:text-indigo-400 transition-colors"
+        <div className="flex items-center gap-1">
+          {isSuperAdmin && (
+            <Link
+              href="/super-admin"
+              onClick={onClose}
+              className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-indigo-500 hover:bg-accent hover:text-indigo-400 transition-colors"
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              Super Admin Panel
+            </Link>
+          )}
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="ml-auto rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors"
           >
-            <ShieldCheck className="h-4 w-4 shrink-0" />
-            Super Admin Panel
-          </Link>
-        )}
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
         <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v1.0.0</p>
       </div>
     </>
