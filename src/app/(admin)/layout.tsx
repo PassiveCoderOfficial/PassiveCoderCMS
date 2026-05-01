@@ -37,7 +37,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!sa && !["admin", "editor", "author"].includes(profile.role)) {
+  if (!sa && !["admin", "editor", "author", "agent"].includes(profile.role)) {
     redirect("/login?error=unauthorized");
   }
 
@@ -54,6 +54,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .single();
     viewingTenantName = tenant?.name ?? null;
   }
+
+  // Fetch user's tenant memberships for site switcher
+  const { data: memberships } = await adminClient
+    .from("tenant_members")
+    .select("tenant_id, role, is_primary, tenants(id, name, slug)")
+    .eq("user_id", user.id)
+    .order("is_primary", { ascending: false });
+
+  const userSites = (memberships ?? []).map(m => {
+    const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string } | null;
+    return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: m.is_primary ?? false } : null;
+  }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
 
   const cmsUser: CMSUser = {
     id: profile.id,
@@ -73,7 +85,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar isSuperAdmin={!!sa} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <AdminTopbar user={cmsUser} />
+          <AdminTopbar user={cmsUser} sites={userSites} />
           <main className="flex-1 overflow-auto pl-0 lg:pl-0">
             {children}
           </main>

@@ -62,5 +62,8 @@ export async function POST(req: Request) {
 
   if (agentErr) return NextResponse.json({ error: agentErr.message }, { status: 400 });
 
+  // Set profile role to 'agent' so they can access /dashboard
+  await supabase.from("profiles").update({ role: "agent" }).eq("id", userId);
+
   return NextResponse.json({ ok: true, agent_id: agent.id });
 }

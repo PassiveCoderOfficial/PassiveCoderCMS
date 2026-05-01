@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap,
+  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
   { label: "Overview", href: "/agent", icon: LayoutDashboard, exact: true },
@@ -22,6 +23,14 @@ interface Agent {
 
 export default function AgentSidebar({ agent }: { agent: Agent }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
+
   return (
     <aside className="w-56 flex flex-col border-r bg-card flex-shrink-0">
       <div className="h-14 flex items-center gap-2.5 px-4 border-b">
@@ -58,11 +67,21 @@ export default function AgentSidebar({ agent }: { agent: Agent }) {
         })}
       </nav>
 
-      <div className="p-3 border-t">
-        <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-          <LogOut className="w-3.5 h-3.5" />
-          Exit Agent Portal
+      <div className="p-3 border-t space-y-1">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        >
+          <LayoutGrid className="w-3.5 h-3.5" />
+          Switch to Site Admin
         </Link>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Logout
+        </button>
       </div>
     </aside>
   );

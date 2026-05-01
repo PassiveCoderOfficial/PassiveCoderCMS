@@ -3,17 +3,19 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   Globe, ArrowLeft, ExternalLink, LayoutDashboard, LogIn,
-  CreditCard, Users, Settings, CheckCircle, Clock, AlertCircle,
+  CreditCard, Users, Settings, Zap,
 } from "lucide-react";
+import AssignAgent from "./assign-agent";
 
 export default async function SiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createAdminClient();
 
-  const [{ data: site }, { data: subscription }, { data: members }] = await Promise.all([
+  const [{ data: site }, { data: subscription }, { data: members }, { data: agents }] = await Promise.all([
     supabase.from("tenants").select("*").eq("id", id).single(),
     supabase.from("subscriptions").select("*").eq("tenant_id", id).order("created_at", { ascending: false }).limit(1).single(),
     supabase.from("tenant_members").select("user_id, role, profiles(full_name, email)").eq("tenant_id", id).limit(20),
+    supabase.from("agents").select("id, full_name, email, referral_code").eq("status", "active").order("full_name"),
   ]);
 
   if (!site) notFound();
@@ -141,6 +143,16 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
       )}
+
+      {/* Assigned Agent */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Assigned Agent</h2>
+        <AssignAgent
+          siteId={site.id}
+          currentAgentId={site.assigned_agent_id ?? null}
+          agents={agents ?? []}
+        />
+      </div>
 
       {/* Members */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
