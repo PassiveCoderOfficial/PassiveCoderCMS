@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Plus, Trash2, Save, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CreditCard, Plus, Trash2, Save, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Plan {
@@ -10,6 +10,7 @@ interface Plan {
   price_yearly: number;
   storage_gb: number;
   features: string[];
+  sort_order?: number;
 }
 
 const DEFAULT_PLANS: Plan[] = [
@@ -140,7 +141,18 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
 
 export default function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/super-admin/plans")
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d.plans) && d.plans.length > 0) setPlans(d.plans);
+      })
+      .catch(() => {/* keep defaults */})
+      .finally(() => setLoading(false));
+  }, []);
 
   const updatePlan = (index: number, updated: Plan) => {
     setPlans(prev => prev.map((p, i) => i === index ? updated : p));
@@ -154,10 +166,13 @@ export default function PlansPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plans }),
       });
-      if (!res.ok) throw new Error("Save failed");
-      toast.success("Plans saved");
-    } catch {
-      toast.error("Failed to save plans");
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error ?? "Save failed");
+      }
+      toast.success("Plans saved — marketing page updated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save plans");
     } finally {
       setSaving(false);
     }
@@ -171,30 +186,32 @@ export default function PlansPage() {
         </h1>
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || loading}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
         >
-          <Save className="w-4 h-4" />
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? "Saving…" : "Save Changes"}
         </button>
       </div>
 
       <p className="text-gray-400 text-sm">
-        Configure the plans shown to users during onboarding. Changes take effect immediately on the onboarding page.
+        Configure the plans shown to users during onboarding. Changes take effect immediately on the marketing homepage.
       </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {plans.map((plan, i) => (
-          <div key={plan.id}>
-            <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">{plan.name}</h3>
-            <PlanCard plan={plan} onChange={updated => updatePlan(i, updated)} />
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-amber-900/20 border border-amber-700/30 rounded-xl p-4 text-sm text-amber-400">
-        <strong>Note:</strong> Plan data is currently stored in the API route. For full persistence, connect this to a <code className="bg-black/30 px-1 rounded">plans</code> table in Supabase.
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {plans.map((plan, i) => (
+            <div key={plan.id}>
+              <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">{plan.name}</h3>
+              <PlanCard plan={plan} onChange={updated => updatePlan(i, updated)} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

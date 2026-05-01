@@ -2,32 +2,55 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { isSuperAdmin } from "@/lib/super-admin";
 
-export async function POST(req: Request) {
+async function authed() {
   const supabase = await createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!await isSuperAdmin(user.id)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }), supabase: null };
+  if (!await isSuperAdmin(user.id)) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }), supabase: null };
+  return { error: null, supabase };
+}
+
+export async function GET() {
+  const { error, supabase } = await authed();
+  if (error) return error;
+
+  const { data, error: dbErr } = await supabase!
+    .from("plans")
+    .select("id, name, price_yearly, storage_gb, features, sort_order")
+    .order("sort_order");
+
+  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
+
+  // Return price in dollars (DB stores cents)
+  const plans = (data ?? []).map(p => ({
+    ...p,
+    price_yearly: Math.round(p.price_yearly / 100),
+    features: Array.isArray(p.features) ? p.features : JSON.parse(p.features ?? "[]"),
+  }));
+
+  return NextResponse.json({ plans });
+}
+
+export async function POST(req: Request) {
+  const { error, supabase } = await authed();
+  if (error) return error;
 
   const { plans } = await req.json();
   if (!Array.isArray(plans)) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  // Persist plans to platform_plans table if it exists, otherwise no-op
-  // (graceful — table may not be migrated yet)
-  try {
-    await supabase.from("platform_plans" as never).upsert(
-      plans.map((p: { id: string; name: string; price_yearly: number; storage_gb: number; features: string[] }) => ({
-        id: p.id,
-        name: p.name,
-        price_yearly: p.price_yearly,
-        storage_gb: p.storage_gb,
-        features: p.features,
-        updated_at: new Date().toISOString(),
-      })),
-      { onConflict: "id" },
-    );
-  } catch {
-    // Table doesn't exist yet — plans live in the API route for now
-  }
+  const { error: dbErr } = await supabase!.from("plans").upsert(
+    plans.map((p: { id: string; name: string; price_yearly: number; storage_gb: number; features: string[]; sort_order?: number }, i: number) => ({
+      id: p.id,
+      name: p.name,
+      price_yearly: Math.round(p.price_yearly * 100), // dollars → cents
+      storage_gb: p.storage_gb,
+      features: p.features,
+      sort_order: p.sort_order ?? i + 1,
+      is_active: true,
+    })),
+    { onConflict: "id" },
+  );
 
+  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
