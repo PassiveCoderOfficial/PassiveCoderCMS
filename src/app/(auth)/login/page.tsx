@@ -25,7 +25,7 @@ export default function LoginPage() {
         </Suspense>
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/onboarding" className="text-primary font-medium hover:underline">Sign up free</Link>
+          <Link href="/register" className="text-primary font-medium hover:underline">Sign up free</Link>
         </p>
       </div>
     </div>
