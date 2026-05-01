@@ -183,11 +183,16 @@ export default function NewSATicketPage() {
     if (guestName) payload.guest_name = guestName;
     if (guestEmail) payload.guest_email = guestEmail;
 
-    const { data, error } = await supabase.from("support_tickets").insert(payload).select("id").single();
+    const res = await fetch("/api/super-admin/tickets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    const result = await res.json();
+    if (!res.ok) { toast.error(result.error ?? "Failed to create ticket"); return; }
     toast.success("Ticket created");
-    router.push(`/super-admin/tickets/${data.id}`);
+    router.push(`/super-admin/tickets/${result.id}`);
   }
 
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>;
