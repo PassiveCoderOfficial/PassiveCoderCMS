@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -28,27 +27,38 @@ interface Site { id: string; name: string; slug: string; is_primary: boolean; }
 interface TopbarProps {
   user?: CMSUser;
   sites?: Site[];
+  isSuperAdmin?: boolean;
 }
 
-function SiteSwitcher({ sites }: { sites: Site[] }) {
+function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: boolean }) {
   const [list, setList] = useState(sites);
   const [loading, setLoading] = useState<string | null>(null);
+  const router = useRouter();
 
-  const primary = list.find(s => s.is_primary) ?? list[0];
+  const active = list.find(s => s.is_primary) ?? list[0];
 
-  async function setDefault(siteId: string) {
-    setLoading(siteId);
+  async function switchSite(site: Site) {
+    if (site.is_primary) return;
+    setLoading(site.id);
+
+    if (isSuperAdmin) {
+      // SA: set impersonation cookie via redirect
+      window.location.href = `/api/super-admin/impersonate?tenant_id=${site.id}`;
+      return;
+    }
+
+    // Regular user: set primary then refresh dashboard
     const res = await fetch("/api/user/primary-site", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ site_id: siteId }),
+      body: JSON.stringify({ site_id: site.id }),
     });
     setLoading(null);
     if (res.ok) {
-      setList(prev => prev.map(s => ({ ...s, is_primary: s.id === siteId })));
-      toast.success("Default site updated");
+      setList(prev => prev.map(s => ({ ...s, is_primary: s.id === site.id })));
+      router.refresh();
     } else {
-      toast.error("Failed to update default site");
+      toast.error("Failed to switch site");
     }
   }
 
@@ -57,35 +67,54 @@ function SiteSwitcher({ sites }: { sites: Site[] }) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs max-w-[200px]">
           <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          <span className="truncate">{primary?.name ?? "Select site"}</span>
+          <span className="truncate">{active?.name ?? "Select site"}</span>
           <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Your Sites</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+          {isSuperAdmin ? "All Sites" : "Your Sites"}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {list.map(site => (
-          <div key={site.id} className="flex items-center gap-1 px-1">
-            <DropdownMenuItem
-              className="flex-1 cursor-pointer gap-2"
-              onClick={() => window.open(`${proto}://${site.slug}.${ROOT}`, "_blank")}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{site.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{site.slug}.{ROOT}</p>
-              </div>
-              <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
-            </DropdownMenuItem>
+          <div key={site.id} className="flex items-center gap-1 px-1 py-0.5">
+            {/* Click name → switch dashboard to this site */}
             <button
-              title={site.is_primary ? "Default site" : "Set as default"}
-              onClick={() => !site.is_primary && setDefault(site.id)}
-              disabled={loading === site.id || site.is_primary}
-              className={`p-1.5 rounded transition-colors shrink-0 ${
-                site.is_primary ? "text-amber-500 cursor-default" : "text-muted-foreground hover:text-amber-500"
+              onClick={() => switchSite(site)}
+              disabled={loading === site.id}
+              className={`flex-1 flex flex-col items-start px-2 py-1.5 rounded-md text-left transition-colors min-w-0 ${
+                site.is_primary
+                  ? "bg-accent"
+                  : "hover:bg-accent"
               }`}
             >
-              <Star className={`h-3.5 w-3.5 ${site.is_primary ? "fill-amber-500" : ""}`} />
+              <span className="text-sm font-medium truncate w-full">{site.name}</span>
+              <span className="text-xs text-muted-foreground truncate w-full">{site.slug}.{ROOT}</span>
             </button>
+            {/* External link — visit site frontend */}
+            <a
+              href={`${proto}://${site.slug}.${ROOT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Visit site"
+              className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              onClick={e => e.stopPropagation()}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            {/* Star — set as default (SA: marks active in UI only, regular: sets primary) */}
+            {!isSuperAdmin && (
+              <button
+                title={site.is_primary ? "Current site" : "Set as default"}
+                onClick={() => switchSite(site)}
+                disabled={loading === site.id || site.is_primary}
+                className={`p-1.5 rounded transition-colors shrink-0 ${
+                  site.is_primary ? "text-amber-500 cursor-default" : "text-muted-foreground hover:text-amber-500"
+                }`}
+              >
+                <Star className={`h-3.5 w-3.5 ${site.is_primary ? "fill-amber-500" : ""}`} />
+              </button>
+            )}
           </div>
         ))}
       </DropdownMenuContent>
@@ -93,7 +122,7 @@ function SiteSwitcher({ sites }: { sites: Site[] }) {
   );
 }
 
-export function AdminTopbar({ user, sites = [] }: TopbarProps) {
+export function AdminTopbar({ user, sites = [], isSuperAdmin = false }: TopbarProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
   const supabase = createClient();
@@ -109,8 +138,8 @@ export function AdminTopbar({ user, sites = [] }: TopbarProps) {
 
   return (
     <header className="flex h-14 items-center gap-3 border-b px-4 bg-background pl-14 lg:pl-4">
-      {/* Site switcher — only if 2+ sites */}
-      {sites.length > 1 && <SiteSwitcher sites={sites} />}
+      {/* Site switcher — show when multiple sites, or SA (always sees all) */}
+      {sites.length > 0 && <SiteSwitcher sites={sites} isSuperAdmin={isSuperAdmin} />}
 
       {/* Search */}
       <div className="relative flex-1 max-w-sm">

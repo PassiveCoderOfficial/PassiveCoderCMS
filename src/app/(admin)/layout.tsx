@@ -55,17 +55,36 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     viewingTenantName = tenant?.name ?? null;
   }
 
-  // Fetch user's tenant memberships for site switcher
-  const { data: memberships } = await adminClient
-    .from("tenant_members")
-    .select("tenant_id, role, is_primary, tenants(id, name, slug)")
-    .eq("user_id", user.id)
-    .order("is_primary", { ascending: false });
+  // Fetch sites for switcher
+  let userSites: { id: string; name: string; slug: string; is_primary: boolean }[] = [];
 
-  const userSites = (memberships ?? []).map(m => {
-    const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string } | null;
-    return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: m.is_primary ?? false } : null;
-  }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
+  if (sa) {
+    // SA sees all tenants
+    const { data: allTenants } = await adminClient
+      .from("tenants")
+      .select("id, name, slug")
+      .order("created_at", { ascending: true });
+
+    const currentViewingId = cookieStore.get(SA_VIEWING_COOKIE)?.value;
+    const saOwnedId = allTenants?.[0]?.id;
+    const activeTenantId = currentViewingId ?? saOwnedId;
+
+    userSites = (allTenants ?? []).map(t => ({
+      id: t.id, name: t.name, slug: t.slug,
+      is_primary: t.id === activeTenantId,
+    }));
+  } else {
+    const { data: memberships } = await adminClient
+      .from("tenant_members")
+      .select("tenant_id, role, is_primary, tenants(id, name, slug)")
+      .eq("user_id", user.id)
+      .order("is_primary", { ascending: false });
+
+    userSites = (memberships ?? []).map(m => {
+      const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string } | null;
+      return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: m.is_primary ?? false } : null;
+    }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
+  }
 
   const cmsUser: CMSUser = {
     id: profile.id,
@@ -85,7 +104,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar isSuperAdmin={!!sa} isAgent={profile.role === "agent"} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <AdminTopbar user={cmsUser} sites={userSites} />
+          <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
           <main className="flex-1 overflow-auto pl-0 lg:pl-0">
             {children}
           </main>
