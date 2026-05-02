@@ -140,7 +140,7 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
 }
 
 export default function PlansPage() {
-  const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
+  const [plans, setPlans] = useState<Plan[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -148,9 +148,13 @@ export default function PlansPage() {
     fetch("/api/super-admin/plans")
       .then(r => r.json())
       .then(d => {
-        if (Array.isArray(d.plans) && d.plans.length > 0) setPlans(d.plans);
+        if (Array.isArray(d.plans) && d.plans.length > 0) {
+          setPlans(d.plans);
+        } else {
+          setPlans(DEFAULT_PLANS);
+        }
       })
-      .catch(() => {/* keep defaults */})
+      .catch(() => setPlans(DEFAULT_PLANS))
       .finally(() => setLoading(false));
   }, []);
 
@@ -198,7 +202,7 @@ export default function PlansPage() {
         Configure the plans shown to users during onboarding. Changes take effect immediately on the marketing homepage.
       </p>
 
-      {loading ? (
+      {loading || !plans ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
         </div>

@@ -15,3 +15,4 @@ export default function GeneralSettingsPage() {
 
   if (!settings) return <div className="p-6 text-sm text-muted-foreground">Loading...</div>;
   return <SettingsForm initialSettings={settings} />;
+}
