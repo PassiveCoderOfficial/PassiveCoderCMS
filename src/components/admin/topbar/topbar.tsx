@@ -35,8 +35,21 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
   const [list, setList] = useState(sites);
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
+  const [exitLoading, setExitLoading] = useState(false);
 
   const active = list.find(s => s.is_primary) ?? list[0];
+
+  async function exitImpersonation() {
+    setExitLoading(true);
+    const res = await fetch("/api/super-admin/impersonate/exit", { method: "POST" });
+    if (res.ok) {
+      router.push("/dashboard");
+      router.refresh();
+    } else {
+      toast.error("Failed to exit impersonation");
+      setExitLoading(false);
+    }
+  }
 
   async function switchSite(site: Site) {
     if (site.is_primary) return;
@@ -118,6 +131,18 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
             )}
           </div>
         ))}
+        {isSuperAdmin && list.length > 1 && (
+          <>
+            <DropdownMenuSeparator />
+            <button
+              onClick={exitImpersonation}
+              disabled={exitLoading}
+              className="w-full px-2 py-1.5 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+            >
+              {exitLoading ? "..." : "← Back to Main"}
+            </button>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
