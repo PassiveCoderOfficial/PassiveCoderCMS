@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getCookieDomain } from "@/lib/cookie-domain";
 
 const CMS_MODE = process.env.NEXT_PUBLIC_CMS_MODE ?? "standalone";
 const isSaaS = CMS_MODE === "saas";
@@ -11,6 +12,7 @@ const REF_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
 
 async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const cookieDomain = getCookieDomain();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,7 +26,7 @@ async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, { ...options, domain: cookieDomain }),
           );
         },
       },
@@ -47,6 +49,7 @@ async function updateSession(request: NextRequest) {
         path: "/",
         sameSite: "lax",
         httpOnly: false, // readable by client for display
+        domain: cookieDomain,
       });
     }
   }
