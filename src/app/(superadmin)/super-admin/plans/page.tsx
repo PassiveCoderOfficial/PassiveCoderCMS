@@ -159,7 +159,7 @@ export default function PlansPage() {
   }, []);
 
   const updatePlan = (index: number, updated: Plan) => {
-    setPlans(prev => prev.map((p, i) => i === index ? updated : p));
+    setPlans(prev => prev ? prev.map((p, i) => i === index ? updated : p) : prev);
   };
 
   const handleSave = async () => {
