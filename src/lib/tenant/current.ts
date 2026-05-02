@@ -1,6 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 export const SA_VIEWING_COOKIE = "sa_viewing_tenant";
 
@@ -19,12 +19,17 @@ export async function getCurrentTenantId(): Promise<string> {
     .maybeSingle();
 
   if (sa) {
+    // SA on a tenant subdomain — use the injected tenant id directly
+    const reqHeaders = await headers();
+    const subdomainTenantId = reqHeaders.get("x-tenant-id");
+    if (subdomainTenantId) return subdomainTenantId;
+
     // SA impersonating a specific tenant via cookie
     const cookieStore = await cookies();
     const viewing = cookieStore.get(SA_VIEWING_COOKIE)?.value;
     if (viewing) return viewing;
 
-    // SA managing their own root tenant
+    // SA on root domain — use their own first tenant
     const { data: ownedTenant } = await adminClient
       .from("tenants")
       .select("id")
@@ -37,14 +42,39 @@ export async function getCurrentTenantId(): Promise<string> {
     redirect("/onboarding");
   }
 
-  // Regular user — resolve via tenant_members
+  // Regular user — subdomain context takes priority
+  const reqHeaders = await headers();
+  const subdomainTenantId = reqHeaders.get("x-tenant-id");
+  if (subdomainTenantId) {
+    // Verify user is actually a member of this tenant
+    const { data: membership } = await adminClient
+      .from("tenant_members")
+      .select("tenant_id")
+      .eq("user_id", user.id)
+      .eq("tenant_id", subdomainTenantId)
+      .maybeSingle();
+    if (membership) return subdomainTenantId;
+  }
+
+  // Regular user — resolve via tenant_members primary flag
   const { data } = await supabase
     .from("tenant_members")
     .select("tenant_id")
     .eq("user_id", user.id)
-    .single();
+    .eq("is_primary", true)
+    .maybeSingle();
 
-  if (!data?.tenant_id) redirect("/login?error=no_tenant");
+  if (data?.tenant_id) return data.tenant_id;
 
-  return data.tenant_id;
+  // Fallback: any membership
+  const { data: any } = await supabase
+    .from("tenant_members")
+    .select("tenant_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (!any?.tenant_id) redirect("/login?error=no_tenant");
+
+  return any.tenant_id;
 }

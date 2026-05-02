@@ -32,48 +32,23 @@ interface TopbarProps {
 }
 
 function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: boolean }) {
-  const [list, setList] = useState(sites);
-  const [loading, setLoading] = useState<string | null>(null);
-  const router = useRouter();
-  const [exitLoading, setExitLoading] = useState(false);
+  const [list] = useState(sites);
 
   const active = list.find(s => s.is_primary) ?? list[0];
 
-  async function exitImpersonation() {
-    setExitLoading(true);
-    const res = await fetch("/api/super-admin/impersonate/exit", { method: "POST" });
-    if (res.ok) {
-      router.push("/dashboard");
-      router.refresh();
+  function exitImpersonation() {
+    // SA's own site is the first in the list (ordered by created_at ASC)
+    const ownSite = list[0];
+    if (ownSite) {
+      window.location.href = `${proto}://${ownSite.slug}.${ROOT}/dashboard`;
     } else {
-      toast.error("Failed to exit impersonation");
-      setExitLoading(false);
+      window.location.href = `${proto}://${ROOT}/dashboard`;
     }
   }
 
-  async function switchSite(site: Site) {
+  function switchSite(site: Site) {
     if (site.is_primary) return;
-    setLoading(site.id);
-
-    if (isSuperAdmin) {
-      // SA: set impersonation cookie via redirect
-      window.location.href = `/api/super-admin/impersonate?tenant_id=${site.id}`;
-      return;
-    }
-
-    // Regular user: set primary then refresh dashboard
-    const res = await fetch("/api/user/primary-site", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ site_id: site.id }),
-    });
-    setLoading(null);
-    if (res.ok) {
-      setList(prev => prev.map(s => ({ ...s, is_primary: s.id === site.id })));
-      router.refresh();
-    } else {
-      toast.error("Failed to switch site");
-    }
+    window.location.href = `${proto}://${site.slug}.${ROOT}/dashboard`;
   }
 
   return (
@@ -95,7 +70,6 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
             {/* Click name → switch dashboard to this site */}
             <button
               onClick={() => switchSite(site)}
-              disabled={loading === site.id}
               className={`flex-1 flex flex-col items-start px-2 py-1.5 rounded-md text-left transition-colors min-w-0 ${
                 site.is_primary
                   ? "bg-accent"
@@ -121,7 +95,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
               <button
                 title={site.is_primary ? "Current site" : "Set as default"}
                 onClick={() => switchSite(site)}
-                disabled={loading === site.id || site.is_primary}
+                disabled={site.is_primary}
                 className={`p-1.5 rounded transition-colors shrink-0 ${
                   site.is_primary ? "text-amber-500 cursor-default" : "text-muted-foreground hover:text-amber-500"
                 }`}
@@ -136,10 +110,9 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
             <DropdownMenuSeparator />
             <button
               onClick={exitImpersonation}
-              disabled={exitLoading}
               className="w-full px-2 py-1.5 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
             >
-              {exitLoading ? "..." : "← Back to Main"}
+              ← Back to Main
             </button>
           </>
         )}

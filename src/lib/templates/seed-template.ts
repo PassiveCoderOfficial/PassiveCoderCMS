@@ -3,11 +3,13 @@
  *
  * "theme" mode: writes theme colours/identity only.
  * "full"  mode: seeds demo service groups, pages, sliders, testimonials, pricing,
- *               identity, and logs the import in tenant_template_imports.
+ *               identity, logs the import in tenant_template_imports, and creates
+ *               a published home page with real blocks from template content.
  */
 import { SupabaseClient } from "@supabase/supabase-js";
 import { TEMPLATES } from "./templates-data";
-import { getTemplateContent } from "./template-content";
+import { getTemplateContent, type TemplateContent } from "./template-content";
+import type { Template } from "./templates-data";
 
 export async function seedTemplate(
   supabase: SupabaseClient,
@@ -135,8 +137,228 @@ export async function seedTemplate(
     { onConflict: "tenant_id" },
   );
 
-  // ── 7. Log the import ────────────────────────────────────────────────────────
+  // ── 7. Home page with real blocks ───────────────────────────────────────────
+  const blocks = buildHomePageBlocks(content, template);
+  await supabase.from("pages").upsert(
+    {
+      tenant_id: tenantId,
+      title: template.name,
+      slug: "home",
+      status: "published",
+      blocks,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "tenant_id,slug" },
+  );
+
+  // ── 8. Log the import ────────────────────────────────────────────────────────
   await logImport(supabase, tenantId, template.id, templateSlug, mode);
+}
+
+function uid(prefix: string, i: number) { return `${prefix}-${i}-${Math.random().toString(36).slice(2, 7)}`; }
+
+const BASE_BLOCK = {
+  visible: true,
+  width: "full" as const,
+  padding: { top: 64, right: 0, bottom: 64, left: 0 },
+  margin: { top: 0, right: 0, bottom: 0, left: 0 },
+  background: { type: "none" as const },
+};
+
+function buildHomePageBlocks(content: TemplateContent, template: Template) {
+  const blocks = [];
+  let order = 0;
+
+  // Navigation
+  blocks.push({
+    ...BASE_BLOCK,
+    id: uid("nav", order),
+    type: "navigation",
+    order: order++,
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    data: {
+      logoText: template.name,
+      items: content.navLinks.map((l, i) => ({ id: `nav-item-${i}`, label: l.label, url: l.href })),
+      sticky: true,
+      transparent: false,
+      style: "default",
+      showCta: true,
+      ctaLabel: content.cta,
+      ctaUrl: "#contact",
+    },
+  });
+
+  // Hero
+  blocks.push({
+    ...BASE_BLOCK,
+    id: uid("hero", order),
+    type: "hero",
+    order: order++,
+    padding: { top: 80, right: 0, bottom: 80, left: 0 },
+    data: {
+      layout: "centered",
+      badge: template.category,
+      title: template.heroHeadline,
+      subtitle: template.heroSubline,
+      description: content.about.body.split(".")[0] + ".",
+      primaryButton: { label: content.cta, url: "#contact", variant: "primary" },
+      secondaryButton: { label: content.ctaSecondary, url: "#services", variant: "outline" },
+      typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" },
+    },
+  });
+
+  // Stats
+  if (content.stats.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("stats", order),
+      type: "stats",
+      order: order++,
+      padding: { top: 48, right: 0, bottom: 48, left: 0 },
+      background: { type: "color", color: template.accentColorHex + "15" },
+      data: {
+        title: "",
+        layout: "row",
+        columns: Math.min(content.stats.length, 4) as 2 | 3 | 4,
+        items: content.stats.map((s, i) => ({ id: uid("stat", i), value: s.value, label: s.label })),
+        style: "plain",
+        animate: true,
+      },
+    });
+  }
+
+  // Services
+  if (content.services.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("services", order),
+      type: "services",
+      order: order++,
+      data: {
+        title: "Our Services",
+        subtitle: content.about.heading,
+        layout: "grid",
+        columns: 3 as 3,
+        cardStyle: "elevated",
+        source: "inline",
+        items: content.services.map((s, i) => ({
+          id: uid("svc", i),
+          title: s.name,
+          description: s.desc,
+          icon: s.icon,
+          iconType: "emoji",
+          linkLabel: s.price ?? "Learn More",
+          link: "#contact",
+        })),
+      },
+    });
+  }
+
+  // About / text
+  blocks.push({
+    ...BASE_BLOCK,
+    id: uid("text", order),
+    type: "text",
+    order: order++,
+    data: {
+      content: `<h2 style="font-size:1.75rem;font-weight:700;margin-bottom:1rem">${content.about.heading}</h2><p>${content.about.body}</p><ul style="margin-top:1rem;padding-left:1.5rem">${content.about.highlights.map(h => `<li>✅ ${h}</li>`).join("")}</ul>`,
+      alignment: "left",
+      columns: 1,
+      typography: {},
+    },
+  });
+
+  // Testimonials
+  if (content.testimonials.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("testimonials", order),
+      type: "testimonials",
+      order: order++,
+      data: {
+        title: "What Our Clients Say",
+        layout: "grid",
+        items: content.testimonials.map((t, i) => ({
+          id: uid("tst", i),
+          name: t.name,
+          role: t.location,
+          content: t.text,
+          rating: t.rating,
+        })),
+      },
+    });
+  }
+
+  // Pricing
+  if (content.pricing && content.pricing.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("pricing", order),
+      type: "pricing",
+      order: order++,
+      data: {
+        title: "Pricing",
+        subtitle: "Simple, transparent pricing",
+        layout: "cards",
+        billingToggle: false,
+        plans: content.pricing.map((p, i) => ({
+          id: uid("plan", i),
+          name: p.name,
+          price: p.price,
+          period: p.period,
+          features: p.features,
+          highlighted: p.highlight ?? false,
+          ctaLabel: p.cta,
+          ctaUrl: "#contact",
+        })),
+      },
+    });
+  }
+
+  // FAQ
+  if (content.faqItems && content.faqItems.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("faq", order),
+      type: "faq",
+      order: order++,
+      data: {
+        title: "Frequently Asked Questions",
+        layout: "accordion",
+        allowMultiple: false,
+        items: content.faqItems.map((f, i) => ({ id: uid("faq-item", i), question: f.q, answer: f.a })),
+      },
+    });
+  }
+
+  // Contact
+  blocks.push({
+    ...BASE_BLOCK,
+    id: uid("contact", order),
+    type: "contact",
+    order: order++,
+    data: {
+      title: "Get In Touch",
+      subtitle: content.cta,
+      layout: "split",
+      showMap: false,
+      showContactInfo: true,
+      phone: content.phone,
+      email: content.email,
+      address: content.address,
+      fields: [
+        { id: "field-name", label: "Full Name", type: "text", required: true },
+        { id: "field-email", label: "Email", type: "email", required: true },
+        { id: "field-phone", label: "Phone", type: "tel", required: false },
+        { id: "field-msg", label: "Message", type: "textarea", required: true },
+      ],
+      submitLabel: "Send Message",
+      successMessage: "Thanks! We'll be in touch soon.",
+    },
+  });
+
+  return blocks;
 }
 
 async function logImport(
