@@ -46,7 +46,36 @@ export default async function MarketingHomePage() {
       );
     }
 
-    // Tenant exists but has no published home page yet
+    // Check if tenant has any pages (e.g. from a template, just not published as home)
+    const { count: pageCount } = await supabase
+      .from("pages")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId);
+
+    if (pageCount && pageCount > 0) {
+      // Has pages from template — home just isn't published yet
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 text-white px-6">
+          <div className="max-w-lg text-center space-y-6">
+            <div className="text-6xl">✏️</div>
+            <h1 className="text-4xl font-bold">Almost there</h1>
+            <p className="text-slate-400 text-lg">
+              Your site has pages ready. Go to the dashboard, set one as{" "}
+              <code className="text-blue-400 bg-slate-700 px-1.5 py-0.5 rounded text-sm">home</code>{" "}
+              and publish it.
+            </p>
+            <a
+              href="/dashboard"
+              className="inline-block mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition-colors"
+            >
+              Go to Dashboard →
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    // Truly blank site — no pages at all
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 text-white px-6">
         <div className="max-w-lg text-center space-y-6">

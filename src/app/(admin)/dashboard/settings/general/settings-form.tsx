@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +22,18 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
 
   const save = async () => {
     setSaving(true);
-    const supabase = createClient();
-    const { error } = await supabase.from("site_settings").update(settings).eq("id", settings.id as string);
+    const res = await fetch("/api/tenant/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+    });
     setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Settings saved");
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.error ?? "Failed to save");
+    } else {
+      toast.success("Settings saved");
+    }
   };
 
   return (
