@@ -1,15 +1,25 @@
 /**
- * Template seeding — applies a template to a newly created tenant.
+ * Template seeding v2 — variant-aware, image-rich, per-template block identity.
  *
- * "theme" mode: writes theme colours/identity only.
- * "full"  mode: seeds demo service groups, pages, sliders, testimonials, pricing,
- *               identity, logs the import in tenant_template_imports, and creates
- *               a published home page with real blocks from template content.
+ * "theme" mode  → writes identity colours + nav + sets active_template_slug. No pages.
+ * "full"  mode  → everything above + home page with template-variant blocks using
+ *                 real images, template-specific content, and proper layout variants.
  */
 import { SupabaseClient } from "@supabase/supabase-js";
-import { TEMPLATES } from "./templates-data";
-import { getTemplateContent, type TemplateContent } from "./template-content";
-import type { Template } from "./templates-data";
+import { getTemplateIdentity, type TemplateIdentity } from "@/modules/themes/template-registry";
+import type { Block } from "@/types/cms";
+
+function uid(prefix: string) {
+  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+const BASE_BLOCK = {
+  visible: true as const,
+  width: "full" as const,
+  padding: { top: 80, right: 0, bottom: 80, left: 0 },
+  margin: { top: 0, right: 0, bottom: 0, left: 0 },
+  background: { type: "none" as const },
+};
 
 export async function seedTemplate(
   supabase: SupabaseClient,
@@ -17,36 +27,38 @@ export async function seedTemplate(
   templateSlug: string,
   mode: "theme" | "full",
 ) {
-  if (templateSlug === "blank" || !templateSlug) return;
+  if (!templateSlug || templateSlug === "blank") return;
 
-  const template = TEMPLATES.find(t => t.slug === templateSlug);
-  if (!template) return;
+  const template = getTemplateIdentity(templateSlug);
+  if (!template) {
+    console.warn(`[seedTemplate] Unknown template slug: ${templateSlug}`);
+    return;
+  }
 
-  const content = getTemplateContent(templateSlug);
-
-  // ── 1. Apply theme colours to site_identity ─────────────────────────────────
+  // ── 1. Site identity + active template ──────────────────────────────────────
   await supabase.from("site_identity").upsert(
     {
       tenant_id: tenantId,
-      site_name: content.tagline.split(".")[0] ?? template.name,
-      primary_color: template.accentColorHex,
-      secondary_color: template.thumbTo,
+      site_name: template.siteName,
+      primary_color: template.palette.primary,
+      secondary_color: template.palette.secondary,
       logo_type: "text",
+      active_template_slug: templateSlug,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "tenant_id" },
   );
 
-  // ── 2. Seed nav menu ─────────────────────────────────────────────────────────
+  // ── 2. Nav menu ──────────────────────────────────────────────────────────────
   await supabase.from("nav_menus").upsert(
     {
       tenant_id: tenantId,
       name: "Main Navigation",
       location: "header",
-      items: content.navLinks.map((l, i) => ({
-        id: `nav-${i}`,
+      items: template.navItems.map((l) => ({
+        id: l.id,
         label: l.label,
-        url: l.href,
+        url: l.url,
         type: "anchor",
         children: [],
       })),
@@ -55,94 +67,110 @@ export async function seedTemplate(
     { onConflict: "tenant_id,location" },
   );
 
+  // ── 3. Log the import ────────────────────────────────────────────────────────
   if (mode === "theme") {
-    // Record the import even for theme-only
-    await logImport(supabase, tenantId, template.id, templateSlug, mode);
+    await logImport(supabase, tenantId, templateSlug, mode);
     return;
   }
 
-  // ── 3. Full demo: service group + items ─────────────────────────────────────
+  // ── FULL MODE ────────────────────────────────────────────────────────────────
+
+  // ── 4. Service groups + items ────────────────────────────────────────────────
   const { data: grp } = await supabase
     .from("service_groups")
-    .insert({ tenant_id: tenantId, name: `${template.name} Services`, description: template.description, sort_order: 0 })
+    .insert({
+      tenant_id: tenantId,
+      name: `${template.name} Services`,
+      description: template.description,
+      sort_order: 0,
+    })
     .select("id")
     .single();
 
   if (grp) {
-    const serviceRows = content.services.map((s, i) => ({
+    const serviceRows = template.services.map((s, i) => ({
       tenant_id: tenantId,
       group_id: grp.id,
-      name: s.name,
-      description: s.desc,
+      name: s.title,
+      description: s.description,
       price: s.price ?? null,
-      icon_type: "emoji" as const,
+      icon_type: s.iconType,
       icon_value: s.icon,
+      image_url: s.imageUrl ?? null,
       sort_order: i,
       active: true,
     }));
     await supabase.from("service_items").insert(serviceRows);
   }
 
-  // ── 4. Testimonials ──────────────────────────────────────────────────────────
-  const testimonialRows = content.testimonials.map((t, i) => ({
-    tenant_id: tenantId,
-    reviewer_name: t.name,
-    reviewer_location: t.location,
-    review_text: t.text,
-    rating: t.rating,
-    source: "manual" as const,
-    published: true,
-    sort_order: i,
-  }));
-  if (testimonialRows.length > 0) {
-    await supabase.from("testimonials").insert(testimonialRows);
+  // ── 5. Testimonials ──────────────────────────────────────────────────────────
+  if (template.testimonials.length > 0) {
+    const rows = template.testimonials.map((t, i) => ({
+      tenant_id: tenantId,
+      reviewer_name: t.name,
+      reviewer_location: t.role + (t.company ? `, ${t.company}` : ""),
+      review_text: t.content,
+      rating: t.rating,
+      avatar_url: t.avatar ?? null,
+      source: "manual" as const,
+      published: true,
+      sort_order: i,
+    }));
+    await supabase.from("testimonials").insert(rows);
   }
 
-  // ── 5. Pricing tiers (if template has them) ──────────────────────────────────
-  if (content.pricing && content.pricing.length > 0) {
+  // ── 6. Pricing ───────────────────────────────────────────────────────────────
+  if (template.pricing && template.pricing.length > 0) {
     const { data: pGrp } = await supabase
       .from("pricing_groups")
-      .insert({ tenant_id: tenantId, name: "Main Pricing", subtitle: "Simple, transparent pricing", sort_order: 0 })
+      .insert({
+        tenant_id: tenantId,
+        name: "Main Pricing",
+        subtitle: "Simple, transparent pricing",
+        sort_order: 0,
+      })
       .select("id")
       .single();
 
     if (pGrp) {
-      const pricingRows = content.pricing.map((tier, i) => ({
+      const rows = template.pricing.map((tier, i) => ({
         tenant_id: tenantId,
         group_id: pGrp.id,
         name: tier.name,
         price: tier.price,
         period: tier.period ?? null,
+        description: tier.description ?? null,
         features: tier.features,
-        cta_label: tier.cta,
-        is_highlighted: tier.highlight ?? false,
+        cta_label: tier.ctaLabel,
+        is_highlighted: tier.highlighted ?? false,
+        badge: tier.badge ?? null,
         sort_order: i,
         active: true,
       }));
-      await supabase.from("pricing_items").insert(pricingRows);
+      await supabase.from("pricing_items").insert(rows);
     }
   }
 
-  // ── 6. Contact details ───────────────────────────────────────────────────────
+  // ── 7. Contact details ───────────────────────────────────────────────────────
   await supabase.from("contact_details").upsert(
     {
       tenant_id: tenantId,
-      phone: content.phone,
-      email: content.email,
-      address: content.address,
+      phone: template.phone,
+      email: template.email,
+      address: template.address,
       show_floating_whatsapp: true,
-      floating_whatsapp_number: content.phone.replace(/[^0-9]/g, ""),
+      floating_whatsapp_number: template.phone.replace(/[^0-9]/g, ""),
       updated_at: new Date().toISOString(),
     },
     { onConflict: "tenant_id" },
   );
 
-  // ── 7. Home page with real blocks ───────────────────────────────────────────
-  const blocks = buildHomePageBlocks(content, template);
+  // ── 8. Home page with variant-aware blocks ───────────────────────────────────
+  const blocks = buildHomePageBlocks(template);
   await supabase.from("pages").upsert(
     {
       tenant_id: tenantId,
-      title: template.name,
+      title: template.siteName,
       slug: "home",
       status: "published",
       blocks,
@@ -152,211 +180,307 @@ export async function seedTemplate(
     { onConflict: "tenant_id,slug" },
   );
 
-  // ── 8. Log the import ────────────────────────────────────────────────────────
-  await logImport(supabase, tenantId, template.id, templateSlug, mode);
+  // ── 9. Log ───────────────────────────────────────────────────────────────────
+  await logImport(supabase, tenantId, templateSlug, mode);
 }
 
-function uid(prefix: string, i: number) { return `${prefix}-${i}-${Math.random().toString(36).slice(2, 7)}`; }
-
-const BASE_BLOCK = {
-  visible: true,
-  width: "full" as const,
-  padding: { top: 64, right: 0, bottom: 64, left: 0 },
-  margin: { top: 0, right: 0, bottom: 0, left: 0 },
-  background: { type: "none" as const },
-};
-
-function buildHomePageBlocks(content: TemplateContent, template: Template) {
-  const blocks = [];
+function buildHomePageBlocks(t: TemplateIdentity): Block[] {
+  const blocks: Block[] = [];
   let order = 0;
 
   // Navigation
   blocks.push({
     ...BASE_BLOCK,
-    id: uid("nav", order),
+    id: uid("nav"),
     type: "navigation",
     order: order++,
     padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    templateVariant: t.variants.navigation,
     data: {
-      logoText: template.name,
-      items: content.navLinks.map((l, i) => ({ id: `nav-item-${i}`, label: l.label, url: l.href })),
+      logoText: t.siteName,
+      items: t.navItems,
       sticky: true,
-      transparent: false,
-      style: "default",
+      transparent: ["fullscreen-overlay"].includes(t.variants.hero),
+      style: t.variants.navigation.includes("centered") ? "centered" : "default",
       showCta: true,
-      ctaLabel: content.cta,
+      ctaLabel: t.heroCTA,
       ctaUrl: "#contact",
     },
-  });
+  } as Block);
 
-  // Hero
+  // Hero — always gets the real hero image + template variant
   blocks.push({
     ...BASE_BLOCK,
-    id: uid("hero", order),
+    id: uid("hero"),
     type: "hero",
     order: order++,
-    padding: { top: 80, right: 0, bottom: 80, left: 0 },
+    padding: ["fullscreen-overlay", "dark-gradient-left"].includes(t.variants.hero)
+      ? { top: 0, right: 0, bottom: 0, left: 0 }
+      : { top: 80, right: 0, bottom: 80, left: 0 },
+    templateVariant: t.variants.hero,
     data: {
-      layout: "centered",
-      badge: template.category,
-      title: template.heroHeadline,
-      subtitle: template.heroSubline,
-      description: content.about.body.split(".")[0] + ".",
-      primaryButton: { label: content.cta, url: "#contact", variant: "primary" },
-      secondaryButton: { label: content.ctaSecondary, url: "#services", variant: "outline" },
-      typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" },
+      layout: "split",
+      badge: t.heroBadge,
+      title: t.heroHeadline,
+      subtitle: t.heroSubline,
+      description: t.aboutBody.split(".")[0] + ".",
+      primaryButton: { label: t.heroCTA, url: "#contact", variant: "primary" },
+      secondaryButton: { label: t.heroSecondaryCTA, url: "#services", variant: "outline" },
+      imageUrl: t.images.hero.url,
+      imageAlt: t.images.hero.alt,
+      overlayOpacity: 0.55,
+      typography: { titleSize: "6xl", titleColor: "", subtitleColor: "", descColor: "" },
     },
-  });
+  } as Block);
 
   // Stats
-  if (content.stats.length > 0) {
+  if (t.stats.length > 0) {
     blocks.push({
       ...BASE_BLOCK,
-      id: uid("stats", order),
+      id: uid("stats"),
       type: "stats",
       order: order++,
-      padding: { top: 48, right: 0, bottom: 48, left: 0 },
-      background: { type: "color", color: template.accentColorHex + "15" },
+      padding: { top: 56, right: 0, bottom: 56, left: 0 },
+      background: { type: "color", color: t.palette.primary + "12" },
+      templateVariant: t.variants.stats,
       data: {
         title: "",
+        subtitle: "",
         layout: "row",
-        columns: Math.min(content.stats.length, 4) as 2 | 3 | 4,
-        items: content.stats.map((s, i) => ({ id: uid("stat", i), value: s.value, label: s.label })),
+        columns: Math.min(t.stats.length, 4) as 2 | 3 | 4,
+        items: t.stats,
         style: "plain",
         animate: true,
       },
-    });
+    } as Block);
   }
 
   // Services
-  if (content.services.length > 0) {
+  if (t.services.length > 0) {
     blocks.push({
       ...BASE_BLOCK,
-      id: uid("services", order),
+      id: uid("services"),
       type: "services",
       order: order++,
+      templateVariant: t.variants.services,
       data: {
         title: "Our Services",
-        subtitle: content.about.heading,
+        subtitle: t.aboutHeading,
         layout: "grid",
-        columns: 3 as 3,
+        columns: 3,
         cardStyle: "elevated",
         source: "inline",
-        items: content.services.map((s, i) => ({
-          id: uid("svc", i),
-          title: s.name,
-          description: s.desc,
+        items: t.services.map((s) => ({
+          id: s.id,
+          title: s.title,
+          description: s.description,
           icon: s.icon,
-          iconType: "emoji",
+          iconType: s.iconType,
+          imageUrl: s.imageUrl,
           linkLabel: s.price ?? "Learn More",
-          link: "#contact",
+          link: s.link ?? "#contact",
         })),
       },
-    });
+    } as Block);
   }
 
-  // About / text
-  blocks.push({
-    ...BASE_BLOCK,
-    id: uid("text", order),
-    type: "text",
-    order: order++,
-    data: {
-      content: `<h2 style="font-size:1.75rem;font-weight:700;margin-bottom:1rem">${content.about.heading}</h2><p>${content.about.body}</p><ul style="margin-top:1rem;padding-left:1.5rem">${content.about.highlights.map(h => `<li>✅ ${h}</li>`).join("")}</ul>`,
-      alignment: "left",
-      columns: 1,
-      typography: {},
-    },
-  });
-
-  // Testimonials
-  if (content.testimonials.length > 0) {
+  // About — features block with real about image in alternating layout
+  if (t.images.about) {
     blocks.push({
       ...BASE_BLOCK,
-      id: uid("testimonials", order),
+      id: uid("features"),
+      type: "features",
+      order: order++,
+      templateVariant: t.variants.features,
+      data: {
+        title: t.aboutHeading,
+        subtitle: "",
+        layout: "alternating",
+        columns: 2,
+        style: "minimal",
+        items: [
+          {
+            id: uid("feat"),
+            title: t.aboutHeading,
+            description: t.aboutBody,
+            imageUrl: t.images.about.url,
+            icon: "",
+          },
+        ],
+      },
+    } as Block);
+  }
+
+  // Testimonials
+  if (t.testimonials.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("testimonials"),
       type: "testimonials",
       order: order++,
+      templateVariant: t.variants.testimonials,
       data: {
         title: "What Our Clients Say",
         layout: "grid",
-        items: content.testimonials.map((t, i) => ({
-          id: uid("tst", i),
+        items: t.testimonials.map((t) => ({
+          id: t.id,
           name: t.name,
-          role: t.location,
-          content: t.text,
+          role: t.role,
+          company: t.company,
+          avatar: t.avatar,
+          content: t.content,
           rating: t.rating,
         })),
       },
-    });
+    } as Block);
+  }
+
+  // Gallery — uses template gallery images
+  if (t.images.gallery.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("gallery"),
+      type: "gallery",
+      order: order++,
+      data: {
+        title: "Gallery",
+        layout: "grid",
+        columns: 4,
+        gap: "sm",
+        lightbox: true,
+        images: t.images.gallery.map((img, i) => ({
+          id: uid(`gal-${i}`),
+          url: img.url,
+          alt: img.alt,
+        })),
+      },
+    } as Block);
   }
 
   // Pricing
-  if (content.pricing && content.pricing.length > 0) {
+  if (t.pricing && t.pricing.length > 0) {
     blocks.push({
       ...BASE_BLOCK,
-      id: uid("pricing", order),
+      id: uid("pricing"),
       type: "pricing",
       order: order++,
+      templateVariant: t.variants.pricing,
       data: {
         title: "Pricing",
         subtitle: "Simple, transparent pricing",
         layout: "cards",
         billingToggle: false,
-        plans: content.pricing.map((p, i) => ({
-          id: uid("plan", i),
+        plans: t.pricing.map((p) => ({
+          id: p.id,
           name: p.name,
           price: p.price,
           period: p.period,
+          description: p.description,
           features: p.features,
-          highlighted: p.highlight ?? false,
-          ctaLabel: p.cta,
-          ctaUrl: "#contact",
+          highlighted: p.highlighted ?? false,
+          badge: p.badge,
+          ctaLabel: p.ctaLabel,
+          ctaUrl: p.ctaUrl,
         })),
       },
-    });
+    } as Block);
+  }
+
+  // Team
+  if (t.team && t.team.length > 0) {
+    blocks.push({
+      ...BASE_BLOCK,
+      id: uid("team"),
+      type: "team",
+      order: order++,
+      templateVariant: t.variants.team,
+      data: {
+        title: "Meet the Team",
+        subtitle: "",
+        layout: "cards",
+        columns: 3,
+        showBio: true,
+        showSocial: false,
+        members: t.team.map((m) => ({
+          id: m.id,
+          name: m.name,
+          role: m.role,
+          bio: m.bio,
+          avatar: m.avatar,
+          social: m.social ?? [],
+        })),
+      },
+    } as Block);
   }
 
   // FAQ
-  if (content.faqItems && content.faqItems.length > 0) {
+  if (t.faq && t.faq.length > 0) {
     blocks.push({
       ...BASE_BLOCK,
-      id: uid("faq", order),
+      id: uid("faq"),
       type: "faq",
       order: order++,
+      templateVariant: t.variants.faq,
       data: {
         title: "Frequently Asked Questions",
+        subtitle: "",
         layout: "accordion",
         allowMultiple: false,
-        items: content.faqItems.map((f, i) => ({ id: uid("faq-item", i), question: f.q, answer: f.a })),
+        items: t.faq.map((f) => ({
+          id: f.id,
+          question: f.question,
+          answer: f.answer,
+        })),
       },
-    });
+    } as Block);
   }
+
+  // CTA
+  blocks.push({
+    ...BASE_BLOCK,
+    id: uid("cta"),
+    type: "cta",
+    order: order++,
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    background: t.images.cta
+      ? { type: "image", imageUrl: t.images.cta.url, imageOverlay: t.palette.primary, imageOverlayOpacity: 0.7 }
+      : { type: "gradient", gradient: `linear-gradient(135deg, ${t.palette.primary}, ${t.palette.secondary})` },
+    templateVariant: t.variants.cta,
+    data: {
+      title: `Ready to Get Started?`,
+      description: t.tagline,
+      primaryButton: { label: t.heroCTA, url: "#contact" },
+      secondaryButton: { label: "Learn More", url: "#services" },
+      layout: "centered",
+    },
+  } as Block);
 
   // Contact
   blocks.push({
     ...BASE_BLOCK,
-    id: uid("contact", order),
+    id: uid("contact"),
     type: "contact",
     order: order++,
     data: {
       title: "Get In Touch",
-      subtitle: content.cta,
+      subtitle: t.heroCTA,
       layout: "split",
       showMap: false,
       showContactInfo: true,
-      phone: content.phone,
-      email: content.email,
-      address: content.address,
+      phone: t.phone,
+      email: t.email,
+      address: t.address,
       fields: [
         { id: "field-name", label: "Full Name", type: "text", required: true },
-        { id: "field-email", label: "Email", type: "email", required: true },
-        { id: "field-phone", label: "Phone", type: "tel", required: false },
+        { id: "field-email", label: "Email Address", type: "email", required: true },
+        { id: "field-phone", label: "Phone Number", type: "tel", required: false },
         { id: "field-msg", label: "Message", type: "textarea", required: true },
       ],
       submitLabel: "Send Message",
-      successMessage: "Thanks! We'll be in touch soon.",
+      successMessage: "Thanks! We'll be in touch shortly.",
+      recipientEmail: t.email,
     },
-  });
+  } as Block);
 
   return blocks;
 }
@@ -364,7 +488,6 @@ function buildHomePageBlocks(content: TemplateContent, template: Template) {
 async function logImport(
   supabase: SupabaseClient,
   tenantId: string,
-  templateId: string,
   templateSlug: string,
   mode: "theme" | "full",
 ) {

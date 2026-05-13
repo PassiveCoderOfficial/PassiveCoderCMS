@@ -69,6 +69,8 @@ export type BlockBase = {
   background: BlockBackground;
   className?: string;
   animation?: "none" | "fade" | "slide-up" | "slide-left" | "zoom";
+  // Template identity — controls which visual variant renders
+  templateVariant?: string;
 };
 
 export type BlockBackground = {
@@ -94,6 +96,9 @@ export type HeroBlockProps = BlockBase & {
     secondaryButton?: { label: string; url: string; variant: "primary" | "secondary" | "outline" };
     imageUrl?: string;
     imageAlt?: string;
+    videoUrl?: string;
+    overlayOpacity?: number;
+    accentColor?: string;
     typography: { titleSize: string; titleColor: string; subtitleColor: string; descColor: string };
   };
 };
