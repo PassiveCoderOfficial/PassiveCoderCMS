@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/client";
+import { loginAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +32,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,19 +55,12 @@ export function LoginForm() {
   const onLogin = async (values: LoginValues) => {
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
-      password: values.password,
-    });
-    if (error) {
-      setError(ERROR_MESSAGES[error.message] ?? error.message);
-      setLoading(false);
-      return;
-    }
     const redirectTo = searchParams.get("redirect") ?? "/dashboard";
-    router.push(redirectTo);
-    router.refresh();
+    const result = await loginAction(values.email, values.password, redirectTo);
+    if (result?.error) {
+      setError(ERROR_MESSAGES[result.error] ?? result.error);
+      setLoading(false);
+    }
   };
 
   const onReset = async (values: ResetValues) => {
