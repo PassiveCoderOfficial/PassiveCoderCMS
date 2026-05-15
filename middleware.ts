@@ -36,7 +36,7 @@ async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isAdminRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  const isAdminRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/") || pathname === "/super-admin" || pathname.startsWith("/super-admin/");
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
 
   // Capture ?ref= param and store as persistent cookie (last-ref-wins: always overwrite)
