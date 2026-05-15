@@ -4,7 +4,7 @@ import SuperAdminSidebar from "@/components/super-admin/sidebar";
 
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireSuperAdmin();
-  if (!user) redirect("/login?reason=unauthorized");
+  if (!user) redirect("/login?error=unauthorized");
 
   return (
     <div className="flex h-screen bg-gray-950 text-gray-100">
