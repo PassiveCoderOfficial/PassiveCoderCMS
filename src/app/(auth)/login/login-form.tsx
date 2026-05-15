@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,6 +33,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,11 +58,13 @@ export function LoginForm() {
     setLoading(true);
     setError(null);
     const redirectTo = searchParams.get("redirect") ?? "/dashboard";
-    const result = await loginAction(values.email, values.password, redirectTo);
+    const result = await loginAction(values.email, values.password);
     if (result?.error) {
       setError(ERROR_MESSAGES[result.error] ?? result.error);
       setLoading(false);
+      return;
     }
+    router.push(redirectTo);
   };
 
   const onReset = async (values: ResetValues) => {
