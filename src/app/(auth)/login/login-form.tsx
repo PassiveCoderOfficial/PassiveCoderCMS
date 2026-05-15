@@ -15,7 +15,7 @@ import { Loader2, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const resetSchema = z.object({

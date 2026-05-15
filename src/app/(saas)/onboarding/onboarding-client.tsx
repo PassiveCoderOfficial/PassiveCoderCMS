@@ -67,6 +67,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
 
   async function handleSignup() {
     if (!email || !password) { toast.error("Email and password required"); return; }
+    if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -109,7 +110,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
         )}
         <div className="space-y-1.5">
           <Label>Password</Label>
-          <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" className="h-11"
+          <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" className="h-11"
             onKeyDown={e => e.key === "Enter" && (mode === "signup" ? handleSignup() : handleLogin())} />
         </div>
       </div>
