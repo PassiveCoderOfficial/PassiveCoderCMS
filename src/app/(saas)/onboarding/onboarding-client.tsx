@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -58,7 +58,8 @@ function StepBar({ current }: { current: number }) {
 // ─── Auth gate ────────────────────────────────────────────────────────────────
 
 function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => void }) {
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -837,7 +838,8 @@ function Step6({
 
 export default function OnboardingClient() {
   const params = useSearchParams();
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [authChecked, setAuthChecked] = useState(false);
   const [authedUser, setAuthedUser] = useState<{ id: string; email: string } | null>(null);
   const [step, setStep] = useState(0);
@@ -851,8 +853,13 @@ export default function OnboardingClient() {
   const referralCode = params.get("ref") ?? undefined;
 
   useEffect(() => {
+    const timeout = setTimeout(() => setAuthChecked(true), 5000);
     supabase.auth.getUser().then(({ data: { user } }) => {
+      clearTimeout(timeout);
       if (user) setAuthedUser({ id: user.id, email: user.email ?? "" });
+      setAuthChecked(true);
+    }).catch(() => {
+      clearTimeout(timeout);
       setAuthChecked(true);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
