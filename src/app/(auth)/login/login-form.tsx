@@ -64,7 +64,9 @@ export function LoginForm() {
       setLoading(false);
       return;
     }
-    router.push(redirectTo);
+    // Hard navigation after login — ensures middleware re-evaluates with new session cookie
+    // rather than replaying a cached RSC redirect from before authentication.
+    window.location.href = redirectTo;
   };
 
   const onReset = async (values: ResetValues) => {
