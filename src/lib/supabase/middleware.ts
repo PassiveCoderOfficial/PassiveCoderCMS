@@ -25,24 +25,28 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+  // Use getSession() in middleware — reads JWT from cookie, no network call.
+  // Layout uses getUser() (network) for security. Middleware just needs to know
+  // if a session token exists to route the request correctly.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
   const isAdminRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
 
-  if (isAdminRoute && !user) {
+  if (isAdminRoute && !session) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Don't redirect away from /login if there's an error param — let the page render
-  if (isAuthRoute && user && !request.nextUrl.searchParams.get("error")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // Respect ?redirect= param so users land on their intended page after login
+  if (isAuthRoute && session && !request.nextUrl.searchParams.get("error")) {
+    const redirectTo = request.nextUrl.searchParams.get("redirect") ?? "/dashboard";
+    return NextResponse.redirect(new URL(redirectTo, request.url));
   }
 
   return supabaseResponse;
