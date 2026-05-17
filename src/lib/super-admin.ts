@@ -23,8 +23,13 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
 
 export async function requireSuperAdmin() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  let { data: { user } } = await supabase.auth.getUser();
+  // Fall back to session if getUser() network call fails
+  if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
+    user = session.user;
+  }
   const ok = await isSuperAdmin(user.id);
   return ok ? user : null;
 }

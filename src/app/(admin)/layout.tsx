@@ -10,8 +10,15 @@ import type { CMSUser } from "@/types/cms";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (!user || authError) redirect("/login");
+  // getUser() makes a network call — if Supabase is slow it returns null and triggers
+  // a redirect loop (middleware lets session through, layout bounces back). Fall back to
+  // getSession() (cookie-local, no network) if getUser() fails so navigation stays stable.
+  let { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) redirect("/login");
+    user = session.user;
+  }
 
   const adminClient = await createAdminClient();
 
@@ -29,7 +36,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  if (!profile) redirect("/login?error=unauthorized");
+  if (!profile) {
+    // PGRST116 = row not found = user has no profile = genuinely unauthorized
+    if (profileError?.code === "PGRST116" || !profileError) redirect("/login?error=unauthorized");
+    // Other DB error = transient, don't redirect (would cause middleware loop)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
+        <p className="text-red-400">Failed to load profile. Please refresh.</p>
+      </div>
+    );
+  }
 
   const { data: sa } = await adminClient
     .from("super_admins")
