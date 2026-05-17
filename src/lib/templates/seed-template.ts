@@ -167,18 +167,18 @@ export async function seedTemplate(
 
   // ── 8. Home page with variant-aware blocks ───────────────────────────────────
   const blocks = buildHomePageBlocks(template);
-  await supabase.from("pages").upsert(
-    {
-      tenant_id: tenantId,
-      title: template.siteName,
-      slug: "home",
-      status: "published",
-      blocks,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "tenant_id,slug" },
-  );
+  // Delete existing home page for this tenant first, then insert fresh.
+  // Avoids relying on a named unique constraint for upsert conflict resolution.
+  await supabase.from("pages").delete().eq("tenant_id", tenantId).eq("slug", "home");
+  await supabase.from("pages").insert({
+    tenant_id: tenantId,
+    title: template.siteName,
+    slug: "home",
+    status: "published",
+    blocks,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
 
   // ── 9. Log ───────────────────────────────────────────────────────────────────
   await logImport(supabase, tenantId, templateSlug, mode);
