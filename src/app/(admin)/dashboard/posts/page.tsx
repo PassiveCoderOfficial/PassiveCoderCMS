@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +8,13 @@ import { Plus, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export default async function PostsPage() {
+  const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
   const { data: posts } = await supabase
     .from("pages")
     .select("*")
     .eq("type", "post")
+    .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
   return (

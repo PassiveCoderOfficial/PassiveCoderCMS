@@ -52,6 +52,19 @@ export default function NewPostPage() {
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
+      // Resolve the user's tenant so the post is scoped (primary membership first).
+      const { data: membership } = await supabase
+        .from("tenant_members")
+        .select("tenant_id, is_primary")
+        .eq("user_id", user?.id ?? "")
+        .order("is_primary", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!membership?.tenant_id) {
+        toast.error("No tenant found for your account");
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from("pages")
         .insert({
@@ -64,6 +77,7 @@ export default function NewPostPage() {
           settings: { show_header: true, show_footer: true },
           seo: {},
           created_by: user?.id,
+          tenant_id: membership.tenant_id,
         })
         .select("id")
         .single();

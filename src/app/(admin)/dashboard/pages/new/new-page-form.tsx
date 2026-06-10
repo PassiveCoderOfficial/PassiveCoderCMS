@@ -24,7 +24,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function NewPageForm() {
+export function NewPageForm({ tenantId }: { tenantId: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +65,7 @@ export function NewPageForm() {
           settings: { show_header: true, show_footer: true },
           seo: {},
           created_by: user?.id,
+          tenant_id: tenantId,
         })
         .select("id")
         .single();

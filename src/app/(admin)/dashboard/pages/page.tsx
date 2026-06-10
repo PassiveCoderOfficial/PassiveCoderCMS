@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +9,13 @@ import { formatDateTime } from "@/lib/utils";
 import { PageActions } from "./page-actions";
 
 export default async function PagesListPage() {
+  const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
   const { data: pages } = await supabase
     .from("pages")
     .select("id, title, slug, type, status, created_at, updated_at, published_at")
     .eq("type", "page")
+    .eq("tenant_id", tenantId)
     .order("updated_at", { ascending: false });
 
   return (
