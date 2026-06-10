@@ -53,7 +53,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!sa && !["admin", "editor", "author", "agent"].includes(profile.role)) {
+  // Tenant membership (owner/admin/editor) is what grants dashboard access in
+  // SaaS multi-tenancy — NOT the global profiles.role. New site owners get
+  // profiles.role = "subscriber" but a tenant_members "owner" row, so gating on
+  // profiles.role alone locked every client out of their own dashboard.
+  const { data: memberships } = await adminClient
+    .from("tenant_members")
+    .select("tenant_id, role, is_primary, tenants(id, name, slug)")
+    .eq("user_id", user.id)
+    .order("is_primary", { ascending: false });
+
+  const hasTenantAccess = (memberships ?? []).some((m) =>
+    ["owner", "admin", "editor"].includes(m.role as string),
+  );
+
+  if (!sa && profile.role !== "agent" && !hasTenantAccess) {
     redirect("/login?error=unauthorized");
   }
 
@@ -90,12 +104,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       is_primary: t.id === activeTenantId,
     }));
   } else {
-    const { data: memberships } = await adminClient
-      .from("tenant_members")
-      .select("tenant_id, role, is_primary, tenants(id, name, slug)")
-      .eq("user_id", user.id)
-      .order("is_primary", { ascending: false });
-
     userSites = (memberships ?? []).map(m => {
       const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string } | null;
       return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: m.is_primary ?? false } : null;
