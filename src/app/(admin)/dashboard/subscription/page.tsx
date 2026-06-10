@@ -54,6 +54,7 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({});
   const [checkout, setCheckout] = useState<{ tenantId: string; plan: CheckoutPlan } | null>(null);
+  const [primaryTenantId, setPrimaryTenantId] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -82,6 +83,7 @@ export default function SubscriptionPage() {
       setPaymentConfig((cfg as PaymentConfig) ?? {});
 
       if (!memberships?.length) { setLoading(false); return; }
+      setPrimaryTenantId(memberships[0].tenant_id);
       const { data } = await supabase
         .from("subscriptions")
         .select("*, tenants(name, slug)")
@@ -141,7 +143,11 @@ export default function SubscriptionPage() {
       )}
 
       {subs.length === 0 ? (
-        <NoSubscription plans={plans} discountPct={discountPct} />
+        <NoSubscription
+          plans={plans}
+          discountPct={discountPct}
+          onChoose={primaryTenantId ? (plan) => setCheckout({ tenantId: primaryTenantId, plan }) : undefined}
+        />
       ) : (
         <div className="space-y-3">
           {subs.map(sub => (
@@ -289,7 +295,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
   );
 }
 
-function NoSubscription({ plans, discountPct }: { plans: Plan[]; discountPct: number }) {
+function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; discountPct: number; onChoose?: (plan: CheckoutPlan) => void }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border bg-muted/30 p-8 text-center space-y-3">
@@ -324,7 +330,13 @@ function NoSubscription({ plans, discountPct }: { plans: Plan[]; discountPct: nu
                   <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />{f}
                 </p>
               ))}
-              <Button size="sm" className="w-full" variant={plan.is_popular ? "default" : "outline"}>
+              <Button
+                size="sm"
+                className="w-full"
+                variant={plan.is_popular ? "default" : "outline"}
+                disabled={!onChoose || (plan.price_yearly ?? 0) <= 0}
+                onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, currency: plan.currency })}
+              >
                 Choose {plan.name}
               </Button>
             </div>
