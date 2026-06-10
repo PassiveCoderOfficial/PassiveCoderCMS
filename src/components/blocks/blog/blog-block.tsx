@@ -1,4 +1,5 @@
 import React from "react";
+import { headers } from "next/headers";
 import type { BlogBlockProps } from "@/types/cms";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -12,6 +13,7 @@ export async function BlogBlock({ block }: { block: BlogBlockProps }) {
   const { title, subtitle, displayCount, layout, columns, showExcerpt, showDate, showAuthor, showCategory, showReadMore, categoryFilter, viewAllUrl, viewAllLabel } = data;
 
   const supabase = await createClient();
+  const tenantId = (await headers()).get("x-tenant-id");
   let query = supabase
     .from("pages")
     .select("id, title, slug, excerpt, featured_image, published_at, created_at")
@@ -19,6 +21,7 @@ export async function BlogBlock({ block }: { block: BlogBlockProps }) {
     .eq("status", "published")
     .order("published_at", { ascending: false })
     .limit(displayCount);
+  if (tenantId) query = query.eq("tenant_id", tenantId);
 
   const { data: posts } = await query;
 

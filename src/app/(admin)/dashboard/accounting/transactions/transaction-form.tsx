@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +52,9 @@ export function TransactionForm() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.from("transactions").insert(values);
+      const tenantId = await getClientTenantId();
+      if (!tenantId) throw new Error("No tenant found for your account");
+      const { error } = await supabase.from("transactions").insert({ ...values, tenant_id: tenantId });
       if (error) throw error;
       toast.success("Transaction added");
       router.push("/dashboard/accounting/transactions");

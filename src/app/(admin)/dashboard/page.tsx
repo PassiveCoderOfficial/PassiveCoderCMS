@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, ShoppingBag, DollarSign, Users, TrendingUp, Package } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -6,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
+  const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
 
   const [
@@ -17,12 +19,12 @@ export default async function DashboardPage() {
     { data: recentOrders },
     { data: recentTransactions },
   ] = await Promise.all([
-    supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "page"),
-    supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "post"),
-    supabase.from("orders").select("*", { count: "exact", head: true }),
-    supabase.from("products").select("*", { count: "exact", head: true }),
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(5),
+    supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "page").eq("tenant_id", tenantId),
+    supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "post").eq("tenant_id", tenantId),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
+    supabase.from("products").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
+    supabase.from("tenant_members").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
+    supabase.from("orders").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
     supabase.from("transactions").select("*").order("created_at", { ascending: false }).limit(5),
   ]);
 

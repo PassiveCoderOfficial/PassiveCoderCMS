@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,9 +39,13 @@ export default function AccountsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    supabase.from("accounts").select("*").order("created_at").then(({ data }) => {
-      setAccounts(data ?? []);
-      setLoading(false);
+    getClientTenantId().then((tenantId) => {
+      let q = supabase.from("accounts").select("*").order("created_at");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => {
+        setAccounts(data ?? []);
+        setLoading(false);
+      });
     });
   }, []);
 
@@ -62,7 +67,9 @@ export default function AccountsPage() {
       setAccounts(prev => prev.map(a => a.id === editingId ? { ...a, ...payload } : a));
       setEditingId(null);
     } else {
-      const { data, error } = await supabase.from("accounts").insert(payload).select().single();
+      const tenantId = await getClientTenantId();
+      if (!tenantId) { toast.error("No tenant found for your account"); setSaving(false); return; }
+      const { data, error } = await supabase.from("accounts").insert({ ...payload, tenant_id: tenantId }).select().single();
       if (error) { toast.error(error.message); setSaving(false); return; }
       setAccounts(prev => [...prev, data as Account]);
       setAdding(false);

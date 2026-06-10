@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,10 +8,12 @@ import { Plus } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default async function TransactionsPage() {
+  const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
   const { data: transactions } = await supabase
     .from("transactions")
     .select("*")
+    .eq("tenant_id", tenantId)
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
 

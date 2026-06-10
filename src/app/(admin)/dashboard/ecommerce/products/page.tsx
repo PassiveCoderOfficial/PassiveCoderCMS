@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,10 +42,13 @@ export default function ProductsPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("products")
-      .select("id,name,slug,price,compare_price,status,stock_quantity,images,featured,created_at")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => { setProducts((data as Product[]) ?? []); setLoading(false); });
+    getClientTenantId().then((tenantId) => {
+      let q = supabase.from("products")
+        .select("id,name,slug,price,compare_price,status,stock_quantity,images,featured,created_at")
+        .order("created_at", { ascending: false });
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => { setProducts((data as Product[]) ?? []); setLoading(false); });
+    });
   }, []);
 
   async function toggleStatus(p: Product) {

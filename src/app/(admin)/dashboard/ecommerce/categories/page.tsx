@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,9 +34,13 @@ export default function CategoriesPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    supabase.from("categories").select("*").eq("type", "product").order("name").then(({ data }) => {
-      setCategories(data ?? []);
-      setLoading(false);
+    getClientTenantId().then((tenantId) => {
+      let q = supabase.from("categories").select("*").eq("type", "product").order("name");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => {
+        setCategories(data ?? []);
+        setLoading(false);
+      });
     });
   }, []);
 
@@ -55,7 +60,9 @@ export default function CategoriesPage() {
       setCategories(prev => prev.map(c => c.id === editingId ? { ...c, ...payload } : c));
       setEditingId(null);
     } else {
-      const { data, error } = await supabase.from("categories").insert(payload).select().single();
+      const tenantId = await getClientTenantId();
+      if (!tenantId) { toast.error("No tenant found for your account"); setSaving(false); return; }
+      const { data, error } = await supabase.from("categories").insert({ ...payload, tenant_id: tenantId }).select().single();
       if (error) { toast.error(error.message); setSaving(false); return; }
       setCategories(prev => [...prev, data as Category].sort((a, b) => a.name.localeCompare(b.name)));
       setAdding(false);

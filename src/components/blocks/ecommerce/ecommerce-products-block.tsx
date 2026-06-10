@@ -1,4 +1,5 @@
 import React from "react";
+import { headers } from "next/headers";
 import type { EcommerceProductsBlockProps } from "@/types/cms";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -12,15 +13,18 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
   const { title, displayCount, layout, columns, sortBy, showAddToCart } = data;
 
   const supabase = await createClient();
+  const tenantId = (await headers()).get("x-tenant-id");
   const orderMap = { latest: "created_at", price_asc: "price", price_desc: "price", featured: "featured" } as const;
   const ascending = sortBy === "price_asc";
 
-  const { data: products } = await supabase
+  let productsQuery = supabase
     .from("products")
     .select("id, name, slug, price, compare_price, images, short_description")
     .eq("status", "active")
     .order(orderMap[sortBy] ?? "created_at", { ascending })
     .limit(displayCount);
+  if (tenantId) productsQuery = productsQuery.eq("tenant_id", tenantId);
+  const { data: products } = await productsQuery;
 
   const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-4" }[columns] ?? "md:grid-cols-4";
 

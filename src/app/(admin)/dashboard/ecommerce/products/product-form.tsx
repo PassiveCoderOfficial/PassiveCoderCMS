@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
 import { createSlug } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -301,7 +302,9 @@ export function ProductForm({ product }: ProductFormProps) {
         if (error) throw error;
         toast.success("Product updated");
       } else {
-        const { error } = await supabase.from("products").insert(payload);
+        const tenantId = await getClientTenantId();
+        if (!tenantId) throw new Error("No tenant found for your account");
+        const { error } = await supabase.from("products").insert({ ...payload, tenant_id: tenantId });
         if (error) throw error;
         toast.success("Product created");
         router.push("/dashboard/ecommerce/products");

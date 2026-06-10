@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -6,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function AccountingDashboard() {
+  const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
   const today = new Date().toISOString().split("T")[0];
   const monthStart = new Date(new Date().setDate(1)).toISOString().split("T")[0];
@@ -16,10 +18,10 @@ export default async function AccountingDashboard() {
     { data: recentTx },
     { data: todayTx },
   ] = await Promise.all([
-    supabase.from("transactions").select("amount").eq("type", "income").eq("status", "completed").gte("date", monthStart),
-    supabase.from("transactions").select("amount").eq("type", "expense").eq("status", "completed").gte("date", monthStart),
-    supabase.from("transactions").select("*").order("created_at", { ascending: false }).limit(10),
-    supabase.from("transactions").select("amount, type").eq("date", today).eq("status", "completed"),
+    supabase.from("transactions").select("amount").eq("tenant_id", tenantId).eq("type", "income").eq("status", "completed").gte("date", monthStart),
+    supabase.from("transactions").select("amount").eq("tenant_id", tenantId).eq("type", "expense").eq("status", "completed").gte("date", monthStart),
+    supabase.from("transactions").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(10),
+    supabase.from("transactions").select("amount, type").eq("tenant_id", tenantId).eq("date", today).eq("status", "completed"),
   ]);
 
   const totalIncome = monthlyIncome?.reduce((s, t) => s + Number(t.amount), 0) ?? 0;

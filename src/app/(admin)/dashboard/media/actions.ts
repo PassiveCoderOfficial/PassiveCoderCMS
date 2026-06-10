@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import { revalidatePath } from "next/cache";
 
 const BUCKET = "media";
@@ -24,6 +25,7 @@ export async function uploadMediaFile(formData: FormData) {
   const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
   const url = urlData.publicUrl;
 
+  const tenantId = await getCurrentTenantId();
   const { error: dbError } = await supabase.from("media").insert({
     name: safeName,
     original_name: file.name,
@@ -31,6 +33,7 @@ export async function uploadMediaFile(formData: FormData) {
     mime_type: file.type,
     size: file.size,
     storage_path: path,
+    tenant_id: tenantId,
   });
 
   if (dbError) return { error: dbError.message };
@@ -41,6 +44,12 @@ export async function uploadMediaFile(formData: FormData) {
 
 export async function deleteMediaFile(id: string, storagePath: string) {
   const supabase = await createAdminClient();
+  const tenantId = await getCurrentTenantId();
+
+  // Verify the media row belongs to the current tenant before touching storage
+  // (admin client bypasses RLS, so scope explicitly).
+  const { data: row } = await supabase.from("media").select("id").eq("id", id).eq("tenant_id", tenantId).maybeSingle();
+  if (!row) return { error: "Not found" };
 
   const { error: storageError } = await supabase.storage
     .from(BUCKET)
@@ -48,7 +57,7 @@ export async function deleteMediaFile(id: string, storagePath: string) {
 
   if (storageError) return { error: storageError.message };
 
-  const { error: dbError } = await supabase.from("media").delete().eq("id", id);
+  const { error: dbError } = await supabase.from("media").delete().eq("id", id).eq("tenant_id", tenantId);
   if (dbError) return { error: dbError.message };
 
   revalidatePath("/dashboard/media");
@@ -57,7 +66,8 @@ export async function deleteMediaFile(id: string, storagePath: string) {
 
 export async function updateMediaAlt(id: string, alt: string) {
   const supabase = await createAdminClient();
-  const { error } = await supabase.from("media").update({ alt }).eq("id", id);
+  const tenantId = await getCurrentTenantId();
+  const { error } = await supabase.from("media").update({ alt }).eq("id", id).eq("tenant_id", tenantId);
   if (error) return { error: error.message };
   revalidatePath("/dashboard/media");
   return { success: true };

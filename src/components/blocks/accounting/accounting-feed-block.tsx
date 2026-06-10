@@ -1,4 +1,5 @@
 import React from "react";
+import { headers } from "next/headers";
 import type { AccountingFeedBlockProps } from "@/types/cms";
 import { createClient } from "@/lib/supabase/server";
 import { Heart, DollarSign } from "lucide-react";
@@ -10,12 +11,14 @@ export async function AccountingFeedBlock({ block }: { block: AccountingFeedBloc
   const { title, displayCount, transactionType, showAmount, showDate, showMessage, layout } = data;
 
   const supabase = await createClient();
+  const tenantId = (await headers()).get("x-tenant-id");
   let query = supabase
     .from("transactions")
     .select("id, type, amount, currency, customer_name, message, date, description")
     .eq("is_public", true)
     .order("created_at", { ascending: false })
     .limit(displayCount);
+  if (tenantId) query = query.eq("tenant_id", tenantId);
 
   if (transactionType && transactionType !== "all") {
     query = query.eq("type", transactionType);

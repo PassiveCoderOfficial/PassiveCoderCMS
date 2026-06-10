@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,9 +48,12 @@ export default function OrdersPage() {
   });
 
   useEffect(() => {
-    supabase.from("orders").select("id,order_number,customer_name,customer_email,status,payment_status,total,created_at")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => { setOrders(data ?? []); setLoading(false); });
+    getClientTenantId().then((tenantId) => {
+      let q = supabase.from("orders").select("id,order_number,customer_name,customer_email,status,payment_status,total,created_at")
+        .order("created_at", { ascending: false });
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => { setOrders(data ?? []); setLoading(false); });
+    });
   }, []);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -57,9 +61,12 @@ export default function OrdersPage() {
   async function createOrder() {
     if (!form.customer_name.trim() || !form.customer_email.trim()) return;
     setSaving(true);
+    const tenantId = await getClientTenantId();
+    if (!tenantId) { setSaving(false); toast.error("No tenant found for your account"); return; }
     const order_number = `ORD-${Date.now().toString(36).toUpperCase()}`;
     const { data, error } = await supabase.from("orders").insert({
       order_number,
+      tenant_id: tenantId,
       customer_name: form.customer_name.trim(),
       customer_email: form.customer_email.trim(),
       status: form.status,
