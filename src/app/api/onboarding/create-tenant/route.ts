@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       referredByAgentId = agentRow?.id ?? null;
     }
 
-    const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
     const { data: created, error } = await supabase
       .from("tenants")
       .insert({ slug, name: siteName, owner_id: userId, status: "trial", trial_ends_at: trialEndsAt, referred_by_agent_id: referredByAgentId })
@@ -73,8 +73,8 @@ export async function POST(req: Request) {
     { onConflict: "tenant_id,user_id" },
   );
 
-  // Upsert subscription row with trial end date
-  const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  // Upsert subscription row with trial end date (14-day trial)
+  const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
   await supabase.from("subscriptions").upsert(
     { tenant_id: tenant.id, plan_id: planId ?? "standard", status: "trial", trial_ends_at: trialEnd },
     { onConflict: "tenant_id" },

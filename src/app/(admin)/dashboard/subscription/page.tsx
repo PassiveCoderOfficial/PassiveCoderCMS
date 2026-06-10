@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { CreditCard, Plus, ExternalLink, CheckCircle, Clock, AlertCircle, Loader2, Zap, Star, BadgePercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { CheckoutDialog, type CheckoutPlan, type PaymentConfig } from "./checkout-dialog";
 
 interface Subscription {
   id: string;
@@ -50,6 +52,15 @@ export default function SubscriptionPage() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({});
+  const [checkout, setCheckout] = useState<{ tenantId: string; plan: CheckoutPlan } | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("paid")) toast.success("Payment successful — your plan is now active!");
+    else if (params.get("cancelled")) toast.info("Payment cancelled.");
+    else if (params.get("error")) toast.error(`Payment issue: ${params.get("error")}`);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -57,16 +68,18 @@ export default function SubscriptionPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [{ data: memberships }, { data: agentRow }, { data: plansData }, { data: saRow }] = await Promise.all([
+      const [{ data: memberships }, { data: agentRow }, { data: plansData }, { data: saRow }, { data: cfg }] = await Promise.all([
         supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id),
         supabase.from("agents").select("id,referral_code,commission_rate,status").eq("user_id", user.id).maybeSingle(),
         supabase.from("plans").select("*").order("sort_order"),
         supabase.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
+        supabase.from("platform_settings").select("bkash_number,nagad_number,bank_details,manual_payment_instructions").eq("id", 1).maybeSingle(),
       ]);
 
       setAgent(agentRow);
       setPlans((plansData as Plan[]) ?? []);
       setIsSuperAdmin(!!saRow);
+      setPaymentConfig((cfg as PaymentConfig) ?? {});
 
       if (!memberships?.length) { setLoading(false); return; }
       const { data } = await supabase
@@ -131,9 +144,25 @@ export default function SubscriptionPage() {
         <NoSubscription plans={plans} discountPct={discountPct} />
       ) : (
         <div className="space-y-3">
-          {subs.map(sub => <SubCard key={sub.id} sub={sub} plans={plans} discountPct={discountPct} />)}
+          {subs.map(sub => (
+            <SubCard
+              key={sub.id}
+              sub={sub}
+              plans={plans}
+              discountPct={discountPct}
+              onChoose={(plan) => setCheckout({ tenantId: sub.tenant_id, plan })}
+            />
+          ))}
         </div>
       )}
+
+      <CheckoutDialog
+        open={!!checkout}
+        onOpenChange={(v) => { if (!v) setCheckout(null); }}
+        tenantId={checkout?.tenantId ?? ""}
+        plan={checkout?.plan ?? null}
+        paymentConfig={paymentConfig}
+      />
 
       <div className="rounded-xl border border-dashed p-6 text-center space-y-3">
         <Plus className="w-8 h-8 text-muted-foreground mx-auto" />
@@ -145,7 +174,7 @@ export default function SubscriptionPage() {
   );
 }
 
-function SubCard({ sub, plans, discountPct }: { sub: Subscription; plans: Plan[]; discountPct: number }) {
+function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; onChoose: (plan: CheckoutPlan) => void }) {
   const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.cancelled;
   const tenant = sub.tenants;
   const renewDate = sub.current_period_end ?? sub.trial_ends_at;
@@ -227,7 +256,7 @@ function SubCard({ sub, plans, discountPct }: { sub: Subscription; plans: Plan[]
         </div>
       )}
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-wrap gap-2 pt-1 items-center">
         {tenant?.slug && (
           <a href={`https://${tenant.slug}.passivecoder.com`} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="flex items-center gap-1.5">
@@ -235,10 +264,25 @@ function SubCard({ sub, plans, discountPct }: { sub: Subscription; plans: Plan[]
             </Button>
           </a>
         )}
-        {sub.status !== "active" && (
-          <Button size="sm" className="flex items-center gap-1.5">
-            <CreditCard className="w-3.5 h-3.5" /> Upgrade Plan
-          </Button>
+        {sub.status === "pending" && (
+          <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5" /> Payment awaiting verification
+          </span>
+        )}
+        {sub.status !== "active" && plans.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {plans.filter(p => (p.price_yearly ?? 0) > 0).map(p => (
+              <Button
+                key={p.id}
+                size="sm"
+                variant={p.is_popular ? "default" : "outline"}
+                className="flex items-center gap-1.5"
+                onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, currency: p.currency })}
+              >
+                <CreditCard className="w-3.5 h-3.5" /> {sub.status === "trial" ? "Subscribe" : "Pay"} — {p.name}
+              </Button>
+            ))}
+          </div>
         )}
       </div>
     </div>

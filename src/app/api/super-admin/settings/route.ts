@@ -28,9 +28,17 @@ export async function POST(req: Request) {
     default_commission_type?: "recurring" | "one_time";
     agent_signup_enabled?: boolean;
     agent_auto_approve?: boolean;
+    bkash_number?: string;
+    nagad_number?: string;
+    bank_details?: string;
+    manual_payment_instructions?: string;
   };
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+  for (const k of ["bkash_number", "nagad_number", "bank_details", "manual_payment_instructions"] as const) {
+    if (typeof body[k] === "string") update[k] = body[k];
+  }
 
   if (typeof body.default_commission_rate === "number") {
     if (body.default_commission_rate < 0 || body.default_commission_rate > 100)

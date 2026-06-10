@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight } from "lucide-react";
+import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone } from "lucide-react";
 
 interface PlatformSettings {
   default_commission_rate: number;
   default_commission_type: "recurring" | "one_time";
   agent_signup_enabled: boolean;
   agent_auto_approve: boolean;
+  bkash_number?: string | null;
+  nagad_number?: string | null;
+  bank_details?: string | null;
+  manual_payment_instructions?: string | null;
 }
 
 export default function SASettingsClient({ settings }: { settings: PlatformSettings | null }) {
@@ -16,6 +20,10 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [commissionType, setCommissionType] = useState<"recurring" | "one_time">(settings?.default_commission_type ?? "recurring");
   const [agentSignup, setAgentSignup] = useState(settings?.agent_signup_enabled !== false);
   const [autoApprove, setAutoApprove] = useState(settings?.agent_auto_approve !== false);
+  const [bkash, setBkash] = useState(settings?.bkash_number ?? "");
+  const [nagad, setNagad] = useState(settings?.nagad_number ?? "");
+  const [bankDetails, setBankDetails] = useState(settings?.bank_details ?? "");
+  const [manualNote, setManualNote] = useState(settings?.manual_payment_instructions ?? "");
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -30,6 +38,10 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
         default_commission_type: commissionType,
         agent_signup_enabled: agentSignup,
         agent_auto_approve: autoApprove,
+        bkash_number: bkash,
+        nagad_number: nagad,
+        bank_details: bankDetails,
+        manual_payment_instructions: manualNote,
       }),
     });
     setSaving(false);
@@ -116,6 +128,37 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
           label="Auto-approve new agents"
           desc="If on, agents get 'active' status immediately. If off, they get 'pending' and must be activated by SA."
         />
+      </div>
+
+      {/* Manual payment methods */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
+          <Smartphone className="w-4 h-4 text-green-400" />
+          <h2 className="font-semibold text-white text-sm">Manual Payment Methods</h2>
+        </div>
+        <p className="text-xs text-gray-500">Shown to clients at subscription checkout. Leave blank to hide a method.</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1.5">bKash number</label>
+            <input value={bkash} onChange={e => setBkash(e.target.value)} placeholder="01XXXXXXXXX"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1.5">Nagad number</label>
+            <input value={nagad} onChange={e => setNagad(e.target.value)} placeholder="01XXXXXXXXX"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs text-gray-400 block mb-1.5">Bank transfer details</label>
+          <textarea value={bankDetails} onChange={e => setBankDetails(e.target.value)} rows={3} placeholder="Bank name, account name, account number, branch/routing…"
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label className="text-xs text-gray-400 block mb-1.5">Extra instructions (optional)</label>
+          <textarea value={manualNote} onChange={e => setManualNote(e.target.value)} rows={2} placeholder="e.g. Send money as 'Payment', include your site name in reference."
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+        </div>
       </div>
 
       <button onClick={save} disabled={saving}
