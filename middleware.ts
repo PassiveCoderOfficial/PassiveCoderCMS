@@ -87,7 +87,7 @@ export async function middleware(request: NextRequest) {
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
       const res = await fetch(
-        `${supabaseUrl}/rest/v1/tenants?slug=eq.${encodeURIComponent(subdomain)}&select=id,status&limit=1`,
+        `${supabaseUrl}/rest/v1/tenants?slug=eq.${encodeURIComponent(subdomain)}&select=id,status,trial_ends_at&limit=1`,
         {
           headers: {
             apikey: serviceKey,
@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
         },
       );
 
-      const tenants: { id: string; status: string }[] = await res.json();
+      const tenants: { id: string; status: string; trial_ends_at: string | null }[] = await res.json();
       const tenant = tenants?.[0];
 
       if (!tenant) {
@@ -106,6 +106,16 @@ export async function middleware(request: NextRequest) {
 
       if (tenant.status === "suspended" || tenant.status === "cancelled") {
         return new NextResponse("This site is suspended", { status: 403 });
+      }
+
+      // Lazy trial-expiry enforcement: an unconverted trial past its end date is
+      // treated as suspended for the public site (owner must choose a plan).
+      if (
+        tenant.status === "trial" &&
+        tenant.trial_ends_at &&
+        new Date(tenant.trial_ends_at).getTime() < Date.now()
+      ) {
+        return new NextResponse("This site's trial has expired.", { status: 403 });
       }
 
       const requestWithTenant = new NextRequest(request, {
