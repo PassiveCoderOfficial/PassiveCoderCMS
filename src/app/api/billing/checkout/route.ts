@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         department: "billing",
         priority: "high",
         status: "open",
-        source: "billing",
+        source: "site_admin",
       })
       .select("id")
       .single();
