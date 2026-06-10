@@ -60,18 +60,19 @@ export async function POST(req: Request) {
       .single();
     if (ticketErr) return NextResponse.json({ error: ticketErr.message }, { status: 500 });
 
-    await admin.from("subscriptions").upsert(
+    const { error: subErr } = await admin.from("subscriptions").upsert(
       {
         tenant_id: tenantId,
         plan_id: planId,
         status: "pending",
-        payment_provider: method,
+        payment_provider: "manual",
         manual_ticket_id: ticket.id,
         amount_cents: amountCents,
         currency: "BDT",
       },
       { onConflict: "tenant_id" },
     );
+    if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
 
     return NextResponse.json({ ok: true, mode: "manual", ticketId: ticket.id });
   }
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
         customerEmail: user.email ?? undefined,
       });
 
-      await admin.from("subscriptions").upsert(
+      const { error: subErr } = await admin.from("subscriptions").upsert(
         {
           tenant_id: tenantId,
           plan_id: planId,
@@ -103,6 +104,7 @@ export async function POST(req: Request) {
         },
         { onConflict: "tenant_id" },
       );
+      if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
 
       return NextResponse.json({ ok: true, mode: "shurjopay", checkoutUrl });
     } catch (e) {
