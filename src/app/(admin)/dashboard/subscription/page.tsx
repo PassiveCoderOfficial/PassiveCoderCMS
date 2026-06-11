@@ -328,12 +328,18 @@ function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; disco
               )}
               <p className="font-bold">{plan.name}</p>
               <div>
-                <p className="text-2xl font-black">
-                  {plan.currency} {discountPct > 0 ? (plan.price_yearly * (1 - discountPct / 100)).toFixed(2) : plan.price_yearly.toFixed(2)}
-                  <span className="text-sm font-normal text-muted-foreground">/yr</span>
-                </p>
-                {discountPct > 0 && (
-                  <p className="text-xs text-muted-foreground line-through">{plan.currency} {plan.price_yearly.toFixed(2)}</p>
+                {(plan.price_yearly ?? 0) > 0 ? (
+                  <>
+                    <p className="text-2xl font-black">
+                      {plan.currency} {discountPct > 0 ? (plan.price_yearly * (1 - discountPct / 100)).toFixed(2) : plan.price_yearly.toFixed(2)}
+                      <span className="text-sm font-normal text-muted-foreground">/yr</span>
+                    </p>
+                    {discountPct > 0 && (
+                      <p className="text-xs text-muted-foreground line-through">{plan.currency} {plan.price_yearly.toFixed(2)}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-2xl font-black">Custom pricing</p>
                 )}
               </div>
               {plan.features?.slice(0, 5).map((f, i) => (
@@ -341,15 +347,21 @@ function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; disco
                   <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />{f}
                 </p>
               ))}
-              <Button
-                size="sm"
-                className="w-full"
-                variant={plan.is_popular ? "default" : "outline"}
-                disabled={!onChoose || (plan.price_yearly ?? 0) <= 0}
-                onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, currency: plan.currency })}
-              >
-                Choose {plan.name}
-              </Button>
+              {(plan.price_yearly ?? 0) > 0 ? (
+                <Button
+                  size="sm"
+                  className="w-full"
+                  variant={plan.is_popular ? "default" : "outline"}
+                  disabled={!onChoose}
+                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, currency: plan.currency })}
+                >
+                  Choose {plan.name}
+                </Button>
+              ) : (
+                <Button size="sm" className="w-full" variant="outline" asChild>
+                  <a href="/contact">Contact Us</a>
+                </Button>
+              )}
             </div>
           ))}
         </div>
