@@ -39,7 +39,7 @@ export async function getCurrentTenantId(): Promise<string> {
       .maybeSingle();
 
     if (ownedTenant?.id) return ownedTenant.id;
-    redirect("/onboarding");
+    redirect("/super-admin");
   }
 
   // Regular user — subdomain context takes priority
