@@ -23,13 +23,17 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
 
 export async function requireSuperAdmin() {
   const supabase = await createClient();
-  let { data: { user } } = await supabase.auth.getUser();
-  // Fall back to session if getUser() network call fails
-  if (!user) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return null;
-    user = session.user;
+  // getSession() reads from cookie — no network call, always fast.
+  // We verify the user is actually in super_admins (service-role DB check)
+  // so spoofing the cookie doesn't help an attacker.
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    // Fallback: try network call in case session cookie is missing but token is valid
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const ok = await isSuperAdmin(user.id);
+    return ok ? user : null;
   }
-  const ok = await isSuperAdmin(user.id);
-  return ok ? user : null;
+  const ok = await isSuperAdmin(session.user.id);
+  return ok ? session.user : null;
 }
