@@ -21,7 +21,7 @@ interface SearchResult {
 }
 
 const MAX_ATTACH = 5;
-const supabase = createClient();
+const supabase = createClient(); // used only for storage uploads
 
 export default function NewSATicketPage() {
   const router = useRouter();
@@ -50,81 +50,23 @@ export default function NewSATicketPage() {
   });
 
   useEffect(() => {
-    supabase.from("support_departments").select("id,name,slug").eq("is_active", true).order("sort_order").then(({ data }) => {
-      const deps = data ?? [];
-      setDepts(deps);
-      if (deps.length) setForm(f => ({ ...f, department: deps[0].slug }));
-      setLoading(false);
-    });
+    fetch("/api/super-admin/tickets")
+      .then(r => r.json())
+      .then(({ depts: d }) => {
+        const deps = (d ?? []).filter((dept: { id: string }) => dept.id);
+        setDepts(deps);
+        if (deps.length) setForm(f => ({ ...f, department: deps[0].slug }));
+        setLoading(false);
+      });
   }, []);
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim() || q.length < 2) { setResults([]); return; }
     setSearching(true);
-
-    const qLike = `%${q}%`;
-
-    const [tenantRes, profileRes] = await Promise.all([
-      // Search tenants by name, slug, custom_domain, phone
-      supabase.from("tenants")
-        .select("id,name,slug,custom_domain,phone")
-        .or(`name.ilike.${qLike},slug.ilike.${qLike},custom_domain.ilike.${qLike},phone.ilike.${qLike}`)
-        .limit(8),
-      // Search profiles by name, email, phone
-      supabase.from("profiles")
-        .select("id,full_name,email,phone")
-        .or(`full_name.ilike.${qLike},email.ilike.${qLike},phone.ilike.${qLike}`)
-        .limit(8),
-    ]);
-
-    const combined: SearchResult[] = [];
-
-    // Tenant hits
-    for (const t of (tenantRes.data ?? [])) {
-      combined.push({
-        key: `t:${t.id}`,
-        tenant_id: t.id,
-        tenant_name: t.name,
-        tenant_slug: t.slug,
-        tenant_domain: t.custom_domain ?? null,
-        user_id: null,
-        user_email: null,
-        user_name: null,
-        phone: t.phone ?? null,
-      });
-    }
-
-    // Profile hits — enrich with tenant via owner membership
-    if ((profileRes.data ?? []).length > 0) {
-      const profileIds = (profileRes.data ?? []).map(p => p.id);
-      const { data: memberships } = await supabase
-        .from("tenant_members")
-        .select("user_id,tenant_id,role,tenants(id,name,slug,custom_domain)")
-        .in("user_id", profileIds)
-        .eq("role", "owner");
-
-      for (const p of (profileRes.data ?? [])) {
-        const membership = memberships?.find(m => m.user_id === p.id);
-        const t = (membership?.tenants as unknown) as { id: string; name: string; slug: string; custom_domain: string | null } | null ?? null;
-        // Skip if already have this tenant from above
-        const alreadyHasTenant = t && combined.some(c => c.tenant_id === t.id);
-        if (alreadyHasTenant) continue;
-        combined.push({
-          key: `p:${p.id}`,
-          tenant_id: t?.id ?? null,
-          tenant_name: t?.name ?? null,
-          tenant_slug: t?.slug ?? null,
-          tenant_domain: t?.custom_domain ?? null,
-          user_id: p.id,
-          user_email: p.email,
-          user_name: p.full_name,
-          phone: p.phone ?? null,
-        });
-      }
-    }
-
-    setResults(combined);
-    setSearching(false);
+    fetch(`/api/super-admin/search?q=${encodeURIComponent(q)}`)
+      .then(r => r.json())
+      .then(({ results: r }) => { setResults(r ?? []); setSearching(false); })
+      .catch(() => setSearching(false));
   }, []);
 
   useEffect(() => {

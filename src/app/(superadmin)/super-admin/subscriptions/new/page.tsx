@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CreditCard, Loader2, Check, X } from "lucide-react";
 
 interface Tenant { id: string; name: string; slug: string; }
 interface Plan { id: string; name: string; price_yearly: number; currency: string; }
-
-const supabase = createClient();
 
 export default function NewSubscriptionPage() {
   const router = useRouter();
@@ -31,10 +28,10 @@ export default function NewSubscriptionPage() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("tenants").select("id,name,slug").order("name"),
-      supabase.from("plans").select("id,name,price_yearly,currency").order("sort_order"),
-    ]).then(([{ data: t }, { data: p }]) => {
-      setTenants(t ?? []);
+      fetch("/api/super-admin/sites").then(r => r.json()),
+      fetch("/api/super-admin/plans").then(r => r.json()),
+    ]).then(([{ sites }, { plans: p }]) => {
+      setTenants((sites ?? []).sort((a: Tenant, b: Tenant) => a.name.localeCompare(b.name)));
       setPlans(p ?? []);
       setLoading(false);
     });
@@ -56,9 +53,13 @@ export default function NewSubscriptionPage() {
     if (form.trial_ends_at) payload.trial_ends_at = form.trial_ends_at;
     if (form.current_period_end) payload.current_period_end = form.current_period_end;
 
-    const { error } = await supabase.from("subscriptions").insert(payload);
+    const res = await fetch("/api/super-admin/subscriptions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d.error ?? "Failed"); return; }
     toast.success("Subscription created");
     router.push("/super-admin/subscriptions");
   }

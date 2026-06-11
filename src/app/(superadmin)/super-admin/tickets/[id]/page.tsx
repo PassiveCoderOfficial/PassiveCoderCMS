@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { TicketIcon, ArrowLeft, Loader2, Save } from "lucide-react";
@@ -26,8 +25,6 @@ interface Ticket {
 
 interface Dept { id: string; name: string; slug: string; }
 
-const supabase = createClient();
-
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -42,33 +39,30 @@ export default function TicketDetailPage() {
   const [internalNote, setInternalNote] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const [{ data: t }, { data: d }] = await Promise.all([
-        supabase.from("support_tickets").select("*").eq("id", id).single(),
-        supabase.from("support_departments").select("id,name,slug").order("sort_order"),
-      ]);
-      if (t) {
-        setTicket(t as Ticket);
-        setEditDept(t.department);
-        setEditStatus(t.status);
-        setEditPriority(t.priority);
-      }
-      setDepts(d ?? []);
-      setLoading(false);
-    })();
+    fetch(`/api/super-admin/tickets?id=${id}`)
+      .then(r => r.json())
+      .then(({ ticket: t, depts: d }) => {
+        if (t) {
+          setTicket(t as Ticket);
+          setEditDept(t.department);
+          setEditStatus(t.status);
+          setEditPriority(t.priority);
+        }
+        setDepts(d ?? []);
+        setLoading(false);
+      });
   }, [id]);
 
   async function save() {
     if (!ticket) return;
     setSaving(true);
-    const { error } = await supabase.from("support_tickets").update({
-      department: editDept,
-      status: editStatus,
-      priority: editPriority,
-      updated_at: new Date().toISOString(),
-    }).eq("id", id);
+    const res = await fetch("/api/super-admin/tickets", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, department: editDept, status: editStatus, priority: editPriority }),
+    });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d.error ?? "Failed"); return; }
     setTicket(prev => prev ? { ...prev, department: editDept, status: editStatus, priority: editPriority } : prev);
     toast.success("Ticket updated");
   }

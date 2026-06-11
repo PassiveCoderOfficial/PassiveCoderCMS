@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Zap, Search, Loader2, X, User, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -11,8 +10,6 @@ interface ProfileResult {
   full_name: string | null;
   email: string;
 }
-
-const supabase = createClient();
 
 function Field({
   label, value, onChange, type = "text", placeholder, required, helper,
@@ -64,13 +61,16 @@ export default function NewAgentPage() {
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim() || q.length < 2) { setSearchResults([]); return; }
     setSearching(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("id,full_name,email")
-      .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
-      .limit(8);
-    setSearchResults((data as ProfileResult[]) ?? []);
-    setSearching(false);
+    fetch(`/api/super-admin/search?q=${encodeURIComponent(q)}`)
+      .then(r => r.json())
+      .then(({ results: r }) => {
+        const profiles = (r ?? [])
+          .filter((x: { user_id: string | null }) => x.user_id)
+          .map((x: { user_id: string; user_name: string | null; user_email: string }) => ({ id: x.user_id, full_name: x.user_name, email: x.user_email }));
+        setSearchResults(profiles);
+        setSearching(false);
+      })
+      .catch(() => setSearching(false));
   }, []);
 
   useEffect(() => {

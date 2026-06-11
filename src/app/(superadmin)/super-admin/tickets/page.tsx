@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { TicketIcon, Plus, Loader2 } from "lucide-react";
 
@@ -27,7 +26,6 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "bg-gray-800 text-gray-500",
 };
 
-const supabase = createClient();
 const STATUSES = ["", "open", "in_progress", "waiting", "resolved", "closed"];
 
 export default function TicketsPage() {
@@ -38,17 +36,13 @@ export default function TicketsPage() {
   const [deptFilter, setDeptFilter] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const [{ data: t }, { data: d }] = await Promise.all([
-        supabase.from("support_tickets")
-          .select("id,subject,department,priority,status,guest_name,guest_email,created_at,tenant_id")
-          .order("created_at", { ascending: false }).limit(200),
-        supabase.from("support_departments").select("id,name,slug").order("sort_order"),
-      ]);
-      setTickets(t ?? []);
-      setDepts(d ?? []);
-      setLoading(false);
-    })();
+    fetch("/api/super-admin/tickets")
+      .then(r => r.json())
+      .then(({ tickets: t, depts: d }) => {
+        setTickets(t ?? []);
+        setDepts(d ?? []);
+        setLoading(false);
+      });
   }, []);
 
   const filtered = tickets.filter(t =>

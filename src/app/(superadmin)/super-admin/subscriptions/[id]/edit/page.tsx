@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { CreditCard, Loader2, Check, X, Clock, Plus } from "lucide-react";
@@ -13,8 +12,6 @@ interface Sub {
   tenants: { name: string; slug: string } | null;
 }
 interface Plan { id: string; name: string; price_yearly: number; currency: string; }
-
-const supabase = createClient();
 
 function toDateInput(iso: string | null) {
   if (!iso) return "";
@@ -35,25 +32,24 @@ export default function EditSubscriptionPage() {
   });
 
   useEffect(() => {
-    Promise.all([
-      supabase.from("subscriptions").select("*, tenants(name,slug)").eq("id", id).maybeSingle(),
-      supabase.from("plans").select("id,name,price_yearly,currency").order("sort_order"),
-    ]).then(([{ data: s }, { data: p }]) => {
-      if (s) {
-        setSub(s as Sub);
-        setForm({
-          plan_id: s.plan_id ?? "",
-          status: s.status ?? "trial",
-          payment_provider: s.payment_provider ?? "",
-          amount_cents: s.amount_cents ? (s.amount_cents / 100).toString() : "",
-          currency: s.currency ?? "USD",
-          trial_ends_at: toDateInput(s.trial_ends_at),
-          current_period_end: toDateInput(s.current_period_end),
-        });
-      }
-      setPlans(p ?? []);
-      setLoading(false);
-    });
+    fetch(`/api/super-admin/subscriptions?id=${id}`)
+      .then(r => r.json())
+      .then(({ subscription: s, plans: p }) => {
+        if (s) {
+          setSub(s as Sub);
+          setForm({
+            plan_id: s.plan_id ?? "",
+            status: s.status ?? "trial",
+            payment_provider: s.payment_provider ?? "",
+            amount_cents: s.amount_cents ? (s.amount_cents / 100).toString() : "",
+            currency: s.currency ?? "USD",
+            trial_ends_at: toDateInput(s.trial_ends_at),
+            current_period_end: toDateInput(s.current_period_end),
+          });
+        }
+        setPlans(p ?? []);
+        setLoading(false);
+      });
   }, [id]);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -82,20 +78,13 @@ export default function EditSubscriptionPage() {
     payload.trial_ends_at = form.trial_ends_at ? new Date(form.trial_ends_at).toISOString() : null;
     payload.current_period_end = form.current_period_end ? new Date(form.current_period_end).toISOString() : null;
 
-    const { error: subErr } = await supabase.from("subscriptions").update(payload).eq("id", id);
-
-    // Sync tenant status
-    if (sub?.tenant_id) {
-      const tenantStatus = form.status === "active" ? "active"
-        : form.status === "trial" ? "trial"
-        : form.status === "cancelled" ? "cancelled"
-        : form.status === "expired" ? "suspended"
-        : "suspended";
-      await supabase.from("tenants").update({ status: tenantStatus, trial_ends_at: payload.trial_ends_at }).eq("id", sub.tenant_id);
-    }
-
+    const res = await fetch("/api/super-admin/subscriptions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...payload }),
+    });
     setSaving(false);
-    if (subErr) { toast.error(subErr.message); return; }
+    if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d.error ?? "Failed"); return; }
     toast.success("Subscription updated");
     router.push("/super-admin/subscriptions");
   }

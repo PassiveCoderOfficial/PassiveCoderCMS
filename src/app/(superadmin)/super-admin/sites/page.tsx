@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Globe, ExternalLink, Search, Trash2, Loader2, AlertTriangle, X, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -142,13 +141,9 @@ export default function AllSitesPage() {
   const [deletingSite, setDeletingSite] = useState<Site | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("tenants")
-      .select("id,name,slug,status,custom_domain,domain_status,created_at,onboarding_completed")
-      .order("created_at", { ascending: false })
-      .limit(200)
-      .then(({ data }) => { setSites((data as Site[]) ?? []); setLoading(false); });
+    fetch("/api/super-admin/sites")
+      .then(r => r.json())
+      .then(({ sites }) => { setSites((sites as Site[]) ?? []); setLoading(false); });
   }, []);
 
   const filtered = sites.filter(s => {

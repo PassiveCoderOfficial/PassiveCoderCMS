@@ -11,6 +11,44 @@ async function authed() {
   return { error: null, supabase };
 }
 
+export async function GET(req: Request) {
+  const { error, supabase } = await authed();
+  if (error) return error;
+
+  const id = new URL(req.url).searchParams.get("id");
+
+  const [ticketsResult, { data: depts }] = await Promise.all([
+    id
+      ? supabase!.from("support_tickets").select("*").eq("id", id).maybeSingle()
+      : supabase!.from("support_tickets")
+          .select("id,subject,department,priority,status,guest_name,guest_email,created_at,tenant_id")
+          .order("created_at", { ascending: false }).limit(500),
+    supabase!.from("support_departments").select("id,name,slug").order("sort_order"),
+  ]);
+
+  if (id) {
+    return NextResponse.json({ ticket: ticketsResult.data ?? null, depts: depts ?? [] });
+  }
+  return NextResponse.json({ tickets: (ticketsResult as { data: unknown[] | null }).data ?? [], depts: depts ?? [] });
+}
+
+export async function PATCH(req: Request) {
+  const { error, supabase } = await authed();
+  if (error) return error;
+
+  const { id, department, status, priority } = await req.json();
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (department !== undefined) payload.department = department;
+  if (status !== undefined) payload.status = status;
+  if (priority !== undefined) payload.priority = priority;
+
+  const { error: dbErr } = await supabase!.from("support_tickets").update(payload).eq("id", id);
+  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
 export async function POST(req: Request) {
   const { error, supabase } = await authed();
   if (error) return error;
