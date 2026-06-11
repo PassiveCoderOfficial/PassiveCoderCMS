@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { loginAction } from "./actions";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,15 +57,31 @@ export function LoginForm() {
     setLoading(true);
     setError(null);
     const redirectTo = searchParams.get("redirect") ?? "/dashboard";
-    const result = await loginAction(values.email, values.password);
-    if (result?.error) {
-      setError(ERROR_MESSAGES[result.error] ?? result.error);
+
+    // Sign in via browser client — sets session in browser storage + cookies directly,
+    // avoiding Next.js server action Set-Cookie forwarding issues on Vercel edge.
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (error) {
+      setError(ERROR_MESSAGES[error.message] ?? error.message);
       setLoading(false);
       return;
     }
-    // Hard navigation after login — ensures middleware re-evaluates with new session cookie
-    // rather than replaying a cached RSC redirect from before authentication.
-    window.location.href = result?.redirect ?? redirectTo;
+
+    // Check SA status from the user's app_metadata (set by DB trigger or Supabase admin)
+    // Fallback: check via whoami API which now has browser cookies available
+    let dest = redirectTo;
+    if (data.user) {
+      const whoami = await fetch("/api/super-admin/whoami").then(r => r.json()).catch(() => null);
+      if (whoami?.saRow) dest = "/super-admin";
+    }
+
+    // Hard navigation — middleware picks up browser-set session cookies on next request
+    window.location.href = dest;
   };
 
   const onReset = async (values: ResetValues) => {
