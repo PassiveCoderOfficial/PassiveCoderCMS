@@ -10,6 +10,11 @@ const REF_COOKIE = "ref_code";
 const REF_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
 
 async function updateSession(request: NextRequest) {
+  // Inject pathname so server layouts can read it via headers()
+  const requestWithPathname = new NextRequest(request, {
+    headers: { "x-pathname": request.nextUrl.pathname },
+  });
+  request = requestWithPathname;
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

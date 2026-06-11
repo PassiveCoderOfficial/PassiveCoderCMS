@@ -55,9 +55,11 @@ export default function SubscriptionPage() {
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({});
   const [checkout, setCheckout] = useState<{ tenantId: string; plan: CheckoutPlan } | null>(null);
   const [primaryTenantId, setPrimaryTenantId] = useState<string | null>(null);
+  const [isSuspended, setIsSuspended] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    if (params.get("suspended")) setIsSuspended(true);
     if (params.get("paid")) toast.success("Payment successful — your plan is now active!");
     else if (params.get("cancelled")) toast.info("Payment cancelled.");
     else if (params.get("error")) toast.error(`Payment issue: ${params.get("error")}`);
@@ -101,6 +103,15 @@ export default function SubscriptionPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-3xl">
+      {isSuspended && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-red-700 dark:text-red-400">Your site has been suspended</p>
+            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">Your free trial has ended. Choose a plan below to reactivate your site.</p>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Subscription</h1>

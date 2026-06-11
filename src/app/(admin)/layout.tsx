@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
 import { AdminTopbar } from "@/components/admin/topbar/topbar";
@@ -69,6 +69,28 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!sa && profile.role !== "agent" && !hasTenantAccess) {
     redirect("/login?error=unauthorized");
+  }
+
+  // Enforce suspended subscriptions for regular tenants (not SA, not agents)
+  if (!sa && profile.role !== "agent" && hasTenantAccess) {
+    const reqHeaders = await headers();
+    const pathname = reqHeaders.get("x-invoke-path") ?? reqHeaders.get("x-pathname") ?? "";
+    if (!pathname.startsWith("/dashboard/subscription")) {
+      const primaryTenantId = (memberships ?? []).find(m => m.is_primary)?.tenant_id
+        ?? (memberships ?? [])[0]?.tenant_id;
+      if (primaryTenantId) {
+        const { data: sub } = await adminClient
+          .from("subscriptions")
+          .select("status")
+          .eq("tenant_id", primaryTenantId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (sub?.status === "suspended") {
+          redirect("/dashboard/subscription?suspended=1");
+        }
+      }
+    }
   }
 
   // Check if SA is impersonating a tenant
