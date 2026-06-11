@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 // Temporary diagnostic — remove after debugging SA auth issue
 export async function GET() {
+  const cookieStore = await cookies();
+  const allCookies = cookieStore.getAll().map(c => c.name);
+
   const supabase = await createClient();
 
   const sessionResult = await supabase.auth.getSession();
@@ -23,6 +27,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
+    cookieNames: allCookies,
     sessionUser: sessionUser ? { id: sessionUser.id, email: sessionUser.email } : null,
     getUser: getUser ? { id: getUser.id, email: getUser.email } : null,
     getUserErr,
