@@ -147,13 +147,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             <Edit3 className="w-3.5 h-3.5" />
             Site Admin
           </Link>
-          <Link
-            href="/api/auth/signout"
+          <button
+            onClick={() => { window.location.href = "/api/auth/signout"; }}
             title="Sign Out"
             className="p-2 rounded-lg text-gray-600 hover:bg-gray-800 hover:text-red-400 transition-colors shrink-0"
           >
             <LogOut className="w-3.5 h-3.5" />
-          </Link>
+          </button>
         </div>
       </div>
     </>
