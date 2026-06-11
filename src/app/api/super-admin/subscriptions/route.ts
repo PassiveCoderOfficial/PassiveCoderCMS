@@ -20,19 +20,26 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
+  const ticketId = searchParams.get("ticketId");
+
   const [plansResult, subsResult] = await Promise.all([
     supabase!.from("plans").select("id,name,price_yearly,currency").order("sort_order"),
     id
       ? supabase!.from("subscriptions").select("*, tenants(name,slug)").eq("id", id).maybeSingle()
-      : supabase!.from("subscriptions").select("*, tenants(name,slug)").order("created_at", { ascending: false }).limit(500),
+      : ticketId
+        ? supabase!.from("subscriptions").select("*, tenants(name,slug)").eq("manual_ticket_id", ticketId).maybeSingle()
+        : supabase!.from("subscriptions").select("*, tenants(name,slug)").order("created_at", { ascending: false }).limit(500),
   ]);
 
   const plans = (plansResult.data ?? []).map((p: { price_yearly: number } & Record<string, unknown>) => ({
     ...p,
-    price_yearly: p.price_yearly, // stored as integer cents — let client handle display
+    price_yearly: p.price_yearly,
   }));
 
   if (id) {
+    return NextResponse.json({ subscription: subsResult.data ?? null, plans });
+  }
+  if (ticketId) {
     return NextResponse.json({ subscription: subsResult.data ?? null, plans });
   }
   return NextResponse.json({ subscriptions: subsResult.data ?? [], plans });

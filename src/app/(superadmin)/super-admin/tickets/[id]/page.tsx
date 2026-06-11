@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { TicketIcon, ArrowLeft, Loader2, Save } from "lucide-react";
+import { TicketIcon, ArrowLeft, Loader2, Save, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 interface Ticket {
@@ -23,6 +23,8 @@ interface Ticket {
   updated_at: string;
 }
 
+interface PendingSub { id: string; plan_id: string; payment_provider: string; amount_cents: number; currency: string; }
+
 interface Dept { id: string; name: string; slug: string; }
 
 export default function TicketDetailPage() {
@@ -30,8 +32,10 @@ export default function TicketDetailPage() {
   const router = useRouter();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [depts, setDepts] = useState<Dept[]>([]);
+  const [pendingSub, setPendingSub] = useState<PendingSub | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [approving, setApproving] = useState(false);
 
   const [editDept, setEditDept] = useState("");
   const [editStatus, setEditStatus] = useState("");
@@ -47,6 +51,13 @@ export default function TicketDetailPage() {
           setEditDept(t.department);
           setEditStatus(t.status);
           setEditPriority(t.priority);
+          // Check for pending subscription linked to this ticket
+          fetch(`/api/super-admin/subscriptions?ticketId=${t.id}`)
+            .then(r => r.json())
+            .then(({ subscription }) => {
+              if (subscription?.status === "pending") setPendingSub(subscription as PendingSub);
+            })
+            .catch(() => {});
         }
         setDepts(d ?? []);
         setLoading(false);
@@ -65,6 +76,22 @@ export default function TicketDetailPage() {
     if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d.error ?? "Failed"); return; }
     setTicket(prev => prev ? { ...prev, department: editDept, status: editStatus, priority: editPriority } : prev);
     toast.success("Ticket updated");
+  }
+
+  async function approve() {
+    if (!pendingSub) return;
+    setApproving(true);
+    const res = await fetch("/api/super-admin/subscriptions/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscriptionId: pendingSub.id }),
+    });
+    setApproving(false);
+    if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d.error ?? "Approval failed"); return; }
+    setPendingSub(null);
+    setEditStatus("resolved");
+    setTicket(prev => prev ? { ...prev, status: "resolved" } : prev);
+    toast.success("Subscription approved — site is now active");
   }
 
   const deptLabel = (slug: string) => depts.find(d => d.slug === slug)?.name ?? slug;
@@ -113,6 +140,24 @@ export default function TicketDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Billing approval panel */}
+      {pendingSub && (
+        <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-blue-300 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" /> Pending Payment Approval
+          </h2>
+          <p className="text-xs text-blue-200/70">
+            Plan: <strong>{pendingSub.plan_id}</strong> · Provider: <strong>{pendingSub.payment_provider}</strong> ·
+            Amount: <strong>{(pendingSub.amount_cents / 100).toFixed(0)} {pendingSub.currency}</strong>
+          </p>
+          <button onClick={approve} disabled={approving}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+            {approving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+            Approve & Activate Site
+          </button>
+        </div>
+      )}
 
       {/* Management panel */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">

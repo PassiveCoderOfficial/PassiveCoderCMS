@@ -21,12 +21,14 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
   const STATUS_COLORS: Record<string, string> = {
     active: "bg-green-900/50 text-green-400",
     trial: "bg-amber-900/50 text-amber-400",
+    pending: "bg-blue-900/50 text-blue-400",
     past_due: "bg-red-900/50 text-red-400",
+    suspended: "bg-orange-900/50 text-orange-400",
     cancelled: "bg-gray-800 text-gray-400",
     expired: "bg-gray-800 text-gray-500",
   };
 
-  const STATUSES = ["", "trial", "active", "past_due", "cancelled", "expired"];
+  const STATUSES = ["", "trial", "active", "pending", "past_due", "suspended", "cancelled", "expired"];
 
   return (
     <div className="p-6 space-y-6">
@@ -74,7 +76,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
                   </td>
                   <td className="px-4 py-3 text-gray-400 capitalize">{sub.payment_provider ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-300">
-                    {sub.amount_cents ? `$${(sub.amount_cents / 100).toFixed(2)}` : "—"}
+                    {sub.amount_cents ? `${(sub.amount_cents / 100).toFixed(0)} ${sub.currency ?? "BDT"}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
                     {sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() :
