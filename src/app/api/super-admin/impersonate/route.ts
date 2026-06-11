@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { SA_VIEWING_COOKIE } from "@/lib/tenant/current";
-import { getCookieDomain } from "@/lib/cookie-domain";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -26,7 +25,6 @@ export async function GET(req: Request) {
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 8, // 8 hours
-    domain: getCookieDomain(),
   });
   return res;
 }
