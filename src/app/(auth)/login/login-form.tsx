@@ -72,16 +72,9 @@ export function LoginForm() {
       return;
     }
 
-    // Check SA status from the user's app_metadata (set by DB trigger or Supabase admin)
-    // Fallback: check via whoami API which now has browser cookies available
-    let dest = redirectTo;
-    if (data.user) {
-      const whoami = await fetch("/api/super-admin/whoami").then(r => r.json()).catch(() => null);
-      if (whoami?.saRow) dest = "/super-admin";
-    }
-
-    // Hard navigation — middleware picks up browser-set session cookies on next request
-    window.location.href = dest;
+    // Hard navigation — middleware picks up browser-set session cookies on next request.
+    // SA users with no owned tenant are redirected to /super-admin by getCurrentTenantId().
+    window.location.href = redirectTo;
   };
 
   const onReset = async (values: ResetValues) => {
