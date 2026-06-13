@@ -213,6 +213,7 @@ export function TemplateDemoRenderer({ template, content }: Props) {
     secondaryColor: secondary,
     stat: content.stats[0],
     icon: content.services[0]?.icon,
+    image: content.about.image,
   };
   const pricingData = { pricing: content.pricing ?? [], primaryColor: primary, accentHex: accent, secondaryColor: secondary };
   const testimonialsData = { testimonials: content.testimonials, primaryColor: primary, accentHex: accent, secondaryColor: secondary };

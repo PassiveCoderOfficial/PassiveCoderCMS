@@ -57,7 +57,7 @@ export interface TemplateContent {
   navLinks: NavLink[];
   stats: Stat[];
   services: ServiceItem[];
-  about: { heading: string; body: string; highlights: string[] };
+  about: { heading: string; body: string; highlights: string[]; image?: string };
   pricing?: PricingTier[];
   team?: TeamMember[];
   testimonials: Testimonial[];
@@ -101,6 +101,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Dubai's Most Trusted Cleaning Company Since 2012",
       body: "CleanPro was founded on one simple belief: a clean space changes everything. Our trained, background-checked team uses eco-friendly products and professional-grade equipment to transform homes and offices across the city. Every job is backed by our 100% satisfaction guarantee — if you're not happy, we come back and re-clean for free.",
       highlights: ["Fully insured & bonded", "Eco-friendly products", "Background-checked staff", "Satisfaction guarantee", "Same-day availability"],
+      image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&fit=crop",
     },
     pricing: [
       {
@@ -176,6 +177,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Book in 60 Seconds. We Handle the Rest.",
       body: "Sparkle was built to make home cleaning genuinely effortless. Select your service, choose your time slot, and we handle everything else. Our trusted cleaners are fully vetted, insured, and trained to deliver a consistently excellent result — every single visit.",
       highlights: ["Online booking in 60 seconds", "Vetted & insured cleaners", "Same-day slots available", "Flexible rescheduling", "WhatsApp support"],
+      image: "https://images.unsplash.com/photo-1527515637462-cff94edd471c?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "Emma W.", location: "Bondi Beach", text: "Booked at 8am, had a cleaner by noon. The apartment was immaculate. I'm signing up for weekly from now on!", rating: 5, initials: "EW" },
@@ -218,6 +220,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "UAE's Trusted HVAC Specialists Since 2009",
       body: "CoolAir has been keeping homes and businesses comfortable across the UAE for over 15 years. Our team of DEWA-approved technicians is trained on all major brands and models. We carry full stock of genuine spare parts for fast, same-visit repairs — no waiting days for parts to arrive.",
       highlights: ["DEWA-approved technicians", "All major brands", "Genuine spare parts stocked", "2-hour emergency response", "3-year installation warranty"],
+      image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80&fit=crop",
     },
     pricing: [
       {
@@ -287,6 +290,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Two Decades. Hundreds of Projects. One Standard.",
       body: "BuildBold has been delivering exceptional construction projects across Singapore and the region since 2004. Our team of licensed engineers, architects and project managers brings precision, accountability and craftsmanship to every build — from a small shophouse renovation to a multi-storey commercial development.",
       highlights: ["BCA-licensed main contractor", "ISO 9001:2015 certified", "OHSAS 18001 safety certified", "20+ years track record", "700+ skilled tradesmen"],
+      image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&fit=crop",
     },
     team: [
       { name: "Raymond Loh", role: "Managing Director", bio: "Civil engineer with 25 years of project delivery experience across Southeast Asia.", initials: "RL", color: "#ca8a04" },
@@ -334,6 +338,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Where Luxury Meets Livability",
       body: "Luxe Interior is an award-winning London design studio with a reputation for creating spaces of exceptional quality and refined beauty. We collaborate closely with each client to understand how they live, work and entertain — translating those insights into bespoke interiors that are both visually stunning and genuinely livable. Our work has been featured in Architectural Digest, House & Garden and The World of Interiors.",
       highlights: ["Featured in Architectural Digest", "BIID registered designers", "Full project management", "Global sourcing network", "12 international design awards"],
+      image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "Lady C. Harrington", location: "Kensington, London", text: "Transforming our townhouse was a dream — every detail exceeded expectations. The studio has an extraordinary eye and made the whole process enjoyable.", rating: 5, initials: "CH" },
@@ -377,6 +382,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Born From a Love of Honest, Exceptional Food",
       body: "Savour was created by Chef Marcus Lim in 2014 with a singular vision: to serve food that genuinely moves people. Every dish on our menu starts with the best local and imported ingredients, treated with respect and prepared with technique. We believe a great meal should be as memorable as any experience in life — and we work hard to make every visit your best one yet.",
       highlights: ["Led by Michelin-trained Chef Marcus Lim", "Seasonal farm-to-table sourcing", "Award-winning wine cellar", "Vegetarian & vegan menus available", "Private dining for up to 30 guests"],
+      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "Nurul Ain", location: "Bangsar, KL", text: "The tasting menu was an absolute revelation. Every course was beautifully presented and tasted extraordinary. This is fine dining done perfectly.", rating: 5, initials: "NA" },
@@ -420,6 +426,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Riyadh's Premier Beauty Destination Since 2015",
       body: "Glow Salon was founded by master stylist Hessa Al-Rashidi with a clear mission: give every client an extraordinary experience from the moment they walk through the door. Our team of internationally trained stylists, colourists and therapists stays at the cutting edge of beauty trends while delivering personalised, caring service. Our salon is a sanctuary — a place to relax, be pampered and leave feeling genuinely transformed.",
       highlights: ["Internationally trained stylists", "L'Oréal & Dermalogica certified", "Ladies-only salon", "Bridal specialist", "Loyalty rewards program"],
+      image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80&fit=crop",
     },
     team: [
       { name: "Hessa Al-Rashidi", role: "Master Stylist & Founder", bio: "Trained in Paris and London. 15 years creating exceptional hair for clients across the Middle East.", initials: "HA", color: "#9d174d" },
@@ -467,6 +474,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Singapore's Most Serious Training Facility",
       body: "Iron Gym was built for people who are serious about their training. We invested in elite equipment, world-class coaches and a no-nonsense environment that lets you focus on one thing: getting better. Whether you're a first-time gym-goer or a competitive athlete, our facility and team have everything you need to reach your potential.",
       highlights: ["24/7 access for members", "Elite Eleiko & Life Fitness equipment", "18 certified personal trainers", "60+ group fitness classes weekly", "No joining fee this month"],
+      image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80&fit=crop",
     },
     pricing: [
       {
@@ -538,6 +546,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "A New York Firm Built on Results, Not Promises",
       body: "Lexis Law has represented clients in New York for over three decades. Our attorneys combine deep legal expertise with a genuine commitment to achieving the best possible outcome for every client. We take on the cases others won't, fight when settlement doesn't serve your interests, and communicate with you every step of the way. We don't measure success by billable hours — we measure it by results.",
       highlights: ["AV Preeminent rated by Martindale-Hubbell", "Former federal prosecutors on staff", "No fee unless we win (injury cases)", "Bilingual attorneys (English & Spanish)", "Free initial consultation"],
+      image: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=800&q=80&fit=crop",
     },
     team: [
       { name: "Michael Lexis", role: "Founding Partner", bio: "Yale Law graduate. 28 years of litigation experience including 3 Supreme Court appearances.", initials: "ML", color: "#1e3a5f" },
@@ -585,6 +594,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Dubai Real Estate Excellence, Delivered",
       body: "Prime Property is one of Dubai's leading real estate agencies, with a team of RERA-registered agents specialising in residential sales, commercial property and investment consultancy. Our in-depth knowledge of the Dubai market — from emerging communities to established premium districts — means we consistently match buyers with the right property at the right price. We work on relationships, not transactions.",
       highlights: ["RERA registered brokerage", "35+ specialist agents", "Multilingual team (10 languages)", "Direct developer partnerships", "24/7 client support"],
+      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "Alexandra N.", location: "Palm Jumeirah", text: "Found our dream villa in three weeks. The team understood exactly what we were looking for from the first meeting. Exceptional service.", rating: 5, initials: "AN" },
@@ -627,6 +637,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Singapore's Most Awarded Wedding Photographer",
       body: "LensCraft is the studio of award-winning photographer Lucas Chen. Over 8 years and more than 650 weddings, Lucas has built a reputation for capturing genuine emotion with beautiful, timeless imagery. His editorial-style approach blends documentary storytelling with artistic portraiture — the result is a wedding album that feels like a film, not a photo album.",
       highlights: ["Best Wedding Photographer SG 2022 & 2023", "Destination wedding specialist", "2 photographers per wedding", "International copyright licence", "3-week delivery guarantee"],
+      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80&fit=crop",
     },
     pricing: [
       {
@@ -690,6 +701,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "The Agency Behind 320+ Growth Stories",
       body: "Pixel Agency was founded in 2016 by digital marketing specialists who were frustrated by agencies that over-promised and under-delivered. We built our business on transparency, accountability and a genuine obsession with client results. Every campaign we run is data-driven, every decision is documented, and every month you get a clear picture of your ROI. No fluff. Just growth.",
       highlights: ["Google Premier Partner", "Meta Business Partner", "In-house creative team", "Dedicated account managers", "Monthly transparent reporting"],
+      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&fit=crop",
     },
     team: [
       { name: "Alex Morgan", role: "CEO & Head of Strategy", bio: "Former Google UK team. Built digital strategies for FTSE 100 brands before founding Pixel.", initials: "AM", color: "#6366f1" },
@@ -738,6 +750,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "A Global Firm. A Local Partner.",
       body: "Corporate One is a multinational professional services group headquartered in Chicago with offices across North America, Europe, the Middle East and Asia Pacific. For 30 years we've helped businesses navigate complexity, seize opportunity and build lasting competitive advantage. Our people are our product — and we invest in them relentlessly so they can deliver for you.",
       highlights: ["Presence in 28 countries", "4,200+ professionals", "Fortune 500 client roster", "30 years in business", "ISO 27001 certified"],
+      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop",
     },
     team: [
       { name: "Jonathan Pierce", role: "CEO & Chairman", bio: "Harvard MBA. 25 years in professional services. Former McKinsey partner.", initials: "JP", color: "#1e40af" },
@@ -785,6 +798,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "UAE's Premier Event Management Company",
       body: "EventFlow was born from a passion for creating moments that move people. Our team of event designers, planners and production specialists has delivered over 1,200 events across the UAE and beyond — from intimate desert dinners to 3,000-guest gala celebrations. We obsess over every detail so our clients can be fully present and enjoy their event as guests of honour.",
       highlights: ["1,200+ successful events", "50+ exclusive venue partners", "In-house décor & production team", "Multilingual planning team", "24/7 support on event day"],
+      image: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "H.H. Princess Amira", location: "Abu Dhabi", text: "EventFlow organised our family celebration with absolute precision and breathtaking beauty. They transformed our vision into something beyond imagination.", rating: 5, initials: "PA" },
@@ -827,6 +841,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "A True Urban Sanctuary in the Heart of Orchard",
       body: "Zen Spa is Singapore's most celebrated wellness destination. Housed in a serene 5,000sqft space on Orchard Boulevard, our spa combines ancient healing traditions with modern luxury to create transformative treatment experiences. Every therapist is trained to the highest international standard, and our treatment rooms are designed to transport you completely away from the pace of city life the moment you step inside.",
       highlights: ["5,000 sqft dedicated spa floor", "Elemis & ESPA certified therapists", "Separate male and female facilities", "Champagne welcome for couples", "Corporate wellness programmes"],
+      image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80&fit=crop",
     },
     pricing: [
       {
@@ -885,6 +900,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Independent. Fiduciary. Completely on Your Side.",
       body: "Wealth Advisor is an SEC-registered investment advisory firm serving high-net-worth individuals, families and business owners across the United States. As an independent, fee-only firm, we have no products to sell and no commissions to earn — our only incentive is your financial success. Our advisors hold CFP®, CFA® and other advanced designations, and our planning process is built around understanding your complete financial picture before making a single recommendation.",
       highlights: ["SEC registered, fee-only RIA", "All advisors are CFP® or CFA® certified", "Fiduciary duty 100% of the time", "Minimum $750,000 in investable assets", "Transparent, flat-fee pricing"],
+      image: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "Robert & Helen M.", location: "Greenwich, CT", text: "Switched to Wealth Advisor after 15 years at a wirehouse. The difference in transparency, accountability and performance is night and day.", rating: 5, initials: "RM" },
@@ -927,6 +943,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "600+ Projects. Zero Compromises.",
       body: "BuildRight has been transforming homes, offices and commercial spaces across Singapore since 2008. Our team handles every trade in-house — meaning tighter timelines, cleaner finishes and one point of accountability.",
       highlights: ["HDB licensed renovator", "All trades in-house", "3-year workmanship warranty", "Fixed-price contracts", "600+ completed projects"],
+      image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Studio / 1-Room", price: "From $12,000", features: ["Up to 45 sqm", "Carpentry & painting", "Tiling & waterproofing", "Electrical & lighting", "3-year warranty"], cta: "Get Quote" },
@@ -986,6 +1003,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Singapore's Trusted Painting Specialists Since 2010",
       body: "ColourCraft's team of 30 certified painters and decorators serves homeowners and businesses across Singapore using premium Nippon, Dulux and Jotun paints that are low-VOC and safe for families and pets.",
       highlights: ["BizSafe certified", "Low-VOC eco-friendly paints", "Furniture fully protected", "On-time project guarantee", "Free colour consultation"],
+      image: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "2–3 Room HDB", price: "From $380", features: ["All interior walls & ceilings", "1 primer + 2 finish coats", "Furniture covered & protected", "Nippon / Dulux paint included", "Same-week availability"], cta: "Get Quote" },
@@ -1044,6 +1062,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "NEA-Licensed. Eco-Certified. Trusted by 5,000+ Clients.",
       body: "PestShield has been protecting Singapore homes and commercial premises since 2009 using Integrated Pest Management methods — safe and effective solutions that eliminate pests at the source.",
       highlights: ["NEA licensed", "ISO 9001:2015 certified", "Eco-certified treatments", "Annual contracts available", "24/7 emergency callout"],
+      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "One-Time Treatment", price: "From $80", features: ["One pest type targeted", "Licensed technician", "Report & recommendations", "Follow-up advice", "30-day guarantee"], cta: "Book Now" },
@@ -1103,6 +1122,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "18 Years of Uniform Manufacturing Excellence",
       body: "UniformPro is a Bangladesh-based garment manufacturer with our own 40,000 sqft factory and 300 skilled machinists. We deliver high-quality uniforms at factory-direct prices to clients across Southeast Asia, the Middle East and beyond.",
       highlights: ["Own 40,000 sqft factory", "300 skilled machinists", "In-house embroidery & printing", "GOTS-certified fabrics available", "Export to 25+ countries"],
+      image: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Sample Order", price: "From $25/piece", features: ["Minimum 1 piece", "Any garment type", "Full customisation", "7–10 day turnaround", "Quality guaranteed"], cta: "Order Sample" },
@@ -1162,6 +1182,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "12 Years of Precision Glass & Aluminium Fabrication",
       body: "GlassLine is a Singapore-based glass and aluminium specialist with our own fabrication workshop and 25 skilled installers, working across residential, commercial and industrial sectors.",
       highlights: ["BCA registered contractor", "Own fabrication workshop", "SS 212 and BCA compliant", "1-year installation warranty", "Same-week survey & quotation"],
+      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Residential", price: "From $80/sqft", features: ["All glass types", "Standard aluminium profiles", "1-year warranty", "Free site survey", "Same-week start"], cta: "Get Quote" },
@@ -1222,6 +1243,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "8,000+ Installations. Certified. Trusted.",
       body: "CoolBreeze has been Singapore's trusted AC and HVAC partner since 2007. Our BCA-certified technicians handle everything from residential split units to full central ducted systems for commercial buildings. 200+ corporate maintenance contracts. 2-hour emergency response, day or night.",
       highlights: ["BCA & SPRING certified technicians", "Authorised Daikin, Mitsubishi, Panasonic installer", "2-hour emergency response guarantee", "200+ corporate maintenance contracts", "Energy audit & optimisation service"],
+      image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Basic Service", price: "From $40/unit", features: ["Filter & coil cleaning", "Drainage check", "Gas pressure check", "Performance test", "Service report"], cta: "Book Now" },
@@ -1280,6 +1302,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Licensed. Insured. 10,000+ Jobs Done.",
       body: "SparkyPro brings together Singapore's most experienced licensed electricians and plumbers. EMA-licensed and PUB-certified tradespeople delivering safe, code-compliant work — from a tripped breaker at midnight to a full commercial rewire. 60-minute emergency response. 12-month workmanship guarantee.",
       highlights: ["EMA Licensed Electrical Worker (LEW)", "PUB licensed plumbing contractor", "60-minute emergency response", "BCA and SS wiring standards compliant", "12-month workmanship guarantee"],
+      image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Residential", price: "From $80/job", features: ["All common repairs", "Licensed tradesperson", "Transparent pricing", "Same-day available", "12-month warranty"], cta: "Book Now" },
@@ -1338,6 +1361,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "30,000+ Satisfied Customers. Trusted Since 2014.",
       body: "FreshWash is Singapore's most convenient laundry and dry cleaning service. We collect, clean with professional-grade machines and premium detergents, and deliver fresh and folded to your door within 24–48 hours. Specialist dry cleaning for delicates, suits, curtains and wedding gowns.",
       highlights: ["Free pickup & delivery with every order", "24–48 hour standard turnaround", "Express 12-hour service available", "Eco-friendly, skin-safe detergents", "Specialist dry cleaning for delicates"],
+      image: "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Pay As You Go", price: "From $1.80/kg", features: ["Wash & fold by weight", "Dry cleaning per item", "Free pickup & delivery", "48-hour turnaround", "No minimum order"], cta: "Schedule Pickup" },
@@ -1396,6 +1420,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "5,000+ Homes & Offices Transformed",
       body: "CurtainStudio has created bespoke window treatments and soft furnishings for Singapore homes, offices and hospitality spaces since 2008. Over 2,000 exclusive fabrics sourced from Europe, Japan and Korea. Custom-made at our local workshop, installed by professional fitters.",
       highlights: ["2,000+ exclusive fabric selections", "Own workshop — all custom made locally", "Free home measuring & colour consultation", "5,000+ residential & commercial projects", "Motorised and smart blind systems available"],
+      image: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Residential", price: "From $80/panel", features: ["Free home measuring", "2,000+ fabric choices", "Custom made locally", "Professional installation", "1-year warranty"], cta: "Book Consultation" },
@@ -1455,6 +1480,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Singapore's Most Trusted Security Partner Since 2012",
       body: "ShieldGuard is an MOM-licensed security agency providing comprehensive guard, surveillance and access control solutions to over 350 sites across Singapore. Our officers are SPF-certified, receive ongoing training in first aid, crowd control and emergency response, and are backed by 24/7 operations support. We treat every client's premises as if it were our own.",
       highlights: ["MOM licensed security agency", "SPF-certified officers", "ISO 9001:2015 certified", "24/7 operations control room", "350+ secured sites"],
+      image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Basic", price: "$18/hr", period: "per guard", features: ["Uniformed static guard", "Hourly incident log", "Daily activity report", "Emergency callout included"], cta: "Get Started" },
@@ -1513,6 +1539,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Singapore's Premier Auto Detailing Studio",
       body: "ShineAuto was founded by detailing enthusiasts who were tired of mediocre car washes. We invest in professional-grade equipment, premium products and — most importantly — highly trained technicians who care about the result. Every vehicle that leaves our studio is treated as if it were our own. We're proud of our 4.9-star rating across 800+ Google reviews and our roster of returning members who trust us month after month.",
       highlights: ["4.9★ across 800+ Google reviews", "IDA-certified detailing specialists", "Gyeon & Kamikaze collection products", "Climate-controlled studio bays", "Collection & delivery available"],
+      image: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Wash & Vacuum", price: "$35", period: "per visit", features: ["Exterior hand wash", "Interior vacuum", "Dashboard wipe", "Tyre dressing", "Air freshener"], cta: "Book Now" },
@@ -1571,6 +1598,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "Singapore's Full-Service Catering & Events Partner",
       body: "Feast Events has fed tens of thousands of guests across Singapore and the Gulf — from intimate 20-person boardroom lunches to 5,000-guest gala dinners. Our team of 40 full-time culinary professionals, event coordinators and service staff brings the same precision and passion to every event, regardless of scale. We source fresh, seasonal ingredients daily and never compromise on food quality or presentation.",
       highlights: ["Singapore Food Agency licensed", "Halal certified kitchen", "2,400+ events delivered", "Team of 40+ culinary professionals", "Fresh daily sourcing"],
+      image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Seminar", price: "$28/pax", period: "minimum 30 pax", features: ["2 mains, 3 sides", "Soup & salad station", "Dessert & beverages", "Setup & teardown", "Disposable tableware"], cta: "Book Now" },
@@ -1629,6 +1657,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "A Community Clinic Built Around You",
       body: "MedPlus Clinic was established in 2016 to provide Clementi and the surrounding community with affordable, high-quality primary care. Our three doctors — trained at NUS and NTU's medical schools — take the time to listen, explain and personalise treatment plans. We accept Medisave, CHAS, Pioneer Generation and MediShield Life, ensuring our patients are never priced out of quality healthcare.",
       highlights: ["MOH registered clinic", "Medisave & CHAS accepted", "Chronic disease management", "Same-day appointments", "Open 7 days a week"],
+      image: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Consultation", price: "$35", period: "per visit", features: ["GP consultation", "1 basic medication", "Medical certificate", "Follow-up advice", "CHAS subsidised rates available"], cta: "Walk In" },
@@ -1687,6 +1716,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "20 Years of Turning Learners Into Confident Drivers",
       body: "DriveAcademy has been Singapore's most trusted private driving school since 2004. Our 25+ certified instructors combine patient, encouraging teaching styles with rigorous preparation for both the TP circuit and road tests. We maintain a 94% first-attempt pass rate — well above the national average — and back our intensive course with a free re-test lesson if you don't pass first time.",
       highlights: ["TP-registered driving school", "94% first-attempt pass rate", "25+ certified instructors", "Online theory portal included", "Free re-test lesson guarantee"],
+      image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Pay Per Lesson", price: "$65/lesson", period: "no commitment", features: ["Class 3A or 3 options", "Flexible slot booking", "WhatsApp scheduling", "Progress tracking app", "Pre-test mock session ($80 add-on)"], cta: "Book a Lesson" },
@@ -1745,6 +1775,7 @@ const CONTENT: Record<string, TemplateContent> = {
       heading: "20 Years. 50+ Countries. 1,000+ Products.",
       body: "TradeSupply International is a full-service wholesale trading and distribution company headquartered in Dubai's Jebel Ali Free Zone, with offices in Dhaka, Singapore and Kuala Lumpur. We source, import, warehouse and distribute goods across 50+ countries — competitive pricing, ISO 9001 certified, letters of credit accepted.",
       highlights: ["ISO 9001:2015 certified", "50+ countries served", "Offices in UAE, BD, SG, MY", "1,000+ product categories", "Letters of credit & trade finance available"],
+      image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80&fit=crop",
     },
     pricing: [
       { name: "Spot Order", price: "MOQ Pricing", features: ["No long-term commitment", "Competitive spot pricing", "Standard lead time", "QC inspection option", "LC / TT payment accepted"], cta: "Submit Enquiry" },
@@ -1837,6 +1868,7 @@ export function getTemplateContent(slug: string): TemplateContent {
       heading: "Quality, Reliability and Results",
       body: "We are a professional services company committed to delivering exceptional quality on every project. Our experienced team brings expertise, dedication and a genuine commitment to client satisfaction to everything we do.",
       highlights: ["Fully licensed & insured", "Experienced team", "Free consultation", "Satisfaction guaranteed"],
+      image: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop",
     },
     testimonials: [
       { name: "John D.", location: "Local Client", text: "Fantastic service from start to finish. Professional, punctual and the results were outstanding. Highly recommended.", rating: 5, initials: "JD" },
