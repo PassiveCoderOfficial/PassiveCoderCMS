@@ -893,6 +893,300 @@ const CONTENT: Record<string, TemplateContent> = {
     badges: ["SEC Registered", "Fee-Only", "Fiduciary", "$2.8B AUM"],
   },
 
+  // ── BuildRight ────────────────────────────────────────────────────────────────
+  "build-right": {
+    tagline: "Quality renovation work, on time and on budget",
+    phone: "+65 9123 4567",
+    email: "quote@buildright.sg",
+    address: "18 Boon Lay Way, #04-98 Tradehub 21, Singapore 609966",
+    cta: "Get a Free Quote",
+    ctaSecondary: "View Our Work",
+    navLinks: [
+      { label: "Services", href: "#services" },
+      { label: "Projects", href: "#gallery" },
+      { label: "About", href: "#about" },
+      { label: "Reviews", href: "#testimonials" },
+      { label: "Get Quote", href: "#contact" },
+    ],
+    stats: [
+      { value: "600+", label: "Projects Completed" },
+      { value: "15 yr", label: "In Business" },
+      { value: "4.9★", label: "HDB Review Score" },
+      { value: "3 yr", label: "Workmanship Warranty" },
+    ],
+    services: [
+      { name: "Full Home Renovation", desc: "Complete HDB or condo overhaul — carpentry, tiling, electrical, plumbing and painting. Turnkey delivery.", price: "From $18,000", icon: "🏠" },
+      { name: "Commercial Fitout", desc: "Office, retail, F&B and co-working spaces built to spec. We manage permits.", price: "Request Quote", icon: "🏢" },
+      { name: "Kitchen Remodel", desc: "Custom carpentry, hob, hood and sink installation. Full tiling and waterproofing.", price: "From $6,500", icon: "🍳" },
+      { name: "Bathroom Renovation", desc: "Waterproofing, tiling, sanitary fitting, mirror cabinet and lighting.", price: "From $4,200", icon: "🚿" },
+      { name: "Carpentry & Wardrobes", desc: "Full custom carpentry — platform beds, wardrobes, TV consoles. E0 board standard.", price: "From $1,800", icon: "🪵" },
+      { name: "Hacking & Demolition", desc: "Wall hacking, floor hacking and structural opening works. HDB-approved.", price: "From $800", icon: "⚒️" },
+    ],
+    about: {
+      heading: "600+ Projects. Zero Compromises.",
+      body: "BuildRight has been transforming homes, offices and commercial spaces across Singapore since 2008. Our team handles every trade in-house — meaning tighter timelines, cleaner finishes and one point of accountability.",
+      highlights: ["HDB licensed renovator", "All trades in-house", "3-year workmanship warranty", "Fixed-price contracts", "600+ completed projects"],
+    },
+    pricing: [
+      { name: "Studio / 1-Room", price: "From $12,000", features: ["Up to 45 sqm", "Carpentry & painting", "Tiling & waterproofing", "Electrical & lighting", "3-year warranty"], cta: "Get Quote" },
+      { name: "3–4 Room HDB", price: "From $25,000", features: ["90–100 sqm", "Full carpentry suite", "Kitchen & bathrooms", "All trades included", "3D design included", "3-year warranty"], highlight: true, cta: "Get Quote" },
+      { name: "5-Room / Condo", price: "From $40,000", features: ["110–130 sqm", "Luxury finishes option", "Smart home wiring", "Full carpentry & tiling", "Project manager assigned", "5-year warranty"], cta: "Get Quote" },
+    ],
+    team: [
+      { name: "Marcus Wong", role: "Founder & Project Director", bio: "15 years in renovation and construction. Personally oversees every project.", initials: "MW", color: "#ea580c" },
+      { name: "Ramesh Kumar", role: "Senior Site Manager", bio: "10 years managing renovation sites. Specialist in HDB compliance.", initials: "RK", color: "#c2410c" },
+      { name: "Wei Ling Tan", role: "Interior Design Lead", bio: "Trained interior designer. Brings your vision to life with 3D renders.", initials: "WL", color: "#ea580c" },
+    ],
+    testimonials: [
+      { name: "Daryl Tan", location: "Tampines", text: "Full renovation done in 28 days. Carpentry is solid, tiling is perfect. Exceptional team.", rating: 5, initials: "DT" },
+      { name: "Priya Nair", location: "Jurong East", text: "Fixed price and they stuck to it. Not a single surprise bill. Kitchen and bathrooms look magazine-worthy.", rating: 5, initials: "PN" },
+      { name: "Jason Lim", location: "Tanjong Pagar", text: "Fitted out our cafe in 3 weeks. BCA submissions handled, permits sorted, result looked exactly like the 3D render.", rating: 5, initials: "JL" },
+    ],
+    faqItems: [
+      { q: "How long does a full HDB renovation take?", a: "A 4-room HDB renovation typically takes 4–6 weeks from handover of keys." },
+      { q: "Do you handle HDB permit submissions?", a: "Yes. We handle all HDB renovation permit submissions on your behalf." },
+      { q: "Do you provide a fixed-price contract?", a: "Always. Our quotations are fully itemised and fixed. No hidden charges." },
+      { q: "What warranty do you provide?", a: "3-year workmanship warranty on all renovation works, 5-year on waterproofing." },
+    ],
+    galleryLabels: ["Living Room Before/After", "Kitchen Renovation", "Bathroom Remodel", "Bedroom Carpentry", "Office Fitout", "Cafe Build"],
+    badges: ["HDB Licensed", "Fixed-Price", "3-Year Warranty", "600+ Projects"],
+  },
+
+  // ── ColourCraft ───────────────────────────────────────────────────────────────
+  "colour-craft": {
+    tagline: "Professional painting that lasts",
+    phone: "+65 8800 1234",
+    email: "hello@colourcraft.sg",
+    address: "Serving all areas across Singapore",
+    cta: "Get Free Quote",
+    ctaSecondary: "See Our Work",
+    navLinks: [
+      { label: "Services", href: "#services" },
+      { label: "Gallery", href: "#gallery" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "About", href: "#about" },
+      { label: "Contact", href: "#contact" },
+    ],
+    stats: [
+      { value: "4,200+", label: "Rooms Painted" },
+      { value: "98%", label: "On-Time Completion" },
+      { value: "4.9★", label: "Google Rating" },
+      { value: "14 yr", label: "In Business" },
+    ],
+    services: [
+      { name: "Interior House Painting", desc: "Full interior repaint for HDB, condo or landed — walls, ceilings, doors and trim.", price: "From $380 (3-room)", icon: "🏠" },
+      { name: "Feature Wall Painting", desc: "Accent walls, geometric patterns, ombre effects and decorative finishes.", price: "From $180/wall", icon: "🎨" },
+      { name: "Exterior Painting", desc: "HDB block touch-up, landed exterior and metal gates. Weatherproof paint.", price: "From $800", icon: "🏗️" },
+      { name: "Commercial Repainting", desc: "Office, retail, restaurant repainting. Weekend and after-hours slots.", price: "Request Quote", icon: "🏢" },
+      { name: "Wallpaper Installation", desc: "Supply and install wallpaper, murals and vinyl wall decals.", price: "From $8/sqft", icon: "🖼️" },
+      { name: "Texture & Specialty Finishes", desc: "Sand texture, marble effect, lime wash and decorative wall coatings.", price: "From $12/sqft", icon: "✨" },
+    ],
+    about: {
+      heading: "Singapore's Trusted Painting Specialists Since 2010",
+      body: "ColourCraft's team of 30 certified painters and decorators serves homeowners and businesses across Singapore using premium Nippon, Dulux and Jotun paints that are low-VOC and safe for families and pets.",
+      highlights: ["BizSafe certified", "Low-VOC eco-friendly paints", "Furniture fully protected", "On-time project guarantee", "Free colour consultation"],
+    },
+    pricing: [
+      { name: "2–3 Room HDB", price: "From $380", features: ["All interior walls & ceilings", "1 primer + 2 finish coats", "Furniture covered & protected", "Nippon / Dulux paint included", "Same-week availability"], cta: "Get Quote" },
+      { name: "4–5 Room HDB", price: "From $580", features: ["All rooms including corridors", "Premium low-VOC paint", "Colour consultation included", "Feature wall option", "2-year paint warranty"], highlight: true, cta: "Get Quote" },
+      { name: "Condo / Landed", price: "From $900", features: ["Up to 160 sqm", "Multi-brand paint available", "Luxury finish options", "3D colour visualisation", "2-year warranty"], cta: "Get Quote" },
+    ],
+    team: [
+      { name: "Tony Lim", role: "Founder & Head Painter", bio: "14 years of painting mastery.", initials: "TL", color: "#7c3aed" },
+      { name: "David Chen", role: "Senior Colour Consultant", bio: "Trained interior designer turned colour specialist.", initials: "DC", color: "#a21caf" },
+      { name: "Siti Rahma", role: "Project Coordinator", bio: "Your single point of contact from quote to handover.", initials: "SR", color: "#7c3aed" },
+    ],
+    testimonials: [
+      { name: "Linda Goh", location: "Punggol", text: "Quoted in 24 hours, started next Monday, done in 2 days. My 5-room looks like a showflat.", rating: 5, initials: "LG" },
+      { name: "Ravi Sundaram", location: "Raffles Place", text: "Repainted our 3,000 sqft office over a weekend. Arrived Saturday 7am, done Sunday 6pm.", rating: 5, initials: "RS" },
+      { name: "Michelle Tan", location: "Interior Designer", text: "I recommend ColourCraft to all my clients. Colour mixing accuracy and finish quality is the best in Singapore.", rating: 5, initials: "MT" },
+    ],
+    faqItems: [
+      { q: "How long does it take to paint a 4-room HDB?", a: "Typically 1–2 days. We send the right number of painters for your unit size." },
+      { q: "Do I need to move my furniture?", a: "No. Our team covers all furniture and flooring with protective sheets before starting." },
+      { q: "Can I choose my own colours?", a: "Absolutely. We can match any colour from Nippon, Dulux, Jotun or your own chips." },
+    ],
+    galleryLabels: ["Living Room Transformation", "Bedroom Feature Wall", "Kitchen Repaint", "Open Plan Living", "Office Repaint", "Exterior Facade"],
+    badges: ["BizSafe Certified", "Free Consultation", "2-Year Warranty", "4.9★ Google"],
+  },
+
+  // ── PestShield ────────────────────────────────────────────────────────────────
+  "pest-shield": {
+    tagline: "Protecting homes and businesses from pests since 2009",
+    phone: "+65 6712 3456",
+    email: "book@pestshield.sg",
+    address: "12 Mandai Estate, #03-20, Singapore 729908",
+    cta: "Book a Treatment",
+    ctaSecondary: "Get Free Inspection",
+    navLinks: [
+      { label: "Services", href: "#services" },
+      { label: "Contracts", href: "#pricing" },
+      { label: "About", href: "#about" },
+      { label: "Reviews", href: "#testimonials" },
+      { label: "Book Now", href: "#contact" },
+    ],
+    stats: [
+      { value: "5,000+", label: "Properties Treated" },
+      { value: "15 yr", label: "In Business" },
+      { value: "100%", label: "NEA Compliant" },
+      { value: "4.8★", label: "Google Rating" },
+    ],
+    services: [
+      { name: "General Pest Control", desc: "Treatment for cockroaches, ants, flies and common household insects.", price: "From $80/treatment", icon: "🐛" },
+      { name: "Termite Treatment", desc: "Soil treatment, baiting systems and structural pre-treatment. 5-year warranty.", price: "From $350", icon: "🪲" },
+      { name: "Rodent Control", desc: "Rat and mouse elimination using tamper-resistant bait stations. Monthly monitoring.", price: "From $180", icon: "🐀" },
+      { name: "Bed Bug Treatment", desc: "Heat treatment and chemical residual treatment. 3-month warranty.", price: "From $280", icon: "🛏️" },
+      { name: "Mosquito Control & Fogging", desc: "ULV thermal fogging, larviciding and misting systems.", price: "From $120", icon: "🦟" },
+      { name: "Commercial Contracts", desc: "NEA-compliant annual pest management for F&B, hospitality and healthcare.", price: "From $800/year", icon: "🏢" },
+    ],
+    about: {
+      heading: "NEA-Licensed. Eco-Certified. Trusted by 5,000+ Clients.",
+      body: "PestShield has been protecting Singapore homes and commercial premises since 2009 using Integrated Pest Management methods — safe and effective solutions that eliminate pests at the source.",
+      highlights: ["NEA licensed", "ISO 9001:2015 certified", "Eco-certified treatments", "Annual contracts available", "24/7 emergency callout"],
+    },
+    pricing: [
+      { name: "One-Time Treatment", price: "From $80", features: ["One pest type targeted", "Licensed technician", "Report & recommendations", "Follow-up advice", "30-day guarantee"], cta: "Book Now" },
+      { name: "Quarterly Contract", price: "From $280/year", features: ["4 scheduled visits/year", "All common pests covered", "Between-visit callouts free", "NEA-compliant reporting", "Priority scheduling"], highlight: true, cta: "Get Contract Quote" },
+      { name: "Commercial Annual", price: "Custom", features: ["Unlimited treatments", "Monthly monitoring", "Emergency same-day callout", "Full NEA compliance docs", "Dedicated account manager"], cta: "Discuss Contract" },
+    ],
+    team: [
+      { name: "Alvin Koh", role: "Chief Pest Control Technician", bio: "NEA licensed with 15 years in the field.", initials: "AK", color: "#15803d" },
+      { name: "Hafiz Rahman", role: "Field Supervisor", bio: "Specialist in commercial accounts and heat treatment.", initials: "HR", color: "#166534" },
+      { name: "Grace Yeo", role: "Operations Manager", bio: "Ensures every client receives a follow-up report within 24 hours.", initials: "GY", color: "#15803d" },
+    ],
+    testimonials: [
+      { name: "Kevin Ong", location: "Clementi", text: "PestShield on annual contract for 4 years. Zero pest incidents, zero NEA warnings. Consistently pass inspections.", rating: 5, initials: "KO" },
+      { name: "Mrs. Lim", location: "Bishan", text: "Serious cockroach problem three other companies couldn't fix. PestShield did one treatment — haven't seen one since.", rating: 5, initials: "ML" },
+      { name: "Jason Park", location: "Marina Bay", text: "Manage 8 commercial units. PestShield handles all on one contract. Professional, thorough reports.", rating: 5, initials: "JP" },
+    ],
+    faqItems: [
+      { q: "Are your treatments safe for children and pets?", a: "Yes. We use EPA and NEA-approved formulations. Re-entry times are typically 1–4 hours." },
+      { q: "Do I need to vacate during treatment?", a: "Most general pest treatments: 1–2 hours. Bed bug heat treatment: 4–6 hours." },
+      { q: "How quickly can you respond?", a: "Same-day bookings for urgent cases. Standard residential within 24 hours." },
+      { q: "Do you provide NEA-compliant service reports?", a: "Yes. Every treatment includes a fully documented service report." },
+    ],
+    galleryLabels: ["Residential Treatment", "Kitchen Inspection", "Technician at Work", "Commercial Contract", "Termite Bait Station", "Fogging Operation"],
+    badges: ["NEA Licensed", "ISO 9001", "Eco-Certified", "24/7 Emergency"],
+  },
+
+  // ── UniformPro ────────────────────────────────────────────────────────────────
+  "uniform-pro": {
+    tagline: "Professional uniforms manufactured to your exact specification",
+    phone: "+880 1712 345678",
+    email: "orders@uniformpro.com.bd",
+    address: "Plot 24, BSCIC Industrial Estate, Tongi, Gazipur, Bangladesh",
+    cta: "Request a Quote",
+    ctaSecondary: "View Catalogue",
+    navLinks: [
+      { label: "Products", href: "#services" },
+      { label: "Gallery", href: "#gallery" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "About", href: "#about" },
+      { label: "Order Now", href: "#contact" },
+    ],
+    stats: [
+      { value: "2M+", label: "Garments Produced" },
+      { value: "25+", label: "Export Countries" },
+      { value: "18 yr", label: "In Business" },
+      { value: "300", label: "Skilled Staff" },
+    ],
+    services: [
+      { name: "Corporate Uniforms", desc: "Polo shirts, formal shirts, trousers and blazers with your logo. MOQ 20 pcs.", price: "From $8/piece", icon: "👔" },
+      { name: "F&B & Hospitality Wear", desc: "Chef coats, aprons, server uniforms. Stain-resistant and easy-care fabrics.", price: "From $6/piece", icon: "🧑‍🍳" },
+      { name: "Healthcare & Medical", desc: "Scrubs, lab coats, nursing uniforms. Anti-microbial fabric options available.", price: "From $10/piece", icon: "🏥" },
+      { name: "Industrial Workwear", desc: "High-visibility vests, coveralls and PPE-compliant workwear.", price: "From $12/piece", icon: "🦺" },
+      { name: "School & Sports Uniforms", desc: "School uniforms, PE kits, team jerseys and sports apparel.", price: "From $5/piece", icon: "🎒" },
+      { name: "Embroidery & Printing", desc: "Logo embroidery, screen printing, heat transfer and sublimation.", price: "From $2/piece", icon: "🪡" },
+    ],
+    about: {
+      heading: "18 Years of Uniform Manufacturing Excellence",
+      body: "UniformPro is a Bangladesh-based garment manufacturer with our own 40,000 sqft factory and 300 skilled machinists. We deliver high-quality uniforms at factory-direct prices to clients across Southeast Asia, the Middle East and beyond.",
+      highlights: ["Own 40,000 sqft factory", "300 skilled machinists", "In-house embroidery & printing", "GOTS-certified fabrics available", "Export to 25+ countries"],
+    },
+    pricing: [
+      { name: "Sample Order", price: "From $25/piece", features: ["Minimum 1 piece", "Any garment type", "Full customisation", "7–10 day turnaround", "Quality guaranteed"], cta: "Order Sample" },
+      { name: "Standard Bulk", price: "From $8/piece", features: ["50–499 pieces", "Logo embroidery included", "4 colour options", "21-day production", "Free shipping on 200+"], highlight: true, cta: "Get Quote" },
+      { name: "Large Volume", price: "From $5/piece", features: ["500+ pieces", "Priority production", "Full custom design", "Multiple delivery batches", "Dedicated account manager"], cta: "Request Quote" },
+    ],
+    team: [
+      { name: "Mohammad Karim", role: "Managing Director", bio: "18 years building UniformPro from 5 to 300 staff.", initials: "MK", color: "#1e3a5f" },
+      { name: "Rashida Begum", role: "Head of Design & Sampling", bio: "Converts client briefs into tech packs within 48 hours.", initials: "RB", color: "#c9a84c" },
+      { name: "Akbar Hossain", role: "Production Manager", bio: "ISO-certified process management across all production lines.", initials: "AH", color: "#1e3a5f" },
+    ],
+    testimonials: [
+      { name: "Raj Menon", location: "Marriott Hotels, SG", text: "2,000 pieces per quarter. Consistent quality, on-time delivery. Our exclusive uniform supplier.", rating: 5, initials: "RM" },
+      { name: "Ahmed Al-Rashid", location: "Al Baik Group, KSA", text: "Supplied uniforms for 45 restaurant locations. Quality excellent, logo embroidery flawless.", rating: 5, initials: "AA" },
+      { name: "Lim Wei Jie", location: "SIA Catering", text: "Strict quality standards met every order. Fast turnaround, responsive team.", rating: 5, initials: "LW" },
+    ],
+    faqItems: [
+      { q: "What is the minimum order quantity?", a: "MOQ is 10 pieces per style/colour. For embroidery: 20 pieces per logo placement." },
+      { q: "How long does production take?", a: "Standard: 21–28 days. Rush (500+): 14 days. Samples: 7–10 days." },
+      { q: "Do you provide samples before bulk orders?", a: "Yes. Sample fee credited against bulk order if you proceed." },
+      { q: "What countries do you ship to?", a: "Worldwide via DHL, FedEx and sea freight. Strong presence in Singapore, UAE, Saudi Arabia and Australia." },
+    ],
+    galleryLabels: ["Corporate Polo Range", "Restaurant Team Wear", "Medical Scrubs", "Logo Embroidery Detail", "Industrial Hi-Vis", "Factory Floor"],
+    badges: ["Factory Direct", "MOQ 10 Pieces", "25+ Countries", "18 Years"],
+  },
+
+  // ── GlassLine ─────────────────────────────────────────────────────────────────
+  "glass-line": {
+    tagline: "Precision fabrication. Professional installation.",
+    phone: "+65 9234 5678",
+    email: "quote@glassline.sg",
+    address: "25 Defu Lane 10, Singapore 539214",
+    cta: "Get a Free Quote",
+    ctaSecondary: "View Projects",
+    navLinks: [
+      { label: "Products", href: "#services" },
+      { label: "Projects", href: "#gallery" },
+      { label: "About", href: "#about" },
+      { label: "Reviews", href: "#testimonials" },
+      { label: "Get Quote", href: "#contact" },
+    ],
+    stats: [
+      { value: "1,200+", label: "Projects Completed" },
+      { value: "12 yr", label: "In Business" },
+      { value: "25+", label: "Skilled Installers" },
+      { value: "4.8★", label: "Client Rating" },
+    ],
+    services: [
+      { name: "Glass Partitions", desc: "Frameless, semi-frameless and framed glass partition systems. Any glass type.", price: "From $80/sqft", icon: "🪟" },
+      { name: "Aluminium Windows & Doors", desc: "Casement, sliding, awning and bi-fold aluminium windows and doors.", price: "From $120/panel", icon: "🚪" },
+      { name: "Roller Shutters", desc: "Manual and motorised aluminium roller shutters for shops, warehouses and garages.", price: "From $800/opening", icon: "🏭" },
+      { name: "Frameless Glass Doors", desc: "Tempered and laminated frameless glass doors with floor spring or pivot fitting.", price: "From $600/door", icon: "🔲" },
+      { name: "Curtain Wall Systems", desc: "Unitised and stick-built aluminium curtain wall for commercial developments.", price: "Request Quote", icon: "🏙️" },
+      { name: "Glass Balustrades", desc: "Tempered glass balustrades for staircases, balconies and pool surrounds.", price: "From $150/lm", icon: "🪜" },
+    ],
+    about: {
+      heading: "12 Years of Precision Glass & Aluminium Fabrication",
+      body: "GlassLine is a Singapore-based glass and aluminium specialist with our own fabrication workshop and 25 skilled installers, working across residential, commercial and industrial sectors.",
+      highlights: ["BCA registered contractor", "Own fabrication workshop", "SS 212 and BCA compliant", "1-year installation warranty", "Same-week survey & quotation"],
+    },
+    pricing: [
+      { name: "Residential", price: "From $80/sqft", features: ["All glass types", "Standard aluminium profiles", "1-year warranty", "Free site survey", "Same-week start"], cta: "Get Quote" },
+      { name: "Commercial", price: "From $65/sqft", features: ["Volume pricing", "Project manager assigned", "BCA-compliant docs", "Night/weekend installation", "2-year warranty"], highlight: true, cta: "Get Quote" },
+      { name: "Industrial / Developer", price: "Request Quote", features: ["Full curtain wall systems", "Specialist engineering", "Sub-contractor capability", "Multi-phase delivery", "Performance bond"], cta: "Discuss Project" },
+    ],
+    team: [
+      { name: "Andy Koh", role: "Managing Director", bio: "12 years in glass and aluminium. Reviews every technical drawing before production.", initials: "AK", color: "#0f172a" },
+      { name: "Dennis Tan", role: "Project Engineer", bio: "Handles BCA submissions, curtain wall engineering and commercial tenders.", initials: "DT", color: "#475569" },
+      { name: "Amar Singh", role: "Fabrication Workshop Head", bio: "20 years fabricating glass and aluminium to precision tolerances.", initials: "AS", color: "#0f172a" },
+    ],
+    testimonials: [
+      { name: "Tan Boon Kiat", location: "Ascendas REIT", text: "Office partition works across three floors. Fabrication quality excellent, installation fast and clean.", rating: 5, initials: "TBK" },
+      { name: "Siva Kumar", location: "Interior Designer", text: "My go-to glazing contractor for all client projects. Quality consistently good, pricing fair.", rating: 5, initials: "SK" },
+      { name: "Raymond Foo", location: "Dempsey Hill", text: "Aluminium shopfront and roller shutter installed in one day. Motorised shutter is silent.", rating: 5, initials: "RF" },
+    ],
+    faqItems: [
+      { q: "How quickly can you provide a quotation?", a: "Site survey within 2–3 days. Written quote within 24 hours of survey." },
+      { q: "What glass types do you supply?", a: "Clear, tinted, frosted, tempered, laminated, IGU and smart glass. All SS 212 certified." },
+      { q: "Do you handle HDB and condo approval submissions?", a: "Yes. We manage HDB renovation permit submissions and MCST liaison." },
+      { q: "What warranty do you provide?", a: "1-year workmanship warranty on all installation. Glass manufacturer warranties passed through." },
+    ],
+    galleryLabels: ["Glass Facade", "Frameless Glass Door", "Retail Shopfront", "Office Partition", "Roller Shutter", "Aluminium Windows"],
+    badges: ["BCA Registered", "Own Workshop", "1-Year Warranty", "1,200+ Projects"],
+  },
+
 };
 
 // Fallback content for templates not explicitly defined

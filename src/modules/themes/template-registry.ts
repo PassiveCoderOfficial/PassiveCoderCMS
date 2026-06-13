@@ -2008,6 +2008,776 @@ const MAIZE_FASHION: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 13: BuildRight (SG/AE Renovation & Construction) ───────────────
+
+const BUILD_RIGHT: TemplateIdentity = {
+  slug: "build-right",
+  name: "BuildRight",
+  description: "Bold renovation & construction company. Dark charcoal + safety orange. Full-width hero, project gallery, certifications, quote form.",
+  category: "Renovation & Construction",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=85&fit=crop",
+  tags: ["renovation", "construction", "fitout", "contractor", "singapore"],
+
+  palette: {
+    primary: "#ea580c",
+    primaryFg: "#ffffff",
+    secondary: "#1c1917",
+    accent: "#fb923c",
+    background: "#111110",
+    foreground: "#f5f5f4",
+    muted: "#1c1917",
+    mutedFg: "#a8a29e",
+    card: "#1c1917",
+    border: "#292524",
+    ring: "#ea580c",
+    borderRadius: "0",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.03em",
+  },
+  customCss: `
+    .template-build-right h1,.template-build-right h2 { font-weight: 900; letter-spacing: -0.03em; text-transform: uppercase; }
+    .template-build-right .service-card { border-left: 4px solid #ea580c; background: #1c1917; }
+    .template-build-right .stat-value { color: #ea580c; font-weight: 900; font-size: 2.5rem; }
+    .template-build-right .nav-bar { background: #111110; border-bottom: 1px solid #292524; }
+    .template-build-right .hero-badge { background: #ea580c; color: #fff; font-weight: 700; letter-spacing: 0.05em; font-size: 0.75rem; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=90&fit=crop",
+      alt: "Construction site at dusk",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&q=80&fit=crop",
+      alt: "Renovation project in progress",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=600&q=80&fit=crop", alt: "Home renovation" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Office fitout" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", alt: "Commercial construction" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop", alt: "Kitchen remodel" },
+      { url: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80&fit=crop", alt: "Bathroom renovation" },
+      { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80&fit=crop", alt: "New build handover" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80&fit=crop", alt: "Completed living room" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&fit=crop", alt: "Kitchen renovation" },
+      { url: "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=800&q=80&fit=crop", alt: "Office fitout" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80&fit=crop", alt: "Bathroom remodel" },
+      { url: "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=800&q=80&fit=crop", alt: "Retail construction" },
+      { url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80&fit=crop", alt: "Bedroom renovation" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Project Director" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Site Manager" },
+      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face", alt: "Design Lead" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80&fit=crop",
+      alt: "Get a quote",
+    },
+  },
+
+  heroHeadline: "We Build. We Renovate. We Deliver.",
+  heroSubline: "Licensed renovation contractor trusted by 600+ homeowners and businesses across Singapore.",
+  heroBadge: "🏗️ BCA Licensed Contractor",
+  heroCTA: "Get a Free Quote",
+  heroSecondaryCTA: "View Our Work",
+  siteName: "BuildRight Renovation",
+  tagline: "Quality renovation work, on time and on budget",
+  phone: "+65 9123 4567",
+  email: "quote@buildright.sg",
+  address: "18 Boon Lay Way, #04-98 Tradehub 21, Singapore 609966",
+  aboutHeading: "600+ Projects. Zero Compromises.",
+  aboutBody: "BuildRight has been transforming homes, offices and commercial spaces across Singapore since 2008. Our team of HDB-licensed carpenters, tilers, electricians and plumbers handles every trade in-house — meaning tighter timelines, cleaner finishes and one point of accountability. We've completed over 600 projects ranging from single-room makeovers to full 5-room HDB renovations and commercial fit-outs.",
+  aboutHighlights: ["HDB licensed renovator", "All trades in-house", "3-year workmanship warranty", "Fixed-price contracts — no surprise bills", "600+ completed projects"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Projects", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get Quote", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Full Home Renovation", description: "Complete HDB or condo overhaul — carpentry, tiling, electrical, plumbing and painting. Turnkey delivery.", icon: "🏠", iconType: "emoji", price: "From $18,000", imageUrl: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Fitout", description: "Office, retail, F&B and co-working spaces built to spec and BCA compliance. We manage permits.", icon: "🏢", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Kitchen Remodel", description: "Custom carpentry, hob, hood and sink installation. Full tiling and waterproofing. 10-day timeline.", icon: "🍳", iconType: "emoji", price: "From $6,500", imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bathroom Renovation", description: "Waterproofing, tiling, sanitary fitting, mirror cabinet and lighting. HDB-approved materials.", icon: "🚿", iconType: "emoji", price: "From $4,200", imageUrl: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Carpentry & Wardrobes", description: "Full custom carpentry — platform beds, wardrobes, TV consoles and display cabinets. E0 board standard.", icon: "🪵", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Hacking & Demolition", description: "Wall hacking, floor hacking and structural opening works. HDB-approved. Safe removal guaranteed.", icon: "⚒️", iconType: "emoji", price: "From $800", imageUrl: "https://images.unsplash.com/photo-1590004987778-bece5c9adab6?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "600+", label: "Projects Completed" },
+    { id: uid("st"), value: "15 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "HDB Review Score" },
+    { id: uid("st"), value: "3 yr", label: "Workmanship Warranty" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Daryl Tan", role: "HDB 5-Room Owner", company: "Tampines", content: "Full renovation done in 28 days. Carpentry is solid, tiling is perfect, and they cleaned up every day before leaving. Exceptional team.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Priya Nair", role: "Condo Owner", company: "Jurong East", content: "They gave us a fixed price and stuck to it. Not a single surprise bill. The kitchen and bathrooms look magazine-worthy. Highly recommend.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Jason Lim", role: "F&B Owner", company: "Tanjong Pagar", content: "Fitted out our cafe in 3 weeks. BCA submissions handled, permits sorted, and the result looked exactly like the 3D render. Brilliant.", rating: 5 },
+    { id: uid("t"), name: "Farah Abdullah", role: "Homeowner", company: "Bedok", content: "Bathroom hacking and full reno done with zero mess. They even helped us select tiles within our budget. Wonderful experience.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Studio / 1-Room", price: "From $12,000", description: "Full renovation package", features: ["Up to 45 sqm", "Carpentry & painting", "Tiling & waterproofing", "Electrical & lighting", "3-year warranty"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "3–4 Room HDB", price: "From $25,000", description: "Most popular package", features: ["90–100 sqm", "Full carpentry suite", "Kitchen & bathrooms", "All trades included", "3D design included", "3-year warranty"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "5-Room / Condo", price: "From $40,000", description: "Premium whole-home package", features: ["110–130 sqm", "Luxury finishes option", "Smart home wiring", "Full carpentry & tiling", "Project manager assigned", "5-year warranty"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How long does a full HDB renovation take?", answer: "A 4-room HDB renovation typically takes 4–6 weeks from handover of keys. We'll give you a detailed timeline before work starts." },
+    { id: uid("f"), question: "Do you handle HDB permit submissions?", answer: "Yes. We handle all HDB renovation permit submissions on your behalf, including structural, electrical and plumbing works that require approval." },
+    { id: uid("f"), question: "Do you provide a fixed-price contract?", answer: "Always. Our quotations are fully itemised and fixed. There are no hidden charges or variations unless you request additional scope in writing." },
+    { id: uid("f"), question: "What warranty do you provide?", answer: "We provide a 3-year workmanship warranty on all renovation works and a 5-year warranty on waterproofing. Any defects during the warranty period are rectified at no charge." },
+    { id: uid("f"), question: "Can we see your past projects?", answer: "Absolutely. Visit our gallery above or message us and we'll share a full portfolio with before/after photos from similar unit types." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Marcus Wong", role: "Founder & Project Director", bio: "15 years in renovation and construction. Personally oversees every project to ensure quality and timeline are met.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Ramesh Kumar", role: "Senior Site Manager", bio: "10 years managing renovation sites across Singapore. Specialist in HDB compliance and structural works.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Wei Ling Tan", role: "Interior Design Lead", bio: "Trained at NAFA. Brings your vision to life with 3D renders before a single nail is hammered.", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 14: ColourCraft (Painting & Decorating) ────────────────────────
+
+const COLOUR_CRAFT: TemplateIdentity = {
+  slug: "colour-craft",
+  name: "ColourCraft",
+  description: "Vibrant painting & decorating company. Bright white + bold accent. Color palette selector feel, before/after gallery, fast quote flow.",
+  category: "Interior Design",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1200&q=85&fit=crop",
+  tags: ["painting", "decorating", "interior", "colour", "residential"],
+
+  palette: {
+    primary: "#7c3aed",
+    primaryFg: "#ffffff",
+    secondary: "#db2777",
+    accent: "#a78bfa",
+    background: "#ffffff",
+    foreground: "#18181b",
+    muted: "#f4f4f5",
+    mutedFg: "#52525b",
+    card: "#ffffff",
+    border: "#e4e4e7",
+    ring: "#7c3aed",
+    borderRadius: "1rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.025em",
+  },
+  customCss: `
+    .template-colour-craft h1,.template-colour-craft h2 { font-weight: 800; letter-spacing: -0.025em; }
+    .template-colour-craft .service-card { border-radius: 1rem; box-shadow: 0 4px 24px rgba(124,58,237,0.08); border: 1px solid #e4e4e7; }
+    .template-colour-craft .service-card:hover { box-shadow: 0 8px 32px rgba(124,58,237,0.18); border-color: #a78bfa; }
+    .template-colour-craft .stat-value { color: #7c3aed; }
+    .template-colour-craft .hero-badge { background: linear-gradient(90deg, #7c3aed, #db2777); color: #fff; border-radius: 9999px; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1600&q=90&fit=crop",
+      alt: "Professional painter at work",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=800&q=80&fit=crop",
+      alt: "Freshly painted living room",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80&fit=crop", alt: "Interior painting" },
+      { url: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&q=80&fit=crop", alt: "Feature wall" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Exterior painting" },
+      { url: "https://images.unsplash.com/photo-1604709177225-055f99402ea3?w=600&q=80&fit=crop", alt: "Commercial painting" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", alt: "Wallpaper installation" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Texture coating" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80&fit=crop", alt: "Living room transformation" },
+      { url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80&fit=crop", alt: "Bedroom feature wall" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Kitchen painted" },
+      { url: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=800&q=80&fit=crop", alt: "Open plan living" },
+      { url: "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80&fit=crop", alt: "Office repaint" },
+      { url: "https://images.unsplash.com/photo-1597211684565-dca64d72bdfe?w=800&q=80&fit=crop", alt: "Exterior facade" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&q=80&fit=crop&face", alt: "Lead Painter" },
+      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face", alt: "Colour Consultant" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Project Coordinator" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1200&q=80&fit=crop",
+      alt: "Get a free colour consultation",
+    },
+  },
+
+  heroHeadline: "Your Home, Transformed by Colour",
+  heroSubline: "Professional painting & decorating for homes, offices and commercial spaces. Free colour consultation included.",
+  heroBadge: "🎨 Free Colour Consultation",
+  heroCTA: "Get Free Quote",
+  heroSecondaryCTA: "See Our Work",
+  siteName: "ColourCraft Painters",
+  tagline: "Professional painting that lasts",
+  phone: "+65 8800 1234",
+  email: "hello@colourcraft.sg",
+  address: "Serving all areas across Singapore",
+  aboutHeading: "Singapore's Trusted Painting Specialists Since 2010",
+  aboutBody: "ColourCraft was founded on a single belief: a fresh coat of paint is the most powerful transformation in any space. Our team of 30 certified painters and decorators serves homeowners and businesses across Singapore, using only premium Nippon, Dulux and Jotun paints that are low-VOC and safe for families and pets. We arrive on time, protect your furniture, and leave your space spotless.",
+  aboutHighlights: ["BizSafe certified company", "Low-VOC & eco-friendly paints", "Furniture fully protected during works", "On-time project guarantee", "Free colour consultation & samples"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "Pricing", url: "#pricing" },
+    { id: "n4", label: "About", url: "#about" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Interior House Painting", description: "Full interior repaint for HDB, condo or landed — walls, ceilings, doors and trim. Any paint brand supplied.", icon: "🏠", iconType: "emoji", price: "From $380 (3-room)", imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Feature Wall Painting", description: "Accent walls, geometric patterns, ombre effects and decorative finishes that define a room.", icon: "🎨", iconType: "emoji", price: "From $180/wall", imageUrl: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Exterior Painting", description: "HDB block touch-up, landed exterior, parapet walls and metal gates. Weatherproof paint guaranteed.", icon: "🏗️", iconType: "emoji", price: "From $800", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Repainting", description: "Office, retail, restaurant and school repainting. Weekend and after-hours slots available.", icon: "🏢", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1604709177225-055f99402ea3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Wallpaper Installation", description: "Supply and install wallpaper, wall murals and vinyl wall decals. Removal of old wallpaper included.", icon: "🖼️", iconType: "emoji", price: "From $8/sqft", imageUrl: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Texture & Specialty Finishes", description: "Sand texture, marble effect, lime wash and other decorative wall coatings that add dimension.", icon: "✨", iconType: "emoji", price: "From $12/sqft", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "4,200+", label: "Rooms Painted" },
+    { id: uid("st"), value: "98%", label: "On-Time Completion" },
+    { id: uid("st"), value: "4.9★", label: "Google Rating" },
+    { id: uid("st"), value: "14 yr", label: "In Business" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Linda Goh", role: "Homeowner", company: "Punggol", content: "Quoted me in 24 hours, started the next Monday, done in 2 days. My 5-room looks like a showflat. The workmanship is immaculate.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ravi Sundaram", role: "Office Manager", company: "One Raffles Place", content: "Repainted our entire 3,000 sqft office over a weekend. Arrived Saturday 7am, done Sunday 6pm, zero disruption to Monday operations.", rating: 5 },
+    { id: uid("t"), name: "Michelle Tan", role: "Interior Designer", company: "Freelance", content: "I recommend ColourCraft to all my clients. Their colour mixing accuracy and finish quality is consistently the best I've seen in Singapore.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ahmad Faris", role: "Homeowner", company: "Woodlands", content: "Did a lime wash feature wall for us. Came out even better than the reference photos we showed them. Genuinely talented team.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "2–3 Room HDB", price: "From $380", description: "Interior walls & ceilings", features: ["All interior walls & ceilings", "1 primer + 2 finish coats", "Furniture covered & protected", "Nippon / Dulux paint included", "Same-week availability"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "4–5 Room HDB", price: "From $580", description: "Full interior repaint", features: ["All rooms including corridors", "Premium low-VOC paint", "Colour consultation included", "Feature wall option", "2-year paint warranty"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Condo / Landed", price: "From $900", description: "Large-format home painting", features: ["Up to 160 sqm", "Multi-brand paint available", "Luxury finish options", "3D colour visualisation", "Weekend scheduling available", "2-year warranty"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How long does it take to paint a 4-room HDB?", answer: "Typically 1–2 days. We send the right number of painters for your unit size to keep the timeline tight without rushing the finish." },
+    { id: uid("f"), question: "Do I need to move my furniture?", answer: "No. Our team covers all furniture and flooring with protective sheets before starting. You don't need to move anything." },
+    { id: uid("f"), question: "Can I choose my own colours?", answer: "Absolutely. We can match any colour from Nippon, Dulux, Jotun or your own colour chips. Our free consultation includes sample patches on your wall." },
+    { id: uid("f"), question: "What paint brands do you use?", answer: "We supply Nippon Paint, Dulux and Jotun — all premium brands with low-VOC formulas. We can also use paint supplied by you." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Tony Lim", role: "Founder & Head Painter", bio: "14 years of painting mastery. Tony personally trains every painter on the team to ensure consistent quality across every job.", avatar: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "David Chen", role: "Senior Colour Consultant", bio: "Trained interior designer turned colour specialist. David's palette recommendations transform spaces every time.", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Siti Rahma", role: "Project Coordinator", bio: "Ensures every job is scheduled, communicated and completed on time. Your single point of contact from quote to handover.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 15: PestShield (Pest Control) ──────────────────────────────────
+
+const PEST_SHIELD: TemplateIdentity = {
+  slug: "pest-shield",
+  name: "PestShield",
+  description: "Authoritative pest control company. Deep green + white. Treatment types, eco-certification badges, fast booking, residential & commercial.",
+  category: "Cleaning",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200&q=85&fit=crop",
+  tags: ["pest control", "extermination", "termite", "residential", "commercial"],
+
+  palette: {
+    primary: "#15803d",
+    primaryFg: "#ffffff",
+    secondary: "#166534",
+    accent: "#4ade80",
+    background: "#f0fdf4",
+    foreground: "#14532d",
+    muted: "#dcfce7",
+    mutedFg: "#166534",
+    card: "#ffffff",
+    border: "#bbf7d0",
+    ring: "#15803d",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-pest-shield h1,.template-pest-shield h2 { font-weight: 800; }
+    .template-pest-shield .service-card { border-top: 3px solid #15803d; }
+    .template-pest-shield .stat-value { color: #15803d; font-weight: 900; }
+    .template-pest-shield .hero-badge { background: #15803d; color: #fff; border-radius: 9999px; font-weight: 700; }
+    .template-pest-shield .nav-bar { background: #ffffff; border-bottom: 2px solid #bbf7d0; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1600&q=90&fit=crop",
+      alt: "Professional pest control technician",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=800&q=80&fit=crop",
+      alt: "Pest control treatment in progress",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "General pest control" },
+      { url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop", alt: "Termite treatment" },
+      { url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80&fit=crop", alt: "Rodent control" },
+      { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", alt: "Bed bug treatment" },
+      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Mosquito fogging" },
+      { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Commercial pest contract" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Residential treatment" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&fit=crop", alt: "Kitchen inspection" },
+      { url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=800&q=80&fit=crop", alt: "Technician at work" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop", alt: "Commercial contract" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Chief Technician" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Field Supervisor" },
+      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face", alt: "Operations Manager" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200&q=80&fit=crop",
+      alt: "Book pest control",
+    },
+  },
+
+  heroHeadline: "Pest-Free. Guaranteed.",
+  heroSubline: "Licensed pest management for homes and businesses. Safe for children, pets and the environment.",
+  heroBadge: "✅ NEA Licensed Pest Control",
+  heroCTA: "Book a Treatment",
+  heroSecondaryCTA: "Get Free Inspection",
+  siteName: "PestShield Services",
+  tagline: "Protecting homes and businesses from pests since 2009",
+  phone: "+65 6712 3456",
+  email: "book@pestshield.sg",
+  address: "12 Mandai Estate, #03-20, Singapore 729908",
+  aboutHeading: "NEA-Licensed. Eco-Certified. Trusted by 5,000+ Clients.",
+  aboutBody: "PestShield has been protecting Singapore homes and commercial premises from pests since 2009. Our NEA-licensed technicians use Integrated Pest Management (IPM) methods — combining targeted treatments with habitat modification to eliminate pests at the source. We prioritise solutions that are effective, safe and kind to the environment.",
+  aboutHighlights: ["NEA licensed pest management company", "ISO 9001:2015 certified", "Eco-certified treatments (safe for kids & pets)", "Annual maintenance contracts available", "24/7 emergency callout service"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Contracts", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "General Pest Control", description: "Treatment for cockroaches, ants, flies, silverfish and common household insects. Gel bait + residual spray.", icon: "🐛", iconType: "emoji", price: "From $80/treatment", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Termite Treatment", description: "Soil treatment, baiting systems and structural pre-treatment. 5-year termite warranty available.", icon: "🪲", iconType: "emoji", price: "From $350", imageUrl: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Rodent Control", description: "Rat and mouse elimination using tamper-resistant bait stations and exclusion works. Monthly monitoring available.", icon: "🐀", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bed Bug Treatment", description: "Heat treatment and chemical residual treatment for complete bed bug elimination. 3-month warranty.", icon: "🛏️", iconType: "emoji", price: "From $280", imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Mosquito Control & Fogging", description: "ULV thermal fogging, larviciding and misting systems for gardens, estates and commercial compounds.", icon: "🦟", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Contracts", description: "NEA-compliant annual pest management contracts for F&B, hospitality, healthcare and manufacturing.", icon: "🏢", iconType: "emoji", price: "From $800/year", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5,000+", label: "Properties Treated" },
+    { id: uid("st"), value: "15 yr", label: "In Business" },
+    { id: uid("st"), value: "100%", label: "NEA Compliant" },
+    { id: uid("st"), value: "4.8★", label: "Google Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Kevin Ong", role: "F&B Owner", company: "Clementi", content: "We've had PestShield on an annual contract for 4 years. Zero pest incidents, zero NEA warnings. They're the reason we consistently pass inspections.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Mrs. Lim", role: "Homeowner", company: "Bishan", content: "Had a serious cockroach problem that three other companies couldn't fix. PestShield did one treatment and we haven't seen a single one since. Incredible.", rating: 5 },
+    { id: uid("t"), name: "Jason Park", role: "Property Manager", company: "Marina Bay", content: "Manage 8 commercial units. PestShield handles all of them on one contract. Professional, thorough reports and zero issues.", rating: 5 },
+    { id: uid("t"), name: "Faridah Binte Said", role: "Homeowner", company: "Yishun", content: "Had termites in the wall. Their heat treatment was completely non-intrusive and the 5-year warranty gives us peace of mind.", rating: 5, avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&q=80&fit=crop&face" },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "One-Time Treatment", price: "From $80", description: "Single-visit pest treatment", features: ["One pest type targeted", "Licensed technician", "Report & recommendations", "Follow-up advice", "30-day guarantee"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Quarterly Contract", price: "From $280/year", description: "4 treatments per year", features: ["4 scheduled visits/year", "All common pests covered", "Between-visit callouts free", "NEA-compliant reporting", "Priority scheduling"], highlighted: true, badge: "Best Value", ctaLabel: "Get Contract Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial Annual", price: "Custom", description: "Full-year commercial contract", features: ["Unlimited treatments", "Monthly monitoring visits", "Emergency same-day callout", "Full NEA compliance docs", "Dedicated account manager", "Multi-unit discounts"], ctaLabel: "Discuss Contract", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Are your treatments safe for children and pets?", answer: "Yes. We use EPA and NEA-approved formulations with minimal residual impact. We'll advise on re-entry times (usually 1–4 hours) for each treatment type." },
+    { id: uid("f"), question: "Do I need to vacate during treatment?", answer: "For most general pest treatments, you only need to vacate for 1–2 hours. Bed bug heat treatment requires 4–6 hours. We'll advise before starting." },
+    { id: uid("f"), question: "How quickly can you respond?", answer: "We offer same-day bookings for urgent cases and 24/7 emergency callouts for commercial contracts. Standard residential bookings can usually be scheduled within 24 hours." },
+    { id: uid("f"), question: "Do you provide NEA-compliant service reports?", answer: "Yes. Every treatment includes a fully documented service report including pest activity levels, treatment applied, and recommendations. Essential for NEA inspections." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Alvin Koh", role: "Chief Pest Control Technician", bio: "NEA licensed with 15 years in the field. Expert in termite baiting systems and Integrated Pest Management.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Hafiz Rahman", role: "Field Supervisor", bio: "Specialises in commercial accounts and high-volume residential estates. Fully certified in heat treatment.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Grace Yeo", role: "Operations Manager", bio: "Ensures every booking is perfectly scheduled and every client receives a follow-up report within 24 hours.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 16: UniformPro (Garments / Uniforms / Workwear) ────────────────
+
+const UNIFORM_PRO: TemplateIdentity = {
+  slug: "uniform-pro",
+  name: "UniformPro",
+  description: "Clean, professional garment & uniform supplier. Navy + gold accent. Product showcase, bulk order form, fabric details, corporate clients.",
+  category: "Retail & Shop",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1200&q=85&fit=crop",
+  tags: ["uniforms", "garments", "workwear", "corporate", "embroidery"],
+
+  palette: {
+    primary: "#1e3a5f",
+    primaryFg: "#ffffff",
+    secondary: "#c9a84c",
+    accent: "#e8d5a3",
+    background: "#f8f7f4",
+    foreground: "#1a1a2e",
+    muted: "#ede9e0",
+    mutedFg: "#5a5a7a",
+    card: "#ffffff",
+    border: "#ddd8cc",
+    ring: "#1e3a5f",
+    borderRadius: "0.375rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-uniform-pro h1,.template-uniform-pro h2 { font-weight: 700; letter-spacing: -0.01em; }
+    .template-uniform-pro .service-card { border: 1px solid #ddd8cc; border-top: 3px solid #c9a84c; }
+    .template-uniform-pro .stat-value { color: #1e3a5f; font-weight: 800; }
+    .template-uniform-pro .nav-bar { background: #1e3a5f; }
+    .template-uniform-pro .hero-badge { background: #c9a84c; color: #1e3a5f; font-weight: 700; border-radius: 4px; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "icon-cards-grid",
+    testimonials: "formal-cards",
+    features: "alternating-images",
+    stats: "navy-row",
+    cta: "navy-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "formal-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1600&q=90&fit=crop",
+      alt: "Professional uniform collection",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?w=800&q=80&fit=crop",
+      alt: "Garment manufacturing",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&q=80&fit=crop", alt: "Corporate uniforms" },
+      { url: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=600&q=80&fit=crop", alt: "F&B uniforms" },
+      { url: "https://images.unsplash.com/photo-1582578598774-a377d4b32223?w=600&q=80&fit=crop", alt: "Healthcare workwear" },
+      { url: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?w=600&q=80&fit=crop", alt: "Construction workwear" },
+      { url: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=600&q=80&fit=crop", alt: "School uniforms" },
+      { url: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=600&q=80&fit=crop", alt: "Custom embroidery" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=80&fit=crop", alt: "Uniform range" },
+      { url: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=800&q=80&fit=crop", alt: "Restaurant team uniforms" },
+      { url: "https://images.unsplash.com/photo-1582578598774-a377d4b32223?w=800&q=80&fit=crop", alt: "Medical scrubs" },
+      { url: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800&q=80&fit=crop", alt: "Logo embroidery detail" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop", alt: "Corporate shirt" },
+      { url: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?w=800&q=80&fit=crop", alt: "Factory floor" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Managing Director" },
+      { url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face", alt: "Design Manager" },
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face", alt: "Production Head" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1200&q=80&fit=crop",
+      alt: "Request a quote",
+    },
+  },
+
+  heroHeadline: "Uniforms That Represent Your Brand",
+  heroSubline: "Custom workwear and uniforms for corporate, F&B, healthcare, hospitality and industrial sectors. MOQ 10 pieces.",
+  heroBadge: "🏭 Factory Direct · MOQ 10 Pieces",
+  heroCTA: "Request a Quote",
+  heroSecondaryCTA: "View Catalogue",
+  siteName: "UniformPro Garments",
+  tagline: "Professional uniforms manufactured to your exact specification",
+  phone: "+880 1712 345678",
+  email: "orders@uniformpro.com.bd",
+  address: "Plot 24, BSCIC Industrial Estate, Tongi, Gazipur, Bangladesh",
+  aboutHeading: "18 Years of Uniform Manufacturing Excellence",
+  aboutBody: "UniformPro is a Bangladesh-based garment manufacturer specialising in custom uniforms, workwear and corporate apparel for clients across Southeast Asia, the Middle East and beyond. With our own 40,000 sqft factory, 300 skilled machinists and in-house embroidery and printing capabilities, we deliver high-quality uniforms at factory-direct prices — with fast turnaround and no compromise on finish.",
+  aboutHighlights: ["Own 40,000 sqft factory — no middlemen", "300 skilled machinists", "In-house embroidery & screen printing", "GOTS-certified sustainable fabrics available", "Export to 25+ countries"],
+
+  navItems: [
+    { id: "n1", label: "Products", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "Pricing", url: "#pricing" },
+    { id: "n4", label: "About", url: "#about" },
+    { id: "n5", label: "Order Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Corporate Uniforms", description: "Polo shirts, formal shirts, trousers and blazers with your logo. Available in all fabrics and colours. MOQ 20 pcs.", icon: "👔", iconType: "emoji", price: "From $8/piece", imageUrl: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "F&B & Hospitality Wear", description: "Chef coats, aprons, server uniforms, housekeeping attire. Stain-resistant and easy-care fabrics standard.", icon: "🧑‍🍳", iconType: "emoji", price: "From $6/piece", imageUrl: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Healthcare & Medical", description: "Scrubs, lab coats, nursing uniforms and dental uniforms. Anti-microbial fabric options available.", icon: "🏥", iconType: "emoji", price: "From $10/piece", imageUrl: "https://images.unsplash.com/photo-1582578598774-a377d4b32223?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Industrial Workwear", description: "High-visibility vests, coveralls, reflective uniforms and PPE-compliant workwear for construction and industrial sites.", icon: "🦺", iconType: "emoji", price: "From $12/piece", imageUrl: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "School & Sports Uniforms", description: "School uniforms, PE kits, team jerseys and sports apparel. Durable, colourfast and school-board approved.", icon: "🎒", iconType: "emoji", price: "From $5/piece", imageUrl: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Embroidery & Printing", description: "Logo embroidery, screen printing, heat transfer and sublimation printing on any garment. Setup from $50.", icon: "🪡", iconType: "emoji", price: "From $2/piece", imageUrl: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "2M+", label: "Garments Produced" },
+    { id: uid("st"), value: "25+", label: "Export Countries" },
+    { id: uid("st"), value: "18 yr", label: "In Business" },
+    { id: uid("st"), value: "300", label: "Skilled Staff" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Raj Menon", role: "Procurement Manager", company: "Marriott Hotels, Singapore", content: "We order 2,000 pieces per quarter. Consistent quality, on-time delivery and competitive pricing. UniformPro is our exclusive uniform supplier.", rating: 5 },
+    { id: uid("t"), name: "Ahmed Al-Rashid", role: "Operations Director", company: "Al Baik Group, Saudi Arabia", content: "Supplied uniforms for 45 restaurant locations. The quality is excellent and the logo embroidery is flawless. Highly reliable supplier.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Lim Wei Jie", role: "HR Director", company: "Singapore Airlines Catering", content: "Strict quality standards met every order. Fast turnaround, responsive team and the reflective workwear passes all our safety audits.", rating: 5 },
+    { id: uid("t"), name: "Nisha Patel", role: "Owner", company: "MedWear Clinic, Malaysia", content: "Custom scrubs with our clinic branding. The antimicrobial fabric is excellent and our staff love wearing them. Repeat customer since 2018.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Sample Order", price: "From $25/piece", description: "Test before bulk order", features: ["Minimum 1 piece", "Any garment type", "Full customisation", "7–10 day turnaround", "Quality guaranteed"], ctaLabel: "Order Sample", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Standard Bulk", price: "From $8/piece", description: "50–499 pieces", features: ["50–499 pieces", "Logo embroidery included", "4 colour options", "21-day production", "Free shipping on 200+"], highlighted: true, badge: "Best Value", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Large Volume", price: "From $5/piece", description: "500+ pieces", features: ["500+ pieces", "Priority production slot", "Full custom design", "Multiple delivery batches", "Dedicated account manager", "14-day rush option"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What is the minimum order quantity?", answer: "Our MOQ is 10 pieces per style/colour for most products. For embroidery or screen printing, we need a minimum of 20 pieces per logo placement." },
+    { id: uid("f"), question: "How long does production take?", answer: "Standard orders: 21–28 days from approved sample. Rush orders (500+ pieces): 14 days. Sample orders: 7–10 days." },
+    { id: uid("f"), question: "Do you provide samples before bulk orders?", answer: "Yes. We strongly recommend ordering a sample first. The sample fee is credited against your bulk order if you proceed." },
+    { id: uid("f"), question: "What countries do you ship to?", answer: "We ship worldwide via DHL, FedEx and sea freight. We have established relationships with freight forwarders for Singapore, Malaysia, UAE, Saudi Arabia and Australia." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Mohammad Karim", role: "Managing Director", bio: "18 years in garment manufacturing. Built UniformPro from 5 machinists to 300 staff and export operations across 25 countries.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Rashida Begum", role: "Head of Design & Sampling", bio: "10 years in fashion and workwear design. Converts client briefs into production-ready tech packs within 48 hours.", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Akbar Hossain", role: "Production Manager", bio: "Oversees quality control across all three production lines. ISO-certified process management.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 17: GlassLine (Glass, Aluminium & Shutter Works) ───────────────
+
+const GLASS_LINE: TemplateIdentity = {
+  slug: "glass-line",
+  name: "GlassLine",
+  description: "Sleek glass & aluminium works company. Gunmetal + silver gradient. Full-width product showcase, technical specs, fast quote form.",
+  category: "Interior Design",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=85&fit=crop",
+  tags: ["glass", "aluminium", "shutters", "glazing", "fabrication"],
+
+  palette: {
+    primary: "#0f172a",
+    primaryFg: "#ffffff",
+    secondary: "#475569",
+    accent: "#94a3b8",
+    background: "#f1f5f9",
+    foreground: "#0f172a",
+    muted: "#e2e8f0",
+    mutedFg: "#475569",
+    card: "#ffffff",
+    border: "#cbd5e1",
+    ring: "#0f172a",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.015em",
+  },
+  customCss: `
+    .template-glass-line h1,.template-glass-line h2 { font-weight: 700; letter-spacing: -0.015em; }
+    .template-glass-line .service-card { border: 1px solid #cbd5e1; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .template-glass-line .service-card:hover { border-color: #475569; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .template-glass-line .stat-value { color: #0f172a; font-weight: 800; }
+    .template-glass-line .nav-bar { background: #0f172a; border-bottom: 1px solid #1e293b; }
+    .template-glass-line .hero-badge { background: #475569; color: #fff; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  `,
+
+  variants: {
+    hero: "centered-bold",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "navy-row",
+    cta: "navy-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=90&fit=crop",
+      alt: "Modern glass facade building",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fit=crop",
+      alt: "Aluminium window installation",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80&fit=crop", alt: "Glass partition" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Aluminium windows" },
+      { url: "https://images.unsplash.com/photo-1584585821959-63ecf5013e25?w=600&q=80&fit=crop", alt: "Roller shutters" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=80&fit=crop", alt: "Glass door" },
+      { url: "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=600&q=80&fit=crop", alt: "Curtain wall" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", alt: "Office glass works" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80&fit=crop", alt: "Glass facade" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Frameless glass door" },
+      { url: "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=800&q=80&fit=crop", alt: "Retail shopfront" },
+      { url: "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=800&q=80&fit=crop", alt: "Office partition" },
+      { url: "https://images.unsplash.com/photo-1584585821959-63ecf5013e25?w=800&q=80&fit=crop", alt: "Roller shutter installation" },
+      { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fit=crop", alt: "Aluminium sliding windows" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Managing Director" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Project Engineer" },
+      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face", alt: "Fabrication Head" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=80&fit=crop",
+      alt: "Get a quotation",
+    },
+  },
+
+  heroHeadline: "Precision Glass & Aluminium Works",
+  heroSubline: "Supply, fabrication and installation of glass partitions, aluminium windows, roller shutters and curtain walls across Singapore.",
+  heroBadge: "🔧 BCA Registered Contractor",
+  heroCTA: "Get a Free Quote",
+  heroSecondaryCTA: "View Projects",
+  siteName: "GlassLine Works",
+  tagline: "Precision fabrication. Professional installation.",
+  phone: "+65 9234 5678",
+  email: "quote@glassline.sg",
+  address: "25 Defu Lane 10, Singapore 539214",
+  aboutHeading: "12 Years of Precision Glass & Aluminium Fabrication",
+  aboutBody: "GlassLine is a Singapore-based glass and aluminium specialist with our own fabrication workshop and a team of 25 skilled installers. We work across residential, commercial and industrial sectors — from a single frameless glass door to full curtain wall systems for multi-storey buildings. All our works comply with SS 212 and BCA standards.",
+  aboutHighlights: ["BCA registered contractor", "Own fabrication workshop", "SS 212 and BCA compliant works", "1-year installation warranty", "Same-week survey and quotation"],
+
+  navItems: [
+    { id: "n1", label: "Products", url: "#services" },
+    { id: "n2", label: "Projects", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get Quote", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Glass Partitions", description: "Frameless, semi-frameless and framed glass partition systems for offices, homes and commercial spaces. Any glass type.", icon: "🪟", iconType: "emoji", price: "From $80/sqft", imageUrl: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Aluminium Windows & Doors", description: "Casement, sliding, awning and bi-fold aluminium windows and doors. All powder-coat colours available.", icon: "🚪", iconType: "emoji", price: "From $120/panel", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Roller Shutters", description: "Manual and motorised aluminium roller shutters for shops, warehouses, car parks and residential garages.", icon: "🏭", iconType: "emoji", price: "From $800/opening", imageUrl: "https://images.unsplash.com/photo-1584585821959-63ecf5013e25?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Frameless Glass Doors", description: "Tempered and laminated frameless glass doors with floor spring, patch fitting or pivot hinge systems.", icon: "🔲", iconType: "emoji", price: "From $600/door", imageUrl: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Curtain Wall Systems", description: "Unitised and stick-built aluminium curtain wall systems for high-rise and commercial developments.", icon: "🏙️", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Glass Balustrades", description: "Tempered glass balustrades and handrails for staircases, balconies and pool surrounds. BCA certified.", icon: "🪜", iconType: "emoji", price: "From $150/lm", imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "1,200+", label: "Projects Completed" },
+    { id: uid("st"), value: "12 yr", label: "In Business" },
+    { id: uid("st"), value: "25+", label: "Skilled Installers" },
+    { id: uid("st"), value: "4.8★", label: "Client Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Tan Boon Kiat", role: "Project Manager", company: "Ascendas REIT", content: "Contracted GlassLine for office partition works across three floors. Fabrication quality is excellent, installation was fast and clean. Will use again.", rating: 5 },
+    { id: uid("t"), name: "Siva Kumar", role: "Interior Designer", company: "SKDesign", content: "My go-to glazing contractor for all client projects. They fabricate precisely to spec, the glass quality is consistently good and pricing is fair.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Mrs. Wong", role: "Homeowner", company: "Bukit Timah", content: "Had frameless glass shower screens and a glass door installed. The finish is immaculate and the team was professional and tidy.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Raymond Foo", role: "F&B Owner", company: "Dempsey Hill", content: "Installed aluminium shopfront and roller shutter for our new restaurant. Done in one day, looks great and the motorised shutter is silent.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Residential", price: "From $80/sqft", description: "Home glass and aluminium works", features: ["All glass types", "Standard aluminium profiles", "1-year installation warranty", "Free site survey", "Same-week start available"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial", price: "From $65/sqft", description: "Offices, retail and F&B", features: ["Volume pricing", "Project manager assigned", "BCA-compliant documentation", "Night/weekend installation", "2-year warranty"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Industrial / Developer", price: "Request Quote", description: "Large-scale projects", features: ["Full curtain wall systems", "Specialist engineering support", "Sub-contractor capability", "Multi-phase delivery", "Performance bond available"], ctaLabel: "Discuss Project", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How quickly can you provide a quotation?", answer: "We conduct a site survey within 2–3 days and provide a detailed written quotation within 24 hours of the survey. Emergency quotations can be turned around same-day." },
+    { id: uid("f"), question: "What glass types do you supply?", answer: "We supply clear, tinted, frosted, tempered, laminated, double-glazed (IGU) and smart glass. All glass is sourced from certified manufacturers and meets Singapore SS 212 standards." },
+    { id: uid("f"), question: "Do you handle HDB and condo approval submissions?", answer: "Yes. We manage the submission of approval drawings for HDB renovation permits and liaise with MCSTs for condominium projects where required." },
+    { id: uid("f"), question: "What warranty do you provide?", answer: "We provide a 1-year workmanship warranty on all installation works. Glass manufacturers' warranties (typically 5–10 years against defects) are passed through to you." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Andy Koh", role: "Managing Director", bio: "12 years in glass and aluminium fabrication. Personally reviews every technical drawing before production starts.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Dennis Tan", role: "Project Engineer", bio: "Structural engineer background. Handles BCA submissions, curtain wall engineering and large commercial tenders.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Amar Singh", role: "Fabrication Workshop Head", bio: "20 years in glass and aluminium fabrication. Leads a team of 12 fabricators ensuring tolerance and quality on every piece.", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face" },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -2023,6 +2793,11 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   BREW_HAVEN,
   BLISS_BRIDE,
   MAIZE_FASHION,
+  BUILD_RIGHT,
+  COLOUR_CRAFT,
+  PEST_SHIELD,
+  UNIFORM_PRO,
+  GLASS_LINE,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
@@ -2034,18 +2809,29 @@ const SLUG_ALIAS: Record<string, string> = {
   "cool-air": "clean-pro",
   "flow-right": "clean-pro",
   "climate-zone": "clean-pro",
-  "pest-control": "clean-pro",
   // Renovation / Construction
-  "build-bold": "lex-core",
-  "renovate-pro": "lex-core",
-  "fitout-hub": "lex-core",
-  "hacking-pro": "lex-core",
+  "build-bold": "build-right",
+  "renovate-pro": "build-right",
+  "fitout-hub": "build-right",
+  "hacking-pro": "build-right",
   // Interior Design
   "luxe-interior": "luxe-spa",
-  "curtain-drape": "luxe-spa",
-  "floor-craft": "luxe-spa",
-  "shutter-craft": "luxe-spa",
-  "paint-masters": "luxe-spa",
+  "curtain-drape": "glass-line",
+  "floor-craft": "glass-line",
+  "shutter-craft": "glass-line",
+  "paint-masters": "colour-craft",
+  // Glass & Aluminium
+  "rhglasssg": "glass-line",
+  "sk3shutter": "glass-line",
+  "inspireshutter": "glass-line",
+  // Pest Control
+  "pest-control": "pest-shield",
+  "alsarahpestcontrol": "pest-shield",
+  "ramzalsafacleaning": "pest-shield",
+  // Garments / Uniforms
+  "rubelsuniformgarments": "uniform-pro",
+  "elegantthreads-bd": "uniform-pro",
+  "anikaclassic": "uniform-pro",
   // Restaurant / Cafe
   "savour": "aroma-table",
   "brew-bar": "brew-haven",
