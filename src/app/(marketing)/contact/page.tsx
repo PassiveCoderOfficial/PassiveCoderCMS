@@ -1,11 +1,58 @@
 import { Suspense } from "react";
+import { headers } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
+import { PageRenderer } from "@/components/site/page-renderer";
 import ContactForm from "./contact-form";
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
+import type { Block, Page } from "@/types/cms";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Contact — Passive Coder" };
+export async function generateMetadata(): Promise<Metadata> {
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+  if (!tenantId) return { title: "Contact — Passive Coder" };
 
-export default function ContactPage() {
+  const supabase = await createClient();
+  const { data: page } = await supabase
+    .from("pages")
+    .select("title, seo")
+    .eq("slug", "contact")
+    .eq("status", "published")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (!page) return { title: "Contact" };
+  const seo = page.seo as Page["seo"];
+  return {
+    title: seo?.title ?? page.title,
+    description: seo?.description,
+  };
+}
+
+export default async function ContactPage() {
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+
+  // On tenant subdomains, render the tenant's contact page instead of marketing page.
+  if (tenantId) {
+    const supabase = await createClient();
+    const { data: page } = await supabase
+      .from("pages")
+      .select("*")
+      .eq("slug", "contact")
+      .eq("status", "published")
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    const blocks: Block[] = Array.isArray(page?.blocks) ? page.blocks : [];
+    return (
+      <div className="min-h-screen">
+        <PageRenderer blocks={blocks} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <MarketingNav />

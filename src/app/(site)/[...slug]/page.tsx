@@ -14,13 +14,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const pageSlug = slug?.join("/") ?? "home";
 
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+
   const supabase = await createClient();
-  const { data: page } = await supabase
+  let metaQuery = supabase
     .from("pages")
     .select("title, seo")
     .eq("slug", pageSlug)
-    .eq("status", "published")
-    .maybeSingle();
+    .eq("status", "published");
+  if (tenantId) {
+    metaQuery = metaQuery.eq("tenant_id", tenantId);
+  } else {
+    metaQuery = metaQuery.is("tenant_id", null);
+  }
+  const { data: page } = await metaQuery.maybeSingle();
 
   if (!page) return { title: "Not Found" };
 
