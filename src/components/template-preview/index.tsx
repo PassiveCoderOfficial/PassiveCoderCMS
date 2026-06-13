@@ -118,6 +118,41 @@ const LAYOUT_COMBOS: Record<string, LayoutCombo> = {
     pricing: "dark", testimonials: "ratings",
     team: "horizontal-list", faq: "two-column", cta: "banner", contact: "dark",
   },
+  // Security: Dark solid → bold-dark hero → dark band → big cards → dark pricing
+  "shield-guard": {
+    nav: "dark-solid", hero: "bold-dark", stats: "dark-band",
+    services: "big-cards", about: "dark",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "avatar-cards", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Car wash/detailing: Dark solid → split image → stats cards → big cards → ratings
+  "shine-auto": {
+    nav: "dark-solid", hero: "split-image", stats: "cards",
+    services: "big-cards", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "avatar-cards", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Catering/events: Transparent nav → editorial hero → editorial stats → alternating → editorial testimonials
+  "feast-events": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Medical clinic: White border nav → minimal light → stats bar → icon grid → light contact
+  "medplus-clinic": {
+    nav: "white-border", hero: "minimal-light", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Driving school: Dark solid → angled split → stats cards → numbered → ratings testimonials
+  "drive-academy": {
+    nav: "dark-solid", hero: "angled-split", stats: "cards",
+    services: "numbered", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "horizontal-list", faq: "two-column", cta: "banner", contact: "dark",
+  },
 };
 
 // Fallback combo for any template without a specific assignment

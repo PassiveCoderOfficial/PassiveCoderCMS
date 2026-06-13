@@ -1421,6 +1421,297 @@ const CONTENT: Record<string, TemplateContent> = {
     badges: ["Free Consultation", "2,000+ Fabrics", "Custom Made", "Motorised Available"],
   },
 
+  // ── ShieldGuard ─────────────────────────────────────────────────────────────
+  "shield-guard": {
+    tagline: "Trusted Security. Round the Clock.",
+    phone: "+65 6789 1234",
+    email: "ops@shieldguard.sg",
+    address: "10 Tuas South Street, Singapore 637000",
+    cta: "Request a Guard",
+    ctaSecondary: "Get a Quote",
+    navLinks: [
+      { label: "Services", href: "#services" },
+      { label: "Why Us", href: "#about" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "FAQ", href: "#faq" },
+      { label: "Contact", href: "#contact" },
+    ],
+    stats: [
+      { value: "200+", label: "Guards Deployed" },
+      { value: "350+", label: "Sites Secured" },
+      { value: "24/7", label: "Operations" },
+      { value: "12 yr", label: "In Business" },
+    ],
+    services: [
+      { name: "Uniformed Guard Services", desc: "Trained, uniformed security officers for commercial premises, industrial sites and residential developments.", price: "From $18/hr", icon: "🛡️" },
+      { name: "CCTV & Surveillance", desc: "Installation, monitoring and management of IP-based CCTV systems with remote access and analytics.", price: "From $1,200", icon: "📹" },
+      { name: "Mobile Patrol", desc: "Regular scheduled and random patrols of your premises by vehicle-mounted officers.", price: "From $800/mo", icon: "🚔" },
+      { name: "Event Security", desc: "Crowd management, access control and VIP protection for concerts, conferences and private events.", price: "Custom quote", icon: "🎪" },
+      { name: "Executive Protection", desc: "Close-protection officers for high-net-worth individuals, corporate executives and visiting dignitaries.", price: "Custom quote", icon: "👤" },
+      { name: "Access Control Systems", desc: "Biometric, card-swipe and visitor management solutions integrated with your existing infrastructure.", price: "From $2,500", icon: "🔐" },
+    ],
+    about: {
+      heading: "Singapore's Most Trusted Security Partner Since 2012",
+      body: "ShieldGuard is an MOM-licensed security agency providing comprehensive guard, surveillance and access control solutions to over 350 sites across Singapore. Our officers are SPF-certified, receive ongoing training in first aid, crowd control and emergency response, and are backed by 24/7 operations support. We treat every client's premises as if it were our own.",
+      highlights: ["MOM licensed security agency", "SPF-certified officers", "ISO 9001:2015 certified", "24/7 operations control room", "350+ secured sites"],
+    },
+    pricing: [
+      { name: "Basic", price: "$18/hr", period: "per guard", features: ["Uniformed static guard", "Hourly incident log", "Daily activity report", "Emergency callout included"], cta: "Get Started" },
+      { name: "Business", price: "$2,400/mo", period: "per site", features: ["2 guards, 12-hr shifts", "CCTV monitoring", "Mobile patrol weekly", "Incident response SLA", "Monthly management report"], highlight: true, cta: "Most Popular" },
+      { name: "Enterprise", price: "Custom", period: "contract basis", features: ["Dedicated site commander", "24/7 guard deployment", "Full CCTV system", "Access control integration", "Executive protection option", "Annual security audit"], cta: "Contact Us" },
+    ],
+    team: [
+      { name: "Alex Goh", role: "CEO & Operations Director", bio: "15 years in security management. Former Singapore Police Force officer. Oversees all client sites and guard deployment.", initials: "AG", color: "#0f172a" },
+      { name: "Raj Kumar", role: "Head of Training", bio: "Runs our SPF-accredited training programme. Ex-Gurkha officer. 200+ officers trained annually.", initials: "RK", color: "#7f1d1d" },
+      { name: "Mei Lin", role: "Client Relations Manager", bio: "Manages our key accounts and ensures every client has direct access to their account manager 24/7.", initials: "ML", color: "#dc2626" },
+    ],
+    testimonials: [
+      { name: "Facilities Manager, CapitaLand", location: "Raffles City, Singapore", text: "ShieldGuard has secured our mall for 4 years. Professional, proactive and always on time. Zero security incidents under their watch.", rating: 5, initials: "FM" },
+      { name: "HR Director, Jurong Shipyard", location: "Tuas, Singapore", text: "Their officers understand industrial environments. Access control at our yard has improved dramatically since we switched to ShieldGuard.", rating: 5, initials: "HD" },
+      { name: "Event Director, Gardens by the Bay", location: "Marina Bay, Singapore", text: "We deploy ShieldGuard for all major events. Crowd control is seamless and their incident response is the best I've seen.", rating: 5, initials: "ED" },
+    ],
+    faqItems: [
+      { q: "Are your guards MOM-licensed?", a: "Yes. All ShieldGuard officers hold valid Private Security Officer licences issued by the Ministry of Manpower (MOM). We conduct licence checks bi-annually and maintain 100% compliance." },
+      { q: "How quickly can you deploy guards to a new site?", a: "For standard requirements, we can deploy officers within 48–72 hours of contract signing. For urgent situations, contact our operations hotline for emergency deployment options." },
+      { q: "Do you provide uniforms and equipment?", a: "Yes. All officers are provided with standard uniforms, torches, communication radios and first aid kits. Specialist equipment (body armour, K9 units) is available for higher-risk sites." },
+      { q: "What industries do you serve?", a: "We serve commercial real estate, industrial facilities, hospitality, healthcare, events, construction sites and residential condominiums across Singapore." },
+    ],
+    badges: ["MOM Licensed", "SPF Certified", "ISO 9001", "24/7 Operations"],
+  },
+
+  // ── ShineAuto ────────────────────────────────────────────────────────────────
+  "shine-auto": {
+    tagline: "Detail-Perfect. Every Single Time.",
+    phone: "+65 9123 4567",
+    email: "book@shineauto.sg",
+    address: "12 Bukit Timah Road, Singapore 229841",
+    cta: "Book a Detail",
+    ctaSecondary: "View Packages",
+    navLinks: [
+      { label: "Packages", href: "#pricing" },
+      { label: "Services", href: "#services" },
+      { label: "Gallery", href: "#gallery" },
+      { label: "Membership", href: "#membership" },
+      { label: "Contact", href: "#contact" },
+    ],
+    stats: [
+      { value: "8,000+", label: "Cars Detailed" },
+      { value: "4.9★", label: "Google Rating" },
+      { value: "6 yr", label: "In Business" },
+      { value: "15+", label: "Services Offered" },
+    ],
+    services: [
+      { name: "Express Wash", desc: "Exterior hand wash, tyre dressing, glass clean and interior wipe-down. In and out in 45 minutes.", price: "From $35", icon: "🚿" },
+      { name: "Full Detail", desc: "Interior vacuum, steam clean, leather condition, exterior wash, clay bar decontamination and machine polish.", price: "From $180", icon: "✨" },
+      { name: "Ceramic Coating", desc: "Professional-grade 9H ceramic coating. 3–5 year protection. Hydrophobic, scratch-resistant, showroom shine.", price: "From $800", icon: "🛡️" },
+      { name: "Paint Protection Film", desc: "Virtually invisible TPU film shields bumper, bonnet and mirrors from stone chips, scratches and abrasions.", price: "From $1,500", icon: "🎯" },
+      { name: "Engine Bay Clean", desc: "Degreaser, rinse and dress engine bay components for improved aesthetics and easier maintenance.", price: "From $80", icon: "⚙️" },
+      { name: "Headlight Restoration", desc: "Restore faded, yellowed headlights to factory clarity. Improves safety and kerb appeal.", price: "From $120", icon: "💡" },
+    ],
+    about: {
+      heading: "Singapore's Premier Auto Detailing Studio",
+      body: "ShineAuto was founded by detailing enthusiasts who were tired of mediocre car washes. We invest in professional-grade equipment, premium products and — most importantly — highly trained technicians who care about the result. Every vehicle that leaves our studio is treated as if it were our own. We're proud of our 4.9-star rating across 800+ Google reviews and our roster of returning members who trust us month after month.",
+      highlights: ["4.9★ across 800+ Google reviews", "IDA-certified detailing specialists", "Gyeon & Kamikaze collection products", "Climate-controlled studio bays", "Collection & delivery available"],
+    },
+    pricing: [
+      { name: "Wash & Vacuum", price: "$35", period: "per visit", features: ["Exterior hand wash", "Interior vacuum", "Dashboard wipe", "Tyre dressing", "Air freshener"], cta: "Book Now" },
+      { name: "Full Detail", price: "$180", period: "per visit", features: ["Full interior steam clean", "Leather conditioning", "Clay bar treatment", "Machine polish", "Ceramic spray sealant", "Engine bay wipe"], highlight: true, cta: "Book Now" },
+      { name: "Ceramic Pro", price: "From $800", period: "one-time", features: ["Paint decontamination", "One-step machine polish", "9H ceramic coating", "3-year manufacturer warranty", "Maintenance kit included", "Certificate of installation"], cta: "Enquire" },
+    ],
+    team: [
+      { name: "Danny Lim", role: "Founder & Lead Detailer", bio: "IDA-certified. 8 years detailing experience. Has worked on Ferraris, Lamborghinis and bespoke Rolls-Royces.", initials: "DL", color: "#1d4ed8" },
+      { name: "Jason Ng", role: "Ceramic Coating Specialist", bio: "Gyeon-trained. Manages all PPF and ceramic coating installations with zero-defect standards.", initials: "JN", color: "#0f172a" },
+      { name: "Amirah B.", role: "Studio Manager", bio: "Handles bookings, customer care and quality inspection for every vehicle that leaves the studio.", initials: "AB", color: "#1e40af" },
+    ],
+    testimonials: [
+      { name: "Kevin T.", location: "Bukit Timah, Singapore", text: "Brought my BMW M3 in for a full ceramic coating. The finish is absolutely stunning. Danny walked me through every step. Best detailer in Singapore, no contest.", rating: 5, initials: "KT" },
+      { name: "Priya M.", location: "Holland Village, Singapore", text: "Booked the Full Detail package for my Kia. The interior looks like it just came from the showroom. Will definitely be back monthly.", rating: 5, initials: "PM" },
+      { name: "Boon Heng L.", location: "Tampines, Singapore", text: "Used them for my Tesla Model Y PPF. Professional, clean studio, and the film application is flawless. Zero bubbles, perfect edges.", rating: 5, initials: "BL" },
+    ],
+    faqItems: [
+      { q: "How long does a full detail take?", a: "A standard Full Detail takes 4–5 hours. Ceramic coating installations take 1–2 days including curing time. We'll give you a time estimate when you book." },
+      { q: "Do you offer collection and delivery?", a: "Yes. We offer free collection and delivery within 10km of our studio for Full Detail and above packages. For Express Wash, drop-off at the studio only." },
+      { q: "How long does ceramic coating last?", a: "Our 9H ceramic coatings carry a 3-year manufacturer warranty with proper maintenance. Annual maintenance washes are recommended to maintain hydrophobic properties." },
+      { q: "Do you detail commercial fleets?", a: "Yes. We offer fleet accounts for businesses with 5+ vehicles. Contact us for corporate pricing and scheduled maintenance plans." },
+    ],
+    badges: ["4.9★ Google", "IDA Certified", "Gyeon Approved", "800+ Reviews"],
+  },
+
+  // ── FeastEvents ───────────────────────────────────────────────────────────────
+  "feast-events": {
+    tagline: "Great Food. Great Events. Every Time.",
+    phone: "+65 6234 8888",
+    email: "hello@feastevents.sg",
+    address: "8 Dempsey Road, Singapore 247696",
+    cta: "Get a Quote",
+    ctaSecondary: "View Menu",
+    navLinks: [
+      { label: "Services", href: "#services" },
+      { label: "Menus", href: "#menus" },
+      { label: "Gallery", href: "#gallery" },
+      { label: "About", href: "#about" },
+      { label: "Contact", href: "#contact" },
+    ],
+    stats: [
+      { value: "2,400+", label: "Events Catered" },
+      { value: "50+", label: "Menu Options" },
+      { value: "10 yr", label: "In Business" },
+      { value: "5,000", label: "Max Guest Capacity" },
+    ],
+    services: [
+      { name: "Corporate Buffet", desc: "Professional buffet catering for conferences, seminars, product launches and office events. Live stations available.", price: "From $28/pax", icon: "🍽️" },
+      { name: "Wedding Banquet", desc: "Full-service wedding catering from cocktail reception to multi-course dinner. Customised menus to your theme.", price: "From $88/pax", icon: "💒" },
+      { name: "Private Dining", desc: "Intimate chef's table experiences, birthday dinners and VIP private events with dedicated sommelier service.", price: "From $120/pax", icon: "🥂" },
+      { name: "Food Truck & Street Food", desc: "Our branded food trucks deliver high-quality street food at festivals, markets and outdoor activations.", price: "From $4,500/day", icon: "🚚" },
+      { name: "High Tea & Brunch", desc: "Curated high tea and brunch spreads for baby showers, engagement parties and corporate hosting.", price: "From $45/pax", icon: "🫖" },
+      { name: "Live Cooking Stations", desc: "Chef-manned carving, wok, pasta and sushi live stations — perfect centrepiece for gala dinners and exhibitions.", price: "From $800/station", icon: "👨‍🍳" },
+    ],
+    about: {
+      heading: "Singapore's Full-Service Catering & Events Partner",
+      body: "Feast Events has fed tens of thousands of guests across Singapore and the Gulf — from intimate 20-person boardroom lunches to 5,000-guest gala dinners. Our team of 40 full-time culinary professionals, event coordinators and service staff brings the same precision and passion to every event, regardless of scale. We source fresh, seasonal ingredients daily and never compromise on food quality or presentation.",
+      highlights: ["Singapore Food Agency licensed", "Halal certified kitchen", "2,400+ events delivered", "Team of 40+ culinary professionals", "Fresh daily sourcing"],
+    },
+    pricing: [
+      { name: "Seminar", price: "$28/pax", period: "minimum 30 pax", features: ["2 mains, 3 sides", "Soup & salad station", "Dessert & beverages", "Setup & teardown", "Disposable tableware"], cta: "Book Now" },
+      { name: "Gala", price: "$88/pax", period: "minimum 100 pax", features: ["5-course sit-down dinner", "2 live cooking stations", "Premium tableware & linens", "Dedicated service team", "Personalised menu card", "Event coordination included"], highlight: true, cta: "Get a Quote" },
+      { name: "Wedding", price: "Custom", period: "per event", features: ["Full custom menu design", "Tasting session included", "Sommelier & bar service", "Wedding cake cutting", "Pre-event planning sessions", "Day-of coordinator"], cta: "Contact Us" },
+    ],
+    team: [
+      { name: "Chef Marcus Tan", role: "Executive Chef", bio: "Trained in Paris and Tokyo. 18 years in fine dining and large-scale event catering. Menu architect for all Feast Events concepts.", initials: "MT", color: "#9f1239" },
+      { name: "Priya Rajendra", role: "Events Director", bio: "Coordinates all event logistics, staffing and client liaison. Has managed events from 20 to 5,000 guests.", initials: "PR", color: "#92400e" },
+      { name: "Hafiz Osman", role: "Operations Manager", bio: "Oversees kitchen operations, halal compliance and daily food sourcing. Ensures every dish leaves the kitchen to spec.", initials: "HO", color: "#b45309" },
+    ],
+    testimonials: [
+      { name: "Procurement Head, DBS Bank", location: "Marina Bay Financial Centre", text: "Feast Events has catered every DBS Singapore townhall for the last 3 years. Consistently excellent food, impeccable service, always on time.", rating: 5, initials: "PH" },
+      { name: "Bride, Siti Rahimah", location: "Fullerton Hotel, Singapore", text: "Our wedding dinner for 350 guests was absolutely perfect. Every guest complimented the food. Chef Marcus even customised a dessert for my grandmother's dietary needs.", rating: 5, initials: "SR" },
+      { name: "CEO, Singtel", location: "MBFC, Singapore", text: "The live cooking stations at our product launch were a hit. Guests were talking about the food weeks later. Feast Events absolutely delivered.", rating: 5, initials: "CE" },
+    ],
+    faqItems: [
+      { q: "Is your kitchen halal certified?", a: "Yes. Our central kitchen holds a valid Halal certification from the Islamic Religious Council of Singapore (MUIS). All menu items are prepared in accordance with halal requirements." },
+      { q: "What is your minimum guest count?", a: "For corporate buffets, our minimum is 30 guests. For sit-down dinners, our minimum is 50 guests. Smaller events (under 30 guests) may be catered for at a premium — please enquire." },
+      { q: "How far in advance should we book?", a: "We recommend booking at least 4–6 weeks in advance for corporate events and 6–12 months for weddings. We accept last-minute bookings subject to availability." },
+      { q: "Do you provide tableware, linens and serving staff?", a: "Yes. All our packages include tableware, serving equipment and trained service staff. Premium linen, centrepieces and décor can be added as optional upgrades." },
+    ],
+    badges: ["SFA Licensed", "MUIS Halal", "5,000 Pax Capacity", "10 Years"],
+  },
+
+  // ── MedPlus Clinic ────────────────────────────────────────────────────────────
+  "medplus-clinic": {
+    tagline: "Caring for You and Your Family.",
+    phone: "+65 6456 7890",
+    email: "appointments@medplus.sg",
+    address: "23 Clementi Ave 2, #01-05, Singapore 120023",
+    cta: "Book Appointment",
+    ctaSecondary: "Our Services",
+    navLinks: [
+      { label: "Services", href: "#services" },
+      { label: "Doctors", href: "#team" },
+      { label: "Appointments", href: "#booking" },
+      { label: "Insurance", href: "#insurance" },
+      { label: "Contact", href: "#contact" },
+    ],
+    stats: [
+      { value: "15,000+", label: "Patients Seen" },
+      { value: "8 yr", label: "In Practice" },
+      { value: "4.8★", label: "Patient Rating" },
+      { value: "Mon–Sun", label: "Open Daily" },
+    ],
+    services: [
+      { name: "General Practice", desc: "Walk-in and appointment GP consultations for acute illness, chronic disease management and medical certificates.", price: "From $35", icon: "🩺" },
+      { name: "Health Screening", desc: "Comprehensive health screenings including blood panel, ECG, body composition, vision and hearing checks.", price: "From $98", icon: "🔬" },
+      { name: "Vaccinations", desc: "Adult and child vaccinations including flu, HPV, Hepatitis B, travel vaccines and pre-employment jabs.", price: "From $28", icon: "💉" },
+      { name: "Women's Health", desc: "Pap smear, breast examination, pre-natal care, contraception counselling and menopause management.", price: "From $80", icon: "🌸" },
+      { name: "Chronic Disease Management", desc: "Long-term care plans for diabetes, hypertension, high cholesterol and asthma under CHAS and CDMP schemes.", price: "Subsidised rates", icon: "💊" },
+      { name: "Minor Surgery", desc: "Wound suturing, mole and skin tag removal, abscess drainage and ingrown toenail procedures.", price: "From $150", icon: "🩹" },
+    ],
+    about: {
+      heading: "A Community Clinic Built Around You",
+      body: "MedPlus Clinic was established in 2016 to provide Clementi and the surrounding community with affordable, high-quality primary care. Our three doctors — trained at NUS and NTU's medical schools — take the time to listen, explain and personalise treatment plans. We accept Medisave, CHAS, Pioneer Generation and MediShield Life, ensuring our patients are never priced out of quality healthcare.",
+      highlights: ["MOH registered clinic", "Medisave & CHAS accepted", "Chronic disease management", "Same-day appointments", "Open 7 days a week"],
+    },
+    pricing: [
+      { name: "Consultation", price: "$35", period: "per visit", features: ["GP consultation", "1 basic medication", "Medical certificate", "Follow-up advice", "CHAS subsidised rates available"], cta: "Walk In" },
+      { name: "Health Screen", price: "$98", period: "per package", features: ["Full blood panel (25 tests)", "ECG", "Body composition analysis", "Doctor consultation", "Digital results in 24hr", "Annual health report"], highlight: true, cta: "Book Now" },
+      { name: "Corporate", price: "Custom", period: "per employee per year", features: ["Pre-employment screening", "Onsite medical visits", "Group health screening", "Dedicated account manager", "Clinic panel for employees", "Annual health day events"], cta: "Enquire" },
+    ],
+    team: [
+      { name: "Dr. Sarah Lim", role: "Principal GP, MBBS (NUS)", bio: "8 years in family medicine. Specialises in chronic disease management, women's health and preventive care.", initials: "SL", color: "#1d4ed8" },
+      { name: "Dr. Raj Arumugam", role: "Senior GP, MBBS (NTU)", bio: "Former hospital doctor with expertise in acute care, minor surgery and occupational medicine.", initials: "RA", color: "#0891b2" },
+      { name: "Nurse Jenny Tan", role: "Clinic Sister", bio: "10 years nursing experience. Manages vaccinations, wound care and patient flow for the clinic.", initials: "JT", color: "#1e3a8a" },
+    ],
+    testimonials: [
+      { name: "Mrs Tan Ah Lian", location: "Clementi, Singapore", text: "Dr Sarah is so patient and thorough. She never rushes you and always explains what the medication does. Best GP I've had in 20 years.", rating: 5, initials: "TA" },
+      { name: "James Lim", location: "West Coast, Singapore", text: "Walked in on a Saturday morning with a bad fever. Seen within 15 minutes, diagnosed, medicated. Back to work by Monday. Efficient and caring.", rating: 5, initials: "JL" },
+      { name: "Priya Nair", location: "Buona Vista, Singapore", text: "Do all my annual health screenings here. The digital results come back fast and the doctor calls to explain every finding personally.", rating: 5, initials: "PN" },
+    ],
+    faqItems: [
+      { q: "Do you accept Medisave?", a: "Yes. We accept Medisave for chronic disease management under the Chronic Disease Management Programme (CDMP), as well as for certain vaccinations and health screenings. Please bring your NRIC and Medisave card." },
+      { q: "Can I walk in or do I need an appointment?", a: "Both. Walk-ins are welcome during clinic hours. To avoid waiting, you can book an appointment online or via WhatsApp. Same-day appointments are usually available." },
+      { q: "What insurance panels are you on?", a: "We are on AIA, Prudential, Great Eastern, AXA, Aviva, NTUC Income and HSBC Health panels. For other insurers, we can provide receipts for reimbursement claims." },
+      { q: "Do you offer home visits?", a: "Yes, for elderly or mobility-impaired patients within 3km of the clinic. Home visit fees apply. Please call to arrange." },
+    ],
+    badges: ["MOH Registered", "Medisave Accepted", "CHAS Green & Blue", "Open 7 Days"],
+  },
+
+  // ── DriveAcademy ─────────────────────────────────────────────────────────────
+  "drive-academy": {
+    tagline: "From Learner to Licensed. Guaranteed.",
+    phone: "+65 6543 9900",
+    email: "hello@driveacademy.sg",
+    address: "3 Ubi Ave 3, #02-11, Singapore 408857",
+    cta: "Book a Lesson",
+    ctaSecondary: "View Courses",
+    navLinks: [
+      { label: "Courses", href: "#pricing" },
+      { label: "Instructors", href: "#team" },
+      { label: "FAQ", href: "#faq" },
+      { label: "Book Now", href: "#booking" },
+      { label: "Contact", href: "#contact" },
+    ],
+    stats: [
+      { value: "94%", label: "First-Attempt Pass Rate" },
+      { value: "12,000+", label: "Students Graduated" },
+      { value: "20 yr", label: "In Business" },
+      { value: "25+", label: "Certified Instructors" },
+    ],
+    services: [
+      { name: "Class 3A (Auto) Private Lessons", desc: "One-on-one circuit and road lessons in automatic transmission cars. Flexible morning, afternoon and weekend slots.", price: "From $65/lesson", icon: "🚗" },
+      { name: "Class 3 (Manual) Private Lessons", desc: "Manual transmission lessons for drivers seeking full licence flexibility. Ideal for commercial or overseas driving.", price: "From $65/lesson", icon: "⚙️" },
+      { name: "Intensive Course", desc: "Full-package intensive programme: 20 lessons + 2 theory sessions + 1 mock test. Average completion in 8 weeks.", price: "$1,200 package", icon: "⚡" },
+      { name: "Refresher Course", desc: "For lapsed drivers returning after a break. Re-familiarise with current road rules and modern vehicle systems.", price: "From $65/lesson", icon: "🔄" },
+      { name: "Theory Test Prep", desc: "Classroom and online preparation for Basic Theory Test (BTT) and Final Theory Test (FTT). 98% pass rate.", price: "$80 package", icon: "📚" },
+      { name: "Simulator Training", desc: "Advanced driving simulator sessions covering wet weather, night driving and emergency stopping situations.", price: "From $45/session", icon: "🖥️" },
+    ],
+    about: {
+      heading: "20 Years of Turning Learners Into Confident Drivers",
+      body: "DriveAcademy has been Singapore's most trusted private driving school since 2004. Our 25+ certified instructors combine patient, encouraging teaching styles with rigorous preparation for both the TP circuit and road tests. We maintain a 94% first-attempt pass rate — well above the national average — and back our intensive course with a free re-test lesson if you don't pass first time.",
+      highlights: ["TP-registered driving school", "94% first-attempt pass rate", "25+ certified instructors", "Online theory portal included", "Free re-test lesson guarantee"],
+    },
+    pricing: [
+      { name: "Pay Per Lesson", price: "$65/lesson", period: "no commitment", features: ["Class 3A or 3 options", "Flexible slot booking", "WhatsApp scheduling", "Progress tracking app", "Pre-test mock session ($80 add-on)"], cta: "Book a Lesson" },
+      { name: "Intensive Course", price: "$1,200", period: "full package", features: ["20 driving lessons", "BTT & FTT prep included", "2 simulator sessions", "Mock test session", "TP test slot booking", "Free re-test lesson if failed"], highlight: true, cta: "Enrol Now" },
+      { name: "Advanced Driver", price: "$550", period: "refresher package", features: ["8 refresher lessons", "Road rule update session", "Night driving practice", "Highway & expressway lesson", "Progress assessment report"], cta: "Book Now" },
+    ],
+    team: [
+      { name: "Chief Instr. David Ong", role: "Founder & Chief Instructor", bio: "TP-certified. 20 years teaching. Has personally graduated over 3,000 students. Known for calm, patient teaching style.", initials: "DO", color: "#dc2626" },
+      { name: "Instr. Michelle Tan", role: "Senior Driving Instructor", bio: "Specialises in anxiety management for nervous learners. 8-year track record with 96% first-attempt pass rate.", initials: "MT", color: "#7f1d1d" },
+      { name: "Instr. Faisal Rahman", role: "Driving Instructor", bio: "Manual transmission specialist. Teaches both Class 3 and Class 3A. Fluent in English, Malay and Tamil.", initials: "FR", color: "#991b1b" },
+    ],
+    testimonials: [
+      { name: "Amanda L.", location: "Bedok, Singapore", text: "Failed twice at CDCs. Switched to DriveAcademy and David's patient coaching made all the difference. Passed first attempt with them. Cannot recommend enough.", rating: 5, initials: "AL" },
+      { name: "Hafiz M.", location: "Jurong East, Singapore", text: "Booked the intensive course. 8 weeks from zero to full licence. The theory prep materials online are so good I passed FTT on my first try too.", rating: 5, initials: "HM" },
+      { name: "Clara Ng", location: "Tampines, Singapore", text: "Michelle is a saint. I was terrified of driving but she built my confidence lesson by lesson. Got my licence in 3 months. Life changing.", rating: 5, initials: "CN" },
+    ],
+    faqItems: [
+      { q: "How many lessons do I need before taking the test?", a: "This varies by learner. Most students need 15–25 lessons for circuit practice plus road lessons. Our instructors assess your readiness and recommend when to book the TP test. The intensive package includes 20 lessons which is the typical requirement." },
+      { q: "Can I book lessons on weekends?", a: "Yes. We offer slots 7 days a week including weekends and public holidays, subject to instructor availability. Weekend slots tend to fill up fast — we recommend booking 1–2 weeks in advance." },
+      { q: "What if I fail the TP test?", a: "Students on our Intensive Course package receive one free additional lesson before their re-test booking. We'll review what went wrong and tailor your practice accordingly." },
+      { q: "Do you provide the car for the TP test?", a: "Yes. Our instructors accompany you to the TP test in our school car. The school car is what you'll have practised in throughout your lessons." },
+    ],
+    badges: ["94% Pass Rate", "TP Registered", "12,000+ Graduates", "20 Years"],
+  },
+
+  // ── TradeSupply (this must remain AFTER Batch 3 content) ──────────────────────
   "trade-supply": {
     tagline: "Your global supply chain partner",
     phone: "+971 4 234 5678",
