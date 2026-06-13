@@ -2025,8 +2025,83 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   MAIZE_FASHION,
 ];
 
+// Maps every DB template slug → closest registry identity slug.
+// Keeps seed-template.ts working for all 55 DB templates.
+const SLUG_ALIAS: Record<string, string> = {
+  // Cleaning
+  "sparkle": "clean-pro",
+  "deep-clean": "clean-pro",
+  "cool-air": "clean-pro",
+  "flow-right": "clean-pro",
+  "climate-zone": "clean-pro",
+  "pest-control": "clean-pro",
+  // Renovation / Construction
+  "build-bold": "lex-core",
+  "renovate-pro": "lex-core",
+  "fitout-hub": "lex-core",
+  "hacking-pro": "lex-core",
+  // Interior Design
+  "luxe-interior": "luxe-spa",
+  "curtain-drape": "luxe-spa",
+  "floor-craft": "luxe-spa",
+  "shutter-craft": "luxe-spa",
+  "paint-masters": "luxe-spa",
+  // Restaurant / Cafe
+  "savour": "aroma-table",
+  "brew-bar": "brew-haven",
+  "grill-house": "aroma-table",
+  // Health & Beauty
+  "glow-salon": "luxe-spa",
+  "zen-spa": "luxe-spa",
+  "dental-care": "dental-care-pro",
+  "nail-studio": "luxe-spa",
+  "veterinary-clinic": "dental-care-pro",
+  // Fitness
+  "iron-gym": "fit-forge",
+  "yoga-flow": "fit-forge",
+  "sports-coach": "fit-forge",
+  // Legal & Finance
+  "lexis-law": "lex-core",
+  "wealth-advisor": "lex-core",
+  "tax-pro": "lex-core",
+  // Real Estate
+  "prime-property": "estate-edge",
+  "rent-ease": "estate-edge",
+  // Photography
+  "lens-craft": "lens-studio",
+  "event-shots": "lens-studio",
+  // Education
+  "learn-hub": "nexa-agency",
+  "code-school": "nexa-agency",
+  "language-school": "nexa-agency",
+  "childcare-center": "nexa-agency",
+  // Retail / Shop
+  "shopify-lite": "maize-fashion",
+  "gift-box": "maize-fashion",
+  "auto-parts": "maize-fashion",
+  // Automotive
+  "drive-care": "fit-forge",
+  "car-wash-pro": "clean-pro",
+  // Events / Weddings
+  "event-flow": "bliss-bride",
+  "wedding-planner": "bliss-bride",
+  "catering-co": "aroma-table",
+  // Tech / Agency
+  "pixel-agency": "nexa-agency",
+  "software-co": "nexa-agency",
+  "it-support": "nexa-agency",
+  "startup-launch": "nexa-agency",
+  // General Business
+  "biz-minimal": "clean-pro",
+  "corporate-one": "lex-core",
+  "consultant-pro": "lex-core",
+  "logistics-co": "lex-core",
+  "security-guard": "lex-core",
+};
+
 export function getTemplateIdentity(slug: string): TemplateIdentity | undefined {
-  return TEMPLATE_REGISTRY.find(t => t.slug === slug);
+  const resolved = SLUG_ALIAS[slug] ?? slug;
+  return TEMPLATE_REGISTRY.find(t => t.slug === resolved);
 }
 
 export function getDefaultTemplateIdentity(): TemplateIdentity {
