@@ -39,7 +39,7 @@ export function GalleryBlock({ block }: { block: GalleryBlockProps }) {
             className="group relative aspect-square overflow-hidden rounded-lg cursor-pointer"
             onClick={() => lightbox && setLightboxIndex(i)}
           >
-            <Image src={image.url} alt={image.alt ?? ""} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+            <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-300" />
             {lightbox && (
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                 <ZoomIn className="text-white opacity-0 group-hover:opacity-100 h-6 w-6 transition-opacity" />
@@ -73,6 +73,7 @@ export function GalleryBlock({ block }: { block: GalleryBlockProps }) {
               src={images[lightboxIndex].url}
               alt={images[lightboxIndex].alt ?? ""}
               fill
+              unoptimized
               className="object-contain"
             />
           </div>
