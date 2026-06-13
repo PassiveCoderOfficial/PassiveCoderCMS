@@ -6,27 +6,26 @@ import Link from "next/link";
 import { Eye, Zap, ChevronRight, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 
-const CATEGORY_SERVICES: Record<string, string[]> = {
-  "Cleaning":                  ["Deep Clean", "Regular Service", "End-of-Lease"],
-  "HVAC & Plumbing":           ["Installation", "Repair", "Maintenance"],
-  "Renovation & Construction": ["New Build", "Renovation", "Fit-Out"],
-  "Interior Design":           ["Full Design", "Space Plan", "Styling"],
-  "Restaurant & Cafe":         ["Dine In", "Reservations", "Private Events"],
-  "Health & Beauty":           ["Hair & Style", "Treatments", "Bridal"],
-  "Fitness & Sports":          ["Memberships", "PT Sessions", "Classes"],
-  "Legal & Finance":           ["Consultation", "Corporate", "Litigation"],
-  "Real Estate":               ["Buy", "Rent", "Manage"],
-  "Photography":               ["Weddings", "Portraits", "Commercial"],
-  "Education":                 ["Courses", "Tutoring", "Programs"],
-  "Retail & Shop":             ["Browse", "New Arrivals", "Offers"],
-  "Automotive":                ["Servicing", "Repairs", "Detailing"],
-  "Events":                    ["Weddings", "Corporate", "Private"],
-  "Tech & Agency":             ["Strategy", "Development", "SEO"],
-  "General Business":          ["Services", "About", "Contact"],
+const TEMPLATE_SERVICES: Record<string, string[]> = {
+  "build-right":     ["Renovation", "New Build", "Fit-Out"],
+  "colour-craft":    ["Interior Paint", "Exterior", "Colour Consult"],
+  "glass-line":      ["Glass Partitions", "Shopfronts", "Aluminium"],
+  "curtain-studio":  ["Curtains", "Blinds", "Home Measuring"],
+  "pest-shield":     ["Pest Control", "Termite Treatment", "Eco-Safe"],
+  "fresh-wash":      ["Dry Cleaning", "Laundry", "Home Pickup"],
+  "uniform-pro":     ["Uniforms", "Workwear", "Bulk Orders"],
+  "cool-breeze":     ["AC Installation", "Servicing", "24/7 Repair"],
+  "sparky-pro":      ["Electrical", "Plumbing", "Emergency Call"],
+  "trade-supply":    ["Wholesale", "Bulk Supply", "Import/Export"],
+  "shield-guard":    ["Guard Services", "CCTV", "Patrol"],
+  "shine-auto":      ["Car Wash", "Detailing", "Ceramic Coat"],
+  "feast-events":    ["Catering", "Corporate Events", "Weddings"],
+  "medplus-clinic":  ["GP Consult", "Specialist", "Walk-In"],
+  "drive-academy":   ["Driving Lessons", "Theory Test", "License"],
 };
 
 function TemplateThumbnail({ template }: { template: Template }) {
-  const services = CATEGORY_SERVICES[template.category] ?? ["Service 1", "Service 2", "Service 3"];
+  const services = TEMPLATE_SERVICES[template.slug] ?? ["Service 1", "Service 2", "Service 3"];
 
   return (
     <div className="w-full aspect-[4/3] rounded-t-xl overflow-hidden relative bg-gray-900">
@@ -44,7 +43,7 @@ function TemplateThumbnail({ template }: { template: Template }) {
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(160deg, ${template.thumbFrom}cc 0%, ${template.thumbTo}e6 100%)`,
+          background: `linear-gradient(160deg, ${template.thumbFrom}99 0%, ${template.thumbTo}bb 100%)`,
         }}
       />
 
