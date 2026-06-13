@@ -2778,6 +2778,779 @@ const GLASS_LINE: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 18: CoolBreeze (AC / HVAC — Gulf & SG style) ──────────────────
+
+const COOL_BREEZE: TemplateIdentity = {
+  slug: "cool-breeze",
+  name: "CoolBreeze",
+  description: "Premium AC & HVAC contractor. Cool blue & white Gulf-style. Service contracts, installation packages, 24/7 emergency callout.",
+  category: "HVAC & Plumbing",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1200&q=85&fit=crop",
+  tags: ["aircon", "hvac", "ac service", "installation", "gulf", "singapore"],
+
+  palette: {
+    primary: "#0284c7",
+    primaryFg: "#ffffff",
+    secondary: "#1e3a5f",
+    accent: "#38bdf8",
+    background: "#f0f9ff",
+    foreground: "#0c1a2e",
+    muted: "#e0f2fe",
+    mutedFg: "#0369a1",
+    card: "#ffffff",
+    border: "#bae6fd",
+    ring: "#0284c7",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-cool-breeze { background: #f0f9ff; }
+    .template-cool-breeze h1,.template-cool-breeze h2 { color: #0c1a2e; font-weight: 700; }
+    .template-cool-breeze .service-card { border: 2px solid #bae6fd; border-radius: 0.5rem; background: #fff; }
+    .template-cool-breeze .service-card:hover { border-color: #0284c7; box-shadow: 0 4px 20px rgba(2,132,199,0.15); }
+    .template-cool-breeze .stat-value { color: #0284c7; font-weight: 800; }
+    .template-cool-breeze .hero-section { background: linear-gradient(135deg, #0c1a2e 0%, #0284c7 100%); }
+  `,
+
+  variants: {
+    hero: "centered-dark",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1600&q=90&fit=crop",
+      alt: "Air conditioning unit installation",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=800&q=80&fit=crop",
+      alt: "HVAC technician at work",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&q=80&fit=crop", alt: "AC installation" },
+      { url: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=600&q=80&fit=crop", alt: "AC servicing" },
+      { url: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80&fit=crop", alt: "Ducted system" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Chemical wash" },
+      { url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop", alt: "Commercial HVAC" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", alt: "Office cooling" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=80&fit=crop", alt: "Residential AC system" },
+      { url: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80&fit=crop", alt: "Ducted installation" },
+      { url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&fit=crop", alt: "Commercial unit" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop", alt: "Office HVAC" },
+      { url: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=800&q=80&fit=crop", alt: "Maintenance visit" },
+      { url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80&fit=crop", alt: "System upgrade" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Lead Technician" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Installation Engineer" },
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face", alt: "Service Manager" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1200&q=80&fit=crop",
+      alt: "Book AC service",
+    },
+  },
+
+  heroHeadline: "Stay Cool. Stay Comfortable.",
+  heroSubline: "Certified AC installation, servicing & maintenance for homes and businesses. 24/7 emergency response.",
+  heroBadge: "❄️ BCA & SPRING Certified Technicians",
+  heroCTA: "Book a Service",
+  heroSecondaryCTA: "View Packages",
+  siteName: "CoolBreeze Aircon",
+  tagline: "Your comfort is our priority",
+  phone: "+65 6789 0123",
+  email: "service@coolbreeze.sg",
+  address: "45 Ubi Avenue 1, #05-12 Ubi Tech Park, Singapore 408935",
+  aboutHeading: "8,000+ Installations. Certified. Trusted.",
+  aboutBody: "CoolBreeze has been Singapore's and the Gulf's trusted AC and HVAC partner since 2007. Our team of BCA-certified technicians handles everything from single split-unit installations to full central ducted systems for commercial buildings. We hold service contracts with over 200 corporate clients and respond to emergencies within 2 hours — day or night.",
+  aboutHighlights: ["BCA & SPRING Singapore certified technicians", "Authorised installer — Daikin, Mitsubishi, Panasonic", "2-hour emergency response guarantee", "200+ corporate maintenance contracts", "Energy audit & optimisation service"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Packages", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "AC Installation", description: "Supply and install split, multi-split and cassette aircon systems. Daikin, Mitsubishi, Panasonic and LG authorised.", icon: "❄️", iconType: "emoji", price: "From $480/unit", imageUrl: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "AC Servicing & Maintenance", description: "General servicing, filter cleaning, gas top-up and leak checks. Regular maintenance contracts available.", icon: "🔧", iconType: "emoji", price: "From $40/unit", imageUrl: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Chemical Wash", description: "Deep chemical cleaning to remove mould, bacteria and buildup. Restores cooling efficiency. Fan coil + condenser unit.", icon: "🧪", iconType: "emoji", price: "From $80/unit", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Ducted Central HVAC", description: "Design, supply and installation of central ducted air conditioning for offices, retail, hotels and industrial facilities.", icon: "🏢", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Emergency Repair", description: "24/7 emergency AC repair for all brands. Our technicians carry common parts and can resolve most faults on the first visit.", icon: "🚨", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Annual Maintenance Contract", description: "Scheduled quarterly servicing, priority emergency response, free parts replacement and one chemical wash per year.", icon: "📋", iconType: "emoji", price: "From $180/unit/yr", imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "8,000+", label: "Units Installed" },
+    { id: uid("st"), value: "17 yr", label: "In Business" },
+    { id: uid("st"), value: "2 hr", label: "Emergency Response" },
+    { id: uid("st"), value: "4.9★", label: "Google Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Ravi Chandran", role: "F&B Owner", company: "Tanjong Pagar", content: "Installed 12 cassette units across our restaurant. Done in two days, all running perfectly. CoolBreeze handles our quarterly servicing too — zero downtime in 3 years.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ahmad Al-Rashid", role: "Property Manager", company: "Marina Bay", content: "Manage HVAC for a 15-storey commercial building. CoolBreeze holds our maintenance contract and their 2-hour emergency response has saved us many times.", rating: 5 },
+    { id: uid("t"), name: "Mrs. Lee", role: "Homeowner", company: "Bukit Timah", content: "Three units installed — spotless work, the piping is neat and the quotes were completely transparent. Highly professional team.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Faisal Al-Mansoori", role: "Hotel Operations", company: "Orchard Road", content: "Replaced the entire central HVAC system for our 120-room hotel. On time, within budget, no disruption to guests. Outstanding project management.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Basic Service", price: "From $40/unit", description: "General AC servicing", features: ["Filter & coil cleaning", "Drainage check", "Gas pressure check", "Performance test", "Service report"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Annual Contract", price: "From $180/unit/yr", description: "Full year maintenance — best value", features: ["4 quarterly services", "Priority emergency callout", "1 chemical wash included", "Free minor parts", "Maintenance log & reports"], highlighted: true, badge: "Best Value", ctaLabel: "Get Contract", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial Package", price: "Custom Quote", description: "For offices, retail & hospitality", features: ["Tailored service schedule", "Dedicated account manager", "Same-day emergency response", "Energy efficiency reporting", "Multi-unit discounts"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How often should I service my aircon?", answer: "We recommend servicing every 3 months for residential units used daily. Commercial units in high-use environments may require monthly maintenance. Our technician will advise during the first visit." },
+    { id: uid("f"), question: "What brands do you service?", answer: "We service all major brands including Daikin, Mitsubishi Electric, Panasonic, LG, Samsung, Midea, Carrier and Fujitsu. We carry a wide range of spare parts for quick repair." },
+    { id: uid("f"), question: "Do you offer 24/7 emergency repair?", answer: "Yes. Our emergency line is staffed 24/7. We guarantee a 2-hour response time for contract holders and aim for 4 hours for non-contract emergency calls." },
+    { id: uid("f"), question: "What is a chemical wash and when do I need it?", answer: "A chemical wash uses specialised cleaners to deep-clean the evaporator coil, removing mould, bacteria and mineral deposits that general servicing misses. We recommend it once a year or when your unit is cooling poorly or has odours." },
+    { id: uid("f"), question: "Do you provide warranty on new installations?", answer: "All new AC installations come with a 1-year workmanship warranty. Manufacturer warranties (typically 5 years for the compressor) are registered on your behalf at no charge." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Eddie Tan", role: "Head of Installations", bio: "BCA-certified engineer with 14 years installing residential and commercial HVAC systems across Singapore.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Suresh Nair", role: "Senior Service Technician", bio: "Authorised Daikin and Mitsubishi technician. Expert in fault diagnosis and gas refrigerant handling.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Lisa Chen", role: "Service Manager", bio: "Coordinates all bookings and emergency callouts. Ensures every client receives a service report within 24 hours.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 19: SparkyPro (Electrical & Plumbing) ──────────────────────────
+
+const SPARKY_PRO: TemplateIdentity = {
+  slug: "sparky-pro",
+  name: "SparkyPro",
+  description: "Bold electrical & plumbing contractor. Safety-yellow & dark. Emergency services, certifications, residential & commercial works.",
+  category: "HVAC & Plumbing",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=85&fit=crop",
+  tags: ["electrical", "plumbing", "contractor", "wiring", "pipes", "singapore", "ae"],
+
+  palette: {
+    primary: "#ca8a04",
+    primaryFg: "#000000",
+    secondary: "#1c1917",
+    accent: "#fbbf24",
+    background: "#ffffff",
+    foreground: "#1c1917",
+    muted: "#fefce8",
+    mutedFg: "#713f12",
+    card: "#ffffff",
+    border: "#fde68a",
+    ring: "#ca8a04",
+    borderRadius: "0.375rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-sparky-pro h1,.template-sparky-pro h2 { font-weight: 800; color: #1c1917; }
+    .template-sparky-pro .hero-section { background: #1c1917; color: #fff; }
+    .template-sparky-pro .service-card { border-left: 4px solid #ca8a04; }
+    .template-sparky-pro .stat-value { color: #ca8a04; font-weight: 800; }
+    .template-sparky-pro .badge { background: #ca8a04; color: #000; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "centered-dark",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1600&q=90&fit=crop",
+      alt: "Electrician at work",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop",
+      alt: "Electrical panel installation",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Electrical wiring" },
+      { url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop", alt: "DB box installation" },
+      { url: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=600&q=80&fit=crop", alt: "Plumbing repair" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Pipe installation" },
+      { url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80&fit=crop", alt: "Lighting installation" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", alt: "Commercial works" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80&fit=crop", alt: "Wiring project" },
+      { url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&fit=crop", alt: "Distribution board" },
+      { url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80&fit=crop", alt: "LED lighting" },
+      { url: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=800&q=80&fit=crop", alt: "Plumbing upgrade" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop", alt: "Pipe replacement" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop", alt: "Commercial fitout" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Master Electrician" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Lead Plumber" },
+      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face", alt: "Operations Lead" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=80&fit=crop",
+      alt: "Call SparkyPro",
+    },
+  },
+
+  heroHeadline: "Certified. Reliable. On Call 24/7.",
+  heroSubline: "Licensed electricians and plumbers for residential and commercial works. Emergency response in under 60 minutes.",
+  heroBadge: "⚡ EMA Licensed Electrical Worker",
+  heroCTA: "Call Now",
+  heroSecondaryCTA: "Get a Quote",
+  siteName: "SparkyPro Electrical & Plumbing",
+  tagline: "Certified trades. Every job guaranteed.",
+  phone: "+65 9000 1234",
+  email: "jobs@sparkypro.sg",
+  address: "Serving all areas across Singapore",
+  aboutHeading: "Licensed. Insured. 10,000+ Jobs Done.",
+  aboutBody: "SparkyPro brings together Singapore's most experienced licensed electricians and plumbers under one roof. Whether it's a tripped breaker at midnight, a new bathroom fitout or a complete commercial rewire, our EMA-licensed and PUB-certified tradespeople deliver safe, code-compliant work every time. We guarantee our workmanship for 12 months.",
+  aboutHighlights: ["EMA Licensed Electrical Worker (LEW)", "PUB licensed plumbing contractor", "60-minute emergency response", "All works under BCA and SS wiring standards", "12-month workmanship guarantee"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Call Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Electrical Wiring & Rewiring", description: "New wiring, partial rewiring and full house rewiring to SS 638 standards. All work certified by our Licensed Electrical Worker.", icon: "⚡", iconType: "emoji", price: "From $150", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "DB Box Upgrade & Installation", description: "Replace old fuse boards with modern MCB distribution boards. Includes earth leakage protection and surge protection.", icon: "🔌", iconType: "emoji", price: "From $380", imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Lighting Installation", description: "LED downlights, track lighting, pendant lights and smart lighting systems. Residential and commercial.", icon: "💡", iconType: "emoji", price: "From $25/point", imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Plumbing Repair & Installation", description: "Tap, toilet, sink, shower and water heater repairs and replacements. New bathroom plumbing supply and drainage.", icon: "🔩", iconType: "emoji", price: "From $80", imageUrl: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Pipe Replacement & Upgrade", description: "Replace ageing galvanised pipes with modern PEX or CPVC piping. Reduce water pressure loss and prevent leaks.", icon: "🪛", iconType: "emoji", price: "From $200", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial & Industrial Works", description: "Complete electrical and M&E services for offices, retail, F&B and industrial units. BCA submissions handled.", icon: "🏭", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "10,000+", label: "Jobs Completed" },
+    { id: uid("st"), value: "12 yr", label: "In Business" },
+    { id: uid("st"), value: "60 min", label: "Emergency Response" },
+    { id: uid("st"), value: "4.9★", label: "Google Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "David Koh", role: "Property Owner", company: "Jurong West", content: "Tripped breaker at 11pm. SparkyPro had a technician at my door in 45 minutes. Fixed and certified within an hour. Incredible service.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Rashid Al-Farsi", role: "Retail Shop Owner", company: "Bugis", content: "Full electrical rewire and LED upgrade for my 3,000 sqft shop. Done over a weekend with zero disruption to business on Monday. Professional and clean.", rating: 5 },
+    { id: uid("t"), name: "Mrs. Tan", role: "Homeowner", company: "Serangoon", content: "Had a burst pipe on a Sunday morning. SparkyPro came within the hour and fixed everything. They even patched the wall. Lifesavers.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "James Ng", role: "Office Manager", company: "One Raffles Place", content: "Manage a 4,000 sqft office. SparkyPro handles all our electrical maintenance. Reliable, well-priced and always on time.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Residential", price: "From $80/job", description: "Home electrical & plumbing repairs", features: ["All common repairs", "Licensed tradesperson", "Transparent pricing", "Same-day available", "12-month warranty"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Renovation Works", price: "From $150", description: "New wiring, points & plumbing", features: ["Full new installations", "EMA/PUB certified work", "BCA-compliant drawings", "Test & inspection cert", "1-year workmanship guarantee"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial Contract", price: "Custom Quote", description: "Ongoing maintenance for businesses", features: ["Scheduled maintenance visits", "Priority emergency callout", "Dedicated account manager", "Compliance documentation", "Multi-unit discounts"], ctaLabel: "Enquire Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Are your electricians EMA licensed?", answer: "Yes. All electrical works are performed or supervised by our EMA-licensed Electrical Workers (LEW). We issue a Certificate of Electrical Installation after every new installation or rewiring job." },
+    { id: uid("f"), question: "How quickly can you respond to emergencies?", answer: "We target a 60-minute response for emergencies in Singapore. Our technicians are on standby 24/7 and carry common parts for immediate repair." },
+    { id: uid("f"), question: "Do you handle HDB and condo electrical works?", answer: "Yes. We are experienced with HDB renovation permit requirements and coordinate approvals with town councils and MCSTs for condo projects." },
+    { id: uid("f"), question: "What warranty do you provide?", answer: "We provide a 12-month workmanship warranty on all completed works. Any fault arising from our workmanship within that period is rectified at no charge." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Ben Lim", role: "Master Electrician (LEW)", bio: "EMA Licensed Electrical Worker with 16 years of experience in residential, commercial and industrial electrical works.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Hafiz Osman", role: "Lead Plumber", bio: "PUB licensed plumber specialising in bathroom renovations, water supply and drainage system upgrades.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Raymond Goh", role: "Operations Manager", bio: "Coordinates all emergency callouts and scheduled jobs. Ensures every technician arrives on time with the right parts.", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 20: FreshWash (Laundry & Dry Cleaning) ────────────────────────
+
+const FRESH_WASH: TemplateIdentity = {
+  slug: "fresh-wash",
+  name: "FreshWash",
+  description: "Modern laundry & dry cleaning service. Clean white + teal. Online booking, price list, home pickup & delivery, express service.",
+  category: "Cleaning",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=1200&q=85&fit=crop",
+  tags: ["laundry", "dry cleaning", "pickup", "delivery", "ironing"],
+
+  palette: {
+    primary: "#0d9488",
+    primaryFg: "#ffffff",
+    secondary: "#06b6d4",
+    accent: "#2dd4bf",
+    background: "#f0fdfa",
+    foreground: "#134e4a",
+    muted: "#ccfbf1",
+    mutedFg: "#0f766e",
+    card: "#ffffff",
+    border: "#99f6e4",
+    ring: "#0d9488",
+    borderRadius: "0.75rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.015em",
+  },
+  customCss: `
+    .template-fresh-wash { background: #f0fdfa; }
+    .template-fresh-wash h1,.template-fresh-wash h2 { color: #134e4a; font-weight: 700; }
+    .template-fresh-wash .service-card { background: #fff; border: 1px solid #99f6e4; border-radius: 0.75rem; }
+    .template-fresh-wash .service-card:hover { border-color: #0d9488; box-shadow: 0 4px 20px rgba(13,148,136,0.12); }
+    .template-fresh-wash .stat-value { color: #0d9488; }
+    .template-fresh-wash .cta-section { background: linear-gradient(135deg, #0d9488, #06b6d4); color: #fff; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=1600&q=90&fit=crop",
+      alt: "Laundry service",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=800&q=80&fit=crop",
+      alt: "Professional laundry facility",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=600&q=80&fit=crop", alt: "Laundry wash & fold" },
+      { url: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=600&q=80&fit=crop", alt: "Dry cleaning" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Ironing service" },
+      { url: "https://images.unsplash.com/photo-1612965607446-25e1332775ae?w=600&q=80&fit=crop", alt: "Shoe cleaning" },
+      { url: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&q=80&fit=crop", alt: "Curtain cleaning" },
+      { url: "https://images.unsplash.com/photo-1503264116251-35a269479413?w=600&q=80&fit=crop", alt: "Bedding & linen" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=800&q=80&fit=crop", alt: "Laundry facility" },
+      { url: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=800&q=80&fit=crop", alt: "Dry cleaning racks" },
+      { url: "https://images.unsplash.com/photo-1612965607446-25e1332775ae?w=800&q=80&fit=crop", alt: "Sneaker cleaning" },
+      { url: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&q=80&fit=crop", alt: "Delivery service" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Head of Operations" },
+      { url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80&fit=crop&face", alt: "Customer Service" },
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face", alt: "Delivery Manager" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=1200&q=80&fit=crop",
+      alt: "Schedule pickup",
+    },
+  },
+
+  heroHeadline: "Fresh Clothes. Zero Hassle.",
+  heroSubline: "Professional laundry, dry cleaning and ironing service with free home pickup and delivery. Ready in 24 hours.",
+  heroBadge: "🚚 Free Pickup & Delivery",
+  heroCTA: "Schedule Pickup",
+  heroSecondaryCTA: "View Prices",
+  siteName: "FreshWash Laundry",
+  tagline: "Clean clothes delivered to your door",
+  phone: "+65 8123 4567",
+  email: "hello@freshwash.sg",
+  address: "Serving all areas across Singapore",
+  aboutHeading: "30,000+ Satisfied Customers. Trusted Since 2014.",
+  aboutBody: "FreshWash is Singapore's most convenient laundry and dry cleaning service. We collect your clothes, clean them with professional-grade machines and premium detergents, and deliver them fresh and folded back to your door — all within 24 to 48 hours. Our specialist dry cleaning team handles everything from delicate silks to business suits, curtains and wedding gowns.",
+  aboutHighlights: ["Free pickup & delivery with every order", "24–48 hour standard turnaround", "Express 12-hour service available", "Eco-friendly, skin-safe detergents", "Specialist dry cleaning for delicates"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Schedule Pickup", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Wash & Fold", description: "Machine wash, tumble dry and neatly folded. Sorted by colour and fabric type. Eco-friendly detergent included.", icon: "👕", iconType: "emoji", price: "From $1.80/kg", imageUrl: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Dry Cleaning", description: "Specialist solvent cleaning for suits, dresses, delicates, leather and formal wear. Pressed and covered.", icon: "🥼", iconType: "emoji", price: "From $8/item", imageUrl: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Ironing & Pressing", description: "Professional steam ironing for shirts, pants, dresses and uniforms. Crisp results every time.", icon: "👔", iconType: "emoji", price: "From $1.50/item", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Sneaker & Shoe Cleaning", description: "Deep clean, deodorising and re-whitening for all sneaker types. Canvas, leather and mesh. Sole restoration included.", icon: "👟", iconType: "emoji", price: "From $18/pair", imageUrl: "https://images.unsplash.com/photo-1612965607446-25e1332775ae?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Curtain & Linen Cleaning", description: "Full curtain cleaning and rehang service. Duvets, pillows, mattress covers and all bed linen accepted.", icon: "🛏️", iconType: "emoji", price: "From $12/panel", imageUrl: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Express Service", description: "12-hour turnaround for urgent items. Available 7 days. Priority cleaning and delivery. Perfect for last-minute needs.", icon: "⚡", iconType: "emoji", price: "+50% on standard rate", imageUrl: "https://images.unsplash.com/photo-1503264116251-35a269479413?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "30,000+", label: "Happy Customers" },
+    { id: uid("st"), value: "10 yr", label: "In Business" },
+    { id: uid("st"), value: "24 hr", label: "Standard Turnaround" },
+    { id: uid("st"), value: "4.8★", label: "Google Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Chloe Ng", role: "Working Professional", company: "CBD", content: "I schedule a pickup every two weeks. They collect Sunday morning and deliver Monday evening — perfectly cleaned and folded. Makes my week so much easier.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Mr. Krishnamurthy", role: "Hotel F&B Manager", company: "Sentosa", content: "We use FreshWash for all our table linen and staff uniforms. Consistent quality, reliable schedule, and they handle our volume without issues.", rating: 5 },
+    { id: uid("t"), name: "Sofia Chen", role: "Homeowner", company: "Clementi", content: "Sent my wedding gown and three suits for dry cleaning. All returned in perfect condition with individual covers. Will only use FreshWash from now on.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ali Hassan", role: "Expat", company: "Buona Vista", content: "As someone who travels frequently for work, having FreshWash handle my suits has been a game-changer. Pickup and delivery around my schedule, always perfect.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Pay As You Go", price: "From $1.80/kg", description: "No commitment, pay per order", features: ["Wash & fold by weight", "Dry cleaning per item", "Free pickup & delivery", "48-hour turnaround", "No minimum order"], ctaLabel: "Schedule Pickup", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Monthly Plan", price: "From $49/month", description: "Best for regular laundry needs", features: ["20kg wash & fold included", "2 free dry cleaning items", "Priority scheduling", "Dedicated account manager", "10% off express service"], highlighted: true, badge: "Best Value", ctaLabel: "Subscribe Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Business Account", price: "Custom Quote", description: "For hotels, restaurants & offices", features: ["High-volume processing", "Fixed weekly collections", "Priority turnaround", "Itemised billing", "Account manager & reporting"], ctaLabel: "Get Business Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How does pickup and delivery work?", answer: "Schedule a pickup via our website or WhatsApp. We collect your laundry in our provided bag, clean it at our facility, and deliver it back within 24–48 hours. All at no extra charge." },
+    { id: uid("f"), question: "What items can you dry clean?", answer: "We dry clean suits, dresses, sarees, leather jackets, formal wear, delicate fabrics (silk, wool, cashmere), wedding gowns, curtains and most household textiles. If in doubt, contact us." },
+    { id: uid("f"), question: "Do you offer express same-day service?", answer: "Yes. Our express 12-hour service is available 7 days a week for an additional 50% on the standard rate. Collect before 10am for delivery by 10pm." },
+    { id: uid("f"), question: "What if an item is damaged?", answer: "We take great care with every item. In the unlikely event of damage, we have a full insurance policy and will compensate based on the item's value and condition. Our team will contact you immediately." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Tracy Lim", role: "Head of Operations", bio: "10 years in commercial laundry. Runs our facility team of 20 and ensures every order meets our quality standards before dispatch.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Amy Tan", role: "Customer Service Manager", bio: "Handles all client enquiries and ensures every pickup and delivery runs to schedule. Your go-to person for anything FreshWash.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Daniel Wong", role: "Delivery Operations", bio: "Manages our fleet of 8 delivery riders and ensures every order arrives on time in pristine condition.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 21: CurtainStudio (Curtains, Blinds & Soft Furnishings) ────────
+
+const CURTAIN_STUDIO: TemplateIdentity = {
+  slug: "curtain-studio",
+  name: "CurtainStudio",
+  description: "Elegant curtains, blinds & soft furnishings showroom. Warm neutrals + gold. Product gallery, free measuring, home consultation.",
+  category: "Interior Design",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85&fit=crop",
+  tags: ["curtains", "blinds", "furnishings", "drapes", "interior", "singapore", "my"],
+
+  palette: {
+    primary: "#b45309",
+    primaryFg: "#ffffff",
+    secondary: "#44403c",
+    accent: "#d97706",
+    background: "#fafaf9",
+    foreground: "#1c1917",
+    muted: "#f5f5f4",
+    mutedFg: "#57534e",
+    card: "#ffffff",
+    border: "#e7e5e4",
+    ring: "#b45309",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Georgia",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "0em",
+  },
+  customCss: `
+    .template-curtain-studio h1,.template-curtain-studio h2 { font-family: Georgia, serif; font-weight: 700; color: #1c1917; }
+    .template-curtain-studio .service-card { border: 1px solid #e7e5e4; border-top: 3px solid #b45309; }
+    .template-curtain-studio .service-card:hover { box-shadow: 0 8px 32px rgba(180,83,9,0.10); }
+    .template-curtain-studio .stat-value { color: #b45309; }
+    .template-curtain-studio .hero-section { background: linear-gradient(135deg, #451a03 0%, #92400e 100%); }
+    .template-curtain-studio .cta-section { background: linear-gradient(90deg, #b45309, #d97706); color: #fff; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=90&fit=crop",
+      alt: "Beautiful curtains in a living room",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80&fit=crop",
+      alt: "Showroom interior",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Curtains" },
+      { url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80&fit=crop", alt: "Roman blinds" },
+      { url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80&fit=crop", alt: "Roller blinds" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", alt: "Motorised blinds" },
+      { url: "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=600&q=80&fit=crop", alt: "Carpets & rugs" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=80&fit=crop", alt: "Upholstery" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop", alt: "Living room curtains" },
+      { url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80&fit=crop", alt: "Bedroom drapes" },
+      { url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80&fit=crop", alt: "Office blinds" },
+      { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&fit=crop", alt: "Hotel curtaining" },
+      { url: "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80&fit=crop", alt: "Show flat styling" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Dining room" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face", alt: "Interior Consultant" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Fabric Specialist" },
+      { url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80&fit=crop&face", alt: "Installation Lead" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&fit=crop",
+      alt: "Book free home consultation",
+    },
+  },
+
+  heroHeadline: "Window Treatments That Transform Spaces",
+  heroSubline: "Custom curtains, blinds and soft furnishings for homes, offices and hospitality. Free home measuring and consultation.",
+  heroBadge: "🏠 Free Home Consultation",
+  heroCTA: "Book Free Consultation",
+  heroSecondaryCTA: "Browse Collection",
+  siteName: "CurtainStudio",
+  tagline: "Beautifully dressed windows since 2008",
+  phone: "+65 8800 9988",
+  email: "hello@curtainstudio.sg",
+  address: "12 Joo Chiat Road, #01-04, Singapore 427348",
+  aboutHeading: "5,000+ Homes & Offices Transformed",
+  aboutBody: "CurtainStudio has been creating bespoke window treatments and soft furnishings for Singapore homes, offices and hospitality spaces since 2008. Our team of interior consultants and master curtain makers work with an exclusive fabric collection of over 2,000 materials sourced from Europe, Japan and Korea. Every piece is custom-made at our local workshop and installed by our professional fitters.",
+  aboutHighlights: ["2,000+ exclusive fabric selections", "Own workshop — all custom made locally", "Free home measuring & colour consultation", "5,000+ residential & commercial projects", "Motorised and smart blind systems available"],
+
+  navItems: [
+    { id: "n1", label: "Products", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Pricing", url: "#pricing" },
+    { id: "n5", label: "Book Consultation", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Curtains & Drapes", description: "Eyelet, pinch pleat, wave and tab-top curtains in sheer, semi-sheer and blackout fabrics. Custom lengths and widths.", icon: "🪟", iconType: "emoji", price: "From $80/panel", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Roman & Roller Blinds", description: "Clean, contemporary window covering in hundreds of fabrics — daylight, blackout, moisture-resistant and fire-retardant options.", icon: "🔲", iconType: "emoji", price: "From $120/window", imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Motorised & Smart Blinds", description: "App-controlled, voice-activated or scene-triggered motorised blinds. Compatible with Google Home, Alexa and KNX.", icon: "📱", iconType: "emoji", price: "From $280/window", imageUrl: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial & Hospitality", description: "High-volume supply and installation for hotels, offices, showrooms and serviced apartments. Contract pricing available.", icon: "🏨", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Carpets & Rugs", description: "Broadloom carpets, carpet tiles and handmade rugs for residential and commercial spaces. Custom sizes and colours.", icon: "🪵", iconType: "emoji", price: "From $5/sqft", imageUrl: "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Upholstery & Soft Furnishings", description: "Sofa reupholstery, cushion covers, headboards and custom fabric accessories. Any fabric from our collection.", icon: "🛋️", iconType: "emoji", price: "From $150/piece", imageUrl: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5,000+", label: "Projects Completed" },
+    { id: uid("st"), value: "16 yr", label: "In Business" },
+    { id: uid("st"), value: "2,000+", label: "Fabric Choices" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Grace Koh", role: "Homeowner", company: "Holland Village", content: "Dressed 14 windows in my new condo. Their consultant came, advised on fabrics for each room, and the result is magazine-worthy. The motorised blinds are a dream.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "James Tan", role: "Interior Designer", company: "JT Interiors", content: "CurtainStudio is my go-to for every client project. Their fabric range, quality and installation consistency is unmatched. No other supplier comes close.", rating: 5 },
+    { id: uid("t"), name: "Mrs. Sharma", role: "Homeowner", company: "Bishan", content: "Beautifully made curtains delivered and installed in 10 days. The measuring service meant everything fitted perfectly. Absolutely no complaints.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ahmad Raza", role: "Hotel GM", company: "Sentosa Cove", content: "Fitted 80 hotel rooms with motorised blackout blinds. Perfectly programmed, looks premium and the installation team was immaculate. Highly recommended.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Residential", price: "From $80/panel", description: "Custom curtains & blinds for home", features: ["Free home measuring", "2,000+ fabric choices", "Custom made locally", "Professional installation", "1-year warranty"], ctaLabel: "Book Consultation", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Smart Home Package", price: "From $280/window", description: "Motorised & app-controlled blinds", features: ["Motorised roller/roman blinds", "App & voice control", "Scene programming", "Smart home integration", "5-year motor warranty"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial", price: "Custom Quote", description: "For hotels, offices & retail", features: ["Volume pricing", "Project manager", "Phased installation", "Commercial-grade fabrics", "Dedicated account manager"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Is the home measuring service really free?", answer: "Yes, completely free with no obligation. Our consultant visits your home, takes accurate measurements, advises on fabric choices and provides a written quotation — all at no charge." },
+    { id: uid("f"), question: "How long does it take from order to installation?", answer: "Standard lead time is 10–14 working days from order confirmation. Express orders (7 working days) are available for an additional charge depending on fabric availability." },
+    { id: uid("f"), question: "Do you do motorised blinds?", answer: "Yes. We offer a full range of motorised roller, roman and venetian blinds with remote control, smartphone app, voice control (Alexa/Google) and KNX smart home integration." },
+    { id: uid("f"), question: "Can you clean or alter existing curtains?", answer: "Yes. We offer a repair, alteration and relining service for curtains purchased elsewhere. Bring your curtains to our showroom for assessment and a quote." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Vanessa Ong", role: "Senior Interior Consultant", bio: "16 years in soft furnishings and interior styling. Has dressed over 1,000 homes and hospitality projects across Singapore.", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Mei Lin", role: "Fabric & Design Specialist", bio: "Trained in textile design in Japan. Curates our fabric collection and advises on colour combinations and light control.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Shirley Ho", role: "Head of Installation", bio: "Leads our team of 8 professional fitters. Ensures every installation is precise, clean and delivered to spec.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 22: TradeSupply (B2B Trading & Wholesale) ──────────────────────
+
+const TRADE_SUPPLY: TemplateIdentity = {
+  slug: "trade-supply",
+  name: "TradeSupply",
+  description: "B2B trading & wholesale supplier. Corporate navy & orange. Product catalogue, bulk enquiry, brand partnerships, global sourcing.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=85&fit=crop",
+  tags: ["trading", "wholesale", "supply", "b2b", "import", "export", "bd", "ae"],
+
+  palette: {
+    primary: "#1e3a5f",
+    primaryFg: "#ffffff",
+    secondary: "#ea580c",
+    accent: "#f97316",
+    background: "#f8fafc",
+    foreground: "#0f172a",
+    muted: "#f1f5f9",
+    mutedFg: "#475569",
+    card: "#ffffff",
+    border: "#e2e8f0",
+    ring: "#1e3a5f",
+    borderRadius: "0.375rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-trade-supply h1,.template-trade-supply h2 { color: #0f172a; font-weight: 700; }
+    .template-trade-supply .hero-section { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); }
+    .template-trade-supply .service-card { border: 1px solid #e2e8f0; border-top: 3px solid #ea580c; }
+    .template-trade-supply .service-card:hover { box-shadow: 0 4px 24px rgba(30,58,95,0.12); }
+    .template-trade-supply .stat-value { color: #ea580c; font-weight: 800; }
+    .template-trade-supply .cta-btn { background: #ea580c; color: #fff; }
+    .template-trade-supply .cta-btn:hover { background: #c2410c; }
+  `,
+
+  variants: {
+    hero: "centered-dark",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600&q=90&fit=crop",
+      alt: "Warehouse and supply chain",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&fit=crop",
+      alt: "Global trading operations",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80&fit=crop", alt: "Wholesale supply" },
+      { url: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=600&q=80&fit=crop", alt: "Import & export" },
+      { url: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=80&fit=crop", alt: "Product sourcing" },
+      { url: "https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=600&q=80&fit=crop", alt: "Logistics & freight" },
+      { url: "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600&q=80&fit=crop", alt: "Quality control" },
+      { url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop", alt: "Brand distribution" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80&fit=crop", alt: "Warehouse operations" },
+      { url: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&fit=crop", alt: "Container loading" },
+      { url: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800&q=80&fit=crop", alt: "Product catalogue" },
+      { url: "https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=800&q=80&fit=crop", alt: "Port operations" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80&fit=crop&face", alt: "CEO" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Trade Director" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Logistics Manager" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=80&fit=crop",
+      alt: "Submit trade enquiry",
+    },
+  },
+
+  heroHeadline: "Sourced Globally. Delivered Locally.",
+  heroSubline: "Trusted wholesale trading and supply partner for businesses across Asia and the Gulf. Competitive pricing, reliable logistics, 20+ years experience.",
+  heroBadge: "🌏 ISO 9001 Certified Trading Company",
+  heroCTA: "Submit Enquiry",
+  heroSecondaryCTA: "View Catalogue",
+  siteName: "TradeSupply International",
+  tagline: "Your global supply chain partner",
+  phone: "+971 4 234 5678",
+  email: "trade@tradesupply.ae",
+  address: "Jebel Ali Free Zone, Dubai, UAE",
+  aboutHeading: "20 Years. 50+ Countries. 1,000+ Products.",
+  aboutBody: "TradeSupply International is a full-service wholesale trading and distribution company headquartered in Dubai's Jebel Ali Free Zone, with offices in Dhaka, Singapore and Kuala Lumpur. We source, import, warehouse and distribute goods across 50+ countries — from consumer products and building materials to garments, chemicals and food commodities. Our network of verified manufacturers ensures competitive pricing without compromising quality.",
+  aboutHighlights: ["ISO 9001:2015 certified", "50+ countries served", "Offices in UAE, BD, SG, MY", "1,000+ product categories", "Letters of credit & trade finance available"],
+
+  navItems: [
+    { id: "n1", label: "Products", url: "#services" },
+    { id: "n2", label: "About", url: "#about" },
+    { id: "n3", label: "Partners", url: "#testimonials" },
+    { id: "n4", label: "FAQ", url: "#faq" },
+    { id: "n5", label: "Enquire Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Wholesale Supply", description: "Bulk supply of consumer goods, building materials, chemicals, food commodities and industrial products. MOQ-based pricing.", icon: "📦", iconType: "emoji", price: "MOQ Pricing", imageUrl: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Import & Export", description: "Full import/export documentation, customs clearance and compliance for cross-border trade between Asia and the Middle East.", icon: "🚢", iconType: "emoji", price: "Contact for Rates", imageUrl: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Global Sourcing", description: "Manufacturer identification, factory audits, sample management and production oversight in Bangladesh, India, China and Vietnam.", icon: "🌏", iconType: "emoji", price: "From 3% of order value", imageUrl: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Freight & Logistics", description: "FCL and LCL ocean freight, air freight, inland trucking and last-mile delivery across GCC, South Asia and Southeast Asia.", icon: "✈️", iconType: "emoji", price: "Quote on enquiry", imageUrl: "https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Quality Control & Inspection", description: "Pre-shipment inspection, in-line QC and lab testing through our network of certified inspection companies.", icon: "✅", iconType: "emoji", price: "From $250/inspection", imageUrl: "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Brand Distribution", description: "Exclusive and non-exclusive distribution agreements for brands entering GCC, ASEAN and South Asian markets.", icon: "🤝", iconType: "emoji", price: "Partnership basis", imageUrl: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "20 yr", label: "In Business" },
+    { id: uid("st"), value: "50+", label: "Countries Served" },
+    { id: uid("st"), value: "1,000+", label: "Product Lines" },
+    { id: uid("st"), value: "$50M+", label: "Annual Trade Volume" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Khalid Al-Mansouri", role: "Procurement Director", company: "Dubai", content: "TradeSupply has been our preferred sourcing partner for 8 years. Competitive pricing, reliable quality and they handle everything from factory to our warehouse. Highly recommend.", rating: 5 },
+    { id: uid("t"), name: "Rashida Begum", role: "Managing Director", company: "Dhaka", content: "We source all our building materials through TradeSupply. Their inspection service caught several quality issues before shipment — saved us significant costs.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ahmad bin Hassan", role: "Import Manager", company: "Kuala Lumpur", content: "Their team arranged factory visits, handled all documentation and shipped 40ft containers to KL on time. Prices were 15% lower than our previous supplier.", rating: 5 },
+    { id: uid("t"), name: "Chen Wei", role: "Operations Manager", company: "Singapore", content: "Distributing our brand into the Gulf through TradeSupply was seamless. They know the market, have the relationships, and deliver results.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Spot Order", price: "MOQ Pricing", description: "One-time bulk purchase", features: ["No long-term commitment", "Competitive spot pricing", "Standard lead time", "Quality inspection option", "LC / TT payment accepted"], ctaLabel: "Submit Enquiry", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Regular Supply Contract", price: "Volume Pricing", description: "Ongoing supply arrangements", features: ["Guaranteed pricing for 6–12 months", "Priority production allocation", "Dedicated account manager", "Monthly delivery schedule", "Trade credit available"], highlighted: true, badge: "Most Popular", ctaLabel: "Discuss Contract", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Distribution Partnership", price: "Custom Terms", description: "Exclusive market distribution", features: ["Exclusive or non-exclusive rights", "Marketing support provided", "In-market sales team access", "Co-branded materials", "Revenue share or margin model"], ctaLabel: "Explore Partnership", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What is your minimum order quantity (MOQ)?", answer: "MOQ varies by product category. For most fast-moving consumer goods, MOQ is 500–1,000 units or one 20ft container. Building materials and commodities are priced per metric tonne. Contact us for specific product MOQs." },
+    { id: uid("f"), question: "What payment terms do you accept?", answer: "We accept Letters of Credit (LC at sight and usance), Telegraphic Transfer (TT), and for established clients, we offer open account terms with credit insurance. Trade finance arrangements can also be structured." },
+    { id: uid("f"), question: "How do you ensure product quality?", answer: "We conduct factory audits before onboarding any supplier. For each shipment, we offer pre-shipment inspection through third-party agencies (SGS, Bureau Veritas, Intertek). Lab testing is available on request." },
+    { id: uid("f"), question: "Which countries do you ship to?", answer: "We primarily serve GCC countries (UAE, Saudi Arabia, Qatar, Kuwait, Oman, Bahrain), South Asia (Bangladesh, India, Sri Lanka) and Southeast Asia (Singapore, Malaysia, Indonesia, Thailand). Other destinations on request." },
+    { id: uid("f"), question: "Can you help with customs clearance?", answer: "Yes. Our in-house trade documentation team prepares all export documentation. We work with licensed customs brokers in all major markets for import clearance and can manage door-to-door delivery." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Mohammed Al-Farsi", role: "CEO & Founder", bio: "20 years in international trade. Built TradeSupply from a single-office operation to a multi-country trading group with offices in 4 countries.", avatar: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "James Tan", role: "Trade Director, Asia", bio: "Based in Singapore. Manages sourcing relationships across Bangladesh, India, China and Vietnam and oversees ASEAN distribution.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Rahul Sharma", role: "Logistics & Operations Manager", bio: "10 years in freight forwarding. Manages our logistics network across 50+ countries and coordinates all shipment documentation.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -2798,17 +3571,40 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   PEST_SHIELD,
   UNIFORM_PRO,
   GLASS_LINE,
+  COOL_BREEZE,
+  SPARKY_PRO,
+  FRESH_WASH,
+  CURTAIN_STUDIO,
+  TRADE_SUPPLY,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
 // Keeps seed-template.ts working for all 55 DB templates.
 const SLUG_ALIAS: Record<string, string> = {
-  // Cleaning
+  // Cleaning / Laundry
   "sparkle": "clean-pro",
   "deep-clean": "clean-pro",
-  "cool-air": "clean-pro",
-  "flow-right": "clean-pro",
-  "climate-zone": "clean-pro",
+  // HVAC / AC
+  "cool-air": "cool-breeze",
+  "flow-right": "cool-breeze",
+  "climate-zone": "cool-breeze",
+  "ac-service-pro": "cool-breeze",
+  // Electrical & Plumbing
+  "elec-pro": "sparky-pro",
+  "plumb-right": "sparky-pro",
+  "wiring-masters": "sparky-pro",
+  // Laundry
+  "laundry-express": "fresh-wash",
+  "dry-clean-pro": "fresh-wash",
+  "wash-n-fold": "fresh-wash",
+  // Curtains & Furnishings
+  "curtain-drape-studio": "curtain-studio",
+  "blind-experts": "curtain-studio",
+  "drape-masters": "curtain-studio",
+  // Trading & Supply
+  "trade-link": "trade-supply",
+  "supply-chain-co": "trade-supply",
+  "global-trade-hub": "trade-supply",
   // Renovation / Construction
   "build-bold": "build-right",
   "renovate-pro": "build-right",
