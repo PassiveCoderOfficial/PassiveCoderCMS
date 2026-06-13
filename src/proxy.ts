@@ -53,7 +53,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/onboarding", request.url));
   }
 
-  return updateSession(new NextRequest(request.url, { headers, method: request.method, body: request.body }));
+  return updateSession(request, headers);
 }
 
 export const config = {

@@ -3,6 +3,7 @@ import type { HeroBlockProps } from "@/types/cms";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { InlineText } from "../inline-text";
 
 interface HeroBlockComponentProps {
   block: HeroBlockProps;
@@ -65,20 +66,20 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
       <div className="flex flex-col gap-5">
         {data.badge && (
           <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold w-fit">
-            {data.badge}
+            <InlineText blockId={block.id} field="badge" value={data.badge} />
           </span>
         )}
         <h1 className={cn("font-bold tracking-tight leading-[1.1]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
-          {data.title}
+          <InlineText blockId={block.id} field="title" value={data.title} />
         </h1>
         {data.subtitle && (
           <p className="text-xl font-medium" style={{ color: data.typography?.subtitleColor || undefined }}>
-            {data.subtitle}
+            <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
           </p>
         )}
         {data.description && (
           <p className="text-base leading-relaxed text-muted-foreground max-w-lg" style={{ color: data.typography?.descColor || undefined }}>
-            {data.description}
+            <InlineText blockId={block.id} field="description" value={data.description} />
           </p>
         )}
         <HeroButtons data={data} />
@@ -110,20 +111,20 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
       <div className="relative z-10 max-w-4xl mx-auto text-center px-6 flex flex-col items-center gap-6">
         {data.badge && (
           <span className="inline-flex items-center gap-1.5 border border-white/30 backdrop-blur-sm text-white/90 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase">
-            {data.badge}
+            <InlineText blockId={block.id} field="badge" value={data.badge} />
           </span>
         )}
         <h1 className={cn("font-bold tracking-tight leading-[1.05] text-white", titleSize)}>
-          {data.title}
+          <InlineText blockId={block.id} field="title" value={data.title} />
         </h1>
         {data.subtitle && (
           <p className="text-xl text-white/80 font-light max-w-2xl">
-            {data.subtitle}
+            <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
           </p>
         )}
         {data.description && (
           <p className="text-base text-white/70 max-w-xl leading-relaxed">
-            {data.description}
+            <InlineText blockId={block.id} field="description" value={data.description} />
           </p>
         )}
         <HeroButtons data={data} centered />
@@ -141,20 +142,20 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
     <div className="max-w-5xl mx-auto text-center flex flex-col items-center gap-6 py-12">
       {data.badge && (
         <span className="inline-flex items-center gap-1.5 bg-secondary/20 text-secondary border border-secondary/30 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase">
-          {data.badge}
+          <InlineText blockId={block.id} field="badge" value={data.badge} />
         </span>
       )}
       <h1 className={cn("font-bold tracking-tight leading-[1.05]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
-        {data.title}
+        <InlineText blockId={block.id} field="title" value={data.title} />
       </h1>
       {data.subtitle && (
         <p className="text-xl font-medium text-muted-foreground max-w-2xl" style={{ color: data.typography?.subtitleColor || undefined }}>
-          {data.subtitle}
+          <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
         </p>
       )}
       {data.description && (
         <p className="text-base leading-relaxed text-muted-foreground max-w-2xl" style={{ color: data.typography?.descColor || undefined }}>
-          {data.description}
+          <InlineText blockId={block.id} field="description" value={data.description} />
         </p>
       )}
       <HeroButtons data={data} centered />
@@ -184,20 +185,20 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
         <div className="max-w-xl flex flex-col gap-6">
           {data.badge && (
             <span className="inline-flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest w-fit">
-              {data.badge}
+              <InlineText blockId={block.id} field="badge" value={data.badge} />
             </span>
           )}
           <h1 className={cn("font-black tracking-tight leading-[1.05]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
-            {data.title}
+            <InlineText blockId={block.id} field="title" value={data.title} />
           </h1>
           {data.subtitle && (
             <p className="text-lg text-muted-foreground" style={{ color: data.typography?.subtitleColor || undefined }}>
-              {data.subtitle}
+              <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
             </p>
           )}
           {data.description && (
             <p className="text-sm text-muted-foreground leading-relaxed" style={{ color: data.typography?.descColor || undefined }}>
-              {data.description}
+              <InlineText blockId={block.id} field="description" value={data.description} />
             </p>
           )}
           <HeroButtons data={data} />
@@ -217,14 +218,14 @@ function HeroLegacy({ block }: HeroBlockComponentProps) {
     <div className={cn(layout === "centered" && "text-center items-center", "flex flex-col gap-4")}>
       {badge && (
         <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium w-fit">
-          {badge}
+          <InlineText blockId={block.id} field="badge" value={badge} />
         </span>
       )}
       <h1 className={cn("font-bold tracking-tight leading-tight", titleSize)} style={{ color: typography.titleColor }}>
-        {title}
+        <InlineText blockId={block.id} field="title" value={title} />
       </h1>
-      {subtitle && <p className="text-xl font-medium" style={{ color: typography.subtitleColor }}>{subtitle}</p>}
-      {description && <p className="text-base leading-relaxed max-w-2xl" style={{ color: typography.descColor }}>{description}</p>}
+      {subtitle && <p className="text-xl font-medium" style={{ color: typography.subtitleColor }}><InlineText blockId={block.id} field="subtitle" value={subtitle} /></p>}
+      {description && <p className="text-base leading-relaxed max-w-2xl" style={{ color: typography.descColor }}><InlineText blockId={block.id} field="description" value={description} /></p>}
       <HeroButtons data={data} centered={layout === "centered"} />
     </div>
   );

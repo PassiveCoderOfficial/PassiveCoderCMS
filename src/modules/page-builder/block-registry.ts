@@ -29,8 +29,8 @@ const baseBlock = (type: BlockType) => ({
 export const blockRegistry: BlockDefinition[] = [
   {
     type: "hero",
-    label: "Hero",
-    description: "Full-width hero section with headline, CTA buttons, and image",
+    label: "Welcome Banner",
+    description: "The big section at the top of your page — headline, photo, and buttons",
     icon: "🦸",
     category: "layout",
     create: () => ({
@@ -49,8 +49,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "slider",
-    label: "Slider",
-    description: "Image carousel/slider with optional text overlays",
+    label: "Image Slideshow",
+    description: "Rotating photos with optional text on top",
     icon: "🎠",
     category: "media",
     create: () => ({
@@ -71,8 +71,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "navigation",
-    label: "Navigation",
-    description: "Site header with logo, navigation links, and optional CTA",
+    label: "Menu Bar",
+    description: "The strip at the very top with your logo and page links",
     icon: "🧭",
     category: "layout",
     create: () => ({
@@ -98,8 +98,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "text",
-    label: "Text / Rich Content",
-    description: "Rich text editor for articles, paragraphs, and formatted content",
+    label: "Text",
+    description: "Plain writing — paragraphs, headings, lists, and links",
     icon: "📝",
     category: "content",
     create: () => ({
@@ -116,7 +116,7 @@ export const blockRegistry: BlockDefinition[] = [
   {
     type: "services",
     label: "Services",
-    description: "Showcase services or features with icon/image, title, description, and link",
+    description: "Cards that show what you offer, each with a short description",
     icon: "⚙️",
     category: "content",
     create: () => ({
@@ -139,7 +139,7 @@ export const blockRegistry: BlockDefinition[] = [
   {
     type: "blog",
     label: "Blog Posts",
-    description: "Display latest blog posts in a grid or list layout",
+    description: "Automatically shows your latest news or blog articles",
     icon: "📰",
     category: "content",
     create: () => ({
@@ -163,8 +163,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "gallery",
-    label: "Gallery",
-    description: "Image gallery with grid, masonry, or carousel layout",
+    label: "Photo Gallery",
+    description: "A grid of photos — great for showing off your work",
     icon: "🖼️",
     category: "media",
     create: () => ({
@@ -182,8 +182,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "cta",
-    label: "Call to Action",
-    description: "Bold section to drive conversions with headline and buttons",
+    label: "Action Banner",
+    description: "A bold colored strip that asks visitors to call or book",
     icon: "📣",
     category: "layout",
     create: () => ({
@@ -201,8 +201,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "testimonials",
-    label: "Testimonials",
-    description: "Customer testimonials and reviews",
+    label: "Customer Reviews",
+    description: "Quotes from happy customers with star ratings",
     icon: "💬",
     category: "content",
     create: () => ({
@@ -221,8 +221,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "divider",
-    label: "Divider",
-    description: "Visual separator between sections",
+    label: "Divider Line",
+    description: "A thin line that separates two sections",
     icon: "➖",
     category: "layout",
     create: () => ({
@@ -234,8 +234,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "spacer",
-    label: "Spacer",
-    description: "Empty space between sections",
+    label: "Empty Space",
+    description: "Adds breathing room between sections",
     icon: "↕️",
     category: "layout",
     create: () => ({
@@ -247,8 +247,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "ecommerce_products",
-    label: "Products Grid",
-    description: "Display products from your store",
+    label: "Products",
+    description: "Automatically shows products from your online store",
     icon: "🛍️",
     category: "ecommerce",
     create: () => ({
@@ -298,8 +298,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "custom_html",
-    label: "Custom HTML",
-    description: "Embed custom HTML, CSS, and JavaScript",
+    label: "Custom Code (Advanced)",
+    description: "For developers — paste your own HTML code",
     icon: "💻",
     category: "interactive",
     create: () => ({
@@ -310,8 +310,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "team",
-    label: "Team",
-    description: "Showcase team members with photos, roles, and bio",
+    label: "Meet the Team",
+    description: "Photos and names of the people behind your business",
     icon: "👥",
     category: "content",
     create: () => ({
@@ -334,8 +334,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "faq",
-    label: "FAQ",
-    description: "Frequently asked questions with accordion or grid layout",
+    label: "Questions & Answers",
+    description: "Common customer questions that open when clicked",
     icon: "❓",
     category: "content",
     create: () => ({
@@ -356,8 +356,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "pricing",
-    label: "Pricing",
-    description: "Pricing plans and comparison table",
+    label: "Price List",
+    description: "Show your prices or packages side by side",
     icon: "💳",
     category: "content",
     create: () => ({
@@ -378,8 +378,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "features",
-    label: "Features",
-    description: "Feature grid, icon list, or alternating image+text layout",
+    label: "Why Choose Us",
+    description: "A grid of selling points with small icons",
     icon: "✨",
     category: "content",
     create: () => ({
@@ -404,8 +404,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "stats",
-    label: "Stats / Counters",
-    description: "Highlight key numbers and metrics with animated counters",
+    label: "Big Numbers",
+    description: "Impressive numbers that count up — years in business, happy customers",
     icon: "📊",
     category: "content",
     create: () => ({
@@ -429,7 +429,7 @@ export const blockRegistry: BlockDefinition[] = [
   {
     type: "contact",
     label: "Contact Form",
-    description: "Contact form with optional map, email, and phone info",
+    description: "Lets visitors send you a message — lands in your inbox",
     icon: "✉️",
     category: "interactive",
     create: () => ({
@@ -454,8 +454,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "embed",
-    label: "Embed",
-    description: "Embed YouTube, Vimeo, Spotify, or any iframe content",
+    label: "Embed Anything",
+    description: "Paste a link to show maps, music, or other websites",
     icon: "🔗",
     category: "media",
     create: () => ({
@@ -467,7 +467,7 @@ export const blockRegistry: BlockDefinition[] = [
   {
     type: "video",
     label: "Video",
-    description: "YouTube, Vimeo, or self-hosted MP4 video player",
+    description: "Show a YouTube, Vimeo, or uploaded video",
     icon: "🎬",
     category: "media",
     create: () => ({
@@ -486,8 +486,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "timeline",
-    label: "Timeline",
-    description: "Vertical, horizontal, or alternating event timeline",
+    label: "Our Story",
+    description: "Your business history as a year-by-year timeline",
     icon: "📅",
     category: "content",
     create: () => ({
@@ -508,8 +508,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "columns",
-    label: "Columns",
-    description: "Multi-column layout for side-by-side rich text content",
+    label: "Side-by-Side Text",
+    description: "Two or more columns of writing next to each other",
     icon: "⬛",
     category: "layout",
     create: () => ({
@@ -528,8 +528,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "newsletter",
-    label: "Newsletter",
-    description: "Email signup / newsletter subscription form",
+    label: "Email Signup",
+    description: "Collect visitor emails for offers and updates",
     icon: "📬",
     category: "interactive",
     create: () => ({
@@ -547,8 +547,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "countdown",
-    label: "Countdown",
-    description: "Countdown timer to a specific date/time",
+    label: "Countdown Clock",
+    description: "Ticking clock for sales, openings, and events",
     icon: "⏳",
     category: "interactive",
     create: () => ({
@@ -565,8 +565,8 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "steps",
-    label: "Steps / Process",
-    description: "Step-by-step process or how-it-works section",
+    label: "How It Works",
+    description: "Numbered steps that explain your process simply",
     icon: "🚶",
     category: "content",
     create: () => ({
@@ -588,7 +588,7 @@ export const blockRegistry: BlockDefinition[] = [
   {
     type: "icon_grid",
     label: "Icon Grid",
-    description: "Grid of icons with labels — great for tech stacks, partners, categories",
+    description: "Small icons with labels — brands you work with, what you cover",
     icon: "🔲",
     category: "content",
     create: () => ({

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { BuilderCanvas } from "./canvas/builder-canvas";
 import { BlocksPanel } from "./blocks-panel/blocks-panel";
@@ -46,24 +46,62 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
-  const handleSave = async () => {
+  const savingRef = useRef(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+
+  const handleSave = useCallback(async (auto = false) => {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
+    const currentBlocks = useBuilderStore.getState().blocks;
     try {
       const supabase = createClient();
       const { error } = await supabase
         .from("pages")
-        .update({ blocks, updated_at: new Date().toISOString() })
+        .update({ blocks: currentBlocks, updated_at: new Date().toISOString() })
         .eq("id", page.id);
       if (error) throw error;
-      setDirty(false);
-      toast.success("Page saved successfully");
+      // Only clear dirty if nothing changed while the request was in flight
+      if (useBuilderStore.getState().blocks === currentBlocks) setDirty(false);
+      setLastSavedAt(new Date());
+      if (!auto) toast.success("Page saved");
     } catch (err) {
-      toast.error("Failed to save page");
+      toast.error("Failed to save page — your changes are still here, try again");
       console.error(err);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
-  };
+  }, [page.id, setDirty]);
+
+  // Autosave: 2.5s after the last change
+  useEffect(() => {
+    if (!isDirty) return;
+    const t = setTimeout(() => void handleSave(true), 2500);
+    return () => clearTimeout(t);
+  }, [blocks, isDirty, handleSave]);
+
+  // Keyboard shortcuts: Ctrl+S save, Ctrl+Z undo, Ctrl+Y / Ctrl+Shift+Z redo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const key = e.key.toLowerCase();
+      const target = e.target as HTMLElement;
+      const typing = target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+      if (key === "s") {
+        e.preventDefault();
+        void handleSave();
+      } else if (key === "z" && !typing) {
+        e.preventDefault();
+        if (e.shiftKey) redo(); else undo();
+      } else if (key === "y" && !typing) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleSave, undo, redo]);
 
   const breakpoints = [
     { value: "desktop", icon: Monitor, label: "Desktop" },
@@ -147,7 +185,9 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
           </Tooltip>
 
           <div className="ml-auto flex items-center gap-2">
-            {isDirty && <span className="text-xs text-amber-600 font-medium">Unsaved changes</span>}
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {saving ? "Saving…" : isDirty ? "Unsaved changes" : lastSavedAt ? "All changes saved" : ""}
+            </span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className={cn("h-8 w-8", !showSettings && "text-muted-foreground")} onClick={() => setShowSettings(!showSettings)}>
@@ -156,7 +196,7 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
               </TooltipTrigger>
               <TooltipContent>Toggle settings panel</TooltipContent>
             </Tooltip>
-            <Button size="sm" onClick={handleSave} disabled={saving || !isDirty} className="h-8 gap-1.5">
+            <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-8 gap-1.5">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               {saving ? "Saving..." : "Save"}
             </Button>
