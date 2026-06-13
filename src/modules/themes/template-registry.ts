@@ -1083,6 +1083,931 @@ const FIT_FORGE: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 7: EstateEdge (Real Estate) ────────────────────────────────────
+
+const ESTATE_EDGE: TemplateIdentity = {
+  slug: "estate-edge",
+  name: "EstateEdge",
+  description: "Premium real estate agency. Slate & champagne palette, luxury property listings, agent profiles, neighbourhood stats.",
+  category: "Real Estate",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=85&fit=crop",
+  tags: ["real estate", "property", "agency", "luxury", "homes"],
+
+  palette: {
+    primary: "#1e293b",
+    primaryFg: "#ffffff",
+    secondary: "#c9a84c",
+    accent: "#f1e4c3",
+    background: "#f8f6f2",
+    foreground: "#0f172a",
+    muted: "#ede8df",
+    mutedFg: "#64748b",
+    card: "#ffffff",
+    border: "#e2d9cc",
+    ring: "#1e293b",
+    borderRadius: "0.125rem",
+  },
+  typography: {
+    headingFont: "Cormorant Garamond",
+    bodyFont: "Inter",
+    headingWeight: "600",
+    letterSpacing: "0.02em",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+    .template-estate-edge h1,.template-estate-edge h2,.template-estate-edge h3 { font-family: 'Cormorant Garamond', serif; letter-spacing: 0.02em; }
+    .template-estate-edge .service-card { border: none; border-bottom: 2px solid #c9a84c; border-radius: 0; }
+    .template-estate-edge .stat-value { color: #1e293b; font-family: 'Cormorant Garamond', serif; font-size: 3rem; }
+    .template-estate-edge .nav-bar { background: #1e293b; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "property-cards",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "navy-row",
+    cta: "navy-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "formal-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=90&fit=crop",
+      alt: "Luxury home exterior",
+    },
+    heroSecondary: {
+      url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop",
+      alt: "Modern interior living room",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fit=crop",
+      alt: "Real estate office",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=85&fit=crop", alt: "Luxury villa" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85&fit=crop", alt: "Modern apartment" },
+      { url: "https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=600&q=85&fit=crop", alt: "Commercial property" },
+      { url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=85&fit=crop", alt: "Waterfront home" },
+      { url: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&q=85&fit=crop", alt: "Penthouse" },
+      { url: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=85&fit=crop", alt: "Suburban home" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80&fit=crop", alt: "Kitchen interior" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80&fit=crop", alt: "Living room" },
+      { url: "https://images.unsplash.com/photo-1560440021-33f9b867899d?w=800&q=80&fit=crop", alt: "Master bedroom" },
+      { url: "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800&q=80&fit=crop", alt: "Pool area" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "James Whitfield" },
+      { url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face", alt: "Amanda Pierce" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "David Harrington" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1582407947304-fd86f28f3f87?w=1200&q=80&fit=crop",
+      alt: "Find your dream home",
+    },
+  },
+
+  heroHeadline: "Find Your Perfect Home",
+  heroSubline: "Luxury residential & commercial properties in the most sought-after locations.",
+  heroBadge: "🏆 #1 Agency in the Region",
+  heroCTA: "Browse Properties",
+  heroSecondaryCTA: "Free Valuation",
+  siteName: "EstateEdge Realty",
+  tagline: "Where Luxury Meets Home",
+  phone: "+1 (646) 555-0321",
+  email: "listings@estateedge.com",
+  address: "One Rockefeller Plaza, Suite 1400, New York, NY 10020",
+  aboutHeading: "20 Years Matching Families with Exceptional Homes",
+  aboutBody: "EstateEdge Realty was founded on a simple belief: every client deserves the finest attention whether they're buying a first apartment or a $50M estate. Our team of 30 licensed agents has closed over 4,200 transactions and maintains a client retention rate no other firm can match.",
+  aboutHighlights: ["4,200+ successful transactions", "Average 14 days to offer", "$3.2B in property sold", "Concierge relocation service"],
+
+  navItems: [
+    { id: "n1", label: "Properties", url: "#services" },
+    { id: "n2", label: "Our Team", url: "#team" },
+    { id: "n3", label: "Gallery", url: "#gallery" },
+    { id: "n4", label: "About", url: "#about" },
+    { id: "n5", label: "Valuation", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Luxury Villas", description: "Gated estates, pool homes and architectural masterpieces from $2M. Private viewings available.", icon: "🏡", iconType: "emoji", price: "From $2,000,000", imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "City Apartments", description: "High-floor condominiums with skyline views. Studio to penthouse. Full building amenities.", icon: "🏙️", iconType: "emoji", price: "From $450,000", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Properties", description: "Prime retail, office and mixed-use investment properties across the metropolitan area.", icon: "🏢", iconType: "emoji", price: "From $1,200,000", imageUrl: "https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Waterfront Homes", description: "Ocean-front, lake-side and river-view residences. The premium lifestyle you deserve.", icon: "🌊", iconType: "emoji", price: "From $3,500,000", imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Penthouse Suites", description: "Rooftop living with private terraces, butler service and 360° views of the city.", icon: "✨", iconType: "emoji", price: "From $5,000,000", imageUrl: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Suburban Family Homes", description: "Top school districts, quiet neighbourhoods and generous lots. Perfect for growing families.", icon: "🌳", iconType: "emoji", price: "From $680,000", imageUrl: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=85&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "4,200+", label: "Homes Sold" },
+    { id: uid("st"), value: "$3.2B", label: "Total Sales Volume" },
+    { id: uid("st"), value: "14 days", label: "Avg Days to Offer" },
+    { id: uid("st"), value: "20 yr", label: "Market Experience" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Katherine B.", role: "Buyer", content: "We'd searched for 18 months with other agencies. EstateEdge found our dream home in three weeks. James is extraordinary.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Robert & Claire", role: "Sellers", content: "Listed on Monday. Four offers by Friday. Accepted $180k over asking. The marketing they did for our home was exceptional.", rating: 5 },
+    { id: uid("t"), name: "Michael T.", role: "Investor", content: "I've bought six properties through EstateEdge. Their market intelligence and off-market access is simply unmatched.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sophia L.", role: "First-time Buyer", content: "Amanda held my hand through every step. As a first-time buyer I was terrified. She made it seamless. Couldn't be happier.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Buyer", price: "Free", description: "We represent buyers at no cost", features: ["Dedicated buyer's agent", "Off-market access", "Mortgage broker referral", "Legal & inspection coordination", "Post-sale support"], ctaLabel: "Start Your Search", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Seller", price: "2.5%", period: "commission", description: "Full-service listing & sale", features: ["Professional photography & video", "3D virtual tour", "Multi-platform marketing", "Open house management", "Negotiation & closing support"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Free Valuation", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Investor", price: "Custom", description: "Portfolio & commercial deals", features: ["Off-market deal sourcing", "Cap rate & ROI analysis", "1031 exchange guidance", "Property management referral", "Portfolio reporting"], ctaLabel: "Talk to an Expert", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How do I get a property valuation?", answer: "Book a free valuation through our contact form or call us. An agent will visit within 48 hours and provide a comprehensive market appraisal." },
+    { id: uid("f"), question: "Do you have off-market listings?", answer: "Yes. We maintain a private portfolio of off-market properties exclusively for qualified buyers. Register with us and we'll match you to opportunities before they're listed publicly." },
+    { id: uid("f"), question: "What areas do you cover?", answer: "We operate across the full metropolitan area including Manhattan, Brooklyn, The Hamptons, Connecticut and New Jersey. We also have partner agencies in Miami, LA and London." },
+    { id: uid("f"), question: "How long does buying take from offer to close?", answer: "Typically 45–60 days from accepted offer to closing in New York. Cash purchases can close in as little as 2 weeks. We coordinate every step including attorneys, inspectors and lenders." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "James Whitfield", role: "Managing Director", bio: "20 years in luxury residential sales. $1.2B+ in personal transactions. Known for his discreet, white-glove approach.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Amanda Pierce", role: "Senior Buyer's Agent", bio: "Specialist in first-time buyers and family homes. 98% client satisfaction. Relentlessly patient and thorough.", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "David Harrington", role: "Commercial & Investment", bio: "Former investment banker. Structures complex commercial deals and portfolio acquisitions for high-net-worth investors.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 8: LensStudio (Photography) ────────────────────────────────────
+
+const LENS_STUDIO: TemplateIdentity = {
+  slug: "lens-studio",
+  name: "LensStudio",
+  description: "Bold photography portfolio studio. Full-bleed image hero, masonry gallery, minimal dark aesthetic, package pricing.",
+  category: "Photography & Creative",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=85&fit=crop",
+  tags: ["photography", "portfolio", "creative", "weddings", "commercial"],
+
+  palette: {
+    primary: "#18181b",
+    primaryFg: "#ffffff",
+    secondary: "#3f3f46",
+    accent: "#e4e4e7",
+    background: "#fafafa",
+    foreground: "#09090b",
+    muted: "#f4f4f5",
+    mutedFg: "#71717a",
+    card: "#ffffff",
+    border: "#e4e4e7",
+    ring: "#18181b",
+    borderRadius: "0",
+  },
+  typography: {
+    headingFont: "DM Sans",
+    bodyFont: "DM Sans",
+    headingWeight: "300",
+    letterSpacing: "0.08em",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+    .template-lens-studio { font-family: 'DM Sans', sans-serif; }
+    .template-lens-studio h1,.template-lens-studio h2 { font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
+    .template-lens-studio .service-card { border: none; border-bottom: 1px solid #e4e4e7; border-radius: 0; padding: 2rem 0; }
+    .template-lens-studio .gallery-item { filter: grayscale(20%); transition: filter 0.4s; }
+    .template-lens-studio .gallery-item:hover { filter: grayscale(0); }
+    .template-lens-studio .nav-bar { background: transparent; border-bottom: 1px solid #e4e4e7; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "minimal-list",
+    testimonials: "minimal-quote",
+    features: "alternating-images",
+    stats: "plain-light",
+    cta: "dark-split",
+    pricing: "clean-cards",
+    faq: "accordion-minimal",
+    navigation: "transparent-light",
+    team: "portrait-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=90&fit=crop",
+      alt: "Wedding photography",
+    },
+    heroSecondary: {
+      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=85&fit=crop",
+      alt: "Portrait session",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80&fit=crop",
+      alt: "Photographer at work",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=85&fit=crop", alt: "Wedding day" },
+      { url: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=600&q=85&fit=crop", alt: "Portrait photography" },
+      { url: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&q=85&fit=crop", alt: "Commercial shoot" },
+      { url: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=85&fit=crop", alt: "Event photography" },
+      { url: "https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?w=600&q=85&fit=crop", alt: "Real estate photography" },
+      { url: "https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=600&q=85&fit=crop", alt: "Product photography" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=85&fit=crop", alt: "Wedding kiss" },
+      { url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=85&fit=crop", alt: "Mountain landscape" },
+      { url: "https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?w=800&q=85&fit=crop", alt: "Fashion portrait" },
+      { url: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=85&fit=crop", alt: "Event crowd" },
+      { url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=85&fit=crop", alt: "Bridal detail" },
+      { url: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&q=85&fit=crop", alt: "Product flatlay" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80&fit=crop&face", alt: "Maya Chen" },
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face", alt: "Oliver Hayes" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=80&fit=crop",
+      alt: "Book a session",
+    },
+  },
+
+  heroHeadline: "Moments That Last Forever",
+  heroSubline: "Award-winning photography for weddings, portraits & brands.",
+  heroBadge: "📷 Booked 12 months ahead",
+  heroCTA: "Book a Session",
+  heroSecondaryCTA: "View Portfolio",
+  siteName: "Lens Studio",
+  tagline: "Light. Story. Emotion.",
+  phone: "+1 (323) 555-0287",
+  email: "hello@lensstudio.com",
+  address: "Studio 4B, Arts District, Los Angeles, CA 90021",
+  aboutHeading: "We Don't Just Take Photos — We Tell Your Story",
+  aboutBody: "Lens Studio was founded by Maya Chen, a documentary photographer turned commercial artist with 12 years behind the lens. Our philosophy is simple: a photograph should make you feel something. We work with natural light, genuine emotion and obsessive attention to composition to create images that endure.",
+  aboutHighlights: ["12 years of storytelling", "Featured in Vogue, Harper's Bazaar", "300+ weddings captured", "2-week turnaround guaranteed"],
+
+  navItems: [
+    { id: "n1", label: "Work", url: "#gallery" },
+    { id: "n2", label: "Services", url: "#services" },
+    { id: "n3", label: "Pricing", url: "#pricing" },
+    { id: "n4", label: "About", url: "#about" },
+    { id: "n5", label: "Book", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Wedding Photography", description: "Full-day coverage from getting ready to first dance. Two photographers, 600+ edited images, private online gallery.", icon: "💍", iconType: "emoji", price: "From $3,200", imageUrl: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Portrait Sessions", description: "Personal branding, family portraits and headshots. Natural-light studio or on-location. 2-hour session, 40 retouched images.", icon: "🎭", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial & Brand", description: "Product photography, brand campaigns and editorial shoots for agencies and direct brands. Full styling and art direction.", icon: "📸", iconType: "emoji", price: "From $1,800/day", imageUrl: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Events & Conferences", description: "Corporate events, galas, product launches and conferences. Discreet, professional, quick turnaround for press use.", icon: "🎤", iconType: "emoji", price: "From $800/day", imageUrl: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Real Estate & Architecture", description: "Interiors, exteriors and aerial drone photography for residential and commercial listings.", icon: "🏛️", iconType: "emoji", price: "From $350/property", imageUrl: "https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Product Photography", description: "Clean white-background and lifestyle product images optimised for e-commerce and social media.", icon: "🛍️", iconType: "emoji", price: "From $60/image", imageUrl: "https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=600&q=85&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "300+", label: "Weddings Captured" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+    { id: uid("st"), value: "12 yr", label: "In the Industry" },
+    { id: uid("st"), value: "2 wk", label: "Gallery Delivery" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Emma & Jake", role: "Wedding Clients", content: "We've never seen our wedding day through someone else's eyes so perfectly. Every single photo made us cry. Maya is a genuine artist.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Stella Brand Co.", role: "Commercial Client", content: "The campaign shoot exceeded every brief we gave. The images were so strong they went viral on Instagram. Booked immediately for next season.", rating: 5 },
+    { id: uid("t"), name: "Ravi P.", role: "Portrait Client", content: "I'm not photogenic — or so I thought. Maya made me completely comfortable and the headshots transformed my LinkedIn. Within a week I had three recruiter calls.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Session", price: "$450", description: "Portrait or headshot", features: ["2-hour session", "2 locations", "40 retouched images", "Private online gallery", "Print-ready files"], ctaLabel: "Book Session", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Wedding", price: "$3,200", description: "Full-day wedding coverage", features: ["8-hour coverage", "2 photographers", "600+ edited images", "Engagement session included", "Wedding album design", "USB delivered"], highlighted: true, badge: "Most Booked", ctaLabel: "Book Wedding", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial", price: "Custom", description: "Brand & product campaigns", features: ["Full creative direction", "Styling & prop sourcing", "Unlimited usage license", "Raw + retouched files", "Priority 5-day delivery"], ctaLabel: "Get a Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How far in advance should I book?", answer: "For weddings, 10–14 months in advance is ideal. We're typically booked 12 months out for peak season (May–October). Portrait sessions can often be booked within 2–4 weeks." },
+    { id: uid("f"), question: "How long until I receive my photos?", answer: "Portraits: within 2 weeks. Weddings: 4–6 weeks for the full gallery. Rush delivery (10 days) available for commercial clients at an additional fee." },
+    { id: uid("f"), question: "What if the weather is bad?", answer: "We shoot in all conditions — rain and overcast light often creates the most dramatic portraits. For outdoor sessions, we offer one free reschedule for severe weather." },
+    { id: uid("f"), question: "Do you travel for destination shoots?", answer: "Absolutely. We've shot weddings in Italy, Japan, Iceland and across the US. Travel packages are available — contact us for a custom quote." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Maya Chen", role: "Lead Photographer & Founder", bio: "Documentary photography background. 300+ weddings. Featured in Vogue Weddings and Harper's Bazaar Brides.", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Oliver Hayes", role: "Second Shooter & Commercial", bio: "Commercial and editorial specialist. 8 years working with fashion brands and creative agencies.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 9: DentalCare Pro (Medical / Dental) ───────────────────────────
+
+const DENTAL_CARE_PRO: TemplateIdentity = {
+  slug: "dental-care-pro",
+  name: "DentalCare Pro",
+  description: "Modern dental practice. Clean white & teal palette, patient-first messaging, treatment cards, appointment booking.",
+  category: "Medical & Health",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=1200&q=85&fit=crop",
+  tags: ["dental", "medical", "health", "clinic", "dentist"],
+
+  palette: {
+    primary: "#0d9488",
+    primaryFg: "#ffffff",
+    secondary: "#0f766e",
+    accent: "#99f6e4",
+    background: "#f0fdfa",
+    foreground: "#134e4a",
+    muted: "#ccfbf1",
+    mutedFg: "#0f766e",
+    card: "#ffffff",
+    border: "#99f6e4",
+    ring: "#0d9488",
+    borderRadius: "0.875rem",
+  },
+  typography: {
+    headingFont: "Nunito",
+    bodyFont: "Nunito",
+    headingWeight: "800",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+    .template-dental-care-pro { font-family: 'Nunito', sans-serif; }
+    .template-dental-care-pro h1,.template-dental-care-pro h2,.template-dental-care-pro h3 { font-family: 'Nunito', sans-serif; font-weight: 800; }
+    .template-dental-care-pro .service-card { border: 2px solid #99f6e4; border-radius: 0.875rem; }
+    .template-dental-care-pro .stat-value { color: #0d9488; }
+    .template-dental-care-pro .hero-badge { background: #0d9488; color: white; border-radius: 9999px; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=1600&q=90&fit=crop",
+      alt: "Friendly dentist consultation",
+    },
+    heroSecondary: {
+      url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80&fit=crop",
+      alt: "Modern dental clinic",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&q=80&fit=crop",
+      alt: "Dental team",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=600&q=80&fit=crop", alt: "General dentistry" },
+      { url: "https://images.unsplash.com/photo-1629909615957-be38d48fbbe4?w=600&q=80&fit=crop", alt: "Teeth whitening" },
+      { url: "https://images.unsplash.com/photo-1588776813677-77adc5070099?w=600&q=80&fit=crop", alt: "Orthodontics" },
+      { url: "https://images.unsplash.com/photo-1638202993928-7267aad84c31?w=600&q=80&fit=crop", alt: "Dental implants" },
+      { url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&q=80&fit=crop", alt: "Veneers" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80&fit=crop", alt: "Pediatric dentistry" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?w=800&q=80&fit=crop", alt: "Dental clinic reception" },
+      { url: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&q=80&fit=crop", alt: "Treatment room" },
+      { url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80&fit=crop", alt: "Modern equipment" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80&fit=crop", alt: "Patient smiling" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80&fit=crop&face", alt: "Dr. Priya Patel" },
+      { url: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80&fit=crop&face", alt: "Dr. Marcus Webb" },
+      { url: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80&fit=crop&face", alt: "Dr. Aisha Nkosi" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&q=80&fit=crop",
+      alt: "Book dental appointment",
+    },
+  },
+
+  heroHeadline: "Your Smile Deserves the Best Care",
+  heroSubline: "Gentle, modern dentistry for the whole family. NHS & private patients welcome.",
+  heroBadge: "😁 New Patients Always Welcome",
+  heroCTA: "Book Appointment",
+  heroSecondaryCTA: "Our Treatments",
+  siteName: "DentalCare Pro",
+  tagline: "Gentle dentistry. Brilliant smiles.",
+  phone: "+1 (718) 555-0144",
+  email: "appointments@dentalcarepro.com",
+  address: "200 Park Avenue South, Suite 800, New York, NY 10003",
+  aboutHeading: "15 Years Caring for Smiles Across the City",
+  aboutBody: "DentalCare Pro was founded by Dr. Priya Patel with one goal: make every patient feel genuinely cared for, not just treated. Our clinic combines state-of-the-art technology with a genuinely warm approach. From nervous first-timers to full smile transformations, we tailor every visit to you.",
+  aboutHighlights: ["Same-day emergency appointments", "Pain-free injections guaranteed", "Interest-free payment plans", "Sedation dentistry available"],
+
+  navItems: [
+    { id: "n1", label: "Treatments", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "Meet the Team", url: "#team" },
+    { id: "n4", label: "About Us", url: "#about" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "General Check-up & Clean", description: "Comprehensive examination, X-rays and professional hygiene clean. The foundation of a healthy smile.", icon: "🦷", iconType: "emoji", price: "From $95", imageUrl: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Teeth Whitening", description: "Professional in-chair whitening in under 60 minutes. Up to 8 shades lighter — guaranteed.", icon: "✨", iconType: "emoji", price: "From $299", imageUrl: "https://images.unsplash.com/photo-1629909615957-be38d48fbbe4?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Orthodontics & Invisalign", description: "Straight teeth without metal braces. Custom clear aligners with 3D imaging. For teens and adults.", icon: "😁", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1588776813677-77adc5070099?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Dental Implants", description: "Permanent tooth replacement that looks, feels and functions like a natural tooth. Lifetime solution.", icon: "🔬", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1638202993928-7267aad84c31?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Porcelain Veneers", description: "Ultra-thin, custom-made veneers for a perfect, natural-looking smile transformation. 2-visit process.", icon: "💎", iconType: "emoji", price: "From $850/tooth", imageUrl: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Children's Dentistry", description: "Friendly, patient and fun. We build positive dental habits from the very first visit. Ages 2 and up.", icon: "🌈", iconType: "emoji", price: "From $75", imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "6,200+", label: "Happy Patients" },
+    { id: uid("st"), value: "15 yr", label: "Serving the Community" },
+    { id: uid("st"), value: "4.9★", label: "Average Rating" },
+    { id: uid("st"), value: "98%", label: "Would Recommend Us" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Thomas R.", role: "Patient", content: "I hadn't been to a dentist in 10 years because of anxiety. Dr. Patel was so patient and kind. I actually look forward to coming now. Life-changing.", rating: 5, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Natalie K.", role: "Invisalign Patient", content: "My teeth were transformed in 8 months and I wore aligners nobody even noticed. The 3D planning before we started was incredible.", rating: 5 },
+    { id: uid("t"), name: "Michael & Family", role: "Family Patients", content: "Three kids, all looked after brilliantly. The children actually ask to come to the dentist. That says everything.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Membership", price: "$29", period: "/month", description: "Best value ongoing care", features: ["2 check-ups per year", "2 hygiene cleans", "X-rays included", "10% off all treatments", "Emergency priority access"], ctaLabel: "Join Membership", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Smile Package", price: "$599", description: "Complete cosmetic starter", features: ["Check-up & clean", "Professional whitening", "Smile analysis", "Veneer consultation", "Treatment plan included"], highlighted: true, badge: "Best Value", ctaLabel: "Book Smile Package", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Smile", price: "Custom", description: "Complete smile transformation", features: ["Full mouth assessment", "Custom treatment plan", "Veneers or Invisalign", "Interest-free payment plan", "Lifetime guarantee on work"], ctaLabel: "Book Consultation", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you treat nervous patients?", answer: "Absolutely. We specialise in anxious patients and offer sedation dentistry, pain-free injection techniques and as many breaks as you need. Tell us your concerns when booking — we'll tailor your entire visit." },
+    { id: uid("f"), question: "How quickly can I get an emergency appointment?", answer: "Members get same-day emergency slots. Non-members: we keep several emergency slots available daily and will always see a patient in pain the same day where possible. Call us first thing." },
+    { id: uid("f"), question: "Do you offer payment plans?", answer: "Yes — 0% interest payment plans are available for treatments over $500. We work with a trusted finance provider. Approval in minutes, no hidden fees." },
+    { id: uid("f"), question: "How often should I visit the dentist?", answer: "Most adults benefit from a check-up and hygiene clean every 6 months. Some patients with higher risk factors may benefit from quarterly hygiene visits. We'll advise you based on your individual needs." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Dr. Priya Patel", role: "Principal Dentist & Founder", bio: "BDS King's College London. 15 years experience. Specialist in cosmetic dentistry and nervous patients. Invisalign Diamond Provider.", avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Dr. Marcus Webb", role: "Implant & Oral Surgery", bio: "MFDS RCS. 12 years in implantology and complex oral surgery. Completed over 1,000 implant placements.", avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Dr. Aisha Nkosi", role: "Orthodontist", bio: "MSc Orthodontics. Invisalign Platinum provider. Specialises in adult and teen orthodontics.", avatar: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 10: BrewHaven (Coffee Shop) ────────────────────────────────────
+
+const BREW_HAVEN: TemplateIdentity = {
+  slug: "brew-haven",
+  name: "BrewHaven",
+  description: "Cosy independent coffee shop. Warm earthy tones, handcrafted aesthetic, menu showcasing, community feel.",
+  category: "Food & Beverage",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=85&fit=crop",
+  tags: ["coffee", "cafe", "bakery", "brunch", "independent"],
+
+  palette: {
+    primary: "#6f4e37",
+    primaryFg: "#ffffff",
+    secondary: "#a0785a",
+    accent: "#d4a574",
+    background: "#fdf8f3",
+    foreground: "#2c1a0e",
+    muted: "#f5ede3",
+    mutedFg: "#7c5c3e",
+    card: "#fffaf6",
+    border: "#e8d5c0",
+    ring: "#6f4e37",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Lora",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "0",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+    .template-brew-haven h1,.template-brew-haven h2,.template-brew-haven h3 { font-family: 'Lora', serif; }
+    .template-brew-haven .service-card { border: 1px solid #e8d5c0; background: #fffaf6; }
+    .template-brew-haven .stat-value { color: #6f4e37; font-family: 'Lora', serif; }
+    .template-brew-haven .hero-overlay { background: linear-gradient(to right, rgba(44,26,14,0.85) 40%, rgba(44,26,14,0.1)); }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "menu-cards",
+    testimonials: "warm-cards",
+    features: "alternating-images",
+    stats: "warm-row",
+    cta: "warm-banner",
+    pricing: "menu-pricing",
+    faq: "accordion-bordered",
+    navigation: "transparent-dark",
+    team: "chef-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=90&fit=crop",
+      alt: "Cosy coffee shop interior",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&q=80&fit=crop",
+      alt: "Barista crafting coffee",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=85&fit=crop", alt: "Latte art" },
+      { url: "https://images.unsplash.com/photo-1497636577773-f1231844b336?w=600&q=85&fit=crop", alt: "Cold brew" },
+      { url: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=85&fit=crop", alt: "Pastries" },
+      { url: "https://images.unsplash.com/photo-1528736235302-52922df5c122?w=600&q=85&fit=crop", alt: "Avocado toast" },
+      { url: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=600&q=85&fit=crop", alt: "Specialty tea" },
+      { url: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&q=85&fit=crop", alt: "Cake slice" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80&fit=crop", alt: "Coffee shop ambience" },
+      { url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&q=80&fit=crop", alt: "Barista at work" },
+      { url: "https://images.unsplash.com/photo-1506807803488-8eafc15316c7?w=800&q=80&fit=crop", alt: "Beans and grinder" },
+      { url: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80&fit=crop", alt: "Reading nook" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1607631568010-a87245c0daf7?w=400&q=80&fit=crop&face", alt: "Leo Barros" },
+      { url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face", alt: "Zara Kim" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80&fit=crop",
+      alt: "Visit our cafe",
+    },
+  },
+
+  heroHeadline: "Coffee That Starts Your Day Right",
+  heroSubline: "Specialty beans, slow brews and baked-fresh-daily pastries. Your neighbourhood escape.",
+  heroBadge: "☕ Specialty Grade Coffee",
+  heroCTA: "Find Us",
+  heroSecondaryCTA: "View Menu",
+  siteName: "BrewHaven Coffee",
+  tagline: "Slow coffee. Good company.",
+  phone: "+1 (503) 555-0167",
+  email: "hello@brewhaven.com",
+  address: "28 Maple Street, Pearl District, Portland, OR 97209",
+  aboutHeading: "Built on a Love of Really Good Coffee",
+  aboutBody: "BrewHaven started as a passion project — Leo quit his finance job in 2016, spent a year learning from roasters across Colombia, Ethiopia and Japan, and opened our first shop with 12 seats and a single La Marzocco. We now serve 400+ guests a day but the philosophy hasn't changed: slow down, brew it right, make a friend.",
+  aboutHighlights: ["Direct-trade beans, single origin", "Roasted fresh weekly on-site", "100% compostable packaging", "Community events every weekend"],
+
+  navItems: [
+    { id: "n1", label: "Menu", url: "#services" },
+    { id: "n2", label: "Our Story", url: "#about" },
+    { id: "n3", label: "Gallery", url: "#gallery" },
+    { id: "n4", label: "Events", url: "#pricing" },
+    { id: "n5", label: "Find Us", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Espresso Bar", description: "Single origin espresso, flat whites, cortados and long blacks. Our house blend changes monthly.", icon: "☕", iconType: "emoji", price: "$3.50 – $5.50", imageUrl: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Cold Brew & Iced", description: "24-hour cold brew, nitro on tap and seasonal iced specialties. Perfect for Portland summers.", icon: "🧊", iconType: "emoji", price: "$4.50 – $6.50", imageUrl: "https://images.unsplash.com/photo-1497636577773-f1231844b336?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Baked Fresh Daily", description: "Croissants, banana bread, almond danishes and sourdough from our in-house baker. Gluten-free options available.", icon: "🥐", iconType: "emoji", price: "$3.00 – $6.00", imageUrl: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "All-Day Brunch", description: "Avocado toast, smoked salmon bagels, egg plates and seasonal grain bowls. Served until 3pm daily.", icon: "🥑", iconType: "emoji", price: "$9 – $16", imageUrl: "https://images.unsplash.com/photo-1528736235302-52922df5c122?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Specialty Teas", description: "Hand-blended loose-leaf teas, matcha lattes and herbal infusions. Sourced from Japan and Sri Lanka.", icon: "🍵", iconType: "emoji", price: "$4.00 – $6.00", imageUrl: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Cakes & Desserts", description: "Whole cakes by pre-order, or grab a slice of our daily bake. Great for birthdays and celebrations.", icon: "🎂", iconType: "emoji", price: "$5.50 – $8.00/slice", imageUrl: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&q=85&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "400+", label: "Guests Daily" },
+    { id: uid("st"), value: "8 yr", label: "Open Since 2016" },
+    { id: uid("st"), value: "12", label: "Origin Countries" },
+    { id: uid("st"), value: "4.9★", label: "Google Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Sam T.", role: "Daily Regular", content: "I've been coming every morning for 3 years. The coffee is exceptional but it's the team that makes it home. Leo remembers everyone's order.", rating: 5 },
+    { id: uid("t"), name: "Mia P.", role: "Freelancer", content: "My unofficial office. Fast wifi, great music, zero pressure to leave. The cold brew keeps me alive on deadline days.", rating: 5, avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Daniel & Anna", role: "Brunch Visitors", content: "Came for coffee, stayed 3 hours. The avocado toast is genuinely the best in Portland and the vibes are completely unmatched.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Bean Club", price: "$45", period: "/month", description: "Monthly bean subscription", features: ["250g freshly roasted beans", "Tasting notes card", "Brewing guide", "10% off all in-store purchases", "Early access to new origins"], ctaLabel: "Join Bean Club", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Office Bundle", price: "$120", period: "/month", description: "Coffee for your whole team", features: ["Daily delivery (weekdays)", "Bean & milk selection", "Machine rental available", "Personalised order management"], highlighted: true, badge: "Popular", ctaLabel: "Get Office Bundle", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Event Catering", price: "Custom", description: "Pop-up bar for your event", features: ["Mobile espresso bar", "Professional barista", "Cups & consumables included", "Min 2 hours, up to 200 guests"], ctaLabel: "Book Event Bar", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What are your opening hours?", answer: "Mon–Fri: 7am – 6pm. Saturday: 8am – 5pm. Sunday: 8am – 4pm. We open earlier during summer months — follow us on Instagram for updates." },
+    { id: uid("f"), question: "Do you have wifi?", answer: "Yes — fast, free wifi on both floors. We ask that you keep sessions to 3 hours during busy periods so everyone gets a seat." },
+    { id: uid("f"), question: "Can I buy beans to take home?", answer: "Absolutely. We sell our house blend and rotating single-origin beans by the 250g or 500g. Ask the barista what's fresh — we roast every Thursday." },
+    { id: uid("f"), question: "Do you do event catering?", answer: "Yes! We have a mobile espresso bar available for corporate events, weddings and private parties. Minimum 30 guests. Get in touch for a custom quote." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Leo Barros", role: "Founder & Head Roaster", bio: "Former finance, now coffee obsessive. Spent a year training with roasters in Colombia, Ethiopia and Tokyo before opening BrewHaven.", avatar: "https://images.unsplash.com/photo-1607631568010-a87245c0daf7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Zara Kim", role: "Head Barista & Baker", bio: "3× Portland barista champion. Trained pastry chef. Responsible for every croissant that sells out by 9am.", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 11: BlissBride (Wedding Planner) ───────────────────────────────
+
+const BLISS_BRIDE: TemplateIdentity = {
+  slug: "bliss-bride",
+  name: "BlissBride",
+  description: "Elegant wedding planning studio. Blush & champagne palette, romantic serif typography, package tiers, full gallery.",
+  category: "Events & Wedding",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=85&fit=crop",
+  tags: ["wedding", "events", "planner", "bridal", "luxury"],
+
+  palette: {
+    primary: "#be8b7a",
+    primaryFg: "#ffffff",
+    secondary: "#9a6b5e",
+    accent: "#f4d9d0",
+    background: "#fdf9f7",
+    foreground: "#2d1810",
+    muted: "#faeee9",
+    mutedFg: "#8b5e52",
+    card: "#ffffff",
+    border: "#f0d5cc",
+    ring: "#be8b7a",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Cormorant Garamond",
+    bodyFont: "Inter",
+    headingWeight: "400",
+    letterSpacing: "0.06em",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+    .template-bliss-bride h1,.template-bliss-bride h2,.template-bliss-bride h3 { font-family: 'Cormorant Garamond', serif; font-weight: 400; letter-spacing: 0.06em; }
+    .template-bliss-bride .service-card { border: 1px solid #f0d5cc; background: #fdf9f7; }
+    .template-bliss-bride .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; color: #be8b7a; }
+    .template-bliss-bride .hero-overlay { background: linear-gradient(to bottom, rgba(45,24,16,0.4), rgba(45,24,16,0.65)); }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "image-cards-dark",
+    testimonials: "minimal-quote",
+    features: "alternating-images",
+    stats: "warm-row",
+    cta: "warm-banner",
+    pricing: "clean-cards",
+    faq: "accordion-minimal",
+    navigation: "transparent-dark",
+    team: "portrait-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=90&fit=crop",
+      alt: "Romantic wedding ceremony",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80&fit=crop",
+      alt: "Wedding planning meeting",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=85&fit=crop", alt: "Ceremony styling" },
+      { url: "https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=600&q=85&fit=crop", alt: "Reception decor" },
+      { url: "https://images.unsplash.com/photo-1583939411023-14783179e581?w=600&q=85&fit=crop", alt: "Floral arrangements" },
+      { url: "https://images.unsplash.com/photo-1525772764200-be829a350797?w=600&q=85&fit=crop", alt: "Wedding cake" },
+      { url: "https://images.unsplash.com/photo-1511795409834-432f9ce0049e?w=600&q=85&fit=crop", alt: "Venue styling" },
+      { url: "https://images.unsplash.com/photo-1578985824572-deb00b70bab9?w=600&q=85&fit=crop", alt: "Bridal details" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=85&fit=crop", alt: "Ceremony aisle" },
+      { url: "https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=800&q=85&fit=crop", alt: "Table setting" },
+      { url: "https://images.unsplash.com/photo-1511795409834-432f9ce0049e?w=800&q=85&fit=crop", alt: "Venue night" },
+      { url: "https://images.unsplash.com/photo-1583939411023-14783179e581?w=800&q=85&fit=crop", alt: "Bridal bouquet" },
+      { url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=800&q=85&fit=crop", alt: "First dance" },
+      { url: "https://images.unsplash.com/photo-1525772764200-be829a350797?w=800&q=85&fit=crop", alt: "Wedding cake detail" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80&fit=crop&face", alt: "Isabelle Laurent" },
+      { url: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=80&fit=crop&face", alt: "Priya Mehta" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=1200&q=80&fit=crop",
+      alt: "Plan your dream wedding",
+    },
+  },
+
+  heroHeadline: "Your Dream Wedding, Perfectly Planned",
+  heroSubline: "Luxury wedding design and coordination for couples who deserve the extraordinary.",
+  heroBadge: "💍 150+ Weddings Celebrated",
+  heroCTA: "Start Planning",
+  heroSecondaryCTA: "View Our Work",
+  siteName: "BlissBride Studio",
+  tagline: "Where love stories become celebrations",
+  phone: "+1 (212) 555-0339",
+  email: "hello@blissbride.com",
+  address: "18 Floral District, SoHo, New York, NY 10013",
+  aboutHeading: "Every Love Story Deserves Its Perfect Day",
+  aboutBody: "BlissBride was founded by Isabelle Laurent after 10 years as a luxury hotel events director. She brings the same attention to detail, the same obsessive coordination and the same passion for perfection to every wedding she touches. From intimate elopements to 400-guest estate celebrations, we treat every wedding as our most important one.",
+  aboutHighlights: ["150+ weddings designed", "Vendor network of 200+", "Full-service from proposal to honeymoon", "Featured in Martha Stewart Weddings"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "Packages", url: "#pricing" },
+    { id: "n4", label: "About", url: "#about" },
+    { id: "n5", label: "Enquire", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Full Planning & Design", description: "End-to-end coordination from engagement to wedding day. Venue sourcing, vendor management, budget tracking, timeline and day-of direction.", icon: "🌸", iconType: "emoji", price: "From $8,500", imageUrl: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Reception Styling", description: "Tablescape design, floral direction, lighting and decor. We transform venues into scenes straight out of your moodboard.", icon: "🕯️", iconType: "emoji", price: "From $3,200", imageUrl: "https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Floral Design", description: "From bridal bouquets to 8-foot ceremony arches. All flowers ethically sourced and arranged by our in-house floral team.", icon: "🌿", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1583939411023-14783179e581?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Wedding Cake Design", description: "Custom multi-tier cakes designed to match your wedding aesthetic. Tasting sessions available in studio.", icon: "🎂", iconType: "emoji", price: "From $950", imageUrl: "https://images.unsplash.com/photo-1525772764200-be829a350797?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Venue Sourcing & Styling", description: "Access to 80+ exclusive venues. We negotiate rates, style the space and ensure every detail matches your vision.", icon: "🏰", iconType: "emoji", price: "From $2,400", imageUrl: "https://images.unsplash.com/photo-1511795409834-432f9ce0049e?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Day-of Coordination", description: "Your personal coordinator on the day. Timeline management, vendor liaison and every detail handled — so you can simply be present.", icon: "📋", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1578985824572-deb00b70bab9?w=600&q=85&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "150+", label: "Weddings Celebrated" },
+    { id: uid("st"), value: "200+", label: "Vendor Partners" },
+    { id: uid("st"), value: "10 yr", label: "Planning Experience" },
+    { id: uid("st"), value: "100%", label: "Would Recommend" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Emma & Thomas", role: "Married June 2024", content: "We handed Isabelle our scrapbook and said 'make this real'. She exceeded every single thing we'd imagined. Our guests are still talking about it.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ananya & Jay", role: "Married September 2024", content: "We planned a fusion Indian-Western wedding for 280 guests. Isabelle coordinated 40 vendors flawlessly and was calm when we weren't. Magical.", rating: 5 },
+    { id: uid("t"), name: "Sophie & Grace", role: "Married April 2024", content: "From our first consultation I knew BlissBride got us. The floral arch was breathtaking. Every single detail was perfect. Worth every penny.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Coordination", price: "$1,800", description: "Day-of coordination only", features: ["Pre-wedding consultation", "Vendor timeline creation", "Day-of coordinator", "Emergency kit included", "Post-wedding wrap-up"], ctaLabel: "Book Coordination", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Signature", price: "$6,500", description: "Partial planning & design", features: ["6 planning sessions", "Venue & vendor referrals", "Budget management", "Design direction", "Day-of coordination", "Rehearsal management"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Signature", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Bespoke", price: "From $12,000", description: "Full luxury planning", features: ["Unlimited planning sessions", "Full vendor management", "Bespoke floral design", "Custom styling & decor", "Complete day direction", "Honeymoon coordination"], ctaLabel: "Enquire Bespoke", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How far in advance should we start planning?", answer: "For full planning packages, 12–18 months gives us the best vendor availability and venue choice. Day-of coordination can be booked up to 3 months out for smaller weddings." },
+    { id: uid("f"), question: "Do you work with destination weddings?", answer: "Yes — we've planned weddings in France, Italy, Santorini and the Maldives. Destination packages include full local vendor coordination and advance site visits. Contact us for custom pricing." },
+    { id: uid("f"), question: "Can we bring our own vendors?", answer: "Absolutely. If you already have a florist or photographer you love, we'll work seamlessly with them. We're collaborative, not exclusive." },
+    { id: uid("f"), question: "What's included in your vendor network?", answer: "Our curated network covers venues, photographers, videographers, caterers, florists, hair & makeup artists, bands and DJs across New York and the Hamptons. All personally vetted and reviewed." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Isabelle Laurent", role: "Founder & Lead Planner", bio: "10 years as luxury hotel events director before founding BlissBride. Plans every wedding personally. Trained in Paris, based in New York.", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Priya Mehta", role: "Senior Coordinator & Florist", bio: "Certified floral designer and coordination specialist. Creates every floral concept in-studio. Has coordinated 80+ weddings.", avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 12: MaizeFashion (Fashion Boutique) ────────────────────────────
+
+const MAIZE_FASHION: TemplateIdentity = {
+  slug: "maize-fashion",
+  name: "MaizeFashion",
+  description: "Avant-garde fashion boutique. High-contrast monochrome with gold, editorial hero, collection grid, luxury brand feel.",
+  category: "Fashion & Retail",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85&fit=crop",
+  tags: ["fashion", "boutique", "retail", "luxury", "clothing"],
+
+  palette: {
+    primary: "#111111",
+    primaryFg: "#ffffff",
+    secondary: "#c8a96e",
+    accent: "#f5e6cc",
+    background: "#ffffff",
+    foreground: "#111111",
+    muted: "#f5f5f5",
+    mutedFg: "#666666",
+    card: "#ffffff",
+    border: "#e5e5e5",
+    ring: "#111111",
+    borderRadius: "0",
+  },
+  typography: {
+    headingFont: "Bodoni Moda",
+    bodyFont: "Inter",
+    headingWeight: "400",
+    letterSpacing: "0.1em",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;1,400&display=swap');
+    .template-maize-fashion h1,.template-maize-fashion h2,.template-maize-fashion h3 { font-family: 'Bodoni Moda', serif; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; }
+    .template-maize-fashion .service-card { border: none; border-bottom: 1px solid #111; border-radius: 0; }
+    .template-maize-fashion .stat-value { font-family: 'Bodoni Moda', serif; font-size: 3rem; color: #111; }
+    .template-maize-fashion .nav-bar { background: #fff; border-bottom: 1px solid #111; }
+    .template-maize-fashion .cta-section { background: #111; color: #fff; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "image-cards-dark",
+    testimonials: "minimal-quote",
+    features: "alternating-images",
+    stats: "plain-light",
+    cta: "dark-split",
+    pricing: "clean-cards",
+    faq: "accordion-minimal",
+    navigation: "transparent-light",
+    team: "portrait-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1600&q=90&fit=crop",
+      alt: "Fashion editorial shoot",
+    },
+    heroSecondary: {
+      url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=85&fit=crop",
+      alt: "Model in boutique",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop",
+      alt: "Boutique interior",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=85&fit=crop", alt: "Women's collection" },
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=85&fit=crop", alt: "Men's collection" },
+      { url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=85&fit=crop", alt: "Accessories" },
+      { url: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=85&fit=crop", alt: "Footwear" },
+      { url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=85&fit=crop", alt: "Bridal & occasion" },
+      { url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=85&fit=crop", alt: "Personal styling" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=85&fit=crop", alt: "Editorial look 1" },
+      { url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=85&fit=crop", alt: "Editorial look 2" },
+      { url: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=85&fit=crop", alt: "Street style" },
+      { url: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=85&fit=crop", alt: "New collection" },
+      { url: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=85&fit=crop", alt: "Campaign shot" },
+      { url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=85&fit=crop", alt: "Bridal look" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80&fit=crop&face", alt: "Camille Noir" },
+      { url: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=80&fit=crop&face", alt: "Yuki Tanaka" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&q=80&fit=crop",
+      alt: "Shop the collection",
+    },
+  },
+
+  heroHeadline: "Wear What You Believe In",
+  heroSubline: "Curated fashion for the discerning. New collection drops every season.",
+  heroBadge: "✦ New Season Collection Now Live",
+  heroCTA: "Shop Now",
+  heroSecondaryCTA: "Book Styling Session",
+  siteName: "Maize Fashion",
+  tagline: "Less, but better.",
+  phone: "+1 (212) 555-0419",
+  email: "studio@maizefashion.com",
+  address: "41 Greene Street, SoHo, New York, NY 10013",
+  aboutHeading: "Fashion That Respects Both You and the World",
+  aboutBody: "Maize was founded by designer Camille Noir with a clear manifesto: buy less, buy better. Every piece in our boutique is selected for longevity, sustainability and genuine beauty. We carry independent European designers, sustainable labels and our own capsule line — all designed to outlast trends.",
+  aboutHighlights: ["50+ independent designers stocked", "Sustainable & ethical production", "Personal styling by appointment", "Alterations in-studio"],
+
+  navItems: [
+    { id: "n1", label: "Collections", url: "#services" },
+    { id: "n2", label: "Lookbook", url: "#gallery" },
+    { id: "n3", label: "Styling", url: "#pricing" },
+    { id: "n4", label: "Story", url: "#about" },
+    { id: "n5", label: "Visit", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Women's Collections", description: "Seasonal ready-to-wear from emerging European designers and our in-house Maize label. New pieces weekly.", icon: "👗", iconType: "emoji", price: "$85 – $1,200", imageUrl: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Men's Edit", description: "Minimal, precise menswear. Tailored essentials, luxury basics and statement outerwear from Scandinavian and Japanese labels.", icon: "👔", iconType: "emoji", price: "$95 – $1,400", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Accessories & Jewellery", description: "Handmade leather goods, minimal fine jewellery and considered accessories. One-of-a-kind finds.", icon: "💍", iconType: "emoji", price: "$35 – $650", imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Footwear", description: "Artisan-made leather shoes and boots. Comfort, craft and design that only improves with wear.", icon: "👠", iconType: "emoji", price: "$180 – $850", imageUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bridal & Occasion", description: "Understated luxury for your most important moments. Bridal consultations by private appointment.", icon: "🤍", iconType: "emoji", price: "$350 – $3,800", imageUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Personal Styling", description: "One-on-one wardrobe curation with our in-house stylist. 90 minutes in-studio. Includes outfit capsule plan.", icon: "✨", iconType: "emoji", price: "$180/session", imageUrl: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=85&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "50+", label: "Designers Stocked" },
+    { id: uid("st"), value: "8 yr", label: "In SoHo" },
+    { id: uid("st"), value: "4.8★", label: "Google Rating" },
+    { id: uid("st"), value: "100%", label: "Ethically Sourced" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Claudia V.", role: "Loyal Client", content: "Maize is the only boutique I trust to curate my wardrobe. Camille has an eye that's completely unmatched. I've never bought something I regret.", rating: 5, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "James K.", role: "Men's Client", content: "Finally a men's edit with real taste. The styling session saved me from 3 years of bad shopping decisions. My wardrobe now works.", rating: 5 },
+    { id: uid("t"), name: "Mei L.", role: "Bridal Client", content: "I wore Maize for my wedding and every person asked where the dress was from. Yuki found it from a Paris designer nobody had heard of. Perfect.", rating: 5, avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&q=80&fit=crop&face" },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Style Consultation", price: "$180", description: "90-minute personal styling", features: ["Style profile assessment", "Wardrobe capsule plan", "In-store styling", "Look curation", "Shopping list provided"], ctaLabel: "Book Styling", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Wardrobe Edit", price: "$380", description: "Full wardrobe transformation", features: ["At-home wardrobe audit", "Curation & edit session", "3 complete new looks", "Seasonal buying guide", "Priority new-arrival access"], highlighted: true, badge: "Most Chosen", ctaLabel: "Book Edit", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Brand Partner", price: "Custom", description: "Ongoing style partnership", features: ["Quarterly seasonal updates", "Personal shopper service", "Event & travel dressing", "Alterations included", "VIP launch invitations"], ctaLabel: "Enquire", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you ship internationally?", answer: "Yes — we ship to 35+ countries. Standard international shipping 7–14 days, express 3–5 days. All orders are packaged in recycled materials with a personalised note." },
+    { id: uid("f"), question: "What is your returns policy?", answer: "14-day returns on unworn, tagged items. Exchange or store credit only for sale items. We cover return shipping for defective items." },
+    { id: uid("f"), question: "Do you do alterations?", answer: "Yes — in-studio alterations are available for all purchases. Simple alterations are complimentary on items over $300. Bespoke tailoring available on request." },
+    { id: uid("f"), question: "How do I book a styling session?", answer: "Use the contact form or email studio@maizefashion.com. Sessions are available Tuesday–Saturday, 10am–6pm. We ask for 48 hours notice for changes." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Camille Noir", role: "Founder & Creative Director", bio: "Former buyer for Net-a-Porter and Liberty London. Founded Maize in 2016 with a 'less, but better' philosophy that drives every selection.", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Yuki Tanaka", role: "Head Stylist & Buyer", bio: "Trained in Tokyo and London. Travels to Paris and Milan each season to source pieces before anyone else. The eye behind the edit.", avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=80&fit=crop&face" },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -1092,6 +2017,12 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   NEXA_AGENCY,
   AROMA_TABLE,
   FIT_FORGE,
+  ESTATE_EDGE,
+  LENS_STUDIO,
+  DENTAL_CARE_PRO,
+  BREW_HAVEN,
+  BLISS_BRIDE,
+  MAIZE_FASHION,
 ];
 
 export function getTemplateIdentity(slug: string): TemplateIdentity | undefined {

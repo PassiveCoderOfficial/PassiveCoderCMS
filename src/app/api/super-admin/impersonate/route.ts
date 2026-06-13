@@ -19,12 +19,18 @@ export async function GET(req: Request) {
   const { data: tenant } = await adminClient.from("tenants").select("id").eq("id", tenantId).single();
   if (!tenant) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
+  // Stay on root domain — SA manages tenant from their own session.
+  // Cookie scoped to root domain so it's also readable on subdomains if needed.
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "";
+  const cookieDomain = rootDomain ? `.${rootDomain.replace(/:\d+$/, "")}` : undefined;
+
   const res = NextResponse.redirect(new URL("/dashboard", req.url));
   res.cookies.set(SA_VIEWING_COOKIE, tenantId, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 8, // 8 hours
+    maxAge: 60 * 60 * 8,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
   return res;
 }

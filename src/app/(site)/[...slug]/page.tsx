@@ -87,36 +87,10 @@ export default async function SitePage({ params }: Props) {
   if (!page && !isRoot) notFound();
 
   if (!page) {
-    // Check if tenant has any pages (template applied but home not published)
-    let hasPages = false;
-    if (tenantId) {
-      const { count } = await supabase
-        .from("pages")
-        .select("id", { count: "exact", head: true })
-        .eq("tenant_id", tenantId);
-      hasPages = (count ?? 0) > 0;
-    }
-
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 text-white px-6">
-        <div className="max-w-lg text-center space-y-6">
-          <div className="text-6xl">{hasPages ? "✏️" : "🚀"}</div>
-          <h1 className="text-4xl font-bold">{hasPages ? "Almost there" : "Your site is ready"}</h1>
-          <p className="text-slate-400 text-lg">
-            {hasPages
-              ? <>Your site has pages ready. Go to the dashboard, set one as{" "}<code className="text-blue-400 bg-slate-700 px-1.5 py-0.5 rounded text-sm">home</code>{" "}and publish it.</>
-              : <>Head to the dashboard to create your first page and publish it as{" "}<code className="text-blue-400 bg-slate-700 px-1.5 py-0.5 rounded text-sm">home</code>.</>
-            }
-          </p>
-          <a
-            href="/dashboard"
-            className="inline-block mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition-colors"
-          >
-            Go to Dashboard →
-          </a>
-        </div>
-      </div>
-    );
+    // No home page published — send visitor to dashboard to set one up.
+    // Never show a placeholder welcome screen to public visitors.
+    const { redirect } = await import("next/navigation");
+    redirect("/dashboard");
   }
 
   const blocks: Block[] = Array.isArray(page.blocks) ? page.blocks : [];

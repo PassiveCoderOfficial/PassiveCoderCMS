@@ -165,20 +165,13 @@ export async function seedTemplate(
     { onConflict: "tenant_id" },
   );
 
-  // ── 8. Home page with variant-aware blocks ───────────────────────────────────
-  const blocks = buildHomePageBlocks(template);
-  // Delete existing home page for this tenant first, then insert fresh.
-  // Avoids relying on a named unique constraint for upsert conflict resolution.
-  await supabase.from("pages").delete().eq("tenant_id", tenantId).eq("slug", "home");
-  await supabase.from("pages").insert({
-    tenant_id: tenantId,
-    title: template.siteName,
-    slug: "home",
-    status: "published",
-    blocks,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  });
+  // ── 8. Multi-page seeding ────────────────────────────────────────────────────
+  // Delete all existing pages for this tenant, then insert a full site.
+  await supabase.from("pages").delete().eq("tenant_id", tenantId);
+
+  const now = new Date().toISOString();
+  const pageRows = buildAllPages(template, tenantId, now);
+  await supabase.from("pages").insert(pageRows);
 
   // ── 9. Log ───────────────────────────────────────────────────────────────────
   await logImport(supabase, tenantId, templateSlug, mode);
@@ -483,6 +476,201 @@ function buildHomePageBlocks(t: TemplateIdentity): Block[] {
   } as Block);
 
   return blocks;
+}
+
+// ─── Multi-page builder ───────────────────────────────────────────────────────
+// Returns an array of page rows ready to INSERT into the `pages` table.
+// Home = full landing page. Additional pages = focused single-topic pages.
+
+function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
+  const pages = [];
+
+  // ── Home ─────────────────────────────────────────────────────────────────────
+  pages.push({
+    tenant_id: tenantId,
+    title: "Home",
+    slug: "home",
+    status: "published",
+    blocks: buildHomePageBlocks(t),
+    created_at: now,
+    updated_at: now,
+  });
+
+  // ── About ─────────────────────────────────────────────────────────────────────
+  const aboutBlocks: Block[] = [];
+  let o = 0;
+  aboutBlocks.push({
+    ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++,
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    templateVariant: t.variants.navigation,
+    data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "#contact" },
+  } as Block);
+  if (t.images.about) {
+    aboutBlocks.push({
+      ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++,
+      templateVariant: "centered-bold",
+      data: {
+        title: t.aboutHeading, subtitle: t.tagline,
+        imageUrl: t.images.about.url, imageAlt: t.images.about.alt,
+        primaryButton: { label: t.heroCTA, url: "/contact", variant: "primary" },
+        typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" },
+      },
+    } as Block);
+  }
+  aboutBlocks.push({
+    ...BASE_BLOCK, id: uid("feat"), type: "features", order: o++,
+    templateVariant: t.variants.features,
+    data: {
+      title: t.aboutHeading, subtitle: "",
+      layout: "alternating", columns: 2, style: "minimal",
+      items: [{ id: uid("f"), title: t.aboutHeading, description: t.aboutBody, imageUrl: t.images.about?.url ?? "", icon: "" }],
+    },
+  } as Block);
+  if (t.stats.length > 0) {
+    aboutBlocks.push({
+      ...BASE_BLOCK, id: uid("stats"), type: "stats", order: o++,
+      padding: { top: 56, right: 0, bottom: 56, left: 0 },
+      background: { type: "color", color: t.palette.primary + "12" },
+      templateVariant: t.variants.stats,
+      data: { title: "", subtitle: "", layout: "row", columns: Math.min(t.stats.length, 4) as 2|3|4, items: t.stats, style: "plain", animate: true },
+    } as Block);
+  }
+  if (t.team && t.team.length > 0) {
+    aboutBlocks.push({
+      ...BASE_BLOCK, id: uid("team"), type: "team", order: o++,
+      templateVariant: t.variants.team,
+      data: { title: "Meet the Team", subtitle: "", layout: "cards", columns: 3, showBio: true, showSocial: false, members: t.team.map(m => ({ id: m.id, name: m.name, role: m.role, bio: m.bio, avatar: m.avatar, social: m.social ?? [] })) },
+    } as Block);
+  }
+  aboutBlocks.push({
+    ...BASE_BLOCK, id: uid("contact"), type: "contact", order: o++,
+    data: {
+      title: "Get In Touch", subtitle: t.heroCTA, layout: "split", showMap: false, showContactInfo: true,
+      phone: t.phone, email: t.email, address: t.address,
+      fields: [
+        { id: "f-name", label: "Full Name", type: "text", required: true },
+        { id: "f-email", label: "Email", type: "email", required: true },
+        { id: "f-msg", label: "Message", type: "textarea", required: true },
+      ],
+      submitLabel: "Send Message", successMessage: "Thanks! We'll be in touch.", recipientEmail: t.email,
+    },
+  } as Block);
+
+  pages.push({ tenant_id: tenantId, title: "About Us", slug: "about", status: "published", blocks: aboutBlocks, created_at: now, updated_at: now });
+
+  // ── Services ──────────────────────────────────────────────────────────────────
+  if (t.services.length > 0) {
+    o = 0;
+    const svcBlocks: Block[] = [];
+    svcBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    svcBlocks.push({
+      ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++,
+      templateVariant: "centered-bold",
+      data: { title: "Our Services", subtitle: t.tagline, primaryButton: { label: t.heroCTA, url: "/contact", variant: "primary" }, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } },
+    } as Block);
+    svcBlocks.push({
+      ...BASE_BLOCK, id: uid("svc"), type: "services", order: o++,
+      templateVariant: t.variants.services,
+      data: {
+        title: "What We Offer", subtitle: t.aboutHeading, layout: "grid", columns: 3, cardStyle: "elevated", source: "inline",
+        items: t.services.map(s => ({ id: s.id, title: s.title, description: s.description, icon: s.icon, iconType: s.iconType, imageUrl: s.imageUrl, linkLabel: s.price ?? "Learn More", link: "/contact" })),
+      },
+    } as Block);
+    svcBlocks.push({
+      ...BASE_BLOCK, id: uid("cta"), type: "cta", order: o++,
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      background: { type: "gradient", gradient: `linear-gradient(135deg, ${t.palette.primary}, ${t.palette.secondary})` },
+      templateVariant: t.variants.cta,
+      data: { title: "Ready to Get Started?", description: t.tagline, primaryButton: { label: t.heroCTA, url: "/contact" }, secondaryButton: { label: "About Us", url: "/about" }, layout: "centered" },
+    } as Block);
+    pages.push({ tenant_id: tenantId, title: "Services", slug: "services", status: "published", blocks: svcBlocks, created_at: now, updated_at: now });
+  }
+
+  // ── Gallery ───────────────────────────────────────────────────────────────────
+  if (t.images.gallery.length > 0) {
+    o = 0;
+    const galBlocks: Block[] = [];
+    galBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    galBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Gallery", subtitle: t.tagline, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
+    galBlocks.push({
+      ...BASE_BLOCK, id: uid("gal"), type: "gallery", order: o++,
+      data: { title: "", layout: "masonry", columns: 3, gap: "sm", lightbox: true, images: t.images.gallery.map((img, i) => ({ id: uid(`g${i}`), url: img.url, alt: img.alt })) },
+    } as Block);
+    // Add service images as additional gallery rows
+    const svcImages = t.images.services.map((img, i) => ({ id: uid(`gs${i}`), url: img.url, alt: img.alt }));
+    if (svcImages.length > 0) {
+      galBlocks.push({ ...BASE_BLOCK, id: uid("gal2"), type: "gallery", order: o++, data: { title: "Our Work", layout: "grid", columns: 3, gap: "sm", lightbox: true, images: svcImages } } as Block);
+    }
+    pages.push({ tenant_id: tenantId, title: "Gallery", slug: "gallery", status: "published", blocks: galBlocks, created_at: now, updated_at: now });
+  }
+
+  // ── Pricing ───────────────────────────────────────────────────────────────────
+  if (t.pricing && t.pricing.length > 0) {
+    o = 0;
+    const prcBlocks: Block[] = [];
+    prcBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    prcBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Pricing", subtitle: "Simple, transparent pricing. No surprises.", typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
+    prcBlocks.push({
+      ...BASE_BLOCK, id: uid("prc"), type: "pricing", order: o++,
+      templateVariant: t.variants.pricing,
+      data: {
+        title: "Choose Your Plan", subtitle: "Simple, transparent pricing",
+        layout: "cards", billingToggle: false,
+        plans: t.pricing.map(p => ({ id: p.id, name: p.name, price: p.price, period: p.period, description: p.description, features: p.features, highlighted: p.highlighted ?? false, badge: p.badge, ctaLabel: p.ctaLabel, ctaUrl: "/contact" })),
+      },
+    } as Block);
+    if (t.faq && t.faq.length > 0) {
+      prcBlocks.push({ ...BASE_BLOCK, id: uid("faq"), type: "faq", order: o++, templateVariant: t.variants.faq, data: { title: "Pricing FAQ", subtitle: "", layout: "accordion", allowMultiple: false, items: t.faq.map(f => ({ id: f.id, question: f.question, answer: f.answer })) } } as Block);
+    }
+    pages.push({ tenant_id: tenantId, title: "Pricing", slug: "pricing", status: "published", blocks: prcBlocks, created_at: now, updated_at: now });
+  }
+
+  // ── Testimonials ──────────────────────────────────────────────────────────────
+  if (t.testimonials.length > 0) {
+    o = 0;
+    const tesBlocks: Block[] = [];
+    tesBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    tesBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "What Our Clients Say", subtitle: t.tagline, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
+    tesBlocks.push({ ...BASE_BLOCK, id: uid("tes"), type: "testimonials", order: o++, templateVariant: t.variants.testimonials, data: { title: "", layout: "grid", items: t.testimonials.map(t => ({ id: t.id, name: t.name, role: t.role, company: t.company, avatar: t.avatar, content: t.content, rating: t.rating })) } } as Block);
+    tesBlocks.push({ ...BASE_BLOCK, id: uid("stats"), type: "stats", order: o++, padding: { top: 56, right: 0, bottom: 56, left: 0 }, background: { type: "color", color: t.palette.primary + "12" }, templateVariant: t.variants.stats, data: { title: "", subtitle: "", layout: "row", columns: Math.min(t.stats.length, 4) as 2|3|4, items: t.stats, style: "plain", animate: true } } as Block);
+    pages.push({ tenant_id: tenantId, title: "Reviews", slug: "reviews", status: "published", blocks: tesBlocks, created_at: now, updated_at: now });
+  }
+
+  // ── FAQ ───────────────────────────────────────────────────────────────────────
+  if (t.faq && t.faq.length > 0) {
+    o = 0;
+    const faqBlocks: Block[] = [];
+    faqBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    faqBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Frequently Asked Questions", subtitle: `Everything you need to know about ${t.siteName}`, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
+    faqBlocks.push({ ...BASE_BLOCK, id: uid("faq"), type: "faq", order: o++, templateVariant: t.variants.faq, data: { title: "", subtitle: "", layout: "accordion", allowMultiple: false, items: t.faq.map(f => ({ id: f.id, question: f.question, answer: f.answer })) } } as Block);
+    faqBlocks.push({ ...BASE_BLOCK, id: uid("cta"), type: "cta", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, background: { type: "gradient", gradient: `linear-gradient(135deg, ${t.palette.primary}, ${t.palette.secondary})` }, templateVariant: t.variants.cta, data: { title: "Still Have Questions?", description: "Our team is happy to help.", primaryButton: { label: "Contact Us", url: "/contact" }, layout: "centered" } } as Block);
+    pages.push({ tenant_id: tenantId, title: "FAQ", slug: "faq", status: "published", blocks: faqBlocks, created_at: now, updated_at: now });
+  }
+
+  // ── Contact ───────────────────────────────────────────────────────────────────
+  {
+    o = 0;
+    const conBlocks: Block[] = [];
+    conBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "#form" } } as Block);
+    conBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Get In Touch", subtitle: t.tagline, primaryButton: { label: "Call Us", url: `tel:${t.phone.replace(/[^0-9+]/g, "")}`, variant: "primary" }, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
+    conBlocks.push({
+      ...BASE_BLOCK, id: uid("contact"), type: "contact", order: o++,
+      data: {
+        title: "", subtitle: "", layout: "split", showMap: false, showContactInfo: true,
+        phone: t.phone, email: t.email, address: t.address,
+        fields: [
+          { id: "f-name", label: "Full Name", type: "text", required: true },
+          { id: "f-email", label: "Email Address", type: "email", required: true },
+          { id: "f-phone", label: "Phone Number", type: "tel", required: false },
+          { id: "f-msg", label: "Message", type: "textarea", required: true },
+        ],
+        submitLabel: "Send Message", successMessage: "Thanks! We'll be in touch shortly.", recipientEmail: t.email,
+      },
+    } as Block);
+    pages.push({ tenant_id: tenantId, title: "Contact", slug: "contact", status: "published", blocks: conBlocks, created_at: now, updated_at: now });
+  }
+
+  return pages;
 }
 
 async function logImport(
