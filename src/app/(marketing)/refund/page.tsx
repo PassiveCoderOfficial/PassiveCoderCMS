@@ -24,8 +24,8 @@ export default function RefundPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Free Trial</h2>
-            <p>No payment is taken during the 7-day free trial. You will only be charged if you choose to upgrade to a paid plan.</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">No Upfront Payment</h2>
+            <p>No payment is required at signup. Your account is fully active from day one. You will only be charged after you add payment details and confirm your plan.</p>
           </section>
 
           <section>

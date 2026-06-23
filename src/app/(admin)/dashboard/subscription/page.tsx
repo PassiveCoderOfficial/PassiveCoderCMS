@@ -40,7 +40,7 @@ interface Agent {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
-  trial:    { color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Free Trial" },
+  trial:    { color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Payment Pending" },
   active:   { color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: "Active" },
   past_due: { color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400", icon: <AlertCircle className="w-3.5 h-3.5" />, label: "Past Due" },
   cancelled:{ color: "text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400", icon: null, label: "Cancelled" },
@@ -108,7 +108,7 @@ export default function SubscriptionPage() {
           <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-red-700 dark:text-red-400">Your site has been suspended</p>
-            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">Your free trial has ended. Choose a plan below to reactivate your site.</p>
+            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">Your site has been suspended. Choose a plan below to reactivate.</p>
           </div>
         </div>
       )}
@@ -269,7 +269,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
       {sub.status === "trial" && renewDate && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
           <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-          Trial expires {new Date(renewDate).toLocaleDateString()}. Upgrade to keep your site live.
+          Payment pending — your site stays active. Add payment by {new Date(renewDate).toLocaleDateString()} to keep it live.
         </div>
       )}
 
@@ -312,7 +312,7 @@ function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; disco
       <div className="rounded-xl border bg-muted/30 p-8 text-center space-y-3">
         <CreditCard className="w-10 h-10 text-muted-foreground mx-auto" />
         <p className="font-semibold">No active subscription</p>
-        <p className="text-sm text-muted-foreground">Your site is on a free trial or has no plan assigned yet.</p>
+        <p className="text-sm text-muted-foreground">No active subscription yet. Choose a plan to activate your site.</p>
         {discountPct > 0 && (
           <p className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center justify-center gap-1">
             <BadgePercent className="w-4 h-4" /> As an agent, you get {discountPct}% off any plan

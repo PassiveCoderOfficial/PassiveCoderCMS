@@ -199,7 +199,7 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Choose your plan</h2>
-        <p className="text-muted-foreground mt-1">Start with a 7-day free trial — no payment needed upfront.</p>
+        <p className="text-muted-foreground mt-1">No payment needed to get started — pay after your account is created.</p>
       </div>
 
       {cycles.length > 1 && (
@@ -286,8 +286,8 @@ function Step1({
     {
       id: "trial",
       icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: "Start 7-Day Free Trial",
-      desc: "Full access for 7 days. Pay when you're ready to keep it.",
+      title: "Get Started — Pay Later",
+      desc: "Full access from day one. No payment required at signup — pay after your account is set up.",
       badge: "No card needed",
     },
     {
@@ -322,7 +322,7 @@ function Step1({
       <div>
         <h2 className="text-2xl font-bold">How would you like to pay?</h2>
         <p className="text-muted-foreground mt-1">
-          {isCustom ? "Custom plans require contacting our sales team." : "Try free for 7 days, or pay now to lock in your plan."}
+          {isCustom ? "Custom plans require contacting our sales team." : "Start now, no payment required — or pay upfront to lock in your plan."}
         </p>
       </div>
 
@@ -354,19 +354,19 @@ function Step1({
       {method === "trial" && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
           <Zap className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-          <span>Your site will be fully functional for 7 days. You'll get a reminder before it expires. No auto-charge.</span>
+          <span>Your site goes live immediately. No payment required now — you can add payment details from your dashboard at any time.</span>
         </div>
       )}
 
       {method === "manual" && (
         <div className="rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 p-3 text-xs text-purple-800 dark:text-purple-400 flex items-start gap-2">
           <MessageSquare className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>A support ticket will be created for our sales team. They'll contact you within 1 business day. You'll have a 7-day trial while you wait.</span>
+          <span>A support ticket will be created for our sales team. They'll contact you within 1 business day to arrange payment.</span>
         </div>
       )}
 
       <Button size="lg" className="w-full" onClick={() => onNext(method)}>
-        {method === "trial" ? "Start Free Trial" : method === "manual" ? "Contact Sales & Start Trial" : "Proceed to Payment"}
+        {method === "trial" ? "Create Account — Pay Later" : method === "manual" ? "Contact Sales & Get Started" : "Proceed to Payment"}
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </div>
@@ -848,9 +848,9 @@ function Step6({
         <h2 className="text-2xl font-bold">🎉 {siteName} is live!</h2>
         <p className="text-muted-foreground">
           {payMethod === "trial"
-            ? "Your 7-day trial has started. You'll get a reminder before it ends."
+            ? "Your site is live. Add payment details from your dashboard whenever you're ready."
             : payMethod === "manual"
-            ? "Our sales team will reach out within 1 business day. Your trial is active."
+            ? "Our sales team will reach out within 1 business day to arrange payment."
             : "Your site is ready. Start building your pages."}
         </p>
       </div>

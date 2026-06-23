@@ -8,7 +8,7 @@ const WEBSITE_PERKS = [
   "All templates included",
   "Custom domain support",
   "Ecommerce & bookings",
-  "7-day free trial",
+  "No payment required at signup",
 ];
 
 const AGENT_PERKS = [
@@ -48,7 +48,7 @@ export default function SignupChoicePage() {
             </ul>
             <div className="mt-auto pt-2">
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
-                Start free trial <ArrowRight className="w-4 h-4" />
+                Get started free <ArrowRight className="w-4 h-4" />
               </span>
             </div>
           </Link>
