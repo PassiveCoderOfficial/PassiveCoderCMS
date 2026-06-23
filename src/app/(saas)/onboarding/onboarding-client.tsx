@@ -179,7 +179,7 @@ const PLAN_HIGHLIGHTS: Record<string, { badge?: string; color: string }> = {
 
 function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleChange: (c: BillingCycle) => void; onNext: (planId: string) => void }) {
   const params = useSearchParams();
-  const defaultPlan = params.get("plan") ?? "standard";
+  const defaultPlan = params.get("plan") ?? "basic";
   const [selected, setSelected] = useState(defaultPlan);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -886,7 +886,7 @@ export default function OnboardingClient() {
   const [authChecked, setAuthChecked] = useState(false);
   const [authedUser, setAuthedUser] = useState<{ id: string; email: string } | null>(null);
   const [step, setStep] = useState(0);
-  const [planId, setPlanId] = useState("standard");
+  const [planId, setPlanId] = useState("basic");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
     params.get("cycle") === "monthly" ? "monthly" : "yearly",
   );

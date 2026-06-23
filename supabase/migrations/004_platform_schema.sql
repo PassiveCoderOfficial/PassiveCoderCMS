@@ -4,7 +4,7 @@
 -- ── Plans ─────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS plans (
-  id                    text PRIMARY KEY, -- 'standard', 'premium', 'custom'
+  id                    text PRIMARY KEY, -- 'basic', 'pro', 'custom'
   name                  text NOT NULL,
   price_yearly          integer NOT NULL DEFAULT 0, -- cents (29000 = $290)
   price_monthly         integer NOT NULL DEFAULT 0, -- cents; 0 = monthly not offered
@@ -27,10 +27,10 @@ ALTER TABLE plans ADD COLUMN IF NOT EXISTS visitor_limit_monthly integer NOT NUL
 ALTER TABLE plans ADD COLUMN IF NOT EXISTS overage_cents_per_1k  integer NOT NULL DEFAULT 0;
 
 INSERT INTO plans (id, name, price_yearly, price_monthly, price_lifetime, storage_gb, domains, support_tier, visitor_limit_monthly, overage_cents_per_1k, features, sort_order) VALUES
-('standard', 'Basic', 29000, 4900, 0, 10, 1, 'standard', 5000, 200,
+('basic', 'Basic', 29000, 4900, 0, 10, 1, 'standard', 5000, 200,
   '["DIY website builder","Free .com/.org/.net TLD domain (1 year)","10 GB storage","5,000 visitors/month included","$2 per 1,000 extra visitors","Page builder","SSL certificate","Daily backups","Uptime monitoring","Email support"]',
   1),
-('premium', 'Pro', 44900, 7900, 0, 50, 1, 'vip', 25000, 100,
+('pro', 'Pro', 44900, 7900, 0, 50, 1, 'vip', 25000, 100,
   '["DIY website builder","Free .com/.org/.net TLD domain (1 year)","50 GB storage","25,000 visitors/month included","$1 per 1,000 extra visitors","Full design & layout support","Configuration assistance","E-Commerce functionality","ExpertNear.Me Pro subscription (free)","SSL certificate","Daily backups","VIP priority support"]',
   2),
 ('custom', 'Custom', 0, 0, 0, 0, 0, 'vip', 0, 0,

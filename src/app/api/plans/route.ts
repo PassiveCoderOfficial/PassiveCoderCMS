@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const PLANS = [
   {
-    id: "standard",
+    id: "basic",
     name: "Basic",
     price_yearly: 290,
     price_monthly: 49,
@@ -23,7 +23,7 @@ const PLANS = [
     ],
   },
   {
-    id: "premium",
+    id: "pro",
     name: "Pro",
     price_yearly: 449,
     price_monthly: 79,

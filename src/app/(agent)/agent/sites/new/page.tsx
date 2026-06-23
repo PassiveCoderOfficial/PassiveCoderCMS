@@ -118,8 +118,8 @@ export default function AgentNewSitePage() {
               <select value={plan} onChange={e => setPlan(e.target.value)}
                 className="w-full bg-muted border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
                 <option value="trial">Trial</option>
-                <option value="standard">Standard</option>
-                <option value="premium">Premium</option>
+                <option value="basic">Basic</option>
+                <option value="pro">Pro</option>
                 <option value="custom">Custom</option>
               </select>
             </div>

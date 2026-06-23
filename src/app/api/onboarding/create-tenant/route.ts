@@ -77,7 +77,7 @@ export async function POST(req: Request) {
   // Upsert subscription row with trial end date (14-day trial)
   const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
   await supabase.from("subscriptions").upsert(
-    { tenant_id: tenant.id, plan_id: planId ?? "standard", status: "trial", trial_ends_at: trialEnd, billing_cycle: billingCycle },
+    { tenant_id: tenant.id, plan_id: planId ?? "basic", status: "trial", trial_ends_at: trialEnd, billing_cycle: billingCycle },
     { onConflict: "tenant_id" },
   );
 

@@ -108,7 +108,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
 
           {/* ── Basic + Pro plan cards ── */}
           {visiblePlans.map((plan) => {
-            const isPremium = plan.id === "premium";
+            const isPremium = plan.id === "pro";
             const price = priceFor(plan);
             const offersCycle = price > 0;
             const features: string[] = Array.isArray(plan.features)

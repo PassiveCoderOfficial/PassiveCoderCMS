@@ -18,7 +18,7 @@ interface Plan {
 
 const DEFAULT_PLANS: Plan[] = [
   {
-    id: "standard",
+    id: "basic",
     name: "Basic",
     price_yearly: 290,
     price_monthly: 49,
@@ -39,7 +39,7 @@ const DEFAULT_PLANS: Plan[] = [
     ],
   },
   {
-    id: "premium",
+    id: "pro",
     name: "Pro",
     price_yearly: 449,
     price_monthly: 79,
