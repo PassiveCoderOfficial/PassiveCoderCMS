@@ -13,8 +13,14 @@ export interface CheckoutPlan {
   id: string;
   name: string;
   price_yearly: number;
+  price_monthly?: number;
+  price_lifetime?: number;
   currency?: string;
 }
+
+type BillingCycle = "monthly" | "yearly" | "lifetime";
+const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly", lifetime: "Lifetime" };
+const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr", lifetime: " one-time" };
 
 export interface PaymentConfig {
   bkash_number?: string | null;
@@ -35,6 +41,7 @@ export function CheckoutDialog({
   paymentConfig: PaymentConfig;
 }) {
   const [method, setMethod] = useState<Method>("shurjopay");
+  const [cycle, setCycle] = useState<BillingCycle>("yearly");
   const [txnRef, setTxnRef] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,13 +50,22 @@ export function CheckoutDialog({
   const isManual = method !== "shurjopay";
   const manualNumber = method === "bkash" ? paymentConfig.bkash_number : method === "nagad" ? paymentConfig.nagad_number : null;
 
+  const priceFor = (c: BillingCycle): number =>
+    c === "monthly" ? (plan.price_monthly ?? 0)
+    : c === "lifetime" ? (plan.price_lifetime ?? 0)
+    : plan.price_yearly;
+  const availableCycles = (["monthly", "yearly", "lifetime"] as BillingCycle[]).filter(c => priceFor(c) > 0);
+  // Fall back to yearly if the selected cycle isn't offered by this plan
+  const activeCycle: BillingCycle = priceFor(cycle) > 0 ? cycle : (availableCycles[0] ?? "yearly");
+  const amount = priceFor(activeCycle);
+
   async function submit() {
     setLoading(true);
     try {
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, planId: plan!.id, method, txnRef, senderNumber }),
+        body: JSON.stringify({ tenantId, planId: plan!.id, method, billingCycle: activeCycle, txnRef, senderNumber }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Checkout failed");
@@ -82,9 +98,31 @@ export function CheckoutDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {availableCycles.length > 1 && (
+            <div className="space-y-2">
+              <Label>Billing cycle</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {availableCycles.map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCycle(c)}
+                    className={cn(
+                      "rounded-lg border p-2 text-xs transition-colors",
+                      activeCycle === c ? "border-primary bg-primary/5 font-semibold" : "hover:border-primary/40",
+                    )}
+                  >
+                    {CYCLE_LABELS[c]}
+                    <span className="block text-[10px] text-muted-foreground">{plan.currency ?? "BDT"} {priceFor(c).toLocaleString()}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="rounded-lg bg-muted/40 p-3 text-sm flex items-center justify-between">
-            <span className="text-muted-foreground">{plan.name} plan (yearly)</span>
-            <span className="font-bold">{plan.currency ?? "BDT"} {plan.price_yearly.toLocaleString()}</span>
+            <span className="text-muted-foreground">{plan.name} plan ({CYCLE_LABELS[activeCycle].toLowerCase()})</span>
+            <span className="font-bold">{plan.currency ?? "BDT"} {amount.toLocaleString()}{CYCLE_SUFFIX[activeCycle]}</span>
           </div>
 
           <div className="space-y-2">
@@ -112,7 +150,7 @@ export function CheckoutDialog({
                 {method === "bank"
                   ? (paymentConfig.bank_details || "Contact support for bank transfer details.")
                   : manualNumber
-                    ? <>Send <strong>{plan.currency ?? "BDT"} {plan.price_yearly.toLocaleString()}</strong> to <strong>{method}</strong> number <strong>{manualNumber}</strong>, then enter the transaction details below.</>
+                    ? <>Send <strong>{plan.currency ?? "BDT"} {amount.toLocaleString()}</strong> to <strong>{method}</strong> number <strong>{manualNumber}</strong>, then enter the transaction details below.</>
                     : `${method} number not configured yet — contact support.`}
               </p>
               {paymentConfig.manual_payment_instructions && (

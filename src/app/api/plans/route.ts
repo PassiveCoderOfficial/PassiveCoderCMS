@@ -5,6 +5,8 @@ const PLANS = [
     id: "standard",
     name: "Standard",
     price_yearly: 199,
+    price_monthly: 19,
+    price_lifetime: 499,
     storage_gb: 5,
     features: [
       "1 website",
@@ -20,6 +22,8 @@ const PLANS = [
     id: "premium",
     name: "Premium",
     price_yearly: 399,
+    price_monthly: 39,
+    price_lifetime: 999,
     storage_gb: 20,
     features: [
       "1 website",
@@ -37,6 +41,8 @@ const PLANS = [
     id: "custom",
     name: "Custom",
     price_yearly: 0,
+    price_monthly: 0,
+    price_lifetime: 0,
     storage_gb: 100,
     features: [
       "Multiple websites",

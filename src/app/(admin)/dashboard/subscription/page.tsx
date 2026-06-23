@@ -27,6 +27,7 @@ interface Plan {
   name: string;
   price_monthly: number;
   price_yearly: number;
+  price_lifetime: number;
   currency: string;
   features: string[];
   is_popular: boolean;
@@ -294,7 +295,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
                 size="sm"
                 variant={p.is_popular ? "default" : "outline"}
                 className="flex items-center gap-1.5"
-                onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, currency: p.currency })}
+                onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, price_lifetime: p.price_lifetime, currency: p.currency })}
               >
                 <CreditCard className="w-3.5 h-3.5" /> {sub.status === "trial" ? "Subscribe" : "Pay"} — {p.name}
               </Button>
@@ -353,7 +354,7 @@ function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; disco
                   className="w-full"
                   variant={plan.is_popular ? "default" : "outline"}
                   disabled={!onChoose}
-                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, currency: plan.currency })}
+                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, price_monthly: plan.price_monthly, price_lifetime: plan.price_lifetime, currency: plan.currency })}
                 >
                   Choose {plan.name}
                 </Button>

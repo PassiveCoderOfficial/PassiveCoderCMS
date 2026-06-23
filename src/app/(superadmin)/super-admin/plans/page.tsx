@@ -8,6 +8,8 @@ interface Plan {
   id: string;
   name: string;
   price_yearly: number;
+  price_monthly: number;
+  price_lifetime: number;
   storage_gb: number;
   features: string[];
   sort_order?: number;
@@ -18,6 +20,8 @@ const DEFAULT_PLANS: Plan[] = [
     id: "standard",
     name: "Standard",
     price_yearly: 199,
+    price_monthly: 19,
+    price_lifetime: 499,
     storage_gb: 5,
     features: ["1 website", "5 GB storage", "Custom subdomain", "All templates", "Page builder", "Contact forms", "Email support"],
   },
@@ -25,6 +29,8 @@ const DEFAULT_PLANS: Plan[] = [
     id: "premium",
     name: "Premium",
     price_yearly: 399,
+    price_monthly: 39,
+    price_lifetime: 999,
     storage_gb: 20,
     features: ["1 website", "20 GB storage", "Custom domain", "All templates", "Page builder", "Contact forms", "Bookings & appointments", "Priority support", "Analytics dashboard"],
   },
@@ -32,6 +38,8 @@ const DEFAULT_PLANS: Plan[] = [
     id: "custom",
     name: "Custom",
     price_yearly: 0,
+    price_monthly: 0,
+    price_lifetime: 0,
     storage_gb: 100,
     features: ["Multiple websites", "100 GB storage", "Custom domain", "White-label option", "All features", "Dedicated support", "Custom integrations", "SLA guarantee"],
   },
@@ -60,6 +68,20 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
           />
         </div>
         <div>
+          <label className="text-xs text-gray-500 mb-1 block">Monthly Price (USD)</label>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm">$</span>
+            <input
+              type="number"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+              value={plan.price_monthly ?? 0}
+              onChange={e => onChange({ ...plan, price_monthly: Number(e.target.value) })}
+            />
+            <span className="text-gray-500 text-xs">/mo</span>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">0 = hide monthly option</p>
+        </div>
+        <div>
           <label className="text-xs text-gray-500 mb-1 block">Yearly Price (USD)</label>
           <div className="flex items-center gap-2">
             <span className="text-gray-400 text-sm">$</span>
@@ -71,9 +93,23 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
             />
             <span className="text-gray-500 text-xs">/yr</span>
           </div>
-          {plan.id !== "custom" && (
+          {plan.id !== "custom" && plan.price_yearly > 0 && (
             <p className="text-xs text-gray-600 mt-1">${(plan.price_yearly / 12).toFixed(2)}/mo equiv</p>
           )}
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">Lifetime Price (USD)</label>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm">$</span>
+            <input
+              type="number"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+              value={plan.price_lifetime ?? 0}
+              onChange={e => onChange({ ...plan, price_lifetime: Number(e.target.value) })}
+            />
+            <span className="text-gray-500 text-xs">once</span>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">0 = hide lifetime option</p>
         </div>
         <div>
           <label className="text-xs text-gray-500 mb-1 block">Storage (GB)</label>

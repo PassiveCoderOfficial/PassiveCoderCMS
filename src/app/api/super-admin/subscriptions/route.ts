@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   const ticketId = searchParams.get("ticketId");
 
   const [plansResult, subsResult] = await Promise.all([
-    supabase!.from("plans").select("id,name,price_yearly,currency").order("sort_order"),
+    supabase!.from("plans").select("id,name,price_yearly,price_monthly,price_lifetime,currency").order("sort_order"),
     id
       ? supabase!.from("subscriptions").select("*, tenants(name,slug)").eq("id", id).maybeSingle()
       : ticketId
@@ -31,10 +31,7 @@ export async function GET(req: Request) {
         : supabase!.from("subscriptions").select("*, tenants(name,slug)").order("created_at", { ascending: false }).limit(500),
   ]);
 
-  const plans = (plansResult.data ?? []).map((p: { price_yearly: number } & Record<string, unknown>) => ({
-    ...p,
-    price_yearly: p.price_yearly,
-  }));
+  const plans = plansResult.data ?? [];
 
   if (id) {
     return NextResponse.json({ subscription: subsResult.data ?? null, plans });
@@ -50,10 +47,11 @@ export async function POST(req: Request) {
   if (error) return error;
 
   const body = await req.json();
-  const { tenant_id, plan_id, status, payment_provider, amount_cents, currency, trial_ends_at, current_period_end } = body;
+  const { tenant_id, plan_id, status, payment_provider, billing_cycle, amount_cents, currency, trial_ends_at, current_period_end } = body;
   if (!tenant_id || !plan_id) return NextResponse.json({ error: "Missing tenant_id or plan_id" }, { status: 400 });
 
   const payload: Record<string, unknown> = { tenant_id, plan_id, status: status ?? "trial", currency: currency || "USD" };
+  if (["monthly", "yearly", "lifetime"].includes(billing_cycle)) payload.billing_cycle = billing_cycle;
   if (payment_provider?.trim()) payload.payment_provider = payment_provider.trim();
   if (amount_cents != null && amount_cents !== "") payload.amount_cents = Math.round(parseFloat(String(amount_cents)) * 100);
   if (trial_ends_at) payload.trial_ends_at = trial_ends_at;
@@ -71,7 +69,7 @@ export async function PATCH(req: Request) {
   const { id, ...updates } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const allowed = ["plan_id","status","payment_provider","amount_cents","currency","trial_ends_at","current_period_end","notes"];
+  const allowed = ["plan_id","status","payment_provider","billing_cycle","amount_cents","currency","trial_ends_at","current_period_end","notes"];
   const payload: Record<string, unknown> = {};
   for (const k of allowed) {
     if (k in updates) payload[k] = updates[k] === "" ? null : updates[k];

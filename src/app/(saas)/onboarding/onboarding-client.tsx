@@ -151,7 +151,16 @@ function AuthedBanner({ email, onSwitch }: { email: string; onSwitch: () => void
 
 // ─── Step 0: Plan selection ───────────────────────────────────────────────────
 
-interface Plan { id: string; name: string; price_yearly: number; storage_gb: number; features: string[] }
+interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_lifetime: number; storage_gb: number; features: string[] }
+
+type BillingCycle = "monthly" | "yearly" | "lifetime";
+const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly", lifetime: "Lifetime" };
+const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr", lifetime: " once" };
+function planPrice(plan: Plan, cycle: BillingCycle): number {
+  if (cycle === "monthly") return plan.price_monthly ?? 0;
+  if (cycle === "lifetime") return plan.price_lifetime ?? 0;
+  return plan.price_yearly ?? 0;
+}
 
 const PLAN_HIGHLIGHTS: Record<string, { badge?: string; color: string }> = {
   standard: { color: "border-gray-200" },
@@ -159,7 +168,7 @@ const PLAN_HIGHLIGHTS: Record<string, { badge?: string; color: string }> = {
   custom: { color: "border-gray-200" },
 };
 
-function Step0({ onNext }: { onNext: (planId: string) => void }) {
+function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleChange: (c: BillingCycle) => void; onNext: (planId: string) => void }) {
   const params = useSearchParams();
   const defaultPlan = params.get("plan") ?? "standard";
   const [selected, setSelected] = useState(defaultPlan);
@@ -170,6 +179,11 @@ function Step0({ onNext }: { onNext: (planId: string) => void }) {
     fetch("/api/plans").then(r => r.json()).then(d => { setPlans(d.plans ?? []); setLoading(false); });
   }, []);
 
+  // Cycles offered by at least one (non-custom) plan
+  const availableCycles: BillingCycle[] = (["monthly", "yearly", "lifetime"] as BillingCycle[])
+    .filter(c => plans.some(p => p.id !== "custom" && planPrice(p, c) > 0));
+  const cycles = availableCycles.length ? availableCycles : (["yearly"] as BillingCycle[]);
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
@@ -178,6 +192,25 @@ function Step0({ onNext }: { onNext: (planId: string) => void }) {
         <h2 className="text-2xl font-bold">Choose your plan</h2>
         <p className="text-muted-foreground mt-1">Start with a 7-day free trial — no payment needed upfront.</p>
       </div>
+
+      {cycles.length > 1 && (
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-1 bg-muted rounded-full p-1">
+            {cycles.map(c => (
+              <button
+                key={c}
+                onClick={() => onCycleChange(c)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-xs font-semibold transition-all",
+                  cycle === c ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {CYCLE_LABELS[c]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         {plans.map(plan => {
@@ -202,7 +235,9 @@ function Step0({ onNext }: { onNext: (planId: string) => void }) {
                   {h.badge && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"><Star className="w-2.5 h-2.5 fill-current" />{h.badge}</span>}
                 </div>
                 <span className="font-bold text-sm">
-                  {isCustom ? "Custom pricing" : `$${plan.price_yearly}/yr`}
+                  {isCustom ? "Custom pricing"
+                    : planPrice(plan, cycle) > 0 ? `$${planPrice(plan, cycle)}${CYCLE_SUFFIX[cycle]}`
+                    : `Not available ${CYCLE_LABELS[cycle].toLowerCase()}`}
                 </span>
               </div>
               <div className="ml-6 flex flex-wrap gap-x-4 gap-y-1">
@@ -713,11 +748,11 @@ function Step5({ onNext, initialSlug, initialMode }: {
 // ─── Step 6: Launching ────────────────────────────────────────────────────────
 
 function Step6({
-  siteName, slug, domainChoice, planId, payMethod, templateId, templateMode, referralCode, userId,
+  siteName, slug, domainChoice, planId, billingCycle, payMethod, templateId, templateMode, referralCode, userId,
 }: {
   siteName: string; slug: string;
   domainChoice: { type: DomainOption; domain?: string };
-  planId: string; payMethod: PayMethod; templateId: string; templateMode: "theme" | "full";
+  planId: string; billingCycle: BillingCycle; payMethod: PayMethod; templateId: string; templateMode: "theme" | "full";
   referralCode?: string; userId: string;
 }) {
   const router = useRouter();
@@ -733,7 +768,7 @@ function Step6({
         const res = await fetch("/api/onboarding/create-tenant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ siteName, slug, userId, planId, payMethod, templateId, templateMode, referralCode }),
+          body: JSON.stringify({ siteName, slug, userId, planId, billingCycle, payMethod, templateId, templateMode, referralCode }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -844,6 +879,9 @@ export default function OnboardingClient() {
   const [authedUser, setAuthedUser] = useState<{ id: string; email: string } | null>(null);
   const [step, setStep] = useState(0);
   const [planId, setPlanId] = useState("standard");
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(
+    (["monthly", "yearly", "lifetime"].includes(params.get("cycle") ?? "") ? params.get("cycle") : "yearly") as BillingCycle,
+  );
   const [payMethod, setPayMethod] = useState<PayMethod>("trial");
   const [siteName, setSiteName] = useState("");
   const [slug, setSlug] = useState("");
@@ -895,7 +933,7 @@ export default function OnboardingClient() {
             </div>
           )}
           {showAuthGate && <AuthGate onAuthed={(id, email) => setAuthedUser({ id, email })} />}
-          {!showAuthGate && step === 0 && <Step0 onNext={p => { setPlanId(p); setStep(1); }} />}
+          {!showAuthGate && step === 0 && <Step0 cycle={billingCycle} onCycleChange={setBillingCycle} onNext={p => { setPlanId(p); setStep(1); }} />}
           {step === 1 && <Step1 planId={planId} onNext={m => { setPayMethod(m); setStep(2); }} />}
           {step === 2 && <Step2 onNext={n => { setSiteName(n); setStep(3); }} />}
           {step === 3 && <Step3 siteName={siteName} onNext={s => { setSlug(s); setStep(4); }} />}
@@ -910,7 +948,7 @@ export default function OnboardingClient() {
           {step === 6 && authedUser && (
             <Step6
               siteName={siteName} slug={slug} domainChoice={domainChoice}
-              planId={planId} payMethod={payMethod}
+              planId={planId} billingCycle={billingCycle} payMethod={payMethod}
               templateId={templateId} templateMode={templateMode}
               referralCode={referralCode}
               userId={authedUser.id}

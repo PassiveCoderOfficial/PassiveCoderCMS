@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { CreditCard, Loader2, Check, X } from "lucide-react";
 
 interface Tenant { id: string; name: string; slug: string; }
-interface Plan { id: string; name: string; price_yearly: number; currency: string; }
+interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_lifetime: number; currency: string; }
+
+function planPrice(plan: Plan, cycle: string): number {
+  if (cycle === "monthly") return plan.price_monthly ?? 0;
+  if (cycle === "lifetime") return plan.price_lifetime ?? 0;
+  return plan.price_yearly ?? 0;
+}
 
 export default function NewSubscriptionPage() {
   const router = useRouter();
@@ -19,6 +25,7 @@ export default function NewSubscriptionPage() {
     plan_id: "",
     status: "trial",
     payment_provider: "",
+    billing_cycle: "yearly",
     amount_cents: "",
     currency: "USD",
     trial_ends_at: "",
@@ -49,6 +56,7 @@ export default function NewSubscriptionPage() {
       currency: form.currency || "USD",
     };
     if (form.payment_provider.trim()) payload.payment_provider = form.payment_provider.trim();
+    payload.billing_cycle = form.billing_cycle;
     if (form.amount_cents.trim()) payload.amount_cents = Math.round(parseFloat(form.amount_cents) * 100);
     if (form.trial_ends_at) payload.trial_ends_at = form.trial_ends_at;
     if (form.current_period_end) payload.current_period_end = form.current_period_end;
@@ -87,12 +95,24 @@ export default function NewSubscriptionPage() {
           <label className="text-xs text-gray-400 block mb-1">Plan *</label>
           <select value={form.plan_id} onChange={e => {
             const plan = plans.find(p => p.id === e.target.value);
-            set("plan_id", e.target.value);
-            if (plan) setForm(f => ({ ...f, plan_id: e.target.value, amount_cents: plan.price_yearly.toString(), currency: plan.currency }));
+            if (plan) setForm(f => ({ ...f, plan_id: e.target.value, amount_cents: planPrice(plan, f.billing_cycle).toString(), currency: plan.currency }));
+            else set("plan_id", e.target.value);
           }}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
             <option value="">— select plan —</option>
             {plans.map(p => <option key={p.id} value={p.id}>{p.name} ({p.currency} {p.price_yearly}/yr)</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-400 block mb-1">Billing Cycle</label>
+          <select value={form.billing_cycle} onChange={e => {
+            const cycle = e.target.value;
+            const plan = plans.find(p => p.id === form.plan_id);
+            setForm(f => ({ ...f, billing_cycle: cycle, ...(plan ? { amount_cents: planPrice(plan, cycle).toString() } : {}) }));
+          }}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+            {["monthly","yearly","lifetime"].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 

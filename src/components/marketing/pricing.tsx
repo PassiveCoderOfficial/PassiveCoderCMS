@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Star, ArrowRight } from "lucide-react";
 
@@ -5,25 +8,78 @@ interface Plan {
   id: string;
   name: string;
   price_yearly: number;
+  price_monthly: number;
+  price_lifetime: number;
   storage_gb: number;
   domains: number;
   support_tier: string;
   features: string[];
 }
 
+type Cycle = "monthly" | "yearly" | "lifetime";
+
+const CYCLE_LABELS: Record<Cycle, string> = {
+  monthly: "Monthly",
+  yearly: "Yearly",
+  lifetime: "Lifetime",
+};
+
 export default function PricingSection({ plans }: { plans: Plan[] }) {
+  // Only show a cycle toggle for the cycles at least one plan actually offers.
+  const availableCycles = useMemo<Cycle[]>(() => {
+    const cycles: Cycle[] = [];
+    if (plans.some(p => (p.price_monthly ?? 0) > 0)) cycles.push("monthly");
+    if (plans.some(p => (p.price_yearly ?? 0) > 0)) cycles.push("yearly");
+    if (plans.some(p => (p.price_lifetime ?? 0) > 0)) cycles.push("lifetime");
+    return cycles.length ? cycles : ["yearly"];
+  }, [plans]);
+
+  const [cycle, setCycle] = useState<Cycle>(
+    availableCycles.includes("yearly") ? "yearly" : availableCycles[0],
+  );
+
+  const priceFor = (plan: Plan): number => {
+    const cents =
+      cycle === "monthly" ? plan.price_monthly
+      : cycle === "lifetime" ? plan.price_lifetime
+      : plan.price_yearly;
+    return (cents ?? 0) / 100;
+  };
+
+  const suffix = cycle === "monthly" ? "/month" : cycle === "lifetime" ? "one-time" : "/year";
+
   return (
     <section id="pricing" className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Simple, honest pricing</h2>
           <p className="mt-4 text-lg text-gray-600 max-w-xl mx-auto">
-            One annual price. Everything included. No monthly surprises.
+            Pick the billing that fits you. Everything included. No hidden fees.
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-medium px-3 py-1.5 rounded-full border border-green-200">
             <CheckCircle className="w-4 h-4" /> 7-day free trial — no credit card needed
           </div>
         </div>
+
+        {/* Billing cycle toggle */}
+        {availableCycles.length > 1 && (
+          <div className="flex justify-center mb-12">
+            <div className="inline-flex items-center gap-1 bg-gray-100 rounded-full p-1">
+              {availableCycles.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setCycle(c)}
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                    cycle === c ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {CYCLE_LABELS[c]}
+                  {c === "yearly" && <span className="ml-1.5 text-[10px] text-green-600 font-bold">Save</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {!plans.length && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
@@ -41,7 +97,8 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
           {plans.map((plan) => {
             const isPremium = plan.id === "premium";
             const isCustom = plan.id === "custom";
-            const price = plan.price_yearly / 100;
+            const price = priceFor(plan);
+            const offersCycle = price > 0;
             const features: string[] = Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features as unknown as string ?? "[]");
 
             return (
@@ -68,14 +125,23 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       <span className="text-3xl font-extrabold text-gray-900">Custom</span>
                       <p className="text-sm text-gray-500 mt-1">Tailored pricing for your needs</p>
                     </div>
+                  ) : offersCycle ? (
+                    <>
+                      <div className="mt-3 flex items-baseline gap-1">
+                        <span className="text-4xl font-extrabold text-gray-900">${price}</span>
+                        <span className="text-gray-500 text-sm">{suffix}</span>
+                      </div>
+                      {cycle === "yearly" && (
+                        <p className="text-xs text-gray-500 mt-1">${(price / 12).toFixed(2)}/month billed annually</p>
+                      )}
+                      {cycle === "lifetime" && (
+                        <p className="text-xs text-gray-500 mt-1">Pay once, own it forever</p>
+                      )}
+                    </>
                   ) : (
-                    <div className="mt-3 flex items-baseline gap-1">
-                      <span className="text-4xl font-extrabold text-gray-900">${price}</span>
-                      <span className="text-gray-500 text-sm">/year</span>
+                    <div className="mt-3">
+                      <span className="text-xl font-bold text-gray-400">Not available {CYCLE_LABELS[cycle].toLowerCase()}</span>
                     </div>
-                  )}
-                  {!isCustom && (
-                    <p className="text-xs text-gray-500 mt-1">${(price / 12).toFixed(2)}/month billed annually</p>
                   )}
                 </div>
 
@@ -89,7 +155,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                 </ul>
 
                 <Link
-                  href={isCustom ? "/contact?dept=sales" : `/onboarding?plan=${plan.id}`}
+                  href={isCustom ? "/contact?dept=sales" : `/onboarding?plan=${plan.id}&cycle=${cycle}`}
                   className={`flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold text-sm transition-all ${
                     isPremium
                       ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-200"
@@ -107,8 +173,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
         </div>
 
         <p className="text-center text-xs text-gray-500 mt-8">
-          All plans include SSL, CDN, daily backups, page builder, ecommerce, and forms.
-          Prices in USD. Annual billing only.
+          All plans include SSL, CDN, daily backups, page builder, ecommerce, and forms. Prices in USD.
         </p>
       </div>
     </section>

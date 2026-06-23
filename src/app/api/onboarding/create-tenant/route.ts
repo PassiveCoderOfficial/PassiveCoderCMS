@@ -6,6 +6,7 @@ import { seedTemplate } from "@/lib/templates/seed-template";
 export async function POST(req: Request) {
   const body = await req.json();
   const { siteName, slug, userId, planId, templateId, templateMode } = body;
+  const billingCycle = ["monthly", "yearly", "lifetime"].includes(body.billingCycle) ? body.billingCycle : "yearly";
   // URL param wins; fallback to persistent cookie (last-ref-wins affiliate tracking)
   const cookieStore = await cookies();
   const referralCode: string | undefined = body.referralCode || cookieStore.get("ref_code")?.value || undefined;
@@ -76,7 +77,7 @@ export async function POST(req: Request) {
   // Upsert subscription row with trial end date (14-day trial)
   const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
   await supabase.from("subscriptions").upsert(
-    { tenant_id: tenant.id, plan_id: planId ?? "standard", status: "trial", trial_ends_at: trialEnd },
+    { tenant_id: tenant.id, plan_id: planId ?? "standard", status: "trial", trial_ends_at: trialEnd, billing_cycle: billingCycle },
     { onConflict: "tenant_id" },
   );
 

@@ -13,6 +13,8 @@ export async function POST(req: Request) {
   const { tenantId, planId, method, txnRef, senderNumber } = body as {
     tenantId: string; planId: string; method: string; txnRef?: string; senderNumber?: string;
   };
+  const billingCycle: "monthly" | "yearly" | "lifetime" =
+    ["monthly", "yearly", "lifetime"].includes(body.billingCycle) ? body.billingCycle : "yearly";
   if (!tenantId || !planId || !method) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
@@ -30,13 +32,22 @@ export async function POST(req: Request) {
 
   const { data: plan } = await admin
     .from("plans")
-    .select("id, name, price_yearly")
+    .select("id, name, price_yearly, price_monthly, price_lifetime")
     .eq("id", planId)
     .maybeSingle();
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-  const amount = Number(plan.price_yearly) || 0;
+  const priceForCycle =
+    billingCycle === "monthly" ? plan.price_monthly
+    : billingCycle === "lifetime" ? plan.price_lifetime
+    : plan.price_yearly;
+  if (!priceForCycle || priceForCycle <= 0) {
+    return NextResponse.json({ error: `${billingCycle} billing not available for this plan` }, { status: 400 });
+  }
+
+  const amount = Number(priceForCycle) || 0;
   const amountCents = Math.round(amount * 100);
+  const cycleLabel = billingCycle === "lifetime" ? "lifetime" : billingCycle === "monthly" ? "monthly" : "yearly";
 
   // ── Manual payment (bKash / Nagad / bank) → pending + billing ticket ────────
   if (MANUAL_METHODS.includes(method as typeof MANUAL_METHODS[number])) {
@@ -46,9 +57,9 @@ export async function POST(req: Request) {
       .insert({
         tenant_id: tenantId,
         user_id: user.id,
-        subject: `Manual payment — ${plan.name} plan (${method})`,
+        subject: `Manual payment — ${plan.name} plan (${cycleLabel}, ${method})`,
         body: `Site: ${tenant?.name ?? tenantId} (${tenant?.slug ?? ""})\n`
-          + `Plan: ${plan.name}\nAmount: ${amount} BDT/yr\nMethod: ${method}\n`
+          + `Plan: ${plan.name} (${cycleLabel})\nAmount: ${amount} BDT\nMethod: ${method}\n`
           + `Sender number: ${senderNumber ?? "—"}\nTransaction ref: ${txnRef ?? "—"}\n\n`
           + `Awaiting super-admin verification.`,
         department: "billing",
@@ -66,6 +77,7 @@ export async function POST(req: Request) {
         plan_id: planId,
         status: "pending",
         payment_provider: "manual",
+        billing_cycle: billingCycle,
         manual_ticket_id: ticket.id,
         amount_cents: amountCents,
         currency: "BDT",
@@ -98,6 +110,7 @@ export async function POST(req: Request) {
           plan_id: planId,
           status: "pending",
           payment_provider: "shurjopay",
+          billing_cycle: billingCycle,
           shurjopay_order_id: spOrderId,
           amount_cents: amountCents,
           currency: "BDT",

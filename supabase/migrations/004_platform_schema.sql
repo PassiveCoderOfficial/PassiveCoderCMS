@@ -4,10 +4,12 @@
 -- ── Plans ─────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS plans (
-  id           text PRIMARY KEY, -- 'standard', 'premium', 'custom'
-  name         text NOT NULL,
-  price_yearly integer NOT NULL, -- cents (19900 = $199)
-  storage_gb   integer NOT NULL,
+  id             text PRIMARY KEY, -- 'standard', 'premium', 'custom'
+  name           text NOT NULL,
+  price_yearly   integer NOT NULL, -- cents (19900 = $199)
+  price_monthly  integer NOT NULL DEFAULT 0, -- cents; 0 = monthly not offered
+  price_lifetime integer NOT NULL DEFAULT 0, -- cents; 0 = lifetime not offered
+  storage_gb     integer NOT NULL,
   domains      integer NOT NULL DEFAULT 1,
   pages_limit  integer NOT NULL DEFAULT -1, -- -1 = unlimited
   support_tier text NOT NULL DEFAULT 'standard', -- 'standard' | 'vip'
@@ -16,19 +18,25 @@ CREATE TABLE IF NOT EXISTS plans (
   sort_order   integer NOT NULL DEFAULT 0
 );
 
-INSERT INTO plans (id, name, price_yearly, storage_gb, domains, support_tier, features, sort_order) VALUES
-('standard', 'Standard', 19900, 10, 1, 'standard',
+-- Add billing-cycle columns to pre-existing tables (no-op if already present)
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS price_monthly  integer NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS price_lifetime integer NOT NULL DEFAULT 0;
+
+INSERT INTO plans (id, name, price_yearly, price_monthly, price_lifetime, storage_gb, domains, support_tier, features, sort_order) VALUES
+('standard', 'Standard', 19900, 1900, 49900, 10, 1, 'standard',
   '["1 .com/.org/.net/.info/.co domain","10GB Storage","Daily backups (7 days)","Page builder","Ecommerce","SSL certificate","Uptime monitoring","Standard support"]',
   1),
-('premium', 'Premium', 49900, 50, 1, 'vip',
+('premium', 'Premium', 49900, 4900, 99900, 50, 1, 'vip',
   '["1 domain (any TLD)","50GB Storage","Daily backups (7 days)","Page builder","Ecommerce","SSL certificate","Uptime monitoring","VIP Premium support","Priority queue","White-label option"]',
   2),
-('custom', 'Custom', 0, 0, 0, 'vip',
+('custom', 'Custom', 0, 0, 0, 0, 0, 'vip',
   '["Custom storage","Custom domains","Dedicated support","Custom integrations","SLA guarantee","Onboarding assistance"]',
   3)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   price_yearly = EXCLUDED.price_yearly,
+  price_monthly = EXCLUDED.price_monthly,
+  price_lifetime = EXCLUDED.price_lifetime,
   storage_gb = EXCLUDED.storage_gb,
   domains = EXCLUDED.domains,
   support_tier = EXCLUDED.support_tier,
@@ -44,6 +52,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   status                text NOT NULL DEFAULT 'trial'
                         CHECK (status IN ('trial','active','past_due','cancelled','expired')),
   payment_provider      text CHECK (payment_provider IN ('paddle','shurjopay','manual','trial')),
+  billing_cycle         text NOT NULL DEFAULT 'yearly'
+                        CHECK (billing_cycle IN ('monthly','yearly','lifetime')),
   -- Trial window
   trial_ends_at         timestamptz,
   trial_converted       boolean NOT NULL DEFAULT false,
@@ -61,6 +71,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   created_at            timestamptz NOT NULL DEFAULT now(),
   updated_at            timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS billing_cycle text NOT NULL DEFAULT 'yearly';
 
 CREATE INDEX IF NOT EXISTS subscriptions_tenant_id_idx ON subscriptions(tenant_id);
 CREATE INDEX IF NOT EXISTS subscriptions_status_idx ON subscriptions(status);
