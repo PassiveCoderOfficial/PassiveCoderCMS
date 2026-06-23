@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle, Star, ArrowRight, Users, Zap } from "lucide-react";
+import { CheckCircle, Star, ArrowRight, Users, Zap, Plug } from "lucide-react";
 
 interface Plan {
   id: string;
@@ -19,17 +19,24 @@ interface Plan {
 
 type Cycle = "monthly" | "yearly";
 
+const PRO_INTEGRATIONS = [
+  { label: "CRM", desc: "Customer & lead management" },
+  { label: "Booking", desc: "Appointments & scheduling" },
+  { label: "Accounting", desc: "Expenses, P&L, reports" },
+  { label: "Invoicing", desc: "Send & track invoices" },
+  { label: "Payments", desc: "Online payment collection" },
+  { label: "Email Marketing", desc: "Campaigns & automations" },
+];
+
 export default function PricingSection({ plans }: { plans: Plan[] }) {
   const availableCycles = useMemo<Cycle[]>(() => {
     const cycles: Cycle[] = [];
     if (plans.some(p => (p.price_monthly ?? 0) > 0)) cycles.push("monthly");
     if (plans.some(p => (p.price_yearly ?? 0) > 0)) cycles.push("yearly");
-    return cycles.length ? cycles : ["yearly"];
+    return cycles.length ? cycles : ["monthly"];
   }, [plans]);
 
-  const [cycle, setCycle] = useState<Cycle>(
-    availableCycles.includes("yearly") ? "yearly" : "monthly",
-  );
+  const [cycle, setCycle] = useState<Cycle>("monthly");
 
   const priceFor = (plan: Plan): number => {
     const cents = cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
@@ -47,7 +54,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             Everything your business needs online. No surprises.
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-medium px-3 py-1.5 rounded-full border border-green-200">
-            <CheckCircle className="w-4 h-4" /> 7-day free trial — no credit card needed
+            <CheckCircle className="w-4 h-4" /> No payment required at signup — pay after your account is created
           </div>
         </div>
 
@@ -141,7 +148,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       )}
                       {cycle === "monthly" && yearlyPrice > 0 && yearlySavings > 0 && (
                         <p className="text-xs text-gray-500 mt-1">
-                          Or ${yearlyPrice}/yr (save ${yearlySavings})
+                          Or ${yearlyPrice}/yr — save ${yearlySavings}
                         </p>
                       )}
                     </>
@@ -170,7 +177,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                   </div>
                 )}
 
-                <ul className="space-y-3 flex-1 mb-8">
+                <ul className="space-y-3 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-sm text-gray-700">
                       <CheckCircle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isPremium ? "text-orange-500" : "text-green-500"}`} />
@@ -178,6 +185,29 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                     </li>
                   ))}
                 </ul>
+
+                {/* ExpertNear.Me integrations — Pro only */}
+                {isPremium && (
+                  <div className="mb-6 rounded-xl border border-orange-200 bg-orange-50/50 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Plug className="w-4 h-4 text-orange-600 shrink-0" />
+                      <p className="text-xs font-bold text-orange-800 uppercase tracking-wide">
+                        ExpertNear.Me Pro — Live API Integrations
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PRO_INTEGRATIONS.map(({ label, desc }) => (
+                        <div key={label} className="flex items-start gap-1.5">
+                          <CheckCircle className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-semibold text-gray-800">{label}</p>
+                            <p className="text-[10px] text-gray-500 leading-tight">{desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <Link
                   href={isCustom ? "/contact?dept=sales" : `/onboarding?plan=${plan.id}&cycle=${cycle}`}
