@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const adminClient = await createAdminClient();
 
-  const { data: profile, error: profileError } = await adminClient
+  const { data: rawProfile, error: profileError } = await adminClient
     .from("profiles")
     .select("*")
     .eq("id", user.id)
@@ -36,15 +36,28 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
+  let profile = rawProfile;
+
   if (!profile) {
-    // PGRST116 = row not found = user has no profile = genuinely unauthorized
-    if (profileError?.code === "PGRST116" || !profileError) redirect("/login?error=unauthorized");
-    // Other DB error = transient, don't redirect (would cause middleware loop)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
-        <p className="text-red-400">Failed to load profile. Please refresh.</p>
-      </div>
-    );
+    if (profileError && profileError.code !== "PGRST116") {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
+          <p className="text-red-400">Failed to load profile. Please refresh.</p>
+        </div>
+      );
+    }
+    // PGRST116 = row missing. DB trigger may not have fired yet (race after signup).
+    // Upsert now so user lands on dashboard without needing to re-login.
+    const { data: upserted } = await adminClient
+      .from("profiles")
+      .upsert(
+        { id: user.id, email: user.email ?? "", full_name: user.user_metadata?.full_name ?? "", role: "subscriber", is_active: true },
+        { onConflict: "id" },
+      )
+      .select("*")
+      .single();
+    if (!upserted) redirect("/login?error=unauthorized");
+    profile = upserted;
   }
 
   const { data: sa } = await adminClient
@@ -66,6 +79,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const hasTenantAccess = (memberships ?? []).some((m) =>
     ["owner", "admin", "editor"].includes(m.role as string),
   );
+
+  // SA with no tenant goes to super-admin panel, not login
+  if (sa && !hasTenantAccess) redirect("/super-admin");
 
   if (!sa && profile.role !== "agent" && !hasTenantAccess) {
     redirect("/login?error=unauthorized");

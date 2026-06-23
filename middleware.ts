@@ -6,7 +6,6 @@ const isSaaS = CMS_MODE === "saas";
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3000";
 
 const REF_COOKIE = "ref_code";
-// 2 years in seconds — "no expiry" affiliate cookie
 const REF_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
 
 async function updateSession(request: NextRequest) {
@@ -39,10 +38,13 @@ async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isAdminRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/") || pathname === "/super-admin" || pathname.startsWith("/super-admin/");
+  const isAdminRoute =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/") ||
+    pathname === "/super-admin" || pathname.startsWith("/super-admin/");
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
 
-  // Capture ?ref= param and store as persistent cookie (last-ref-wins: always overwrite)
+  // Capture ?ref= param and store as persistent cookie — set AFTER supabase may have
+  // replaced supabaseResponse in setAll, so it always lands on the final response.
   const refParam = request.nextUrl.searchParams.get("ref");
   if (refParam) {
     const cleaned = refParam.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 32);
@@ -51,7 +53,7 @@ async function updateSession(request: NextRequest) {
         maxAge: REF_COOKIE_MAX_AGE,
         path: "/",
         sameSite: "lax",
-        httpOnly: false, // readable by client for display
+        httpOnly: false,
       });
     }
   }
@@ -63,8 +65,17 @@ async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Logged-in user hitting /login or /register — send them where they belong.
+  // We don't know SA status here without a DB call, so redirect to /dashboard and
+  // let the layout handle the SA→/super-admin redirect. Only bypass if an error
+  // param is present (e.g. ?error=unauthorized — let them see the login page).
   if (isAuthRoute && user && !request.nextUrl.searchParams.get("error")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const redirectTo = request.nextUrl.searchParams.get("redirect") ?? "/dashboard";
+    // Avoid redirect loops: if redirectTo is itself an auth route, go to /dashboard.
+    const safeRedirect = redirectTo.startsWith("/login") || redirectTo.startsWith("/register")
+      ? "/dashboard"
+      : redirectTo;
+    return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 
   return supabaseResponse;
@@ -110,8 +121,6 @@ export async function middleware(request: NextRequest) {
         return new NextResponse("This site is suspended", { status: 403 });
       }
 
-      // Lazy trial-expiry enforcement: an unconverted trial past its end date is
-      // treated as suspended for the public site (owner must choose a plan).
       if (
         tenant.status === "trial" &&
         tenant.trial_ends_at &&

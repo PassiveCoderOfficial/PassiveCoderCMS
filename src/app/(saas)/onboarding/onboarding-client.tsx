@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -75,9 +75,19 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
       password,
       options: { data: { phone_whatsapp: phone } },
     });
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    if (data.user) onAuthed(data.user.id, email);
+    if (error) { setLoading(false); toast.error(error.message); return; }
+
+    // If email confirmation is disabled, signUp returns a session directly.
+    // If it IS enabled, session is null — sign in immediately so we have a session cookie.
+    if (!data.session) {
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      setLoading(false);
+      if (signInError) { toast.error(signInError.message); return; }
+      if (signInData.user) onAuthed(signInData.user.id, email);
+    } else {
+      setLoading(false);
+      if (data.user) onAuthed(data.user.id, email);
+    }
   }
 
   async function handleLogin() {
@@ -754,7 +764,6 @@ function Step6({
   planId: string; billingCycle: BillingCycle; payMethod: PayMethod; templateId: string; templateMode: "theme" | "full";
   referralCode?: string; userId: string;
 }) {
-  const router = useRouter();
   const [status, setStatus] = useState<"creating" | "done" | "error">("creating");
   const [siteUrl, setSiteUrl] = useState("");
 
@@ -860,7 +869,7 @@ function Step6({
         <Button variant="outline" className="flex-1 gap-2" asChild>
           <a href={siteUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /> View Site</a>
         </Button>
-        <Button className="flex-1 gap-2" onClick={() => router.push("/dashboard")}>
+        <Button className="flex-1 gap-2" onClick={() => { window.location.href = "/dashboard"; }}>
           Go to Dashboard <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
