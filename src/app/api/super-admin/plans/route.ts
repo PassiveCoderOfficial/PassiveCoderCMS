@@ -17,7 +17,7 @@ export async function GET() {
 
   const { data, error: dbErr } = await supabase!
     .from("plans")
-    .select("id, name, price_yearly, price_monthly, price_lifetime, storage_gb, features, sort_order")
+    .select("id, name, price_yearly, price_monthly, storage_gb, visitor_limit_monthly, overage_cents_per_1k, features, sort_order")
     .order("sort_order");
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
@@ -27,7 +27,8 @@ export async function GET() {
     ...p,
     price_yearly: Math.round(p.price_yearly / 100),
     price_monthly: Math.round((p.price_monthly ?? 0) / 100),
-    price_lifetime: Math.round((p.price_lifetime ?? 0) / 100),
+    visitor_limit_monthly: p.visitor_limit_monthly ?? 0,
+    overage_cents_per_1k: p.overage_cents_per_1k ?? 0,
     features: Array.isArray(p.features) ? p.features : JSON.parse(p.features ?? "[]"),
   }));
 
@@ -42,13 +43,14 @@ export async function POST(req: Request) {
   if (!Array.isArray(plans)) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const { error: dbErr } = await supabase!.from("plans").upsert(
-    plans.map((p: { id: string; name: string; price_yearly: number; price_monthly?: number; price_lifetime?: number; storage_gb: number; features: string[]; sort_order?: number }, i: number) => ({
+    plans.map((p: { id: string; name: string; price_yearly: number; price_monthly?: number; storage_gb: number; visitor_limit_monthly?: number; overage_cents_per_1k?: number; features: string[]; sort_order?: number }, i: number) => ({
       id: p.id,
       name: p.name,
       price_yearly: Math.round(p.price_yearly * 100), // dollars → cents
       price_monthly: Math.round((p.price_monthly ?? 0) * 100),
-      price_lifetime: Math.round((p.price_lifetime ?? 0) * 100),
       storage_gb: p.storage_gb,
+      visitor_limit_monthly: p.visitor_limit_monthly ?? 0,
+      overage_cents_per_1k: p.overage_cents_per_1k ?? 0,
       features: p.features,
       sort_order: p.sort_order ?? i + 1,
       is_active: true,

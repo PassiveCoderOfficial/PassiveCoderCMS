@@ -14,13 +14,12 @@ export interface CheckoutPlan {
   name: string;
   price_yearly: number;
   price_monthly?: number;
-  price_lifetime?: number;
   currency?: string;
 }
 
-type BillingCycle = "monthly" | "yearly" | "lifetime";
-const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly", lifetime: "Lifetime" };
-const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr", lifetime: " one-time" };
+type BillingCycle = "monthly" | "yearly";
+const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly" };
+const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr" };
 
 export interface PaymentConfig {
   bkash_number?: string | null;
@@ -51,10 +50,8 @@ export function CheckoutDialog({
   const manualNumber = method === "bkash" ? paymentConfig.bkash_number : method === "nagad" ? paymentConfig.nagad_number : null;
 
   const priceFor = (c: BillingCycle): number =>
-    c === "monthly" ? (plan.price_monthly ?? 0)
-    : c === "lifetime" ? (plan.price_lifetime ?? 0)
-    : plan.price_yearly;
-  const availableCycles = (["monthly", "yearly", "lifetime"] as BillingCycle[]).filter(c => priceFor(c) > 0);
+    c === "monthly" ? (plan.price_monthly ?? 0) : plan.price_yearly;
+  const availableCycles = (["monthly", "yearly"] as BillingCycle[]).filter(c => priceFor(c) > 0);
   // Fall back to yearly if the selected cycle isn't offered by this plan
   const activeCycle: BillingCycle = priceFor(cycle) > 0 ? cycle : (availableCycles[0] ?? "yearly");
   const amount = priceFor(activeCycle);

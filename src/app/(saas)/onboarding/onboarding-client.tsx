@@ -151,14 +151,13 @@ function AuthedBanner({ email, onSwitch }: { email: string; onSwitch: () => void
 
 // ─── Step 0: Plan selection ───────────────────────────────────────────────────
 
-interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_lifetime: number; storage_gb: number; features: string[] }
+interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; storage_gb: number; visitor_limit_monthly?: number; overage_cents_per_1k?: number; features: string[] }
 
-type BillingCycle = "monthly" | "yearly" | "lifetime";
-const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly", lifetime: "Lifetime" };
-const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr", lifetime: " once" };
+type BillingCycle = "monthly" | "yearly";
+const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly" };
+const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr" };
 function planPrice(plan: Plan, cycle: BillingCycle): number {
   if (cycle === "monthly") return plan.price_monthly ?? 0;
-  if (cycle === "lifetime") return plan.price_lifetime ?? 0;
   return plan.price_yearly ?? 0;
 }
 
@@ -180,7 +179,7 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
   }, []);
 
   // Cycles offered by at least one (non-custom) plan
-  const availableCycles: BillingCycle[] = (["monthly", "yearly", "lifetime"] as BillingCycle[])
+  const availableCycles: BillingCycle[] = (["monthly", "yearly"] as BillingCycle[])
     .filter(c => plans.some(p => p.id !== "custom" && planPrice(p, c) > 0));
   const cycles = availableCycles.length ? availableCycles : (["yearly"] as BillingCycle[]);
 
@@ -880,7 +879,7 @@ export default function OnboardingClient() {
   const [step, setStep] = useState(0);
   const [planId, setPlanId] = useState("standard");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
-    (["monthly", "yearly", "lifetime"].includes(params.get("cycle") ?? "") ? params.get("cycle") : "yearly") as BillingCycle,
+    params.get("cycle") === "monthly" ? "monthly" : "yearly",
   );
   const [payMethod, setPayMethod] = useState<PayMethod>("trial");
   const [siteName, setSiteName] = useState("");

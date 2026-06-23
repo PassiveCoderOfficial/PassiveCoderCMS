@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, Plus, Trash2, Save, CheckCircle, Loader2 } from "lucide-react";
+import { CreditCard, Plus, Trash2, Save, CheckCircle, Loader2, Users, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 interface Plan {
@@ -9,8 +9,9 @@ interface Plan {
   name: string;
   price_yearly: number;
   price_monthly: number;
-  price_lifetime: number;
   storage_gb: number;
+  visitor_limit_monthly: number;
+  overage_cents_per_1k: number;
   features: string[];
   sort_order?: number;
 }
@@ -18,30 +19,57 @@ interface Plan {
 const DEFAULT_PLANS: Plan[] = [
   {
     id: "standard",
-    name: "Standard",
-    price_yearly: 199,
-    price_monthly: 19,
-    price_lifetime: 499,
-    storage_gb: 5,
-    features: ["1 website", "5 GB storage", "Custom subdomain", "All templates", "Page builder", "Contact forms", "Email support"],
+    name: "Basic",
+    price_yearly: 290,
+    price_monthly: 49,
+    storage_gb: 10,
+    visitor_limit_monthly: 5000,
+    overage_cents_per_1k: 200,
+    features: [
+      "DIY website builder",
+      "Free .com/.org/.net TLD domain (1 year)",
+      "10 GB storage",
+      "5,000 visitors/month included",
+      "$2 per 1,000 extra visitors",
+      "Page builder",
+      "SSL certificate",
+      "Daily backups",
+      "Uptime monitoring",
+      "Email support",
+    ],
   },
   {
     id: "premium",
-    name: "Premium",
-    price_yearly: 399,
-    price_monthly: 39,
-    price_lifetime: 999,
-    storage_gb: 20,
-    features: ["1 website", "20 GB storage", "Custom domain", "All templates", "Page builder", "Contact forms", "Bookings & appointments", "Priority support", "Analytics dashboard"],
+    name: "Pro",
+    price_yearly: 449,
+    price_monthly: 79,
+    storage_gb: 50,
+    visitor_limit_monthly: 25000,
+    overage_cents_per_1k: 100,
+    features: [
+      "DIY website builder",
+      "Free .com/.org/.net TLD domain (1 year)",
+      "50 GB storage",
+      "25,000 visitors/month included",
+      "$1 per 1,000 extra visitors",
+      "Full design & layout support",
+      "Configuration assistance",
+      "E-Commerce functionality",
+      "ExpertNear.Me Pro subscription (free)",
+      "SSL certificate",
+      "Daily backups",
+      "VIP priority support",
+    ],
   },
   {
     id: "custom",
     name: "Custom",
     price_yearly: 0,
     price_monthly: 0,
-    price_lifetime: 0,
     storage_gb: 100,
-    features: ["Multiple websites", "100 GB storage", "Custom domain", "White-label option", "All features", "Dedicated support", "Custom integrations", "SLA guarantee"],
+    visitor_limit_monthly: 0,
+    overage_cents_per_1k: 0,
+    features: ["Custom storage", "Custom domains", "Dedicated support", "Custom integrations", "SLA guarantee", "Onboarding assistance"],
   },
 ];
 
@@ -93,23 +121,35 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
             />
             <span className="text-gray-500 text-xs">/yr</span>
           </div>
-          {plan.id !== "custom" && plan.price_yearly > 0 && (
-            <p className="text-xs text-gray-600 mt-1">${(plan.price_yearly / 12).toFixed(2)}/mo equiv</p>
+          {plan.id !== "custom" && plan.price_monthly > 0 && plan.price_yearly > 0 && (
+            <p className="text-xs text-green-600 mt-1">
+              Save ${(plan.price_monthly * 12 - plan.price_yearly).toFixed(0)}/yr vs monthly
+            </p>
           )}
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Lifetime Price (USD)</label>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm">$</span>
-            <input
-              type="number"
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-              value={plan.price_lifetime ?? 0}
-              onChange={e => onChange({ ...plan, price_lifetime: Number(e.target.value) })}
-            />
-            <span className="text-gray-500 text-xs">once</span>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">0 = hide lifetime option</p>
+          <label className="text-xs text-gray-500 mb-1 block flex items-center gap-1">
+            <Users className="w-3 h-3" /> Visitors/Month Included
+          </label>
+          <input
+            type="number"
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+            value={plan.visitor_limit_monthly ?? 0}
+            onChange={e => onChange({ ...plan, visitor_limit_monthly: Number(e.target.value) })}
+          />
+          <p className="text-xs text-gray-600 mt-1">0 = unlimited</p>
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block flex items-center gap-1">
+            <Zap className="w-3 h-3" /> Overage (¢ per 1k visitors)
+          </label>
+          <input
+            type="number"
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+            value={plan.overage_cents_per_1k ?? 0}
+            onChange={e => onChange({ ...plan, overage_cents_per_1k: Number(e.target.value) })}
+          />
+          <p className="text-xs text-gray-600 mt-1">e.g. 200 = $2/1k visitors</p>
         </div>
         <div>
           <label className="text-xs text-gray-500 mb-1 block">Storage (GB)</label>

@@ -13,8 +13,8 @@ export async function POST(req: Request) {
   const { tenantId, planId, method, txnRef, senderNumber } = body as {
     tenantId: string; planId: string; method: string; txnRef?: string; senderNumber?: string;
   };
-  const billingCycle: "monthly" | "yearly" | "lifetime" =
-    ["monthly", "yearly", "lifetime"].includes(body.billingCycle) ? body.billingCycle : "yearly";
+  const billingCycle: "monthly" | "yearly" =
+    body.billingCycle === "monthly" ? "monthly" : "yearly";
   if (!tenantId || !planId || !method) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
@@ -32,22 +32,19 @@ export async function POST(req: Request) {
 
   const { data: plan } = await admin
     .from("plans")
-    .select("id, name, price_yearly, price_monthly, price_lifetime")
+    .select("id, name, price_yearly, price_monthly")
     .eq("id", planId)
     .maybeSingle();
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-  const priceForCycle =
-    billingCycle === "monthly" ? plan.price_monthly
-    : billingCycle === "lifetime" ? plan.price_lifetime
-    : plan.price_yearly;
+  const priceForCycle = billingCycle === "monthly" ? plan.price_monthly : plan.price_yearly;
   if (!priceForCycle || priceForCycle <= 0) {
     return NextResponse.json({ error: `${billingCycle} billing not available for this plan` }, { status: 400 });
   }
 
   const amount = Number(priceForCycle) || 0;
   const amountCents = Math.round(amount * 100);
-  const cycleLabel = billingCycle === "lifetime" ? "lifetime" : billingCycle === "monthly" ? "monthly" : "yearly";
+  const cycleLabel = billingCycle === "monthly" ? "monthly" : "yearly";
 
   // ── Manual payment (bKash / Nagad / bank) → pending + billing ticket ────────
   if (MANUAL_METHODS.includes(method as typeof MANUAL_METHODS[number])) {

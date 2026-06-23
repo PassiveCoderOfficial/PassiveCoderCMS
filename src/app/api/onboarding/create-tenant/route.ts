@@ -6,7 +6,7 @@ import { seedTemplate } from "@/lib/templates/seed-template";
 export async function POST(req: Request) {
   const body = await req.json();
   const { siteName, slug, userId, planId, templateId, templateMode } = body;
-  const billingCycle = ["monthly", "yearly", "lifetime"].includes(body.billingCycle) ? body.billingCycle : "yearly";
+  const billingCycle = body.billingCycle === "monthly" ? "monthly" : "yearly";
   // URL param wins; fallback to persistent cookie (last-ref-wins affiliate tracking)
   const cookieStore = await cookies();
   const referralCode: string | undefined = body.referralCode || cookieStore.get("ref_code")?.value || undefined;

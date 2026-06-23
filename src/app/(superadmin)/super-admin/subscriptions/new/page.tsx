@@ -6,11 +6,10 @@ import { toast } from "sonner";
 import { CreditCard, Loader2, Check, X } from "lucide-react";
 
 interface Tenant { id: string; name: string; slug: string; }
-interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_lifetime: number; currency: string; }
+interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; currency: string; }
 
 function planPrice(plan: Plan, cycle: string): number {
   if (cycle === "monthly") return plan.price_monthly ?? 0;
-  if (cycle === "lifetime") return plan.price_lifetime ?? 0;
   return plan.price_yearly ?? 0;
 }
 
@@ -112,7 +111,7 @@ export default function NewSubscriptionPage() {
             setForm(f => ({ ...f, billing_cycle: cycle, ...(plan ? { amount_cents: planPrice(plan, cycle).toString() } : {}) }));
           }}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-            {["monthly","yearly","lifetime"].map(c => <option key={c} value={c}>{c}</option>)}
+            {["monthly","yearly"].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 

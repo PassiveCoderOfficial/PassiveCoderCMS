@@ -2,51 +2,41 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle, Star, ArrowRight } from "lucide-react";
+import { CheckCircle, Star, ArrowRight, Users, Zap } from "lucide-react";
 
 interface Plan {
   id: string;
   name: string;
   price_yearly: number;
   price_monthly: number;
-  price_lifetime: number;
   storage_gb: number;
   domains: number;
   support_tier: string;
+  visitor_limit_monthly: number;
+  overage_cents_per_1k: number;
   features: string[];
 }
 
-type Cycle = "monthly" | "yearly" | "lifetime";
-
-const CYCLE_LABELS: Record<Cycle, string> = {
-  monthly: "Monthly",
-  yearly: "Yearly",
-  lifetime: "Lifetime",
-};
+type Cycle = "monthly" | "yearly";
 
 export default function PricingSection({ plans }: { plans: Plan[] }) {
-  // Only show a cycle toggle for the cycles at least one plan actually offers.
   const availableCycles = useMemo<Cycle[]>(() => {
     const cycles: Cycle[] = [];
     if (plans.some(p => (p.price_monthly ?? 0) > 0)) cycles.push("monthly");
     if (plans.some(p => (p.price_yearly ?? 0) > 0)) cycles.push("yearly");
-    if (plans.some(p => (p.price_lifetime ?? 0) > 0)) cycles.push("lifetime");
     return cycles.length ? cycles : ["yearly"];
   }, [plans]);
 
   const [cycle, setCycle] = useState<Cycle>(
-    availableCycles.includes("yearly") ? "yearly" : availableCycles[0],
+    availableCycles.includes("yearly") ? "yearly" : "monthly",
   );
 
   const priceFor = (plan: Plan): number => {
-    const cents =
-      cycle === "monthly" ? plan.price_monthly
-      : cycle === "lifetime" ? plan.price_lifetime
-      : plan.price_yearly;
+    const cents = cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
     return (cents ?? 0) / 100;
   };
 
-  const suffix = cycle === "monthly" ? "/month" : cycle === "lifetime" ? "one-time" : "/year";
+  const suffix = cycle === "monthly" ? "/month" : "/year";
 
   return (
     <section id="pricing" className="py-24 bg-white">
@@ -54,7 +44,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Simple, honest pricing</h2>
           <p className="mt-4 text-lg text-gray-600 max-w-xl mx-auto">
-            Pick the billing that fits you. Everything included. No hidden fees.
+            Everything your business needs online. No surprises.
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-medium px-3 py-1.5 rounded-full border border-green-200">
             <CheckCircle className="w-4 h-4" /> 7-day free trial — no credit card needed
@@ -65,25 +55,30 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
         {availableCycles.length > 1 && (
           <div className="flex justify-center mb-12">
             <div className="inline-flex items-center gap-1 bg-gray-100 rounded-full p-1">
-              {availableCycles.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setCycle(c)}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-                    cycle === c ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {CYCLE_LABELS[c]}
-                  {c === "yearly" && <span className="ml-1.5 text-[10px] text-green-600 font-bold">Save</span>}
-                </button>
-              ))}
+              <button
+                onClick={() => setCycle("monthly")}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  cycle === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setCycle("yearly")}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  cycle === "yearly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Yearly
+                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">Save</span>
+              </button>
             </div>
           </div>
         )}
 
         {!plans.length && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            {["Standard", "Premium", "Custom"].map(name => (
+            {["Basic", "Pro", "Custom"].map(name => (
               <div key={name} className="rounded-2xl border border-gray-200 bg-white p-8 animate-pulse">
                 <div className="h-5 w-24 bg-gray-100 rounded mb-4" />
                 <div className="h-10 w-20 bg-gray-100 rounded mb-6" />
@@ -93,6 +88,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             ))}
           </div>
         )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {plans.map((plan) => {
             const isPremium = plan.id === "premium";
@@ -100,6 +96,13 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             const price = priceFor(plan);
             const offersCycle = price > 0;
             const features: string[] = Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features as unknown as string ?? "[]");
+            const monthlyPrice = (plan.price_monthly ?? 0) / 100;
+            const yearlyPrice = (plan.price_yearly ?? 0) / 100;
+            const yearlySavings = monthlyPrice > 0 && yearlyPrice > 0
+              ? Math.round(monthlyPrice * 12 - yearlyPrice)
+              : 0;
+            const visitorLimit = plan.visitor_limit_monthly ?? 0;
+            const overagePerK = (plan.overage_cents_per_1k ?? 0) / 100;
 
             return (
               <div
@@ -131,19 +134,41 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                         <span className="text-4xl font-extrabold text-gray-900">${price}</span>
                         <span className="text-gray-500 text-sm">{suffix}</span>
                       </div>
-                      {cycle === "yearly" && (
-                        <p className="text-xs text-gray-500 mt-1">${(price / 12).toFixed(2)}/month billed annually</p>
+                      {cycle === "yearly" && yearlySavings > 0 && (
+                        <p className="text-xs text-green-600 font-medium mt-1">
+                          Save ${yearlySavings}/yr vs monthly billing
+                        </p>
                       )}
-                      {cycle === "lifetime" && (
-                        <p className="text-xs text-gray-500 mt-1">Pay once, own it forever</p>
+                      {cycle === "monthly" && yearlyPrice > 0 && yearlySavings > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Or ${yearlyPrice}/yr (save ${yearlySavings})
+                        </p>
                       )}
                     </>
                   ) : (
                     <div className="mt-3">
-                      <span className="text-xl font-bold text-gray-400">Not available {CYCLE_LABELS[cycle].toLowerCase()}</span>
+                      <span className="text-xl font-bold text-gray-400">Not available {cycle}</span>
                     </div>
                   )}
                 </div>
+
+                {/* Visitor allowance callout */}
+                {!isCustom && visitorLimit > 0 && (
+                  <div className={`mb-5 rounded-xl px-4 py-3 flex items-start gap-2.5 ${isPremium ? "bg-orange-100/60" : "bg-gray-50"}`}>
+                    <Users className={`w-4 h-4 mt-0.5 shrink-0 ${isPremium ? "text-orange-600" : "text-gray-500"}`} />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {visitorLimit.toLocaleString()} visitors/month
+                      </p>
+                      {overagePerK > 0 && (
+                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                          <Zap className="w-3 h-3" />
+                          ${overagePerK}/1,000 extra visitors
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <ul className="space-y-3 flex-1 mb-8">
                   {features.map((f) => (
@@ -173,7 +198,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
         </div>
 
         <p className="text-center text-xs text-gray-500 mt-8">
-          All plans include SSL, CDN, daily backups, page builder, ecommerce, and forms. Prices in USD.
+          All plans include SSL, daily backups, page builder, and uptime monitoring. Prices in USD.
         </p>
       </div>
     </section>

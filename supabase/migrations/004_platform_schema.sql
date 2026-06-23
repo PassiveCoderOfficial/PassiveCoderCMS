@@ -4,32 +4,36 @@
 -- ── Plans ─────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS plans (
-  id             text PRIMARY KEY, -- 'standard', 'premium', 'custom'
-  name           text NOT NULL,
-  price_yearly   integer NOT NULL, -- cents (19900 = $199)
-  price_monthly  integer NOT NULL DEFAULT 0, -- cents; 0 = monthly not offered
-  price_lifetime integer NOT NULL DEFAULT 0, -- cents; 0 = lifetime not offered
-  storage_gb     integer NOT NULL,
-  domains      integer NOT NULL DEFAULT 1,
-  pages_limit  integer NOT NULL DEFAULT -1, -- -1 = unlimited
-  support_tier text NOT NULL DEFAULT 'standard', -- 'standard' | 'vip'
-  features     jsonb NOT NULL DEFAULT '[]',
-  is_active    boolean NOT NULL DEFAULT true,
-  sort_order   integer NOT NULL DEFAULT 0
+  id                    text PRIMARY KEY, -- 'standard', 'premium', 'custom'
+  name                  text NOT NULL,
+  price_yearly          integer NOT NULL DEFAULT 0, -- cents (29000 = $290)
+  price_monthly         integer NOT NULL DEFAULT 0, -- cents; 0 = monthly not offered
+  price_lifetime        integer NOT NULL DEFAULT 0, -- cents; 0 = lifetime not offered
+  storage_gb            integer NOT NULL,
+  domains               integer NOT NULL DEFAULT 1,
+  pages_limit           integer NOT NULL DEFAULT -1, -- -1 = unlimited
+  support_tier          text NOT NULL DEFAULT 'standard', -- 'standard' | 'vip'
+  visitor_limit_monthly integer NOT NULL DEFAULT 0,   -- 0 = unlimited
+  overage_cents_per_1k  integer NOT NULL DEFAULT 0,   -- cents charged per 1k over limit
+  features              jsonb NOT NULL DEFAULT '[]',
+  is_active             boolean NOT NULL DEFAULT true,
+  sort_order            integer NOT NULL DEFAULT 0
 );
 
--- Add billing-cycle columns to pre-existing tables (no-op if already present)
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS price_monthly  integer NOT NULL DEFAULT 0;
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS price_lifetime integer NOT NULL DEFAULT 0;
+-- Add columns to pre-existing tables (no-op if already present)
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS price_monthly         integer NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS price_lifetime        integer NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS visitor_limit_monthly integer NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS overage_cents_per_1k  integer NOT NULL DEFAULT 0;
 
-INSERT INTO plans (id, name, price_yearly, price_monthly, price_lifetime, storage_gb, domains, support_tier, features, sort_order) VALUES
-('standard', 'Standard', 19900, 1900, 49900, 10, 1, 'standard',
-  '["1 .com/.org/.net/.info/.co domain","10GB Storage","Daily backups (7 days)","Page builder","Ecommerce","SSL certificate","Uptime monitoring","Standard support"]',
+INSERT INTO plans (id, name, price_yearly, price_monthly, price_lifetime, storage_gb, domains, support_tier, visitor_limit_monthly, overage_cents_per_1k, features, sort_order) VALUES
+('standard', 'Basic', 29000, 4900, 0, 10, 1, 'standard', 5000, 200,
+  '["DIY website builder","Free .com/.org/.net TLD domain (1 year)","10 GB storage","5,000 visitors/month included","$2 per 1,000 extra visitors","Page builder","SSL certificate","Daily backups","Uptime monitoring","Email support"]',
   1),
-('premium', 'Premium', 49900, 4900, 99900, 50, 1, 'vip',
-  '["1 domain (any TLD)","50GB Storage","Daily backups (7 days)","Page builder","Ecommerce","SSL certificate","Uptime monitoring","VIP Premium support","Priority queue","White-label option"]',
+('premium', 'Pro', 44900, 7900, 0, 50, 1, 'vip', 25000, 100,
+  '["DIY website builder","Free .com/.org/.net TLD domain (1 year)","50 GB storage","25,000 visitors/month included","$1 per 1,000 extra visitors","Full design & layout support","Configuration assistance","E-Commerce functionality","ExpertNear.Me Pro subscription (free)","SSL certificate","Daily backups","VIP priority support"]',
   2),
-('custom', 'Custom', 0, 0, 0, 0, 0, 'vip',
+('custom', 'Custom', 0, 0, 0, 0, 0, 'vip', 0, 0,
   '["Custom storage","Custom domains","Dedicated support","Custom integrations","SLA guarantee","Onboarding assistance"]',
   3)
 ON CONFLICT (id) DO UPDATE SET
@@ -40,6 +44,8 @@ ON CONFLICT (id) DO UPDATE SET
   storage_gb = EXCLUDED.storage_gb,
   domains = EXCLUDED.domains,
   support_tier = EXCLUDED.support_tier,
+  visitor_limit_monthly = EXCLUDED.visitor_limit_monthly,
+  overage_cents_per_1k = EXCLUDED.overage_cents_per_1k,
   features = EXCLUDED.features,
   sort_order = EXCLUDED.sort_order;
 
