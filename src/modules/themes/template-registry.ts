@@ -4054,6 +4054,288 @@ const DRIVE_ACADEMY: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE: Life Settle Travel And Tourism ─────────────────────────────────
+
+const LIFE_SETTLE: TemplateIdentity = {
+  slug: "life-settle",
+  name: "Life Settle Travel",
+  description: "Premium travel agency template — visa processing, work permits, tour packages and flight bookings with dark-green & gold luxury branding.",
+  category: "Travel & Tourism",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&q=85&fit=crop",
+  tags: ["travel", "tourism", "visa", "work-permit", "flight", "tour-packages"],
+
+  palette: {
+    primary: "#1a5c38",
+    primaryFg: "#ffffff",
+    secondary: "#c9a84c",
+    accent: "#d4af37",
+    background: "#f8f6f0",
+    foreground: "#0f2418",
+    muted: "#eef4f0",
+    mutedFg: "#2d6a4f",
+    card: "#ffffff",
+    border: "#d4af3740",
+    ring: "#1a5c38",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-life-settle .hero-badge { background: #c9a84c; color: #0f2418; border-radius: 9999px; font-weight: 700; }
+    .template-life-settle .service-card { border-top: 3px solid #c9a84c; }
+    .template-life-settle .stat-value { color: #c9a84c; }
+    .template-life-settle .nav-cta { background: #c9a84c !important; color: #0f2418 !important; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1600&q=85&fit=crop",
+      alt: "Airplane flying over world destinations",
+    },
+    heroSecondary: {
+      url: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80&fit=crop",
+      alt: "Travel destinations collage",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=800&q=80&fit=crop",
+      alt: "Life Settle Travel team serving clients",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80&fit=crop", alt: "Visa processing service" },
+      { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80&fit=crop", alt: "Flight booking service" },
+      { url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80&fit=crop", alt: "Tour packages" },
+      { url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&fit=crop", alt: "Hotel booking" },
+      { url: "https://images.unsplash.com/photo-1521898284481-a5ec348cb555?w=600&q=80&fit=crop", alt: "Work permit Europe" },
+      { url: "https://images.unsplash.com/photo-1531219432768-9f540ce91ef3?w=600&q=80&fit=crop", alt: "Manpower recruitment" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80&fit=crop", alt: "Paris Eiffel Tower" },
+      { url: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80&fit=crop", alt: "Germany skyline" },
+      { url: "https://images.unsplash.com/photo-1555952517-2e8e729e0b44?w=800&q=80&fit=crop", alt: "Portugal Lisbon" },
+      { url: "https://images.unsplash.com/photo-1609943500965-a4e61c1cd91d?w=800&q=80&fit=crop", alt: "Serbia Belgrade" },
+      { url: "https://images.unsplash.com/photo-1576502200916-3808e07386a5?w=800&q=80&fit=crop", alt: "Dubai city" },
+      { url: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=800&q=80&fit=crop", alt: "Saudi Arabia" },
+      { url: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&q=80&fit=crop", alt: "Italy Rome" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop", alt: "Romania Bucharest" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Sharmin Akter" },
+      { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face", alt: "Mohammed Masud Rana" },
+      { url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face", alt: "Md. Fazlul Hoque" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&q=80&fit=crop",
+      alt: "Start your journey with Life Settle",
+    },
+  },
+
+  heroHeadline: "Your Dream Destination Awaits",
+  heroSubline: "Visa processing, work permits, flight bookings & tour packages — all under one roof.",
+  heroBadge: "✈️ Trusted Since 2020 · 5,000+ Visas Processed",
+  heroCTA: "Get Free Consultation",
+  heroSecondaryCTA: "Explore Destinations",
+  siteName: "Life Settle Travel And Tourism",
+  tagline: "Our Aim Is Your Journey",
+  phone: "+8801711145428",
+  email: "info@lifesettle.com",
+  address: "House #560, Road #8, Adabor, Mohammadpur, Dhaka-1207",
+  aboutHeading: "Bangladesh's Most Trusted Travel & Visa Partner",
+  aboutBody: "Life Settle Travel And Tourism has helped thousands of Bangladeshi citizens realize their dreams of working and living abroad. From Schengen visas to GCC work permits, our expert team handles every step — document preparation, embassy appointments, manpower processing, and air ticketing. We collect fees only after successful visa — zero advance required.",
+  aboutHighlights: [
+    "Zero advance payment — pay after visa approval",
+    "Europe, GCC & Asia visa processing",
+    "Work permit & manpower recruitment",
+    "Air ticketing & hotel booking",
+  ],
+
+  navItems: [
+    { id: "n1", label: "Home", url: "/" },
+    { id: "n2", label: "Services", url: "#services" },
+    { id: "n3", label: "Destinations", url: "#destinations" },
+    { id: "n4", label: "About Us", url: "#about" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    {
+      id: uid("svc"), title: "Visa Processing",
+      description: "Europe (Schengen & non-Schengen), GCC, and Asia visa processing with embassy appointment handling. Payment after approval.",
+      icon: "🛂", iconType: "emoji",
+      imageUrl: "https://images.unsplash.com/photo-1521898284481-a5ec348cb555?w=600&q=80&fit=crop",
+      price: "Consult Free", link: "#contact",
+    },
+    {
+      id: uid("svc"), title: "Work Permit Processing",
+      description: "Legal work permits for Europe (Serbia, Portugal, Germany, Romania, Bosnia) and GCC countries. Fast-track processing available.",
+      icon: "📋", iconType: "emoji",
+      imageUrl: "https://images.unsplash.com/photo-1521898284481-a5ec348cb555?w=600&q=80&fit=crop",
+      price: "Consult Free", link: "#contact",
+    },
+    {
+      id: uid("svc"), title: "Manpower Recruitment",
+      description: "Factory workers, cleaners, construction workers, and general helpers for Saudi Arabia, UAE, Qatar, Kuwait, Jordan, and Europe.",
+      icon: "👷", iconType: "emoji",
+      imageUrl: "https://images.unsplash.com/photo-1531219432768-9f540ce91ef3?w=600&q=80&fit=crop",
+      price: "Consult Free", link: "#contact",
+    },
+    {
+      id: uid("svc"), title: "Flight Booking",
+      description: "Domestic and international air tickets at competitive rates. One-way, return and multi-city bookings with all major airlines.",
+      icon: "✈️", iconType: "emoji",
+      imageUrl: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80&fit=crop",
+      price: "Best Rates", link: "#contact",
+    },
+    {
+      id: uid("svc"), title: "Tour Packages",
+      description: "Full holiday packages to Malaysia, Nepal, Sri Lanka, Thailand, Dubai and more — includes visa, return tickets, hotel & transfers.",
+      icon: "🌍", iconType: "emoji",
+      imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80&fit=crop",
+      price: "From ৳37,000", link: "#contact",
+    },
+    {
+      id: uid("svc"), title: "Hotel Booking",
+      description: "Budget to luxury hotel reservations worldwide. Get the best rates for your travel destination with free cancellation options.",
+      icon: "🏨", iconType: "emoji",
+      imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&fit=crop",
+      price: "Best Rates", link: "#contact",
+    },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5,000+", label: "Visas Processed" },
+    { id: uid("st"), value: "45+", label: "Countries Covered" },
+    { id: uid("st"), value: "100%", label: "Pay After Visa" },
+    { id: uid("st"), value: "5★", label: "Client Rating" },
+  ],
+
+  testimonials: [
+    {
+      id: uid("t"), name: "Rakibul Islam", role: "Factory Worker", company: "Now in Serbia",
+      content: "Life Settle got me a Serbia work permit within 45 days. The whole process was smooth and they only took money after I got the visa. Highly recommend!",
+      rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face",
+    },
+    {
+      id: uid("t"), name: "Fatema Begum", role: "Cleaner", company: "Now in Saudi Arabia",
+      content: "3 months free visa to Saudi Arabia with full package — visa, manpower, and air ticket. Life Settle made my dream come true. Iqama within 72 hours!",
+      rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face",
+    },
+    {
+      id: uid("t"), name: "Mahmudul Hassan", role: "Engineer", company: "Portugal D1 Visa",
+      content: "Got Portugal emergency recruitment visa through Life Settle. Only 1 month for appointment, 2 months total. Zero advance taken. Amazing service.",
+      rating: 5, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80&fit=crop&face",
+    },
+    {
+      id: uid("t"), name: "Nasrin Akter", role: "Tourist", company: "Malaysia Trip",
+      content: "Booked Malaysia full package — e-visa, return ticket, and 3-night hotel, all for under ৳60,000. Great value and stress-free planning.",
+      rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face",
+    },
+    {
+      id: uid("t"), name: "Jahidul Karim", role: "Construction Worker", company: "Now in Bosnia",
+      content: "Bosnia work permit via Life Settle — salary 750–800 EUR per month. They handled everything from documents to flight. Trustworthy agency.",
+      rating: 5,
+    },
+    {
+      id: uid("t"), name: "Shirin Sultana", role: "Business Owner",
+      content: "Needed urgent Romania visa. Life Settle processed it in 7–8 days. Professional team, clear communication, and no hidden fees.",
+      rating: 5,
+    },
+  ],
+
+  faq: [
+    {
+      id: uid("f"),
+      question: "Do you take advance payment before visa approval?",
+      answer: "No. We never take any advance payment before your visa is approved. You pay only after receiving your visa. This is our firm policy and a core part of how we serve our clients.",
+    },
+    {
+      id: uid("f"),
+      question: "Which countries do you process visas for?",
+      answer: "We process visas for 29 Schengen countries (Germany, Portugal, Italy, France, Spain etc.), 16 non-Schengen European countries (UK, Serbia, Romania, Bosnia, North Macedonia etc.), 6 GCC countries (Saudi Arabia, UAE, Qatar, Kuwait, Bahrain, Oman), and several Asian destinations.",
+    },
+    {
+      id: uid("f"),
+      question: "How long does work permit processing take?",
+      answer: "Processing times vary by country. Serbia: approval in 7 days, sticker visa in 25 days, flight in ~2 months. Bosnia: work permit approval in 7 days, sticker in 25 days. Saudi Arabia: iqama within 72 hours of arrival. Portugal D1: appointment in 1 month, completed in 2 months.",
+    },
+    {
+      id: uid("f"),
+      question: "What job types are available for overseas recruitment?",
+      answer: "We recruit for factory workers, cleaners (load/unload, office cleaner, warehouse cleaner), construction workers, general helpers, electricians, painters, masons, plasters, excavator operators, and restaurant staff depending on available positions.",
+    },
+    {
+      id: uid("f"),
+      question: "Do you offer tour packages?",
+      answer: "Yes! We offer full holiday packages including e-visa or visa processing, return air tickets, and hotel accommodation. Popular destinations include Malaysia, Nepal, Sri Lanka, Dubai, and Thailand. Packages start from ৳37,000.",
+    },
+    {
+      id: uid("f"),
+      question: "How do I get started?",
+      answer: "Contact us via WhatsApp at +8801750599917 or call +8801711145428. You can also visit our office at House #560, Road #8, Adabor, Mohammadpur, Dhaka-1207. We offer a free initial consultation.",
+    },
+  ],
+
+  team: [
+    {
+      id: uid("tm"), name: "Sharmin Akter", role: "Managing Director & CEO",
+      bio: "Founder of Life Settle Travel And Tourism. Leads the company with a vision of making overseas opportunities accessible to every Bangladeshi.",
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face",
+      social: [{ platform: "phone", url: "tel:+8801711145428" }],
+    },
+    {
+      id: uid("tm"), name: "Mohammed Masud Rana", role: "Chairman",
+      bio: "Oversees company strategy and international partnerships. Drives expansion into new European and GCC markets.",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face",
+      social: [{ platform: "phone", url: "tel:+8801711961149" }],
+    },
+    {
+      id: uid("tm"), name: "Md. Fazlul Hoque", role: "Marketing Manager",
+      bio: "Connects clients with the right overseas opportunities. Expert in visa requirements and manpower recruitment across 45+ countries.",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&fit=crop&face",
+    },
+  ],
+
+  pricing: [
+    {
+      id: uid("p"), name: "Tour Package", price: "From ৳37,000", period: "/person",
+      description: "Holiday travel with full arrangements",
+      features: ["Return air ticket", "E-visa or visa processing", "Hotel minimum 3 nights", "Airport transfer", "Popular: Malaysia, Nepal, Sri Lanka"],
+      ctaLabel: "Book Package", ctaUrl: "#contact",
+    },
+    {
+      id: uid("p"), name: "Work Permit", price: "Pay After Visa", period: "",
+      description: "Europe & GCC work permit processing",
+      features: ["Full document preparation", "Embassy appointment", "Visa processing", "Manpower paperwork", "Air ticket booking", "Zero advance required"],
+      highlighted: true, badge: "Most Popular",
+      ctaLabel: "Apply Now", ctaUrl: "#contact",
+    },
+    {
+      id: uid("p"), name: "Visa Only", price: "Pay After Visa", period: "",
+      description: "Tourist, business or visit visa",
+      features: ["Schengen & non-Schengen", "GCC tourist visas", "Document checklist", "Application support", "Embassy tracking", "Zero advance required"],
+      ctaLabel: "Get Visa", ctaUrl: "#contact",
+    },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -4084,6 +4366,7 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   FEAST_EVENTS,
   MEDPLUS_CLINIC,
   DRIVE_ACADEMY,
+  LIFE_SETTLE,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
@@ -4190,6 +4473,12 @@ const SLUG_ALIAS: Record<string, string> = {
   // Medical / Healthcare
   "dental-clinic": "medplus-clinic",
   "medical-center": "medplus-clinic",
+  // Travel & Tourism
+  "lifesettle": "life-settle",
+  "life-settle-travel": "life-settle",
+  "travel-agency": "life-settle",
+  "visa-agency": "life-settle",
+  "tour-operator": "life-settle",
 };
 
 export function getTemplateIdentity(slug: string): TemplateIdentity | undefined {
