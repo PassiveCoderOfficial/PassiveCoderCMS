@@ -46,7 +46,7 @@ export async function getCurrentTenantId(): Promise<string> {
   const reqHeaders = await headers();
   const subdomainTenantId = reqHeaders.get("x-tenant-id");
   if (subdomainTenantId) {
-    // Verify user is actually a member of this tenant
+    // Accept if user is a member of this tenant
     const { data: membership } = await adminClient
       .from("tenant_members")
       .select("tenant_id")
@@ -54,6 +54,15 @@ export async function getCurrentTenantId(): Promise<string> {
       .eq("tenant_id", subdomainTenantId)
       .maybeSingle();
     if (membership) return subdomainTenantId;
+
+    // Also accept if user is the owner (owner_id may exist without tenant_members row)
+    const { data: owned } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("id", subdomainTenantId)
+      .eq("owner_id", user.id)
+      .maybeSingle();
+    if (owned) return subdomainTenantId;
   }
 
   // Regular user — resolve via tenant_members primary flag
