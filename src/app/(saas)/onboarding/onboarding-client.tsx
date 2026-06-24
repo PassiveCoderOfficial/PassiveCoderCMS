@@ -195,7 +195,7 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
   // Cycles offered by at least one (non-custom) plan
   const availableCycles: BillingCycle[] = (["monthly", "yearly"] as BillingCycle[])
     .filter(c => plans.some(p => p.id !== "custom" && planPrice(p, c) > 0));
-  const cycles = availableCycles.length ? availableCycles : (["yearly"] as BillingCycle[]);
+  const cycles = availableCycles.length ? availableCycles : (["monthly"] as BillingCycle[]);
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
@@ -894,7 +894,7 @@ export default function OnboardingClient() {
   const [step, setStep] = useState(0);
   const [planId, setPlanId] = useState("basic");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
-    params.get("cycle") === "monthly" ? "monthly" : "yearly",
+    params.get("cycle") === "yearly" ? "yearly" : "monthly",
   );
   const [payMethod, setPayMethod] = useState<PayMethod>("trial");
   const [siteName, setSiteName] = useState("");

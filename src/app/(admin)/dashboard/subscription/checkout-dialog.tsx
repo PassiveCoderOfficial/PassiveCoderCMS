@@ -42,7 +42,7 @@ export function CheckoutDialog({
   paymentConfig: PaymentConfig;
 }) {
   const [method, setMethod] = useState<Method>("shurjopay");
-  const [cycle, setCycle] = useState<BillingCycle>("yearly");
+  const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [txnRef, setTxnRef] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [loading, setLoading] = useState(false);
