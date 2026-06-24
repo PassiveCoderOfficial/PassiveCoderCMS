@@ -64,7 +64,7 @@ function FeatureList({ features, highlighted, dark }: { features: string[]; high
 
 // ─── Variants ─────────────────────────────────────────────────────────────────
 
-type VariantData = PricingBlockProps["data"] & { plans: Plan[] };
+type VariantData = Omit<PricingBlockProps["data"], "plans"> & { plans: Plan[] };
 
 function PricingHighlightedCards({ data }: { data: VariantData }) {
   return (
