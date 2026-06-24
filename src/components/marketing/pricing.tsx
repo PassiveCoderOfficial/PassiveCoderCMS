@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Star, ArrowRight, Users, Zap, Plug, BookOpen, Users2, Receipt, Calculator, CreditCard, Mail, ShoppingCart } from "lucide-react";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
+import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
 
 interface Plan {
   id: string;
@@ -38,6 +40,8 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
   }, [plans]);
 
   const [cycle, setCycle] = useState<Cycle>("monthly");
+  const [currency, setCurrency] = useState<Currency>("USD");
+  const bdtRate = useCurrencyRate();
 
   const priceFor = (plan: Plan): number => {
     const cents = cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
@@ -64,9 +68,9 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
           </div>
         </div>
 
-        {/* Billing toggle */}
-        {availableCycles.length > 1 && (
-          <div className="flex justify-center mb-12">
+        {/* Billing toggle + currency toggle */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+          {availableCycles.length > 1 && (
             <div className="inline-flex items-center gap-1 bg-gray-100 rounded-full p-1">
               <button
                 onClick={() => setCycle("monthly")}
@@ -86,8 +90,9 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                 <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">Save</span>
               </button>
             </div>
-          </div>
-        )}
+          )}
+          <CurrencyToggle currency={currency} onChange={setCurrency} />
+        </div>
 
         {/* Skeleton */}
         {!plans.length && (
@@ -144,14 +149,14 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                   {offersCycle ? (
                     <>
                       <div className="mt-3 flex items-baseline gap-1">
-                        <span className="text-4xl font-extrabold text-gray-900">${price}</span>
+                        <span className="text-4xl font-extrabold text-gray-900">{formatCurrency(price, currency, bdtRate)}</span>
                         <span className="text-gray-500 text-sm">{suffix}</span>
                       </div>
                       {cycle === "yearly" && yearlySavings > 0 && (
-                        <p className="text-xs text-green-600 font-medium mt-1">Save ${yearlySavings}/yr vs monthly</p>
+                        <p className="text-xs text-green-600 font-medium mt-1">Save {formatCurrency(yearlySavings, currency, bdtRate)}/yr vs monthly</p>
                       )}
                       {cycle === "monthly" && yearlyPrice > 0 && yearlySavings > 0 && (
-                        <p className="text-xs text-gray-500 mt-1">Or ${yearlyPrice}/yr — save ${yearlySavings}</p>
+                        <p className="text-xs text-gray-500 mt-1">Or {formatCurrency(yearlyPrice, currency, bdtRate)}/yr — save {formatCurrency(yearlySavings, currency, bdtRate)}</p>
                       )}
                     </>
                   ) : (
