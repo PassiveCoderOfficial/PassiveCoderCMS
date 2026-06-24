@@ -1,7 +1,7 @@
-﻿import { createClient } from "@/lib/supabase/server";
+﻿import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ShoppingBag, DollarSign, Users, TrendingUp, Package } from "lucide-react";
+import { FileText, ShoppingBag, Users, TrendingUp, Package, AlertCircle, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,20 @@ import { Button } from "@/components/ui/button";
 export default async function DashboardPage() {
   const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
+
+  // Check if this user has a Pro sub from ENM but hasn't set up their site yet
+  const { data: { user } } = await supabase.auth.getUser();
+  let showProSiteBanner = false;
+  if (user) {
+    const admin = await createAdminClient();
+    const { data: pendingTenant } = await admin
+      .from("tenants")
+      .select("id")
+      .eq("owner_id", user.id)
+      .eq("status", "enm_pending")
+      .maybeSingle();
+    showProSiteBanner = !!pendingTenant;
+  }
 
   const [
     { count: pageCount },
@@ -38,6 +52,22 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {showProSiteBanner && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-700 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-bold text-red-700 dark:text-red-400">Your Pro site is not set up yet</p>
+            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">
+              You have an active Pro subscription from ExpertNear.Me. Complete your site setup to go live — choose a site name, subdomain, and template.
+            </p>
+          </div>
+          <Link href="/onboarding">
+            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white border-0 shrink-0 flex items-center gap-1.5">
+              <ExternalLink className="w-3.5 h-3.5" /> Create Your Pro Site
+            </Button>
+          </Link>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
