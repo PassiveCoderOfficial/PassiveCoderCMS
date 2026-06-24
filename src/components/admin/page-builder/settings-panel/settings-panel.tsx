@@ -29,6 +29,8 @@ import { NewsletterSettings } from "./newsletter-settings";
 import { CountdownSettings } from "./countdown-settings";
 import { StepsSettings } from "./steps-settings";
 import { IconGridSettings } from "./icon-grid-settings";
+import { EnmLeadFormSettings } from "./enm-lead-form-settings";
+import { EnmBookingWidgetSettings } from "./enm-booking-widget-settings";
 import { BlockLayoutSettings } from "./block-layout-settings";
 import { Layers } from "lucide-react";
 import type { Block } from "@/types/cms";
@@ -98,6 +100,8 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "countdown": return <CountdownSettings block={block} />;
     case "steps": return <StepsSettings block={block} />;
     case "icon_grid": return <IconGridSettings block={block} />;
+    case "enm_lead_form": return <EnmLeadFormSettings block={block} />;
+    case "enm_booking_widget": return <EnmBookingWidgetSettings block={block} />;
     default:
       return <p className="text-xs text-muted-foreground">No settings for this block type.</p>;
   }

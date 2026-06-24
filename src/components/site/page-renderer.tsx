@@ -30,6 +30,8 @@ import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block
 import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
 import { StepsBlock } from "@/components/blocks/steps/steps-block";
 import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
+import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
+import { EnmBookingWidgetBlock } from "@/components/blocks/enm/enm-booking-widget-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -79,6 +81,8 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "countdown":        content = <CountdownBlock block={block} />; break;
     case "steps":            content = <StepsBlock block={block} />; break;
     case "icon_grid":        content = <IconGridBlock block={block} />; break;
+    case "enm_lead_form":    content = <EnmLeadFormBlock block={block} />; break;
+    case "enm_booking_widget": content = <EnmBookingWidgetBlock block={block} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     default:                 content = null;
   }

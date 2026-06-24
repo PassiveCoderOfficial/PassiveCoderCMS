@@ -51,7 +51,9 @@ export type BlockType =
   | "countdown"
   | "steps"
   | "icon_grid"
-  | "video";
+  | "video"
+  | "enm_lead_form"
+  | "enm_booking_widget";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -528,6 +530,29 @@ export type VideoBlockProps = BlockBase & {
   };
 };
 
+export type EnmLeadFormBlockProps = BlockBase & {
+  type: "enm_lead_form";
+  data: {
+    apiKey: string;
+    formTitle: string;
+    buttonLabel: string;
+    thankYouMessage: string;
+    showPhone: boolean;
+    showMessage: boolean;
+  };
+};
+
+export type EnmBookingWidgetBlockProps = BlockBase & {
+  type: "enm_booking_widget";
+  data: {
+    expertSlug: string;
+    label?: string;
+    height: number;
+    maxWidth: number;
+    borderRadius: number;
+  };
+};
+
 export type Block =
   | HeroBlockProps
   | SliderBlockProps
@@ -557,7 +582,9 @@ export type Block =
   | CountdownBlockProps
   | StepsBlockProps
   | IconGridBlockProps
-  | VideoBlockProps;
+  | VideoBlockProps
+  | EnmLeadFormBlockProps
+  | EnmBookingWidgetBlockProps;
 
 // ─── Page Types ───────────────────────────────────────────────────────────
 

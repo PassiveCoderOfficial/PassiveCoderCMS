@@ -27,6 +27,8 @@ import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block
 import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
 import { StepsBlock } from "@/components/blocks/steps/steps-block";
 import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
+import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
+import { EnmBookingWidgetBlock } from "@/components/blocks/enm/enm-booking-widget-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
 
@@ -84,6 +86,8 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
       case "countdown": return <CountdownBlock block={block} />;
       case "steps": return <StepsBlock block={block} />;
       case "icon_grid": return <IconGridBlock block={block} />;
+      case "enm_lead_form": return <EnmLeadFormBlock block={block} />;
+      case "enm_booking_widget": return <EnmBookingWidgetBlock block={block} />;
       // Server data blocks show placeholders in builder
       case "ecommerce_cart":
         return <DataBlockPlaceholder icon={ShoppingBag} label="Shopping Cart — live cart on the public site" />;

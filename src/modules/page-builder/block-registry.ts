@@ -28,6 +28,43 @@ const baseBlock = (type: BlockType) => ({
 
 export const blockRegistry: BlockDefinition[] = [
   {
+    type: "enm_lead_form",
+    label: "ENM Lead Form",
+    description: "Contact form that sends leads directly to your ExpertNear.Me CRM",
+    icon: "📨",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("enm_lead_form"),
+      type: "enm_lead_form",
+      data: {
+        apiKey: "",
+        formTitle: "Get in Touch",
+        buttonLabel: "Send Message",
+        thankYouMessage: "Thanks! We'll be in touch soon.",
+        showPhone: true,
+        showMessage: true,
+      },
+    }),
+  },
+  {
+    type: "enm_booking_widget",
+    label: "ENM Booking Widget",
+    description: "Embedded booking form from your ExpertNear.Me profile",
+    icon: "📅",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("enm_booking_widget"),
+      type: "enm_booking_widget",
+      data: {
+        expertSlug: "",
+        label: "Book a Session",
+        height: 600,
+        maxWidth: 400,
+        borderRadius: 12,
+      },
+    }),
+  },
+  {
     type: "hero",
     label: "Welcome Banner",
     description: "The big section at the top of your page — headline, photo, and buttons",
