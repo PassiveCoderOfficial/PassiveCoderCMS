@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPayment } from "@/lib/billing/shurjopay";
+import { enmProvision } from "@/lib/enm";
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+async function syncENM(admin: SupabaseClient, tenantId: string, tier: "free" | "pro") {
+  const { data: tenant } = await admin.from("tenants").select("id, owner_id").eq("id", tenantId).maybeSingle();
+  if (!tenant) return;
+  const { data: profile } = await admin.from("profiles").select("email, full_name").eq("id", tenant.owner_id).maybeSingle();
+  if (!profile?.email) return;
+  const enmUserId = await enmProvision({ email: profile.email, name: profile.full_name ?? undefined, pcTenantId: tenantId, tier });
+  await admin.from("tenants").update({ enm_user_id: enmUserId, enm_tier: tier }).eq("id", tenantId);
+}
 
 // shurjoPay redirects the customer here after payment with ?order_id=<sp_order_id>.
 async function handle(req: Request, orderId: string | null) {
@@ -32,6 +44,10 @@ async function handle(req: Request, orderId: string | null) {
   }).eq("id", sub.id);
 
   await admin.from("tenants").update({ status: "active", plan: sub.plan_id }).eq("id", sub.tenant_id);
+
+  // Sync ENM tier (best-effort — don't block on failure)
+  const enmTier = sub.plan_id === "pro" ? "pro" : "free";
+  syncENM(admin, sub.tenant_id, enmTier).catch(err => console.error("[ENM sync shurjopay]", err));
 
   return NextResponse.redirect(`${origin}/dashboard/subscription?paid=1`);
 }

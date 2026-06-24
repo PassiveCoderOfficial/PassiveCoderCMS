@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CreditCard, Plus, ExternalLink, CheckCircle, Clock, AlertCircle, Loader2, Zap, Star, BadgePercent } from "lucide-react";
+import { CreditCard, Plus, ExternalLink, CheckCircle, Clock, AlertCircle, Loader2, Zap, Star, BadgePercent, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -281,6 +281,16 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
             </Button>
           </a>
         )}
+        <a href="/api/enm/sso" target="_blank" rel="noopener noreferrer">
+          <Button
+            size="sm"
+            variant={sub.plan_id === "pro" && sub.status === "active" ? "default" : "outline"}
+            className={cn("flex items-center gap-1.5", sub.plan_id === "pro" && sub.status === "active" ? "bg-orange-500 hover:bg-orange-600 text-white border-0" : "")}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            {sub.plan_id === "pro" && sub.status === "active" ? "Open ExpertNear.Me Pro" : "ExpertNear.Me (Free)"}
+          </Button>
+        </a>
         {sub.status === "pending" && (
           <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" /> Payment awaiting verification

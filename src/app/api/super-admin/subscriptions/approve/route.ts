@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { enmProvision } from "@/lib/enm";
 
 // Super-admin approves a pending manual payment (bKash/Nagad/bank) and activates
 // the subscription + tenant for one year.
@@ -36,6 +37,18 @@ export async function POST(req: Request) {
 
   if (sub.manual_ticket_id) {
     await admin.from("support_tickets").update({ status: "resolved", resolved_at: now.toISOString() }).eq("id", sub.manual_ticket_id);
+  }
+
+  // Sync ENM tier (best-effort)
+  const enmTier = sub.plan_id === "pro" ? "pro" : "free";
+  const { data: tenant } = await admin.from("tenants").select("owner_id").eq("id", sub.tenant_id).maybeSingle();
+  if (tenant) {
+    const { data: profile } = await admin.from("profiles").select("email, full_name").eq("id", tenant.owner_id).maybeSingle();
+    if (profile?.email) {
+      enmProvision({ email: profile.email, name: profile.full_name ?? undefined, pcTenantId: sub.tenant_id, tier: enmTier })
+        .then(uid => admin.from("tenants").update({ enm_user_id: uid, enm_tier: enmTier }).eq("id", sub.tenant_id))
+        .catch(err => console.error("[ENM approve]", err));
+    }
   }
 
   return NextResponse.json({ ok: true });

@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { seedTemplate } from "@/lib/templates/seed-template";
+import { enmProvision } from "@/lib/enm";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -104,6 +105,15 @@ export async function POST(req: Request) {
       templateId,
       (templateMode as "theme" | "full") ?? "full",
     ).catch(err => console.error("[seed-template]", err));
+  }
+
+  // Provision ENM free account (best-effort)
+  const { data: profile } = await supabase.from("profiles").select("email, full_name").eq("id", userId).maybeSingle();
+  if (profile?.email) {
+    const tier = (planId === "pro" ? "pro" : "free") as "pro" | "free";
+    enmProvision({ email: profile.email, name: profile.full_name ?? undefined, pcTenantId: tenant.id, tier })
+      .then(enmUserId => supabase.from("tenants").update({ enm_user_id: enmUserId, enm_tier: tier }).eq("id", tenant.id))
+      .catch(err => console.error("[ENM create-tenant]", err));
   }
 
   return NextResponse.json({ tenantId: tenant.id, slug: tenant.slug });
