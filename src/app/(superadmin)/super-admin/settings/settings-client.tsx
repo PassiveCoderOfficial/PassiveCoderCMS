@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone } from "lucide-react";
+import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone, DollarSign } from "lucide-react";
 
 interface PlatformSettings {
   default_commission_rate?: number;
@@ -15,6 +15,7 @@ interface PlatformSettings {
   nagad_number?: string | null;
   bank_details?: string | null;
   manual_payment_instructions?: string | null;
+  usd_to_bdt_rate?: number | null;
 }
 
 export default function SASettingsClient({ settings }: { settings: PlatformSettings | null }) {
@@ -26,13 +27,16 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [nagad, setNagad] = useState(settings?.nagad_number ?? "");
   const [bankDetails, setBankDetails] = useState(settings?.bank_details ?? "");
   const [manualNote, setManualNote] = useState(settings?.manual_payment_instructions ?? "");
+  const [bdtRate, setBdtRate] = useState(String(settings?.usd_to_bdt_rate ?? 125));
   const [saving, setSaving] = useState(false);
 
   async function save() {
     const oneTime = parseFloat(agentOneTimePct);
     const recurring = parseFloat(staffRecurringPct);
+    const rate = parseFloat(bdtRate);
     if (isNaN(oneTime) || oneTime < 0 || oneTime > 100) { toast.error("One-time % must be 0–100"); return; }
     if (isNaN(recurring) || recurring < 0 || recurring > 100) { toast.error("Recurring % must be 0–100"); return; }
+    if (isNaN(rate) || rate <= 0) { toast.error("BDT rate must be a positive number"); return; }
     setSaving(true);
     const res = await fetch("/api/super-admin/settings", {
       method: "POST",
@@ -46,6 +50,7 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
         nagad_number: nagad,
         bank_details: bankDetails,
         manual_payment_instructions: manualNote,
+        usd_to_bdt_rate: rate,
       }),
     });
     setSaving(false);
@@ -161,6 +166,27 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
           <label className="text-xs text-gray-400 block mb-1.5">Extra instructions (optional)</label>
           <textarea value={manualNote} onChange={e => setManualNote(e.target.value)} rows={2} placeholder="e.g. Send money as 'Payment', include your site name in reference."
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+        </div>
+      </div>
+
+      {/* Currency rate */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
+          <DollarSign className="w-4 h-4 text-emerald-400" />
+          <h2 className="font-semibold text-white text-sm">Currency Conversion</h2>
+        </div>
+        <p className="text-xs text-gray-500">Used by Pricing blocks with USD/BDT switcher enabled.</p>
+        <div>
+          <label className="text-xs text-gray-400 block mb-1.5">1 USD = ? BDT</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="number" min={1} step={0.5}
+              value={bdtRate}
+              onChange={e => setBdtRate(e.target.value)}
+              className="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+            />
+            <span className="text-gray-500 text-sm">BDT</span>
+          </div>
         </div>
       </div>
 

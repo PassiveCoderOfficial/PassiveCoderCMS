@@ -343,6 +343,7 @@ export type PricingPlan = {
   id: string;
   name: string;
   price: string;
+  priceUsdCents?: number;
   period?: string;
   description?: string;
   features: string[];
@@ -359,6 +360,7 @@ export type PricingBlockProps = BlockBase & {
     subtitle?: string;
     layout: "cards" | "comparison";
     billingToggle: boolean;
+    showCurrencyToggle?: boolean;
     plans: PricingPlan[];
   };
 };

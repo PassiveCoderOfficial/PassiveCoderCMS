@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     nagad_number?: string;
     bank_details?: string;
     manual_payment_instructions?: string;
+    usd_to_bdt_rate?: number;
   };
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Recurring % must be 0–100" }, { status: 400 });
     update.default_staff_recurring_pct = body.default_staff_recurring_pct;
   }
+  if (typeof body.usd_to_bdt_rate === "number" && body.usd_to_bdt_rate > 0) update.usd_to_bdt_rate = body.usd_to_bdt_rate;
   if (typeof body.default_commission_rate === "number") update.default_commission_rate = body.default_commission_rate;
   if (body.default_commission_type) update.default_commission_type = body.default_commission_type;
   if (typeof body.agent_signup_enabled === "boolean") update.agent_signup_enabled = body.agent_signup_enabled;

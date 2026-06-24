@@ -36,6 +36,13 @@ export function PricingSettings({ block }: { block: PricingBlockProps }) {
         <Label className="text-xs">Billing Toggle</Label>
         <Switch checked={block.data.billingToggle} onCheckedChange={v => update("billingToggle", v)} />
       </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <Label className="text-xs">USD / BDT Switcher</Label>
+          <p className="text-[10px] text-muted-foreground">Shows USD ↔ BDT toggle to visitors</p>
+        </div>
+        <Switch checked={block.data.showCurrencyToggle ?? false} onCheckedChange={v => update("showCurrencyToggle", v)} />
+      </div>
       <div className="border-t pt-3">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Plans</p>
@@ -52,6 +59,19 @@ export function PricingSettings({ block }: { block: PricingBlockProps }) {
                 <Input value={plan.price} onChange={e => updatePlan(plan.id, "price", e.target.value)} className="h-7 text-xs flex-1" placeholder="$29" />
                 <Input value={plan.period ?? ""} onChange={e => updatePlan(plan.id, "period", e.target.value)} className="h-7 text-xs w-16" placeholder="mo" />
               </div>
+              {block.data.showCurrencyToggle && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-0.5">USD price (cents, for BDT conversion)</p>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={plan.priceUsdCents ?? ""}
+                    onChange={e => updatePlan(plan.id, "priceUsdCents", e.target.value ? Number(e.target.value) : undefined)}
+                    className="h-7 text-xs"
+                    placeholder="e.g. 2900 = $29.00"
+                  />
+                </div>
+              )}
               <Input value={plan.badge ?? ""} onChange={e => updatePlan(plan.id, "badge", e.target.value)} className="h-7 text-xs" placeholder="Badge (e.g. Popular)" />
               <div className="flex items-center justify-between">
                 <Label className="text-xs">Highlighted</Label>
