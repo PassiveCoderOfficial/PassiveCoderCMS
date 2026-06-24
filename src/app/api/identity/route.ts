@@ -34,6 +34,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  if (body._type === "global_layout") {
+    const { _type, global_header, global_footer } = body;
+    void _type;
+    const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (global_header !== undefined) payload.global_header = global_header;
+    if (global_footer !== undefined) payload.global_footer = global_footer;
+    await supabase.from("site_identity").update(payload).eq("tenant_id", tenantId);
+    return NextResponse.json({ ok: true });
+  }
+
   if (body._type === "menu") {
     const { _type, ...fields } = body;
     const { data, error } = await supabase.from("nav_menus")

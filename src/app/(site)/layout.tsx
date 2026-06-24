@@ -81,9 +81,15 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     : null;
   const templateCustomCss = templateIdentity?.customCss ?? null;
 
-  // Global header/footer blocks from site_identity (persistent across all pages)
-  const globalHeader: Block[] = Array.isArray(identity?.global_header) ? identity!.global_header! : [];
-  const globalFooter: Block[] = Array.isArray(identity?.global_footer) ? identity!.global_footer! : [];
+  // Global header/footer — stored as single Block object OR Block[] array
+  function toBlockArray(val: unknown): Block[] {
+    if (!val) return [];
+    if (Array.isArray(val)) return val as Block[];
+    if (typeof val === "object" && (val as Record<string, unknown>).type) return [val as Block];
+    return [];
+  }
+  const globalHeader: Block[] = toBlockArray(identity?.global_header);
+  const globalFooter: Block[] = toBlockArray(identity?.global_footer);
 
   return (
     <>
