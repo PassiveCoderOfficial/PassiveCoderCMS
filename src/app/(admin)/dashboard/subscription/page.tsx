@@ -8,6 +8,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CheckoutDialog, type CheckoutPlan, type PaymentConfig } from "./checkout-dialog";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
+import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
 
 interface Subscription {
   id: string;
@@ -59,6 +61,8 @@ export default function SubscriptionPage() {
   const [checkout, setCheckout] = useState<{ tenantId: string; plan: CheckoutPlan } | null>(null);
   const [primaryTenantId, setPrimaryTenantId] = useState<string | null>(null);
   const [isSuspended, setIsSuspended] = useState(false);
+  const [currency, setCurrency] = useState<Currency>("USD");
+  const bdtRate = useCurrencyRate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -156,10 +160,16 @@ export default function SubscriptionPage() {
         </div>
       )}
 
+      <div className="flex justify-end">
+        <CurrencyToggle currency={currency} onChange={setCurrency} />
+      </div>
+
       {subs.length === 0 ? (
         <NoSubscription
           plans={plans}
           discountPct={discountPct}
+          currency={currency}
+          bdtRate={bdtRate}
           onChoose={primaryTenantId ? (plan) => setCheckout({ tenantId: primaryTenantId, plan }) : undefined}
         />
       ) : (
@@ -170,6 +180,8 @@ export default function SubscriptionPage() {
               sub={sub}
               plans={plans}
               discountPct={discountPct}
+              currency={currency}
+              bdtRate={bdtRate}
               onChoose={(plan) => setCheckout({ tenantId: sub.tenant_id, plan })}
             />
           ))}
@@ -194,7 +206,7 @@ export default function SubscriptionPage() {
   );
 }
 
-function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; onChoose: (plan: CheckoutPlan) => void }) {
+function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; onChoose: (plan: CheckoutPlan) => void }) {
   const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.cancelled;
   const tenant = sub.tenants;
   const renewDate = sub.current_period_end ?? sub.trial_ends_at;
@@ -227,7 +239,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
           <div>
             {sub.amount_cents ? (
               <>
-                <p className="font-medium">{sub.currency?.toUpperCase() ?? "USD"} {(sub.amount_cents / 100).toFixed(2)}/yr</p>
+                <p className="font-medium">{formatCurrency(sub.amount_cents / 100, currency, bdtRate)}/yr</p>
                 {discountPct > 0 && (
                   <p className="text-xs text-green-600 dark:text-green-400">−{discountPct}% agent discount</p>
                 )}
@@ -319,7 +331,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
   );
 }
 
-function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; discountPct: number; onChoose?: (plan: CheckoutPlan) => void }) {
+function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; onChoose?: (plan: CheckoutPlan) => void }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border bg-muted/30 p-8 text-center space-y-3">
@@ -344,11 +356,13 @@ function NoSubscription({ plans, discountPct, onChoose }: { plans: Plan[]; disco
                 {(plan.price_yearly ?? 0) > 0 ? (
                   <>
                     <p className="text-2xl font-black">
-                      {plan.currency} {discountPct > 0 ? (plan.price_yearly * (1 - discountPct / 100)).toFixed(2) : plan.price_yearly.toFixed(2)}
+                      {discountPct > 0
+                        ? formatCurrency(plan.price_yearly * (1 - discountPct / 100), currency, bdtRate)
+                        : formatCurrency(plan.price_yearly, currency, bdtRate)}
                       <span className="text-sm font-normal text-muted-foreground">/yr</span>
                     </p>
                     {discountPct > 0 && (
-                      <p className="text-xs text-muted-foreground line-through">{plan.currency} {plan.price_yearly.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground line-through">{formatCurrency(plan.price_yearly, currency, bdtRate)}</p>
                     )}
                   </>
                 ) : (

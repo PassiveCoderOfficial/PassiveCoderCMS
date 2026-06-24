@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, CreditCard, Smartphone, Building2, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
+import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
 
 export interface CheckoutPlan {
   id: string;
@@ -44,6 +46,8 @@ export function CheckoutDialog({
   const [txnRef, setTxnRef] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState<Currency>("USD");
+  const bdtRate = useCurrencyRate();
 
   if (!plan) return null;
   const isManual = method !== "shurjopay";
@@ -95,6 +99,10 @@ export function CheckoutDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="flex justify-end">
+            <CurrencyToggle currency={currency} onChange={setCurrency} />
+          </div>
+
           {availableCycles.length > 1 && (
             <div className="space-y-2">
               <Label>Billing cycle</Label>
@@ -110,7 +118,7 @@ export function CheckoutDialog({
                     )}
                   >
                     {CYCLE_LABELS[c]}
-                    <span className="block text-[10px] text-muted-foreground">{plan.currency ?? "BDT"} {priceFor(c).toLocaleString()}</span>
+                    <span className="block text-[10px] text-muted-foreground">{formatCurrency(priceFor(c), currency, bdtRate)}</span>
                   </button>
                 ))}
               </div>
@@ -119,7 +127,7 @@ export function CheckoutDialog({
 
           <div className="rounded-lg bg-muted/40 p-3 text-sm flex items-center justify-between">
             <span className="text-muted-foreground">{plan.name} plan ({CYCLE_LABELS[activeCycle].toLowerCase()})</span>
-            <span className="font-bold">{plan.currency ?? "BDT"} {amount.toLocaleString()}{CYCLE_SUFFIX[activeCycle]}</span>
+            <span className="font-bold">{formatCurrency(amount, currency, bdtRate)}{CYCLE_SUFFIX[activeCycle]}</span>
           </div>
 
           <div className="space-y-2">
@@ -147,7 +155,8 @@ export function CheckoutDialog({
                 {method === "bank"
                   ? (paymentConfig.bank_details || "Contact support for bank transfer details.")
                   : manualNumber
-                    ? <>Send <strong>{plan.currency ?? "BDT"} {amount.toLocaleString()}</strong> to <strong>{method}</strong> number <strong>{manualNumber}</strong>, then enter the transaction details below.</>
+                    ? <>Send <strong>{formatCurrency(amount, currency, bdtRate)}</strong> to <strong>{method}</strong> number <strong>{manualNumber}</strong>, then enter the transaction details below.</>
+
                     : `${method} number not configured yet — contact support.`}
               </p>
               {paymentConfig.manual_payment_instructions && (

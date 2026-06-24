@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
+import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
 
 // ─── Step bar ─────────────────────────────────────────────────────────────────
 
@@ -183,6 +185,8 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
   const [selected, setSelected] = useState(defaultPlan);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currency, setCurrency] = useState<Currency>("USD");
+  const bdtRate = useCurrencyRate();
 
   useEffect(() => {
     fetch("/api/plans").then(r => r.json()).then(d => { setPlans(d.plans ?? []); setLoading(false); });
@@ -202,8 +206,8 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
         <p className="text-muted-foreground mt-1">No payment needed to get started — pay after your account is created.</p>
       </div>
 
-      {cycles.length > 1 && (
-        <div className="flex justify-center">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        {cycles.length > 1 && (
           <div className="inline-flex items-center gap-1 bg-muted rounded-full p-1">
             {cycles.map(c => (
               <button
@@ -218,8 +222,9 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
               </button>
             ))}
           </div>
-        </div>
-      )}
+        )}
+        <CurrencyToggle currency={currency} onChange={setCurrency} />
+      </div>
 
       <div className="space-y-3">
         {plans.map(plan => {
@@ -245,8 +250,9 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
                 </div>
                 <span className="font-bold text-sm">
                   {isCustom ? "Custom pricing"
-                    : planPrice(plan, cycle) > 0 ? `$${planPrice(plan, cycle)}${CYCLE_SUFFIX[cycle]}`
-                    : `Not available ${CYCLE_LABELS[cycle].toLowerCase()}`}
+                    : planPrice(plan, cycle) > 0
+                      ? `${formatCurrency(planPrice(plan, cycle), currency, bdtRate)}${CYCLE_SUFFIX[cycle]}`
+                      : `Not available ${CYCLE_LABELS[cycle].toLowerCase()}`}
                 </span>
               </div>
               <div className="ml-6 flex flex-wrap gap-x-4 gap-y-1">
