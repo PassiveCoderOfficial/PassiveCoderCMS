@@ -649,6 +649,49 @@ export const blockRegistry: BlockDefinition[] = [
       },
     }),
   },
+  {
+    type: "footer",
+    label: "Footer",
+    description: "Site footer with logo, links, social icons and copyright",
+    icon: "🦶",
+    category: "layout",
+    create: () => ({
+      ...baseBlock("footer"),
+      type: "footer" as const,
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      data: {
+        logoText: "Brand",
+        tagline: "Your tagline here",
+        style: "dark" as const,
+        columns: [
+          {
+            id: generateId(),
+            heading: "Company",
+            links: [
+              { id: generateId(), label: "About Us", url: "/about" },
+              { id: generateId(), label: "Services", url: "/services" },
+              { id: generateId(), label: "Contact", url: "/contact" },
+            ],
+          },
+          {
+            id: generateId(),
+            heading: "Services",
+            links: [
+              { id: generateId(), label: "Visa Processing", url: "/services/visa" },
+              { id: generateId(), label: "Work Permits", url: "/services/work-permit" },
+              { id: generateId(), label: "Tour Packages", url: "/services/tours" },
+            ],
+          },
+        ],
+        socials: [],
+        copyrightYear: true,
+        bottomLinks: [
+          { id: generateId(), label: "Privacy Policy", url: "/privacy" },
+          { id: generateId(), label: "Terms", url: "/terms" },
+        ],
+      },
+    }),
+  },
 ];
 
 export const blocksByCategory = blockRegistry.reduce(

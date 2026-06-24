@@ -32,6 +32,7 @@ import { StepsBlock } from "@/components/blocks/steps/steps-block";
 import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
 import { EnmBookingWidgetBlock } from "@/components/blocks/enm/enm-booking-widget-block";
+import { FooterBlock } from "@/components/blocks/footer/footer-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -83,6 +84,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "icon_grid":        content = <IconGridBlock block={block} />; break;
     case "enm_lead_form":    content = <EnmLeadFormBlock block={block} />; break;
     case "enm_booking_widget": content = <EnmBookingWidgetBlock block={block} />; break;
+    case "footer":           content = <FooterBlock block={block as import("@/types/cms").FooterBlockProps} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     default:                 content = null;
   }

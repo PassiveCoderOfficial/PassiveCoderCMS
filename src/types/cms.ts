@@ -53,7 +53,8 @@ export type BlockType =
   | "icon_grid"
   | "video"
   | "enm_lead_form"
-  | "enm_booking_widget";
+  | "enm_booking_widget"
+  | "footer";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -555,6 +556,44 @@ export type EnmBookingWidgetBlockProps = BlockBase & {
   };
 };
 
+export type FooterColumnLink = {
+  id: string;
+  label: string;
+  url: string;
+};
+
+export type FooterColumn = {
+  id: string;
+  heading: string;
+  links: FooterColumnLink[];
+};
+
+export type FooterSocial = {
+  platform: "facebook" | "instagram" | "twitter" | "linkedin" | "youtube" | "tiktok" | "whatsapp";
+  url: string;
+};
+
+export type FooterBlockProps = BlockBase & {
+  type: "footer";
+  data: {
+    logo?: string;
+    logoText?: string;
+    tagline?: string;
+    columns: FooterColumn[];
+    socials?: FooterSocial[];
+    copyrightText?: string;
+    copyrightYear?: boolean;
+    backgroundColor?: string;
+    textColor?: string;
+    accentColor?: string;
+    showNewsletter?: boolean;
+    newsletterLabel?: string;
+    newsletterPlaceholder?: string;
+    bottomLinks?: FooterColumnLink[];
+    style?: "dark" | "light" | "colored";
+  };
+};
+
 export type Block =
   | HeroBlockProps
   | SliderBlockProps
@@ -586,7 +625,8 @@ export type Block =
   | IconGridBlockProps
   | VideoBlockProps
   | EnmLeadFormBlockProps
-  | EnmBookingWidgetBlockProps;
+  | EnmBookingWidgetBlockProps
+  | FooterBlockProps;
 
 // ─── Page Types ───────────────────────────────────────────────────────────
 

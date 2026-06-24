@@ -1,67 +1,123 @@
 "use client";
 
-import React, { useState } from "react";
-import type { NavigationBlockProps } from "@/types/cms";
+import React, { useState, useRef, useEffect } from "react";
+import type { NavigationBlockProps, NavItem } from "@/types/cms";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function NavigationBlock({ block, identityLogo, identityLogoDark }: {
+function DropdownMenu({ items }: { items: NavItem[] }) {
+  return (
+    <ul className="absolute left-0 top-full mt-1 min-w-[200px] bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-black/5 py-1.5 z-[9999]">
+      {items.map((child) => (
+        <li key={child.id}>
+          <Link
+            href={child.url}
+            target={child.target}
+            className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+          >
+            {child.label}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLLIElement>(null);
+  const hasChildren = (item.children?.length ?? 0) > 0;
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  if (!hasChildren) {
+    return (
+      <li>
+        <Link
+          href={item.url}
+          target={item.target}
+          className="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 transition-colors"
+          style={{ color: textColor }}
+        >
+          {item.label}
+        </Link>
+      </li>
+    );
+  }
+
+  return (
+    <li ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 transition-colors"
+        style={{ color: textColor }}
+      >
+        {item.label}
+        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
+      </button>
+      {open && <DropdownMenu items={item.children!} />}
+    </li>
+  );
+}
+
+export function NavigationBlock({ block, identityLogo, identityLogoDark: _identityLogoDark }: {
   block: NavigationBlockProps;
   identityLogo?: string | null;
   identityLogoDark?: string | null;
 }) {
   const { data } = block;
-  const { logoText, logoUrl, items, sticky, transparent, style, backgroundColor, textColor, showCta, ctaLabel, ctaUrl } = data;
-  // Block-level logo takes priority; fall back to site identity logo
+  const {
+    logoText, logoUrl, items, sticky, transparent, style,
+    backgroundColor, textColor, showCta, ctaLabel, ctaUrl,
+  } = data;
   const logo = data.logo || identityLogo || null;
-  const logoDark = identityLogoDark || logo;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
 
-  const navStyle = {
-    backgroundColor: transparent ? "transparent" : (backgroundColor ?? "#fff"),
-    color: textColor ?? "#111827",
-  };
+  const bg = transparent ? "transparent" : (backgroundColor ?? "#1a5c38");
+  const fg = textColor ?? "#ffffff";
 
   return (
     <nav
-      className={cn("w-full z-50", sticky && "sticky top-0", style === "centered" && "text-center")}
-      style={navStyle}
+      className={cn("w-full z-50", sticky && "sticky top-0")}
+      style={{ backgroundColor: bg, color: fg }}
     >
       <div className="max-w-7xl mx-auto px-4">
-        <div className={cn("flex items-center h-16 gap-6", style === "centered" && "justify-center")}>
+        <div className={cn("flex items-center h-16 gap-4", style === "centered" && "justify-center")}>
           {/* Logo */}
           <Link href={logoUrl ?? "/"} className="flex items-center gap-2 shrink-0">
             {logo ? (
-              <Image src={logo} alt={logoText ?? "Logo"} width={120} height={40} className="h-9 w-auto object-contain" />
+              <Image src={logo} alt={logoText ?? "Logo"} width={140} height={44} className="h-10 w-auto object-contain" />
             ) : (
-              <span className="text-lg font-bold" style={{ color: textColor ?? "#111827" }}>{logoText ?? "Brand"}</span>
+              <span className="text-lg font-bold tracking-tight" style={{ color: fg }}>{logoText ?? "Brand"}</span>
             )}
           </Link>
 
-          {/* Desktop Nav */}
-          <ul className={cn("hidden md:flex items-center gap-1", style === "centered" ? "mx-auto" : "ml-4 flex-1")}>
+          {/* Desktop nav */}
+          <ul className={cn("hidden md:flex items-center gap-0.5", style === "centered" ? "mx-auto" : "ml-2 flex-1")}>
             {items.map((item) => (
-              <li key={item.id}>
-                <Link
-                  href={item.url}
-                  target={item.target}
-                  className="px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors"
-                  style={{ color: textColor ?? "#374151" }}
-                >
-                  {item.label}
-                </Link>
-              </li>
+              <NavItemDesktop key={item.id} item={item} textColor={fg} />
             ))}
           </ul>
 
-          {/* CTA */}
+          {/* CTA button */}
           {showCta && ctaLabel && ctaUrl && (
             <div className="hidden md:block shrink-0">
               <Link
                 href={ctaUrl}
-                className="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: "var(--color-secondary, #c9a84c)",
+                  color: "var(--color-foreground, #0f2418)",
+                }}
               >
                 {ctaLabel}
               </Link>
@@ -70,8 +126,9 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark }: {
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden ml-auto p-2 rounded-md hover:bg-black/5"
+            className="md:hidden ml-auto p-2 rounded-md"
             onClick={() => setMobileOpen(!mobileOpen)}
+            style={{ color: fg }}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -80,24 +137,60 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark }: {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t" style={{ backgroundColor: backgroundColor ?? "#fff" }}>
-          <ul className="px-4 py-3 space-y-1">
-            {items.map((item) => (
-              <li key={item.id}>
-                <Link
-                  href={item.url}
-                  className="block px-3 py-2 rounded-md text-sm hover:bg-black/5"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+        <div className="md:hidden border-t" style={{ backgroundColor: backgroundColor ?? "#1a5c38", borderColor: `${fg}20` }}>
+          <ul className="px-4 py-3 space-y-0.5">
+            {items.map((item) => {
+              const hasChildren = (item.children?.length ?? 0) > 0;
+              const expanded = mobileExpanded === item.id;
+              return (
+                <li key={item.id}>
+                  <div className="flex items-center">
+                    <Link
+                      href={item.url}
+                      className="flex-1 block px-3 py-2.5 rounded-md text-sm font-medium"
+                      style={{ color: fg }}
+                      onClick={() => { if (!hasChildren) setMobileOpen(false); }}
+                    >
+                      {item.label}
+                    </Link>
+                    {hasChildren && (
+                      <button
+                        onClick={() => setMobileExpanded(expanded ? null : item.id)}
+                        className="px-2 py-2 rounded-md"
+                        style={{ color: fg }}
+                      >
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", expanded && "rotate-180")} />
+                      </button>
+                    )}
+                  </div>
+                  {hasChildren && expanded && (
+                    <ul className="ml-4 mt-1 space-y-0.5 border-l-2 pl-3" style={{ borderColor: `${fg}30` }}>
+                      {item.children!.map(child => (
+                        <li key={child.id}>
+                          <Link
+                            href={child.url}
+                            className="block px-2 py-2 text-sm rounded"
+                            style={{ color: `${fg}cc` }}
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
             {showCta && ctaLabel && ctaUrl && (
-              <li>
+              <li className="pt-2">
                 <Link
                   href={ctaUrl}
-                  className="block px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white text-center mt-2"
+                  className="block px-3 py-2.5 rounded-lg text-sm font-semibold text-center hover:opacity-90 transition-opacity"
+                  style={{
+                    backgroundColor: "var(--color-secondary, #c9a84c)",
+                    color: "var(--color-foreground, #0f2418)",
+                  }}
                   onClick={() => setMobileOpen(false)}
                 >
                   {ctaLabel}
