@@ -53,8 +53,9 @@ export function CheckoutDialog({
   const isManual = method !== "shurjopay";
   const manualNumber = method === "bkash" ? paymentConfig.bkash_number : method === "nagad" ? paymentConfig.nagad_number : null;
 
-  const priceFor = (c: BillingCycle): number =>
+  const priceForCents = (c: BillingCycle): number =>
     c === "monthly" ? (plan.price_monthly ?? 0) : plan.price_yearly;
+  const priceFor = (c: BillingCycle): number => priceForCents(c) / 100;
   const availableCycles = (["monthly", "yearly"] as BillingCycle[]).filter(c => priceFor(c) > 0);
   // Fall back to yearly if the selected cycle isn't offered by this plan
   const activeCycle: BillingCycle = priceFor(cycle) > 0 ? cycle : (availableCycles[0] ?? "yearly");

@@ -357,12 +357,12 @@ function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { p
                   <>
                     <p className="text-2xl font-black">
                       {discountPct > 0
-                        ? formatCurrency(plan.price_yearly * (1 - discountPct / 100), currency, bdtRate)
-                        : formatCurrency(plan.price_yearly, currency, bdtRate)}
+                        ? formatCurrency((plan.price_yearly / 100) * (1 - discountPct / 100), currency, bdtRate)
+                        : formatCurrency(plan.price_yearly / 100, currency, bdtRate)}
                       <span className="text-sm font-normal text-muted-foreground">/yr</span>
                     </p>
                     {discountPct > 0 && (
-                      <p className="text-xs text-muted-foreground line-through">{formatCurrency(plan.price_yearly, currency, bdtRate)}</p>
+                      <p className="text-xs text-muted-foreground line-through">{formatCurrency(plan.price_yearly / 100, currency, bdtRate)}</p>
                     )}
                   </>
                 ) : (
@@ -380,7 +380,7 @@ function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { p
                   className="w-full"
                   variant={plan.is_popular ? "default" : "outline"}
                   disabled={!onChoose}
-                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, price_monthly: plan.price_monthly, currency: plan.currency })}
+                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, price_monthly: plan.price_monthly ?? 0, currency: plan.currency })}
                 >
                   Choose {plan.name}
                 </Button>
