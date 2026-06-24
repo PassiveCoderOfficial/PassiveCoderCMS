@@ -19,11 +19,13 @@ interface Site {
 
 const STATUS_COLOR: Record<string, string> = {
   active: "bg-green-900/50 text-green-400",
-  trial: "bg-amber-900/50 text-amber-400",
+  onboarded: "bg-blue-900/50 text-blue-400",
   suspended: "bg-red-900/50 text-red-400",
+  cancelled: "bg-gray-800 text-gray-500",
+  enm_pending: "bg-orange-900/50 text-orange-400",
 };
 
-const STATUSES = ["", "trial", "active", "suspended"];
+const STATUSES = ["", "onboarded", "active", "suspended", "cancelled", "enm_pending"];
 
 function DeleteModal({ site, onClose, onDeleted }: {
   site: Site;

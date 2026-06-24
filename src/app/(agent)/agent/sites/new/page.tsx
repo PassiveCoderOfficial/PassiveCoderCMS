@@ -15,7 +15,7 @@ export default function AgentNewSitePage() {
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState("");
-  const [plan, setPlan] = useState("trial");
+  const [plan, setPlan] = useState("basic");
   const [isMySite, setIsMySite] = useState(false);
   const [checking, setChecking] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
@@ -117,7 +117,6 @@ export default function AgentNewSitePage() {
               <label className="block text-sm text-muted-foreground mb-1.5">Plan</label>
               <select value={plan} onChange={e => setPlan(e.target.value)}
                 className="w-full bg-muted border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
-                <option value="trial">Trial</option>
                 <option value="basic">Basic</option>
                 <option value="pro">Pro</option>
                 <option value="custom">Custom</option>

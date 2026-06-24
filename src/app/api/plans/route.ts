@@ -1,71 +1,30 @@
 import { NextResponse } from "next/server";
-
-const PLANS = [
-  {
-    id: "basic",
-    name: "Basic",
-    price_yearly: 290,
-    price_monthly: 49,
-    storage_gb: 10,
-    visitor_limit_monthly: 5000,
-    overage_cents_per_1k: 200,
-    features: [
-      "DIY website builder",
-      "Free .com/.org/.net TLD domain (1 year)",
-      "10 GB storage",
-      "5,000 visitors/month included",
-      "$2 per 1,000 extra visitors",
-      "Page builder",
-      "SSL certificate",
-      "Daily backups",
-      "Uptime monitoring",
-      "Email support",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price_yearly: 449,
-    price_monthly: 79,
-    storage_gb: 50,
-    visitor_limit_monthly: 25000,
-    overage_cents_per_1k: 100,
-    features: [
-      "DIY website builder",
-      "Free .com/.org/.net TLD domain (1 year)",
-      "50 GB storage",
-      "25,000 visitors/month included",
-      "$1 per 1,000 extra visitors",
-      "Full design & layout support",
-      "Configuration assistance",
-      "E-Commerce functionality",
-      "ExpertNear.Me Pro subscription (free)",
-      "SSL certificate",
-      "Daily backups",
-      "VIP priority support",
-    ],
-  },
-  {
-    id: "custom",
-    name: "Custom",
-    price_yearly: 0,
-    price_monthly: 0,
-    storage_gb: 100,
-    visitor_limit_monthly: 0,
-    overage_cents_per_1k: 0,
-    features: [
-      "Multiple websites",
-      "100 GB storage",
-      "Custom domain",
-      "White-label option",
-      "All features",
-      "Dedicated support",
-      "Custom integrations",
-      "SLA guarantee",
-    ],
-  },
-];
+import { createAdminClient } from "@/lib/supabase/server";
 
 export async function GET() {
-  return NextResponse.json({ plans: PLANS });
+  const admin = await createAdminClient();
+  const { data: rows, error } = await admin
+    .from("plans")
+    .select("id, name, price_yearly, price_monthly, storage_gb, visitor_limit_monthly, overage_cents_per_1k, features, sort_order, is_active")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  if (error || !rows?.length) {
+    // Fallback to DB seed values if query fails
+    return NextResponse.json({ plans: [] }, { status: 500 });
+  }
+
+  // DB stores prices in cents, onboarding expects dollars
+  const plans = rows.map(p => ({
+    id: p.id,
+    name: p.name,
+    price_yearly: Math.round((p.price_yearly ?? 0) / 100),
+    price_monthly: Math.round((p.price_monthly ?? 0) / 100),
+    storage_gb: p.storage_gb ?? 0,
+    visitor_limit_monthly: p.visitor_limit_monthly ?? 0,
+    overage_cents_per_1k: p.overage_cents_per_1k ?? 0,
+    features: Array.isArray(p.features) ? p.features : [],
+  }));
+
+  return NextResponse.json({ plans });
 }

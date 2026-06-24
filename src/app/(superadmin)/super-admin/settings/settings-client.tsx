@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone } from "lucide-react";
 
 interface PlatformSettings {
-  default_commission_rate: number;
-  default_commission_type: "recurring" | "one_time";
+  default_commission_rate?: number;
+  default_commission_type?: "recurring" | "one_time";
+  default_agent_one_time_pct?: number | null;
+  default_staff_recurring_pct?: number | null;
   agent_signup_enabled: boolean;
   agent_auto_approve: boolean;
   bkash_number?: string | null;
@@ -16,8 +18,8 @@ interface PlatformSettings {
 }
 
 export default function SASettingsClient({ settings }: { settings: PlatformSettings | null }) {
-  const [commissionRate, setCommissionRate] = useState(String(settings?.default_commission_rate ?? 20));
-  const [commissionType, setCommissionType] = useState<"recurring" | "one_time">(settings?.default_commission_type ?? "recurring");
+  const [agentOneTimePct, setAgentOneTimePct] = useState(String(settings?.default_agent_one_time_pct ?? 10));
+  const [staffRecurringPct, setStaffRecurringPct] = useState(String(settings?.default_staff_recurring_pct ?? 10));
   const [agentSignup, setAgentSignup] = useState(settings?.agent_signup_enabled !== false);
   const [autoApprove, setAutoApprove] = useState(settings?.agent_auto_approve !== false);
   const [bkash, setBkash] = useState(settings?.bkash_number ?? "");
@@ -27,15 +29,17 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    const rate = parseFloat(commissionRate);
-    if (isNaN(rate) || rate < 0 || rate > 100) { toast.error("Commission rate must be 0–100"); return; }
+    const oneTime = parseFloat(agentOneTimePct);
+    const recurring = parseFloat(staffRecurringPct);
+    if (isNaN(oneTime) || oneTime < 0 || oneTime > 100) { toast.error("One-time % must be 0–100"); return; }
+    if (isNaN(recurring) || recurring < 0 || recurring > 100) { toast.error("Recurring % must be 0–100"); return; }
     setSaving(true);
     const res = await fetch("/api/super-admin/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        default_commission_rate: rate,
-        default_commission_type: commissionType,
+        default_agent_one_time_pct: oneTime,
+        default_staff_recurring_pct: recurring,
         agent_signup_enabled: agentSignup,
         agent_auto_approve: autoApprove,
         bkash_number: bkash,
@@ -74,37 +78,36 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-5">
         <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
           <Zap className="w-4 h-4 text-yellow-400" />
-          <h2 className="font-semibold text-white text-sm">Agent Commission Defaults</h2>
+          <h2 className="font-semibold text-white text-sm">Commission Defaults</h2>
         </div>
-        <p className="text-xs text-gray-500">Applied to all new agents created via /become-agent or SA panel. Existing agents keep their individual rates.</p>
+        <p className="text-xs text-gray-500">Platform-wide defaults. Individual agents can override with per-agent rates.</p>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-gray-400 block mb-1.5">Default Rate (%)</label>
+            <label className="text-xs text-gray-400 block mb-1.5">Agent one-time % <span className="text-gray-600">(first payment only)</span></label>
             <div className="flex items-center gap-2">
               <input
                 type="number" min={0} max={100} step={0.5}
-                value={commissionRate}
-                onChange={e => setCommissionRate(e.target.value)}
+                value={agentOneTimePct}
+                onChange={e => setAgentOneTimePct(e.target.value)}
                 className="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
               />
               <span className="text-gray-500 text-sm">%</span>
             </div>
+            <p className="text-xs text-gray-600 mt-1">Applies to all agents (staff + external)</p>
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1.5">Default Type</label>
-            <div className="flex gap-2">
-              {(["recurring", "one_time"] as const).map(t => (
-                <button key={t} onClick={() => setCommissionType(t)}
-                  className={`text-xs px-3 py-2 rounded-lg border transition-colors ${
-                    commissionType === t
-                      ? "bg-indigo-600 border-indigo-500 text-white"
-                      : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
-                  }`}>
-                  {t === "recurring" ? "Recurring" : "One-Time"}
-                </button>
-              ))}
+            <label className="text-xs text-gray-400 block mb-1.5">Staff recurring % <span className="text-gray-600">(each renewal)</span></label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number" min={0} max={100} step={0.5}
+                value={staffRecurringPct}
+                onChange={e => setStaffRecurringPct(e.target.value)}
+                className="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+              />
+              <span className="text-gray-500 text-sm">%</span>
             </div>
+            <p className="text-xs text-gray-600 mt-1">Only for agents with is_staff = true</p>
           </div>
         </div>
       </div>

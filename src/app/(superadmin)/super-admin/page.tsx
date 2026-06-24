@@ -73,7 +73,7 @@ export default async function SuperAdminOverview() {
                 <td className="px-5 py-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     site.status === "active" ? "bg-green-900/50 text-green-400" :
-                    site.status === "trial" ? "bg-amber-900/50 text-amber-400" :
+                    site.status === "onboarded" ? "bg-blue-900/50 text-blue-400" :
                     "bg-gray-800 text-gray-400"
                   }`}>{site.status}</span>
                 </td>

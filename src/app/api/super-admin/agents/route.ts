@@ -8,11 +8,14 @@ export async function POST(req: Request) {
 
   const body = await req.json() as {
     agentId: string;
-    action: "status" | "commission" | "referral_code" | "remove";
+    action: "status" | "commission" | "referral_code" | "remove" | "staff";
     status?: string;
     commission_rate?: number;
     commission_type?: "recurring" | "one_time";
     referral_code?: string;
+    is_staff?: boolean;
+    one_time_pct_override?: number | null;
+    staff_recurring_pct?: number | null;
   };
 
   const { agentId, action } = body;
@@ -48,6 +51,17 @@ export async function POST(req: Request) {
     const { data: existing } = await supabase.from("agents").select("id").eq("referral_code", code).maybeSingle();
     if (existing && existing.id !== agentId) return NextResponse.json({ error: "Referral code already in use" }, { status: 409 });
     const { error } = await supabase.from("agents").update({ referral_code: code, updated_at: new Date().toISOString() }).eq("id", agentId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (action === "staff") {
+    const { is_staff, one_time_pct_override, staff_recurring_pct } = body;
+    const { error } = await supabase.from("agents").update({
+      is_staff: is_staff ?? false,
+      one_time_pct_override: one_time_pct_override ?? null,
+      staff_recurring_pct: staff_recurring_pct ?? null,
+      updated_at: new Date().toISOString(),
+    }).eq("id", agentId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { enmProvision } from "@/lib/enm";
+import { createCommissions } from "@/lib/commissions";
 
 // Super-admin approves a pending manual payment (bKash/Nagad/bank) and activates
 // the subscription + tenant for one year.
@@ -37,6 +38,23 @@ export async function POST(req: Request) {
 
   if (sub.manual_ticket_id) {
     await admin.from("support_tickets").update({ status: "resolved", resolved_at: now.toISOString() }).eq("id", sub.manual_ticket_id);
+  }
+
+  // Create commission entries (best-effort)
+  try {
+    const { data: subFull } = await admin.from("subscriptions").select("amount_cents, custom_amount_cents, billing_cycle, trial_converted").eq("id", sub.id).maybeSingle();
+    const amtCents = subFull?.custom_amount_cents ?? subFull?.amount_cents ?? 0;
+    if (amtCents > 0) {
+      await createCommissions({
+        supabase: admin,
+        tenantId: sub.tenant_id,
+        paymentAmountCents: amtCents,
+        billingCycle: subFull?.billing_cycle ?? "yearly",
+        isFirstPayment: !subFull?.trial_converted,
+      });
+    }
+  } catch (err) {
+    console.error("[commissions approve]", err);
   }
 
   // Sync ENM tier (best-effort)

@@ -26,6 +26,8 @@ export async function POST(req: Request) {
   const body = await req.json() as {
     default_commission_rate?: number;
     default_commission_type?: "recurring" | "one_time";
+    default_agent_one_time_pct?: number;
+    default_staff_recurring_pct?: number;
     agent_signup_enabled?: boolean;
     agent_auto_approve?: boolean;
     bkash_number?: string;
@@ -40,14 +42,18 @@ export async function POST(req: Request) {
     if (typeof body[k] === "string") update[k] = body[k];
   }
 
-  if (typeof body.default_commission_rate === "number") {
-    if (body.default_commission_rate < 0 || body.default_commission_rate > 100)
-      return NextResponse.json({ error: "Commission rate must be 0–100" }, { status: 400 });
-    update.default_commission_rate = body.default_commission_rate;
+  if (typeof body.default_agent_one_time_pct === "number") {
+    if (body.default_agent_one_time_pct < 0 || body.default_agent_one_time_pct > 100)
+      return NextResponse.json({ error: "One-time % must be 0–100" }, { status: 400 });
+    update.default_agent_one_time_pct = body.default_agent_one_time_pct;
   }
-  if (body.default_commission_type && ["recurring", "one_time"].includes(body.default_commission_type)) {
-    update.default_commission_type = body.default_commission_type;
+  if (typeof body.default_staff_recurring_pct === "number") {
+    if (body.default_staff_recurring_pct < 0 || body.default_staff_recurring_pct > 100)
+      return NextResponse.json({ error: "Recurring % must be 0–100" }, { status: 400 });
+    update.default_staff_recurring_pct = body.default_staff_recurring_pct;
   }
+  if (typeof body.default_commission_rate === "number") update.default_commission_rate = body.default_commission_rate;
+  if (body.default_commission_type) update.default_commission_type = body.default_commission_type;
   if (typeof body.agent_signup_enabled === "boolean") update.agent_signup_enabled = body.agent_signup_enabled;
   if (typeof body.agent_auto_approve === "boolean") update.agent_auto_approve = body.agent_auto_approve;
 

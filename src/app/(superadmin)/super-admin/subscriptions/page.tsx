@@ -10,7 +10,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
 
   let query = supabase
     .from("subscriptions")
-    .select("id,plan_id,status,payment_provider,amount_cents,currency,trial_ends_at,current_period_end,created_at,tenant_id,tenants(name,slug)")
+    .select("id,plan_id,status,billing_cycle,payment_provider,custom_amount_cents,amount_cents,currency,next_payment_due,current_period_end,created_at,tenant_id,tenants(name,slug,tenant_number)")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -20,15 +20,15 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
 
   const STATUS_COLORS: Record<string, string> = {
     active: "bg-green-900/50 text-green-400",
-    trial: "bg-amber-900/50 text-amber-400",
-    pending: "bg-blue-900/50 text-blue-400",
+    onboarded: "bg-blue-900/50 text-blue-400",
+    pending: "bg-amber-900/50 text-amber-400",
     past_due: "bg-red-900/50 text-red-400",
     suspended: "bg-orange-900/50 text-orange-400",
     cancelled: "bg-gray-800 text-gray-400",
     expired: "bg-gray-800 text-gray-500",
   };
 
-  const STATUSES = ["", "trial", "active", "pending", "past_due", "suspended", "cancelled", "expired"];
+  const STATUSES = ["", "onboarded", "pending", "active", "past_due", "suspended", "cancelled", "expired"];
 
   return (
     <div className="p-6 space-y-6">
@@ -63,12 +63,14 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
           <tbody>
             {(subs ?? []).map((sub) => {
               const tenantRaw = sub.tenants;
-              const tenant = (Array.isArray(tenantRaw) ? tenantRaw[0] : tenantRaw) as { name: string; slug: string } | null;
+              const tenant = (Array.isArray(tenantRaw) ? tenantRaw[0] : tenantRaw) as { name: string; slug: string; tenant_number: number | null } | null;
+              const displayAmt = sub.custom_amount_cents ?? sub.amount_cents;
+              const cycleLabel = sub.billing_cycle === "monthly" ? "/mo" : sub.billing_cycle === "lifetime" ? " lifetime" : "/yr";
               return (
                 <tr key={sub.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                   <td className="px-4 py-3">
                     <div className="text-white font-medium">{tenant?.name ?? "—"}</div>
-                    <div className="text-xs text-gray-500">{tenant?.slug}</div>
+                    <div className="text-xs text-gray-500">{tenant?.tenant_number ? `T${tenant.tenant_number} · ` : ""}{tenant?.slug}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-300 capitalize">{sub.plan_id}</td>
                   <td className="px-4 py-3">
@@ -76,11 +78,12 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
                   </td>
                   <td className="px-4 py-3 text-gray-400 capitalize">{sub.payment_provider ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-300">
-                    {sub.amount_cents ? `${(sub.amount_cents / 100).toFixed(0)} ${sub.currency ?? "BDT"}` : "—"}
+                    {displayAmt ? `$${(displayAmt / 100).toFixed(0)}${cycleLabel}` : "—"}
+                    {sub.custom_amount_cents && <span className="text-xs text-amber-400 ml-1">custom</span>}
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
-                    {sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() :
-                     sub.trial_ends_at ? `Trial: ${new Date(sub.trial_ends_at).toLocaleDateString()}` : "—"}
+                    {sub.next_payment_due ? new Date(sub.next_payment_due).toLocaleDateString() :
+                     sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : "—"}
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-xs">{new Date(sub.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">

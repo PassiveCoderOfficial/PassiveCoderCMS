@@ -15,7 +15,7 @@ export default function NewSitePage() {
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState("");
-  const [plan, setPlan] = useState("trial");
+  const [plan, setPlan] = useState("basic");
   const [checking, setChecking] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [slugMsg, setSlugMsg] = useState("");
@@ -130,7 +130,6 @@ export default function NewSitePage() {
               onChange={e => setPlan(e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
             >
-              <option value="trial">Trial</option>
               <option value="free">Free</option>
               <option value="starter">Starter</option>
               <option value="pro">Pro</option>

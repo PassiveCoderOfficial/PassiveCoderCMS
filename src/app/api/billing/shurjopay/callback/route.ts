@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPayment } from "@/lib/billing/shurjopay";
 import { enmProvision } from "@/lib/enm";
+import { createCommissions } from "@/lib/commissions";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -25,7 +26,7 @@ async function handle(req: Request, orderId: string | null) {
   const admin = await createAdminClient();
   const { data: sub } = await admin
     .from("subscriptions")
-    .select("id, tenant_id, plan_id")
+    .select("id, tenant_id, plan_id, amount_cents, custom_amount_cents, billing_cycle, trial_converted")
     .eq("shurjopay_order_id", orderId)
     .maybeSingle();
   if (!sub) return fail("subscription_not_found");
@@ -48,6 +49,18 @@ async function handle(req: Request, orderId: string | null) {
   // Sync ENM tier (best-effort — don't block on failure)
   const enmTier = sub.plan_id === "pro" ? "pro" : "free";
   syncENM(admin, sub.tenant_id, enmTier).catch(err => console.error("[ENM sync shurjopay]", err));
+
+  // Create commission entries (best-effort)
+  const amtCents = sub.custom_amount_cents ?? sub.amount_cents ?? 0;
+  if (amtCents > 0) {
+    createCommissions({
+      supabase: admin,
+      tenantId: sub.tenant_id,
+      paymentAmountCents: amtCents,
+      billingCycle: sub.billing_cycle ?? "yearly",
+      isFirstPayment: !sub.trial_converted,
+    }).catch(err => console.error("[commissions shurjopay]", err));
+  }
 
   return NextResponse.redirect(`${origin}/dashboard/subscription?paid=1`);
 }

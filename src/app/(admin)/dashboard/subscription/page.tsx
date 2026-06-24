@@ -40,10 +40,13 @@ interface Agent {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
-  trial:    { color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Payment Pending" },
-  active:   { color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: "Active" },
-  past_due: { color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400", icon: <AlertCircle className="w-3.5 h-3.5" />, label: "Past Due" },
-  cancelled:{ color: "text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400", icon: null, label: "Cancelled" },
+  onboarded: { color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",   icon: <Clock className="w-3.5 h-3.5" />, label: "Onboarded" },
+  pending:   { color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Pending Payment" },
+  active:    { color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: "Active" },
+  past_due:  { color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400",         icon: <AlertCircle className="w-3.5 h-3.5" />, label: "Past Due" },
+  suspended: { color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400", icon: <AlertCircle className="w-3.5 h-3.5" />, label: "Suspended" },
+  cancelled: { color: "text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400",       icon: null, label: "Cancelled" },
+  expired:   { color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Expired" },
 };
 
 export default function SubscriptionPage() {
@@ -235,7 +238,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
           </div>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">{sub.status === "trial" ? "Trial ends" : "Renews"}</p>
+          <p className="text-xs text-muted-foreground">{sub.status === "onboarded" || sub.status === "pending" ? "Due" : "Renews"}</p>
           <p className="font-medium">{renewDate ? new Date(renewDate).toLocaleDateString() : "—"}</p>
         </div>
         <div>
@@ -266,7 +269,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
         </div>
       )}
 
-      {sub.status === "trial" && renewDate && (
+      {(sub.status === "onboarded" || sub.status === "pending") && renewDate && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
           <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           Payment pending — your site stays active. Add payment by {new Date(renewDate).toLocaleDateString()} to keep it live.
@@ -306,7 +309,7 @@ function SubCard({ sub, plans, discountPct, onChoose }: { sub: Subscription; pla
                 className="flex items-center gap-1.5"
                 onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, currency: p.currency })}
               >
-                <CreditCard className="w-3.5 h-3.5" /> {sub.status === "trial" ? "Subscribe" : "Pay"} — {p.name}
+                <CreditCard className="w-3.5 h-3.5" /> Pay — {p.name}
               </Button>
             ))}
           </div>

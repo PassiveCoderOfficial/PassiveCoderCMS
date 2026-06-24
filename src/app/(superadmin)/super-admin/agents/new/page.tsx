@@ -54,8 +54,11 @@ export default function NewAgentPage() {
   const [company, setCompany] = useState("");
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
-  const [commissionRate, setCommissionRate] = useState("20");
-  const [commissionType, setCommissionType] = useState<"recurring" | "one_time">("recurring");
+  const [commissionRate, setCommissionRate] = useState("10");
+  const [commissionType, setCommissionType] = useState<"recurring" | "one_time">("one_time");
+  const [isStaff, setIsStaff] = useState(false);
+  const [oneTimePct, setOneTimePct] = useState("");
+  const [staffRecurringPct, setStaffRecurringPct] = useState("");
   const [notes, setNotes] = useState("");
 
   const doSearch = useCallback(async (q: string) => {
@@ -101,8 +104,11 @@ export default function NewAgentPage() {
         company,
         website,
         bio,
-        commission_rate: parseFloat(commissionRate) || 20,
+        commission_rate: parseFloat(commissionRate) || 10,
         commission_type: commissionType,
+        is_staff: isStaff,
+        one_time_pct_override: oneTimePct ? parseFloat(oneTimePct) : undefined,
+        staff_recurring_pct: staffRecurringPct ? parseFloat(staffRecurringPct) : undefined,
         notes,
         existing_user_id: mode === "existing" && selectedUser ? selectedUser.id : undefined,
       }),
@@ -225,48 +231,45 @@ export default function NewAgentPage() {
 
         {/* Settings */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="font-semibold text-white text-sm">Commission & Notes</h2>
+          <h2 className="font-semibold text-white text-sm">Commission & Staff</h2>
+
+          {/* Is staff toggle */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div
+              onClick={() => setIsStaff(v => !v)}
+              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${isStaff ? "bg-indigo-600" : "bg-gray-700"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isStaff ? "translate-x-5" : "translate-x-0"}`} />
+            </div>
+            <div>
+              <p className="text-sm text-white font-medium">Staff member</p>
+              <p className="text-xs text-gray-500">Staff earns ongoing recurring commission on every renewal</p>
+            </div>
+          </label>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Commission Rate (%)</label>
-              <div className="flex items-center gap-2">
+              <label className="block text-xs font-medium text-gray-400 mb-1">One-time % (blank = platform default 10%)</label>
+              <input
+                type="number" min="0" max="100" step="0.5" value={oneTimePct}
+                onChange={e => setOneTimePct(e.target.value)}
+                placeholder="10"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+              />
+              <p className="text-xs text-gray-600 mt-1">% of first payment</p>
+            </div>
+            {isStaff && (
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Recurring % (blank = platform default 10%)</label>
                 <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.5"
-                  value={commissionRate}
-                  onChange={e => setCommissionRate(e.target.value)}
-                  className="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  type="number" min="0" max="100" step="0.5" value={staffRecurringPct}
+                  onChange={e => setStaffRecurringPct(e.target.value)}
+                  placeholder="10"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                 />
-                <span className="text-gray-500 text-sm">%</span>
+                <p className="text-xs text-gray-600 mt-1">% of each renewal while site is active</p>
               </div>
-              <p className="text-xs text-gray-600 mt-1">Default 20%. Changeable later.</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Commission Type</label>
-              <div className="flex gap-2">
-                {(["recurring", "one_time"] as const).map(type => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setCommissionType(type)}
-                    className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
-                      commissionType === type
-                        ? "bg-indigo-600 border-indigo-500 text-white"
-                        : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500"
-                    }`}
-                  >
-                    {type === "recurring" ? "Recurring" : "One-Time"}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-gray-600 mt-1">
-                {commissionType === "recurring" ? "Paid every renewal cycle." : "Paid once on first payment only."}
-              </p>
-            </div>
+            )}
           </div>
 
           <div>

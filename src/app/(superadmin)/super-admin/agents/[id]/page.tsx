@@ -11,8 +11,8 @@ const proto = ROOT.includes("localhost") ? "http" : "https";
 
 function StatusBadge({ status }: { status: string }) {
   const cls =
-    status === "active"  ? "bg-green-900/40 text-green-400" :
-    status === "trial"   ? "bg-amber-900/40 text-amber-400" :
+    status === "active"    ? "bg-green-900/40 text-green-400" :
+    status === "onboarded" ? "bg-blue-900/40 text-blue-400" :
     status === "suspended" ? "bg-red-900/40 text-red-400" :
     "bg-gray-800 text-gray-400";
   return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{status}</span>;

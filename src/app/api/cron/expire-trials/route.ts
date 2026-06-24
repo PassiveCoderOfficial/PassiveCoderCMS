@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const { data: expired, error } = await supabase
     .from("tenants")
     .select("id")
-    .eq("status", "trial")
+    .in("status", ["onboarded", "pending"])
     .lt("trial_ends_at", now);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     .from("subscriptions")
     .update({ status: "expired" })
     .in("tenant_id", ids)
-    .eq("status", "trial");
+    .in("status", ["onboarded", "pending"]);
 
   // Invalidate tenant cache entries — cache lives per-process so this only
   // helps the current instance, but expiry is already handled by status check

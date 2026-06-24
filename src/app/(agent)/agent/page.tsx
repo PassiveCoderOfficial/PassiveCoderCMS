@@ -85,7 +85,7 @@ export default async function AgentDashboardPage() {
                   <td className="px-5 py-3">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       site.status === "active" ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" :
-                      site.status === "trial" ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" :
+                      site.status === "onboarded" ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" :
                       "bg-gray-100 text-gray-500 dark:bg-gray-800"
                     }`}>
                       {site.status}

@@ -12,8 +12,8 @@ function siteUrl(slug: string) { return `${proto}://${slug}.${ROOT}`; }
 
 function StatusBadge({ status }: { status: string }) {
   const cls =
-    status === "active" ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" :
-    status === "trial"  ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" :
+    status === "active"    ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" :
+    status === "onboarded" ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" :
     "bg-gray-100 text-gray-500 dark:bg-gray-800";
   return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{status}</span>;
 }

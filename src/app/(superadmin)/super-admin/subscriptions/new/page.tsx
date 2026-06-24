@@ -22,7 +22,7 @@ export default function NewSubscriptionPage() {
   const [form, setForm] = useState({
     tenant_id: "",
     plan_id: "",
-    status: "trial",
+    status: "onboarded",
     payment_provider: "",
     billing_cycle: "yearly",
     amount_cents: "",
@@ -120,7 +120,7 @@ export default function NewSubscriptionPage() {
             <label className="text-xs text-gray-400 block mb-1">Status</label>
             <select value={form.status} onChange={e => set("status", e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-              {["trial","active","past_due","cancelled","expired"].map(s => <option key={s} value={s}>{s}</option>)}
+              {["onboarded","pending","active","past_due","suspended","cancelled","expired"].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>

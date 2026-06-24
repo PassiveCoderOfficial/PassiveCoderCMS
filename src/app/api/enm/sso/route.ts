@@ -32,7 +32,7 @@ export async function GET() {
     .from("subscriptions")
     .select("plan_id, status")
     .eq("tenant_id", tenant.id)
-    .in("status", ["active", "trial"])
+    .in("status", ["active", "onboarded", "pending"])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();

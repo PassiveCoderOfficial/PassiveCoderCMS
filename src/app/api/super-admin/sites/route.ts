@@ -35,8 +35,8 @@ export async function POST(req: Request) {
     .insert({
       name,
       slug,
-      plan: plan ?? "trial",
-      status: "trial",
+      plan: plan ?? "basic",
+      status: "onboarded",
       owner_id: owner_user_id ?? null,
       onboarding_completed: true,
     })

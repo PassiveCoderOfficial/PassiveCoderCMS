@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   if (!caller) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
-  const { full_name, email, password, company, website, bio, commission_rate, commission_type, notes, existing_user_id } = body as {
+  const { full_name, email, password, company, website, bio, commission_rate, commission_type, is_staff, one_time_pct_override, staff_recurring_pct, notes, existing_user_id } = body as {
     full_name: string;
     email: string;
     password?: string;
@@ -31,6 +31,9 @@ export async function POST(req: Request) {
     bio?: string;
     commission_rate?: number;
     commission_type?: "recurring" | "one_time";
+    is_staff?: boolean;
+    one_time_pct_override?: number;
+    staff_recurring_pct?: number;
     notes?: string;
     existing_user_id?: string;
   };
@@ -72,8 +75,11 @@ export async function POST(req: Request) {
     company: company?.trim() || null,
     website: website?.trim() || null,
     bio: bio?.trim() || null,
-    commission_rate: commission_rate ?? 20,
-    commission_type: commission_type ?? "recurring",
+    commission_rate: commission_rate ?? 10,
+    commission_type: commission_type ?? "one_time",
+    is_staff: is_staff ?? false,
+    one_time_pct_override: one_time_pct_override ?? null,
+    staff_recurring_pct: staff_recurring_pct ?? null,
     notes: notes?.trim() || null,
     status: "active",
     referral_code,

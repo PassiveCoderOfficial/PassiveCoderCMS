@@ -38,8 +38,8 @@ export async function POST(req: Request) {
     .insert({
       name: name.trim(),
       slug,
-      plan: plan ?? "trial",
-      status: "trial",
+      plan: plan ?? "basic",
+      status: "onboarded",
       owner_id: ownerUserId,
       onboarding_completed: true,
       referred_by_agent_id: agent.id,
