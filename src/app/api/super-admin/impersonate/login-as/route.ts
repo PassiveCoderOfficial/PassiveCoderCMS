@@ -50,26 +50,33 @@ export async function GET(req: Request) {
   const email = await resolveTargetEmail();
   if (!email) return NextResponse.json({ error: "No admin user found for this tenant" }, { status: 404 });
 
-  // Generate a magic-link token and exchange it server-side so the SSR
-  // cookie session is replaced with the target user's session (PKCE/SSR flow).
-  // Redirecting straight to the GoTrue action_link uses the implicit flow
-  // (tokens in URL hash) which @supabase/ssr cannot read → session never switches.
+  // Resolve target tenant slug so we redirect to the correct subdomain
+  const { data: tenantRow } = await adminClient.from("tenants").select("slug, custom_domain").eq("id", tenantId).maybeSingle();
+  const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+  const proto = ROOT.includes("localhost") ? "http" : "https";
+  const targetOrigin = tenantRow?.custom_domain
+    ? `${proto}://${tenantRow.custom_domain}`
+    : tenantRow?.slug
+      ? `${proto}://${tenantRow.slug}.${ROOT}`
+      : new URL(req.url).origin;
+
+  // Generate a magic-link token. We cannot use verifyOtp here because the
+  // session cookie must be written on the TARGET subdomain, not this one.
+  // Instead redirect the browser to a handoff endpoint on the target subdomain
+  // that calls verifyOtp there, so cookies land on the right domain.
   const { data: link, error: linkErr } = await adminClient.auth.admin.generateLink({
     type: "magiclink",
     email,
+    options: { redirectTo: `${targetOrigin}/dashboard` },
   });
   if (linkErr || !link?.properties?.hashed_token) {
     return NextResponse.json({ error: linkErr?.message ?? "Failed to generate session" }, { status: 500 });
   }
 
-  const { error: verifyErr } = await supabase.auth.verifyOtp({
-    type: "magiclink",
-    token_hash: link.properties.hashed_token,
-  });
-  if (verifyErr) {
-    return NextResponse.json({ error: verifyErr.message }, { status: 500 });
-  }
-
-  // verifyOtp wrote the new session cookies via the SSR cookie adapter.
-  return NextResponse.redirect(new URL("/dashboard", req.url));
+  // Send browser to target subdomain's /api/auth/impersonate-verify which calls
+  // verifyOtp there so the session cookie is scoped to that subdomain.
+  const verifyUrl = new URL(`${targetOrigin}/api/auth/impersonate-verify`);
+  verifyUrl.searchParams.set("token_hash", link.properties.hashed_token);
+  verifyUrl.searchParams.set("next", "/dashboard");
+  return NextResponse.redirect(verifyUrl.toString());
 }
