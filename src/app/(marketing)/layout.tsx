@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/server";
+import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createAdminClient();
@@ -11,5 +12,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <WhatsAppButton />
+    </>
+  );
 }

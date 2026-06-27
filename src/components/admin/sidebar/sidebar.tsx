@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { navSections } from "./nav-items";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShieldCheck, Menu, X, LogOut, Zap } from "lucide-react";
+import { ExternalLink, ShieldCheck, Menu, X, LogOut, Zap, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
@@ -123,6 +123,15 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
             <LogOut className="h-4 w-4" />
           </button>
         </div>
+        <a
+          href="https://wa.me/8801678669699?text=Need%20Support%3F"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 w-full rounded-md py-1.5 px-2 text-xs font-semibold text-[#25D366] hover:bg-[#25D366]/10 transition-colors"
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          Need Support?
+        </a>
         <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v1.0.0</p>
       </div>
     </>

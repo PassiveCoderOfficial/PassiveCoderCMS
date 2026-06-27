@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -288,7 +288,7 @@ function Step1({
   const [method, setMethod] = useState<PayMethod>("trial");
   const isCustom = planId === "custom";
 
-  const OPTIONS: Array<{ id: PayMethod; icon: React.ReactNode; title: string; desc: string; badge?: string; disabled?: boolean }> = [
+  const OPTIONS: Array<{ id: PayMethod; icon: React.ReactNode; title: string; desc: string; badge?: string; disabled?: boolean; hidden?: boolean }> = [
     {
       id: "trial",
       icon: <Clock className="w-5 h-5 text-amber-500" />,
@@ -301,7 +301,8 @@ function Step1({
       icon: <CreditCard className="w-5 h-5 text-blue-500" />,
       title: "Pay with Card",
       desc: "Visa, Mastercard, Amex — all major cards. Secure via Paddle.",
-      disabled: isCustom,
+      disabled: true,
+      hidden: true,
     },
     {
       id: "shurjopay",
@@ -333,7 +334,7 @@ function Step1({
       </div>
 
       <div className="space-y-2.5">
-        {OPTIONS.filter(o => !o.disabled).map(opt => (
+        {OPTIONS.filter(o => !o.disabled && !o.hidden).map(opt => (
           <button
             key={opt.id}
             onClick={() => setMethod(opt.id)}
@@ -932,12 +933,28 @@ export default function OnboardingClient() {
 
   const showAuthGate = !authedUser && step === 0;
 
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      {/* Back arrow — top left */}
+      <button
+        onClick={() => router.back()}
+        className="fixed top-4 left-4 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors z-50"
+      >
+        <ArrowRight className="h-4 w-4 rotate-180" />
+        Back
+      </button>
+
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-black tracking-tight">Passive Coder</h1>
-          <p className="text-sm text-muted-foreground mt-1">Let&apos;s get your site live in minutes</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"}
+            alt="Passive Coder"
+            className="h-10 w-auto mx-auto mb-2"
+          />
+          <p className="text-sm text-muted-foreground">Let&apos;s get your site live in minutes</p>
         </div>
         <div className="bg-card border rounded-2xl p-8 shadow-sm">
           {!showAuthGate && <StepBar current={step} />}
