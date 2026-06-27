@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -935,27 +936,40 @@ export default function OnboardingClient() {
 
   const router = useRouter();
 
+  function handleBack() {
+    if (step === 0) {
+      router.back();
+    } else {
+      setStep(step - 1);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Back arrow — top left */}
-      <button
-        onClick={() => router.back()}
-        className="fixed top-4 left-4 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors z-50"
-      >
-        <ArrowRight className="h-4 w-4 rotate-180" />
-        Back
-      </button>
-
       <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"}
-            alt="Passive Coder"
-            className="h-10 w-auto mx-auto mb-2"
-          />
-          <p className="text-sm text-muted-foreground">Let&apos;s get your site live in minutes</p>
+        {/* Logo row with back button left-aligned */}
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <ArrowRight className="h-4 w-4 rotate-180" />
+            Back
+          </button>
+          <div className="flex-1 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"}
+              alt="Passive Coder"
+              className="h-8 w-auto"
+            />
+          </div>
+          {/* Spacer to balance back button */}
+          <div className="w-14 shrink-0" />
         </div>
+
+        <p className="text-center text-sm text-muted-foreground mb-6">Let&apos;s get your site live in minutes</p>
+
         <div className="bg-card border rounded-2xl p-8 shadow-sm">
           {!showAuthGate && <StepBar current={step} />}
           {authedUser && step === 0 && (
@@ -986,17 +1000,14 @@ export default function OnboardingClient() {
             />
           )}
         </div>
-        {!showAuthGate && step > 0 && step < 6 && (
-          <button onClick={() => setStep(step - 1)} className="block mx-auto mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Back
-          </button>
-        )}
         {showAuthGate && (
           <button onClick={() => setAuthedUser({ id: "skip", email: "" })} className="block mx-auto mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
             Continue as guest (sign in later)
           </button>
         )}
       </div>
+
+      <WhatsAppButton />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, Zap, ChevronRight, Sparkles, Star, CheckCircle2 } from "lucide-react";
+import { Eye, Zap, ChevronRight, Sparkles, Star } from "lucide-react";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 
 const TEMPLATE_SERVICES: Record<string, string[]> = {
@@ -65,11 +65,8 @@ const TEMPLATE_SERVICES: Record<string, string[]> = {
 };
 
 function TemplateThumbnail({ template }: { template: Template }) {
-  const services = TEMPLATE_SERVICES[template.slug] ?? ["Service 1", "Service 2", "Service 3"];
-
   return (
-    <div className="w-full aspect-[4/3] rounded-t-xl overflow-hidden relative bg-gray-900">
-      {/* Real photo background */}
+    <div className="w-full aspect-[4/3] rounded-t-xl overflow-hidden relative bg-gray-100">
       <Image
         src={template.slug in TEMPLATE_SERVICES ? `/images/templates/${template.slug}.jpg` : template.heroImage}
         alt={template.name}
@@ -78,76 +75,6 @@ function TemplateThumbnail({ template }: { template: Template }) {
         className="object-cover object-top"
         loading="lazy"
       />
-
-      {/* Subtle vignette only — screenshot shows through */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: template.slug in TEMPLATE_SERVICES
-            ? `linear-gradient(160deg, ${template.thumbFrom}22 0%, ${template.thumbTo}44 100%)`
-            : `linear-gradient(160deg, ${template.thumbFrom}99 0%, ${template.thumbTo}bb 100%)`,
-        }}
-      />
-
-      {/* Browser chrome bar */}
-      <div className="absolute inset-x-2.5 top-2.5 bg-black/30 backdrop-blur-md rounded-lg overflow-hidden border border-white/10">
-        <div className="flex items-center gap-1.5 px-2 py-1.5">
-          <div className="flex gap-1 flex-shrink-0">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-400/90" />
-            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400/90" />
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400/90" />
-          </div>
-          <div className="flex-1 bg-white/10 rounded px-2 py-0.5 text-[8px] text-white/70 text-center truncate font-mono">
-            {template.slug}.passivecoder.com
-          </div>
-        </div>
-      </div>
-
-      {/* Hero content mock */}
-      <div className="absolute inset-x-2.5 top-11 bottom-2.5 flex flex-col justify-between p-2.5">
-        {/* Top section */}
-        <div>
-          <div
-            className="inline-block text-[7px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full mb-1.5 text-white"
-            style={{ background: `${template.accentColorHex}80`, border: `1px solid ${template.accentColorHex}60` }}
-          >
-            {template.category}
-          </div>
-          <div className="text-white font-black text-[11px] leading-[1.2] mb-1 drop-shadow-sm line-clamp-2">
-            {template.heroHeadline}
-          </div>
-          <div className="text-white/75 text-[8px] leading-relaxed mb-2 line-clamp-1 drop-shadow-sm">
-            {template.heroSubline}
-          </div>
-          <div className="flex gap-1.5">
-            <div
-              className="text-[8px] font-bold px-2 py-0.5 rounded text-white shadow-sm"
-              style={{ background: template.accentColorHex }}
-            >
-              Get Started
-            </div>
-            <div className="text-[8px] font-semibold px-2 py-0.5 rounded border border-white/30 text-white/90 backdrop-blur-sm bg-white/10">
-              Learn More
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom: service pills */}
-        <div className="flex gap-1 flex-wrap">
-          {services.map((svc, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-0.5 bg-white/15 backdrop-blur-sm rounded-md px-1.5 py-0.5 border border-white/20"
-            >
-              <CheckCircle2 className="w-2 h-2 text-white/80 flex-shrink-0" />
-              <span className="text-[7px] text-white/90 font-semibold whitespace-nowrap">{svc}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Subtle vignette at bottom for depth */}
-      <div className="absolute bottom-0 inset-x-0 h-8 bg-gradient-to-t from-black/30 to-transparent pointer-events-none rounded-b-xl" />
     </div>
   );
 }
