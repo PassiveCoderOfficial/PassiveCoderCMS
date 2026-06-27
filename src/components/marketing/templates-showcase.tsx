@@ -31,19 +31,21 @@ function TemplateThumbnail({ template }: { template: Template }) {
     <div className="w-full aspect-[4/3] rounded-t-xl overflow-hidden relative bg-gray-900">
       {/* Real photo background */}
       <Image
-        src={template.heroImage}
+        src={template.slug in TEMPLATE_SERVICES ? `/images/templates/${template.slug}.jpg` : template.heroImage}
         alt={template.name}
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        className="object-cover"
+        className="object-cover object-top"
         loading="lazy"
       />
 
-      {/* Strong gradient overlay so text stays readable */}
+      {/* Subtle vignette only — screenshot shows through */}
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(160deg, ${template.thumbFrom}99 0%, ${template.thumbTo}bb 100%)`,
+          background: template.slug in TEMPLATE_SERVICES
+            ? `linear-gradient(160deg, ${template.thumbFrom}22 0%, ${template.thumbTo}44 100%)`
+            : `linear-gradient(160deg, ${template.thumbFrom}99 0%, ${template.thumbTo}bb 100%)`,
         }}
       />
 
