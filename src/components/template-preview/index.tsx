@@ -153,6 +153,282 @@ const LAYOUT_COMBOS: Record<string, LayoutCombo> = {
     pricing: "highlight-cards", testimonials: "ratings",
     team: "horizontal-list", faq: "two-column", cta: "banner", contact: "dark",
   },
+
+  // ── Batch 2 ─────────────────────────────────────────────────────────────────
+
+  // Handyman: Bold dark → horizontal list → dark band → ratings → dark contact
+  "handyfix-pro": {
+    nav: "dark-solid", hero: "bold-dark", stats: "dark-band",
+    services: "horizontal-list", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Building maintenance: Corporate nav → corporate hero → dark band → numbered → dark
+  "buildguard": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "numbered", about: "dark",
+    pricing: "dark", testimonials: "full-width",
+    team: "avatar-cards", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // General contractor: Editorial → big cards → editorial stats → editorial testimonials → light
+  "apex-construct": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "big-cards", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // House cleaning: Minimal light → icon grid → bar stats → cards testimonials → light
+  "sparkle-home": {
+    nav: "white-border", hero: "minimal-light", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Commercial cleaning: Dark solid → split image → dark band → big cards → dark
+  "cleancore-commercial": {
+    nav: "dark-solid", hero: "split-image", stats: "dark-band",
+    services: "big-cards", about: "color-block",
+    pricing: "dark", testimonials: "full-width",
+    team: "avatar-cards", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Carpet cleaning: Angled split → alternating → cards stats → ratings → light
+  "fibrefresh": {
+    nav: "white-border", hero: "angled-split", stats: "cards",
+    services: "alternating", about: "split",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Plumbing: Bold dark → horizontal list → dark band → full-width testimonial → dark
+  "flowmaster-plumbing": {
+    nav: "dark-solid", hero: "bold-dark", stats: "dark-band",
+    services: "horizontal-list", about: "dark",
+    pricing: "highlight-cards", testimonials: "full-width",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Gas & heating: Angled split → big cards → dark band → ratings → dark
+  "heatwave-hvac": {
+    nav: "dark-solid", hero: "angled-split", stats: "dark-band",
+    services: "big-cards", about: "color-block",
+    pricing: "table", testimonials: "ratings",
+    team: "horizontal-list", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Multi-trade building services: Corporate → corporate hero → dark band → numbered → dark
+  "totalbuilds-services": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "numbered", about: "dark",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "avatar-cards", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Car mechanic: Dark solid → bold dark → dark band → big cards → dark pricing → dark contact
+  "torque-auto": {
+    nav: "dark-solid", hero: "bold-dark", stats: "dark-band",
+    services: "big-cards", about: "dark",
+    pricing: "dark", testimonials: "ratings",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Tyre shop: Dark solid → split image → cards stats → horizontal list → ratings
+  "gripzone-tyres": {
+    nav: "dark-solid", hero: "split-image", stats: "cards",
+    services: "horizontal-list", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Panel beating: White border → split image → bar stats → alternating → light
+  "panelcraft": {
+    nav: "white-border", hero: "split-image", stats: "bar",
+    services: "alternating", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "avatar-cards", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Fashion: Editorial → alternating → editorial stats → editorial testimonials → light
+  "threadline": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "horizontal-list", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Activewear: Angled split → big cards → dark band → full-width → dark
+  "stride-active": {
+    nav: "dark-solid", hero: "angled-split", stats: "dark-band",
+    services: "big-cards", about: "color-block",
+    pricing: "highlight-cards", testimonials: "full-width",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Workwear & safety: Corporate → corporate hero → dark band → numbered → dark
+  "worksafe-gear": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "numbered", about: "dark",
+    pricing: "table", testimonials: "ratings",
+    team: "horizontal-list", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Travel agency: Transparent → editorial hero → editorial stats → alternating → light
+  "wanderway": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Tour operator: Dark solid → split image → cards → big cards → ratings → dark
+  "trailblaze-tours": {
+    nav: "dark-solid", hero: "split-image", stats: "cards",
+    services: "big-cards", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "avatar-cards", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Visa & immigration: Corporate → corporate hero → dark band → numbered → dark
+  "visabridge": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "numbered", about: "dark",
+    pricing: "dark", testimonials: "full-width",
+    team: "avatar-cards", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Casual dining: Transparent → editorial → editorial stats → alternating → light
+  "tablefare": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Cafe: Minimal light → icon grid → bar stats → icon grid → light contact
+  "beancraft-cafe": {
+    nav: "white-border", hero: "minimal-light", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Food truck: Bold dark → angled split → dark band → big cards → dark
+  "streetbite": {
+    nav: "dark-solid", hero: "angled-split", stats: "dark-band",
+    services: "big-cards", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Beauty salon: Minimal light → split image → editorial stats → alternating → light
+  "lumiere-salon": {
+    nav: "white-border", hero: "minimal-light", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Barbershop: Dark solid → bold dark → dark band → icon grid → dark
+  "fade-barbershop": {
+    nav: "dark-solid", hero: "bold-dark", stats: "dark-band",
+    services: "icon-grid", about: "dark",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "avatar-cards", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Dental clinic: White border → minimal light → bar stats → icon grid → light
+  "smilestudio-dental": {
+    nav: "white-border", hero: "minimal-light", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Gym: Dark solid → bold dark → dark band → big cards → dark pricing → dark contact
+  "ironforge-gym": {
+    nav: "dark-solid", hero: "bold-dark", stats: "dark-band",
+    services: "big-cards", about: "dark",
+    pricing: "dark", testimonials: "full-width",
+    team: "avatar-cards", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Personal trainer: Split image → alternating → editorial stats → editorial → light
+  "peak-pt": {
+    nav: "transparent", hero: "split-image", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "horizontal-list", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Courier: Corporate → corporate hero → cards stats → horizontal list → dark
+  "swiftdrop-courier": {
+    nav: "corporate", hero: "corporate", stats: "cards",
+    services: "horizontal-list", about: "color-block",
+    pricing: "highlight-cards", testimonials: "ratings",
+    team: "horizontal-list", faq: "accordion", cta: "banner", contact: "dark",
+  },
+  // Storage & removals: White border → split image → bar → icon grid → light
+  "vaultstore": {
+    nav: "white-border", hero: "split-image", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Printing & signage: Editorial → big cards → editorial stats → editorial → light
+  "pressmark-print": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "big-cards", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "horizontal-list", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Tutoring: White border → minimal light → bar → icon grid → light
+  "brightminds-tutor": {
+    nav: "white-border", hero: "minimal-light", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "avatar-cards", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Vocational training: Corporate → corporate hero → dark band → numbered → dark
+  "skillforge-training": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "numbered", about: "dark",
+    pricing: "table", testimonials: "full-width",
+    team: "avatar-cards", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Law firm: Corporate → corporate hero → dark band → alternating → dark pricing → dark
+  "lexbridge-law": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "alternating", about: "dark",
+    pricing: "dark", testimonials: "full-width",
+    team: "avatar-cards", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Accounting: White border → split image → bar → icon grid → light pricing → light
+  "cleartax-accounting": {
+    nav: "white-border", hero: "split-image", stats: "bar",
+    services: "icon-grid", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "horizontal-list", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Photography: Transparent → editorial → editorial stats → big cards → editorial → light
+  "lenscroft-studio": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "big-cards", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Wedding planning: Transparent → editorial → editorial stats → alternating → editorial → light
+  "forever-events": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "alternating", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
+  // Property agent: White border → split image → bar → alternating → light
+  "prime-property": {
+    nav: "white-border", hero: "split-image", stats: "bar",
+    services: "alternating", about: "split",
+    pricing: "highlight-cards", testimonials: "cards",
+    team: "avatar-cards", faq: "accordion", cta: "minimal", contact: "light",
+  },
+  // Property management: Corporate → corporate hero → dark band → numbered → dark
+  "propertyvault-mgmt": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "numbered", about: "dark",
+    pricing: "table", testimonials: "full-width",
+    team: "horizontal-list", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // IT support: Corporate → corporate hero → dark band → icon grid → dark
+  "netsupport-it": {
+    nav: "corporate", hero: "corporate", stats: "dark-band",
+    services: "icon-grid", about: "dark",
+    pricing: "dark", testimonials: "ratings",
+    team: "avatar-cards", faq: "two-column", cta: "banner", contact: "dark",
+  },
+  // Digital marketing agency: Editorial → bold dark → editorial stats → big cards → editorial → dark
+  "growthlab-agency": {
+    nav: "transparent", hero: "editorial", stats: "editorial",
+    services: "big-cards", about: "editorial",
+    pricing: "highlight-cards", testimonials: "editorial",
+    team: "avatar-cards", faq: "two-column", cta: "minimal", contact: "light",
+  },
 };
 
 // Fallback combo for any template without a specific assignment
