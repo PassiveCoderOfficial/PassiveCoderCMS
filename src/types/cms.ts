@@ -54,7 +54,10 @@ export type BlockType =
   | "video"
   | "enm_lead_form"
   | "enm_booking_widget"
-  | "footer";
+  | "footer"
+  | "country_grid"
+  | "eligibility_checker"
+  | "status_tracker";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -594,6 +597,61 @@ export type FooterBlockProps = BlockBase & {
   };
 };
 
+export type CountryGridItem = {
+  id: string;
+  country: string;
+  flagEmoji?: string;
+  image?: string;
+  region?: string;
+  visaTypes?: string[];
+  processingTime?: string;
+  summary?: string;
+  href?: string;
+};
+
+export type CountryGridBlockProps = BlockBase & {
+  type: "country_grid";
+  data: {
+    title?: string;
+    subtitle?: string;
+    columns?: 2 | 3 | 4;
+    groupByRegion?: boolean;
+    accentColor?: string;
+    items: CountryGridItem[];
+  };
+};
+
+export type EligibilityDestination = {
+  id: string;
+  label: string;
+  value: string;
+};
+
+export type EligibilityCheckerBlockProps = BlockBase & {
+  type: "eligibility_checker";
+  data: {
+    title?: string;
+    subtitle?: string;
+    destinations?: EligibilityDestination[];
+    submitLabel?: string;
+    successMessage?: string;
+    recipientEmail?: string;
+    accentColor?: string;
+  };
+};
+
+export type StatusTrackerBlockProps = BlockBase & {
+  type: "status_tracker";
+  data: {
+    title?: string;
+    subtitle?: string;
+    placeholder?: string;
+    helpText?: string;
+    submitLabel?: string;
+    accentColor?: string;
+  };
+};
+
 export type Block =
   | HeroBlockProps
   | SliderBlockProps
@@ -626,7 +684,10 @@ export type Block =
   | VideoBlockProps
   | EnmLeadFormBlockProps
   | EnmBookingWidgetBlockProps
-  | FooterBlockProps;
+  | FooterBlockProps
+  | CountryGridBlockProps
+  | EligibilityCheckerBlockProps
+  | StatusTrackerBlockProps;
 
 // ─── Page Types ───────────────────────────────────────────────────────────
 

@@ -4059,38 +4059,38 @@ const DRIVE_ACADEMY: TemplateIdentity = {
 const LIFE_SETTLE: TemplateIdentity = {
   slug: "life-settle",
   name: "Life Settle Travel",
-  description: "Premium travel agency template — visa processing, work permits, tour packages and flight bookings with dark-green & gold luxury branding.",
+  description: "Premium visa & immigration brand template — visa processing, work permits, skilled migration and travel services with royal-blue, white & gold luxury branding.",
   category: "Travel & Tourism",
   author: "Passive Coder",
-  version: "1.0.0",
+  version: "2.0.0",
   previewImage: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&q=85&fit=crop",
-  tags: ["travel", "tourism", "visa", "work-permit", "flight", "tour-packages"],
+  tags: ["visa", "immigration", "travel", "work-permit", "skilled-migration", "tour-packages"],
 
   palette: {
-    primary: "#1a5c38",
+    primary: "#1e3a8a",
     primaryFg: "#ffffff",
     secondary: "#c9a84c",
     accent: "#d4af37",
-    background: "#f8f6f0",
-    foreground: "#0f2418",
-    muted: "#eef4f0",
-    mutedFg: "#2d6a4f",
+    background: "#f5f8ff",
+    foreground: "#0b1f4d",
+    muted: "#eef3ff",
+    mutedFg: "#3b5bbd",
     card: "#ffffff",
-    border: "#d4af3740",
-    ring: "#1a5c38",
-    borderRadius: "0.5rem",
+    border: "#1e3a8a1f",
+    ring: "#1e3a8a",
+    borderRadius: "0.75rem",
   },
   typography: {
-    headingFont: "Inter",
-    bodyFont: "Inter",
-    headingWeight: "800",
-    letterSpacing: "-0.01em",
+    headingFont: "var(--font-poppins), Poppins",
+    bodyFont: "var(--font-inter), Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.02em",
   },
   customCss: `
-    .template-life-settle .hero-badge { background: #c9a84c; color: #0f2418; border-radius: 9999px; font-weight: 700; }
+    .template-life-settle .hero-badge { background: #c9a84c; color: #0b1f4d; border-radius: 9999px; font-weight: 700; }
     .template-life-settle .service-card { border-top: 3px solid #c9a84c; }
     .template-life-settle .stat-value { color: #c9a84c; }
-    .template-life-settle .nav-cta { background: #c9a84c !important; color: #0f2418 !important; }
+    .template-life-settle .nav-cta { background: #c9a84c !important; color: #0b1f4d !important; }
   `,
 
   variants: {

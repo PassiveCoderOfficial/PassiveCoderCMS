@@ -692,6 +692,70 @@ export const blockRegistry: BlockDefinition[] = [
       },
     }),
   },
+  {
+    type: "country_grid",
+    label: "Country Grid",
+    description: "Grid of country cards with flag, visa types, processing time and link",
+    icon: "🌍",
+    category: "content",
+    create: () => ({
+      ...baseBlock("country_grid"),
+      type: "country_grid" as const,
+      data: {
+        title: "Countries We Cover",
+        subtitle: "Choose a destination to see visa options and requirements.",
+        columns: 4 as const,
+        groupByRegion: false,
+        accentColor: "#1e3a8a",
+        items: [
+          { id: generateId(), country: "Germany", flagEmoji: "🇩🇪", region: "Schengen Europe", visaTypes: ["Work Permit", "Job Seeker"], processingTime: "8–12 weeks", summary: "Skilled work opportunities across the EU's largest economy.", href: "/countries/germany" },
+          { id: generateId(), country: "Saudi Arabia", flagEmoji: "🇸🇦", region: "GCC", visaTypes: ["Work Visa", "Visit"], processingTime: "2–4 weeks", summary: "High-demand work visas across the Gulf region.", href: "/countries/saudi-arabia" },
+        ],
+      },
+    }),
+  },
+  {
+    type: "eligibility_checker",
+    label: "Eligibility Checker",
+    description: "Interactive multi-step visa eligibility quiz with lead capture",
+    icon: "✅",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("eligibility_checker"),
+      type: "eligibility_checker" as const,
+      data: {
+        title: "Check Your Visa Eligibility",
+        subtitle: "Answer a few quick questions and get instant guidance — free.",
+        accentColor: "#1e3a8a",
+        submitLabel: "Check My Eligibility",
+        destinations: [
+          { id: generateId(), label: "Europe (Work Permit)", value: "Europe" },
+          { id: generateId(), label: "GCC / Middle East", value: "GCC" },
+          { id: generateId(), label: "Skilled Migration (AU/CA/NZ)", value: "Skilled Migration" },
+          { id: generateId(), label: "Student Visa", value: "Student" },
+        ],
+      },
+    }),
+  },
+  {
+    type: "status_tracker",
+    label: "Visa Status Tracker",
+    description: "Lookup form for clients to track their visa application status",
+    icon: "🔎",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("status_tracker"),
+      type: "status_tracker" as const,
+      data: {
+        title: "Track Your Application",
+        subtitle: "Enter your reference number to see live status.",
+        placeholder: "Passport or reference number",
+        helpText: "Your reference number is provided when you submit an application.",
+        submitLabel: "Track Status",
+        accentColor: "#1e3a8a",
+      },
+    }),
+  },
 ];
 
 export const blocksByCategory = blockRegistry.reduce(

@@ -33,6 +33,9 @@ import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
 import { EnmBookingWidgetBlock } from "@/components/blocks/enm/enm-booking-widget-block";
 import { FooterBlock } from "@/components/blocks/footer/footer-block";
+import { CountryGridBlock } from "@/components/blocks/country-grid/country-grid-block";
+import { EligibilityCheckerBlock } from "@/components/blocks/eligibility-checker/eligibility-checker-block";
+import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tracker-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -85,6 +88,9 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "enm_lead_form":    content = <EnmLeadFormBlock block={block} />; break;
     case "enm_booking_widget": content = <EnmBookingWidgetBlock block={block} />; break;
     case "footer":           content = <FooterBlock block={block as import("@/types/cms").FooterBlockProps} />; break;
+    case "country_grid":     content = <CountryGridBlock block={block} />; break;
+    case "eligibility_checker": content = <EligibilityCheckerBlock block={block} />; break;
+    case "status_tracker":   content = <StatusTrackerBlock block={block} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     default:                 content = null;
   }

@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PageRenderer } from "@/components/site/page-renderer";
 import ContactForm from "./contact-form";
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
-import type { Block, Page } from "@/types/cms";
+import type { Page } from "@/types/cms";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,24 +34,11 @@ export default async function ContactPage() {
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
 
-  // On tenant subdomains, render the tenant's contact page instead of marketing page.
-  if (tenantId) {
-    const supabase = await createClient();
-    const { data: page } = await supabase
-      .from("pages")
-      .select("*")
-      .eq("slug", "contact")
-      .eq("status", "published")
-      .eq("tenant_id", tenantId)
-      .maybeSingle();
-
-    const blocks: Block[] = Array.isArray(page?.blocks) ? page.blocks : [];
-    return (
-      <div className="min-h-screen">
-        <PageRenderer blocks={blocks} />
-      </div>
-    );
-  }
+  // On tenant subdomains, this marketing route must NOT handle /contact — it bypasses
+  // the (site) layout that injects the global header/footer. notFound() lets Next fall
+  // through to the (site)/[...slug] catch-all, which renders the DB contact page wrapped
+  // in (site)/layout.tsx (global nav + footer included).
+  if (tenantId) notFound();
 
   return (
     <div className="min-h-screen bg-white">

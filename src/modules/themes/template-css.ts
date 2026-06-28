@@ -36,6 +36,9 @@ export function buildTemplateCSSVars(
   typography: TemplateTypography,
 ): string {
   const p = (hex: string) => hexToHSL(hex);
+  // Wrap single font names in quotes, but pass through font stacks / CSS var() refs as-is.
+  const fontVal = (f: string) =>
+    /var\(|,/.test(f) ? f : `'${f}'`;
   return `
 :root {
   --background: ${p(palette.background)};
@@ -58,8 +61,8 @@ export function buildTemplateCSSVars(
   --input: ${p(palette.border)};
   --ring: ${p(palette.ring)};
   --radius: ${palette.borderRadius};
-  --heading-font: '${typography.headingFont}', serif;
-  --body-font: '${typography.bodyFont}', sans-serif;
+  --heading-font: ${fontVal(typography.headingFont)}, sans-serif;
+  --body-font: ${fontVal(typography.bodyFont)}, sans-serif;
   --heading-weight: ${typography.headingWeight};
   --letter-spacing-heading: ${typography.letterSpacing};
 }
