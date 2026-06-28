@@ -6,10 +6,12 @@ import { Menu, X } from "lucide-react";
 const LOGO = process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
 
 const links = [
+  { label: "Home", href: "/" },
   { label: "Features", href: "/#features" },
   { label: "Templates", href: "/#templates" },
   { label: "Pricing", href: "/#pricing" },
   { label: "FAQ", href: "/#faq" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function MarketingNav({ dark = false }: { dark?: boolean }) {
