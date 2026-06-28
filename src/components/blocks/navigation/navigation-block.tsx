@@ -8,26 +8,70 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function DropdownMenu({ items }: { items: NavItem[] }) {
+  // Mega-menu: if any item has its own children, render region columns.
+  const isMega = items.some((i) => (i.children?.length ?? 0) > 0);
+
+  // pt-2 keeps a transparent hover-bridge so the cursor can cross from the
+  // trigger into the menu without the gap closing it.
+  if (isMega) {
+    return (
+      <div className="absolute left-0 top-full pt-2 z-[9999]">
+        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 p-5 grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-5 w-[min(78vw,720px)] max-h-[75vh] overflow-y-auto">
+          {items.map((group) => {
+            const kids = group.children ?? [];
+            if (kids.length === 0) {
+              return (
+                <Link key={group.id} href={group.url} className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:opacity-70">
+                  {group.label}
+                </Link>
+              );
+            }
+            return (
+              <div key={group.id}>
+                <Link href={group.url} className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 hover:text-gray-600">
+                  {group.label}
+                </Link>
+                <ul className="space-y-1">
+                  {kids.map((child) => (
+                    <li key={child.id}>
+                      <Link href={child.url} target={child.target}
+                        className="block text-sm text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors">
+                        {child.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <ul className="absolute left-0 top-full mt-1 min-w-[200px] bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-black/5 py-1.5 z-[9999]">
-      {items.map((child) => (
-        <li key={child.id}>
-          <Link
-            href={child.url}
-            target={child.target}
-            className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-          >
-            {child.label}
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="absolute left-0 top-full pt-2 z-[9999]">
+      <ul className="min-w-[210px] max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-black/5 py-1.5">
+        {items.map((child) => (
+          <li key={child.id}>
+            <Link
+              href={child.url}
+              target={child.target}
+              className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              {child.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
 function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasChildren = (item.children?.length ?? 0) > 0;
 
   useEffect(() => {
@@ -35,8 +79,14 @@ function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string 
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
   }, []);
+
+  const openNow = () => { if (closeTimer.current) clearTimeout(closeTimer.current); setOpen(true); };
+  const closeSoon = () => { closeTimer.current = setTimeout(() => setOpen(false), 120); };
 
   if (!hasChildren) {
     return (
@@ -44,7 +94,7 @@ function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string 
         <Link
           href={item.url}
           target={item.target}
-          className="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 transition-colors"
+          className="px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors"
           style={{ color: textColor }}
         >
           {item.label}
@@ -54,15 +104,16 @@ function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string 
   }
 
   return (
-    <li ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 transition-colors"
+    <li ref={ref} className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
+      <Link
+        href={item.url}
+        onClick={() => setOpen(false)}
+        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors"
         style={{ color: textColor }}
       >
         {item.label}
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
-      </button>
+      </Link>
       {open && <DropdownMenu items={item.children!} />}
     </li>
   );

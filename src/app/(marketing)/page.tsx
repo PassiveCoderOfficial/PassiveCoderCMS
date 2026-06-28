@@ -27,20 +27,38 @@ export default async function MarketingHomePage() {
   // The (site)/[...slug] catch-all only fires for /something, not /
   // So we handle the tenant homepage here.
   if (tenantId) {
-    const { data: tenantPage } = await supabase
-      .from("pages")
-      .select("*")
-      .eq("slug", "home")
-      .eq("tenant_id", tenantId)
-      .eq("status", "published")
-      .maybeSingle();
+    const [{ data: tenantPage }, { data: identity }] = await Promise.all([
+      supabase
+        .from("pages")
+        .select("*")
+        .eq("slug", "home")
+        .eq("tenant_id", tenantId)
+        .eq("status", "published")
+        .maybeSingle(),
+      supabase
+        .from("site_identity")
+        .select("global_header, global_footer")
+        .eq("tenant_id", tenantId)
+        .maybeSingle(),
+    ]);
 
     const blocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
+
+    // Global header/footer — stored as single Block object OR Block[] array.
+    // The (site) layout injects these on other pages; root "/" is handled here
+    // (catch-all can't match "/"), so we inject them manually for parity.
+    const toBlocks = (v: unknown): Block[] =>
+      !v ? [] : Array.isArray(v) ? v as Block[]
+        : (typeof v === "object" && (v as Record<string, unknown>).type) ? [v as Block] : [];
+    const globalHeader = toBlocks(identity?.global_header);
+    const globalFooter = toBlocks(identity?.global_footer);
 
     if (blocks.length > 0) {
       return (
         <div className="min-h-screen">
+          {globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
           <PageRenderer blocks={blocks} />
+          {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>
       );
     }

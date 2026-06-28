@@ -1,10 +1,13 @@
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 
 export const metadata = { title: "Refund Policy — Passive Coder" };
 
-export default function RefundPage() {
+export default async function RefundPage() {
+  if ((await headers()).get("x-tenant-id")) notFound();
   return (
     <div className="min-h-screen bg-white">
       <MarketingNav />
