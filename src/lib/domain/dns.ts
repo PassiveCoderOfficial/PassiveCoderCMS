@@ -16,16 +16,19 @@ export async function setupAutomaticDns(domain: string): Promise<void> {
   await addDnsRecord(domain, "A", "www", VERCEL_IP);
 }
 
+// Branded (vanity) nameservers. These are child nameservers registered under
+// passivecoder.com with glue records pointing to the underlying DNS host IPs.
+// Override per-environment via NEXT_PUBLIC_BRAND_NAMESERVERS (comma-separated).
+const BRAND_NAMESERVERS =
+  (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "ns1.passivecoder.com,ns2.passivecoder.com")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 export function getNameserverInstructions(): DnsInstructions {
   return {
     type: "nameserver",
-    nameservers: [
-      "ns1.logicbox.net",
-      "ns2.logicbox.net",
-      "ns3.logicbox.net",
-      "ns4.logicbox.net",
-      "ns5.logicbox.net",
-    ],
+    nameservers: BRAND_NAMESERVERS,
   };
 }
 

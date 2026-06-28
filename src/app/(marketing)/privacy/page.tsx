@@ -2,14 +2,13 @@ import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 
 export const metadata = { title: "Privacy Policy — Passive Coder" };
 
 export default async function PrivacyPage() {
-  // On tenant subdomains, defer to the tenant's own page via (site) catch-all
-  // (which wraps it in the global header/footer layout).
-  if ((await headers()).get("x-tenant-id")) notFound();
+  const tenantId = (await headers()).get("x-tenant-id");
+  if (tenantId) return <TenantPageWithChrome tenantId={tenantId} slug="privacy" />;
   return (
     <div className="min-h-screen bg-white">
       <MarketingNav />

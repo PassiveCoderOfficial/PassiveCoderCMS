@@ -44,19 +44,16 @@ function ServicesIconCardsGrid({ data }: { data: ServicesBlockProps["data"] }) {
       )}
       <div className={cn("grid grid-cols-1 gap-6", colMap)}>
         {data.items.map((item) => (
-          <div key={item.id} className="service-card bg-card border border-border rounded-xl p-6 flex flex-col hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-t-4 border-t-primary">
-            <div className="text-primary mb-4">
-              <ServiceIcon item={item} size="md" />
+          <div key={item.id} className="service-card bg-card border border-border rounded-xl p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-t-4 border-t-primary">
+            <div className="text-primary mb-4 flex items-center justify-center">
+              <ServiceIcon item={item} size="lg" />
             </div>
             <h3 className="font-bold text-lg mb-2">{item.title}</h3>
             <p className="text-muted-foreground text-sm flex-1 leading-relaxed whitespace-pre-line">{item.description}</p>
             {item.link && (
-              <div className="mt-4 flex items-center justify-between">
-                {item.linkLabel && (
-                  <span className="text-xs font-semibold text-primary">{item.linkLabel}</span>
-                )}
-                <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium ml-auto">
-                  Learn More <ArrowRight className="h-3 w-3" />
+              <div className="mt-4">
+                <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-semibold">
+                  {item.linkLabel || "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             )}

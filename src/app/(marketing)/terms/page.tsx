@@ -2,12 +2,13 @@ import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 
 export const metadata = { title: "Terms of Service — Passive Coder" };
 
 export default async function TermsPage() {
-  if ((await headers()).get("x-tenant-id")) notFound();
+  const tenantId = (await headers()).get("x-tenant-id");
+  if (tenantId) return <TenantPageWithChrome tenantId={tenantId} slug="terms" />;
   return (
     <div className="min-h-screen bg-white">
       <MarketingNav />
