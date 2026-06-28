@@ -5,7 +5,7 @@ import { Mail } from "lucide-react";
 
 export default async function AgentLayout({ children }: { children: React.ReactNode }) {
   const agent = await requireAgent();
-  if (!agent) redirect("/become-agent");
+  if (!agent) redirect("/login");
   if (agent.status === "suspended") redirect("/login?error=agent_suspended");
 
   if (agent.status === "pending") {
