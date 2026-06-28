@@ -32,7 +32,7 @@ export function FAQBlock({ block }: { block: FAQBlockProps }) {
           {items.map(item => (
             <div key={item.id} className="bg-white border rounded-xl p-5">
               <h3 className="font-semibold mb-2">{item.question}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.answer}</p>
             </div>
           ))}
         </div>
@@ -41,7 +41,7 @@ export function FAQBlock({ block }: { block: FAQBlockProps }) {
           {items.map(item => (
             <div key={item.id} className="border-b pb-6">
               <h3 className="font-semibold text-lg mb-2">{item.question}</h3>
-              <p className="text-muted-foreground leading-relaxed">{item.answer}</p>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{item.answer}</p>
             </div>
           ))}
         </div>

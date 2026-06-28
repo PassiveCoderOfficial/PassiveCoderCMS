@@ -14,25 +14,29 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
   // pt-2 keeps a transparent hover-bridge so the cursor can cross from the
   // trigger into the menu without the gap closing it.
   if (isMega) {
+    const standalone = items.filter((i) => (i.children?.length ?? 0) === 0);
+    const groups = items.filter((i) => (i.children?.length ?? 0) > 0);
     return (
-      <div className="absolute left-0 top-full pt-2 z-[9999]">
-        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 p-5 grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-5 w-[min(78vw,720px)] max-h-[75vh] overflow-y-auto">
-          {items.map((group) => {
-            const kids = group.children ?? [];
-            if (kids.length === 0) {
-              return (
-                <Link key={group.id} href={group.url} className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:opacity-70">
-                  {group.label}
+      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[9999]">
+        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 p-6 w-[min(92vw,1040px)]">
+          {standalone.length > 0 && (
+            <div className="flex flex-wrap gap-x-6 gap-y-1 pb-4 mb-4 border-b border-black/5">
+              {standalone.map((s) => (
+                <Link key={s.id} href={s.url} className="text-sm font-semibold text-blue-700 dark:text-blue-400 hover:opacity-70">
+                  {s.label} →
                 </Link>
-              );
-            }
-            return (
-              <div key={group.id}>
-                <Link href={group.url} className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 hover:text-gray-600">
+              ))}
+            </div>
+          )}
+          {/* CSS multi-column so region groups pack tightly without broken rows or inner scroll */}
+          <div className="[column-count:2] sm:[column-count:3] lg:[column-count:5] [column-gap:1.75rem]">
+            {groups.map((group) => (
+              <div key={group.id} className="break-inside-avoid mb-5 inline-block w-full align-top">
+                <Link href={group.url} className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 hover:text-gray-600">
                   {group.label}
                 </Link>
                 <ul className="space-y-1">
-                  {kids.map((child) => (
+                  {(group.children ?? []).map((child) => (
                     <li key={child.id}>
                       <Link href={child.url} target={child.target}
                         className="block text-sm text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors">
@@ -42,8 +46,8 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
                   ))}
                 </ul>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
     );

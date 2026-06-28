@@ -39,7 +39,7 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
             )}
             <div className="flex-1">
               <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{item.description}</p>
             </div>
           </div>
         ))}
@@ -68,7 +68,7 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
               </div>
               <div>
                 <h3 className="font-semibold mb-1">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{item.description}</p>
               </div>
             </div>
           ))}
@@ -100,7 +100,7 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
               <DynIcon name={item.icon} className="w-6 h-6 text-primary" />
             </div>
             <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.description}</p>
           </div>
         ))}
       </div>

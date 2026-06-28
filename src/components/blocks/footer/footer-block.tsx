@@ -40,9 +40,12 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
     <footer style={{ backgroundColor: bg, color: fg }} className="w-full">
       {/* Main footer body */}
       <div className="max-w-7xl mx-auto px-6 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div
+          className="grid grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:repeat(var(--fcols),minmax(0,1fr))] gap-x-8 gap-y-10"
+          style={{ ["--fcols" as string]: String(columns.length + 1) }}
+        >
           {/* Brand column */}
-          <div className="lg:col-span-1">
+          <div className="col-span-2 md:col-span-3 lg:col-auto">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
               {logo ? (
                 <Image src={logo} alt={logoText ?? "Logo"} width={140} height={48} className="h-10 w-auto object-contain" />

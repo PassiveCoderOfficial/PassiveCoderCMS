@@ -49,7 +49,7 @@ function ServicesIconCardsGrid({ data }: { data: ServicesBlockProps["data"] }) {
               <ServiceIcon item={item} size="md" />
             </div>
             <h3 className="font-bold text-lg mb-2">{item.title}</h3>
-            <p className="text-muted-foreground text-sm flex-1 leading-relaxed">{item.description}</p>
+            <p className="text-muted-foreground text-sm flex-1 leading-relaxed whitespace-pre-line">{item.description}</p>
             {item.link && (
               <div className="mt-4 flex items-center justify-between">
                 {item.linkLabel && (
@@ -90,7 +90,7 @@ function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) 
             )}
             <div className="p-5">
               <h3 className="font-semibold text-base mb-1 text-primary">{item.title}</h3>
-              <p className="text-muted-foreground text-xs leading-relaxed mb-3">{item.description}</p>
+              <p className="text-muted-foreground text-xs leading-relaxed mb-3 whitespace-pre-line">{item.description}</p>
               {item.linkLabel && (
                 <p className="text-xs font-medium text-foreground/60 tracking-wider">{item.linkLabel}</p>
               )}
@@ -126,7 +126,7 @@ function ServicesBorderedList({ data }: { data: ServicesBlockProps["data"] }) {
             </div>
             <div>
               <h3 className="font-bold text-base mb-1">{item.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">{item.description}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
               {item.link && (
                 <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline font-medium">
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
@@ -159,7 +159,7 @@ function ServicesDarkGridCards({ data }: { data: ServicesBlockProps["data"] }) {
               <ServiceIcon item={item} size="sm" />
             </div>
             <h3 className="font-bold text-base mb-2">{item.title}</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-4">{item.description}</p>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4 whitespace-pre-line">{item.description}</p>
             {item.link && (
               <Link href={item.link} className="inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
                 {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
@@ -198,7 +198,7 @@ function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
                 <span className="text-sm font-bold text-primary shrink-0">{item.linkLabel}</span>
               )}
             </div>
-            <p className="text-muted-foreground text-sm leading-relaxed">{item.description}</p>
+            <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
             {item.link && (
               <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary mt-3 hover:underline font-medium">
                 Reserve <ArrowRight className="h-3 w-3" />
@@ -234,7 +234,7 @@ function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }
             )}
             <div className="p-5">
               <h3 className="font-black text-lg uppercase tracking-tight mb-1">{item.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-3">{item.description}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-3 whitespace-pre-line">{item.description}</p>
               {item.linkLabel && (
                 <p className="text-xs font-bold text-primary uppercase tracking-widest">{item.linkLabel}</p>
               )}
@@ -278,7 +278,7 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
               <div className="shrink-0 text-primary"><ServiceIcon item={item} /></div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
-                <p className="text-muted-foreground text-sm">{item.description}</p>
+                <p className="text-muted-foreground text-sm whitespace-pre-line">{item.description}</p>
                 {item.link && (
                   <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary mt-2 hover:underline">
                     {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
@@ -294,7 +294,7 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
             <div key={item.id} className={cn(cardClass, "flex flex-col")}>
               <div className="text-primary mb-4"><ServiceIcon item={item} /></div>
               <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-              <p className="text-muted-foreground text-sm flex-1">{item.description}</p>
+              <p className="text-muted-foreground text-sm flex-1 whitespace-pre-line">{item.description}</p>
               {item.link && (
                 <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary mt-4 hover:underline font-medium">
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />

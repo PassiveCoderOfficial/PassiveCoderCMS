@@ -36,7 +36,7 @@ export function StepsBlock({ block }: { block: StepsBlockProps }) {
                 {item.icon ? <DynIcon name={item.icon} className="w-4 h-4" /> : item.number ?? (i + 1)}
               </div>
               <h3 className="font-semibold mb-1">{item.title}</h3>
-              {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
+              {item.description && <p className="text-sm text-muted-foreground whitespace-pre-line">{item.description}</p>}
             </div>
           ))}
         </div>
@@ -55,7 +55,7 @@ export function StepsBlock({ block }: { block: StepsBlockProps }) {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
-                {item.description && <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>}
+                {item.description && <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.description}</p>}
                 {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="mt-3 rounded-lg w-full max-w-xs object-cover" />}
               </div>
             </div>
