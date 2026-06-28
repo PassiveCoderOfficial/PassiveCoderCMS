@@ -23,6 +23,7 @@ export default function DomainSettingsClient({ tenant }: { tenant: Tenant | null
   const [instructions, setInstructions] = useState<Record<string, unknown> | null>(null);
   const [status, setStatus] = useState(tenant?.domain_status ?? "none");
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const [copied, setCopied] = useState("");
 
   if (!tenant) return null;
@@ -32,15 +33,17 @@ export default function DomainSettingsClient({ tenant }: { tenant: Tenant | null
   async function connectDomain() {
     setConnecting(true);
     setError("");
+    setWarning("");
     try {
       const res = await fetch("/api/domain/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tenantId: tenant!.id, domain, type: dnsType }),
       });
-      const data = await res.json() as { ok?: boolean; instructions?: Record<string, unknown>; error?: string };
+      const data = await res.json() as { ok?: boolean; instructions?: Record<string, unknown>; error?: string; warning?: string };
       if (!data.ok) throw new Error(data.error ?? "Failed");
       setInstructions(data.instructions ?? null);
+      if (data.warning) setWarning(data.warning);
       setStatus("pending");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Connection failed");
@@ -136,6 +139,9 @@ export default function DomainSettingsClient({ tenant }: { tenant: Tenant | null
 
               {error && (
                 <p className="text-sm text-destructive">{error}</p>
+              )}
+              {warning && (
+                <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2">{warning}</p>
               )}
 
               <Button onClick={connectDomain} disabled={!domain || connecting} className="w-full">

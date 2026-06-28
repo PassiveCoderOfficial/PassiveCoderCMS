@@ -18,9 +18,9 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
     const groups = items.filter((i) => (i.children?.length ?? 0) > 0);
     return (
       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[9999]">
-        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 p-6 w-[min(92vw,1040px)]">
+        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 w-[min(94vw,1100px)] overflow-hidden">
           {standalone.length > 0 && (
-            <div className="flex flex-wrap gap-x-6 gap-y-1 pb-4 mb-4 border-b border-black/5">
+            <div className="flex flex-wrap gap-x-6 gap-y-1 px-6 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-black/5">
               {standalone.map((s) => (
                 <Link key={s.id} href={s.url} className="text-sm font-semibold text-blue-700 dark:text-blue-400 hover:opacity-70">
                   {s.label} →
@@ -28,18 +28,18 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
               ))}
             </div>
           )}
-          {/* CSS multi-column so region groups pack tightly without broken rows or inner scroll */}
-          <div className="[column-count:2] sm:[column-count:3] lg:[column-count:5] [column-gap:1.75rem]">
+          {/* Fixed grid — each region is its own self-contained cell (no column-splitting) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-6 p-6 max-h-[72vh] overflow-y-auto">
             {groups.map((group) => (
-              <div key={group.id} className="break-inside-avoid mb-5 inline-block w-full align-top">
-                <Link href={group.url} className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 hover:text-gray-600">
+              <div key={group.id} className="min-w-0">
+                <Link href={group.url} className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 pb-1.5 border-b border-black/5 hover:text-gray-600">
                   {group.label}
                 </Link>
-                <ul className="space-y-1">
+                <ul className="space-y-1.5">
                   {(group.children ?? []).map((child) => (
                     <li key={child.id}>
                       <Link href={child.url} target={child.target}
-                        className="block text-sm text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors">
+                        className="block text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors truncate">
                         {child.label}
                       </Link>
                     </li>
