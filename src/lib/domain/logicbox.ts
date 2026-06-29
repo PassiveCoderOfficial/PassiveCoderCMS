@@ -4,6 +4,13 @@ const LB_AUTH = () => ({
   "api-key": process.env.LOGICBOX_API_KEY ?? "",
 });
 
+// Optional fixed-IP proxy. ResellerClub requires the CALLER's IP to be whitelisted,
+// but Vercel functions have no fixed egress IP. When LOGICBOX_PROXY_URL is set, route
+// all API calls through the proxy (a cPanel PHP script on a whitelisted host). The
+// proxy takes ?path=/api/... and forwards to httpapi.com.
+const LB_PROXY_URL = () => process.env.LOGICBOX_PROXY_URL ?? "";
+const LB_PROXY_SECRET = () => process.env.LOGICBOX_PROXY_SECRET ?? "";
+
 export interface DomainAvailability {
   domain: string;
   available: boolean;
@@ -28,19 +35,34 @@ function qs(params: Record<string, string | string[]>): string {
 }
 
 async function lbGet<T>(path: string, params: Record<string, string | string[]> = {}): Promise<T> {
-  const url = `${LB_BASE}${path}?${qs({ ...LB_AUTH(), ...params })}`;
-  const res = await fetch(url);
+  const proxy = LB_PROXY_URL();
+  const query = qs({ ...LB_AUTH(), ...params });
+  let url: string;
+  const headers: Record<string, string> = {};
+  if (proxy) {
+    // path here is like "/domains/available"; the real API path is "/api" + path
+    url = `${proxy}?path=${encodeURIComponent("/api" + path)}&${query}`;
+    headers["X-Proxy-Secret"] = LB_PROXY_SECRET();
+  } else {
+    url = `${LB_BASE}${path}?${query}`;
+  }
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`LogicBox API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<T>;
 }
 
 async function lbPost<T>(path: string, body: Record<string, string | string[]>): Promise<T> {
-  const url = `${LB_BASE}${path}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: qs({ ...LB_AUTH(), ...body }),
-  });
+  const proxy = LB_PROXY_URL();
+  const payload = qs({ ...LB_AUTH(), ...body });
+  let url: string;
+  const headers: Record<string, string> = { "Content-Type": "application/x-www-form-urlencoded" };
+  if (proxy) {
+    url = `${proxy}?path=${encodeURIComponent("/api" + path)}`;
+    headers["X-Proxy-Secret"] = LB_PROXY_SECRET();
+  } else {
+    url = `${LB_BASE}${path}`;
+  }
+  const res = await fetch(url, { method: "POST", headers, body: payload });
   if (!res.ok) throw new Error(`LogicBox API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<T>;
 }
