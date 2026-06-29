@@ -19,8 +19,10 @@
  */
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
-$PROXY_SECRET = getenv('LOGICBOX_PROXY_SECRET') ?: 'CHANGE_ME_to_a_long_random_string';
+// Hardcoded shared secret (must match LOGICBOX_PROXY_SECRET in the CMS/Vercel env).
+$PROXY_SECRET = getenv('LOGICBOX_PROXY_SECRET') ?: '10c3b55301fa614b159bf8ed2b446619460a3a13e13dce28a78cc5a20df6a06f';
 $LOGICBOX_BASE = 'https://httpapi.com';
+// Outbound IP of this host (whitelist in ResellerClub Settings -> API): 131.153.48.206
 // ──────────────────────────────────────────────────────────────────────────
 
 header('Content-Type: application/json');
