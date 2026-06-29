@@ -68,6 +68,16 @@ export async function POST(req: Request) {
       ok: true,
       instructions,
       ...(warn && { warning: warn }),
+      // Temporary diagnostics (remove after domain setup verified).
+      diag: {
+        vercelWarning, dnsWarning,
+        hasVercelToken: !!process.env.VERCEL_API_TOKEN,
+        hasVercelProject: !!process.env.VERCEL_PROJECT_ID,
+        hasVercelTeam: !!process.env.VERCEL_TEAM_ID,
+        hasLogicboxUser: !!process.env.LOGICBOX_USER_ID,
+        hasLogicboxKey: !!process.env.LOGICBOX_API_KEY,
+        hasProxy: !!process.env.LOGICBOX_PROXY_URL,
+      },
     });
   } catch (err) {
     console.error("Domain connect error:", err);
