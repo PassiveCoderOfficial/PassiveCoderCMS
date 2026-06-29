@@ -25,8 +25,14 @@ export async function POST(req: Request) {
     try {
       await addDomainToVercel(domain);
     } catch (e) {
-      vercelWarning = e instanceof Error ? e.message : "Vercel domain registration failed";
-      console.error("addDomainToVercel failed (continuing):", vercelWarning);
+      const msg = e instanceof Error ? e.message : "Vercel domain registration failed";
+      // 409 / "already in use" = domain is already on the project → success, not an error.
+      if (/already in use|domain_already_in_use|409/i.test(msg)) {
+        console.log("addDomainToVercel: domain already on project (ok)");
+      } else {
+        vercelWarning = msg;
+        console.error("addDomainToVercel failed (continuing):", vercelWarning);
+      }
     }
 
     // Nameserver method: we host the DNS zone via LogicBox Web-Services nameservers.
@@ -68,16 +74,6 @@ export async function POST(req: Request) {
       ok: true,
       instructions,
       ...(warn && { warning: warn }),
-      // Temporary diagnostics (remove after domain setup verified).
-      diag: {
-        vercelWarning, dnsWarning,
-        hasVercelToken: !!process.env.VERCEL_API_TOKEN,
-        hasVercelProject: !!process.env.VERCEL_PROJECT_ID,
-        hasVercelTeam: !!process.env.VERCEL_TEAM_ID,
-        hasLogicboxUser: !!process.env.LOGICBOX_USER_ID,
-        hasLogicboxKey: !!process.env.LOGICBOX_API_KEY,
-        hasProxy: !!process.env.LOGICBOX_PROXY_URL,
-      },
     });
   } catch (err) {
     console.error("Domain connect error:", err);
