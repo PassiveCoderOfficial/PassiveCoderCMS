@@ -31,20 +31,23 @@ export async function POST(req: Request) {
     .maybeSingle();
   if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { data: plan } = await admin
-    .from("plans")
-    .select("id, name, price_yearly, price_monthly")
-    .eq("id", planId)
-    .maybeSingle();
+  const [{ data: plan }, { data: platformSettings }] = await Promise.all([
+    admin.from("plans").select("id, name, price_yearly, price_monthly").eq("id", planId).maybeSingle(),
+    admin.from("platform_settings").select("usd_to_bdt_rate").eq("id", 1).maybeSingle(),
+  ]);
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+
+  const bdtRate: number = (platformSettings as { usd_to_bdt_rate?: number } | null)?.usd_to_bdt_rate ?? 125;
 
   const priceForCycle = billingCycle === "monthly" ? plan.price_monthly : plan.price_yearly;
   if (!priceForCycle || priceForCycle <= 0) {
     return NextResponse.json({ error: `${billingCycle} billing not available for this plan` }, { status: 400 });
   }
 
-  const amount = Number(priceForCycle) || 0;
-  const amountCents = Math.round(amount * 100);
+  // priceForCycle is stored as cents (e.g. 4000 = $40.00)
+  const amountUsd = Number(priceForCycle) / 100;
+  const amountCents = Number(priceForCycle); // already cents
+  const amountBdt = Math.round(amountUsd * bdtRate);
   const cycleLabel = billingCycle === "monthly" ? "monthly" : "yearly";
 
   // ── Manual payment (bKash / Nagad / bank) → pending + billing ticket ────────
@@ -57,7 +60,7 @@ export async function POST(req: Request) {
         user_id: user.id,
         subject: `Manual payment — ${plan.name} plan (${cycleLabel}, ${method})`,
         body: `Site: ${tenant?.name ?? tenantId} (${tenant?.slug ?? ""})\n`
-          + `Plan: ${plan.name} (${cycleLabel})\nAmount: ${amount} BDT\nMethod: ${method}\n`
+          + `Plan: ${plan.name} (${cycleLabel})\nAmount: ৳${amountBdt} BDT ($${amountUsd} USD)\nMethod: ${method}\n`
           + `Sender number: ${senderNumber ?? "—"}\nTransaction ref: ${txnRef ?? "—"}\n\n`
           + `Awaiting super-admin verification.`,
         department: "billing",
@@ -93,7 +96,7 @@ export async function POST(req: Request) {
     const orderId = `sub_${tenantId.slice(0, 8)}_${Date.now()}`;
     try {
       const { checkoutUrl, spOrderId } = await makePayment({
-        amount,
+        amount: amountBdt,
         orderId,
         currency: "BDT",
         returnUrl: `${origin}/api/billing/shurjopay/callback`,
