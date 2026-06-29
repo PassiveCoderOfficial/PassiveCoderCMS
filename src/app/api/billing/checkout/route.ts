@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { makePayment } from "@/lib/billing/shurjopay";
+import { dodo, getDodoProductId } from "@/lib/billing/dodo";
 
 const MANUAL_METHODS = ["bkash", "nagad", "bank"] as const;
 
@@ -119,6 +120,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, mode: "shurjopay", checkoutUrl });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : "Payment init failed" }, { status: 502 });
+    }
+  }
+
+  // ── Dodo Payments (international card) ────────────────────────────────────
+  if (method === "dodo") {
+    const productId = getDodoProductId(planId, billingCycle);
+    if (!productId) {
+      return NextResponse.json({ error: `No Dodo product configured for ${planId} ${billingCycle}` }, { status: 400 });
+    }
+
+    const origin = new URL(req.url).origin;
+    try {
+      const session = await dodo.checkoutSessions.create({
+        product_cart: [{ product_id: productId, quantity: 1 }],
+        customer: { email: user.email!, name: user.email! },
+        return_url: `${origin}/dashboard/subscription?paid=1`,
+        cancel_url: `${origin}/dashboard/subscription?cancelled=1`,
+        metadata: { tenant_id: tenantId, plan_id: planId, billing_cycle: billingCycle },
+        feature_flags: { redirect_immediately: true },
+      });
+
+      const { error: subErr } = await admin.from("subscriptions").upsert(
+        {
+          tenant_id: tenantId,
+          plan_id: planId,
+          status: "pending",
+          payment_provider: "dodo",
+          billing_cycle: billingCycle,
+          amount_cents: amountCents,
+          currency: "USD",
+        },
+        { onConflict: "tenant_id" },
+      );
+      if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
+
+      return NextResponse.json({ ok: true, mode: "dodo", checkoutUrl: session.checkout_url });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : "Dodo payment init failed" }, { status: 502 });
     }
   }
 
