@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { createContact, registerDomain } from "@/lib/domain/logicbox";
+import { createContact, registerDomain, activateDnsService } from "@/lib/domain/logicbox";
 import { addDomainToVercel } from "@/lib/domain/vercel";
 import { setupAutomaticDns } from "@/lib/domain/dns";
 
@@ -29,7 +29,8 @@ export async function POST(req: Request) {
     const contactId = await createContact(contact);
     const { orderId } = await registerDomain(domain, contactId);
 
-    // Set up DNS pointing to Vercel
+    // Activate the DNS zone for this order, then point it at Vercel
+    await activateDnsService(orderId);
     await setupAutomaticDns(domain);
 
     // Register with Vercel

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { addDomainToVercel } from "@/lib/domain/vercel";
-import { getNameserverInstructions, getARecordInstructions } from "@/lib/domain/dns";
+import { getNameserverInstructions, getARecordInstructions, setupAutomaticDns } from "@/lib/domain/dns";
 
 export async function POST(req: Request) {
   const { tenantId, domain, type } = await req.json() as {
@@ -29,6 +29,20 @@ export async function POST(req: Request) {
       console.error("addDomainToVercel failed (continuing):", vercelWarning);
     }
 
+    // Nameserver method: we host the DNS zone via LogicBox Web-Services nameservers.
+    // Auto-create the A records (by domain-name; no order-id needed) so the client
+    // only has to point their nameservers to us. Non-fatal if LogicBox creds are
+    // missing — the client can still set NS and we retry, or fall back to A-record.
+    let dnsWarning: string | null = null;
+    if (type === "nameserver") {
+      try {
+        await setupAutomaticDns(domain);
+      } catch (e) {
+        dnsWarning = e instanceof Error ? e.message : "LogicBox DNS setup failed";
+        console.error("setupAutomaticDns failed (continuing):", dnsWarning);
+      }
+    }
+
     await supabase
       .from("tenants")
       .update({ custom_domain: domain, domain_status: "pending" })
@@ -46,13 +60,14 @@ export async function POST(req: Request) {
         ? getNameserverInstructions()
         : getARecordInstructions(domain);
 
+    const warn = [vercelWarning, dnsWarning].filter(Boolean).length > 0
+      ? "Domain saved and DNS instructions ready. Some automation is not active yet (admin needs to set VERCEL_API_TOKEN / LogicBox API keys). It completes automatically once configured."
+      : null;
+
     return NextResponse.json({
       ok: true,
       instructions,
-      ...(vercelWarning && {
-        warning:
-          "Domain saved and DNS instructions ready. Vercel binding is not active yet (admin needs to set VERCEL_API_TOKEN). It will complete automatically once configured.",
-      }),
+      ...(warn && { warning: warn }),
     });
   } catch (err) {
     console.error("Domain connect error:", err);

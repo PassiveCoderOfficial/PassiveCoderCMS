@@ -96,11 +96,17 @@ export async function registerDomain(
 ): Promise<{ orderId: number }> {
   const [name, ...tldParts] = domain.split(".");
   const tld = tldParts.join(".");
+  // Use branded vanity nameservers when configured, else fall back to reseller NS.
+  const brandNs = (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  const ns = brandNs.length >= 2
+    ? brandNs
+    : ["ns1.logicbox.net", "ns2.logicbox.net", "ns3.logicbox.net", "ns4.logicbox.net", "ns5.logicbox.net"];
   const data = await lbPost<{ entityid: number }>("/domains/register", {
     "domain-name": name,
     tlds: [tld],
     years: String(years),
-    ns: ["ns1.logicbox.net", "ns2.logicbox.net", "ns3.logicbox.net", "ns4.logicbox.net", "ns5.logicbox.net"],
+    ns,
     "reg-contact-id": String(contactId),
     "admin-contact-id": String(contactId),
     "tech-contact-id": String(contactId),
@@ -110,6 +116,21 @@ export async function registerDomain(
     "auto-renew": autoRenew ? "true" : "false",
   });
   return { orderId: data.entityid };
+}
+
+/**
+ * Activate the (free) DNS service for an order before adding records.
+ * ResellerClub requires this once per domain order; records cannot be added until
+ * the DNS zone exists. Idempotent-ish: if already active, the API returns an error
+ * we can safely ignore.
+ */
+export async function activateDnsService(orderId: number): Promise<void> {
+  try {
+    await lbPost("/dns/activate", { "order-id": String(orderId) });
+  } catch (e) {
+    // Already-active / not-applicable errors are non-fatal.
+    console.warn("activateDnsService:", e instanceof Error ? e.message : e);
+  }
 }
 
 export async function addDnsRecord(
