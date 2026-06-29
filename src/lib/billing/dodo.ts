@@ -1,8 +1,13 @@
 import DodoPayments from "dodopayments";
 
+type DodoEnv = "live_mode" | "test_mode";
+
 export function getDodoClient(sandbox?: boolean): DodoPayments {
-  const envMode = (process.env.DODO_ENVIRONMENT ?? "live_mode") as "live_mode" | "sandbox_mode";
-  const environment = sandbox === true ? "sandbox_mode" : sandbox === false ? "live_mode" : envMode;
+  // SDK v2.40.x environment is "live_mode" | "test_mode". Accept legacy
+  // DODO_ENVIRONMENT="sandbox_mode" and translate it to "test_mode".
+  const raw = process.env.DODO_ENVIRONMENT ?? "live_mode";
+  const envMode: DodoEnv = raw === "test_mode" || raw === "sandbox_mode" ? "test_mode" : "live_mode";
+  const environment: DodoEnv = sandbox === true ? "test_mode" : sandbox === false ? "live_mode" : envMode;
   return new DodoPayments({
     bearerToken: process.env.DODO_API_KEY!,
     environment,
