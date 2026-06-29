@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { makePayment } from "@/lib/billing/shurjopay";
-import { getDodoClient, getDodoProductId } from "@/lib/billing/dodo";
+import { makePayment, resolveSpConfig } from "@/lib/billing/shurjopay";
+import { getDodoClient, getDodoProductId, resolveDodoConfig } from "@/lib/billing/dodo";
 
 const MANUAL_METHODS = ["bkash", "nagad", "bank"] as const;
 
@@ -31,26 +31,26 @@ export async function POST(req: Request) {
     .maybeSingle();
   if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const [{ data: plan }, { data: platformSettings }] = await Promise.all([
+  const [{ data: plan }, { data: ps }] = await Promise.all([
     admin.from("plans").select("id, name, price_yearly, price_monthly").eq("id", planId).maybeSingle(),
-    admin.from("platform_settings").select("usd_to_bdt_rate, shurjopay_mode, dodo_mode, whatsapp_number").eq("id", 1).maybeSingle(),
+    admin.from("platform_settings").select("*").eq("id", 1).maybeSingle(),
   ]);
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-  type PlatformRow = { usd_to_bdt_rate?: number; shurjopay_mode?: string; dodo_mode?: string; whatsapp_number?: string } | null;
-  const ps = platformSettings as PlatformRow;
-  const bdtRate: number = ps?.usd_to_bdt_rate ?? 125;
-  const spSandbox: boolean = (ps?.shurjopay_mode ?? "sandbox") === "sandbox";
-  const dodoSandbox: boolean = (ps?.dodo_mode ?? "live") === "sandbox";
+  const psRow = ps as Record<string, unknown> | null;
+  const bdtRate: number = (psRow?.usd_to_bdt_rate as number | null) ?? 125;
+
+  const spConfig = resolveSpConfig(psRow);
+  const dodoConfig = resolveDodoConfig(psRow);
 
   const priceForCycle = billingCycle === "monthly" ? plan.price_monthly : plan.price_yearly;
   if (!priceForCycle || priceForCycle <= 0) {
     return NextResponse.json({ error: `${billingCycle} billing not available for this plan` }, { status: 400 });
   }
 
-  // priceForCycle is stored as cents (e.g. 4000 = $40.00)
+  // priceForCycle stored as cents (e.g. 4000 = $40.00)
   const amountUsd = Number(priceForCycle) / 100;
-  const amountCents = Number(priceForCycle); // already cents
+  const amountCents = Number(priceForCycle);
   const amountBdt = Math.round(amountUsd * bdtRate);
   const cycleLabel = billingCycle === "monthly" ? "monthly" : "yearly";
 
@@ -96,6 +96,9 @@ export async function POST(req: Request) {
 
   // ── shurjoPay (hosted checkout) ─────────────────────────────────────────────
   if (method === "shurjopay") {
+    if (!spConfig.sandbox && !spConfig.username) {
+      return NextResponse.json({ error: "shurjoPay live credentials not configured — set them in SA Settings" }, { status: 400 });
+    }
     const origin = new URL(req.url).origin;
     const orderId = `sub_${tenantId.slice(0, 8)}_${Date.now()}`;
     try {
@@ -107,7 +110,7 @@ export async function POST(req: Request) {
         cancelUrl: `${origin}/dashboard/subscription?cancelled=1`,
         customerName: user.email ?? "Customer",
         customerEmail: user.email ?? undefined,
-        sandbox: spSandbox,
+        config: spConfig,
       });
 
       const { error: subErr } = await admin.from("subscriptions").upsert(
@@ -133,14 +136,19 @@ export async function POST(req: Request) {
 
   // ── Dodo Payments (international card) ────────────────────────────────────
   if (method === "dodo") {
-    const productId = getDodoProductId(planId, billingCycle);
+    if (!dodoConfig.apiKey) {
+      return NextResponse.json({ error: "Dodo API key not configured — set it in SA Settings" }, { status: 400 });
+    }
+    const productId = getDodoProductId(dodoConfig, planId, billingCycle);
     if (!productId) {
-      return NextResponse.json({ error: `No Dodo product configured for ${planId} ${billingCycle}` }, { status: 400 });
+      return NextResponse.json({
+        error: `No Dodo product ID configured for ${planId} ${billingCycle} (${dodoConfig.sandbox ? "sandbox" : "live"})`,
+      }, { status: 400 });
     }
 
     const origin = new URL(req.url).origin;
     try {
-      const session = await getDodoClient(dodoSandbox).checkoutSessions.create({
+      const session = await getDodoClient({ apiKey: dodoConfig.apiKey, sandbox: dodoConfig.sandbox }).checkoutSessions.create({
         product_cart: [{ product_id: productId, quantity: 1 }],
         customer: { email: user.email!, name: user.email! },
         return_url: `${origin}/dashboard/subscription?paid=1`,

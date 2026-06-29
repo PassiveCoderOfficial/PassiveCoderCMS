@@ -1,24 +1,29 @@
 import { NextResponse } from "next/server";
-import { dodo } from "@/lib/billing/dodo";
+import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const rawBody = await req.text();
-  const webhookSecret = process.env.DODO_WEBHOOK_SECRET;
+
+  const admin = await createAdminClient();
+  const { data: ps } = await admin.from("platform_settings").select("*").eq("id", 1).maybeSingle();
+  const dodoConfig = resolveDodoConfig(ps as Record<string, unknown> | null);
+  const webhookSecret = dodoConfig.webhookSecret ?? process.env.DODO_WEBHOOK_SECRET;
+
   if (!webhookSecret) return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+
+  const dodoClient = getDodoClient({ apiKey: dodoConfig.apiKey, sandbox: dodoConfig.sandbox });
 
   let event;
   try {
     const headers: Record<string, string> = {};
     req.headers.forEach((v, k) => { headers[k] = v; });
-    event = dodo.webhooks.unwrap(rawBody, { headers, key: webhookSecret });
+    event = dodoClient.webhooks.unwrap(rawBody, { headers, key: webhookSecret });
   } catch {
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   }
-
-  const admin = await createAdminClient();
 
   if (event.type === "payment.succeeded") {
     const payment = event.data;

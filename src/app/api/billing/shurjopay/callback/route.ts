@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { verifyPayment } from "@/lib/billing/shurjopay";
+import { verifyPayment, resolveSpConfig } from "@/lib/billing/shurjopay";
 import { enmProvision } from "@/lib/enm";
 import { createCommissions } from "@/lib/commissions";
 
@@ -30,12 +30,12 @@ async function handle(req: Request, orderId: string | null) {
       .select("id, tenant_id, plan_id, amount_cents, custom_amount_cents, billing_cycle, trial_converted")
       .eq("shurjopay_order_id", orderId)
       .maybeSingle(),
-    admin.from("platform_settings").select("shurjopay_mode").eq("id", 1).maybeSingle(),
+    admin.from("platform_settings").select("*").eq("id", 1).maybeSingle(),
   ]);
   if (!sub) return fail("subscription_not_found");
 
-  const spSandbox = ((ps as { shurjopay_mode?: string } | null)?.shurjopay_mode ?? "sandbox") === "sandbox";
-  const { ok } = await verifyPayment(orderId, spSandbox);
+  const spConfig = resolveSpConfig(ps as Record<string, unknown> | null);
+  const { ok } = await verifyPayment(orderId, spConfig);
   if (!ok) return fail("payment_not_verified");
 
   const now = new Date();
