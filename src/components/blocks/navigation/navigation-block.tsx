@@ -7,7 +7,11 @@ import Image from "next/image";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function DropdownMenu({ items }: { items: NavItem[] }) {
+function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
+  items: NavItem[];
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}) {
   // Mega-menu: if any item has its own children, render region columns.
   const isMega = items.some((i) => (i.children?.length ?? 0) > 0);
 
@@ -17,8 +21,14 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
     const standalone = items.filter((i) => (i.children?.length ?? 0) === 0);
     const groups = items.filter((i) => (i.children?.length ?? 0) > 0);
     return (
-      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[9999]">
-        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 w-[min(94vw,1100px)] overflow-hidden">
+      // Fixed to the viewport (not the trigger) so a wide panel is always centered
+      // and never clipped at the screen edges. top-16 matches the h-16 nav bar.
+      <div
+        className="fixed left-1/2 -translate-x-1/2 top-16 z-[9999] px-2 w-full max-w-[1120px]"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <div className="bg-white dark:bg-gray-900 shadow-2xl rounded-2xl border border-black/5 overflow-hidden">
           {standalone.length > 0 && (
             <div className="flex flex-wrap gap-x-6 gap-y-1 px-6 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-black/5">
               {standalone.map((s) => (
@@ -29,7 +39,7 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
             </div>
           )}
           {/* Fixed grid — each region is its own self-contained cell (no column-splitting) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-6 p-6 max-h-[72vh] overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6 p-6 max-h-[70vh] overflow-y-auto">
             {groups.map((group) => (
               <div key={group.id} className="min-w-0">
                 <Link href={group.url} className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 pb-1.5 border-b border-black/5 hover:text-gray-600">
@@ -54,7 +64,7 @@ function DropdownMenu({ items }: { items: NavItem[] }) {
   }
 
   return (
-    <div className="absolute left-0 top-full pt-2 z-[9999]">
+    <div className="absolute left-0 top-full pt-2 z-[9999]" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <ul className="min-w-[210px] max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-black/5 py-1.5">
         {items.map((child) => (
           <li key={child.id}>
@@ -118,7 +128,7 @@ function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string 
         {item.label}
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
       </Link>
-      {open && <DropdownMenu items={item.children!} />}
+      {open && <DropdownMenu items={item.children!} onMouseEnter={openNow} onMouseLeave={closeSoon} />}
     </li>
   );
 }
