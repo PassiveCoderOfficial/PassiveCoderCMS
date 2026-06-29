@@ -34,13 +34,19 @@ function qs(params: Record<string, string | string[]>): string {
   return parts.join("&");
 }
 
-async function lbGet<T>(path: string, params: Record<string, string | string[]> = {}): Promise<T> {
+// ResellerClub/LogicBox requires a response-format suffix on every endpoint.
+function withJson(path: string): string {
+  return /\.(json|xml)$/.test(path) ? path : `${path}.json`;
+}
+
+async function lbGet<T>(rawPath: string, params: Record<string, string | string[]> = {}): Promise<T> {
+  const path = withJson(rawPath);
   const proxy = LB_PROXY_URL();
   const query = qs({ ...LB_AUTH(), ...params });
   let url: string;
   const headers: Record<string, string> = {};
   if (proxy) {
-    // path here is like "/domains/available"; the real API path is "/api" + path
+    // path here is like "/domains/available.json"; the real API path is "/api" + path
     url = `${proxy}?path=${encodeURIComponent("/api" + path)}&${query}`;
     headers["X-Proxy-Secret"] = LB_PROXY_SECRET();
   } else {
@@ -51,7 +57,8 @@ async function lbGet<T>(path: string, params: Record<string, string | string[]> 
   return res.json() as Promise<T>;
 }
 
-async function lbPost<T>(path: string, body: Record<string, string | string[]>): Promise<T> {
+async function lbPost<T>(rawPath: string, body: Record<string, string | string[]>): Promise<T> {
+  const path = withJson(rawPath);
   const proxy = LB_PROXY_URL();
   const payload = qs({ ...LB_AUTH(), ...body });
   let url: string;

@@ -19,6 +19,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ results });
   } catch (err) {
     console.error("Domain search error:", err);
-    return NextResponse.json({ error: "Domain search unavailable" }, { status: 503 });
+    const detail = err instanceof Error ? err.message : String(err);
+    const debug = process.env.DOMAIN_DEBUG === "1";
+    return NextResponse.json(
+      { error: "Domain search unavailable", ...(debug && { detail, proxy: !!process.env.LOGICBOX_PROXY_URL, hasUser: !!process.env.LOGICBOX_USER_ID }) },
+      { status: 503 },
+    );
   }
 }
