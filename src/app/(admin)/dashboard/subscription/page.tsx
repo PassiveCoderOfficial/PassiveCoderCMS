@@ -83,7 +83,7 @@ export default function SubscriptionPage() {
         supabase.from("agents").select("id,referral_code,commission_rate,status").eq("user_id", user.id).maybeSingle(),
         supabase.from("plans").select("*").order("sort_order"),
         supabase.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
-        supabase.from("platform_settings").select("bkash_number,nagad_number,bank_details,manual_payment_instructions").eq("id", 1).maybeSingle(),
+        supabase.from("platform_settings").select("bkash_number,nagad_number,bank_details,manual_payment_instructions,whatsapp_number").eq("id", 1).maybeSingle(),
       ]);
 
       setAgent(agentRow);

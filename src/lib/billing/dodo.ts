@@ -1,9 +1,16 @@
 import DodoPayments from "dodopayments";
 
-export const dodo = new DodoPayments({
-  bearerToken: process.env.DODO_API_KEY!,
-  environment: "live_mode",
-});
+export function getDodoClient(sandbox?: boolean): DodoPayments {
+  const envMode = (process.env.DODO_ENVIRONMENT ?? "live_mode") as "live_mode" | "sandbox_mode";
+  const environment = sandbox === true ? "sandbox_mode" : sandbox === false ? "live_mode" : envMode;
+  return new DodoPayments({
+    bearerToken: process.env.DODO_API_KEY!,
+    environment,
+  });
+}
+
+// Default export — env-driven (used for webhooks and places where DB mode isn't available)
+export const dodo = getDodoClient();
 
 const PRODUCT_MAP: Record<string, string | undefined> = {
   basic_yearly:   process.env.DODO_PRODUCT_BASIC_YEARLY,

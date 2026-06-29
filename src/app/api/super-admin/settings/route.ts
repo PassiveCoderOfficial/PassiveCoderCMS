@@ -35,13 +35,18 @@ export async function POST(req: Request) {
     bank_details?: string;
     manual_payment_instructions?: string;
     usd_to_bdt_rate?: number;
+    shurjopay_mode?: "sandbox" | "live";
+    dodo_mode?: "sandbox" | "live";
+    whatsapp_number?: string;
   };
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-  for (const k of ["bkash_number", "nagad_number", "bank_details", "manual_payment_instructions"] as const) {
+  for (const k of ["bkash_number", "nagad_number", "bank_details", "manual_payment_instructions", "whatsapp_number"] as const) {
     if (typeof body[k] === "string") update[k] = body[k];
   }
+  if (body.shurjopay_mode === "sandbox" || body.shurjopay_mode === "live") update.shurjopay_mode = body.shurjopay_mode;
+  if (body.dodo_mode === "sandbox" || body.dodo_mode === "live") update.dodo_mode = body.dodo_mode;
 
   if (typeof body.default_agent_one_time_pct === "number") {
     if (body.default_agent_one_time_pct < 0 || body.default_agent_one_time_pct > 100)

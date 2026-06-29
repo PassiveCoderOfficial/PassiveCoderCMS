@@ -97,7 +97,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
         {/* Trust line */}
         <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-sm text-gray-500">
           <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> No credit card required</span>
-          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> 7-day free trial</span>
+          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Pay after signup</span>
           <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Cancel anytime</span>
         </div>
 

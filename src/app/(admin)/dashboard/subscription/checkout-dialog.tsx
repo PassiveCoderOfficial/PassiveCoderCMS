@@ -28,11 +28,10 @@ export interface PaymentConfig {
   nagad_number?: string | null;
   bank_details?: string | null;
   manual_payment_instructions?: string | null;
+  whatsapp_number?: string | null;
 }
 
 type Method = "dodo" | "shurjopay" | "bkash" | "nagad" | "whatsapp";
-
-const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
 
 export function CheckoutDialog({
   open, onOpenChange, tenantId, plan, paymentConfig,
@@ -66,11 +65,13 @@ export function CheckoutDialog({
   const isManualEntry = isBkash || isNagad;
   const manualNumber = isBkash ? paymentConfig.bkash_number : isNagad ? paymentConfig.nagad_number : null;
 
+  const waNumber = paymentConfig.whatsapp_number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
+
   function openWhatsApp() {
     const text = encodeURIComponent(
       `Hi! I'd like to subscribe to Passive Coder *${plan!.name}* plan (${CYCLE_LABELS[activeCycle]}) — ${amountFormatted}${CYCLE_SUFFIX[activeCycle]}. Please assist with payment.`
     );
-    window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, "_blank");
+    window.open(`https://wa.me/${waNumber}?text=${text}`, "_blank");
   }
 
   async function submit() {

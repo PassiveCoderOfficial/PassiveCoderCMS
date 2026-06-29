@@ -28,7 +28,7 @@ export default function FooterSection() {
               <li><Link href="/#features" className="hover:text-orange-400 transition-colors">Features</Link></li>
               <li><Link href="/#templates" className="hover:text-orange-400 transition-colors">Templates</Link></li>
               <li><Link href="/#pricing" className="hover:text-orange-400 transition-colors">Pricing</Link></li>
-              <li><Link href="/onboarding" className="hover:text-orange-400 transition-colors">Get Started</Link></li>
+              <li><Link href="/onboarding" className="hover:text-orange-400 transition-colors">Get Started — Pay Later</Link></li>
               <li><Link href="/dashboard" className="hover:text-orange-400 transition-colors">Dashboard</Link></li>
             </ul>
           </div>

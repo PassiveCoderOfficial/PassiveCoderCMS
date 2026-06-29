@@ -75,9 +75,9 @@ export default function CtaSection({ settings }: { settings: Settings | null }) 
 
         {/* Trust badges */}
         <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500">
-          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> No credit card to start</span>
+          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> No payment to start</span>
           <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-blue-400" /> Live in 24 hours</span>
-          <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-purple-400" /> Cancel anytime, no fees</span>
+          <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-purple-400" /> Pay from dashboard anytime</span>
         </div>
 
         {/* Social proof mini */}

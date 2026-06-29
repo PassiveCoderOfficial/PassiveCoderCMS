@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone, DollarSign } from "lucide-react";
+import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone, DollarSign, CreditCard } from "lucide-react";
 
 interface PlatformSettings {
   default_commission_rate?: number;
@@ -16,6 +16,9 @@ interface PlatformSettings {
   bank_details?: string | null;
   manual_payment_instructions?: string | null;
   usd_to_bdt_rate?: number | null;
+  shurjopay_mode?: "sandbox" | "live" | null;
+  dodo_mode?: "sandbox" | "live" | null;
+  whatsapp_number?: string | null;
 }
 
 export default function SASettingsClient({ settings }: { settings: PlatformSettings | null }) {
@@ -28,6 +31,9 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [bankDetails, setBankDetails] = useState(settings?.bank_details ?? "");
   const [manualNote, setManualNote] = useState(settings?.manual_payment_instructions ?? "");
   const [bdtRate, setBdtRate] = useState(String(settings?.usd_to_bdt_rate ?? 125));
+  const [shurjopayMode, setShurjopayMode] = useState<"sandbox" | "live">(settings?.shurjopay_mode ?? "sandbox");
+  const [dodoMode, setDodoMode] = useState<"sandbox" | "live">(settings?.dodo_mode ?? "live");
+  const [whatsappNumber, setWhatsappNumber] = useState(settings?.whatsapp_number ?? "");
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -51,6 +57,9 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
         bank_details: bankDetails,
         manual_payment_instructions: manualNote,
         usd_to_bdt_rate: rate,
+        shurjopay_mode: shurjopayMode,
+        dodo_mode: dodoMode,
+        whatsapp_number: whatsappNumber,
       }),
     });
     setSaving(false);
@@ -187,6 +196,79 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
             />
             <span className="text-gray-500 text-sm">BDT</span>
           </div>
+        </div>
+      </div>
+
+      {/* Payment gateways */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
+          <CreditCard className="w-4 h-4 text-violet-400" />
+          <h2 className="font-semibold text-white text-sm">Payment Gateways</h2>
+        </div>
+        <p className="text-xs text-gray-500">Switch gateways between Sandbox and Live without redeploying. Use Sandbox for testing.</p>
+
+        {/* shurjoPay */}
+        <div className="space-y-1.5">
+          <label className="text-xs text-gray-400 font-medium block">shurjoPay (Bangladesh)</label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["sandbox", "live"] as const).map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setShurjopayMode(m)}
+                className={`text-xs px-3 py-2 rounded-lg border font-medium transition-colors ${
+                  shurjopayMode === m
+                    ? m === "live"
+                      ? "border-green-500 bg-green-500/10 text-green-400"
+                      : "border-yellow-500 bg-yellow-500/10 text-yellow-400"
+                    : "border-gray-700 text-gray-500 hover:border-gray-600"
+                }`}
+              >
+                {m === "sandbox" ? "🧪 Sandbox" : "🟢 Live"}
+              </button>
+            ))}
+          </div>
+          {shurjopayMode === "sandbox" && (
+            <p className="text-xs text-yellow-600">Sandbox active — payments go to test environment, no real money.</p>
+          )}
+        </div>
+
+        {/* Dodo */}
+        <div className="space-y-1.5">
+          <label className="text-xs text-gray-400 font-medium block">Dodo Payments (International)</label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["sandbox", "live"] as const).map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setDodoMode(m)}
+                className={`text-xs px-3 py-2 rounded-lg border font-medium transition-colors ${
+                  dodoMode === m
+                    ? m === "live"
+                      ? "border-green-500 bg-green-500/10 text-green-400"
+                      : "border-yellow-500 bg-yellow-500/10 text-yellow-400"
+                    : "border-gray-700 text-gray-500 hover:border-gray-600"
+                }`}
+              >
+                {m === "sandbox" ? "🧪 Sandbox" : "🟢 Live"}
+              </button>
+            ))}
+          </div>
+          {dodoMode === "sandbox" && (
+            <p className="text-xs text-yellow-600">Sandbox active — use Dodo test API key + test card 4242 4242 4242 4242.</p>
+          )}
+        </div>
+
+        {/* WhatsApp */}
+        <div>
+          <label className="text-xs text-gray-400 block mb-1.5">WhatsApp number <span className="text-gray-600">(international, no +)</span></label>
+          <input
+            value={whatsappNumber}
+            onChange={e => setWhatsappNumber(e.target.value)}
+            placeholder="e.g. 8801678669699"
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+          />
+          <p className="text-xs text-gray-600 mt-1">Used in checkout &quot;WhatsApp&quot; button for manual payment requests.</p>
         </div>
       </div>
 

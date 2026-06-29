@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { makePayment } from "@/lib/billing/shurjopay";
-import { dodo, getDodoProductId } from "@/lib/billing/dodo";
+import { getDodoClient, getDodoProductId } from "@/lib/billing/dodo";
 
 const MANUAL_METHODS = ["bkash", "nagad", "bank"] as const;
 
@@ -33,11 +33,15 @@ export async function POST(req: Request) {
 
   const [{ data: plan }, { data: platformSettings }] = await Promise.all([
     admin.from("plans").select("id, name, price_yearly, price_monthly").eq("id", planId).maybeSingle(),
-    admin.from("platform_settings").select("usd_to_bdt_rate").eq("id", 1).maybeSingle(),
+    admin.from("platform_settings").select("usd_to_bdt_rate, shurjopay_mode, dodo_mode, whatsapp_number").eq("id", 1).maybeSingle(),
   ]);
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-  const bdtRate: number = (platformSettings as { usd_to_bdt_rate?: number } | null)?.usd_to_bdt_rate ?? 125;
+  type PlatformRow = { usd_to_bdt_rate?: number; shurjopay_mode?: string; dodo_mode?: string; whatsapp_number?: string } | null;
+  const ps = platformSettings as PlatformRow;
+  const bdtRate: number = ps?.usd_to_bdt_rate ?? 125;
+  const spSandbox: boolean = (ps?.shurjopay_mode ?? "sandbox") === "sandbox";
+  const dodoSandbox: boolean = (ps?.dodo_mode ?? "live") === "sandbox";
 
   const priceForCycle = billingCycle === "monthly" ? plan.price_monthly : plan.price_yearly;
   if (!priceForCycle || priceForCycle <= 0) {
@@ -103,6 +107,7 @@ export async function POST(req: Request) {
         cancelUrl: `${origin}/dashboard/subscription?cancelled=1`,
         customerName: user.email ?? "Customer",
         customerEmail: user.email ?? undefined,
+        sandbox: spSandbox,
       });
 
       const { error: subErr } = await admin.from("subscriptions").upsert(
@@ -135,7 +140,7 @@ export async function POST(req: Request) {
 
     const origin = new URL(req.url).origin;
     try {
-      const session = await dodo.checkoutSessions.create({
+      const session = await getDodoClient(dodoSandbox).checkoutSessions.create({
         product_cart: [{ product_id: productId, quantity: 1 }],
         customer: { email: user.email!, name: user.email! },
         return_url: `${origin}/dashboard/subscription?paid=1`,
