@@ -15,7 +15,7 @@ interface Tenant {
   domain_status: string;
 }
 
-const BRAND_NS = (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "ns1.passivecoder.com,ns2.passivecoder.com,ns3.passivecoder.com,ns4.passivecoder.com")
+const BRAND_NS = (process.env.NEXT_PUBLIC_VERCEL_NAMESERVERS ?? "ns1.vercel-dns.com,ns2.vercel-dns.com")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const VERCEL_IP = process.env.NEXT_PUBLIC_VERCEL_IP ?? "76.76.21.21";
 
@@ -258,7 +258,7 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground pt-1">
-                  Nameserver method is best for domains registered through us. For domains bought elsewhere, the A Record method is recommended.
+                  Nameserver method points your whole domain to Vercel (we manage DNS for you). The A Record method keeps DNS at your current registrar — either works for any domain.
                 </p>
               </div>
             )}

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { createContact, registerDomain } from "@/lib/domain/logicbox";
 import { addDomainToVercel } from "@/lib/domain/vercel";
-import { setupAutomaticDns } from "@/lib/domain/dns";
 
 export async function POST(req: Request) {
   const { tenantId, domain, contact } = await req.json() as {
@@ -27,27 +26,25 @@ export async function POST(req: Request) {
 
   try {
     const contactId = await createContact(contact);
+    // registerDomain sets the domain's nameservers to the configured (Vercel)
+    // nameservers, so Vercel hosts the DNS zone — no separate DNS-host step.
     const { orderId } = await registerDomain(domain, contactId);
 
-    // setupAutomaticDns activates the DNS zone (by domain-name) then adds A records.
-    await setupAutomaticDns(domain);
-
-    // Register with Vercel
+    // Add to Vercel (creates the zone + records on Vercel's side, issues SSL).
     await addDomainToVercel(domain);
 
-    // Record in DB
     const supabase = await createAdminClient();
     await supabase.from("domain_orders").insert({
       tenant_id: tenantId,
       domain,
       logicbox_order_id: orderId,
       status: "registered",
-      dns_type: "automatic",
+      dns_type: "nameserver",
     });
 
     await supabase
       .from("tenants")
-      .update({ custom_domain: domain, domain_status: "active" })
+      .update({ custom_domain: domain, domain_status: "pending" })
       .eq("id", tenantId);
 
     return NextResponse.json({ ok: true, domain });

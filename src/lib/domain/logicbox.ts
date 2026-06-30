@@ -125,12 +125,13 @@ export async function registerDomain(
 ): Promise<{ orderId: number }> {
   const [name, ...tldParts] = domain.split(".");
   const tld = tldParts.join(".");
-  // Use branded vanity nameservers when configured, else fall back to reseller NS.
-  const brandNs = (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "")
+  // Point newly-registered domains at Vercel's nameservers so Vercel hosts the DNS
+  // zone (creates records + SSL automatically when the domain is added to the project).
+  const vercelNs = (process.env.NEXT_PUBLIC_VERCEL_NAMESERVERS ?? "ns1.vercel-dns.com,ns2.vercel-dns.com")
     .split(",").map((s) => s.trim()).filter(Boolean);
-  const ns = brandNs.length >= 2
-    ? brandNs
-    : ["ns1.logicbox.net", "ns2.logicbox.net", "ns3.logicbox.net", "ns4.logicbox.net", "ns5.logicbox.net"];
+  const ns = vercelNs.length >= 2
+    ? vercelNs
+    : ["ns1.vercel-dns.com", "ns2.vercel-dns.com"];
   const data = await lbPost<{ entityid: number }>("/domains/register", {
     "domain-name": name,
     tlds: [tld],
