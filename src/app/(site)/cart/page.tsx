@@ -4,10 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
-import { formatCurrency } from "@/lib/utils";
+import { useEcommerceCurrency } from "@/lib/hooks/use-ecommerce-currency";
 
 export default function CartPage() {
   const { items, subtotal, removeItem, updateQty } = useCart();
+  const { format } = useEcommerceCurrency();
 
   if (items.length === 0) {
     return (
@@ -51,7 +52,7 @@ export default function CartPage() {
                 <Link href={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors text-sm leading-snug">
                   {item.name}
                 </Link>
-                <p className="text-base font-bold mt-1">{formatCurrency(item.price)}</p>
+                <p className="text-base font-bold mt-1">{format(item.price)}</p>
 
                 <div className="flex items-center gap-3 mt-3">
                   <div className="flex items-center border rounded-lg overflow-hidden">
@@ -71,7 +72,7 @@ export default function CartPage() {
                     </button>
                   </div>
 
-                  <span className="text-sm font-semibold ml-auto">{formatCurrency(item.price * item.quantity)}</span>
+                  <span className="text-sm font-semibold ml-auto">{format(item.price * item.quantity)}</span>
 
                   <button
                     onClick={() => removeItem(item.id)}
@@ -97,7 +98,7 @@ export default function CartPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">{formatCurrency(subtotal)}</span>
+                <span className="font-medium">{format(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
@@ -107,7 +108,7 @@ export default function CartPage() {
 
             <div className="border-t pt-3 flex justify-between font-bold text-base">
               <span>Total</span>
-              <span>{formatCurrency(subtotal)}</span>
+              <span>{format(subtotal)}</span>
             </div>
 
             <Link

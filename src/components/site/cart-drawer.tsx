@@ -1,13 +1,26 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, ShoppingCart, Minus, Plus, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
-import { formatCurrency } from "@/lib/utils";
+import { useEcommerceCurrency } from "@/lib/hooks/use-ecommerce-currency";
 
 export function CartDrawer() {
   const { items, itemCount, subtotal, removeItem, updateQty, isOpen, closeCart } = useCart();
+  const { format } = useEcommerceCurrency();
+  const router = useRouter();
+
+  function handleCheckout() {
+    closeCart();
+    router.push("/checkout");
+  }
+
+  function handleViewCart() {
+    closeCart();
+    router.push("/cart");
+  }
 
   return (
     <>
@@ -79,7 +92,7 @@ export function CartDrawer() {
                   >
                     {item.name}
                   </Link>
-                  <p className="text-sm font-bold mt-1">{formatCurrency(item.price)}</p>
+                  <p className="text-sm font-bold mt-1">{format(item.price)}</p>
 
                   {/* Qty stepper */}
                   <div className="flex items-center gap-2 mt-2">
@@ -115,23 +128,21 @@ export function CartDrawer() {
           <div className="border-t px-5 py-4 space-y-3 bg-background">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-bold text-base">{formatCurrency(subtotal)}</span>
+              <span className="font-bold text-base">{format(subtotal)}</span>
             </div>
             <p className="text-xs text-muted-foreground">Shipping & taxes calculated at checkout</p>
-            <Link
-              href="/checkout"
-              onClick={closeCart}
+            <button
+              onClick={handleCheckout}
               className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
             >
               Checkout <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/cart"
-              onClick={closeCart}
-              className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+            </button>
+            <button
+              onClick={handleViewCart}
+              className="block w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
             >
               View full cart
-            </Link>
+            </button>
           </div>
         )}
       </div>

@@ -260,12 +260,23 @@ export type EcommerceProductsBlockProps = BlockBase & {
   type: "ecommerce_products";
   data: {
     title?: string;
+    subtitle?: string;
     displayCount: number;
-    layout: "grid" | "list";
-    columns: 2 | 3 | 4;
+    layout: "grid" | "list" | "featured" | "minimal" | "wide-cards";
+    columns: 2 | 3 | 4 | 5;
     categoryId?: string;
     sortBy: "latest" | "price_asc" | "price_desc" | "featured";
     showAddToCart: boolean;
+    showDescription: boolean;
+    showBadges: boolean;
+    showRating: boolean;
+    cardStyle: "default" | "flat" | "minimal" | "shadow" | "bordered";
+    imageRatio: "square" | "portrait" | "landscape" | "auto";
+    sectionPadding: "none" | "sm" | "md" | "lg" | "xl";
+    backgroundColor?: string;
+    titleAlignment: "left" | "center" | "right";
+    ctaLabel?: string;
+    ctaUrl?: string;
   };
 };
 

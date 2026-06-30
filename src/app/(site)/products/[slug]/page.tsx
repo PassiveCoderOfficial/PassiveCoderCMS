@@ -93,17 +93,18 @@ export default async function ProductPage({ params }: Props) {
             )}
           </div>
 
-          {product.stock_quantity !== null && product.stock_quantity !== undefined && (
-            <div>
-              {product.stock_quantity === 0 ? (
-                <span className="text-sm font-medium text-red-600">Out of stock</span>
-              ) : product.stock_quantity <= 5 ? (
-                <span className="text-sm font-medium text-amber-600">Only {product.stock_quantity} left in stock</span>
-              ) : (
-                <span className="text-sm text-green-700">In stock</span>
-              )}
-            </div>
-          )}
+          {/* Stock status */}
+          <div>
+            {!product.track_inventory ? (
+              <span className="text-sm text-green-700 font-medium">In Stock</span>
+            ) : product.stock_quantity === 0 ? (
+              <span className="text-sm font-medium text-red-600">Out of stock</span>
+            ) : product.stock_quantity <= 5 ? (
+              <span className="text-sm font-medium text-amber-600">Only {product.stock_quantity} left in stock</span>
+            ) : (
+              <span className="text-sm text-green-700 font-medium">In stock</span>
+            )}
+          </div>
 
           {/* Add to Cart — client interactive section */}
           <AddToCartSection
@@ -113,7 +114,7 @@ export default async function ProductPage({ params }: Props) {
               slug: product.slug,
               price: product.price,
               image: images[0] ?? null,
-              inStock: product.stock_quantity === null || product.stock_quantity > 0,
+              inStock: !product.track_inventory || product.stock_quantity > 0,
             }}
           />
 

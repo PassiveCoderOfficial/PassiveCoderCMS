@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
-import { formatCurrency } from "@/lib/utils";
+import { useEcommerceCurrency } from "@/lib/hooks/use-ecommerce-currency";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,6 +19,7 @@ interface Gateway {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
+  const { format } = useEcommerceCurrency();
   const [gateways, setGateways] = useState<Gateway[]>([]);
   const [selectedGateway, setSelectedGateway] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -261,7 +262,7 @@ export default function CheckoutPage() {
                       <p className="text-xs font-medium leading-snug line-clamp-2">{item.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">×{item.quantity}</p>
                     </div>
-                    <span className="text-xs font-semibold shrink-0">{formatCurrency(item.price * item.quantity)}</span>
+                    <span className="text-xs font-semibold shrink-0">{format(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -269,7 +270,7 @@ export default function CheckoutPage() {
               <div className="border-t pt-3 space-y-1.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
+                  <span>{format(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
@@ -279,7 +280,7 @@ export default function CheckoutPage() {
 
               <div className="border-t pt-3 flex justify-between font-bold text-base">
                 <span>Total</span>
-                <span>{formatCurrency(subtotal)}</span>
+                <span>{format(subtotal)}</span>
               </div>
 
               <button
