@@ -4,8 +4,9 @@ import React, { useState, useRef, useEffect } from "react";
 import type { NavigationBlockProps, NavItem } from "@/types/cms";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/lib/cart/cart-context";
 
 function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
   items: NavItem[];
@@ -146,6 +147,7 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
+  const { itemCount, openCart } = useCart();
 
   const bg = transparent ? "transparent" : (backgroundColor ?? "#1a5c38");
   const fg = textColor ?? "#ffffff";
@@ -189,9 +191,24 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
             </div>
           )}
 
+          {/* Cart icon */}
+          <button
+            onClick={openCart}
+            className="relative p-2 rounded-md hover:bg-black/10 transition-colors shrink-0"
+            style={{ color: fg }}
+            aria-label="Open cart"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {itemCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
+          </button>
+
           {/* Mobile toggle */}
           <button
-            className="md:hidden ml-auto p-2 rounded-md"
+            className="md:hidden p-2 rounded-md"
             onClick={() => setMobileOpen(!mobileOpen)}
             style={{ color: fg }}
           >

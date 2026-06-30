@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { getTemplateIdentity } from "@/modules/themes/template-registry";
 import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { CartProvider } from "@/lib/cart/cart-context";
+import { CartDrawer } from "@/components/site/cart-drawer";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -92,7 +94,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const globalFooter: Block[] = toBlockArray(identity?.global_footer);
 
   return (
-    <>
+    <CartProvider>
       {/* Theme flash prevention */}
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <script dangerouslySetInnerHTML={{ __html: themeScript }} />
@@ -123,12 +125,15 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <PageRenderer blocks={globalFooter} />
       )}
 
+      {/* Floating cart drawer — always mounted, toggled by cart icon */}
+      <CartDrawer />
+
       {settings?.analytics_code && (
         <div dangerouslySetInnerHTML={{ __html: settings.analytics_code }} />
       )}
       {settings?.custom_js && (
         <script dangerouslySetInnerHTML={{ __html: settings.custom_js }} />
       )}
-    </>
+    </CartProvider>
   );
 }

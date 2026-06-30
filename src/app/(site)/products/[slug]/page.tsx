@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
+import { AddToCartSection } from "./add-to-cart-section";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -103,6 +104,18 @@ export default async function ProductPage({ params }: Props) {
               )}
             </div>
           )}
+
+          {/* Add to Cart — client interactive section */}
+          <AddToCartSection
+            product={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              image: images[0] ?? null,
+              inStock: product.stock_quantity === null || product.stock_quantity > 0,
+            }}
+          />
 
           {product.description && (
             <div>
