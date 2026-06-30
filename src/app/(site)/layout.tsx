@@ -6,6 +6,7 @@ import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/
 import { PageRenderer } from "@/components/site/page-renderer";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { CartDrawer } from "@/components/site/cart-drawer";
+import { MaintenanceScreen } from "@/components/site/maintenance-screen";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,7 +42,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const tenantId = reqHeaders.get("x-tenant-id");
 
   const [settingsResult, identityResult] = await Promise.all([
-    supabase.from("site_settings").select("site_theme, custom_css, custom_js, analytics_code").single(),
+    supabase.from("site_settings").select("site_theme, custom_css, custom_js, analytics_code, maintenance_mode, site_name, meta_description").single(),
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity")
@@ -65,6 +66,22 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   const activeTemplateSlug = identity?.active_template_slug ?? null;
   const templateIdentity = activeTemplateSlug ? getTemplateIdentity(activeTemplateSlug) : null;
+
+  // ── Maintenance mode ────────────────────────────────────────────────────────
+  // When on, show the maintenance screen to public visitors. Logged-in users
+  // (the owner/staff previewing) bypass it so they can keep working on the site.
+  if (settings?.maintenance_mode) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return (
+        <MaintenanceScreen
+          description={settings?.meta_description ?? undefined}
+          logoUrl={identity?.logo_url ?? null}
+          siteName={identity?.site_name ?? settings?.site_name ?? undefined}
+        />
+      );
+    }
+  }
 
   const siteTheme = settings?.site_theme ?? "system";
 

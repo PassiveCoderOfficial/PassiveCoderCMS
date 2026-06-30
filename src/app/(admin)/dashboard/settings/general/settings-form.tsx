@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { CURRENCIES } from "@/lib/currency/currencies";
+import { CURRENCIES, PRIORITY_CURRENCIES, OTHER_CURRENCIES } from "@/lib/currency/currencies";
 
 const TIMEZONES = [
   "UTC", "Asia/Dhaka", "Asia/Kolkata", "Asia/Karachi", "Asia/Dubai", "Asia/Riyadh",
@@ -150,7 +150,15 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="max-h-72 overflow-y-auto">
-                {CURRENCIES.map((c) => (
+                {PRIORITY_CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    <span className="font-mono w-8 inline-block">{c.symbol}</span>
+                    <span className="font-semibold mr-1">{c.code}</span>
+                    <span className="text-muted-foreground text-xs">— {c.name}</span>
+                  </SelectItem>
+                ))}
+                <div className="my-1 border-t" role="separator" />
+                {OTHER_CURRENCIES.map((c) => (
                   <SelectItem key={c.code} value={c.code}>
                     <span className="font-mono w-8 inline-block">{c.symbol}</span>
                     <span className="font-semibold mr-1">{c.code}</span>

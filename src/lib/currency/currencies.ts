@@ -7,7 +7,11 @@ export interface CurrencyDef {
   name: string;
 }
 
-export const CURRENCIES: CurrencyDef[] = [
+// Priority currencies shown first, in this exact order.
+export const PRIORITY_CODES = ["USD", "BDT", "AED", "MYR", "SGD", "SAR", "QAR", "OMR"] as const;
+
+// All currencies, unordered (display order is computed below).
+const ALL_CURRENCIES: CurrencyDef[] = [
   { code: "USD", symbol: "$",  name: "US Dollar" },
   { code: "EUR", symbol: "€",  name: "Euro" },
   { code: "GBP", symbol: "£",  name: "British Pound" },
@@ -67,6 +71,18 @@ export const CURRENCIES: CurrencyDef[] = [
   { code: "PEN", symbol: "S/.", name: "Peruvian Sol" },
   { code: "UYU", symbol: "$U", name: "Uruguayan Peso" },
 ];
+
+const byCode = (code: string) => ALL_CURRENCIES.find((c) => c.code === code)!;
+
+// Priority block (fixed order) + the rest sorted alphabetically by name.
+export const PRIORITY_CURRENCIES: CurrencyDef[] = PRIORITY_CODES.map(byCode);
+
+export const OTHER_CURRENCIES: CurrencyDef[] = ALL_CURRENCIES
+  .filter((c) => !PRIORITY_CODES.includes(c.code as (typeof PRIORITY_CODES)[number]))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+// Flat list for lookups: priority first, then alphabetical rest.
+export const CURRENCIES: CurrencyDef[] = [...PRIORITY_CURRENCIES, ...OTHER_CURRENCIES];
 
 export interface CurrencyConfig {
   currency: string;
