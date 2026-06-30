@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useSiteCurrency } from "@/lib/hooks/use-site-currency";
 
 const schema = z.object({
   type: z.enum(["income", "expense", "transfer", "donation", "refund"]),
@@ -37,6 +38,7 @@ export function TransactionForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const today = new Date().toISOString().split("T")[0];
+  const { currency, currency_symbol } = useSiteCurrency();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as never,
@@ -54,7 +56,8 @@ export function TransactionForm() {
       const supabase = createClient();
       const tenantId = await getClientTenantId();
       if (!tenantId) throw new Error("No tenant found for your account");
-      const { error } = await supabase.from("transactions").insert({ ...values, tenant_id: tenantId });
+      // Currency is the site-wide base currency, not a per-transaction choice.
+      const { error } = await supabase.from("transactions").insert({ ...values, currency, tenant_id: tenantId });
       if (error) throw error;
       toast.success("Transaction added");
       router.push("/dashboard/accounting/transactions");
@@ -93,22 +96,17 @@ export function TransactionForm() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label>Amount</Label>
-          <Input type="number" step="0.01" {...form.register("amount")} />
+      <div className="space-y-1.5">
+        <Label>Amount</Label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+            {currency_symbol}
+          </span>
+          <Input type="number" step="0.01" {...form.register("amount")} className="pl-7" />
         </div>
-        <div className="space-y-1.5">
-          <Label>Currency</Label>
-          <Select defaultValue="USD" onValueChange={(v) => form.setValue("currency", v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {["USD","EUR","GBP","BDT","CAD","AUD"].map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Currency: <strong>{currency}</strong> — set site-wide in Settings → Base Currency
+        </p>
       </div>
 
       <div className="space-y-1.5">

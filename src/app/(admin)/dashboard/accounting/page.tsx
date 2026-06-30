@@ -2,13 +2,16 @@
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { getSiteCurrency } from "@/lib/currency/currency-server";
+import { formatMoney } from "@/lib/currency/currencies";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function AccountingDashboard() {
   const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
+  const cur = await getSiteCurrency(tenantId);
+  const fmt = (n: number) => formatMoney(n, cur);
   const today = new Date().toISOString().split("T")[0];
   const monthStart = new Date(new Date().setDate(1)).toISOString().split("T")[0];
 
@@ -31,10 +34,10 @@ export default async function AccountingDashboard() {
   const todayIncome = todayTx?.filter((t) => t.type !== "expense").reduce((s, t) => s + Number(t.amount), 0) ?? 0;
 
   const stats = [
-    { label: "Monthly Income", value: formatCurrency(totalIncome), icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Monthly Expenses", value: formatCurrency(totalExpenses), icon: TrendingDown, color: "text-red-600", bg: "bg-red-50" },
-    { label: "Net Profit", value: formatCurrency(profit), icon: DollarSign, color: profit >= 0 ? "text-blue-600" : "text-red-600", bg: "bg-blue-50" },
-    { label: "Today's Revenue", value: formatCurrency(todayIncome), icon: ArrowUpRight, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Monthly Income", value: fmt(totalIncome), icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Monthly Expenses", value: fmt(totalExpenses), icon: TrendingDown, color: "text-red-600", bg: "bg-red-50" },
+    { label: "Net Profit", value: fmt(profit), icon: DollarSign, color: profit >= 0 ? "text-blue-600" : "text-red-600", bg: "bg-blue-50" },
+    { label: "Today's Revenue", value: fmt(todayIncome), icon: ArrowUpRight, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
   return (
@@ -84,7 +87,7 @@ export default async function AccountingDashboard() {
                   </div>
                   <div className="text-right">
                     <p className={`font-semibold text-sm ${tx.type === "expense" ? "text-red-600" : "text-green-600"}`}>
-                      {tx.type === "expense" ? "-" : "+"}{formatCurrency(Number(tx.amount), tx.currency)}
+                      {tx.type === "expense" ? "-" : "+"}{fmt(Number(tx.amount))}
                     </p>
                     <p className={`text-xs ${tx.status === "completed" ? "text-green-500" : "text-yellow-500"}`}>{tx.status}</p>
                   </div>

@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { CURRENCIES } from "@/lib/currency/currencies";
 
 interface SettingsFormProps {
   initialSettings: Record<string, unknown>;
@@ -19,6 +21,14 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [saving, setSaving] = useState(false);
 
   const update = (key: string, value: unknown) => setSettings(s => ({ ...s, [key]: value }));
+
+  function handleCurrencyChange(code: string) {
+    const cur = CURRENCIES.find((c) => c.code === code);
+    if (!cur) return;
+    setSettings((s) => ({ ...s, currency: cur.code, currency_symbol: cur.symbol }));
+  }
+
+  const selectedCur = CURRENCIES.find((c) => c.code === (settings.currency as string));
 
   const save = async () => {
     setSaving(true);
@@ -68,6 +78,56 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
           <div className="space-y-1.5">
             <Label>Meta Description</Label>
             <Textarea value={settings.meta_description as string ?? ""} onChange={(e) => update("meta_description", e.target.value)} rows={2} placeholder="Default meta description" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Base Currency</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Site-wide currency used across the <strong>ecommerce store</strong> and the{" "}
+            <strong>accounting system</strong>. Product prices, cart, checkout, orders, and all
+            financial figures use this currency.
+          </p>
+          <div className="space-y-1.5">
+            <Label>Currency</Label>
+            <Select value={settings.currency as string ?? "USD"} onValueChange={handleCurrencyChange}>
+              <SelectTrigger>
+                <SelectValue>
+                  {selectedCur
+                    ? `${selectedCur.symbol} ${selectedCur.code} — ${selectedCur.name}`
+                    : (settings.currency as string ?? "USD")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-72 overflow-y-auto">
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    <span className="font-mono w-8 inline-block">{c.symbol}</span>
+                    <span className="font-semibold mr-1">{c.code}</span>
+                    <span className="text-muted-foreground text-xs">— {c.name}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Symbol: <strong>{settings.currency_symbol as string ?? "$"}</strong>
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Symbol Position</Label>
+            <Select
+              value={settings.currency_position as string ?? "before"}
+              onValueChange={(v) => update("currency_position", v)}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="before">Before — {settings.currency_symbol as string ?? "$"}1,000</SelectItem>
+                <SelectItem value="after">After — 1,000{settings.currency_symbol as string ?? "$"}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

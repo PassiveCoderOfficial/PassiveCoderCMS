@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { BookMarked, Plus, Trash2, Pencil, Check, X, Loader2, Star } from "lucide-react";
+import { useSiteCurrency } from "@/lib/hooks/use-site-currency";
 
 interface Account {
   id: string;
@@ -35,8 +36,9 @@ export default function AccountsPage() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", type: "bank" as Account["type"], currency: "USD", balance: "0", is_default: false });
+  const [form, setForm] = useState({ name: "", type: "bank" as Account["type"], balance: "0", is_default: false });
   const [saving, setSaving] = useState(false);
+  const { currency, format } = useSiteCurrency();
 
   useEffect(() => {
     getClientTenantId().then((tenantId) => {
@@ -57,7 +59,7 @@ export default function AccountsPage() {
     const payload = {
       name: form.name.trim(),
       type: form.type,
-      currency: form.currency.toUpperCase() || "USD",
+      currency, // site-wide base currency
       balance: parseFloat(form.balance) || 0,
       is_default: form.is_default,
     };
@@ -74,14 +76,14 @@ export default function AccountsPage() {
       setAccounts(prev => [...prev, data as Account]);
       setAdding(false);
     }
-    setForm({ name: "", type: "bank", currency: "USD", balance: "0", is_default: false });
+    setForm({ name: "", type: "bank", balance: "0", is_default: false });
     setSaving(false);
     toast.success("Saved");
   }
 
   function startEdit(a: Account) {
     setEditingId(a.id);
-    setForm({ name: a.name, type: a.type, currency: a.currency, balance: String(a.balance), is_default: a.is_default });
+    setForm({ name: a.name, type: a.type, balance: String(a.balance), is_default: a.is_default });
     setAdding(false);
   }
 
@@ -117,11 +119,7 @@ export default function AccountsPage() {
             </select>
           </div>
           <div>
-            <Label className="text-xs mb-1 block">Currency</Label>
-            <Input value={form.currency} onChange={e => set("currency", e.target.value)} placeholder="USD" maxLength={3} />
-          </div>
-          <div>
-            <Label className="text-xs mb-1 block">Opening Balance</Label>
+            <Label className="text-xs mb-1 block">Opening Balance ({currency})</Label>
             <Input type="number" step="0.01" value={form.balance} onChange={e => set("balance", e.target.value)} />
           </div>
           <div className="flex items-center gap-2 pt-4">
@@ -178,10 +176,9 @@ export default function AccountsPage() {
                       {a.is_default && <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />}
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_COLORS[a.type]}`}>{a.type}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{a.currency}</p>
                   </div>
                   <p className={`font-bold text-base shrink-0 ${a.balance < 0 ? "text-destructive" : ""}`}>
-                    {a.currency} {a.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    {format(a.balance)}
                   </p>
                   <div className="flex items-center gap-1 shrink-0">
                     {!a.is_default && (
