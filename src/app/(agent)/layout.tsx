@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireAgent } from "@/lib/agent";
+import { createAdminClient } from "@/lib/supabase/server";
 import AgentSidebar from "@/components/agent/sidebar";
 import { Mail } from "lucide-react";
 
@@ -27,9 +28,26 @@ export default async function AgentLayout({ children }: { children: React.ReactN
     );
   }
 
+  // Fetch agent's primary site slug for "Switch to Site Admin" link
+  const supabase = await createAdminClient();
+  const { data: primarySite } = await supabase
+    .from("tenants")
+    .select("slug")
+    .or(`assigned_agent_id.eq.${agent.id},referred_by_agent_id.eq.${agent.id}`)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+  const isLocal = ROOT.includes("localhost");
+  const proto = isLocal ? "http" : "https";
+  const dashboardUrl = primarySite?.slug
+    ? `${proto}://${primarySite.slug}.${ROOT}/dashboard`
+    : null;
+
   return (
     <div className="flex h-screen bg-background">
-      <AgentSidebar agent={agent} />
+      <AgentSidebar agent={agent} dashboardUrl={dashboardUrl} />
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>

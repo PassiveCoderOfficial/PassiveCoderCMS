@@ -21,7 +21,7 @@ interface Agent {
   commission_rate: number;
 }
 
-export default function AgentSidebar({ agent }: { agent: Agent }) {
+export default function AgentSidebar({ agent, dashboardUrl }: { agent: Agent; dashboardUrl: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -68,13 +68,15 @@ export default function AgentSidebar({ agent }: { agent: Agent }) {
       </nav>
 
       <div className="p-3 border-t space-y-1">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        >
-          <LayoutGrid className="w-3.5 h-3.5" />
-          Switch to Site Admin
-        </Link>
+        {dashboardUrl && (
+          <a
+            href={dashboardUrl}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            Switch to Site Admin
+          </a>
+        )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors"
