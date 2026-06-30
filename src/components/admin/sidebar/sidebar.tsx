@@ -106,14 +106,14 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
             </Link>
           )}
           {isAgent && !isSuperAdmin && (
-            <Link
-              href="/agent"
+            <a
+              href={`${typeof window !== "undefined" && window.location.hostname.includes("localhost") ? "http" : "https"}://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com"}/agent`}
               onClick={onClose}
               className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-yellow-500 hover:bg-accent hover:text-yellow-400 transition-colors"
             >
               <Zap className="h-4 w-4 shrink-0" />
-              Agent Panel
-            </Link>
+              Staff Portal
+            </a>
           )}
           <button
             onClick={handleLogout}
