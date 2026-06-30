@@ -124,13 +124,13 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
           </button>
         </div>
         <a
-          href="https://wa.me/8801678669699?text=Need%20Support%3F"
+          href="https://wa.me/8801678669699?text=Hi%2C%20I%20need%20support%20with%20my%20Passive%20Coder%20site."
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 w-full rounded-md py-1.5 px-2 text-xs font-semibold text-[#25D366] hover:bg-[#25D366]/10 transition-colors"
+          className="flex items-center justify-center gap-1.5 w-full rounded-md py-2 px-2 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#1da851] transition-colors shadow-sm"
         >
           <MessageCircle className="h-3.5 w-3.5" />
-          Need Support?
+          WhatsApp Support
         </a>
         <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v1.0.0</p>
       </div>

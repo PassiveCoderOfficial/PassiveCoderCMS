@@ -427,7 +427,9 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
       {custom && (
         <div className="rounded-lg border border-dashed p-3 flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Need something bigger? <strong className="text-foreground">Custom</strong> plan available.</span>
-          <Button size="sm" variant="ghost" asChild><a href="/contact">Contact Us</a></Button>
+          <Button size="sm" variant="ghost" asChild>
+            <a href="/dashboard/support?new=1&dept=custom_dev">Contact Support</a>
+          </Button>
         </div>
       )}
     </div>

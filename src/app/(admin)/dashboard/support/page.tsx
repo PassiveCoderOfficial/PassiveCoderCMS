@@ -45,6 +45,15 @@ export default function SupportPage() {
   const [attachments, setAttachments] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Deep-link support: /dashboard/support?new=1&dept=custom_dev opens the form
+  // with the department preselected (used by the subscription "Contact Support" CTA).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dept = params.get("dept");
+    if (params.get("new")) setShowForm(true);
+    if (dept) setForm(f => ({ ...f, department: dept }));
+  }, []);
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
