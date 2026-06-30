@@ -42,7 +42,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const tenantId = reqHeaders.get("x-tenant-id");
 
   const [settingsResult, identityResult] = await Promise.all([
-    supabase.from("site_settings").select("site_theme, custom_css, custom_js, analytics_code, maintenance_mode, site_name, meta_description").single(),
+    supabase.from("site_settings").select("site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description").single(),
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity")
@@ -75,7 +75,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     if (!user) {
       return (
         <MaintenanceScreen
-          description={settings?.meta_description ?? undefined}
+          title={settings?.maintenance_title || undefined}
+          description={settings?.maintenance_message || settings?.meta_description || undefined}
           logoUrl={identity?.logo_url ?? null}
           siteName={identity?.site_name ?? settings?.site_name ?? undefined}
         />

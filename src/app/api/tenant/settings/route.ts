@@ -9,6 +9,7 @@ const ALLOWED = [
   "timezone", "language", "maintenance_mode", "meta_title", "meta_description",
   "analytics_code", "custom_css", "custom_js", "site_theme",
   "currency", "currency_symbol", "currency_position",
+  "maintenance_title", "maintenance_message",
 ] as const;
 
 export async function GET() {

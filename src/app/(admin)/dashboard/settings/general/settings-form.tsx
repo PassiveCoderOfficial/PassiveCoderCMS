@@ -189,14 +189,36 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
 
       <Card>
         <CardHeader><CardTitle className="text-sm">Maintenance</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <Label>Maintenance Mode</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Show a maintenance page to visitors</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Show a maintenance page to visitors (you stay able to preview while logged in)</p>
             </div>
             <Switch checked={!!settings.maintenance_mode} onCheckedChange={(v) => update("maintenance_mode", v)} />
           </div>
+
+          {!!settings.maintenance_mode && (
+            <div className="space-y-4 border-t pt-4">
+              <div className="space-y-1.5">
+                <Label>Maintenance Title</Label>
+                <Input
+                  value={settings.maintenance_title as string ?? ""}
+                  onChange={(e) => update("maintenance_title", e.target.value)}
+                  placeholder="We'll be back soon!"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Maintenance Message</Label>
+                <Textarea
+                  value={settings.maintenance_message as string ?? ""}
+                  onChange={(e) => update("maintenance_message", e.target.value)}
+                  rows={3}
+                  placeholder="Our site is currently undergoing scheduled maintenance. We'll be back online shortly."
+                />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
