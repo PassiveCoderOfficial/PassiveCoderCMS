@@ -4479,6 +4479,59 @@ const SLUG_ALIAS: Record<string, string> = {
   "travel-agency": "life-settle",
   "visa-agency": "life-settle",
   "tour-operator": "life-settle",
+  // ── Onboarding picker templates (templates-data.ts) ──────────────────────────
+  // Renovation & Construction
+  "handyfix-pro": "build-right",
+  "buildguard": "build-right",
+  "apex-construct": "build-right",
+  // Cleaning
+  "sparkle-home": "clean-pro",
+  "cleancore-commercial": "clean-pro",
+  "fibrefresh": "clean-pro",
+  // HVAC & Plumbing
+  "flowmaster-plumbing": "cool-breeze",
+  "heatwave-hvac": "cool-breeze",
+  "totalbuilds-services": "cool-breeze",
+  // Automotive
+  "torque-auto": "shine-auto",
+  "gripzone-tyres": "shine-auto",
+  "panelcraft": "shine-auto",
+  // Retail & Shop
+  "threadline": "maize-fashion",
+  "stride-active": "maize-fashion",
+  "worksafe-gear": "maize-fashion",
+  // General Business / Tech & Agency
+  "wanderway": "nexa-agency",
+  "trailblaze-tours": "nexa-agency",
+  "visabridge": "nexa-agency",
+  "swiftdrop-courier": "nexa-agency",
+  "vaultstore": "nexa-agency",
+  "pressmark-print": "nexa-agency",
+  "netsupport-it": "nexa-agency",
+  "growthlab-agency": "nexa-agency",
+  // Restaurant & Cafe
+  "tablefare": "aroma-table",
+  "streetbite": "aroma-table",
+  "beancraft-cafe": "brew-haven",
+  // Health & Beauty
+  "lumiere-salon": "luxe-spa",
+  "fade-barbershop": "luxe-spa",
+  "smilestudio-dental": "dental-care-pro",
+  // Fitness & Sports
+  "ironforge-gym": "fit-forge",
+  "peak-pt": "fit-forge",
+  // Education
+  "brightminds-tutor": "drive-academy",
+  "skillforge-training": "drive-academy",
+  // Legal & Finance
+  "lexbridge-law": "lex-core",
+  "cleartax-accounting": "lex-core",
+  // Photography
+  "lenscroft-studio": "lens-studio",
+  // Events
+  "forever-events": "feast-events",
+  // Real Estate
+  "propertyvault-mgmt": "estate-edge",
 };
 
 export function getTemplateIdentity(slug: string): TemplateIdentity | undefined {

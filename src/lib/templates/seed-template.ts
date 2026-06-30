@@ -6,7 +6,7 @@
  *                 real images, template-specific content, and proper layout variants.
  */
 import { SupabaseClient } from "@supabase/supabase-js";
-import { getTemplateIdentity, type TemplateIdentity } from "@/modules/themes/template-registry";
+import { getTemplateIdentity, getDefaultTemplateIdentity, type TemplateIdentity } from "@/modules/themes/template-registry";
 import type { Block } from "@/types/cms";
 
 function uid(prefix: string) {
@@ -27,13 +27,17 @@ export async function seedTemplate(
   templateSlug: string,
   mode: "theme" | "full",
 ) {
-  if (!templateSlug || templateSlug === "blank") return;
-
-  const template = getTemplateIdentity(templateSlug);
-  if (!template) {
-    console.warn(`[seedTemplate] Unknown template slug: ${templateSlug}`);
-    return;
+  // "blank" or an unknown slug → seed a minimal starter site using a neutral
+  // default identity, so a tenant is NEVER left fully empty (which would surface
+  // the "Your site is ready" welcome screen to public visitors).
+  const resolved = templateSlug && templateSlug !== "blank"
+    ? getTemplateIdentity(templateSlug)
+    : undefined;
+  if (!resolved && templateSlug && templateSlug !== "blank") {
+    console.warn(`[seedTemplate] Unknown template slug "${templateSlug}" — falling back to minimal starter`);
   }
+  const isStarter = !resolved;
+  const template = resolved ?? getDefaultTemplateIdentity();
 
   // ── 1. Site identity + active template ──────────────────────────────────────
   await supabase.from("site_identity").upsert(
@@ -68,7 +72,9 @@ export async function seedTemplate(
   );
 
   // ── 3. Log the import ────────────────────────────────────────────────────────
-  if (mode === "theme") {
+  // Starter (blank/unknown) always seeds pages so the site is never empty —
+  // skip the theme-only early return for it.
+  if (mode === "theme" && !isStarter) {
     await logImport(supabase, tenantId, templateSlug, mode);
     return;
   }
@@ -170,7 +176,9 @@ export async function seedTemplate(
   await supabase.from("pages").delete().eq("tenant_id", tenantId);
 
   const now = new Date().toISOString();
-  const pageRows = buildAllPages(template, tenantId, now);
+  const pageRows = isStarter
+    ? buildStarterPages(template, tenantId, now)
+    : buildAllPages(template, tenantId, now);
   await supabase.from("pages").insert(pageRows);
 
   // ── 9. Log ───────────────────────────────────────────────────────────────────
@@ -671,6 +679,63 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   }
 
   return pages;
+}
+
+// Minimal starter for "blank"/unknown templates: a single published home page
+// with nav + hero + contact, using a neutral default identity. Ensures a tenant
+// is never fully empty (which would surface the welcome placeholder publicly).
+function buildStarterPages(t: TemplateIdentity, tenantId: string, now: string) {
+  let o = 0;
+  const blocks: Block[] = [];
+
+  blocks.push({
+    ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++,
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    templateVariant: t.variants.navigation,
+    data: {
+      logoText: t.siteName,
+      items: [{ id: uid("ni"), label: "Home", url: "/" }, { id: uid("ni"), label: "Contact", url: "#contact" }],
+      sticky: true, showCta: true, ctaLabel: "Get Started", ctaUrl: "#contact",
+    },
+  } as Block);
+
+  blocks.push({
+    ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++,
+    templateVariant: "centered-bold",
+    data: {
+      layout: "centered",
+      title: "Welcome to your new site",
+      subtitle: "Your site is set up and ready. Edit this page in the dashboard to make it yours.",
+      description: "",
+      primaryButton: { label: "Edit in Dashboard", url: "/dashboard", variant: "primary" },
+      typography: { titleSize: "6xl", titleColor: "", subtitleColor: "", descColor: "" },
+    },
+  } as Block);
+
+  blocks.push({
+    ...BASE_BLOCK, id: uid("contact"), type: "contact", order: o++,
+    data: {
+      title: "Get In Touch", subtitle: "We'd love to hear from you", layout: "split",
+      showMap: false, showContactInfo: true,
+      phone: t.phone, email: t.email, address: t.address,
+      fields: [
+        { id: "f-name", label: "Full Name", type: "text", required: true },
+        { id: "f-email", label: "Email", type: "email", required: true },
+        { id: "f-msg", label: "Message", type: "textarea", required: true },
+      ],
+      submitLabel: "Send Message", successMessage: "Thanks! We'll be in touch.", recipientEmail: t.email,
+    },
+  } as Block);
+
+  return [{
+    tenant_id: tenantId,
+    title: "Home",
+    slug: "home",
+    status: "published",
+    blocks,
+    created_at: now,
+    updated_at: now,
+  }];
 }
 
 async function logImport(

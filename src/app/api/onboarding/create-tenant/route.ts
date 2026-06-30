@@ -97,15 +97,15 @@ export async function POST(req: Request) {
     { onConflict: "tenant_id" },
   );
 
-  // Apply template (seeding is best-effort — don't fail tenant creation if it errors)
-  if (templateId && templateId !== "blank") {
-    await seedTemplate(
-      supabase,
-      tenant.id,
-      templateId,
-      (templateMode as "theme" | "full") ?? "full",
-    ).catch(err => console.error("[seed-template]", err));
-  }
+  // Apply template (seeding is best-effort — don't fail tenant creation if it errors).
+  // Always called: "blank" or an unknown slug seeds a minimal starter site, so a
+  // tenant is never left fully empty.
+  await seedTemplate(
+    supabase,
+    tenant.id,
+    templateId ?? "blank",
+    (templateMode as "theme" | "full") ?? "full",
+  ).catch(err => console.error(`[seed-template] tenant=${tenant.id} slug=${templateId ?? "blank"}`, err));
 
   // Provision ENM free account (best-effort)
   const { data: profile } = await supabase.from("profiles").select("email, full_name").eq("id", userId).maybeSingle();
