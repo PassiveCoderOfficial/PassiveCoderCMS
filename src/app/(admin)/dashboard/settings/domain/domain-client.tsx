@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Globe, CheckCircle, Clock, XCircle, RefreshCw, Copy, Loader2 } from "lucide-react";
+import { Globe, CheckCircle, Clock, XCircle, RefreshCw, Copy, Loader2, Trash2 } from "lucide-react";
 
 interface Tenant {
   id: string;
@@ -39,6 +39,7 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
   const [dnsType, setDnsType] = useState<"nameserver" | "arecord">(initialDnsType);
   const [connecting, setConnecting] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [instructions, setInstructions] = useState<Record<string, unknown> | null>(initialInstructions);
   const [status, setStatus] = useState(isPending ? "pending" : initialStatus);
   const [error, setError] = useState("");
@@ -72,25 +73,56 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
     }
   }
 
-  async function checkVerification() {
-    setVerifying(true);
-    setVerifyMsg("");
+  const checkVerification = useCallback(async (silent = false) => {
+    if (!silent) { setVerifying(true); setVerifyMsg(""); }
     try {
       const res = await fetch(`/api/domain/verify?tenantId=${tenant!.id}`);
       const data = await res.json() as { verified: boolean; vercel?: boolean; dns?: boolean; reason?: string };
       if (data.verified) {
         setStatus("active");
         setVerifyMsg("");
-      } else {
+      } else if (!silent) {
         const bits: string[] = [];
         bits.push(data.dns ? "DNS ✓" : "DNS pending");
         bits.push(data.vercel ? "Vercel ✓" : "Vercel pending");
-        setVerifyMsg(`Not verified yet — ${bits.join(" · ")}. ${data.reason ?? "DNS can take up to 48h to propagate."} Try again shortly.`);
+        setVerifyMsg(`Not verified yet — ${bits.join(" · ")}. ${data.reason ?? "DNS can take up to 48h to propagate."} We'll keep checking automatically.`);
       }
     } catch {
-      setVerifyMsg("Could not check right now. Try again in a moment.");
+      if (!silent) setVerifyMsg("Could not check right now. Try again in a moment.");
     } finally {
-      setVerifying(false);
+      if (!silent) setVerifying(false);
+    }
+  }, [tenant]);
+
+  // Auto-poll every 30s while pending, so the badge flips to Active without manual clicks.
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    if (status === "pending") {
+      pollRef.current = setInterval(() => checkVerification(true), 30000);
+      return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    }
+  }, [status, checkVerification]);
+
+  async function disconnectDomain() {
+    if (!confirm(`Disconnect ${tenant!.custom_domain ?? "this domain"}? Your site will stay live at ${tenant!.slug}.${ROOT_DOMAIN}. You can reconnect anytime.`)) return;
+    setDisconnecting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/domain/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId: tenant!.id }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!data.ok) throw new Error(data.error ?? "Failed");
+      setDomain("");
+      setStatus("none");
+      setInstructions(null);
+      setWarning(""); setVerifyMsg("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Disconnect failed");
+    } finally {
+      setDisconnecting(false);
     }
   }
 
@@ -233,7 +265,7 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
             <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 px-3 py-2 text-sm text-amber-800 dark:text-amber-400">
               DNS changes can take up to 48 hours to propagate worldwide.
             </div>
-            <Button variant="outline" onClick={checkVerification} disabled={verifying} className="w-full">
+            <Button variant="outline" onClick={() => checkVerification(false)} disabled={verifying} className="w-full">
               {verifying ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Checking…</> : <><RefreshCw className="w-4 h-4 mr-2" />Check Verification</>}
             </Button>
             {verifyMsg && (
@@ -245,14 +277,36 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
 
       {status === "active" && (
         <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
-          <CardContent className="pt-5">
+          <CardContent className="pt-5 space-y-3">
             <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
               <CheckCircle className="w-5 h-5" />
               <span className="font-medium">Domain is active and verified!</span>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Your site is now live at <a href={`https://${tenant.custom_domain}`} className="underline" target="_blank" rel="noopener noreferrer">https://{tenant.custom_domain}</a>
+            <p className="text-sm text-muted-foreground">
+              Your site is live at <a href={`https://${tenant.custom_domain}`} className="underline font-medium" target="_blank" rel="noopener noreferrer">https://{tenant.custom_domain}</a>
             </p>
+            <p className="text-xs text-muted-foreground">
+              It also stays reachable at <span className="font-mono">{tenant.slug}.{ROOT_DOMAIN}</span> — both addresses serve the same site.
+            </p>
+            <Button variant="outline" onClick={disconnectDomain} disabled={disconnecting}
+              className="text-destructive border-destructive/30 hover:bg-destructive/5">
+              {disconnecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Removing…</> : <><Trash2 className="w-4 h-4 mr-2" />Disconnect Domain</>}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Allow cancelling a pending/wrong domain too */}
+      {status === "pending" && (
+        <Card>
+          <CardContent className="pt-5 flex items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              Wrong domain or want to start over?
+            </p>
+            <Button variant="outline" onClick={disconnectDomain} disabled={disconnecting}
+              className="text-destructive border-destructive/30 hover:bg-destructive/5 shrink-0">
+              {disconnecting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Removing…</> : <><Trash2 className="w-4 h-4 mr-2" />Remove</>}
+            </Button>
           </CardContent>
         </Card>
       )}
