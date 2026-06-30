@@ -15,9 +15,9 @@ export default async function AgentLayout({ children }: { children: React.ReactN
           <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto">
             <Mail className="w-8 h-8 text-yellow-600" />
           </div>
-          <h1 className="text-2xl font-bold">Check your email</h1>
+          <h1 className="text-2xl font-bold">Account pending</h1>
           <p className="text-muted-foreground">
-            Your agent account is pending. Confirm your email address to activate it, or wait for a platform admin to approve you.
+            Your staff account is pending approval. Contact a platform admin to activate it.
           </p>
           <p className="text-sm text-muted-foreground">
             Signed in as <span className="font-medium">{agent.email}</span>

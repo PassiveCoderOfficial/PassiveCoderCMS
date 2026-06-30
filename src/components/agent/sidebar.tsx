@@ -35,7 +35,7 @@ export default function AgentSidebar({ agent }: { agent: Agent }) {
     <aside className="w-56 flex flex-col border-r bg-card flex-shrink-0">
       <div className="h-14 flex items-center gap-2.5 px-4 border-b">
         <Zap className="w-5 h-5 text-primary" />
-        <span className="font-bold text-sm">Agent Portal</span>
+        <span className="font-bold text-sm">Staff Portal</span>
       </div>
 
       <div className="px-3 py-3 border-b">
@@ -43,7 +43,7 @@ export default function AgentSidebar({ agent }: { agent: Agent }) {
         <p className="text-[10px] text-muted-foreground mt-0.5">
           Code: <span className="font-mono font-medium text-primary">{agent.referral_code}</span>
         </p>
-        <p className="text-[10px] text-muted-foreground">{agent.commission_rate}% commission</p>
+        <p className="text-[10px] text-muted-foreground">{agent.commission_rate}% rate</p>
       </div>
 
       <nav className="flex-1 px-2 py-3 space-y-0.5">

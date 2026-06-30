@@ -20,7 +20,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default async function AgentSitesPage() {
   const agent = await requireAgent();
-  if (!agent) redirect("/become-agent");
+  if (!agent) redirect("/login");
 
   const supabase = await createAdminClient();
 

@@ -5,7 +5,7 @@ import { DollarSign } from "lucide-react";
 
 export default async function AgentCommissionsPage() {
   const agent = await requireAgent();
-  if (!agent) redirect("/become-agent");
+  if (!agent) redirect("/login");
 
   const supabase = await createAdminClient();
   const { data: commissions } = await supabase
@@ -21,7 +21,7 @@ export default async function AgentCommissionsPage() {
     <div className="p-6 space-y-6 max-w-4xl">
       <div>
         <h1 className="text-2xl font-bold">Commissions</h1>
-        <p className="text-muted-foreground text-sm mt-1">Your earnings from referred sites.</p>
+        <p className="text-muted-foreground text-sm mt-1">Your earnings from assigned and referred sites.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

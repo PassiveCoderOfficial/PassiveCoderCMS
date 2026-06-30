@@ -55,7 +55,7 @@ export default function AgentProfilePage() {
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Agent Profile</h1>
+      <h1 className="text-2xl font-bold">Staff Profile</h1>
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div className="grid grid-cols-2 gap-4">

@@ -6,7 +6,7 @@ import { CopyButton } from "./copy-button";
 
 export default async function AgentDashboardPage() {
   const agent = await requireAgent();
-  if (!agent) redirect("/become-agent");
+  if (!agent) redirect("/login");
 
   const supabase = await createAdminClient();
 
@@ -31,7 +31,7 @@ export default async function AgentDashboardPage() {
   return (
     <div className="p-6 space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold">Agent Dashboard</h1>
+        <h1 className="text-2xl font-bold">Staff Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Welcome back, {agent.full_name}</p>
       </div>
 
