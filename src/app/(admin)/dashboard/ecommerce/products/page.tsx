@@ -91,8 +91,8 @@ function EditableCell({
 
   return (
     <span
-      onDoubleClick={() => setEditing(true)}
-      title="Double-click to edit"
+      onClick={() => setEditing(true)}
+      title="Click to edit"
       className={cn("cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none", className)}
     >
       {value}
@@ -132,8 +132,8 @@ function StatusCell({ product, onUpdate }: { product: Product; onUpdate: (p: Par
 
   return (
     <span
-      onDoubleClick={() => setEditing(true)}
-      title="Double-click to change status"
+      onClick={() => setEditing(true)}
+      title="Click to change status"
       className={cn("text-xs font-medium px-2 py-1 rounded-full capitalize cursor-pointer select-none", STATUS_VARIANT[product.status])}
     >
       {product.status}
@@ -183,8 +183,8 @@ function CategoryCell({
   return (
     <div className="relative" ref={ref}>
       <span
-        onDoubleClick={() => setEditing(true)}
-        title="Double-click to edit categories"
+        onClick={() => setEditing(true)}
+        title="Click to edit categories"
         className="text-xs cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none text-muted-foreground"
       >
         {names.length > 0 ? names.join(", ") : <span className="opacity-40">—</span>}
@@ -274,8 +274,8 @@ function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Part
   return (
     <div className="relative" ref={ref}>
       <span
-        onDoubleClick={() => setEditing(true)}
-        title="Double-click to edit stock"
+        onClick={() => setEditing(true)}
+        title="Click to edit stock"
         className="cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none inline-block"
       >
         {display}
@@ -399,7 +399,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Package className="w-6 h-6" /> Products</h1>
-          <p className="text-muted-foreground text-sm mt-1">{products.length} total · double-click any cell to quick edit</p>
+          <p className="text-muted-foreground text-sm mt-1">{products.length} total · click any cell to quick edit</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
@@ -477,7 +477,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
 
-                    {/* Price — double-click editable */}
+                    {/* Price — click to edit */}
                     <td className="px-4 py-3 hidden sm:table-cell">
                       <EditableCell
                         value={String(product.price)}
@@ -498,7 +498,7 @@ export default function ProductsPage() {
                       )}
                     </td>
 
-                    {/* Stock — double-click editable */}
+                    {/* Stock — click to edit */}
                     <td className="px-4 py-3 hidden md:table-cell relative">
                       <StockCell
                         product={product}
@@ -506,7 +506,7 @@ export default function ProductsPage() {
                       />
                     </td>
 
-                    {/* Category — double-click editable */}
+                    {/* Category — click to edit */}
                     <td className="px-4 py-3 hidden md:table-cell relative">
                       <CategoryCell
                         product={product}
@@ -515,7 +515,7 @@ export default function ProductsPage() {
                       />
                     </td>
 
-                    {/* Status — double-click editable */}
+                    {/* Status — click to edit */}
                     <td className="px-4 py-3 hidden md:table-cell relative">
                       <StatusCell
                         product={product}
