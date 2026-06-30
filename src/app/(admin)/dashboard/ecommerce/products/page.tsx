@@ -282,7 +282,7 @@ function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Part
       </span>
 
       {editing && (
-        <div className="absolute left-0 top-7 z-20 bg-background border rounded-xl shadow-xl p-3 min-w-[220px] space-y-3">
+        <div className="absolute left-0 bottom-full mb-1 z-30 bg-background border rounded-xl shadow-xl p-3 min-w-[220px] space-y-3">
           {/* In Stock (untracked) */}
           <button
             onClick={setInStock}
