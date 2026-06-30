@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Package, Loader2, Pencil, Trash2, Eye, EyeOff, Star } from "lucide-react";
+import { Plus, Package, Loader2, Pencil, Trash2, Eye, EyeOff, Star, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Product {
@@ -177,6 +177,13 @@ export default function ProductsPage() {
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                           {product.status === "active" ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                         </button>
+                        {product.status === "active" && (
+                          <Link href={`/products/${product.slug}`} target="_blank"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            title="View product">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
                         <Link href={`/dashboard/ecommerce/products/${product.id}`}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                           <Pencil className="h-3.5 w-3.5" />

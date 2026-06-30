@@ -19,8 +19,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import {
   Loader2, Trash2, Star, Upload, ImageIcon, Search, Grid3X3, List,
-  X, Check, FolderOpen, Plus,
+  X, Check, FolderOpen, Plus, Eye,
 } from "lucide-react";
+import Link from "next/link";
 import { uploadMediaFile } from "@/app/(admin)/dashboard/media/actions";
 import type { Product } from "@/types/cms";
 import { cn } from "@/lib/utils";
@@ -473,6 +474,13 @@ export function ProductForm({ product }: ProductFormProps) {
                   <div><Label>Featured</Label><p className="text-xs text-muted-foreground">Show in featured sections</p></div>
                   <Switch {...form.register("featured")} onCheckedChange={v => form.setValue("featured", v)} defaultChecked={form.getValues("featured")} />
                 </div>
+                {product && (
+                  <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                    <Link href={`/products/${form.getValues("slug")}`} target="_blank">
+                      <Eye className="h-3.5 w-3.5" /> View Product
+                    </Link>
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
