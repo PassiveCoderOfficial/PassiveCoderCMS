@@ -12,6 +12,32 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { CURRENCIES } from "@/lib/currency/currencies";
 
+const TIMEZONES = [
+  "UTC", "Asia/Dhaka", "Asia/Kolkata", "Asia/Karachi", "Asia/Dubai", "Asia/Riyadh",
+  "Asia/Singapore", "Asia/Kuala_Lumpur", "Asia/Jakarta", "Asia/Bangkok", "Asia/Manila",
+  "Asia/Tokyo", "Asia/Shanghai", "Asia/Hong_Kong", "Asia/Seoul",
+  "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Moscow", "Europe/Istanbul",
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "America/Sao_Paulo", "America/Mexico_City", "Australia/Sydney", "Pacific/Auckland",
+  "Africa/Lagos", "Africa/Cairo", "Africa/Johannesburg", "Africa/Nairobi",
+];
+
+const LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "bn", name: "Bengali (বাংলা)" },
+  { code: "hi", name: "Hindi (हिन्दी)" },
+  { code: "ur", name: "Urdu (اردو)" },
+  { code: "ar", name: "Arabic (العربية)" },
+  { code: "es", name: "Spanish (Español)" },
+  { code: "fr", name: "French (Français)" },
+  { code: "de", name: "German (Deutsch)" },
+  { code: "pt", name: "Portuguese (Português)" },
+  { code: "zh", name: "Chinese (中文)" },
+  { code: "ja", name: "Japanese (日本語)" },
+  { code: "id", name: "Indonesian" },
+  { code: "ms", name: "Malay" },
+];
+
 interface SettingsFormProps {
   initialSettings: Record<string, unknown>;
 }
@@ -61,9 +87,30 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
             <Label>Site Description</Label>
             <Textarea value={settings.site_description as string ?? ""} onChange={(e) => update("site_description", e.target.value)} rows={3} placeholder="Brief description of your site" />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm">Regional</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Site URL</Label>
-            <Input value={settings.site_url as string ?? ""} onChange={(e) => update("site_url", e.target.value)} placeholder="https://yoursite.com" />
+            <Label>Timezone</Label>
+            <Select value={settings.timezone as string ?? "UTC"} onValueChange={(v) => update("timezone", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-72 overflow-y-auto">
+                {TIMEZONES.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Used for dates, orders, and reports.</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Language</Label>
+            <Select value={settings.language as string ?? "en"} onValueChange={(v) => update("language", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((l) => <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
