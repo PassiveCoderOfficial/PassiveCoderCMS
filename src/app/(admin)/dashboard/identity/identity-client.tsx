@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, Pencil, Check, X, Navigation, Footprints, ChevronDown, ChevronRight } from "lucide-react";
+import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, Pencil, Check, X, Navigation, Footprints, ChevronDown, ChevronRight, Phone } from "lucide-react";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 
 interface SiteIdentity {
@@ -422,13 +422,124 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
   );
 }
 
+// ─── GLOBAL PRE-FOOTER EDITOR (CTA + Contact, shown on every page) ──────────
+
+function GlobalPrefooterEditor({ initialCta, initialContact }: {
+  initialCta: Record<string, unknown> | null;
+  initialContact: Record<string, unknown> | null;
+}) {
+  const cd = (initialCta?.data ?? {}) as Record<string, unknown>;
+  const cc = (initialContact?.data ?? {}) as Record<string, unknown>;
+  const cPrimary = (cd.primaryButton ?? {}) as Record<string, unknown>;
+  const cSecondary = (cd.secondaryButton ?? {}) as Record<string, unknown>;
+
+  const [ctaTitle, setCtaTitle] = useState((cd.title as string) ?? "Ready to Start Your Journey?");
+  const [ctaDesc, setCtaDesc] = useState((cd.description as string) ?? "");
+  const [ctaPrimaryLabel, setCtaPrimaryLabel] = useState((cPrimary.label as string) ?? "Free Consultation");
+  const [ctaPrimaryUrl, setCtaPrimaryUrl] = useState((cPrimary.url as string) ?? "/contact");
+  const [ctaSecondaryLabel, setCtaSecondaryLabel] = useState((cSecondary.label as string) ?? "WhatsApp Now");
+  const [ctaSecondaryUrl, setCtaSecondaryUrl] = useState((cSecondary.url as string) ?? "");
+
+  const [title, setTitle] = useState((cc.title as string) ?? "Get In Touch");
+  const [subtitle, setSubtitle] = useState((cc.subtitle as string) ?? "");
+  const [phone, setPhone] = useState((cc.phone as string) ?? "");
+  const [email, setEmail] = useState((cc.email as string) ?? "");
+  const [address, setAddress] = useState((cc.address as string) ?? "");
+  const [recipientEmail, setRecipientEmail] = useState((cc.recipientEmail as string) ?? "");
+
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const save = useCallback(async () => {
+    setSaving(true);
+    const ctaBlock = {
+      id: (initialCta?.id as string) ?? uid(),
+      type: "cta", order: 0, visible: true, width: "full",
+      padding: { top: 0, right: 0, bottom: 0, left: 0 }, margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      background: { type: "gradient", gradient: "linear-gradient(135deg, #1e3a8a, #0b1f4d)" },
+      templateVariant: "gradient-banner",
+      data: {
+        title: ctaTitle, description: ctaDesc,
+        primaryButton: { label: ctaPrimaryLabel, url: ctaPrimaryUrl },
+        secondaryButton: ctaSecondaryLabel ? { label: ctaSecondaryLabel, url: ctaSecondaryUrl } : undefined,
+        layout: "centered",
+      },
+    };
+    const contactBlock = {
+      id: (initialContact?.id as string) ?? uid(),
+      type: "contact", order: 1, visible: true, width: "full",
+      padding: { top: 80, right: 0, bottom: 80, left: 0 }, margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      background: { type: "none" },
+      data: {
+        title, subtitle, layout: "split", showMap: false, showContactInfo: true,
+        phone, email, address, recipientEmail: recipientEmail || email,
+        fields: (cc.fields as unknown[]) ?? [
+          { id: "f-name", label: "Full Name", type: "text", required: true },
+          { id: "f-email", label: "Email Address", type: "email", required: false },
+          { id: "f-phone", label: "Phone / WhatsApp", type: "tel", required: true },
+          { id: "f-msg", label: "Message", type: "textarea", required: true },
+        ],
+        submitLabel: (cc.submitLabel as string) ?? "Send Message",
+        successMessage: (cc.successMessage as string) ?? "Thank you! We'll contact you within 24 hours.",
+      },
+    };
+    await api("POST", { _type: "global_layout", global_prefooter: [ctaBlock, contactBlock] });
+    setSaving(false); setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  }, [initialCta, initialContact, ctaTitle, ctaDesc, ctaPrimaryLabel, ctaPrimaryUrl, ctaSecondaryLabel, ctaSecondaryUrl, title, subtitle, phone, email, address, recipientEmail, cc]);
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-white">Global Pre-Footer (CTA + Contact)</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Shows on every page above the footer. Edit once — updates the whole site. (Skipped on pages that already have their own contact form, like the Contact page.)</p>
+        </div>
+        <button onClick={save} disabled={saving}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saved ? "Saved!" : "Save"}
+        </button>
+      </div>
+
+      <section className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-indigo-400">Call-to-Action Banner</h3>
+        <div><label className="block text-xs text-gray-400 mb-1">Title</label><input value={ctaTitle} onChange={e => setCtaTitle(e.target.value)} className={inputCls} /></div>
+        <div><label className="block text-xs text-gray-400 mb-1">Description</label><input value={ctaDesc} onChange={e => setCtaDesc(e.target.value)} className={inputCls} /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="block text-xs text-gray-400 mb-1">Primary Button Label</label><input value={ctaPrimaryLabel} onChange={e => setCtaPrimaryLabel(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-gray-400 mb-1">Primary Button URL</label><input value={ctaPrimaryUrl} onChange={e => setCtaPrimaryUrl(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-gray-400 mb-1">Secondary Button Label</label><input value={ctaSecondaryLabel} onChange={e => setCtaSecondaryLabel(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-gray-400 mb-1">Secondary Button URL</label><input value={ctaSecondaryUrl} onChange={e => setCtaSecondaryUrl(e.target.value)} className={inputCls} /></div>
+        </div>
+      </section>
+
+      <section className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-indigo-400">Contact Form</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="block text-xs text-gray-400 mb-1">Heading</label><input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-gray-400 mb-1">Subheading</label><input value={subtitle} onChange={e => setSubtitle(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-gray-400 mb-1">Phone</label><input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-gray-400 mb-1">Email (shown)</label><input value={email} onChange={e => setEmail(e.target.value)} className={inputCls} /></div>
+          <div className="col-span-2"><label className="block text-xs text-gray-400 mb-1">Address</label><input value={address} onChange={e => setAddress(e.target.value)} className={inputCls} /></div>
+          <div className="col-span-2"><label className="block text-xs text-gray-400 mb-1">Form submissions sent to (email)</label><input value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} placeholder="defaults to shown email" className={inputCls} /></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 // ─── MAIN CLIENT ───────────────────────────────────────────────────────────
 
-export default function IdentityClient({ initialIdentity, initialMenus, initialGlobalHeader, initialGlobalFooter }: {
+export default function IdentityClient({ initialIdentity, initialMenus, initialGlobalHeader, initialGlobalFooter, initialPrefooterCta, initialPrefooterContact }: {
   initialIdentity: SiteIdentity | null;
   initialMenus: NavMenu[];
   initialGlobalHeader: Record<string, unknown> | null;
   initialGlobalFooter: Record<string, unknown> | null;
+  initialPrefooterCta: Record<string, unknown> | null;
+  initialPrefooterContact: Record<string, unknown> | null;
 }) {
   const [identity, setIdentity] = useState<SiteIdentity>(initialIdentity ?? {
     logo_url: null, logo_dark_url: null, logo_width: 160, logo_alt: null,
@@ -439,7 +550,7 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
   const [saved, setSaved] = useState(false);
   const [creatingMenu, setCreatingMenu] = useState(false);
   const [newMenuName, setNewMenuName] = useState("");
-  const [activeTab, setActiveTab] = useState<"identity" | "nav" | "footer" | "menus">("nav");
+  const [activeTab, setActiveTab] = useState<"identity" | "nav" | "footer" | "prefooter" | "menus">("nav");
 
   const set = (k: keyof SiteIdentity, v: unknown) => { setIdentity(p => ({ ...p, [k]: v })); setSaved(false); };
 
@@ -461,6 +572,7 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
   const TABS = [
     { key: "nav" as const, label: "Global Nav", icon: <Navigation className="w-4 h-4" /> },
     { key: "footer" as const, label: "Global Footer", icon: <Footprints className="w-4 h-4" /> },
+    { key: "prefooter" as const, label: "Pre-Footer (CTA + Contact)", icon: <Phone className="w-4 h-4" /> },
     { key: "identity" as const, label: "Site Identity", icon: <Layers className="w-4 h-4" /> },
     { key: "menus" as const, label: "Nav Menus (Legacy)", icon: <Plus className="w-4 h-4" /> },
   ];
@@ -489,6 +601,9 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
 
       {/* Global Footer */}
       {activeTab === "footer" && <GlobalFooterEditor initialBlock={initialGlobalFooter} />}
+
+      {/* Global Pre-Footer */}
+      {activeTab === "prefooter" && <GlobalPrefooterEditor initialCta={initialPrefooterCta} initialContact={initialPrefooterContact} />}
 
       {/* Site Identity */}
       {activeTab === "identity" && (

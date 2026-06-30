@@ -13,6 +13,7 @@ import CtaSection from "@/components/marketing/cta";
 import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
 import type { Block } from "@/types/cms";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function MarketingHomePage() {
   // The (site)/[...slug] catch-all only fires for /something, not /
   // So we handle the tenant homepage here.
   if (tenantId) {
-    const [{ data: tenantPage }, { data: identity }] = await Promise.all([
+    const [{ data: tenantPage }, layout] = await Promise.all([
       supabase
         .from("pages")
         .select("*")
@@ -35,29 +36,23 @@ export default async function MarketingHomePage() {
         .eq("tenant_id", tenantId)
         .eq("status", "published")
         .maybeSingle(),
-      supabase
-        .from("site_identity")
-        .select("global_header, global_footer")
-        .eq("tenant_id", tenantId)
-        .maybeSingle(),
+      fetchGlobalLayout(tenantId),
     ]);
 
     const blocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
 
-    // Global header/footer — stored as single Block object OR Block[] array.
-    // The (site) layout injects these on other pages; root "/" is handled here
-    // (catch-all can't match "/"), so we inject them manually for parity.
-    const toBlocks = (v: unknown): Block[] =>
-      !v ? [] : Array.isArray(v) ? v as Block[]
-        : (typeof v === "object" && (v as Record<string, unknown>).type) ? [v as Block] : [];
-    const globalHeader = toBlocks(identity?.global_header);
-    const globalFooter = toBlocks(identity?.global_footer);
+    // Global header/footer/pre-footer. The (site) layout injects these on other pages;
+    // root "/" is handled here (catch-all can't match "/"), so inject for parity.
+    const { header: globalHeader, footer: globalFooter, prefooter } = layout;
+    const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
+      ? [...blocks, ...prefooter]
+      : blocks;
 
     if (blocks.length > 0) {
       return (
         <div className="min-h-screen">
           {globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
-          <PageRenderer blocks={blocks} />
+          <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>
       );

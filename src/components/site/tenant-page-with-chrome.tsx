@@ -1,13 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { fetchGlobalLayout, toBlocks, shouldInjectPrefooter } from "@/lib/site/global-blocks";
 import type { Block } from "@/types/cms";
-
-function toBlocks(v: unknown): Block[] {
-  if (!v) return [];
-  if (Array.isArray(v)) return v as Block[];
-  if (typeof v === "object" && (v as Record<string, unknown>).type) return [v as Block];
-  return [];
-}
 
 /**
  * Renders a tenant's DB page (by slug) wrapped in the global header + footer.
@@ -17,17 +11,19 @@ function toBlocks(v: unknown): Block[] {
  */
 export async function TenantPageWithChrome({ tenantId, slug }: { tenantId: string; slug: string }) {
   const supabase = await createClient();
-  const [{ data: page }, { data: identity }] = await Promise.all([
+  const [{ data: page }, layout] = await Promise.all([
     supabase.from("pages").select("*").eq("slug", slug).eq("status", "published").eq("tenant_id", tenantId).maybeSingle(),
-    supabase.from("site_identity").select("global_header, global_footer").eq("tenant_id", tenantId).maybeSingle(),
+    fetchGlobalLayout(tenantId),
   ]);
-  const blocks = toBlocks(page?.blocks);
-  const header = toBlocks(identity?.global_header);
-  const footer = toBlocks(identity?.global_footer);
+  const blocks: Block[] = toBlocks(page?.blocks);
+  const { header, footer, prefooter } = layout;
+  const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
+    ? [...blocks, ...prefooter]
+    : blocks;
   return (
     <div className="min-h-screen">
       {header.length > 0 && <PageRenderer blocks={header} />}
-      <PageRenderer blocks={blocks} />
+      <PageRenderer blocks={body} />
       {footer.length > 0 && <PageRenderer blocks={footer} />}
     </div>
   );

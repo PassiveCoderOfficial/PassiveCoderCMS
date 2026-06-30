@@ -29,12 +29,21 @@ export default async function IdentityPage() {
           : null)
     : null;
 
+  // global_prefooter is a Block[] (cta + contact). Pull each out for the editor.
+  const prefooterArr: Record<string, unknown>[] = Array.isArray(identity?.global_prefooter)
+    ? identity!.global_prefooter as Record<string, unknown>[]
+    : [];
+  const prefooterCta = prefooterArr.find((b) => b.type === "cta") ?? null;
+  const prefooterContact = prefooterArr.find((b) => b.type === "contact") ?? null;
+
   return (
     <IdentityClient
       initialIdentity={identity ?? null}
       initialMenus={menus ?? []}
       initialGlobalHeader={globalHeader}
       initialGlobalFooter={globalFooter}
+      initialPrefooterCta={prefooterCta}
+      initialPrefooterContact={prefooterContact}
     />
   );
 }

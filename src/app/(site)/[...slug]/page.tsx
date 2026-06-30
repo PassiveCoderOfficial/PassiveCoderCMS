@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
 import { isSaaS } from "@/lib/flags";
 import type { Block, Page } from "@/types/cms";
 import type { Metadata } from "next";
@@ -103,9 +104,16 @@ export default async function SitePage({ params }: Props) {
 
   const blocks: Block[] = Array.isArray(page.blocks) ? page.blocks : [];
 
+  // Global pre-footer (CTA + contact) — injected once site-wide, skipped on pages
+  // that already have their own contact block.
+  const { prefooter } = await fetchGlobalLayout(tenantId);
+  const finalBlocks = prefooter.length > 0 && shouldInjectPrefooter(blocks)
+    ? [...blocks, ...prefooter]
+    : blocks;
+
   return (
     <div className="min-h-screen">
-      <PageRenderer blocks={blocks} />
+      <PageRenderer blocks={finalBlocks} />
     </div>
   );
 }
