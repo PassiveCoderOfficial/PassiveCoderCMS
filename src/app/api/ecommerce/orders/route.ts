@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CartItem, Address } from "@/types/cms";
 
+type BillingAddress = Address & { email: string; phone?: string };
+
 interface OrderPayload {
   items: CartItem[];
-  billing_address: Address;
+  billing_address: BillingAddress;
   payment_method: string;
   notes?: string;
 }
