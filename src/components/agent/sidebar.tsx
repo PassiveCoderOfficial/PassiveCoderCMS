@@ -3,10 +3,20 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, LayoutGrid,
+  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, ExternalLink, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+
+const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+const isLocal = ROOT.includes("localhost");
+const proto = isLocal ? "http" : "https";
 
 const NAV = [
   { label: "Overview", href: "/agent", icon: LayoutDashboard, exact: true },
@@ -21,9 +31,16 @@ interface Agent {
   commission_rate: number;
 }
 
-export default function AgentSidebar({ agent, dashboardUrl }: { agent: Agent; dashboardUrl: string | null }) {
+interface Site {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export default function AgentSidebar({ agent, sites }: { agent: Agent; sites: Site[] }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -68,15 +85,66 @@ export default function AgentSidebar({ agent, dashboardUrl }: { agent: Agent; da
       </nav>
 
       <div className="p-3 border-t space-y-1">
-        {dashboardUrl && (
-          <a
-            href={dashboardUrl}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            Switch to Site Admin
-          </a>
+        {/* Site switcher */}
+        {sites.length === 0 ? (
+          <p className="px-3 py-2 text-xs text-muted-foreground">No sites yet</p>
+        ) : sites.length === 1 ? (
+          <div className="flex items-center gap-1 px-1">
+            <a
+              href={`${proto}://${sites[0].slug}.${ROOT}/dashboard`}
+              className="flex flex-1 items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors truncate"
+            >
+              <Globe className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{sites[0].name}</span>
+            </a>
+            <a
+              href={`${proto}://${sites[0].slug}.${ROOT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Visit site"
+              className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            >
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        ) : (
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-3 h-8 text-xs text-muted-foreground">
+                <Globe className="w-3.5 h-3.5 shrink-0" />
+                <span className="flex-1 text-left truncate">Switch Site Admin</span>
+                <ChevronDown className="w-3 h-3 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="start" className="w-52">
+              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Your Sites</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {sites.map(site => (
+                <div key={site.id} className="flex items-center gap-1 px-1 py-0.5">
+                  <a
+                    href={`${proto}://${site.slug}.${ROOT}/dashboard`}
+                    className="flex-1 flex flex-col px-2 py-1.5 rounded-md hover:bg-accent transition-colors min-w-0"
+                    onClick={() => setOpen(false)}
+                  >
+                    <span className="text-sm font-medium truncate">{site.name}</span>
+                    <span className="text-xs text-muted-foreground truncate">{site.slug}.{ROOT}</span>
+                  </a>
+                  <a
+                    href={`${proto}://${site.slug}.${ROOT}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Visit site"
+                    className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
+
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors"

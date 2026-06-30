@@ -28,26 +28,23 @@ export default async function AgentLayout({ children }: { children: React.ReactN
     );
   }
 
-  // Fetch agent's primary site slug for "Switch to Site Admin" link
+  // Fetch all sites this agent is assigned to or referred
   const supabase = await createAdminClient();
-  const { data: primarySite } = await supabase
-    .from("tenants")
-    .select("slug")
-    .or(`assigned_agent_id.eq.${agent.id},referred_by_agent_id.eq.${agent.id}`)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  const [{ data: assigned }, { data: referred }] = await Promise.all([
+    supabase.from("tenants").select("id,name,slug").eq("assigned_agent_id", agent.id).order("created_at", { ascending: true }),
+    supabase.from("tenants").select("id,name,slug").eq("referred_by_agent_id", agent.id).order("created_at", { ascending: true }),
+  ]);
 
-  const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
-  const isLocal = ROOT.includes("localhost");
-  const proto = isLocal ? "http" : "https";
-  const dashboardUrl = primarySite?.slug
-    ? `${proto}://${primarySite.slug}.${ROOT}/dashboard`
-    : null;
+  // Merge, deduplicate by id
+  const seen = new Set<string>();
+  const agentSites: { id: string; name: string; slug: string }[] = [];
+  for (const s of [...(assigned ?? []), ...(referred ?? [])]) {
+    if (!seen.has(s.id)) { seen.add(s.id); agentSites.push(s); }
+  }
 
   return (
     <div className="flex h-screen bg-background">
-      <AgentSidebar agent={agent} dashboardUrl={dashboardUrl} />
+      <AgentSidebar agent={agent} sites={agentSites} />
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>
