@@ -15,7 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const tenantId = reqHeaders.get("x-tenant-id");
 
   const [{ data: settings }, identityResult] = await Promise.all([
-    supabase.from("site_settings").select("site_name, meta_description, site_description").single(),
+    tenantId
+      ? createAdminClient().then(admin =>
+          admin.from("site_settings").select("site_name, meta_description, site_description").eq("tenant_id", tenantId).maybeSingle()
+        )
+      : supabase.from("site_settings").select("site_name, meta_description, site_description").maybeSingle(),
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity").select("site_name, favicon_url").eq("tenant_id", tenantId).single()
@@ -41,8 +45,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
 
+  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description";
   const [settingsResult, identityResult] = await Promise.all([
-    supabase.from("site_settings").select("site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description").single(),
+    tenantId
+      ? createAdminClient().then(admin =>
+          admin.from("site_settings").select(settingsCols).eq("tenant_id", tenantId).maybeSingle()
+        )
+      : supabase.from("site_settings").select(settingsCols).maybeSingle(),
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity")
