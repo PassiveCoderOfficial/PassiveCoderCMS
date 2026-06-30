@@ -27,6 +27,8 @@
   SlidersHorizontal,
   DollarSign as PricingIcon,
   Calendar,
+  Plus,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 
@@ -84,9 +86,18 @@ export const navSections: NavSection[] = [
   {
     label: "Ecommerce",
     items: [
-      { label: "Products", href: "/dashboard/ecommerce/products", icon: Package },
+      {
+        label: "Products",
+        href: "/dashboard/ecommerce/products",
+        icon: Package,
+        children: [
+          { label: "All Products", href: "/dashboard/ecommerce/products", icon: Package },
+          { label: "Add Single", href: "/dashboard/ecommerce/products/new", icon: Plus },
+          { label: "Add Multiple", href: "/dashboard/ecommerce/products/bulk-upload", icon: Upload },
+          { label: "Categories", href: "/dashboard/ecommerce/categories", icon: Tag },
+        ],
+      },
       { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag },
-      { label: "Categories", href: "/dashboard/ecommerce/categories", icon: Tag },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck },
     ],
