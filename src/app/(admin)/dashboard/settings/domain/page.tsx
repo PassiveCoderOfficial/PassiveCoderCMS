@@ -14,5 +14,21 @@ export default async function DomainSettingsPage() {
     .eq("id", tenantId)
     .single();
 
-  return <DomainSettingsClient tenant={tenant} />;
+  // Latest domain order to restore the chosen DNS method on reload.
+  let savedDnsType: "nameserver" | "arecord" | null = null;
+  if (tenant?.custom_domain) {
+    const { data: order } = await supabase
+      .from("domain_orders")
+      .select("dns_type")
+      .eq("tenant_id", tenantId)
+      .eq("domain", tenant.custom_domain)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const dt = order?.dns_type;
+    if (dt === "nameserver" || dt === "arecord") savedDnsType = dt;
+    else if (dt === "automatic") savedDnsType = "nameserver";
+  }
+
+  return <DomainSettingsClient tenant={tenant} savedDnsType={savedDnsType} />;
 }

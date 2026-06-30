@@ -15,15 +15,35 @@ interface Tenant {
   domain_status: string;
 }
 
-export default function DomainSettingsClient({ tenant }: { tenant: Tenant | null }) {
+const BRAND_NS = (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "ns1.passivecoder.com,ns2.passivecoder.com")
+  .split(",").map((s) => s.trim()).filter(Boolean);
+const VERCEL_IP = process.env.NEXT_PUBLIC_VERCEL_IP ?? "76.76.21.21";
+
+export default function DomainSettingsClient({ tenant, savedDnsType }: {
+  tenant: Tenant | null;
+  savedDnsType?: "nameserver" | "arecord" | null;
+}) {
+  const initialStatus = tenant?.domain_status ?? "none";
+  const isPending = initialStatus === "pending" || initialStatus === "pending_dns";
+  const initialDnsType = savedDnsType ?? "arecord";
+  // Rebuild the instructions shown for a previously-saved (pending) domain so the
+  // page is persistent across reloads.
+  const initialInstructions: Record<string, unknown> | null =
+    tenant?.custom_domain && isPending
+      ? (initialDnsType === "nameserver"
+          ? { type: "nameserver", nameservers: BRAND_NS }
+          : { type: "arecord" })
+      : null;
+
   const [domain, setDomain] = useState(tenant?.custom_domain ?? "");
-  const [dnsType, setDnsType] = useState<"nameserver" | "arecord">("arecord");
+  const [dnsType, setDnsType] = useState<"nameserver" | "arecord">(initialDnsType);
   const [connecting, setConnecting] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [instructions, setInstructions] = useState<Record<string, unknown> | null>(null);
-  const [status, setStatus] = useState(tenant?.domain_status ?? "none");
+  const [instructions, setInstructions] = useState<Record<string, unknown> | null>(initialInstructions);
+  const [status, setStatus] = useState(isPending ? "pending" : initialStatus);
   const [error, setError] = useState("");
   const [warning, setWarning] = useState("");
+  const [verifyMsg, setVerifyMsg] = useState("");
   const [copied, setCopied] = useState("");
 
   if (!tenant) return null;
@@ -54,10 +74,21 @@ export default function DomainSettingsClient({ tenant }: { tenant: Tenant | null
 
   async function checkVerification() {
     setVerifying(true);
+    setVerifyMsg("");
     try {
       const res = await fetch(`/api/domain/verify?tenantId=${tenant!.id}`);
-      const data = await res.json() as { verified: boolean };
-      if (data.verified) setStatus("active");
+      const data = await res.json() as { verified: boolean; vercel?: boolean; dns?: boolean; reason?: string };
+      if (data.verified) {
+        setStatus("active");
+        setVerifyMsg("");
+      } else {
+        const bits: string[] = [];
+        bits.push(data.dns ? "DNS ✓" : "DNS pending");
+        bits.push(data.vercel ? "Vercel ✓" : "Vercel pending");
+        setVerifyMsg(`Not verified yet — ${bits.join(" · ")}. ${data.reason ?? "DNS can take up to 48h to propagate."} Try again shortly.`);
+      }
+    } catch {
+      setVerifyMsg("Could not check right now. Try again in a moment.");
     } finally {
       setVerifying(false);
     }
@@ -205,6 +236,9 @@ export default function DomainSettingsClient({ tenant }: { tenant: Tenant | null
             <Button variant="outline" onClick={checkVerification} disabled={verifying} className="w-full">
               {verifying ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Checking…</> : <><RefreshCw className="w-4 h-4 mr-2" />Check Verification</>}
             </Button>
+            {verifyMsg && (
+              <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2">{verifyMsg}</p>
+            )}
           </CardContent>
         </Card>
       )}
