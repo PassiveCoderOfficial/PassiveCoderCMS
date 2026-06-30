@@ -102,11 +102,22 @@ export default async function SitePage({ params }: Props) {
     redirect("/dashboard");
   }
 
-  const blocks: Block[] = Array.isArray(page.blocks) ? page.blocks : [];
+  const rawBlocks: Block[] = Array.isArray(page.blocks) ? page.blocks : [];
+
+  // Site chrome (header/footer) is rendered once by (site)/layout.tsx from
+  // site_identity.global_header / global_footer. When those exist, strip any
+  // per-page navigation/footer blocks so they don't render twice.
+  const { header, footer, prefooter } = await fetchGlobalLayout(tenantId);
+  const hasGlobalHeader = header.length > 0;
+  const hasGlobalFooter = footer.length > 0;
+  const blocks: Block[] = rawBlocks.filter((b) => {
+    if (hasGlobalHeader && b.type === "navigation") return false;
+    if (hasGlobalFooter && b.type === "footer") return false;
+    return true;
+  });
 
   // Global pre-footer (CTA + contact) — injected once site-wide, skipped on pages
   // that already have their own contact block.
-  const { prefooter } = await fetchGlobalLayout(tenantId);
   const finalBlocks = prefooter.length > 0 && shouldInjectPrefooter(blocks)
     ? [...blocks, ...prefooter]
     : blocks;
