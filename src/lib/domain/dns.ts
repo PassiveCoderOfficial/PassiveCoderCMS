@@ -20,7 +20,8 @@ export async function setupAutomaticDns(domain: string): Promise<void> {
 // passivecoder.com with glue records pointing to the underlying DNS host IPs.
 // Override per-environment via NEXT_PUBLIC_BRAND_NAMESERVERS (comma-separated).
 const BRAND_NAMESERVERS =
-  (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "ns1.passivecoder.com,ns2.passivecoder.com")
+  (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ??
+    "ns1.passivecoder.com,ns2.passivecoder.com,ns3.passivecoder.com,ns4.passivecoder.com")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);

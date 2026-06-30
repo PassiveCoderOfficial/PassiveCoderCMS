@@ -15,7 +15,7 @@ interface Tenant {
   domain_status: string;
 }
 
-const BRAND_NS = (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "ns1.passivecoder.com,ns2.passivecoder.com")
+const BRAND_NS = (process.env.NEXT_PUBLIC_BRAND_NAMESERVERS ?? "ns1.passivecoder.com,ns2.passivecoder.com,ns3.passivecoder.com,ns4.passivecoder.com")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const VERCEL_IP = process.env.NEXT_PUBLIC_VERCEL_IP ?? "76.76.21.21";
 
