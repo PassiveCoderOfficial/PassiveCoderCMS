@@ -153,11 +153,13 @@ export async function registerDomain(
  * the DNS zone exists. Idempotent-ish: if already active, the API returns an error
  * we can safely ignore.
  */
-export async function activateDnsService(orderId: number): Promise<void> {
+// Activate the (free) DNS hosting service for a domain. Works for externally-
+// registered domains by domain-name (no order-id needed). Must run before adding
+// records. Idempotent: "already active" errors are non-fatal.
+export async function activateDnsService(domain: string): Promise<void> {
   try {
-    await lbPost("/dns/activate", { "order-id": String(orderId) });
+    await lbGet("/dns/manage/activate-dns-service", { "domain-name": domain });
   } catch (e) {
-    // Already-active / not-applicable errors are non-fatal.
     console.warn("activateDnsService:", e instanceof Error ? e.message : e);
   }
 }
@@ -169,8 +171,9 @@ export async function addDnsRecord(
   value: string,
   ttl = 300,
 ): Promise<void> {
+  // ResellerClub DNS add endpoints are GET, not POST.
   const endpoint = type === "A" ? "/dns/manage/add-ipv4-record" : "/dns/manage/add-cname-record";
-  await lbPost(endpoint, {
+  await lbGet(endpoint, {
     "domain-name": domain,
     host,
     value,

@@ -1,4 +1,4 @@
-import { addDnsRecord } from "./logicbox";
+import { addDnsRecord, activateDnsService } from "./logicbox";
 import { ROOT_DOMAIN } from "@/lib/flags";
 
 const VERCEL_IP = process.env.VERCEL_IP ?? "76.76.21.21";
@@ -11,7 +11,9 @@ export interface DnsInstructions {
 }
 
 export async function setupAutomaticDns(domain: string): Promise<void> {
-  // Called after domain is registered via LogicBox — we own the DNS zone
+  // Activate the DNS zone first (required before records can be added), then point
+  // apex + www at Vercel.
+  await activateDnsService(domain);
   await addDnsRecord(domain, "A", "@", VERCEL_IP);
   await addDnsRecord(domain, "A", "www", VERCEL_IP);
 }
