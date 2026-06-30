@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, Loader2, AlertCircle } from "lucide-react";
 
 function slugify(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "") || "mysite";
 }
 
 export default function NewSitePage() {
