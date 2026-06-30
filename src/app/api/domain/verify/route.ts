@@ -26,25 +26,26 @@ export async function GET(req: Request) {
     return NextResponse.json({ verified: true });
   }
 
-  // Check both Vercel verification and DNS propagation
+  // Vercel's own "verified" flag is authoritative: Vercel only marks a domain verified
+  // once DNS points at it correctly (and it then issues SSL). For both methods —
+  // A-record (apex → 76.76.21.21) and Vercel nameservers (apex → Vercel's own IPs) —
+  // Vercel verification is the reliable signal. The raw DNS-IP check is a best-effort
+  // fallback only (it can't match the dynamic Vercel-NS apex IPs).
   const [vercelOk, dnsOk] = await Promise.all([
     verifyDomainOnVercel(tenant.custom_domain),
     checkDnsResolution(tenant.custom_domain),
   ]);
 
-  if (vercelOk && dnsOk) {
+  if (vercelOk || dnsOk) {
     await supabase
       .from("tenants")
       .update({ domain_status: "active" })
       .eq("id", tenantId);
-
-    // Update domain_orders too
     await supabase
       .from("domain_orders")
       .update({ status: "active" })
       .eq("tenant_id", tenantId)
       .eq("domain", tenant.custom_domain);
-
     return NextResponse.json({ verified: true });
   }
 
@@ -52,6 +53,6 @@ export async function GET(req: Request) {
     verified: false,
     vercel: vercelOk,
     dns: dnsOk,
-    reason: !dnsOk ? "DNS not yet propagated" : "Vercel not yet verified",
+    reason: "Domain not yet verified by Vercel — DNS can take a few minutes to propagate.",
   });
 }
