@@ -16,11 +16,12 @@ let _promise: Promise<CurrencySettings> | null = null;
 async function fetchCurrencySettings(): Promise<CurrencySettings> {
   if (_cache) return _cache;
   if (_promise) return _promise;
-  _promise = createClient()
-    .from("ecommerce_settings")
-    .select("currency, currency_symbol, currency_position")
-    .single()
-    .then(({ data }) => {
+  _promise = Promise.resolve(
+    createClient()
+      .from("ecommerce_settings")
+      .select("currency, currency_symbol, currency_position")
+      .single()
+  ).then(({ data }) => {
       const result: CurrencySettings = {
         currency: data?.currency ?? "USD",
         currency_symbol: data?.currency_symbol ?? "$",
