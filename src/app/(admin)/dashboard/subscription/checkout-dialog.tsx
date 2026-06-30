@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ export interface CheckoutPlan {
   price_yearly_bdt?: number | null;  // whole BDT
   price_monthly_bdt?: number | null; // whole BDT
   currency?: string;
+  is_popular?: boolean;
 }
 
 type BillingCycle = "monthly" | "yearly";
@@ -35,12 +36,13 @@ export interface PaymentConfig {
 type Method = "dodo" | "shurjopay" | "bkash" | "nagad" | "whatsapp";
 
 export function CheckoutDialog({
-  open, onOpenChange, tenantId, plan, paymentConfig,
+  open, onOpenChange, tenantId, plan, plans, paymentConfig,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   tenantId: string;
   plan: CheckoutPlan | null;
+  plans: CheckoutPlan[];
   paymentConfig: PaymentConfig;
 }) {
   const [method, setMethod] = useState<Method>("dodo");
@@ -48,17 +50,24 @@ export function CheckoutDialog({
   const [txnRef, setTxnRef] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(plan?.id ?? null);
   const bdtRate = useCurrencyRate();
 
-  if (!plan) return null;
+  // Sync selection when the dialog is opened from a specific plan card.
+  useEffect(() => { if (plan?.id) setSelectedId(plan.id); }, [plan?.id]);
+
+  // Resolve the plan to charge — switcher overrides the initially-opened plan.
+  const activePlan = plans.find(p => p.id === selectedId) ?? plan;
+  if (!activePlan) return null;
+  const planToUse = activePlan;
 
   // Charge currency is fixed by payment method: Dodo = USD, everything else (BD methods) = BDT.
   const currency: Currency = method === "dodo" ? "USD" : "BDT";
 
   const usdFor = (c: BillingCycle): number =>
-    (c === "monthly" ? (plan.price_monthly ?? 0) : plan.price_yearly) / 100;
+    (c === "monthly" ? (planToUse.price_monthly ?? 0) : planToUse.price_yearly) / 100;
   const bdtFor = (c: BillingCycle): number | null =>
-    c === "monthly" ? (plan.price_monthly_bdt ?? null) : (plan.price_yearly_bdt ?? null);
+    c === "monthly" ? (planToUse.price_monthly_bdt ?? null) : (planToUse.price_yearly_bdt ?? null);
   const formatFor = (c: BillingCycle): string =>
     formatPrice(usdFor(c), bdtFor(c), currency, bdtRate);
 
@@ -75,7 +84,7 @@ export function CheckoutDialog({
 
   function openWhatsApp() {
     const text = encodeURIComponent(
-      `Hi! I'd like to subscribe to Passive Coder *${plan!.name}* plan (${CYCLE_LABELS[activeCycle]}) — ${amountFormatted}${CYCLE_SUFFIX[activeCycle]}. Please assist with payment.`
+      `Hi! I'd like to subscribe to Passive Coder *${planToUse.name}* plan (${CYCLE_LABELS[activeCycle]}) — ${amountFormatted}${CYCLE_SUFFIX[activeCycle]}. Please assist with payment.`
     );
     window.open(`https://wa.me/${waNumber}?text=${text}`, "_blank");
   }
@@ -88,7 +97,7 @@ export function CheckoutDialog({
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, planId: plan!.id, method, billingCycle: activeCycle, txnRef, senderNumber }),
+        body: JSON.stringify({ tenantId, planId: planToUse.id, method, billingCycle: activeCycle, txnRef, senderNumber }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Checkout failed");
@@ -118,10 +127,40 @@ export function CheckoutDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Subscribe to {plan.name}</DialogTitle>
+          <DialogTitle>Subscribe</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Plan switcher */}
+          {plans.length > 1 && (
+            <div className="space-y-2">
+              <Label>Plan</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {plans.map(p => {
+                  const pUsd = (activeCycle === "monthly" ? (p.price_monthly ?? 0) : p.price_yearly) / 100;
+                  const pBdt = activeCycle === "monthly" ? (p.price_monthly_bdt ?? null) : (p.price_yearly_bdt ?? null);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedId(p.id)}
+                      className={cn(
+                        "rounded-lg border p-2 text-xs transition-colors relative text-left",
+                        planToUse.id === p.id ? "border-primary bg-primary/5 font-semibold" : "hover:border-primary/40",
+                      )}
+                    >
+                      <span className="flex items-center gap-1">
+                        {p.name}
+                        {p.is_popular && <span className="text-[8px] font-bold bg-primary text-primary-foreground px-1 py-0.5 rounded-full">★</span>}
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground">{formatPrice(pUsd, pBdt, currency, bdtRate)}{CYCLE_SUFFIX[activeCycle]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {availableCycles.length > 1 && (
             <div className="space-y-2">
               <Label>Billing cycle</Label>
@@ -145,7 +184,7 @@ export function CheckoutDialog({
           )}
 
           <div className="rounded-lg bg-muted/40 p-3 text-sm flex items-center justify-between">
-            <span className="text-muted-foreground">{plan.name} ({CYCLE_LABELS[activeCycle].toLowerCase()})</span>
+            <span className="text-muted-foreground">{planToUse.name} ({CYCLE_LABELS[activeCycle].toLowerCase()})</span>
             <span className="font-bold">{amountFormatted}{CYCLE_SUFFIX[activeCycle]}</span>
           </div>
 

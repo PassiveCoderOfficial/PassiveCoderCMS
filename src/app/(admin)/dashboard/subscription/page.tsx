@@ -196,6 +196,10 @@ export default function SubscriptionPage() {
         onOpenChange={(v) => { if (!v) setCheckout(null); }}
         tenantId={checkout?.tenantId ?? ""}
         plan={checkout?.plan ?? null}
+        plans={plans.filter(p => (p.price_yearly ?? 0) > 0).map(p => ({
+          id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly,
+          price_yearly_bdt: p.price_yearly_bdt, price_monthly_bdt: p.price_monthly_bdt, currency: p.currency, is_popular: p.is_popular,
+        }))}
         paymentConfig={paymentConfig}
       />
 
@@ -322,22 +326,110 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
             <Clock className="w-3.5 h-3.5" /> Payment awaiting verification
           </span>
         )}
-        {sub.status !== "active" && plans.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {plans.filter(p => (p.price_yearly ?? 0) > 0).map(p => (
-              <Button
-                key={p.id}
-                size="sm"
-                variant={p.is_popular ? "default" : "outline"}
-                className="flex items-center gap-1.5"
-                onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, price_yearly_bdt: p.price_yearly_bdt, price_monthly_bdt: p.price_monthly_bdt, currency: p.currency })}
-              >
-                <CreditCard className="w-3.5 h-3.5" /> Pay — {p.name}
-              </Button>
-            ))}
-          </div>
-        )}
       </div>
+
+      {sub.status !== "active" && plans.length > 0 && (
+        <div className="pt-2 border-t">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            {sub.status === "pending" ? "Change plan or pay" : "Choose a plan to activate"}
+          </p>
+          <PlanGrid
+            plans={plans}
+            currentPlanId={sub.plan_id}
+            discountPct={discountPct}
+            currency={currency}
+            bdtRate={bdtRate}
+            onChoose={onChoose}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoose }: {
+  plans: Plan[];
+  currentPlanId?: string | null;
+  discountPct: number;
+  currency: Currency;
+  bdtRate: number;
+  onChoose?: (plan: CheckoutPlan) => void;
+}) {
+  const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
+  const paid = plans.filter(p => (p.price_yearly ?? 0) > 0);
+  const custom = plans.find(p => p.id === "custom");
+  const cycleSuffix = cycle === "monthly" ? "/mo" : "/yr";
+
+  const usdFor = (p: Plan) => (cycle === "monthly" ? (p.price_monthly ?? 0) : p.price_yearly) / 100;
+  const bdtFor = (p: Plan) => (cycle === "monthly" ? p.price_monthly_bdt : p.price_yearly_bdt);
+
+  return (
+    <div className="space-y-3">
+      <div className="inline-flex rounded-lg border p-0.5 text-xs">
+        {(["monthly", "yearly"] as const).map(c => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => setCycle(c)}
+            className={cn(
+              "px-3 py-1.5 rounded-md font-medium transition-colors capitalize",
+              cycle === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {c}{c === "yearly" && <span className="ml-1 text-[10px] opacity-80">save 2 months</span>}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {paid.map(p => {
+          const isCurrent = p.id === currentPlanId;
+          const usd = usdFor(p) * (1 - discountPct / 100);
+          const bdt = bdtFor(p) != null ? Math.round((bdtFor(p) as number) * (1 - discountPct / 100)) : null;
+          return (
+            <div
+              key={p.id}
+              className={cn(
+                "rounded-xl border p-4 space-y-2 relative",
+                p.is_popular ? "border-primary" : "",
+              )}
+            >
+              {p.is_popular && (
+                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">Popular</span>
+              )}
+              <div className="flex items-center justify-between">
+                <p className="font-bold">{p.name}</p>
+                {isCurrent && <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Current</span>}
+              </div>
+              <p className="text-2xl font-black">
+                {formatPrice(usd, bdt, currency, bdtRate)}
+                <span className="text-sm font-normal text-muted-foreground">{cycleSuffix}</span>
+              </p>
+              {p.features?.slice(0, 4).map((f, i) => (
+                <p key={i} className="text-xs text-muted-foreground flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />{f}
+                </p>
+              ))}
+              <Button
+                size="sm"
+                className="w-full mt-1"
+                variant={p.is_popular ? "default" : "outline"}
+                disabled={!onChoose}
+                onClick={() => onChoose?.({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, price_yearly_bdt: p.price_yearly_bdt, price_monthly_bdt: p.price_monthly_bdt, currency: p.currency })}
+              >
+                <CreditCard className="w-3.5 h-3.5 mr-1.5" /> Choose {p.name}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+
+      {custom && (
+        <div className="rounded-lg border border-dashed p-3 flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">Need something bigger? <strong className="text-foreground">Custom</strong> plan available.</span>
+          <Button size="sm" variant="ghost" asChild><a href="/contact">Contact Us</a></Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -356,53 +448,13 @@ function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { p
         )}
       </div>
       {plans.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map(plan => (
-            <div key={plan.id} className={cn("rounded-xl border p-5 space-y-3 relative", plan.is_popular ? "border-primary" : "")}>
-              {plan.is_popular && (
-                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">Popular</span>
-              )}
-              <p className="font-bold">{plan.name}</p>
-              <div>
-                {(plan.price_yearly ?? 0) > 0 ? (
-                  <>
-                    <p className="text-2xl font-black">
-                      {discountPct > 0
-                        ? formatPrice((plan.price_yearly / 100) * (1 - discountPct / 100), plan.price_yearly_bdt != null ? Math.round(plan.price_yearly_bdt * (1 - discountPct / 100)) : null, currency, bdtRate)
-                        : formatPrice(plan.price_yearly / 100, plan.price_yearly_bdt, currency, bdtRate)}
-                      <span className="text-sm font-normal text-muted-foreground">/yr</span>
-                    </p>
-                    {discountPct > 0 && (
-                      <p className="text-xs text-muted-foreground line-through">{formatPrice(plan.price_yearly / 100, plan.price_yearly_bdt, currency, bdtRate)}</p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-2xl font-black">Custom pricing</p>
-                )}
-              </div>
-              {plan.features?.slice(0, 5).map((f, i) => (
-                <p key={i} className="text-xs text-muted-foreground flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />{f}
-                </p>
-              ))}
-              {(plan.price_yearly ?? 0) > 0 ? (
-                <Button
-                  size="sm"
-                  className="w-full"
-                  variant={plan.is_popular ? "default" : "outline"}
-                  disabled={!onChoose}
-                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, price_monthly: plan.price_monthly ?? 0, price_yearly_bdt: plan.price_yearly_bdt, price_monthly_bdt: plan.price_monthly_bdt, currency: plan.currency })}
-                >
-                  Choose {plan.name}
-                </Button>
-              ) : (
-                <Button size="sm" className="w-full" variant="outline" asChild>
-                  <a href="/contact">Contact Us</a>
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
+        <PlanGrid
+          plans={plans}
+          discountPct={discountPct}
+          currency={currency}
+          bdtRate={bdtRate}
+          onChoose={onChoose}
+        />
       )}
     </div>
   );
