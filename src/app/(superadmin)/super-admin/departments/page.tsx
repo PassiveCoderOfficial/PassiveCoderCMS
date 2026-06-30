@@ -84,7 +84,7 @@ export default function DepartmentsPage() {
     setDepts(prev => prev.map(x => x.id === d.id ? { ...x, is_active: !x.is_active } : x));
   }
 
-  const FormPanel = () => (
+  const formPanel = (
     <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
       <h3 className="font-semibold text-white text-sm">{editingId ? "Edit Department" : "New Department"}</h3>
       <div className="grid grid-cols-2 gap-3">
@@ -142,14 +142,14 @@ export default function DepartmentsPage() {
         )}
       </div>
 
-      {adding && !editingId && <FormPanel />}
+      {adding && !editingId && formPanel}
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>
       ) : (
         <div className="space-y-2">
           {depts.map(d => (
-            editingId === d.id ? <FormPanel key={d.id} /> : (
+            editingId === d.id ? <div key={d.id}>{formPanel}</div> : (
               <div key={d.id} className={`bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center gap-4 ${!d.is_active ? "opacity-50" : ""}`}>
                 <GripVertical className="w-4 h-4 text-gray-600 shrink-0" />
                 <div className="flex-1 min-w-0">

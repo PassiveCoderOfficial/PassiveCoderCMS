@@ -83,7 +83,7 @@ export default function DeliveryPage() {
     setOptions(prev => prev.map(x => x.id === o.id ? { ...x, is_enabled: !x.is_enabled } : x));
   }
 
-  const FormPanel = () => (
+  const formPanel = (
     <Card>
       <CardContent className="p-5 space-y-4">
         <h3 className="font-semibold text-sm">{editingId ? "Edit Option" : "New Delivery Option"}</h3>
@@ -134,7 +134,7 @@ export default function DeliveryPage() {
         )}
       </div>
 
-      {(adding && !editingId) && <FormPanel />}
+      {(adding && !editingId) && formPanel}
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
@@ -149,7 +149,7 @@ export default function DeliveryPage() {
       ) : (
         <div className="space-y-2">
           {options.map(o => (
-            editingId === o.id ? <FormPanel key={o.id} /> : (
+            editingId === o.id ? <div key={o.id}>{formPanel}</div> : (
               <Card key={o.id} className={o.is_enabled ? "" : "opacity-50"}>
                 <CardContent className="p-4 flex items-center gap-4">
                   <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />

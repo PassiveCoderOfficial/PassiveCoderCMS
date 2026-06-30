@@ -99,7 +99,7 @@ export default function AccountsPage() {
     setAccounts(prev => prev.map(a => ({ ...a, is_default: a.id === id })));
   }
 
-  const FormPanel = () => (
+  const formPanel = (
     <Card>
       <CardContent className="p-5 space-y-4">
         <h3 className="font-semibold text-sm">{editingId ? "Edit Account" : "New Account"}</h3>
@@ -152,7 +152,7 @@ export default function AccountsPage() {
         )}
       </div>
 
-      {(adding && !editingId) && <FormPanel />}
+      {(adding && !editingId) && formPanel}
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
@@ -167,7 +167,7 @@ export default function AccountsPage() {
       ) : (
         <div className="space-y-2">
           {accounts.map(a => (
-            editingId === a.id ? <FormPanel key={a.id} /> : (
+            editingId === a.id ? <div key={a.id}>{formPanel}</div> : (
               <Card key={a.id}>
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="flex-1 min-w-0">
