@@ -72,6 +72,19 @@ export function LoginForm() {
       return;
     }
 
+    // Agent users have no tenant — send them directly to agent portal.
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (profile?.role === "agent") {
+        window.location.href = "/agent";
+        return;
+      }
+    }
+
     // Hard navigation — middleware picks up browser-set session cookies on next request.
     // SA users with no owned tenant are redirected to /super-admin by getCurrentTenantId().
     window.location.href = redirectTo;

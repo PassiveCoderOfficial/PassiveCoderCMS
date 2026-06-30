@@ -83,7 +83,16 @@ export async function getCurrentTenantId(): Promise<string> {
     .limit(1)
     .maybeSingle();
 
-  if (!any?.tenant_id) redirect("/login?error=no_tenant");
+  if (!any?.tenant_id) {
+    // Agent users have no tenant membership — send them to the agent portal
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.role === "agent") redirect("/agent");
+    redirect("/login?error=no_tenant");
+  }
 
   return any.tenant_id;
 }
