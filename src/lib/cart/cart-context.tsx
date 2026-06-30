@@ -102,8 +102,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const NOOP_CART: CartContextValue = {
+  items: [],
+  itemCount: 0,
+  subtotal: 0,
+  addItem: () => {},
+  removeItem: () => {},
+  updateQty: () => {},
+  clearCart: () => {},
+  isOpen: false,
+  openCart: () => {},
+  closeCart: () => {},
+};
+
 export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
-  return ctx;
+  return useContext(CartContext) ?? NOOP_CART;
 }
