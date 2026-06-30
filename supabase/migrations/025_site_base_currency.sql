@@ -20,3 +20,12 @@ BEGIN
     ALTER TABLE site_settings ADD CONSTRAINT site_settings_tenant_id_key UNIQUE (tenant_id);
   END IF;
 END $$;
+
+-- Backfill: many tenants had NO site_settings row because the onboarding upsert's
+-- onConflict("tenant_id") silently no-op'd before the UNIQUE constraint above
+-- existed. Create a default USD row for every tenant that is still missing one.
+INSERT INTO site_settings (tenant_id, currency, currency_symbol, currency_position)
+SELECT t.id, 'USD', '$', 'before'
+FROM tenants t
+WHERE NOT EXISTS (SELECT 1 FROM site_settings s WHERE s.tenant_id = t.id)
+ON CONFLICT (tenant_id) DO NOTHING;

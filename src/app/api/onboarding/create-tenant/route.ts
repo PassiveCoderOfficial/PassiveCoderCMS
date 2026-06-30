@@ -93,6 +93,9 @@ export async function POST(req: Request) {
       language: "en",
       maintenance_mode: false,
       site_theme: "system",
+      currency: "USD",
+      currency_symbol: "$",
+      currency_position: "before",
     },
     { onConflict: "tenant_id" },
   );
