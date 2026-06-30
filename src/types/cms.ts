@@ -931,6 +931,7 @@ export type Address = {
   postal_code: string;
   country: string;
   phone?: string;
+  email?: string;
 };
 
 export type PaymentGateway = {
