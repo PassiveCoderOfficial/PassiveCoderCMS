@@ -21,6 +21,72 @@ const BASE_BLOCK = {
   background: { type: "none" as const },
 };
 
+/** Build the persistent global header (navigation block) from a template. */
+function buildGlobalHeader(t: TemplateIdentity): Block[] {
+  return [
+    {
+      ...BASE_BLOCK,
+      id: uid("nav"),
+      type: "navigation",
+      order: 0,
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      templateVariant: t.variants.navigation,
+      data: {
+        logoText: t.siteName,
+        items: t.navItems,
+        sticky: true,
+        style: t.variants.navigation.includes("centered") ? "centered" : "default",
+        backgroundColor: t.palette.primary,
+        textColor: "#ffffff",
+        showCta: true,
+        ctaLabel: t.heroCTA,
+        ctaUrl: "/contact",
+      },
+    } as Block,
+  ];
+}
+
+/** Build the persistent global footer from a template. */
+function buildGlobalFooter(t: TemplateIdentity): Block[] {
+  const year = new Date().getFullYear();
+  return [
+    {
+      ...BASE_BLOCK,
+      id: uid("footer"),
+      type: "footer",
+      order: 0,
+      padding: { top: 56, right: 0, bottom: 32, left: 0 },
+      data: {
+        logoText: t.siteName,
+        tagline: t.tagline,
+        columns: [
+          {
+            id: uid("fcol"),
+            heading: "Quick Links",
+            links: t.navItems.slice(0, 5).map((n) => ({
+              id: uid("flink"),
+              label: n.label,
+              url: n.url,
+            })),
+          },
+          {
+            id: uid("fcol"),
+            heading: "Contact",
+            links: [
+              ...(t.phone ? [{ id: uid("flink"), label: t.phone, url: `tel:${t.phone}` }] : []),
+              ...(t.email ? [{ id: uid("flink"), label: t.email, url: `mailto:${t.email}` }] : []),
+            ],
+          },
+        ],
+        copyrightText: `© ${year} ${t.siteName}. All rights reserved.`,
+        copyrightYear: true,
+        accentColor: t.palette.secondary,
+        style: "dark" as const,
+      },
+    } as Block,
+  ];
+}
+
 export async function seedTemplate(
   supabase: SupabaseClient,
   tenantId: string,
@@ -40,6 +106,12 @@ export async function seedTemplate(
   const template = resolved ?? getDefaultTemplateIdentity();
 
   // ── 1. Site identity + active template ──────────────────────────────────────
+  // Seed a global header (navigation) + footer so EVERY page — including dynamic
+  // routes like /products/[slug], /cart, /checkout that have no per-page nav —
+  // renders a consistent site chrome via (site)/layout.tsx.
+  const globalHeader = buildGlobalHeader(template);
+  const globalFooter = buildGlobalFooter(template);
+
   await supabase.from("site_identity").upsert(
     {
       tenant_id: tenantId,
@@ -48,6 +120,8 @@ export async function seedTemplate(
       secondary_color: template.palette.secondary,
       logo_type: "text",
       active_template_slug: templateSlug,
+      global_header: globalHeader,
+      global_footer: globalFooter,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "tenant_id" },

@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import { AddToCartSection } from "./add-to-cart-section";
+import { getCurrencyConfig, formatWithConfig } from "@/lib/ecommerce/currency-server";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -38,9 +39,10 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const images: string[] = Array.isArray(product.images) ? product.images : [];
-  const price = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(product.price);
+  const currencyCfg = await getCurrencyConfig(tenantId);
+  const price = formatWithConfig(product.price, currencyCfg);
   const comparePrice = product.compare_price
-    ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(product.compare_price)
+    ? formatWithConfig(product.compare_price, currencyCfg)
     : null;
 
   return (
