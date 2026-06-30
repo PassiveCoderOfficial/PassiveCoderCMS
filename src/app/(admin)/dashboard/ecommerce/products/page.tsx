@@ -23,6 +23,7 @@ interface Product {
   compare_price: number | null;
   status: "active" | "draft" | "archived";
   stock_quantity: number;
+  track_inventory: boolean;
   images: string[];
   featured: boolean;
   category_ids: string[];
@@ -222,6 +223,113 @@ function CategoryCell({
   );
 }
 
+// ─── Inline stock cell (In Stock / tracked quantity) ───────────────────────────
+function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Partial<Product>) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [qty, setQty] = useState(String(product.stock_quantity ?? 0));
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setQty(String(product.stock_quantity ?? 0)); }, [product.stock_quantity]);
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setEditing(false);
+    }
+    if (editing) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [editing]);
+
+  async function setInStock() {
+    setSaving(true);
+    await supabase.from("products").update({ track_inventory: false }).eq("id", product.id);
+    onUpdate({ track_inventory: false });
+    setSaving(false);
+    setEditing(false);
+    toast.success("Marked In Stock (not tracked)");
+  }
+
+  async function setTracked() {
+    const n = parseInt(qty, 10);
+    if (isNaN(n) || n < 0) { toast.error("Enter a valid quantity"); return; }
+    setSaving(true);
+    await supabase.from("products").update({ track_inventory: true, stock_quantity: n }).eq("id", product.id);
+    onUpdate({ track_inventory: true, stock_quantity: n });
+    setSaving(false);
+    setEditing(false);
+    toast.success("Stock quantity updated");
+  }
+
+  // Display
+  const tracked = product.track_inventory;
+  const display = !tracked ? (
+    <span className="text-sm font-medium text-green-600">In Stock</span>
+  ) : product.stock_quantity === 0 ? (
+    <span className="text-sm font-medium text-red-600">0 <span className="text-xs">Out of stock</span></span>
+  ) : product.stock_quantity <= 5 ? (
+    <span className="text-sm font-medium text-amber-600">{product.stock_quantity} <span className="text-xs">Low</span></span>
+  ) : (
+    <span className="text-sm font-medium">{product.stock_quantity}</span>
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <span
+        onDoubleClick={() => setEditing(true)}
+        title="Double-click to edit stock"
+        className="cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none inline-block"
+      >
+        {display}
+      </span>
+
+      {editing && (
+        <div className="absolute left-0 top-7 z-20 bg-background border rounded-xl shadow-xl p-3 min-w-[220px] space-y-3">
+          {/* In Stock (untracked) */}
+          <button
+            onClick={setInStock}
+            disabled={saving}
+            className={cn(
+              "w-full text-left text-xs px-3 py-2 rounded-lg border transition-colors",
+              !tracked ? "border-green-500 bg-green-50 dark:bg-green-900/20 font-semibold" : "border-border hover:bg-muted"
+            )}
+          >
+            <span className="text-green-600">● In Stock</span>
+            <span className="block text-[10px] text-muted-foreground mt-0.5">Don&apos;t track quantity — always available</span>
+          </button>
+
+          {/* Track quantity */}
+          <div className={cn(
+            "rounded-lg border p-2.5 space-y-2",
+            tracked ? "border-primary bg-primary/5" : "border-border"
+          )}>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Track Quantity</p>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min="0"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") setTracked(); }}
+                className="border rounded px-2 py-1 text-xs w-full outline-none focus:ring-1 focus:ring-primary"
+                placeholder="0"
+              />
+              <button
+                onClick={setTracked}
+                disabled={saving}
+                className="text-xs bg-primary text-primary-foreground rounded-lg px-3 py-1.5 font-medium hover:opacity-90 disabled:opacity-60 shrink-0"
+              >
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Set"}
+              </button>
+            </div>
+            <p className="text-[10px] text-muted-foreground">0 = Out of stock</p>
+          </div>
+
+          <button onClick={() => setEditing(false)} className="text-xs text-muted-foreground w-full text-center">Cancel</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -236,7 +344,7 @@ export default function ProductsPage() {
       // Load products
       let pq = supabase
         .from("products")
-        .select("id,name,slug,price,compare_price,status,stock_quantity,images,featured,category_ids,created_at")
+        .select("id,name,slug,price,compare_price,status,stock_quantity,track_inventory,images,featured,category_ids,created_at")
         .order("created_at", { ascending: false });
       if (tenantId) pq = pq.eq("tenant_id", tenantId);
       pq.then(({ data }) => { setProducts((data as Product[]) ?? []); setLoading(false); });
@@ -391,23 +499,11 @@ export default function ProductsPage() {
                     </td>
 
                     {/* Stock — double-click editable */}
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <EditableCell
-                        value={String(product.stock_quantity)}
-                        type="number"
-                        onSave={async (v) => {
-                          const qty = parseInt(v, 10);
-                          if (isNaN(qty)) return;
-                          await inlineUpdate(product.id, { stock_quantity: qty });
-                          toast.success("Stock updated");
-                        }}
-                        className={cn(
-                          "font-medium",
-                          product.stock_quantity === 0 ? "text-red-600" : product.stock_quantity <= 5 ? "text-amber-600" : ""
-                        )}
+                    <td className="px-4 py-3 hidden md:table-cell relative">
+                      <StockCell
+                        product={product}
+                        onUpdate={(patch) => updateProduct(product.id, patch)}
                       />
-                      {product.stock_quantity === 0 && <span className="text-xs text-red-500 ml-1">Out of stock</span>}
-                      {product.stock_quantity > 0 && product.stock_quantity <= 5 && <span className="text-xs text-amber-500 ml-1">Low</span>}
                     </td>
 
                     {/* Category — double-click editable */}
