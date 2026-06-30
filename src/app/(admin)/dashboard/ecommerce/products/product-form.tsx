@@ -252,11 +252,24 @@ interface ProductFormProps {
   product?: Product;
 }
 
+interface CategoryOption { id: string; name: string; }
+
 export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categoryIds, setCategoryIds] = useState<string[]>(product?.category_ids ?? []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    getClientTenantId().then((tenantId) => {
+      let q = supabase.from("categories").select("id,name").eq("type", "product").order("name");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => setCategories((data as CategoryOption[]) ?? []));
+    });
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as never,
@@ -294,6 +307,7 @@ export function ProductForm({ product }: ProductFormProps) {
       const supabase = createClient();
       const payload = {
         ...values, images,
+        category_ids: categoryIds,
         compare_price: values.compare_price || null,
         cost_price: values.cost_price || null,
         weight: values.weight || null,
@@ -480,6 +494,32 @@ export function ProductForm({ product }: ProductFormProps) {
                       <Eye className="h-3.5 w-3.5" /> View Product
                     </Link>
                   </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* ── Categories ── */}
+            <Card>
+              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Categories</CardTitle></CardHeader>
+              <CardContent className="px-4 pb-4">
+                {categories.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No product categories yet. <a href="/dashboard/ecommerce/categories" className="underline">Create one</a>.</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {categories.map((c) => (
+                      <label key={c.id} className="flex items-center gap-2 text-sm cursor-pointer hover:text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={categoryIds.includes(c.id)}
+                          onChange={() => setCategoryIds((prev) =>
+                            prev.includes(c.id) ? prev.filter((x) => x !== c.id) : [...prev, c.id]
+                          )}
+                          className="accent-primary"
+                        />
+                        {c.name}
+                      </label>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
