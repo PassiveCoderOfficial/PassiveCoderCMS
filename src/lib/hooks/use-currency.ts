@@ -22,8 +22,23 @@ export function useCurrencyRate() {
   return rate;
 }
 
+/**
+ * Format a USD amount, optionally falling back to a rate-based BDT conversion.
+ * Prefer formatPrice() when a fixed BDT price is available.
+ */
 export function formatCurrency(usdAmount: number, currency: Currency, bdtRate: number): string {
   if (currency === "USD") return `$${usdAmount.toLocaleString("en-US")}`;
   const bdt = Math.round(usdAmount * bdtRate);
+  return `৳${bdt.toLocaleString("en-BD")}`;
+}
+
+/**
+ * Format an explicit per-currency price.
+ * @param usdAmount  amount in USD (dollars, not cents)
+ * @param bdtAmount  fixed BDT price (whole taka); falls back to usd×rate when null
+ */
+export function formatPrice(usdAmount: number, bdtAmount: number | null | undefined, currency: Currency, bdtRate: number): string {
+  if (currency === "USD") return `$${usdAmount.toLocaleString("en-US")}`;
+  const bdt = bdtAmount != null ? bdtAmount : Math.round(usdAmount * bdtRate);
   return `৳${bdt.toLocaleString("en-BD")}`;
 }

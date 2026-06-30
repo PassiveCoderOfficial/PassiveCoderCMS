@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const [{ data: plan }, { data: ps }] = await Promise.all([
-    admin.from("plans").select("id, name, price_yearly, price_monthly").eq("id", planId).maybeSingle(),
+    admin.from("plans").select("id, name, price_yearly, price_monthly, price_yearly_bdt, price_monthly_bdt").eq("id", planId).maybeSingle(),
     admin.from("platform_settings").select("*").eq("id", 1).maybeSingle(),
   ]);
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
@@ -48,10 +48,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `${billingCycle} billing not available for this plan` }, { status: 400 });
   }
 
-  // priceForCycle stored as cents (e.g. 4000 = $40.00)
+  // priceForCycle stored as USD cents (e.g. 4000 = $40.00)
   const amountUsd = Number(priceForCycle) / 100;
   const amountCents = Number(priceForCycle);
-  const amountBdt = Math.round(amountUsd * bdtRate);
+  // Fixed BDT price per plan; fall back to USD×rate only if not configured.
+  const bdtForCycle = billingCycle === "monthly" ? plan.price_monthly_bdt : plan.price_yearly_bdt;
+  const amountBdt = bdtForCycle != null && bdtForCycle > 0 ? Number(bdtForCycle) : Math.round(amountUsd * bdtRate);
   const cycleLabel = billingCycle === "monthly" ? "monthly" : "yearly";
 
   // ── Manual payment (bKash / Nagad / bank) → pending + billing ticket ────────
@@ -84,7 +86,7 @@ export async function POST(req: Request) {
         payment_provider: "manual",
         billing_cycle: billingCycle,
         manual_ticket_id: ticket.id,
-        amount_cents: amountCents,
+        amount_cents: amountBdt,
         currency: "BDT",
       },
       { onConflict: "tenant_id" },
@@ -121,7 +123,7 @@ export async function POST(req: Request) {
           payment_provider: "shurjopay",
           billing_cycle: billingCycle,
           shurjopay_order_id: spOrderId,
-          amount_cents: amountCents,
+          amount_cents: amountBdt,
           currency: "BDT",
         },
         { onConflict: "tenant_id" },

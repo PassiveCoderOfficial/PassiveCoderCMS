@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CheckoutDialog, type CheckoutPlan, type PaymentConfig } from "./checkout-dialog";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
-import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
+import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
 
 interface Subscription {
   id: string;
@@ -20,6 +20,7 @@ interface Subscription {
   amount_cents: number | null;
   currency: string | null;
   payment_provider: string | null;
+  billing_cycle: string | null;
   tenant_id: string;
   tenants: { name: string; slug: string } | null;
 }
@@ -29,6 +30,8 @@ interface Plan {
   name: string;
   price_monthly: number;
   price_yearly: number;
+  price_monthly_bdt: number | null;
+  price_yearly_bdt: number | null;
   currency: string;
   features: string[];
   is_popular: boolean;
@@ -212,6 +215,14 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
   const renewDate = sub.current_period_end ?? sub.trial_ends_at;
   const plan = plans.find(p => p.id === sub.plan_id || p.name.toLowerCase() === sub.plan_id);
 
+  const cycle = sub.billing_cycle === "monthly" ? "monthly" : "yearly";
+  const cycleSuffix = cycle === "monthly" ? "/mo" : "/yr";
+  const planUsd = plan ? (cycle === "monthly" ? (plan.price_monthly ?? 0) : plan.price_yearly) / 100 : 0;
+  const planBdt = plan ? (cycle === "monthly" ? plan.price_monthly_bdt : plan.price_yearly_bdt) : null;
+  const amountStr = plan
+    ? formatPrice(planUsd * (1 - discountPct / 100), planBdt != null ? Math.round(planBdt * (1 - discountPct / 100)) : null, currency, bdtRate)
+    : null;
+
   return (
     <div className="rounded-xl border bg-card p-5 space-y-4">
       <div className="flex items-start justify-between gap-4">
@@ -237,9 +248,9 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
         <div>
           <p className="text-xs text-muted-foreground">Amount</p>
           <div>
-            {sub.amount_cents ? (
+            {amountStr ? (
               <>
-                <p className="font-medium">{formatCurrency(sub.amount_cents / 100, currency, bdtRate)}/yr</p>
+                <p className="font-medium">{amountStr}{cycleSuffix}</p>
                 {discountPct > 0 && (
                   <p className="text-xs text-green-600 dark:text-green-400">−{discountPct}% agent discount</p>
                 )}
@@ -319,7 +330,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
                 size="sm"
                 variant={p.is_popular ? "default" : "outline"}
                 className="flex items-center gap-1.5"
-                onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, currency: p.currency })}
+                onClick={() => onChoose({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, price_yearly_bdt: p.price_yearly_bdt, price_monthly_bdt: p.price_monthly_bdt, currency: p.currency })}
               >
                 <CreditCard className="w-3.5 h-3.5" /> Pay — {p.name}
               </Button>
@@ -357,12 +368,12 @@ function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { p
                   <>
                     <p className="text-2xl font-black">
                       {discountPct > 0
-                        ? formatCurrency((plan.price_yearly / 100) * (1 - discountPct / 100), currency, bdtRate)
-                        : formatCurrency(plan.price_yearly / 100, currency, bdtRate)}
+                        ? formatPrice((plan.price_yearly / 100) * (1 - discountPct / 100), plan.price_yearly_bdt != null ? Math.round(plan.price_yearly_bdt * (1 - discountPct / 100)) : null, currency, bdtRate)
+                        : formatPrice(plan.price_yearly / 100, plan.price_yearly_bdt, currency, bdtRate)}
                       <span className="text-sm font-normal text-muted-foreground">/yr</span>
                     </p>
                     {discountPct > 0 && (
-                      <p className="text-xs text-muted-foreground line-through">{formatCurrency(plan.price_yearly / 100, currency, bdtRate)}</p>
+                      <p className="text-xs text-muted-foreground line-through">{formatPrice(plan.price_yearly / 100, plan.price_yearly_bdt, currency, bdtRate)}</p>
                     )}
                   </>
                 ) : (
@@ -380,7 +391,7 @@ function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { p
                   className="w-full"
                   variant={plan.is_popular ? "default" : "outline"}
                   disabled={!onChoose}
-                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, price_monthly: plan.price_monthly ?? 0, currency: plan.currency })}
+                  onClick={() => onChoose?.({ id: plan.id, name: plan.name, price_yearly: plan.price_yearly, price_monthly: plan.price_monthly ?? 0, price_yearly_bdt: plan.price_yearly_bdt, price_monthly_bdt: plan.price_monthly_bdt, currency: plan.currency })}
                 >
                   Choose {plan.name}
                 </Button>

@@ -4,13 +4,15 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Star, ArrowRight, Users, Zap, Plug, BookOpen, Users2, Receipt, Calculator, CreditCard, Mail, ShoppingCart } from "lucide-react";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
-import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
+import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
 
 interface Plan {
   id: string;
   name: string;
   price_yearly: number;
   price_monthly: number;
+  price_yearly_bdt: number | null;
+  price_monthly_bdt: number | null;
   storage_gb: number;
   domains: number;
   support_tier: string;
@@ -47,6 +49,8 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
     const cents = cycle === "monthly" ? plan.price_monthly : plan.price_yearly;
     return (cents ?? 0) / 100;
   };
+  const bdtFor = (plan: Plan): number | null =>
+    cycle === "monthly" ? (plan.price_monthly_bdt ?? null) : (plan.price_yearly_bdt ?? null);
 
   const suffix = cycle === "monthly" ? "/month" : "/year";
 
@@ -123,6 +127,11 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             const yearlyPrice   = (plan.price_yearly  ?? 0) / 100;
             const yearlySavings = monthlyPrice > 0 && yearlyPrice > 0
               ? Math.round(monthlyPrice * 12 - yearlyPrice) : 0;
+            // BDT equivalents (fixed prices) for the same figures
+            const monthlyBdt = plan.price_monthly_bdt ?? null;
+            const yearlyBdt  = plan.price_yearly_bdt ?? null;
+            const yearlySavingsBdt = monthlyBdt != null && yearlyBdt != null && monthlyBdt > 0 && yearlyBdt > 0
+              ? monthlyBdt * 12 - yearlyBdt : null;
             const visitorLimit = plan.visitor_limit_monthly ?? 0;
             const overagePerK  = (plan.overage_cents_per_1k ?? 0) / 100;
 
@@ -149,14 +158,14 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                   {offersCycle ? (
                     <>
                       <div className="mt-3 flex items-baseline gap-1">
-                        <span className="text-4xl font-extrabold text-gray-900">{formatCurrency(price, currency, bdtRate)}</span>
+                        <span className="text-4xl font-extrabold text-gray-900">{formatPrice(price, bdtFor(plan), currency, bdtRate)}</span>
                         <span className="text-gray-500 text-sm">{suffix}</span>
                       </div>
                       {cycle === "yearly" && yearlySavings > 0 && (
-                        <p className="text-xs text-green-600 font-medium mt-1">Save {formatCurrency(yearlySavings, currency, bdtRate)}/yr vs monthly</p>
+                        <p className="text-xs text-green-600 font-medium mt-1">Save {formatPrice(yearlySavings, yearlySavingsBdt, currency, bdtRate)}/yr vs monthly</p>
                       )}
                       {cycle === "monthly" && yearlyPrice > 0 && yearlySavings > 0 && (
-                        <p className="text-xs text-gray-500 mt-1">Or {formatCurrency(yearlyPrice, currency, bdtRate)}/yr — save {formatCurrency(yearlySavings, currency, bdtRate)}</p>
+                        <p className="text-xs text-gray-500 mt-1">Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr — save {formatPrice(yearlySavings, yearlySavingsBdt, currency, bdtRate)}</p>
                       )}
                     </>
                   ) : (

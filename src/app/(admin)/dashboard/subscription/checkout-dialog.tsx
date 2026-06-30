@@ -8,14 +8,15 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, CreditCard, Smartphone, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CurrencyToggle } from "@/components/ui/currency-toggle";
-import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
+import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
 
 export interface CheckoutPlan {
   id: string;
   name: string;
-  price_yearly: number;
-  price_monthly?: number;
+  price_yearly: number;            // USD cents
+  price_monthly?: number;          // USD cents
+  price_yearly_bdt?: number | null;  // whole BDT
+  price_monthly_bdt?: number | null; // whole BDT
   currency?: string;
 }
 
@@ -47,18 +48,23 @@ export function CheckoutDialog({
   const [txnRef, setTxnRef] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const [currency, setCurrency] = useState<Currency>("USD");
   const bdtRate = useCurrencyRate();
 
   if (!plan) return null;
 
-  const priceForCents = (c: BillingCycle): number =>
-    (c === "monthly" ? (plan.price_monthly ?? 0) : plan.price_yearly);
-  const priceFor = (c: BillingCycle): number => priceForCents(c) / 100;
-  const availableCycles = (["monthly", "yearly"] as BillingCycle[]).filter(c => priceFor(c) > 0);
-  const activeCycle: BillingCycle = priceFor(cycle) > 0 ? cycle : (availableCycles[0] ?? "yearly");
-  const amount = priceFor(activeCycle);
-  const amountFormatted = formatCurrency(amount, currency, bdtRate);
+  // Charge currency is fixed by payment method: Dodo = USD, everything else (BD methods) = BDT.
+  const currency: Currency = method === "dodo" ? "USD" : "BDT";
+
+  const usdFor = (c: BillingCycle): number =>
+    (c === "monthly" ? (plan.price_monthly ?? 0) : plan.price_yearly) / 100;
+  const bdtFor = (c: BillingCycle): number | null =>
+    c === "monthly" ? (plan.price_monthly_bdt ?? null) : (plan.price_yearly_bdt ?? null);
+  const formatFor = (c: BillingCycle): string =>
+    formatPrice(usdFor(c), bdtFor(c), currency, bdtRate);
+
+  const availableCycles = (["monthly", "yearly"] as BillingCycle[]).filter(c => usdFor(c) > 0);
+  const activeCycle: BillingCycle = usdFor(cycle) > 0 ? cycle : (availableCycles[0] ?? "yearly");
+  const amountFormatted = formatFor(activeCycle);
 
   const isBkash = method === "bkash";
   const isNagad = method === "nagad";
@@ -116,10 +122,6 @@ export function CheckoutDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <CurrencyToggle currency={currency} onChange={setCurrency} />
-          </div>
-
           {availableCycles.length > 1 && (
             <div className="space-y-2">
               <Label>Billing cycle</Label>
@@ -135,7 +137,7 @@ export function CheckoutDialog({
                     )}
                   >
                     {CYCLE_LABELS[c]}
-                    <span className="block text-[10px] text-muted-foreground">{formatCurrency(priceFor(c), currency, bdtRate)}</span>
+                    <span className="block text-[10px] text-muted-foreground">{formatFor(c)}</span>
                   </button>
                 ))}
               </div>
@@ -146,6 +148,12 @@ export function CheckoutDialog({
             <span className="text-muted-foreground">{plan.name} ({CYCLE_LABELS[activeCycle].toLowerCase()})</span>
             <span className="font-bold">{amountFormatted}{CYCLE_SUFFIX[activeCycle]}</span>
           </div>
+
+          <p className="text-[11px] text-muted-foreground -mt-2">
+            {currency === "USD"
+              ? "Charged in USD via international card / PayPal."
+              : "Charged in BDT (Bangladeshi Taka) via the selected local method."}
+          </p>
 
           <div className="space-y-2">
             <Label>Payment method</Label>
