@@ -1,5 +1,6 @@
 ﻿import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { withCookieDomain } from "./cookie-domain";
 
 export async function updateSession(request: NextRequest, requestHeaders?: Headers) {
   // Next 16: request headers MUST be forwarded as `{ request: { headers } }`.
@@ -19,7 +20,7 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request: { headers } });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, withCookieDomain(options)),
           );
         },
       },

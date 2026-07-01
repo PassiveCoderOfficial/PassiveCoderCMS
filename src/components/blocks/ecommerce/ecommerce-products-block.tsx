@@ -25,13 +25,15 @@ const ALIGN = {
 export async function EcommerceProductsBlock({ block }: { block: EcommerceProductsBlockProps }) {
   const { data } = block;
   const {
-    title, subtitle, displayCount, layout = "grid", columns = 3,
+    title, subtitle, layout = "grid", columns = 3,
     sortBy = "latest", showAddToCart = true,
     showDescription = true, showBadges = true,
     cardStyle = "default", imageRatio = "square",
     sectionPadding = "md", backgroundColor,
     titleAlignment = "center", ctaLabel, ctaUrl,
   } = data;
+  // Old blocks may lack displayCount; guard against .limit(undefined) → 0 rows.
+  const displayCount = data.displayCount && data.displayCount > 0 ? data.displayCount : 8;
 
   const supabase = await createClient();
   const tenantId = (await headers()).get("x-tenant-id");
@@ -82,8 +84,8 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
           </div>
         )}
 
-        {/* ── Grid layout (default) ── */}
-        {(layout === "grid" || layout === "wide-cards") && layout !== "wide-cards" && (
+        {/* ── Grid layout (default; also fallback for any unknown layout value) ── */}
+        {(layout === "grid" || !["list", "featured", "minimal", "wide-cards"].includes(layout)) && (
           <div className={cn("grid grid-cols-1 gap-6", colMap[columns] ?? colMap[3])}>
             {normalizedProducts.map((product) => (
               <ProductCard

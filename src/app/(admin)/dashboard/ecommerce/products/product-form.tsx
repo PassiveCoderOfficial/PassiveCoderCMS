@@ -261,6 +261,8 @@ export function ProductForm({ product }: ProductFormProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [categoryIds, setCategoryIds] = useState<string[]>(product?.category_ids ?? []);
+  const [newCategory, setNewCategory] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -270,6 +272,32 @@ export function ProductForm({ product }: ProductFormProps) {
       q.then(({ data }) => setCategories((data as CategoryOption[]) ?? []));
     });
   }, []);
+
+  async function createCategory() {
+    const name = newCategory.trim();
+    if (!name) return;
+    setCreatingCategory(true);
+    try {
+      const supabase = createClient();
+      const tenantId = await getClientTenantId();
+      const slug = createSlug(name);
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ name, slug, type: "product", tenant_id: tenantId })
+        .select("id,name")
+        .single();
+      if (error) throw error;
+      const cat = data as CategoryOption;
+      setCategories((prev) => [...prev, cat].sort((a, b) => a.name.localeCompare(b.name)));
+      setCategoryIds((prev) => [...prev, cat.id]); // auto-select the new one
+      setNewCategory("");
+      toast.success(`Category "${name}" created`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create category");
+    } finally {
+      setCreatingCategory(false);
+    }
+  }
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as never,
@@ -501,9 +529,9 @@ export function ProductForm({ product }: ProductFormProps) {
             {/* ── Categories ── */}
             <Card>
               <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Categories</CardTitle></CardHeader>
-              <CardContent className="px-4 pb-4">
+              <CardContent className="px-4 pb-4 space-y-3">
                 {categories.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No product categories yet. <a href="/dashboard/ecommerce/categories" className="underline">Create one</a>.</p>
+                  <p className="text-xs text-muted-foreground">No product categories yet — add one below.</p>
                 ) : (
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {categories.map((c) => (
@@ -521,6 +549,27 @@ export function ProductForm({ product }: ProductFormProps) {
                     ))}
                   </div>
                 )}
+
+                {/* Inline create */}
+                <div className="flex items-center gap-1.5 pt-1 border-t">
+                  <Input
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createCategory(); } }}
+                    placeholder="New category…"
+                    className="h-8 text-xs"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={createCategory}
+                    disabled={creatingCategory || !newCategory.trim()}
+                    className="h-8 shrink-0"
+                  >
+                    {creatingCategory ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
