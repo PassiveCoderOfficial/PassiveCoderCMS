@@ -326,6 +326,62 @@ export function ProductForm({ product }: ProductFormProps) {
     if (!product) form.setValue("slug", createSlug(e.target.value));
   };
 
+  // ── Auto-draft: for NEW products, persist a draft row as the user edits so
+  // navigating away never loses progress. Once a draft exists we keep updating it.
+  const draftIdRef = useRef<string | null>(product?.id ?? null);
+  const [autoSaved, setAutoSaved] = useState<Date | null>(null);
+  const isExistingProduct = !!product?.id;
+
+  useEffect(() => {
+    // Only auto-draft brand-new products (existing ones save on submit).
+    if (isExistingProduct) return;
+    const supabase = createClient();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const sub = form.watch((values) => {
+      const name = (values.name ?? "").trim();
+      if (!name) return; // nothing meaningful yet
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(async () => {
+        try {
+          const tenantId = await getClientTenantId();
+          if (!tenantId) return;
+          const payload = {
+            name,
+            slug: values.slug || createSlug(name),
+            description: values.description ?? "",
+            short_description: values.short_description ?? "",
+            type: values.type ?? "simple",
+            status: "draft" as const,
+            price: values.price ?? 0,
+            compare_price: values.compare_price || null,
+            cost_price: values.cost_price || null,
+            sku: values.sku ?? "",
+            track_inventory: values.track_inventory ?? true,
+            stock_quantity: values.stock_quantity ?? 0,
+            low_stock_threshold: values.low_stock_threshold ?? 5,
+            featured: values.featured ?? false,
+            images,
+            category_ids: categoryIds,
+          };
+          if (draftIdRef.current) {
+            await supabase.from("products").update(payload).eq("id", draftIdRef.current);
+          } else {
+            const { data } = await supabase
+              .from("products")
+              .insert({ ...payload, tenant_id: tenantId })
+              .select("id")
+              .single();
+            if (data?.id) draftIdRef.current = data.id;
+          }
+          setAutoSaved(new Date());
+        } catch { /* silent — autosave is best-effort */ }
+      }, 1500);
+    });
+
+    return () => { sub.unsubscribe(); if (timer) clearTimeout(timer); };
+  }, [form, images, categoryIds, isExistingProduct]);
+
   const removeImage = (i: number) => setImages(prev => prev.filter((_, j) => j !== i));
   const setPrimary = (i: number) => setImages(prev => [prev[i], ...prev.filter((_, j) => j !== i)]);
 
@@ -340,10 +396,13 @@ export function ProductForm({ product }: ProductFormProps) {
         cost_price: values.cost_price || null,
         weight: values.weight || null,
       };
-      if (product?.id) {
-        const { error } = await supabase.from("products").update(payload).eq("id", product.id);
+      const existingId = product?.id ?? draftIdRef.current;
+      if (existingId) {
+        // Update the existing product OR the auto-saved draft row.
+        const { error } = await supabase.from("products").update(payload).eq("id", existingId);
         if (error) throw error;
-        toast.success("Product updated");
+        toast.success(product?.id ? "Product updated" : "Product created");
+        if (!product?.id) router.push("/dashboard/ecommerce/products");
       } else {
         const tenantId = await getClientTenantId();
         if (!tenantId) throw new Error("No tenant found for your account");
@@ -575,7 +634,12 @@ export function ProductForm({ product }: ProductFormProps) {
 
             <Card>
               <CardContent className="pt-4 pb-4 px-4">
-                <p className="text-xs text-muted-foreground mb-3">{images.length} image{images.length !== 1 ? "s" : ""} added</p>
+                <p className="text-xs text-muted-foreground mb-1">{images.length} image{images.length !== 1 ? "s" : ""} added</p>
+                {!isExistingProduct && autoSaved && (
+                  <p className="text-[11px] text-green-600 mb-2 flex items-center gap-1">
+                    <Check className="h-3 w-3" /> Draft auto-saved {autoSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                )}
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {product ? "Update Product" : "Create Product"}
