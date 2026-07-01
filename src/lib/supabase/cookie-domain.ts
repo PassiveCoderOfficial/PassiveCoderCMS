@@ -16,9 +16,13 @@ export function getCookieDomain(): string | undefined {
   return `.${host}`;
 }
 
-/** Merge the shared cross-subdomain Domain into Supabase cookie options. */
-export function withCookieDomain<T extends Record<string, unknown>>(options?: T): T {
+/**
+ * Merge the shared cross-subdomain Domain into Supabase cookie options.
+ * Generic preserves the caller's option type; we spread into a fresh object so
+ * the `domain` key is added without a lossy cast.
+ */
+export function withCookieDomain<T extends object>(options?: T): T & { domain?: string } {
   const domain = getCookieDomain();
-  if (!domain) return (options ?? {}) as T;
-  return { ...(options ?? {}), domain } as T;
+  if (!domain) return { ...(options ?? ({} as T)) };
+  return { ...(options ?? ({} as T)), domain };
 }
