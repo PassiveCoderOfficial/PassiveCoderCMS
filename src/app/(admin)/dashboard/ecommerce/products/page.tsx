@@ -226,9 +226,23 @@ function CategoryCell({
 // ─── Inline stock cell (In Stock / tracked quantity) ───────────────────────────
 function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Partial<Product>) => void }) {
   const [editing, setEditing] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const [qty, setQty] = useState(String(product.stock_quantity ?? 0));
   const [saving, setSaving] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Popover is ~200px tall. Open upward only if not enough space below AND
+  // there IS enough space above — otherwise open downward (default).
+  function openEditor() {
+    const POP = 220;
+    const rect = ref.current?.getBoundingClientRect();
+    if (rect) {
+      const below = window.innerHeight - rect.bottom;
+      const above = rect.top;
+      setDropUp(below < POP && above > below);
+    }
+    setEditing(true);
+  }
 
   useEffect(() => { setQty(String(product.stock_quantity ?? 0)); }, [product.stock_quantity]);
   useEffect(() => {
@@ -274,7 +288,7 @@ function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Part
   return (
     <div className="relative" ref={ref}>
       <span
-        onClick={() => setEditing(true)}
+        onClick={openEditor}
         title="Click to edit stock"
         className="cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none inline-block"
       >
@@ -282,7 +296,10 @@ function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Part
       </span>
 
       {editing && (
-        <div className="absolute left-0 bottom-full mb-1 z-30 bg-background border rounded-xl shadow-xl p-3 min-w-[220px] space-y-3">
+        <div className={cn(
+          "absolute left-0 z-30 bg-background border rounded-xl shadow-xl p-3 min-w-[220px] space-y-3",
+          dropUp ? "bottom-full mb-1" : "top-full mt-1",
+        )}>
           {/* In Stock (untracked) */}
           <button
             onClick={setInStock}
