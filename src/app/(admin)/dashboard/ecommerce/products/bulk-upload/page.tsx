@@ -26,7 +26,7 @@ interface Category { id: string; name: string; }
 
 function uid() { return Math.random().toString(36).slice(2); }
 
-function parseCSV(text: string): Omit<RowProduct, "_key" | "image" | "imageFile" | "category_id" | "category_all">[] {
+function parseCSV(text: string): Omit<RowProduct, "_key" | "imageFile" | "category_id" | "category_all">[] {
   const lines = text.trim().split("\n");
   if (lines.length < 2) return [];
   const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z_]/g, ""));
@@ -51,11 +51,13 @@ function parseCSV(text: string): Omit<RowProduct, "_key" | "image" | "imageFile"
       return "";
     };
 
+    const imageUrl = get(["image_url", "image", "images", "image_link", "picture"]);
     return {
       name: get(["name", "product_name", "title"]),
       price: get(["price", "regular_price"]),
       sale_price: get(["sale_price", "compare_price", "compare"]),
       short_description: get(["short_description", "description", "desc"]),
+      image: imageUrl || null,
     };
   }).filter((r) => r.name);
 }
@@ -151,6 +153,15 @@ export default function BulkUploadPage() {
   const dropRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
 
+  // Batch-level defaults applied to ALL rows on save
+  const [batchStatus, setBatchStatus] = useState<"draft" | "active">("draft");
+  const [batchTracked, setBatchTracked] = useState(false); // false = "In Stock" (untracked)
+  const [batchStock, setBatchStock] = useState("0");
+
+  // Inline category creation
+  const [newCategory, setNewCategory] = useState("");
+  const [creatingCat, setCreatingCat] = useState(false);
+
   useEffect(() => {
     const supabase = createClient();
     getClientTenantId().then((tenantId) => {
@@ -159,6 +170,29 @@ export default function BulkUploadPage() {
       q.then(({ data }) => setCategories((data as Category[]) ?? []));
     });
   }, []);
+
+  async function createCategory() {
+    const name = newCategory.trim();
+    if (!name) return;
+    setCreatingCat(true);
+    try {
+      const supabase = createClient();
+      const tenantId = await getClientTenantId();
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ name, slug: createSlug(name), type: "product", tenant_id: tenantId })
+        .select("id,name")
+        .single();
+      if (error) throw error;
+      setCategories((prev) => [...prev, data as Category].sort((a, b) => a.name.localeCompare(b.name)));
+      setNewCategory("");
+      toast.success(`Category "${name}" created`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create category");
+    } finally {
+      setCreatingCat(false);
+    }
+  }
 
   // ── Drop zone handler ──────────────────────────────────────────────────────
   const handleDrop = useCallback(async (e: React.DragEvent) => {
@@ -175,8 +209,7 @@ export default function BulkUploadPage() {
       const parsed = parseCSV(text);
       const newRows: RowProduct[] = parsed.map((r) => ({
         _key: uid(),
-        image: null,
-        imageFile: null,
+                imageFile: null,
         category_id: "",
         category_all: false,
         ...r,
@@ -219,8 +252,7 @@ export default function BulkUploadPage() {
       const parsed = parseCSV(text);
       const newRows: RowProduct[] = parsed.map((r) => ({
         _key: uid(),
-        image: null,
-        imageFile: null,
+                imageFile: null,
         category_id: "",
         category_all: false,
         ...r,
@@ -289,7 +321,8 @@ export default function BulkUploadPage() {
         }));
         setUploadingImages(false);
 
-        // Build insert rows
+        // Build insert rows — batch-level status/stock applied to all
+        const stockN = parseInt(batchStock, 10) || 0;
         const inserts = withUrls.map((row) => ({
           name: row.name.trim(),
           slug: createSlug(row.name.trim()) + "-" + uid().slice(0, 4),
@@ -298,10 +331,10 @@ export default function BulkUploadPage() {
           short_description: row.short_description || null,
           images: row.image ? [row.image] : [],
           category_ids: row.category_id ? [row.category_id] : [],
-          status: "draft",
+          status: batchStatus,
           type: "simple",
-          track_inventory: true,
-          stock_quantity: 0,
+          track_inventory: batchTracked,
+          stock_quantity: batchTracked ? stockN : 0,
           low_stock_threshold: 5,
           featured: false,
           tenant_id: tenantId,
@@ -376,10 +409,16 @@ export default function BulkUploadPage() {
       </div>
 
       {/* CSV template download hint */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <FileText className="h-3.5 w-3.5" />
-        CSV columns: <code className="bg-muted px-1 rounded">name, price, sale_price, short_description</code>
-        — first row must be headers.
+      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+        <FileText className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+        <span>
+          CSV columns: <code className="bg-muted px-1 rounded">name, price, sale_price, short_description, image_url</code>
+          {" "}— first row must be headers.
+          <br />
+          <code className="bg-muted px-1 rounded">image_url</code>: a full web URL (https://…) to fetch the image from,
+          or a media-library link you copied from{" "}
+          <Link href="/dashboard/media" className="underline">Media</Link>.
+        </span>
       </div>
 
       {/* Product rows grid */}
@@ -394,6 +433,67 @@ export default function BulkUploadPage() {
             >
               <Plus className="h-3.5 w-3.5" /> Add Row
             </button>
+          </div>
+
+          {/* Batch settings — applied to ALL rows on save */}
+          <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-muted/30 p-3 text-xs">
+            <span className="font-semibold text-muted-foreground">Apply to all:</span>
+
+            <label className="flex items-center gap-1.5">
+              Status
+              <select
+                value={batchStatus}
+                onChange={(e) => setBatchStatus(e.target.value as "draft" | "active")}
+                className="border rounded px-2 py-1 bg-background outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="draft">Draft</option>
+                <option value="active">Active (published)</option>
+              </select>
+            </label>
+
+            <label className="flex items-center gap-1.5">
+              Stock
+              <select
+                value={batchTracked ? "tracked" : "instock"}
+                onChange={(e) => setBatchTracked(e.target.value === "tracked")}
+                className="border rounded px-2 py-1 bg-background outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="instock">In Stock (untracked)</option>
+                <option value="tracked">Track quantity</option>
+              </select>
+            </label>
+
+            {batchTracked && (
+              <label className="flex items-center gap-1.5">
+                Qty
+                <input
+                  type="number"
+                  min="0"
+                  value={batchStock}
+                  onChange={(e) => setBatchStock(e.target.value)}
+                  className="border rounded px-2 py-1 w-20 bg-background outline-none focus:ring-1 focus:ring-primary"
+                />
+              </label>
+            )}
+
+            {/* Add category inline */}
+            <div className="flex items-center gap-1.5 ml-auto">
+              <input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createCategory(); } }}
+                placeholder="New category…"
+                className="border rounded px-2 py-1 bg-background outline-none focus:ring-1 focus:ring-primary w-36"
+              />
+              <button
+                type="button"
+                onClick={createCategory}
+                disabled={creatingCat || !newCategory.trim()}
+                className="flex items-center gap-1 border rounded px-2 py-1 hover:bg-muted disabled:opacity-50"
+              >
+                {creatingCat ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Add
+              </button>
+            </div>
           </div>
 
           {/* Table header */}
