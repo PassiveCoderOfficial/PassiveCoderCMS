@@ -330,6 +330,88 @@ function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Part
   );
 }
 
+// ─── Bulk action bar (shown when rows selected) ─────────────────────────────────
+function BulkBar({
+  count, categories, busy,
+  onSetStatus, onSetStock, onSetCategories, onDelete, onClear,
+}: {
+  count: number;
+  categories: Category[];
+  busy: boolean;
+  onSetStatus: (s: Product["status"]) => void;
+  onSetStock: (qty: number, tracked: boolean) => void;
+  onSetCategories: (ids: string[]) => void;
+  onDelete: () => void;
+  onClear: () => void;
+}) {
+  const [menu, setMenu] = useState<null | "status" | "stock" | "category">(null);
+  const [stockQty, setStockQty] = useState("0");
+  const [catSel, setCatSel] = useState<string[]>([]);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setMenu(null); }
+    if (menu) document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [menu]);
+
+  return (
+    <div ref={ref} className="sticky top-0 z-20 flex items-center gap-2 flex-wrap bg-primary text-primary-foreground rounded-xl px-4 py-2.5 mb-3 shadow-md">
+      <span className="text-sm font-semibold">{count} selected</span>
+      {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+      <div className="h-4 w-px bg-primary-foreground/30 mx-1" />
+
+      {/* Status */}
+      <div className="relative">
+        <button onClick={() => setMenu(menu === "status" ? null : "status")} className="text-xs bg-primary-foreground/15 hover:bg-primary-foreground/25 rounded-lg px-3 py-1.5 font-medium">Set Status</button>
+        {menu === "status" && (
+          <div className="absolute left-0 top-9 z-30 bg-background text-foreground border rounded-lg shadow-xl p-1 min-w-[140px]">
+            {(["active", "draft", "archived"] as const).map((s) => (
+              <button key={s} onClick={() => { onSetStatus(s); setMenu(null); }} className="w-full text-left text-xs px-3 py-1.5 rounded hover:bg-muted capitalize">{s}</button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Stock */}
+      <div className="relative">
+        <button onClick={() => setMenu(menu === "stock" ? null : "stock")} className="text-xs bg-primary-foreground/15 hover:bg-primary-foreground/25 rounded-lg px-3 py-1.5 font-medium">Set Stock</button>
+        {menu === "stock" && (
+          <div className="absolute left-0 top-9 z-30 bg-background text-foreground border rounded-lg shadow-xl p-3 min-w-[220px] space-y-2">
+            <button onClick={() => { onSetStock(0, false); setMenu(null); }} className="w-full text-left text-xs px-3 py-2 rounded-lg border hover:bg-muted">
+              <span className="text-green-600 font-medium">● In Stock</span> <span className="text-muted-foreground">(untracked)</span>
+            </button>
+            <div className="flex items-center gap-1.5">
+              <input type="number" min="0" value={stockQty} onChange={(e) => setStockQty(e.target.value)} className="border rounded px-2 py-1 text-xs w-full outline-none focus:ring-1 focus:ring-primary" placeholder="Qty" />
+              <button onClick={() => { const n = parseInt(stockQty, 10); if (!isNaN(n)) { onSetStock(n, true); setMenu(null); } }} className="text-xs bg-primary text-primary-foreground rounded-lg px-3 py-1.5 font-medium shrink-0">Set</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Category */}
+      <div className="relative">
+        <button onClick={() => { setMenu(menu === "category" ? null : "category"); setCatSel([]); }} className="text-xs bg-primary-foreground/15 hover:bg-primary-foreground/25 rounded-lg px-3 py-1.5 font-medium">Set Category</button>
+        {menu === "category" && (
+          <div className="absolute left-0 top-9 z-30 bg-background text-foreground border rounded-xl shadow-xl p-3 min-w-[200px] space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Assign categories</p>
+            {categories.length === 0 ? <p className="text-xs text-muted-foreground">No categories</p> : categories.map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer hover:text-foreground">
+                <input type="checkbox" checked={catSel.includes(c.id)} onChange={() => setCatSel((p) => p.includes(c.id) ? p.filter((x) => x !== c.id) : [...p, c.id])} className="accent-primary" />
+                {c.name}
+              </label>
+            ))}
+            <button onClick={() => { onSetCategories(catSel); setMenu(null); }} className="w-full text-xs bg-primary text-primary-foreground rounded-lg py-1.5 font-medium mt-2">Apply to {count}</button>
+          </div>
+        )}
+      </div>
+
+      <button onClick={onDelete} className="text-xs bg-red-500/90 hover:bg-red-500 rounded-lg px-3 py-1.5 font-medium">Delete</button>
+      <button onClick={onClear} className="text-xs ml-auto opacity-80 hover:opacity-100 underline underline-offset-2">Clear</button>
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -337,6 +419,8 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"" | "active" | "draft" | "archived">("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
   const { format } = useEcommerceCurrency();
 
   useEffect(() => {
@@ -384,6 +468,44 @@ export default function ProductsPage() {
     setProducts((prev) => prev.filter((x) => x.id !== p.id));
     setDeleting(null);
     toast.success("Product deleted");
+  }
+
+  // ── Bulk selection + edit ──────────────────────────────────────────────────
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll(ids: string[]) {
+    setSelectedIds((prev) => {
+      const allSelected = ids.every((id) => prev.has(id));
+      return allSelected ? new Set() : new Set(ids);
+    });
+  }
+
+  async function bulkUpdate(patch: Record<string, unknown>) {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    setBulkBusy(true);
+    await supabase.from("products").update(patch).in("id", ids);
+    setProducts((prev) => prev.map((p) => ids.includes(p.id) ? { ...p, ...(patch as Partial<Product>) } : p));
+    setBulkBusy(false);
+    toast.success(`Updated ${ids.length} product${ids.length > 1 ? "s" : ""}`);
+  }
+
+  async function bulkDelete() {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} product${ids.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setBulkBusy(true);
+    await supabase.from("products").delete().in("id", ids);
+    setProducts((prev) => prev.filter((p) => !ids.includes(p.id)));
+    setSelectedIds(new Set());
+    setBulkBusy(false);
+    toast.success("Products deleted");
   }
 
   const filtered = filter ? products.filter((p) => p.status === filter) : products;
@@ -439,10 +561,33 @@ export default function ProductsPage() {
           )}
         </div>
       ) : (
+        <>
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <BulkBar
+            count={selectedIds.size}
+            categories={categories}
+            busy={bulkBusy}
+            onSetStatus={(s) => bulkUpdate({ status: s })}
+            onSetStock={(qty, tracked) => bulkUpdate(tracked ? { track_inventory: true, stock_quantity: qty } : { track_inventory: false })}
+            onSetCategories={(ids) => bulkUpdate({ category_ids: ids })}
+            onDelete={bulkDelete}
+            onClear={() => setSelectedIds(new Set())}
+          />
+        )}
         <div className="rounded-xl border overflow-hidden overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
+          <table className="w-full text-sm min-w-[740px]">
             <thead>
               <tr className="border-b bg-muted/40">
+                <th className="px-3 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all"
+                    className="accent-primary"
+                    checked={filtered.length > 0 && filtered.every((p) => selectedIds.has(p.id))}
+                    onChange={() => toggleSelectAll(filtered.map((p) => p.id))}
+                  />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Product</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden sm:table-cell">Price</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">Stock</th>
@@ -454,8 +599,19 @@ export default function ProductsPage() {
             <tbody className="divide-y">
               {filtered.map((product) => {
                 const firstImage = Array.isArray(product.images) ? product.images[0] : undefined;
+                const isSelected = selectedIds.has(product.id);
                 return (
-                  <tr key={product.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={product.id} className={cn("hover:bg-muted/20 transition-colors", isSelected && "bg-primary/5")}>
+                    {/* Select */}
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${product.name}`}
+                        className="accent-primary"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(product.id)}
+                      />
+                    </td>
                     {/* Product name */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -559,6 +715,7 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
