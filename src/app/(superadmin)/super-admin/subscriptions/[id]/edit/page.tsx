@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { CreditCard, Loader2, Check, X, Clock, Plus, DollarSign, FileText, Calendar } from "lucide-react";
+import PaymentsSection from "./payments-section";
 
 interface Sub {
   id: string; tenant_id: string; plan_id: string; status: string;
@@ -13,6 +14,7 @@ interface Sub {
   notes: string | null; next_payment_due: string | null;
   last_paid_at: string | null; payment_method: string | null;
   trial_ends_at: string | null; current_period_end: string | null;
+  total_billed_cents: number | null; total_paid_cents: number | null; balance_due_cents: number | null;
   tenants: { name: string; slug: string; tenant_number: number | null } | null;
 }
 interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; currency: string; }
@@ -267,6 +269,13 @@ export default function EditSubscriptionPage() {
             rows={3} placeholder="SA-only notes about this subscription…"
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
         </div>
+
+        <PaymentsSection
+          subscriptionId={sub.id}
+          totalBilledCents={sub.total_billed_cents}
+          totalPaidCents={sub.total_paid_cents}
+          balanceDueCents={sub.balance_due_cents}
+        />
 
         <div className="flex gap-2 pt-1">
           <button onClick={save} disabled={saving}

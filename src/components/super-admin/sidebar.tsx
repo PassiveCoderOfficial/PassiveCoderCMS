@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, CreditCard, Users, TicketIcon,
-  Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, Plus, Menu, X, FileText, ChevronDown,
+  Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, Plus, Menu, X, FileText, ChevronDown, Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { label: "Overview",        href: "/super-admin",              icon: LayoutDashboard, exact: true },
   { label: "All Sites",       href: "/super-admin/sites",        icon: Globe,           add: "/super-admin/sites/new" },
   { label: "Subscriptions",   href: "/super-admin/subscriptions",icon: CreditCard,      add: "/super-admin/subscriptions/new" },
+  { label: "Billing",         href: "/super-admin/billing",      icon: Receipt },
   { label: "Plans & Pricing", href: "/super-admin/plans",        icon: CreditCard,      add: "/super-admin/plans/new" },
   {
     label: "Support Tickets",

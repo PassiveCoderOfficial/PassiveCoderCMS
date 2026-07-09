@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -7,21 +8,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
     }
 
-    // If Resend/SMTP env vars configured, send email — otherwise just log
-    const RESEND_KEY = process.env.RESEND_API_KEY;
-    if (RESEND_KEY && recipient) {
+    if (recipient) {
       const body = Object.entries(fields as Record<string, string>)
         .map(([k, v]) => `${k}: ${v}`)
         .join("\n");
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "contact@noreply.passivecoder.com",
-          to: [recipient],
-          subject: "New contact form submission",
-          text: body,
-        }),
+      await sendEmail({
+        to: recipient,
+        subject: "New contact form submission",
+        text: body,
       });
     }
 
