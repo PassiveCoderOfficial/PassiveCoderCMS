@@ -1,7 +1,9 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { computeVerificationStatus } from "@/lib/verification";
 import { Users, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
 import GrantSuperAdminButton from "./grant-button";
+import ActivateToggleButton from "./activate-button";
 
 export const metadata = { title: "Users & Roles — Super Admin" };
 
@@ -10,12 +12,14 @@ export default async function UsersPage() {
   const authClient = await createClient();
   const { data: { user: currentUser } } = await authClient.auth.getUser();
 
-  const [{ data: superAdmins }, { data: recentUsers }] = await Promise.all([
+  const [{ data: superAdmins }, { data: recentUsers }, { data: profiles }] = await Promise.all([
     supabase.from("super_admins").select("user_id,granted_at"),
     supabase.auth.admin.listUsers({ page: 1, perPage: 50 }),
+    supabase.from("profiles").select("id, is_active, created_at, email_verified_at, whatsapp_verified_at"),
   ]);
 
   const superAdminIds = new Set((superAdmins ?? []).map(s => s.user_id));
+  const profileById = new Map((profiles ?? []).map(p => [p.id, p]));
   const users = recentUsers?.users ?? [];
 
   return (
@@ -37,10 +41,10 @@ export default async function UsersPage() {
           <span className="text-xs text-gray-500">({users.length})</span>
         </div>
         <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        <table className="w-full text-sm min-w-[800px]">
           <thead>
             <tr className="border-b border-gray-800">
-              {["Email", "Created", "Last Sign In", "Role", "Actions"].map(h => (
+              {["Email", "Created", "Last Sign In", "Role", "Status", "Verification", "Actions"].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs text-gray-500 font-medium">{h}</th>
               ))}
             </tr>
@@ -48,6 +52,9 @@ export default async function UsersPage() {
           <tbody>
             {users.map(user => {
               const isSA = superAdminIds.has(user.id);
+              const profile = profileById.get(user.id);
+              const isActive = profile?.is_active ?? true;
+              const verification = profile ? computeVerificationStatus(profile) : null;
               return (
                 <tr key={user.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                   <td className="px-5 py-3 text-white">{user.email}</td>
@@ -65,7 +72,28 @@ export default async function UsersPage() {
                     )}
                   </td>
                   <td className="px-5 py-3">
-                    <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
+                    {isActive ? (
+                      <span className="inline-flex items-center gap-1 bg-green-900/30 text-green-400 text-xs font-medium px-2 py-0.5 rounded-full">Active</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 bg-red-900/30 text-red-400 text-xs font-medium px-2 py-0.5 rounded-full">Inactive</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3">
+                    {!verification ? (
+                      <span className="text-xs text-gray-500">—</span>
+                    ) : verification.verified ? (
+                      <span className="text-xs text-green-400">Verified</span>
+                    ) : verification.locked ? (
+                      <span className="text-xs text-red-400">Locked</span>
+                    ) : (
+                      <span className="text-xs text-amber-400">{verification.daysRemaining}d left</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
+                      <ActivateToggleButton userId={user.id} isActive={isActive} isSelf={user.id === currentUser?.id} />
+                    </div>
                   </td>
                 </tr>
               );

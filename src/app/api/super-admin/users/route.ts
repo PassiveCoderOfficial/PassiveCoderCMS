@@ -24,5 +24,10 @@ export async function POST(req: Request) {
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Mark verified immediately — SA-created accounts are pre-vouched-for and
+  // must not be subject to the 7-day grace-period soft-lock.
+  await admin.from("profiles").update({ email_verified_at: new Date().toISOString() }).eq("id", data.user.id);
+
   return NextResponse.json({ ok: true, userId: data.user.id });
 }

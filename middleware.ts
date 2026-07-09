@@ -65,6 +65,17 @@ async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  const isVerifyPendingRoute = pathname.startsWith("/verify-pending");
+  if (isAdminRoute && user && !isVerifyPendingRoute) {
+    const { checkAndEnforceLock } = await import("@/lib/verification");
+    const status = await checkAndEnforceLock(user.id);
+    if (status?.locked) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/verify-pending";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   // Logged-in user hitting /login or /register — send them where they belong.
   // We don't know SA status here without a DB call, so redirect to /dashboard and
   // let the layout handle the SA→/super-admin redirect. Only bypass if an error

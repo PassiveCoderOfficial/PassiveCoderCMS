@@ -33,9 +33,16 @@ export async function GET(request: NextRequest) {
   }
 
   const user = session.user;
+  const admin = await createAdminClient();
+
+  // Callback only fires for Supabase-issued confirmation/magic links, so a
+  // successful code exchange implies the user proved control of the inbox.
+  await admin.from("profiles").update({ email_verified_at: new Date().toISOString() })
+    .eq("id", user.id).is("email_verified_at", null);
+  await admin.from("profiles").update({ is_active: true })
+    .eq("id", user.id).eq("is_active", false);
 
   // Auto-activate agent if pending and platform_settings.agent_auto_approve = true
-  const admin = await createAdminClient();
   const { data: agent } = await admin
     .from("agents")
     .select("id, status")

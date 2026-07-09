@@ -80,17 +80,21 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
     });
     if (error) { setLoading(false); toast.error(error.message); return; }
 
-    // If email confirmation is disabled, signUp returns a session directly.
-    // If it IS enabled, session is null — sign in immediately so we have a session cookie.
-    if (!data.session) {
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    // With Supabase "Confirm email" disabled, signUp() returns a session
+    // immediately. Kick off the verification email in the background —
+    // non-blocking, failure here must not block onboarding.
+    if (data.session && data.user) {
+      supabase.auth.resend({ type: "signup", email }).catch(() => {});
       setLoading(false);
-      if (signInError) { toast.error(signInError.message); return; }
-      if (signInData.user) onAuthed(signInData.user.id, email);
-    } else {
-      setLoading(false);
-      if (data.user) onAuthed(data.user.id, email);
+      onAuthed(data.user.id, email);
+      return;
     }
+
+    // Defensive fallback: if confirm-email is somehow still required (toggle
+    // not yet flipped, or reverted), data.session will be null. Surface a
+    // clear message instead of chaining into a doomed sign-in call.
+    setLoading(false);
+    toast.error("Account created, but email confirmation is still required by the server. Please contact support.");
   }
 
   async function handleLogin() {
