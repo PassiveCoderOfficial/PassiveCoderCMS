@@ -57,7 +57,11 @@ export default async function UsersPage() {
               const verification = profile ? computeVerificationStatus(profile) : null;
               return (
                 <tr key={user.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                  <td className="px-5 py-3 text-white">{user.email}</td>
+                  <td className="px-5 py-3">
+                    <Link href={`/super-admin/users/${user.id}`} className="text-white hover:text-indigo-400 hover:underline transition-colors">
+                      {user.email}
+                    </Link>
+                  </td>
                   <td className="px-5 py-3 text-gray-500 text-xs">{new Date(user.created_at).toLocaleDateString()}</td>
                   <td className="px-5 py-3 text-gray-500 text-xs">
                     {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
