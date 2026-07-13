@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CartItem, Address } from "@/types/cms";
+import { upsertContact } from "@/lib/crm/upsertContact";
 
 type BillingAddress = Address & { email: string; phone?: string };
 
@@ -83,6 +84,23 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error("Order insert error:", error);
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    }
+
+    if (tenantId) {
+      await upsertContact({
+        tenantId,
+        email: billing_address.email,
+        phone: billing_address.phone,
+        firstName: billing_address.first_name,
+        lastName: billing_address.last_name,
+        source: "order",
+        tags: ["customer"],
+        event: {
+          type: "order",
+          title: `Order ${order.order_number} — ${total}`,
+          meta: { order_id: order.id, order_number: order.order_number, total, items: verifiedItems.length },
+        },
+      }).catch(() => null);
     }
 
     return NextResponse.json({ orderId: order.id, orderNumber: order.order_number });

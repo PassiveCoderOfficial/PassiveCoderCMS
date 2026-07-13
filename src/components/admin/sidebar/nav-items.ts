@@ -63,6 +63,12 @@ export const navSections: NavSection[] = [
     ],
   },
   {
+    label: "Customers",
+    items: [
+      { label: "CRM", href: "/dashboard/crm", icon: Users },
+    ],
+  },
+  {
     label: "Site Sections",
     items: [
       { label: "Services", href: "/dashboard/services", icon: Wrench },

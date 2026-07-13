@@ -15,10 +15,15 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
     e.preventDefault();
     setLoading(true);
     try {
+      // Key by field label so the CRM can recognize email/phone/name fields
+      const labeled: Record<string, string> = {};
+      for (const f of data.fields) {
+        if (values[f.id] !== undefined) labeled[f.label] = values[f.id];
+      }
       const res = await fetch("/api/contact/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: values, recipient: data.recipientEmail }),
+        body: JSON.stringify({ fields: labeled, recipient: data.recipientEmail, formName: data.title || "Contact" }),
       });
       if (!res.ok) { setLoading(false); return; }
     } finally {
