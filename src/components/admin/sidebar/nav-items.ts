@@ -29,6 +29,8 @@
   Calendar,
   Plus,
   Upload,
+  Briefcase,
+  ShoppingCart,
   type LucideIcon,
 } from "lucide-react";
 
@@ -68,6 +70,7 @@ export const navSections: NavSection[] = [
       { label: "CRM", href: "/dashboard/crm", icon: Users },
       { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
       { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles },
+      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase },
     ],
   },
   {
@@ -109,6 +112,7 @@ export const navSections: NavSection[] = [
       { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck },
+      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart },
     ],
   },
   {
@@ -117,6 +121,7 @@ export const navSections: NavSection[] = [
       { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
       { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
       { label: "Accounts", href: "/dashboard/accounting/accounts", icon: BookMarked },
+      { label: "P&L Report", href: "/dashboard/accounting/report", icon: BarChart3 },
     ],
   },
   {
