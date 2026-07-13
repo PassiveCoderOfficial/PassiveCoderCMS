@@ -137,6 +137,7 @@ export const navSections: NavSection[] = [
       { label: "Users", href: "/dashboard/users", icon: Users },
       { label: "Backups", href: "/dashboard/backups", icon: Archive },
       { label: "Settings", href: "/dashboard/settings", icon: Settings },
+      { label: "API Keys", href: "/dashboard/settings/api-keys", icon: Puzzle },
       { label: "Layout Manager", href: "/dashboard/settings/layout-manager", icon: Layout },
       { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },
       { label: "Visit Site", href: "/", icon: Globe },
