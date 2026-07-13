@@ -16,6 +16,12 @@ async function handle(authorized: boolean) {
   const supabase = await createAdminClient();
   const now = new Date().toISOString();
 
+  // Flip past-due sent invoices to overdue while we're here
+  await supabase.from("invoices")
+    .update({ status: "overdue", updated_at: now })
+    .eq("status", "sent")
+    .lt("due_date", now.slice(0, 10));
+
   const { data: due, error } = await supabase
     .from("crm_tasks")
     .select("id, tenant_id, title, due_at, assignee_user_id, contacts(id, first_name, last_name, email, phone, whatsapp)")

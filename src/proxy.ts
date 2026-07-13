@@ -10,12 +10,6 @@ export async function proxy(request: NextRequest) {
   // In standalone mode, skip tenant resolution entirely
   if (!isSaaS) return updateSession(request);
 
-  // Pass through static assets and API routes without tenant checks
-  const isInternal = pathname.startsWith("/_next") ||
-    pathname.startsWith("/api/") ||
-    pathname.startsWith("/favicon");
-  if (isInternal) return updateSession(request);
-
   // Marketing / root domain — no tenant needed
   // Compare both with and without port so ROOT_DOMAIN="localhost:3000" matches host="localhost:3000"
   // and ROOT_DOMAIN="example.com" matches host="example.com" or "www.example.com"
@@ -24,6 +18,28 @@ export async function proxy(request: NextRequest) {
   const isRootDomain = host.toLowerCase() === ROOT_DOMAIN.toLowerCase() ||
     hostname === rootHostname ||
     hostname === `www.${rootHostname}`;
+
+  // API routes on tenant hosts still need x-tenant-id (public form submits,
+  // booking widget, storefront checkout resolve the tenant from it) — inject
+  // headers but skip the page-level redirects below.
+  if (pathname.startsWith("/api/")) {
+    if (!isRootDomain) {
+      const tenant = await resolveTenant(host);
+      if (tenant) {
+        const headers = new Headers(request.headers);
+        headers.set("x-tenant-id", tenant.id);
+        headers.set("x-tenant-slug", tenant.slug);
+        headers.set("x-tenant-plan", tenant.plan);
+        return updateSession(request, headers);
+      }
+    }
+    return updateSession(request);
+  }
+
+  // Pass through static assets without tenant checks
+  const isInternal = pathname.startsWith("/_next") || pathname.startsWith("/favicon");
+  if (isInternal) return updateSession(request);
+
   if (isRootDomain) return updateSession(request);
 
   // Resolve tenant from host header

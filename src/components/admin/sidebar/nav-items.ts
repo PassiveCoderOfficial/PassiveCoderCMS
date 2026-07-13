@@ -66,6 +66,7 @@ export const navSections: NavSection[] = [
     label: "Customers",
     items: [
       { label: "CRM", href: "/dashboard/crm", icon: Users },
+      { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
     ],
   },
   {
