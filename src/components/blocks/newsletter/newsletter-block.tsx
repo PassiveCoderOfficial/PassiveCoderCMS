@@ -18,13 +18,19 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
     setLoading(true);
     setError("");
     try {
+      // Always feed the site's own CRM list; optional external webhook after
+      const res = await fetch("/api/marketing/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) { setError("Subscription failed. Please try again."); setLoading(false); return; }
       if (data.webhookUrl) {
-        const res = await fetch(data.webhookUrl, {
+        await fetch(data.webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
-        });
-        if (!res.ok) { setError("Subscription failed. Please try again."); setLoading(false); return; }
+        }).catch(() => null);
       }
       setSubmitted(true);
     } catch {

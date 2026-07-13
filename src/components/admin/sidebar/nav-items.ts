@@ -67,6 +67,7 @@ export const navSections: NavSection[] = [
     items: [
       { label: "CRM", href: "/dashboard/crm", icon: Users },
       { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
+      { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles },
     ],
   },
   {
@@ -105,6 +106,7 @@ export const navSections: NavSection[] = [
         ],
       },
       { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag },
+      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck },
     ],

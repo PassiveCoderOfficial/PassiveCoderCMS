@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const productIds = [...new Set(items.map((i) => i.product_id))];
     let pQuery = supabase
       .from("products")
-      .select("id, name, price, stock_quantity, status")
+      .select("id, name, price, stock_quantity, status, track_inventory")
       .in("id", productIds)
       .eq("status", "active");
     if (tenantId) pQuery = pQuery.eq("tenant_id", tenantId);
@@ -84,6 +84,20 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error("Order insert error:", error);
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    }
+
+    // Decrement stock for tracked products (floor at 0)
+    {
+      const { createAdminClient } = await import("@/lib/supabase/server");
+      const admin = await createAdminClient();
+      for (const item of verifiedItems) {
+        const product = dbProducts.find((p) => p.id === item.product_id);
+        if (!product?.track_inventory) continue;
+        const next = Math.max(0, (product.stock_quantity ?? 0) - item.quantity);
+        await admin.from("products")
+          .update({ stock_quantity: next, updated_at: new Date().toISOString() })
+          .eq("id", product.id);
+      }
     }
 
     if (tenantId) {
