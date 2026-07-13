@@ -31,6 +31,7 @@ import { StepsSettings } from "./steps-settings";
 import { IconGridSettings } from "./icon-grid-settings";
 import { EnmLeadFormSettings } from "./enm-lead-form-settings";
 import { EnmBookingWidgetSettings } from "./enm-booking-widget-settings";
+import { BookingSettings } from "./booking-settings";
 import { BlockLayoutSettings } from "./block-layout-settings";
 import { Layers } from "lucide-react";
 import type { Block } from "@/types/cms";
@@ -97,6 +98,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "timeline": return <TimelineSettings block={block} />;
     case "columns": return <ColumnsSettings block={block} />;
     case "newsletter": return <NewsletterSettings block={block} />;
+    case "booking": return <BookingSettings block={block} />;
     case "countdown": return <CountdownSettings block={block} />;
     case "steps": return <StepsSettings block={block} />;
     case "icon_grid": return <IconGridSettings block={block} />;

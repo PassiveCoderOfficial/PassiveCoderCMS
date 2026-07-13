@@ -36,6 +36,7 @@ import { FooterBlock } from "@/components/blocks/footer/footer-block";
 import { CountryGridBlock } from "@/components/blocks/country-grid/country-grid-block";
 import { EligibilityCheckerBlock } from "@/components/blocks/eligibility-checker/eligibility-checker-block";
 import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tracker-block";
+import { BookingBlock } from "@/components/blocks/booking/booking-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -91,6 +92,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "country_grid":     content = <CountryGridBlock block={block} />; break;
     case "eligibility_checker": content = <EligibilityCheckerBlock block={block} />; break;
     case "status_tracker":   content = <StatusTrackerBlock block={block} />; break;
+    case "booking":          content = <BookingBlock block={block} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     default:                 content = null;
   }

@@ -748,6 +748,26 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "booking",
+    label: "Appointment Booking",
+    description: "Live availability calendar — visitors pick a slot and book",
+    icon: "📅",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("booking"),
+      type: "booking" as const,
+      data: {
+        title: "Book an Appointment",
+        subtitle: "Pick a day and time that works for you.",
+        accentColor: "#4f46e5",
+        daysToShow: 14,
+        showPhone: true,
+        showMessage: true,
+        submitLabel: "Book Appointment",
+      },
+    }),
+  },
+  {
     type: "status_tracker",
     label: "Visa Status Tracker",
     description: "Lookup form for clients to track their visa application status",

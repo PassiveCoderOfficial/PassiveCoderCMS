@@ -57,7 +57,8 @@ export type BlockType =
   | "footer"
   | "country_grid"
   | "eligibility_checker"
-  | "status_tracker";
+  | "status_tracker"
+  | "booking";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -698,7 +699,21 @@ export type Block =
   | FooterBlockProps
   | CountryGridBlockProps
   | EligibilityCheckerBlockProps
-  | StatusTrackerBlockProps;
+  | StatusTrackerBlockProps
+  | BookingBlockProps;
+
+export type BookingBlockProps = BlockBase & {
+  type: "booking";
+  data: {
+    title?: string;
+    subtitle?: string;
+    accentColor?: string;
+    daysToShow: number;          // how many upcoming days appear in the picker
+    showPhone: boolean;
+    showMessage: boolean;
+    submitLabel: string;
+  };
+};
 
 // ─── Page Types ───────────────────────────────────────────────────────────
 
