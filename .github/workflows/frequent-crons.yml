@@ -1,0 +1,24 @@
+# Vercel Hobby allows only daily crons, so the frequent ticks live here.
+# Calls the manual (POST + x-cron-secret) variants of the cron routes.
+name: Frequent crons
+
+on:
+  schedule:
+    # GitHub Actions minimum practical interval; runs may drift a few minutes
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Campaign sender
+        run: |
+          curl -s -X POST "https://passivecoder.com/api/cron/campaign-sender" \
+            -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
+            --max-time 120 || true
+      - name: CRM reminders + invoice overdue flip
+        run: |
+          curl -s -X POST "https://passivecoder.com/api/cron/crm-reminders" \
+            -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
+            --max-time 120 || true
