@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
 
-function NavLinkItem({ item, pathname, onClose }: { item: NavItem; pathname: string; onClose?: () => void }) {
+function NavLinkItem({ item, pathname, onClose, dark = false }: { item: NavItem; pathname: string; onClose?: () => void; dark?: boolean }) {
   const isExternal = item.href === "/";
   const hasChildren = (item.children?.length ?? 0) > 0;
 
@@ -28,15 +28,24 @@ function NavLinkItem({ item, pathname, onClose }: { item: NavItem; pathname: str
         ? pathname === item.href // parent only "active" on its own exact page
         : withinParent;
 
+  // Tone classes — the "tools" section sits on a dark panel in both themes
+  const idle = dark
+    ? "text-gray-400 hover:bg-white/10 hover:text-white"
+    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground";
+  const active = dark
+    ? "bg-indigo-600 text-white"
+    : "bg-primary text-primary-foreground";
+  const parentOpen = dark
+    ? "bg-white/10 text-white"
+    : "bg-accent/50 text-foreground";
+
   if (hasChildren) {
     return (
       <li>
         <div
           className={cn(
             "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors cursor-pointer",
-            withinParent && !expanded
-              ? "bg-accent/50 text-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            withinParent && !expanded ? parentOpen : idle,
           )}
           onClick={() => setExpanded((v) => !v)}
         >
@@ -45,7 +54,7 @@ function NavLinkItem({ item, pathname, onClose }: { item: NavItem; pathname: str
           <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")} />
         </div>
         {expanded && (
-          <ul className="mt-0.5 ml-3 pl-2 border-l border-border space-y-0.5">
+          <ul className={cn("mt-0.5 ml-3 pl-2 border-l space-y-0.5", dark ? "border-gray-700" : "border-border")}>
             {item.children!.map((child) => {
               const childActive = pathname === child.href;
               return (
@@ -55,9 +64,7 @@ function NavLinkItem({ item, pathname, onClose }: { item: NavItem; pathname: str
                     onClick={onClose}
                     className={cn(
                       "flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors",
-                      childActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      childActive ? active : idle,
                     )}
                   >
                     <child.icon className="h-3.5 w-3.5 shrink-0" />
@@ -80,16 +87,14 @@ function NavLinkItem({ item, pathname, onClose }: { item: NavItem; pathname: str
         onClick={onClose}
         className={cn(
           "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",
-          isActive
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+          isActive ? active : idle,
         )}
       >
         <item.icon className="h-4 w-4 shrink-0" />
         <span className="flex-1">{item.label}</span>
         {isExternal && <ExternalLink className="h-3 w-3 opacity-50" />}
         {item.badge && (
-          <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-medium">
+          <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-medium", dark ? "bg-white/15" : "bg-primary/20")}>
             {item.badge}
           </span>
         )}
@@ -130,22 +135,31 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
       {/* Nav */}
       <ScrollArea className="flex-1">
         <nav className="px-2 py-3 space-y-4">
-          {navSections.map((section) => (
-            <div key={section.label}>
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {section.label}
-              </p>
-              <ul className="space-y-0.5">
-                {section.items.filter((item) => {
-                  if (item.saasOnly && !isSaaS) return false;
-                  if (item.standaloneOnly && isSaaS) return false;
-                  return true;
-                }).map((item) => (
-                  <NavLinkItem key={item.href} item={item} pathname={pathname} onClose={onClose} />
-                ))}
-              </ul>
-            </div>
-          ))}
+          {navSections.map((section) => {
+            const isTools = section.variant === "tools";
+            return (
+              <div
+                key={section.label}
+                className={cn(isTools && "rounded-xl bg-gray-950 border border-gray-800 p-2 shadow-inner")}
+              >
+                <p className={cn(
+                  "px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest",
+                  isTools ? "text-gray-500 pt-1" : "text-muted-foreground",
+                )}>
+                  {section.label}
+                </p>
+                <ul className="space-y-0.5">
+                  {section.items.filter((item) => {
+                    if (item.saasOnly && !isSaaS) return false;
+                    if (item.standaloneOnly && isSaaS) return false;
+                    return true;
+                  }).map((item) => (
+                    <NavLinkItem key={item.href} item={item} pathname={pathname} onClose={onClose} dark={isTools} />
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </nav>
       </ScrollArea>
 

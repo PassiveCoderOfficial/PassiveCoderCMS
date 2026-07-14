@@ -47,6 +47,8 @@ export type NavItem = {
 export type NavSection = {
   label: string;
   items: NavItem[];
+  /** "tools" renders as the dark business-tools block at the bottom */
+  variant?: "tools";
 };
 
 export const navSections: NavSection[] = [
@@ -62,15 +64,6 @@ export const navSections: NavSection[] = [
       { label: "Pages", href: "/dashboard/pages", icon: FileText },
       { label: "Posts", href: "/dashboard/posts", icon: BookOpen },
       { label: "Media", href: "/dashboard/media", icon: Image },
-    ],
-  },
-  {
-    label: "Customers",
-    items: [
-      { label: "CRM", href: "/dashboard/crm", icon: Users },
-      { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
-      { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles },
-      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase },
     ],
   },
   {
@@ -109,19 +102,8 @@ export const navSections: NavSection[] = [
         ],
       },
       { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag },
-      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck },
-      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart },
-    ],
-  },
-  {
-    label: "Accounting",
-    items: [
-      { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
-      { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
-      { label: "Accounts", href: "/dashboard/accounting/accounts", icon: BookMarked },
-      { label: "P&L Report", href: "/dashboard/accounting/report", icon: BarChart3 },
     ],
   },
   {
@@ -142,6 +124,29 @@ export const navSections: NavSection[] = [
       { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },
       { label: "Visit Site", href: "/", icon: Globe },
       { label: "Docs", href: "/dashboard/docs", icon: BookOpen },
+    ],
+  },
+  {
+    label: "Business Tools",
+    variant: "tools",
+    items: [
+      { label: "CRM", href: "/dashboard/crm", icon: Users },
+      { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
+      { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles },
+      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase },
+      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart },
+      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package },
+      {
+        label: "Accounting",
+        href: "/dashboard/accounting",
+        icon: BarChart3,
+        children: [
+          { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
+          { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
+          { label: "Accounts", href: "/dashboard/accounting/accounts", icon: BookMarked },
+          { label: "P&L Report", href: "/dashboard/accounting/report", icon: BarChart3 },
+        ],
+      },
     ],
   },
 ];
