@@ -85,12 +85,24 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
   const [radius, setRadius] = useState(radiusKm);
 
   useEffect(() => {
-    if (!mapRef.current || !window.google || donors.length === 0) return;
+    const map = mapRef.current;
+    if (!map || !window.google) return;
+
+    // With GPS active, always frame the search radius itself — never the
+    // full donor scatter, which spans the whole country when few/no donors
+    // are nearby and previously caused the map to zoom out to all of BD.
+    if (gps) {
+      const circle = new window.google.maps.Circle({ center: gps, radius: radius * 1000 });
+      const bounds = circle.getBounds();
+      if (bounds) map.fitBounds(bounds, 20);
+      return;
+    }
+
+    if (donors.length === 0) return;
     const bounds = new window.google.maps.LatLngBounds();
     donors.forEach((d) => bounds.extend({ lat: d.lat, lng: d.lng }));
-    if (gps) bounds.extend(gps);
-    mapRef.current.fitBounds(bounds, 40);
-  }, [donors, gps]);
+    map.fitBounds(bounds, 40);
+  }, [donors, gps, radius]);
 
   function findMe() {
     if (!navigator.geolocation) { alert("Location isn't available in this browser"); return; }
@@ -101,8 +113,6 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
         setGps(point);
         setLocating(false);
         onRadiusSearch?.({ ...point, radiusKm: radius });
-        mapRef.current?.panTo(point);
-        mapRef.current?.setZoom(12);
       },
       () => { setLocating(false); alert("Couldn't get your location — check permission and try again."); },
       { enableHighAccuracy: true, timeout: 10000 },

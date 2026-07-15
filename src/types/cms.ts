@@ -108,6 +108,8 @@ export type HeroBlockProps = BlockBase & {
     imageAlt?: string;
     videoUrl?: string;
     overlayOpacity?: number;
+    overlayColor?: string;       // base color for the fullscreen-overlay gradient (default black)
+    overlayColorTo?: string;     // second gradient stop; omit for a flat color
     accentColor?: string;
     typography: { titleSize: string; titleColor: string; subtitleColor: string; descColor: string };
   };

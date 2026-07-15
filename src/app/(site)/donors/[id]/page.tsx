@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   Droplet, Loader2, Phone, MessageCircle, MapPin, User, Calendar,
-  ShieldCheck, Pencil, KeyRound, Camera, Trash2,
+  ShieldCheck, Pencil, KeyRound,
 } from "lucide-react";
 import { donorApi } from "../ui";
 import { DonorAvatar } from "@/components/donors/donor-avatar";
+import { PhotoCaptureButton } from "@/components/donors/photo-capture-button";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
 
 const DonorsMap = dynamic(() => import("@/components/donors/donor-map").then(m => m.DonorsMap), { ssr: false });
@@ -168,7 +169,6 @@ export default function DonorProfilePage() {
 }
 
 function PhotoUploadButton({ donorId, onUploaded }: { donorId: string; onUploaded: () => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
   async function upload(file: File) {
@@ -187,13 +187,13 @@ function PhotoUploadButton({ donorId, onUploaded }: { donorId: string; onUploade
   }
 
   return (
-    <>
-      <button onClick={() => inputRef.current?.click()} title="Upload photo"
-        className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors">
-        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-      </button>
-      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
-    </>
+    <div className="absolute -top-1 -right-1">
+      <PhotoCaptureButton
+        onFile={upload}
+        busy={busy}
+        className="w-8 h-8 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors"
+        iconClassName="w-4 h-4"
+      />
+    </div>
   );
 }

@@ -96,16 +96,26 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
 
 // ─── Variant: fullscreen-overlay ─────────────────────────────────────────────
 // Full viewport background image with text overlay — used for spa, restaurant, gym
+function hexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const num = parseInt(full, 16);
+  const r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
   const opacity = data.overlayOpacity ?? 0.55;
+  const overlayFrom = hexToRgba(data.overlayColor ?? "#000000", opacity);
+  const overlayTo = data.overlayColorTo ? hexToRgba(data.overlayColorTo, opacity) : overlayFrom;
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {data.imageUrl && (
         <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
       )}
-      <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${opacity})` }} />
+      <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${overlayFrom}, ${overlayTo})` }} />
       {/* Subtle gradient for readability at bottom */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
       <div className="relative z-10 max-w-4xl mx-auto text-center px-6 flex flex-col items-center gap-6">

@@ -59,6 +59,28 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={(url) => update("imageUrl", url)} />
       </FieldGroup>
 
+      {block.data.imageUrl && (
+        <div className="pt-1 border-t space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Image Overlay</p>
+          <p className="text-[10px] text-muted-foreground">Only used by the fullscreen-overlay layout.</p>
+          <div className="grid grid-cols-2 gap-2">
+            <FieldGroup label="Overlay Color">
+              <Input type="color" value={block.data.overlayColor ?? "#000000"} onChange={(e) => update("overlayColor", e.target.value)} className="h-8 p-1" />
+            </FieldGroup>
+            <FieldGroup label="Gradient To (optional)">
+              <Input type="color" value={block.data.overlayColorTo || block.data.overlayColor || "#000000"} onChange={(e) => update("overlayColorTo", e.target.value)} className="h-8 p-1" />
+            </FieldGroup>
+          </div>
+          {block.data.overlayColorTo && (
+            <button onClick={() => update("overlayColorTo", "")} className="text-[11px] text-muted-foreground underline">Clear gradient</button>
+          )}
+          <FieldGroup label={`Overlay Opacity (${Math.round((block.data.overlayOpacity ?? 0.55) * 100)}%)`}>
+            <Input type="range" min={0} max={1} step={0.05} value={block.data.overlayOpacity ?? 0.55}
+              onChange={(e) => update("overlayOpacity", parseFloat(e.target.value))} className="h-8" />
+          </FieldGroup>
+        </div>
+      )}
+
       <div className="pt-1 border-t">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Primary Button</p>
         <div className="space-y-1.5">

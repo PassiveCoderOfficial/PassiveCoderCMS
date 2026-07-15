@@ -4,11 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, Camera, Settings2, Pencil,
+  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, Settings2, Pencil,
 } from "lucide-react";
 import { btnCls, donorApi } from "../ui";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
 import { DonorAvatar } from "@/components/donors/donor-avatar";
+import { PhotoCaptureButton } from "@/components/donors/photo-capture-button";
 
 interface Me { id: string; name: string; phone: string; blood_group: string; is_admin?: boolean; photo_url?: string | null }
 interface Entry {
@@ -145,22 +146,23 @@ export default function MyDonorPage() {
 
 function MyPhotoButton({ onUploaded }: { onUploaded: () => void }) {
   const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/donors/photo", { method: "POST", body: form });
+    setBusy(false);
+    if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error ?? "Upload failed"); return; }
+    onUploaded();
+  }
+
   return (
-    <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 cursor-pointer transition-colors">
-      {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-      <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          e.target.value = "";
-          if (!file) return;
-          setBusy(true);
-          const form = new FormData();
-          form.append("file", file);
-          const res = await fetch("/api/donors/photo", { method: "POST", body: form });
-          setBusy(false);
-          if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error ?? "Upload failed"); return; }
-          onUploaded();
-        }} />
-    </label>
+    <PhotoCaptureButton
+      onFile={upload}
+      busy={busy}
+      className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors"
+      iconClassName="w-3.5 h-3.5"
+    />
   );
 }
