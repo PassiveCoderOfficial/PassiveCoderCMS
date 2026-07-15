@@ -9,7 +9,7 @@ export async function sendSms(to: string, message: string): Promise<{ ok: boolea
   }
 
   try {
-    const res = await fetch("https://api.bdbulksms.net/api.php?json", {
+    const res = await fetch("https://api.bdbulksms.net/g_api.php?json", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ token, to, message }),
@@ -19,11 +19,13 @@ export async function sendSms(to: string, message: string): Promise<{ ok: boolea
     try {
       const json = JSON.parse(body);
       const first = Array.isArray(json) ? json[0] : json;
-      if (first?.status && String(first.status).toUpperCase() !== "SENT") {
-        return { ok: false, error: first.statusmsg ?? "sms_failed" };
+      // API returns e.g. {status:"SENT"} on success or {response:"Error ..."}
+      const status = String(first?.status ?? first?.response ?? "").toUpperCase();
+      if (status && !status.includes("SENT") && !status.includes("SUCCESS")) {
+        return { ok: false, error: first?.statusmsg ?? first?.response ?? "sms_failed" };
       }
     } catch {
-      if (/error/i.test(body)) return { ok: false, error: body.slice(0, 120) };
+      if (/error|invalid/i.test(body)) return { ok: false, error: body.slice(0, 120) };
     }
     return { ok: true };
   } catch (e) {

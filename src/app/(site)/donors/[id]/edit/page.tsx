@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Pencil, Loader2, ArrowLeft, Trash2 } from "lucide-react";
+import { Pencil, Loader2, ArrowLeft, Trash2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { inputCls, btnCls, Field, donorApi } from "../../ui";
 import { SocialLinksEditor } from "@/components/donors/social-links";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS } from "@/lib/donors/bd-locations";
@@ -16,6 +16,7 @@ interface Profile {
   district: string | null; police_station: string | null; area: string | null;
   last_donated_on: string | null; never_donated: boolean; is_available: boolean;
   lat: number | null; lng: number | null; socials: Record<string, string>;
+  phone_verified: boolean; is_claimed: boolean;
 }
 
 export default function EditDonorPage() {
@@ -23,6 +24,7 @@ export default function EditDonorPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [canManage, setCanManage] = useState<boolean | null>(null);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [f, setF] = useState({ name: "", blood_group: "O+", district: "", police_station: "", area: "", last_donated_on: "", never_donated: false, date_unknown: false });
   const [socials, setSocials] = useState<Record<string, string>>({});
   const [areas, setAreas] = useState<string[]>([]);
@@ -37,6 +39,7 @@ export default function EditDonorPage() {
       const p: Profile = r.data.donor;
       setProfile(p);
       setCanManage(!!r.data.viewer?.can_manage);
+      setIsOwnProfile(r.data.viewer?.id === p.id);
       setF({
         name: p.name, blood_group: p.blood_group,
         district: p.district ?? "", police_station: p.police_station ?? "",
@@ -108,6 +111,10 @@ export default function EditDonorPage() {
         <h1 className="text-xl font-bold">Edit {profile.name}</h1>
       </div>
 
+      {isOwnProfile && (
+        <VerifyPhoneCard verified={profile.phone_verified} onVerified={load} />
+      )}
+
       <div className="bg-white border rounded-2xl p-5 space-y-3">
         <Field label="Name"><input className={inputCls} value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} /></Field>
         <Field label="Blood group">
@@ -172,6 +179,62 @@ export default function EditDonorPage() {
           <Trash2 className="w-4 h-4" /> Delete this profile
         </button>
       </div>
+    </div>
+  );
+}
+
+function VerifyPhoneCard({ verified, onVerified }: { verified: boolean; onVerified: () => void }) {
+  const [step, setStep] = useState<"idle" | "sent">("idle");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hint, setHint] = useState("");
+
+  if (verified) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-2 text-sm text-green-800">
+        <ShieldCheck className="w-4 h-4" /> Your phone number is verified.
+      </div>
+    );
+  }
+
+  async function send() {
+    setBusy(true); setError(null);
+    const r = await donorApi("/api/donors/auth/verify-phone", "POST", {});
+    setBusy(false);
+    if (!r.ok) { setError(r.data.error ?? "Failed"); return; }
+    setHint(r.data.phone_hint ?? ""); setStep("sent");
+  }
+  async function confirm() {
+    setBusy(true); setError(null);
+    const r = await donorApi("/api/donors/auth/confirm-phone", "POST", { code });
+    setBusy(false);
+    if (!r.ok) { setError(r.data.error ?? "Wrong code"); return; }
+    onVerified();
+  }
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm text-amber-800">
+        <ShieldAlert className="w-4 h-4" /> Verify your phone to get a verified badge.
+      </div>
+      {step === "idle" ? (
+        <button onClick={send} disabled={busy} className={btnCls}>
+          {busy && <Loader2 className="w-4 h-4 animate-spin" />} Send verification code
+        </button>
+      ) : (
+        <>
+          <p className="text-xs text-amber-700">Code sent to the number ending in {hint}.</p>
+          <Field label="6-digit code" required>
+            <input className={`${inputCls} text-center tracking-[0.5em] font-bold`} inputMode="numeric" maxLength={6}
+              value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
+          </Field>
+          <button onClick={confirm} disabled={busy} className={btnCls}>
+            {busy && <Loader2 className="w-4 h-4 animate-spin" />} Verify
+          </button>
+        </>
+      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

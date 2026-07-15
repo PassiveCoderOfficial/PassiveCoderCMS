@@ -192,90 +192,99 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         </div>
       </div>
 
-      {data.showFilters && (
-        <div className="space-y-2 mb-5">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <select className={selectCls} value={filters.blood_group} onChange={e => set("blood_group", e.target.value)}>
-              <option value="">All groups</option>
-              {BLOOD_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
-            <select className={selectCls} value={filters.district} onChange={e => set("district", e.target.value)}>
-              <option value="">All districts</option>
-              {BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <select className={selectCls} value={filters.police_station} onChange={e => set("police_station", e.target.value)} disabled={!filters.district}>
-              <option value="">{filters.district ? "All thanas" : "Pick district first"}</option>
-              {thanas.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select className={selectCls} value={filters.availability} onChange={e => set("availability", e.target.value)}>
-              <option value="">Any status</option>
-              <option value="ready">Ready to donate</option>
-              <option value="soon">Ready soon</option>
-              <option value="not_ready">Recently donated</option>
-              <option value="unknown">Unknown</option>
-              <option value="unavailable">Temporarily unavailable</option>
-            </select>
-            <select className={selectCls} value={filters.gender} onChange={e => set("gender", e.target.value)}>
-              <option value="">Any gender</option>
-              {GENDERS.map(g => <option key={g} value={g} className="capitalize">{g[0].toUpperCase() + g.slice(1)}</option>)}
-            </select>
-            <select className={selectCls} value={filters.religion} onChange={e => set("religion", e.target.value)}>
-              <option value="">Any religion</option>
-              {RELIGIONS.map(r => <option key={r} value={r}>{r[0].toUpperCase() + r.slice(1)}</option>)}
-            </select>
-            <input className={selectCls} placeholder="Location…" value={filters.area} onChange={e => set("area", e.target.value)} />
-            <div className="relative">
-              <Search className="w-4 h-4 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input className={`${selectCls} w-full pl-8`} placeholder="Search name…" value={filters.q} onChange={e => set("q", e.target.value)} />
-            </div>
+      {/* Map + filters: on desktop map goes left (wider), filters stack in a
+          narrower right column; on mobile everything stacks. In list-only
+          view there's no map, so filters go full-width. */}
+      <div className={view === "map"
+        ? "grid gap-4 mb-5 lg:grid-cols-[1.6fr_1fr] items-start"
+        : "mb-5"}>
+        {view === "map" && (
+          <div className="order-2 lg:order-1">
+            <DonorsMap
+              donors={donors.filter(d => d.lat != null && d.lng != null) as never}
+              onRadiusSearch={onRadiusSearch}
+              onBoundsChanged={onMapBoundsChanged}
+              boundsActive={!!bounds}
+              onClearBounds={clearMapBounds}
+            />
           </div>
+        )}
 
-          {hasAnyFilter && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {activeChips.map((k) => (
-                <span key={k} className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
-                  {FILTER_LABELS[k](filters[k])}
-                  <button onClick={() => clearOne(k)} className="p-0.5 hover:bg-gray-200 rounded-full" aria-label={`Remove ${k} filter`}>
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-              {radius && (
-                <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
-                  Within {radius.radiusKm} km of you
-                  <button onClick={() => onRadiusSearch(null)} className="p-0.5 hover:bg-blue-100 rounded-full" aria-label="Remove radius filter">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              {bounds && (
-                <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
-                  Map view area
-                  <button onClick={clearMapBounds} className="p-0.5 hover:bg-blue-100 rounded-full" aria-label="Remove map area filter">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              <button onClick={resetAll}
-                className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 px-2 py-1">
-                <RotateCcw className="w-3 h-3" /> Reset all
-              </button>
+        {data.showFilters && (
+          <div className={`space-y-2 ${view === "map" ? "order-1 lg:order-2" : ""}`}>
+            <div className={view === "map"
+              ? "grid grid-cols-2 gap-2"
+              : "grid grid-cols-2 sm:grid-cols-4 gap-2"}>
+              <select className={selectCls} value={filters.blood_group} onChange={e => set("blood_group", e.target.value)}>
+                <option value="">All groups</option>
+                {BLOOD_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+              <select className={selectCls} value={filters.district} onChange={e => set("district", e.target.value)}>
+                <option value="">All districts</option>
+                {BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              <select className={selectCls} value={filters.police_station} onChange={e => set("police_station", e.target.value)} disabled={!filters.district}>
+                <option value="">{filters.district ? "All thanas" : "Pick district first"}</option>
+                {thanas.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select className={selectCls} value={filters.availability} onChange={e => set("availability", e.target.value)}>
+                <option value="">Any status</option>
+                <option value="ready">Ready to donate</option>
+                <option value="soon">Almost ready</option>
+                <option value="not_ready">Recently donated</option>
+                <option value="unknown">Unknown</option>
+                <option value="unavailable">Temporarily unavailable</option>
+              </select>
+              <select className={selectCls} value={filters.gender} onChange={e => set("gender", e.target.value)}>
+                <option value="">Any gender</option>
+                {GENDERS.map(g => <option key={g} value={g} className="capitalize">{g[0].toUpperCase() + g.slice(1)}</option>)}
+              </select>
+              <select className={selectCls} value={filters.religion} onChange={e => set("religion", e.target.value)}>
+                <option value="">Any religion</option>
+                {RELIGIONS.map(r => <option key={r} value={r}>{r[0].toUpperCase() + r.slice(1)}</option>)}
+              </select>
+              <input className={selectCls} placeholder="Location…" value={filters.area} onChange={e => set("area", e.target.value)} />
+              <div className="relative">
+                <Search className="w-4 h-4 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input className={`${selectCls} w-full pl-8`} placeholder="Search name…" value={filters.q} onChange={e => set("q", e.target.value)} />
+              </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {view === "map" && (
-        <div className="mb-5">
-          <DonorsMap
-            donors={donors.filter(d => d.lat != null && d.lng != null) as never}
-            onRadiusSearch={onRadiusSearch}
-            onBoundsChanged={onMapBoundsChanged}
-            boundsActive={!!bounds}
-            onClearBounds={clearMapBounds}
-          />
-        </div>
-      )}
+            {hasAnyFilter && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {activeChips.map((k) => (
+                  <span key={k} className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
+                    {FILTER_LABELS[k](filters[k])}
+                    <button onClick={() => clearOne(k)} className="p-0.5 hover:bg-gray-200 rounded-full" aria-label={`Remove ${k} filter`}>
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+                {radius && (
+                  <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
+                    Within {radius.radiusKm} km of you
+                    <button onClick={() => onRadiusSearch(null)} className="p-0.5 hover:bg-blue-100 rounded-full" aria-label="Remove radius filter">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {bounds && (
+                  <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
+                    Map view area
+                    <button onClick={clearMapBounds} className="p-0.5 hover:bg-blue-100 rounded-full" aria-label="Remove map area filter">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                <button onClick={resetAll}
+                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 px-2 py-1">
+                  <RotateCcw className="w-3 h-3" /> Reset all
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="border rounded-2xl overflow-hidden bg-white">
         {/* Column header */}

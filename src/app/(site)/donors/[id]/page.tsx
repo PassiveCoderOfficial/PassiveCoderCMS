@@ -21,7 +21,8 @@ interface Profile {
   blood_group: string; gender: string | null; religion: string | null;
   district: string | null; police_station: string | null; area: string | null;
   age: number | null; last_donated_on: string | null;
-  availability: Availability; is_available: boolean; is_claimed: boolean; created_at: string;
+  availability: Availability; is_available: boolean; is_claimed: boolean;
+  phone_verified: boolean; created_at: string;
   photo_url: string | null; lat: number | null; lng: number | null;
   socials: Record<string, string>;
 }
@@ -97,7 +98,14 @@ export default function DonorProfilePage() {
             </a>
           )}
         </div>
-        <p className="text-sm text-gray-500">{profile.phone}</p>
+        <p className="text-sm text-gray-500 flex items-center justify-center gap-1.5">
+          {profile.phone}
+          {profile.phone_verified && (
+            <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full font-medium">
+              <ShieldCheck className="w-3 h-3" /> Verified
+            </span>
+          )}
+        </p>
 
         {Object.keys(profile.socials ?? {}).length > 0 && (
           <div className="pt-3 border-t">

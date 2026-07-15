@@ -27,8 +27,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!donor) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const supabase = await createAdminClient();
+  // Once a donor claims (OTP-verifies) their own profile, they own it — the
+  // "submitted by" attribution to whoever first added them is no longer shown.
   let submittedBy: { id: string; name: string } | null = null;
-  if (donor.created_by) {
+  if (donor.created_by && !donor.is_claimed) {
     const { data: creator } = await supabase.from("donors")
       .select("id, name").eq("id", donor.created_by).eq("is_active", true).maybeSingle();
     submittedBy = creator ?? null;
@@ -54,6 +56,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       availability: availabilityOf(donor.last_donated_on, donor.is_available, donor.never_donated),
       is_available: donor.is_available,
       is_claimed: donor.is_claimed,
+      phone_verified: donor.phone_verified,
       created_at: donor.created_at,
       photo_url: donor.photo_url,
       lat: donor.lat,

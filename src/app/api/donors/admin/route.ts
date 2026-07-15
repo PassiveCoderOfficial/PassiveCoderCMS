@@ -4,6 +4,7 @@ import { getDonorSession, getDonorSettings, normalizeBdPhone, hashPassword, disp
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, GENDERS, RELIGIONS, BD_DISTRICTS } from "@/lib/donors/bd-locations";
 import { normalizeSocials } from "@/lib/donors/socials";
+import { geocodeBdArea } from "@/lib/donors/geocode";
 
 /**
  * Donor admin access = EITHER a donor account flagged is_admin (front-end
@@ -80,6 +81,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Name, valid phone and blood group required" }, { status: 400 });
   }
 
+  let aLat = typeof body.lat === "number" ? body.lat : null;
+  let aLng = typeof body.lng === "number" ? body.lng : null;
+  if (aLat == null || aLng == null) {
+    const geo = await geocodeBdArea({ area: body.area, police_station: body.police_station, district: body.district });
+    if (geo) { aLat = geo.lat; aLng = geo.lng; }
+  }
+
   const supabase = await createAdminClient();
   const { data, error } = await supabase.from("donors").insert({
     tenant_id: tenantId,
@@ -95,7 +103,7 @@ export async function POST(req: NextRequest) {
     age_years: body.age_years ? Number(body.age_years) : null,
     last_donated_on: body.last_donated_on || null,
     never_donated: !!body.never_donated,
-    lat: body.lat ?? null, lng: body.lng ?? null,
+    lat: aLat, lng: aLng,
     socials: normalizeSocials(body.socials),
     created_by: admin.donorId,
   }).select("id").single();

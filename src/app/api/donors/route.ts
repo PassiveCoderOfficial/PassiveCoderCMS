@@ -4,6 +4,7 @@ import { getDonorSession, normalizeBdPhone } from "@/lib/donors/auth";
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, BD_DISTRICTS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
 import { normalizeSocials } from "@/lib/donors/socials";
+import { geocodeBdArea } from "@/lib/donors/geocode";
 
 const PAGE_SIZE = 20;
 
@@ -58,19 +59,6 @@ export async function GET(req: NextRequest) {
   const search = sp.get("q");
   if (search) q = q.or(`name.ilike.%${search}%,area.ilike.%${search}%`);
 
-  // Map viewport bounds — donors visible in the current map frame. Combines
-  // (ANDs) with every other active filter above, same as any dropdown.
-  if (hasBounds) {
-    const swLat = parseFloat(sp.get("sw_lat")!);
-    const swLng = parseFloat(sp.get("sw_lng")!);
-    const neLat = parseFloat(sp.get("ne_lat")!);
-    const neLng = parseFloat(sp.get("ne_lng")!);
-    q = q.gte("lat", Math.min(swLat, neLat)).lte("lat", Math.max(swLat, neLat));
-    // Bounds can cross the antimeridian in theory, but Bangladesh never does —
-    // a plain min/max lng range is correct here.
-    q = q.gte("lng", Math.min(swLng, neLng)).lte("lng", Math.max(swLng, neLng));
-  }
-
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
@@ -86,6 +74,21 @@ export async function GET(req: NextRequest) {
   const avail = sp.get("availability");
   if (avail && ["ready", "soon", "not_ready", "unknown", "unavailable"].includes(avail)) {
     donors = donors.filter((d) => d.availability === avail);
+  }
+
+  // Map viewport bounds — filters to donors visible in the current map frame,
+  // but ALWAYS keeps donors that have no coordinates (a donor without a pin
+  // must never silently disappear from the list). Done post-fetch so the
+  // null-coord donors survive.
+  if (hasBounds) {
+    const swLat = parseFloat(sp.get("sw_lat")!), swLng = parseFloat(sp.get("sw_lng")!);
+    const neLat = parseFloat(sp.get("ne_lat")!), neLng = parseFloat(sp.get("ne_lng")!);
+    const loLat = Math.min(swLat, neLat), hiLat = Math.max(swLat, neLat);
+    const loLng = Math.min(swLng, neLng), hiLng = Math.max(swLng, neLng);
+    donors = donors.filter((d) =>
+      d.lat == null || d.lng == null ||
+      (d.lat >= loLat && d.lat <= hiLat && d.lng >= loLng && d.lng <= hiLng),
+    );
   }
 
   // GPS radius filter (?lat=&lng=&radius_km=) — Haversine distance, then sort
@@ -138,6 +141,15 @@ export async function POST(req: NextRequest) {
 
   const whatsapp = body.same_whatsapp ? phone : normalizeBdPhone(body.whatsapp) ?? phone;
 
+  // No map pin? Geocode the area/thana/district so the donor still lands on
+  // the map and isn't hidden by map-viewport filtering.
+  let lat = typeof body.lat === "number" ? body.lat : null;
+  let lng = typeof body.lng === "number" ? body.lng : null;
+  if (lat == null || lng == null) {
+    const geo = await geocodeBdArea({ area: body.area, police_station: body.police_station, district: body.district });
+    if (geo) { lat = geo.lat; lng = geo.lng; }
+  }
+
   const supabase = await createAdminClient();
   const { data, error } = await supabase.from("donors")
     .insert({
@@ -155,8 +167,7 @@ export async function POST(req: NextRequest) {
       age_years: body.age_years ? Number(body.age_years) : null,
       last_donated_on: body.last_donated_on || null,
       never_donated: !!body.never_donated,
-      lat: typeof body.lat === "number" ? body.lat : null,
-      lng: typeof body.lng === "number" ? body.lng : null,
+      lat, lng,
       socials: normalizeSocials(body.socials),
       created_by: me.id,
     })

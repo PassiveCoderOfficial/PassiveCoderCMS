@@ -148,6 +148,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
     return sessionResponse({ ok: true }, donor.id, tenantId);
   }
 
+  // ── verify-phone: logged-in donor requests an OTP to verify their number ──
+  if (action === "verify-phone") {
+    const me = await getDonorSession(tenantId);
+    if (!me) return NextResponse.json({ error: "login_required" }, { status: 401 });
+    const { data: donor } = await supabase.from("donors")
+      .select("phone, phone_verified").eq("id", me.id).eq("tenant_id", tenantId).maybeSingle();
+    if (!donor) return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    if (donor.phone_verified) return NextResponse.json({ error: "Already verified" }, { status: 400 });
+    const sent = await createAndSendOtp(tenantId, donor.phone, "reset", { verify_phone: true });
+    if (!sent.ok) return NextResponse.json({ error: sent.error }, { status: 400 });
+    return NextResponse.json({ ok: true, phone_hint: donor.phone.slice(-4) });
+  }
+
+  // ── confirm-phone: logged-in donor submits the OTP to mark phone verified ──
+  if (action === "confirm-phone") {
+    const me = await getDonorSession(tenantId);
+    if (!me) return NextResponse.json({ error: "login_required" }, { status: 401 });
+    const { data: donor } = await supabase.from("donors")
+      .select("phone").eq("id", me.id).eq("tenant_id", tenantId).maybeSingle();
+    if (!donor) return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    const otp = await consumeOtp(tenantId, donor.phone, "reset", String(body.code));
+    if (!otp.ok) return NextResponse.json({ error: otp.error }, { status: 400 });
+    await supabase.from("donors").update({ phone_verified: true, updated_at: new Date().toISOString() })
+      .eq("id", me.id).eq("tenant_id", tenantId);
+    return NextResponse.json({ ok: true });
+  }
+
   // ── claim: donor takes over a profile someone else created ────────────────
   if (action === "claim") {
     const { otp_required: claimOtp } = await getDonorSettings(tenantId);
