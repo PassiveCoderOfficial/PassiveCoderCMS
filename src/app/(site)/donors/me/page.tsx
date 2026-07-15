@@ -61,7 +61,7 @@ export default function MyDonorPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10 space-y-5">
+    <div className="max-w-2xl mx-auto px-4 py-10 space-y-5">
       <div className="bg-white border rounded-2xl p-5 flex items-center gap-4">
         <div className="relative shrink-0">
           <DonorAvatar photoUrl={me.photo_url} name={me.name} size={56} />
@@ -93,6 +93,15 @@ export default function MyDonorPage() {
       </div>
 
       <div className="bg-white border rounded-2xl divide-y">
+        {entries.length > 0 && (
+          <div className="hidden sm:flex items-center gap-3 px-4 py-2.5 bg-gray-50 border-b text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            <span className="w-10 shrink-0 text-center">Group</span>
+            <span className="min-w-0 flex-1">Name &amp; status</span>
+            <span className="shrink-0 w-9 text-center">Avail.</span>
+            <span className="shrink-0 w-9 text-center">Edit</span>
+            <span className="shrink-0 w-24 text-center">Password</span>
+          </div>
+        )}
         {entries.length === 0 && (
           <p className="text-center text-sm text-gray-500 py-10">
             You haven&apos;t added any donors yet.
@@ -112,9 +121,10 @@ export default function MyDonorPage() {
                   {[e.area, e.district].filter(Boolean).join(", ")}
                 </div>
               </div>
-              <button onClick={() => toggleAvailable(e)} disabled={togglingId === e.id} title="Toggle temporarily unavailable"
-                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${!e.is_available ? "bg-gray-500" : "bg-gray-200"}`}>
-                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${!e.is_available ? "left-[18px]" : "left-0.5"}`} />
+              <button onClick={() => toggleAvailable(e)} disabled={togglingId === e.id}
+                title={e.is_available ? "Available — tap to mark unavailable" : "Unavailable — tap to mark available"}
+                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${e.is_available ? "bg-green-500" : "bg-gray-300"}`}>
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${e.is_available ? "left-[18px]" : "left-0.5"}`} />
               </button>
               <Link href={`/donors/${e.id}/edit`} title="Edit"
                 className="p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-50 shrink-0">

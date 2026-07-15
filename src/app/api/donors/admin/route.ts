@@ -1,14 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { getDonorSession, getDonorSettings, normalizeBdPhone, hashPassword, displayBdPhone } from "@/lib/donors/auth";
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, GENDERS, RELIGIONS, BD_DISTRICTS } from "@/lib/donors/bd-locations";
 import { normalizeSocials } from "@/lib/donors/socials";
 
-async function requireAdmin(tenantId: string) {
-  const me = await getDonorSession(tenantId);
-  if (!me?.is_admin) return null;
-  return me;
+/**
+ * Donor admin access = EITHER a donor account flagged is_admin (front-end
+ * phone login) OR a Supabase tenant member of this tenant (the owner managing
+ * donors from /dashboard/donors). Returns an admin identity or null.
+ */
+async function requireAdmin(tenantId: string): Promise<{ id: string; donorId: string | null } | null> {
+  const donor = await getDonorSession(tenantId);
+  if (donor?.is_admin) return { id: donor.id, donorId: donor.id };
+
+  // Supabase tenant-member / super-admin fallback (dashboard owner). They have
+  // no donor row — donorId stays null so we don't set created_by (which FKs to
+  // donors.id) to a Supabase user id.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const admin = await createAdminClient();
+  const { data: member } = await admin.from("tenant_members")
+    .select("user_id").eq("tenant_id", tenantId).eq("user_id", user.id).maybeSingle();
+  const { data: sa } = await admin.from("super_admins")
+    .select("user_id").eq("user_id", user.id).maybeSingle();
+  if (member || sa) return { id: user.id, donorId: null };
+  return null;
 }
 
 export async function GET(req: NextRequest) {
@@ -79,7 +97,7 @@ export async function POST(req: NextRequest) {
     never_donated: !!body.never_donated,
     lat: body.lat ?? null, lng: body.lng ?? null,
     socials: normalizeSocials(body.socials),
-    created_by: admin.id,
+    created_by: admin.donorId,
   }).select("id").single();
 
   if (error) {
