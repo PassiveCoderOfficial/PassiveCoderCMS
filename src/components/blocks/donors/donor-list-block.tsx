@@ -168,9 +168,14 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
   return (
     <div id="donor-list" className="max-w-5xl mx-auto scroll-mt-24">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-        <h2 className="text-2xl font-bold">
-          {data.title || "Donors"} <span className="text-sm font-normal text-muted-foreground">({total})</span>
-        </h2>
+        <div className="flex items-center gap-4 flex-wrap">
+          <h2 className="text-2xl font-bold">
+            {data.title || "Donors"} <span className="text-sm font-normal text-muted-foreground">({total})</span>
+          </h2>
+          {/* DonorsMap portals its find-me / radius / map-view controls here
+              so they sit beside the title instead of on top of the map. */}
+          {view === "map" && <div id="donor-map-controls" className="flex items-center" />}
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border overflow-hidden">
             <button onClick={() => setView("map")}
@@ -203,6 +208,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             <DonorsMap
               donors={donors.filter(d => d.lat != null && d.lng != null) as never}
               height={420}
+              controlsPortalId="donor-map-controls"
               onRadiusSearch={onRadiusSearch}
               onBoundsChanged={onMapBoundsChanged}
               boundsActive={!!bounds}

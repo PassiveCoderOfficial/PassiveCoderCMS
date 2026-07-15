@@ -4,6 +4,7 @@
 // with GPS radius search. Requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { GoogleMap, Marker, Circle, InfoWindow, useJsApiLoader } from "@react-google-maps/api";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
 import { Crosshair, Loader2 } from "lucide-react";
@@ -129,7 +130,7 @@ export interface MapBounds { sw_lat: number; sw_lng: number; ne_lat: number; ne_
  */
 export function DonorsMap({
   donors, height = 420, onRadiusSearch, radiusKm = 15,
-  onBoundsChanged, boundsActive, onClearBounds, mode = "search",
+  onBoundsChanged, boundsActive, onClearBounds, mode = "search", controlsPortalId,
 }: {
   donors: MapDonor[]; height?: number;
   onRadiusSearch?: (v: { lat: number; lng: number; radiusKm: number } | null) => void;
@@ -139,6 +140,9 @@ export function DonorsMap({
   onClearBounds?: () => void;
   /** "display" hides GPS/radius controls + bounds reporting (single profile). */
   mode?: "search" | "display";
+  /** If set, the find-me/radius control bar renders into this element id
+      (e.g. beside the section title) instead of above the map. */
+  controlsPortalId?: string;
 }) {
   const { isLoaded } = useMapsLoader();
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -149,6 +153,11 @@ export function DonorsMap({
   const userMovedMap = useRef(false);
   const didInitialFit = useRef(false);
   const gpsFitToken = useRef(0);      // bumped when GPS/radius should re-frame
+  const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (controlsPortalId) setPortalEl(document.getElementById(controlsPortalId));
+  }, [controlsPortalId]);
 
   const MAX_VISIBLE = 40;   // when framing GPS results, cover the nearest 40
   const MIN_KM = 30;        // GPS frame at least ~30km wide
@@ -261,33 +270,37 @@ export function DonorsMap({
 
   const isSearch = mode === "search";
 
+  const controlBar = (
+    <div className="flex items-center gap-2 flex-wrap">
+      <button onClick={findMe} disabled={locating}
+        className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
+        {locating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crosshair className="w-4 h-4" />}
+        Find donors near me
+      </button>
+      {gps && (
+        <>
+          <select value={radius} onChange={(e) => changeRadius(Number(e.target.value))}
+            className="border rounded-lg px-3 py-2 text-sm bg-white font-medium">
+            {[2, 5, 10, 15, 25, 50].map(k => <option key={k} value={k}>Within {k} km</option>)}
+          </select>
+          <button onClick={clearGps} className="text-sm text-gray-500 underline">Clear</button>
+        </>
+      )}
+      {boundsActive && (
+        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-3 py-1.5 text-xs font-medium">
+          Filtering by map view
+          {onClearBounds && (
+            <button onClick={onClearBounds} className="hover:text-blue-900" aria-label="Clear map filter">×</button>
+          )}
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-3">
       {isSearch && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={findMe} disabled={locating}
-            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
-            {locating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crosshair className="w-4 h-4" />}
-            Find donors near me
-          </button>
-          {gps && (
-            <>
-              <select value={radius} onChange={(e) => changeRadius(Number(e.target.value))}
-                className="border rounded-lg px-3 py-2 text-sm bg-white font-medium">
-                {[2, 5, 10, 15, 25, 50].map(k => <option key={k} value={k}>Within {k} km</option>)}
-              </select>
-              <button onClick={clearGps} className="text-sm text-gray-500 underline">Clear</button>
-            </>
-          )}
-          {boundsActive && (
-            <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-3 py-1.5 text-xs font-medium">
-              Filtering by map view
-              {onClearBounds && (
-                <button onClick={onClearBounds} className="hover:text-blue-900" aria-label="Clear map filter">×</button>
-              )}
-            </span>
-          )}
-        </div>
+        controlsPortalId && portalEl ? createPortal(controlBar, portalEl) : controlBar
       )}
 
       <GoogleMap
