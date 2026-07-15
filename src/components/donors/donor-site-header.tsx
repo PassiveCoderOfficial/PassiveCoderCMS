@@ -34,12 +34,21 @@ export function DonorSiteHeader({ showTranslate = false }: { showTranslate?: boo
     <header className="sticky top-0 z-30 bg-gradient-to-r from-red-700 to-red-600 text-white shadow-md">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 font-extrabold text-lg shrink-0">
-            <span className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
-              <Droplet className="w-5 h-5 text-white" fill="currentColor" />
-            </span>
-            Blood Donors BD
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/" className="flex items-center gap-2 font-extrabold text-lg">
+              <span className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
+                <Droplet className="w-5 h-5 text-white" fill="currentColor" />
+              </span>
+              Blood Donors BD
+            </Link>
+            <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-1 pl-2 ml-1 border-l border-white/25 text-white/80 hover:text-white transition-colors">
+              <span className="text-[10px] leading-none">powered by</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"
+                alt="Passive Coder" className="h-4 w-auto bg-white rounded px-1 py-0.5" />
+            </a>
+          </div>
 
           <nav className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map((l) => (
