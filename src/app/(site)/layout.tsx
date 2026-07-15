@@ -7,6 +7,8 @@ import { PageRenderer } from "@/components/site/page-renderer";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { CartDrawer } from "@/components/site/cart-drawer";
 import { MaintenanceScreen } from "@/components/site/maintenance-screen";
+import { GoogleTranslateWidget } from "@/components/site/google-translate-widget";
+import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -44,8 +46,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const supabase = await createClient();
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
+  const tenantSlug = reqHeaders.get("x-tenant-slug");
+  const isBloodSite = tenantSlug === "blood";
 
-  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description";
+  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
   const [settingsResult, identityResult] = await Promise.all([
     tenantId
       ? createAdminClient().then(admin =>
@@ -139,10 +143,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <style dangerouslySetInnerHTML={{ __html: settings.custom_css }} />
       )}
 
-      {/* Persistent global header (navigation block managed site-wide) */}
-      {globalHeader.length > 0 && (
+      {/* Persistent global header — dedicated donor-site header for the blood
+          directory (present on every /donors/* route too, via donors/layout.tsx),
+          otherwise the tenant's page-builder global header block. */}
+      {isBloodSite ? (
+        <DonorSiteHeader />
+      ) : globalHeader.length > 0 ? (
         <PageRenderer blocks={globalHeader} />
-      )}
+      ) : null}
 
       {/* Page content */}
       {children}
@@ -154,6 +162,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {/* Floating cart drawer — always mounted, toggled by cart icon */}
       <CartDrawer />
+
+      {settings?.auto_translate_enabled && <GoogleTranslateWidget />}
 
       {settings?.analytics_code && (
         <div dangerouslySetInnerHTML={{ __html: settings.analytics_code }} />

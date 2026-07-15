@@ -188,6 +188,21 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle className="text-sm">Auto Translate</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Google Translate widget</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Adds a small floating language switcher so visitors can auto-translate the site into their own language.
+              </p>
+            </div>
+            <Switch checked={!!settings.auto_translate_enabled} onCheckedChange={(v) => update("auto_translate_enabled", v)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle className="text-sm">Maintenance</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">

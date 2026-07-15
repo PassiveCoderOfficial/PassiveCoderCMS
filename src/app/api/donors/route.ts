@@ -7,7 +7,16 @@ import { BLOOD_GROUPS, BD_DISTRICTS, RELIGIONS, GENDERS } from "@/lib/donors/bd-
 const PAGE_SIZE = 20;
 
 const PUBLIC_FIELDS =
-  "id, name, blood_group, gender, religion, district, police_station, area, birthdate, age_years, last_donated_on, is_claimed, created_at, photo_url, lat, lng";
+  "id, name, blood_group, gender, religion, district, police_station, area, birthdate, age_years, last_donated_on, is_available, is_claimed, created_at, photo_url, lat, lng";
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 /** Public list with filters — no phone numbers in the list payload. */
 export async function GET(req: NextRequest) {
@@ -16,14 +25,17 @@ export async function GET(req: NextRequest) {
 
   const sp = new URL(req.url).searchParams;
   const page = Math.max(0, parseInt(sp.get("page") ?? "0", 10) || 0);
+  const hasRadius = sp.has("lat") && sp.has("lng") && sp.has("radius_km");
 
   const supabase = await createAdminClient();
   let q = supabase.from("donors")
     .select(PUBLIC_FIELDS, { count: "exact" })
     .eq("tenant_id", tenantId)
     .eq("is_active", true)
-    .order("last_donated_on", { ascending: true, nullsFirst: false })
-    .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+    .order("last_donated_on", { ascending: true, nullsFirst: false });
+  // Radius search needs every geotagged donor in view to sort by distance —
+  // skip server pagination and cap at a generous ceiling instead.
+  q = hasRadius ? q.limit(2000) : q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
   const group = sp.get("blood_group");
   if (group && (BLOOD_GROUPS as readonly string[]).includes(group)) q = q.eq("blood_group", group);
@@ -46,14 +58,27 @@ export async function GET(req: NextRequest) {
   let donors = (data ?? []).map((d) => ({
     ...d,
     age: ageOf(d.birthdate, d.age_years),
-    availability: availabilityOf(d.last_donated_on),
+    availability: availabilityOf(d.last_donated_on, d.is_available),
     birthdate: undefined,
   }));
 
   // Availability filter is computed, so filter after fetch
   const avail = sp.get("availability");
-  if (avail && ["ready", "soon", "not_ready", "unknown"].includes(avail)) {
+  if (avail && ["ready", "soon", "not_ready", "unknown", "unavailable"].includes(avail)) {
     donors = donors.filter((d) => d.availability === avail);
+  }
+
+  // GPS radius filter (?lat=&lng=&radius_km=) — computed post-fetch since it
+  // needs Haversine distance, not a plain column comparison.
+  const lat = parseFloat(sp.get("lat") ?? "");
+  const lng = parseFloat(sp.get("lng") ?? "");
+  const radiusKm = parseFloat(sp.get("radius_km") ?? "");
+  if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm)) {
+    donors = donors
+      .filter((d) => d.lat != null && d.lng != null)
+      .map((d) => ({ ...d, distance_km: Math.round(haversineKm(lat, lng, d.lat as number, d.lng as number) * 10) / 10 }))
+      .filter((d) => d.distance_km <= radiusKm)
+      .sort((a, b) => a.distance_km - b.distance_km);
   }
 
   return NextResponse.json({ donors, total: count ?? 0, pageSize: PAGE_SIZE, page });

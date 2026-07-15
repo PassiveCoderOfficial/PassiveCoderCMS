@@ -785,6 +785,22 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "donor_map",
+    label: "Donor Map",
+    description: "Interactive map of donors color-coded by availability, with GPS radius search",
+    icon: "🗺️",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("donor_map"),
+      type: "donor_map" as const,
+      data: {
+        title: "Donors Near You",
+        subtitle: "Use your location to find nearby donors, or explore the map.",
+        height: 420,
+      },
+    }),
+  },
+  {
     type: "donor_list",
     label: "Donor List",
     description: "Filterable blood donor directory with availability status",

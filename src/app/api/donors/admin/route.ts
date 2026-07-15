@@ -37,7 +37,8 @@ export async function GET(req: NextRequest) {
       blood_group: d.blood_group, gender: d.gender, religion: d.religion,
       district: d.district, police_station: d.police_station, area: d.area,
       age: ageOf(d.birthdate, d.age_years), birthdate: d.birthdate, age_years: d.age_years,
-      last_donated_on: d.last_donated_on, availability: availabilityOf(d.last_donated_on),
+      last_donated_on: d.last_donated_on, availability: availabilityOf(d.last_donated_on, d.is_available),
+      is_available: d.is_available,
       photo_url: d.photo_url, lat: d.lat, lng: d.lng,
       is_claimed: d.is_claimed, is_admin: d.is_admin, is_active: d.is_active,
       has_password: !!d.password_hash, created_at: d.created_at,
@@ -110,7 +111,7 @@ export async function PATCH(req: NextRequest) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of ["name", "gender", "religion", "police_station", "area",
                      "birthdate", "age_years", "last_donated_on", "lat", "lng",
-                     "is_active", "is_admin", "is_claimed"] as const) {
+                     "is_active", "is_admin", "is_claimed", "is_available"] as const) {
     if (key in fields) patch[key] = fields[key] === "" ? null : fields[key];
   }
   if ("blood_group" in fields && (BLOOD_GROUPS as readonly string[]).includes(fields.blood_group)) {

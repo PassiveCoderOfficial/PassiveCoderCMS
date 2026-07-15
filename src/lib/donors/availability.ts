@@ -3,7 +3,7 @@
 //   51–59 days                  → yellow (almost)
 //   ≥ 60 days or never recorded → green (ready) / orange (unknown)
 
-export type Availability = "ready" | "soon" | "not_ready" | "unknown";
+export type Availability = "ready" | "soon" | "not_ready" | "unknown" | "unavailable";
 
 export function daysSince(dateStr: string | null | undefined): number | null {
   if (!dateStr) return null;
@@ -12,7 +12,13 @@ export function daysSince(dateStr: string | null | undefined): number | null {
   return Math.floor((Date.now() - d.getTime()) / 86400_000);
 }
 
-export function availabilityOf(lastDonatedOn: string | null | undefined): Availability {
+/**
+ * `isAvailable=false` (donor marked themselves/was marked temporarily
+ * unavailable — traveling, sick, etc.) overrides the readiness-by-date
+ * color with grey, regardless of how long since their last donation.
+ */
+export function availabilityOf(lastDonatedOn: string | null | undefined, isAvailable = true): Availability {
+  if (!isAvailable) return "unavailable";
   const days = daysSince(lastDonatedOn);
   if (days === null) return "unknown";
   if (days >= 60) return "ready";
@@ -20,11 +26,12 @@ export function availabilityOf(lastDonatedOn: string | null | undefined): Availa
   return "not_ready";
 }
 
-export const AVAILABILITY_META: Record<Availability, { label: string; bg: string; text: string }> = {
-  ready:     { label: "Ready",    bg: "#dcfce7", text: "#15803d" },
-  soon:      { label: "Soon",     bg: "#fef9c3", text: "#a16207" },
-  not_ready: { label: "Not yet",  bg: "#fee2e2", text: "#b91c1c" },
-  unknown:   { label: "Unknown",  bg: "#ffedd5", text: "#c2410c" },
+export const AVAILABILITY_META: Record<Availability, { label: string; bg: string; text: string; dot: string }> = {
+  ready:       { label: "Ready",       bg: "#dcfce7", text: "#15803d", dot: "#22c55e" },
+  soon:        { label: "Soon",        bg: "#fef9c3", text: "#a16207", dot: "#eab308" },
+  not_ready:   { label: "Not yet",     bg: "#fee2e2", text: "#b91c1c", dot: "#ef4444" },
+  unknown:     { label: "Unknown",     bg: "#ffedd5", text: "#c2410c", dot: "#f97316" },
+  unavailable: { label: "Unavailable", bg: "#e5e7eb", text: "#4b5563", dot: "#9ca3af" },
 };
 
 export function ageOf(birthdate: string | null | undefined, ageYears: number | null | undefined): number | null {

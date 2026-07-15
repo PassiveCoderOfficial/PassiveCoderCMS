@@ -60,7 +60,8 @@ export type BlockType =
   | "status_tracker"
   | "booking"
   | "donor_group_cards"
-  | "donor_list";
+  | "donor_list"
+  | "donor_map";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -145,10 +146,16 @@ export type NavigationBlockProps = BlockBase & {
     transparent: boolean;
     style: "default" | "centered" | "split" | "minimal";
     backgroundColor?: string;
+    backgroundGradientTo?: string; // when set, renders a gradient from backgroundColor to this
     textColor?: string;
+    activeColor?: string;
+    logoHeight?: number;
+    shadow?: boolean;
+    borderBottom?: boolean;
     showCta?: boolean;
     ctaLabel?: string;
     ctaUrl?: string;
+    ctaStyle?: "solid" | "outline";
   };
 };
 
@@ -704,7 +711,8 @@ export type Block =
   | StatusTrackerBlockProps
   | BookingBlockProps
   | DonorGroupCardsBlockProps
-  | DonorListBlockProps;
+  | DonorListBlockProps
+  | DonorMapBlockProps;
 
 export type DonorGroupCardsBlockProps = BlockBase & {
   type: "donor_group_cards";
@@ -713,6 +721,15 @@ export type DonorGroupCardsBlockProps = BlockBase & {
     subtitle?: string;
     accentColor?: string;      // card accent (blood red default)
     linkTarget?: string;       // where cards send the filter, default "#donor-list"
+  };
+};
+
+export type DonorMapBlockProps = BlockBase & {
+  type: "donor_map";
+  data: {
+    title?: string;
+    subtitle?: string;
+    height: number;
   };
 };
 

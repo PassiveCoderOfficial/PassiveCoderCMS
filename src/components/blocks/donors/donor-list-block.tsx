@@ -32,7 +32,8 @@ const selectCls = "border rounded-lg px-2.5 py-2 text-sm bg-white focus:outline-
 function DaysChip({ donor }: { donor: DonorRow }) {
   const meta = AVAILABILITY_META[donor.availability];
   let label = meta.label;
-  if (donor.last_donated_on) {
+  if (donor.availability === "unavailable") label = "Unavailable";
+  else if (donor.last_donated_on) {
     const days = Math.floor((Date.now() - new Date(donor.last_donated_on + "T00:00:00").getTime()) / 86400_000);
     label = donor.availability === "ready" ? "Ready to donate" : `${days} days ago`;
   }
@@ -53,13 +54,19 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"list" | "map">("list");
+  const [radius, setRadius] = useState<{ lat: number; lng: number; radiusKm: number } | null>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const load = useCallback(async (f: Filters, pg: number) => {
+  const load = useCallback(async (f: Filters, pg: number, r?: typeof radius) => {
     setLoading(true);
     const params = new URLSearchParams();
     Object.entries(f).forEach(([k, v]) => v && params.set(k, v));
     params.set("page", String(pg));
+    if (r) {
+      params.set("lat", String(r.lat));
+      params.set("lng", String(r.lng));
+      params.set("radius_km", String(r.radiusKm));
+    }
     try {
       const res = await fetch(`/api/donors?${params}`);
       if (res.ok) {
@@ -71,6 +78,12 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
   }, []);
 
   useEffect(() => { load(EMPTY, 0); }, [load]);
+
+  function onRadiusSearch(v: { lat: number; lng: number; radiusKm: number } | null) {
+    setRadius(v);
+    setPage(0);
+    load(filters, 0, v ?? undefined);
+  }
 
   // Blood-group cards elsewhere on the page dispatch this event
   useEffect(() => {
@@ -152,6 +165,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             <option value="soon">Ready soon</option>
             <option value="not_ready">Recently donated</option>
             <option value="unknown">Unknown</option>
+            <option value="unavailable">Temporarily unavailable</option>
           </select>
           <select className={selectCls} value={filters.gender} onChange={e => set("gender", e.target.value)}>
             <option value="">Any gender</option>
@@ -171,10 +185,15 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
 
       {view === "map" ? (
         <div>
-          <DonorsMap donors={donors.filter(d => d.lat != null && d.lng != null) as never} />
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Showing donors on this page that shared a map location. Use filters to narrow, tap a pin for the profile.
-          </p>
+          <DonorsMap
+            donors={donors.filter(d => d.lat != null && d.lng != null) as never}
+            onRadiusSearch={onRadiusSearch}
+          />
+          {radius && (
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Showing donors within {radius.radiusKm} km of your location, sorted nearest first.
+            </p>
+          )}
         </div>
       ) : (
       <div className="border rounded-2xl overflow-hidden bg-white">
@@ -188,7 +207,8 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
           <div className="divide-y">
             {donors.map((d) => (
               <Link key={d.id} href={`/donors/${d.id}`}
-                className="flex items-center gap-3 sm:gap-4 px-4 py-3 hover:bg-red-50/50 transition-colors">
+                className={`flex items-center gap-3 sm:gap-4 px-4 py-3 hover:bg-red-50/50 transition-colors ${
+                  d.availability === "unavailable" ? "opacity-60" : ""}`}>
                 <DonorAvatar photoUrl={d.photo_url} name={d.name} size={44} />
                 <span className="flex items-center justify-center w-10 h-10 rounded-full font-bold text-xs shrink-0"
                   style={{ backgroundColor: `${accent}15`, color: accent }}>

@@ -6,22 +6,20 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   Droplet, Loader2, Phone, MessageCircle, MapPin, User, Calendar,
-  ShieldCheck, Pencil, KeyRound, X, Camera,
+  ShieldCheck, Pencil, KeyRound, Camera, Trash2,
 } from "lucide-react";
+import { donorApi } from "../ui";
 import { DonorAvatar } from "@/components/donors/donor-avatar";
-
-const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
-const DonorsMap = dynamic(() => import("@/components/donors/donor-map").then(m => m.DonorsMap), { ssr: false });
-import { inputCls, btnCls, Field, donorApi } from "../ui";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
-import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS } from "@/lib/donors/bd-locations";
+
+const DonorsMap = dynamic(() => import("@/components/donors/donor-map").then(m => m.DonorsMap), { ssr: false });
 
 interface Profile {
   id: string; name: string; phone: string; whatsapp: string;
   blood_group: string; gender: string | null; religion: string | null;
   district: string | null; police_station: string | null; area: string | null;
   age: number | null; last_donated_on: string | null;
-  availability: Availability; is_claimed: boolean; created_at: string;
+  availability: Availability; is_available: boolean; is_claimed: boolean; created_at: string;
   photo_url: string | null; lat: number | null; lng: number | null;
 }
 
@@ -32,7 +30,7 @@ export default function DonorProfilePage() {
   const [submittedBy, setSubmittedBy] = useState<{ id: string; name: string } | null>(null);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<"claim" | "edit" | null>(null);
+  const [togglingAvail, setTogglingAvail] = useState(false);
 
   const load = useCallback(async () => {
     const r = await donorApi(`/api/donors/${id}`, "GET");
@@ -45,6 +43,14 @@ export default function DonorProfilePage() {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  async function toggleAvailable() {
+    if (!profile) return;
+    setTogglingAvail(true);
+    const r = await donorApi(`/api/donors/${id}`, "PATCH", { is_available: !profile.is_available });
+    setTogglingAvail(false);
+    if (r.ok) load();
+  }
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   if (!profile) return <div className="min-h-[60vh] flex items-center justify-center text-gray-500">Donor not found.</div>;
@@ -69,8 +75,10 @@ export default function DonorProfilePage() {
           </h1>
           <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold"
             style={{ backgroundColor: meta.bg, color: meta.text }}>
-            {profile.availability === "unknown" ? "Last donation unknown" : meta.label}
-            {profile.last_donated_on ? ` · last donated ${profile.last_donated_on}` : ""}
+            {profile.availability === "unavailable" ? "Temporarily unavailable"
+              : profile.availability === "unknown" ? "Last donation unknown"
+              : meta.label}
+            {profile.last_donated_on && profile.availability !== "unavailable" ? ` · last donated ${profile.last_donated_on}` : ""}
           </span>
         </div>
 
@@ -119,26 +127,38 @@ export default function DonorProfilePage() {
       {profile.lat != null && profile.lng != null && (
         <DonorsMap height={220} donors={[{
           id: profile.id, name: profile.name, blood_group: profile.blood_group,
+          availability: profile.availability,
           lat: profile.lat, lng: profile.lng, area: profile.area, district: profile.district,
         }]} />
       )}
 
+      {canManage && (
+        <div className="bg-white border rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold">Temporarily unavailable</p>
+            <p className="text-xs text-gray-500">Hide the readiness color and mark grey on the map — e.g. traveling or unwell.</p>
+          </div>
+          <button onClick={toggleAvailable} disabled={togglingAvail}
+            className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${!profile.is_available ? "bg-gray-500" : "bg-gray-300"}`}>
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all ${!profile.is_available ? "left-[22px]" : "left-0.5"}`} />
+          </button>
+        </div>
+      )}
+
       <div className="space-y-2">
         {canManage && (
-          <button onClick={() => setModal("edit")} className={btnCls} style={{ backgroundColor: "#374151" }}>
+          <Link href={`/donors/${profile.id}/edit`}
+            className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
             <Pencil className="w-4 h-4" /> Edit this profile
-          </button>
+          </Link>
         )}
         {!profile.is_claimed && (
-          <button onClick={() => setModal("claim")}
+          <Link href={`/donors/${profile.id}/claim`}
             className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
             <KeyRound className="w-4 h-4" /> This is me — claim this profile
-          </button>
+          </Link>
         )}
       </div>
-
-      {modal === "claim" && <ClaimModal donorId={profile.id} onClose={() => setModal(null)} onDone={() => { setModal(null); load(); }} />}
-      {modal === "edit" && <EditModal profile={profile} onClose={() => setModal(null)} onDone={() => { setModal(null); load(); }} />}
 
       <p className="text-center">
         <button onClick={() => router.back()} className="text-sm text-gray-400 hover:text-gray-600">← Back to donor list</button>
@@ -175,137 +195,5 @@ function PhotoUploadButton({ donorId, onUploaded }: { donorId: string; onUploade
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
     </>
-  );
-}
-
-function ClaimModal({ donorId, onClose, onDone }: { donorId: string; onClose: () => void; onDone: () => void }) {
-  const [step, setStep] = useState<"start" | "verify">("start");
-  const [hint, setHint] = useState("");
-  const [code, setCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function start() {
-    setBusy(true); setError(null);
-    const r = await donorApi("/api/donors/auth/claim", "POST", { donor_id: donorId });
-    setBusy(false);
-    if (!r.ok) { setError(r.data.error); return; }
-    setHint(r.data.phone_hint); setStep("verify");
-  }
-  async function verify() {
-    setBusy(true); setError(null);
-    const r = await donorApi("/api/donors/auth/verify-claim", "POST", { donor_id: donorId, code, password });
-    setBusy(false);
-    if (!r.ok) { setError(r.data.error); return; }
-    onDone();
-  }
-
-  return (
-    <Modal title="Claim your profile" onClose={onClose}>
-      {step === "start" ? (
-        <>
-          <p className="text-sm text-gray-500">
-            We&apos;ll text a 6-digit code to the phone number on this profile. Enter it to take control and set your own password.
-          </p>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button onClick={start} disabled={busy} className={btnCls}>
-            {busy && <Loader2 className="w-4 h-4 animate-spin" />} Send code
-          </button>
-        </>
-      ) : (
-        <>
-          <p className="text-sm text-gray-500">Code sent to the number ending in <strong>{hint}</strong>.</p>
-          <Field label="6-digit code" required>
-            <input className={`${inputCls} text-center tracking-[0.5em] font-bold`} inputMode="numeric" maxLength={6}
-              value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))} />
-          </Field>
-          <Field label="Your new password" required>
-            <input type="password" className={inputCls} value={password} onChange={e => setPassword(e.target.value)} />
-          </Field>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button onClick={verify} disabled={busy} className={btnCls}>
-            {busy && <Loader2 className="w-4 h-4 animate-spin" />} Claim profile
-          </button>
-        </>
-      )}
-    </Modal>
-  );
-}
-
-function EditModal({ profile, onClose, onDone }: { profile: Profile; onClose: () => void; onDone: () => void }) {
-  const [f, setF] = useState({
-    name: profile.name, blood_group: profile.blood_group,
-    district: profile.district ?? "", police_station: profile.police_station ?? "",
-    area: profile.area ?? "", last_donated_on: profile.last_donated_on ?? "",
-  });
-  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(
-    profile.lat != null && profile.lng != null ? { lat: profile.lat, lng: profile.lng } : null);
-  const [showMap, setShowMap] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const thanas = f.district ? BD_LOCATIONS[f.district] ?? [] : [];
-
-  async function save() {
-    setBusy(true); setError(null);
-    const r = await donorApi(`/api/donors/${profile.id}`, "PATCH",
-      { ...f, ...(geo ? { lat: geo.lat, lng: geo.lng } : {}) });
-    setBusy(false);
-    if (!r.ok) { setError(r.data.error); return; }
-    onDone();
-  }
-
-  return (
-    <Modal title="Edit profile" onClose={onClose}>
-      <Field label="Name"><input className={inputCls} value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} /></Field>
-      <Field label="Blood group">
-        <select className={inputCls} value={f.blood_group} onChange={e => setF(p => ({ ...p, blood_group: e.target.value }))}>
-          {BLOOD_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-        </select>
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="District">
-          <select className={inputCls} value={f.district} onChange={e => setF(p => ({ ...p, district: e.target.value, police_station: "" }))}>
-            <option value="">—</option>
-            {BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </Field>
-        <Field label="Thana">
-          <select className={inputCls} value={f.police_station} onChange={e => setF(p => ({ ...p, police_station: e.target.value }))} disabled={!f.district}>
-            <option value="">—</option>
-            {thanas.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </Field>
-      </div>
-      <Field label="Location (area / village)"><input className={inputCls} value={f.area} onChange={e => setF(p => ({ ...p, area: e.target.value }))} /></Field>
-      <div>
-        <button type="button" className="text-xs text-red-600 underline" onClick={() => setShowMap(v => !v)}>
-          {showMap ? "Hide map" : geo ? "Change map location" : "Pin location on map"}
-        </button>
-        {showMap && <div className="mt-2"><MapPicker value={geo} onChange={setGeo} height={200} /></div>}
-      </div>
-      <Field label="Last donated date">
-        <input type="date" className={inputCls} value={f.last_donated_on} onChange={e => setF(p => ({ ...p, last_donated_on: e.target.value }))} />
-      </Field>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button onClick={save} disabled={busy} className={btnCls}>
-        {busy && <Loader2 className="w-4 h-4 animate-spin" />} Save changes
-      </button>
-    </Modal>
-  );
-}
-
-function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white rounded-2xl p-5 space-y-3 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold">{title}</h2>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
-        </div>
-        {children}
-      </div>
-    </div>
   );
 }

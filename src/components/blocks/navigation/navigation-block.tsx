@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import type { NavigationBlockProps, NavItem } from "@/types/cms";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart/cart-context";
@@ -83,11 +84,13 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
   );
 }
 
-function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string }) {
+function NavItemDesktop({ item, textColor, activeColor }: { item: NavItem; textColor: string; activeColor: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasChildren = (item.children?.length ?? 0) > 0;
+  const pathname = usePathname();
+  const isActive = item.url !== "/" && item.url !== "#" && pathname.startsWith(item.url.split("#")[0] || "");
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -110,7 +113,7 @@ function NavItemDesktop({ item, textColor }: { item: NavItem; textColor: string 
           href={item.url}
           target={item.target}
           className="px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors"
-          style={{ color: textColor }}
+          style={{ color: isActive ? activeColor : textColor, fontWeight: isActive ? 700 : 500 }}
         >
           {item.label}
         </Link>
@@ -142,27 +145,33 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
   const { data } = block;
   const {
     logoText, logoUrl, items, sticky, transparent, style,
-    backgroundColor, textColor, showCta, ctaLabel, ctaUrl,
+    backgroundColor, backgroundGradientTo, textColor, activeColor,
+    logoHeight, shadow, borderBottom, showCta, ctaLabel, ctaUrl, ctaStyle,
   } = data;
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const { itemCount, openCart } = useCart();
 
-  const bg = transparent ? "transparent" : (backgroundColor ?? "#1a5c38");
+  const solidBg = backgroundColor ?? "#1a5c38";
+  const bg = transparent ? "transparent"
+    : backgroundGradientTo ? `linear-gradient(to right, ${solidBg}, ${backgroundGradientTo})`
+    : solidBg;
   const fg = textColor ?? "#ffffff";
+  const accent = activeColor ?? fg;
+  const logoH = logoHeight ?? 40;
 
   return (
     <nav
-      className={cn("w-full z-50", sticky && "sticky top-0")}
-      style={{ backgroundColor: bg, color: fg }}
+      className={cn("w-full z-50", sticky && "sticky top-0", shadow && "shadow-md", borderBottom && "border-b")}
+      style={{ background: bg, color: fg, borderColor: borderBottom ? `${fg}20` : undefined }}
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className={cn("flex items-center h-16 gap-4", style === "centered" && "justify-center")}>
           {/* Logo */}
           <Link href={logoUrl ?? "/"} className="flex items-center gap-2 shrink-0">
             {logo ? (
-              <Image src={logo} alt={logoText ?? "Logo"} width={140} height={44} className="h-10 w-auto object-contain" />
+              <Image src={logo} alt={logoText ?? "Logo"} width={logoH * 3.2} height={logoH} style={{ height: logoH }} className="w-auto object-contain" />
             ) : (
               <span className="text-lg font-bold tracking-tight" style={{ color: fg }}>{logoText ?? "Brand"}</span>
             )}
@@ -171,7 +180,7 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
           {/* Desktop nav */}
           <ul className={cn("hidden md:flex items-center gap-0.5", style === "centered" ? "mx-auto" : "ml-2 flex-1")}>
             {items.map((item) => (
-              <NavItemDesktop key={item.id} item={item} textColor={fg} />
+              <NavItemDesktop key={item.id} item={item} textColor={fg} activeColor={accent} />
             ))}
           </ul>
 
@@ -181,10 +190,9 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
               <Link
                 href={ctaUrl}
                 className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
-                style={{
-                  backgroundColor: "var(--color-secondary, #c9a84c)",
-                  color: "var(--color-foreground, #0f2418)",
-                }}
+                style={ctaStyle === "outline"
+                  ? { backgroundColor: "transparent", color: fg, border: `1.5px solid ${fg}` }
+                  : { backgroundColor: "var(--color-secondary, #c9a84c)", color: "var(--color-foreground, #0f2418)" }}
               >
                 {ctaLabel}
               </Link>

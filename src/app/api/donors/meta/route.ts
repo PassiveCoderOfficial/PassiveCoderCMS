@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const me = await getDonorSession(tenantId);
     if (!me) return NextResponse.json({ error: "login_required" }, { status: 401 });
     const { data } = await supabase.from("donors")
-      .select("id, name, blood_group, district, area, last_donated_on, is_claimed, password_hash, created_at")
+      .select("id, name, blood_group, district, area, last_donated_on, is_available, is_claimed, password_hash, created_at")
       .eq("tenant_id", tenantId).eq("created_by", me.id).eq("is_active", true)
       .order("created_at", { ascending: false });
     return NextResponse.json({
@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
         id: d.id, name: d.name, blood_group: d.blood_group,
         district: d.district, area: d.area,
         last_donated_on: d.last_donated_on,
-        availability: availabilityOf(d.last_donated_on),
+        availability: availabilityOf(d.last_donated_on, d.is_available),
+        is_available: d.is_available,
         is_claimed: d.is_claimed,
         has_password: !!d.password_hash,
         created_at: d.created_at,

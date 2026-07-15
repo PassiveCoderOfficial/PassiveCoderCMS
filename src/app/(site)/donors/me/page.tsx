@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, X, Copy, Check, Camera, Settings2,
+  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, Camera, Settings2, Pencil,
 } from "lucide-react";
-import { inputCls, btnCls, Field, donorApi } from "../ui";
+import { btnCls, donorApi } from "../ui";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
 import { DonorAvatar } from "@/components/donors/donor-avatar";
 
@@ -14,7 +14,7 @@ interface Me { id: string; name: string; phone: string; blood_group: string; is_
 interface Entry {
   id: string; name: string; blood_group: string;
   district: string | null; area: string | null;
-  last_donated_on: string | null; availability: Availability;
+  last_donated_on: string | null; availability: Availability; is_available: boolean;
   is_claimed: boolean; has_password: boolean; created_at: string;
 }
 
@@ -22,7 +22,7 @@ export default function MyDonorPage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [pwFor, setPwFor] = useState<Entry | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const meRes = await donorApi("/api/donors/auth/me", "GET");
@@ -37,6 +37,13 @@ export default function MyDonorPage() {
   async function logout() {
     await donorApi("/api/donors/auth/logout", "POST", {});
     router.push("/");
+  }
+
+  async function toggleAvailable(e: Entry) {
+    setTogglingId(e.id);
+    const r = await donorApi(`/api/donors/${e.id}`, "PATCH", { is_available: !e.is_available });
+    setTogglingId(null);
+    if (r.ok) load();
   }
 
   if (me === undefined) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
@@ -104,14 +111,22 @@ export default function MyDonorPage() {
                   {[e.area, e.district].filter(Boolean).join(", ")}
                 </div>
               </div>
+              <button onClick={() => toggleAvailable(e)} disabled={togglingId === e.id} title="Toggle temporarily unavailable"
+                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${!e.is_available ? "bg-gray-500" : "bg-gray-200"}`}>
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${!e.is_available ? "left-[18px]" : "left-0.5"}`} />
+              </button>
+              <Link href={`/donors/${e.id}/edit`} title="Edit"
+                className="p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-50 shrink-0">
+                <Pencil className="w-4 h-4" />
+              </Link>
               {e.is_claimed ? (
                 <span className="text-[11px] text-green-600 flex items-center gap-1 shrink-0"><ShieldCheck className="w-3.5 h-3.5" /> Claimed</span>
               ) : (
-                <button onClick={() => setPwFor(e)}
+                <Link href={`/donors/me/${e.id}/password`}
                   className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors shrink-0 ${
                     e.has_password ? "text-gray-500 hover:bg-gray-50" : "text-red-600 border-red-200 hover:bg-red-50"}`}>
-                  <KeyRound className="w-3.5 h-3.5" /> {e.has_password ? "Reset password" : "Set password"}
-                </button>
+                  <KeyRound className="w-3.5 h-3.5" /> {e.has_password ? "Reset" : "Set password"}
+                </Link>
               )}
             </div>
           );
@@ -124,8 +139,6 @@ export default function MyDonorPage() {
           <LogOut className="w-4 h-4" /> Log out
         </button>
       </div>
-
-      {pwFor && <SetPasswordModal entry={pwFor} onClose={() => setPwFor(null)} onDone={() => { setPwFor(null); load(); }} />}
     </div>
   );
 }
@@ -133,77 +146,21 @@ export default function MyDonorPage() {
 function MyPhotoButton({ onUploaded }: { onUploaded: () => void }) {
   const [busy, setBusy] = useState(false);
   return (
-    <>
-      <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 cursor-pointer transition-colors">
-        {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-        <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            e.target.value = "";
-            if (!file) return;
-            setBusy(true);
-            const form = new FormData();
-            form.append("file", file);
-            const res = await fetch("/api/donors/photo", { method: "POST", body: form });
-            setBusy(false);
-            if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error ?? "Upload failed"); return; }
-            onUploaded();
-          }} />
-      </label>
-    </>
-  );
-}
-
-function SetPasswordModal({ entry, onClose, onDone }: { entry: Entry; onClose: () => void; onDone: () => void }) {
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  async function save() {
-    setBusy(true); setError(null);
-    const r = await donorApi(`/api/donors/${entry.id}`, "POST", { action: "set-password", password });
-    setBusy(false);
-    if (!r.ok) { setError(r.data.error); return; }
-    setSaved(true);
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white rounded-2xl p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold">Password for {entry.name}</h2>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
-        </div>
-        {saved ? (
-          <>
-            <p className="text-sm text-gray-600">
-              Done. Share this password with <strong>{entry.name}</strong> — they log in with their phone number
-              and this password, then take over the profile.
-            </p>
-            <button onClick={() => { navigator.clipboard.writeText(password); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-              className={btnCls} style={{ backgroundColor: "#374151" }}>
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} Copy password
-            </button>
-            <button onClick={onDone} className={btnCls}>Close</button>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-gray-500">
-              Set a starter password so the donor can log in with their own phone number and manage this profile.
-            </p>
-            <Field label="Password (6+ characters)" required>
-              <input className={inputCls} value={password} onChange={e => setPassword(e.target.value)} />
-            </Field>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <button onClick={save} disabled={busy || password.length < 6} className={btnCls}>
-              {busy && <Loader2 className="w-4 h-4 animate-spin" />} Save password
-            </button>
-          </>
-        )}
-      </div>
-    </div>
+    <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 cursor-pointer transition-colors">
+      {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+      <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          setBusy(true);
+          const form = new FormData();
+          form.append("file", file);
+          const res = await fetch("/api/donors/photo", { method: "POST", body: form });
+          setBusy(false);
+          if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error ?? "Upload failed"); return; }
+          onUploaded();
+        }} />
+    </label>
   );
 }
