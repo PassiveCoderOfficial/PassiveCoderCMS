@@ -768,6 +768,41 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "donor_group_cards",
+    label: "Blood Group Cards",
+    description: "8 blood-group cards with live donor counts — tap to filter the donor list",
+    icon: "🩸",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("donor_group_cards"),
+      type: "donor_group_cards" as const,
+      data: {
+        title: "Find Donors by Blood Group",
+        subtitle: "Tap a group to see available donors.",
+        accentColor: "#dc2626",
+        linkTarget: "#donor-list",
+      },
+    }),
+  },
+  {
+    type: "donor_list",
+    label: "Donor List",
+    description: "Filterable blood donor directory with availability status",
+    icon: "🫀",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("donor_list"),
+      type: "donor_list" as const,
+      data: {
+        title: "Donors",
+        accentColor: "#dc2626",
+        showAddButton: true,
+        addButtonLabel: "Become a Donor",
+        showFilters: true,
+      },
+    }),
+  },
+  {
     type: "status_tracker",
     label: "Visa Status Tracker",
     description: "Lookup form for clients to track their visa application status",

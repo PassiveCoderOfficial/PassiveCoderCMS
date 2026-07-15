@@ -37,6 +37,8 @@ import { CountryGridBlock } from "@/components/blocks/country-grid/country-grid-
 import { EligibilityCheckerBlock } from "@/components/blocks/eligibility-checker/eligibility-checker-block";
 import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tracker-block";
 import { BookingBlock } from "@/components/blocks/booking/booking-block";
+import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
+import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -93,6 +95,8 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "eligibility_checker": content = <EligibilityCheckerBlock block={block} />; break;
     case "status_tracker":   content = <StatusTrackerBlock block={block} />; break;
     case "booking":          content = <BookingBlock block={block} />; break;
+    case "donor_group_cards": content = <DonorGroupCardsBlock block={block} />; break;
+    case "donor_list":       content = <DonorListBlock block={block} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     default:                 content = null;
   }

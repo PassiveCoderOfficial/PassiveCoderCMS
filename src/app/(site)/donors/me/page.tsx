@@ -1,0 +1,170 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, X, Copy, Check,
+} from "lucide-react";
+import { inputCls, btnCls, Field, donorApi } from "../ui";
+import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
+
+interface Me { id: string; name: string; phone: string; blood_group: string }
+interface Entry {
+  id: string; name: string; blood_group: string;
+  district: string | null; area: string | null;
+  last_donated_on: string | null; availability: Availability;
+  is_claimed: boolean; has_password: boolean; created_at: string;
+}
+
+export default function MyDonorPage() {
+  const router = useRouter();
+  const [me, setMe] = useState<Me | null | undefined>(undefined);
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [pwFor, setPwFor] = useState<Entry | null>(null);
+
+  const load = useCallback(async () => {
+    const meRes = await donorApi("/api/donors/auth/me", "GET");
+    if (!meRes.data.donor) { setMe(null); return; }
+    setMe(meRes.data.donor);
+    const mine = await donorApi("/api/donors/meta?what=mine", "GET");
+    if (mine.ok) setEntries(mine.data.entries ?? []);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function logout() {
+    await donorApi("/api/donors/auth/logout", "POST", {});
+    router.push("/");
+  }
+
+  if (me === undefined) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (me === null) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center space-y-3 max-w-sm">
+          <Droplet className="w-10 h-10 text-red-600 mx-auto" />
+          <p className="text-sm text-gray-500">Log in to manage your profile and entries.</p>
+          <Link href="/donors/auth?next=/donors/me" className={btnCls}>Log in / Sign up</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-lg mx-auto px-4 py-10 space-y-5">
+      <div className="bg-white border rounded-2xl p-5 flex items-center gap-4">
+        <span className="flex items-center justify-center w-12 h-12 rounded-full font-bold bg-red-50 text-red-600">
+          {me.blood_group}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold flex items-center gap-1.5">{me.name} <ShieldCheck className="w-4 h-4 text-green-600" /></p>
+          <p className="text-sm text-gray-500">{me.phone}</p>
+        </div>
+        <Link href={`/donors/${me.id}`} className="text-sm text-red-600 font-medium hover:underline shrink-0">My profile</Link>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold">My entries ({entries.length})</h2>
+        <Link href="/donors/add"
+          className="inline-flex items-center gap-1.5 text-sm text-red-600 font-medium hover:underline">
+          <Plus className="w-4 h-4" /> Add donor
+        </Link>
+      </div>
+
+      <div className="bg-white border rounded-2xl divide-y">
+        {entries.length === 0 && (
+          <p className="text-center text-sm text-gray-500 py-10">
+            You haven&apos;t added any donors yet.
+          </p>
+        )}
+        {entries.map((e) => {
+          const meta = AVAILABILITY_META[e.availability];
+          return (
+            <div key={e.id} className="flex items-center gap-3 px-4 py-3">
+              <span className="flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold bg-red-50 text-red-600 shrink-0">
+                {e.blood_group}
+              </span>
+              <div className="min-w-0 flex-1">
+                <Link href={`/donors/${e.id}`} className="text-sm font-semibold hover:underline truncate block">{e.name}</Link>
+                <div className="text-xs text-gray-500 flex items-center gap-2">
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: meta.bg, color: meta.text }}>{meta.label}</span>
+                  {[e.area, e.district].filter(Boolean).join(", ")}
+                </div>
+              </div>
+              {e.is_claimed ? (
+                <span className="text-[11px] text-green-600 flex items-center gap-1 shrink-0"><ShieldCheck className="w-3.5 h-3.5" /> Claimed</span>
+              ) : (
+                <button onClick={() => setPwFor(e)}
+                  className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors shrink-0 ${
+                    e.has_password ? "text-gray-500 hover:bg-gray-50" : "text-red-600 border-red-200 hover:bg-red-50"}`}>
+                  <KeyRound className="w-3.5 h-3.5" /> {e.has_password ? "Reset password" : "Set password"}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <button onClick={logout} className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 mx-auto">
+        <LogOut className="w-4 h-4" /> Log out
+      </button>
+
+      {pwFor && <SetPasswordModal entry={pwFor} onClose={() => setPwFor(null)} onDone={() => { setPwFor(null); load(); }} />}
+    </div>
+  );
+}
+
+function SetPasswordModal({ entry, onClose, onDone }: { entry: Entry; onClose: () => void; onDone: () => void }) {
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function save() {
+    setBusy(true); setError(null);
+    const r = await donorApi(`/api/donors/${entry.id}`, "POST", { action: "set-password", password });
+    setBusy(false);
+    if (!r.ok) { setError(r.data.error); return; }
+    setSaved(true);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative w-full max-w-sm bg-white rounded-2xl p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold">Password for {entry.name}</h2>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+        </div>
+        {saved ? (
+          <>
+            <p className="text-sm text-gray-600">
+              Done. Share this password with <strong>{entry.name}</strong> — they log in with their phone number
+              and this password, then take over the profile.
+            </p>
+            <button onClick={() => { navigator.clipboard.writeText(password); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+              className={btnCls} style={{ backgroundColor: "#374151" }}>
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} Copy password
+            </button>
+            <button onClick={onDone} className={btnCls}>Close</button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-gray-500">
+              Set a starter password so the donor can log in with their own phone number and manage this profile.
+            </p>
+            <Field label="Password (6+ characters)" required>
+              <input className={inputCls} value={password} onChange={e => setPassword(e.target.value)} />
+            </Field>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button onClick={save} disabled={busy || password.length < 6} className={btnCls}>
+              {busy && <Loader2 className="w-4 h-4 animate-spin" />} Save password
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

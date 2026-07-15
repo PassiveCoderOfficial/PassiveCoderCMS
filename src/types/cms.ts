@@ -58,7 +58,9 @@ export type BlockType =
   | "country_grid"
   | "eligibility_checker"
   | "status_tracker"
-  | "booking";
+  | "booking"
+  | "donor_group_cards"
+  | "donor_list";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -700,7 +702,30 @@ export type Block =
   | CountryGridBlockProps
   | EligibilityCheckerBlockProps
   | StatusTrackerBlockProps
-  | BookingBlockProps;
+  | BookingBlockProps
+  | DonorGroupCardsBlockProps
+  | DonorListBlockProps;
+
+export type DonorGroupCardsBlockProps = BlockBase & {
+  type: "donor_group_cards";
+  data: {
+    title?: string;
+    subtitle?: string;
+    accentColor?: string;      // card accent (blood red default)
+    linkTarget?: string;       // where cards send the filter, default "#donor-list"
+  };
+};
+
+export type DonorListBlockProps = BlockBase & {
+  type: "donor_list";
+  data: {
+    title?: string;
+    accentColor?: string;
+    showAddButton: boolean;
+    addButtonLabel: string;
+    showFilters: boolean;
+  };
+};
 
 export type BookingBlockProps = BlockBase & {
   type: "booking";
