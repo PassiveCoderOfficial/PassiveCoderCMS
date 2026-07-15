@@ -26,6 +26,8 @@ export async function GET(req: NextRequest) {
   const sp = new URL(req.url).searchParams;
   const page = Math.max(0, parseInt(sp.get("page") ?? "0", 10) || 0);
   const hasRadius = sp.has("lat") && sp.has("lng") && sp.has("radius_km");
+  const hasBounds = sp.has("sw_lat") && sp.has("sw_lng") && sp.has("ne_lat") && sp.has("ne_lng");
+  const skipPagination = hasRadius || hasBounds;
 
   const supabase = await createAdminClient();
   let q = supabase.from("donors")
@@ -33,9 +35,10 @@ export async function GET(req: NextRequest) {
     .eq("tenant_id", tenantId)
     .eq("is_active", true)
     .order("last_donated_on", { ascending: true, nullsFirst: false });
-  // Radius search needs every geotagged donor in view to sort by distance —
-  // skip server pagination and cap at a generous ceiling instead.
-  q = hasRadius ? q.limit(2000) : q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+  // Radius / map-bounds search needs every matching geotagged donor in view
+  // (to sort by distance, or to count what's on screen) — skip server
+  // pagination and cap at a generous ceiling instead.
+  q = skipPagination ? q.limit(2000) : q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
   const group = sp.get("blood_group");
   if (group && (BLOOD_GROUPS as readonly string[]).includes(group)) q = q.eq("blood_group", group);
@@ -51,6 +54,19 @@ export async function GET(req: NextRequest) {
   if (area) q = q.ilike("area", `%${area}%`);
   const search = sp.get("q");
   if (search) q = q.or(`name.ilike.%${search}%,area.ilike.%${search}%`);
+
+  // Map viewport bounds — donors visible in the current map frame. Combines
+  // (ANDs) with every other active filter above, same as any dropdown.
+  if (hasBounds) {
+    const swLat = parseFloat(sp.get("sw_lat")!);
+    const swLng = parseFloat(sp.get("sw_lng")!);
+    const neLat = parseFloat(sp.get("ne_lat")!);
+    const neLng = parseFloat(sp.get("ne_lng")!);
+    q = q.gte("lat", Math.min(swLat, neLat)).lte("lat", Math.max(swLat, neLat));
+    // Bounds can cross the antimeridian in theory, but Bangladesh never does —
+    // a plain min/max lng range is correct here.
+    q = q.gte("lng", Math.min(swLng, neLng)).lte("lng", Math.max(swLng, neLng));
+  }
 
   const { data, count, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

@@ -76,15 +76,24 @@ export interface MapDonor {
   availability?: Availability;
 }
 
+export interface MapBounds { sw_lat: number; sw_lng: number; ne_lat: number; ne_lng: number }
+
 /**
  * Read-only donor map with availability-colored pins (green/yellow/red/
- * orange/grey), an optional search radius circle, and a "Use my location"
- * GPS button that reports the picked point + radius to the parent.
+ * orange/grey), an optional search radius circle, a "Use my location" GPS
+ * button, and (when onBoundsChanged is passed) reports the visible viewport
+ * once panning/zooming settles — used to filter a donor list below the map.
  */
-export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 }: {
+export function DonorsMap({
+  donors, height = 420, onRadiusSearch, radiusKm = 15,
+  onBoundsChanged, boundsActive, onClearBounds,
+}: {
   donors: MapDonor[]; height?: number;
   onRadiusSearch?: (v: { lat: number; lng: number; radiusKm: number } | null) => void;
   radiusKm?: number;
+  onBoundsChanged?: (b: MapBounds) => void;
+  boundsActive?: boolean;
+  onClearBounds?: () => void;
 }) {
   const { isLoaded } = useMapsLoader();
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -92,6 +101,7 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [radius, setRadius] = useState(radiusKm);
+  const userMovedMap = useRef(false);
 
   const MAX_VISIBLE = 40;   // don't try to frame more than the nearest 40 pins
   const MIN_KM = 30;        // never zoom in tighter than a 30km-wide view
@@ -126,6 +136,7 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
           const cb = circle.getBounds();
           if (cb) bounds.union(cb);
         }
+        userMovedMap.current = false; // programmatic move, not a user pan
         map.fitBounds(bounds, 30);
         return;
       }
@@ -133,6 +144,7 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
       if (donors.length === 0) return;
       const bounds = new window.google.maps.LatLngBounds();
       donors.forEach((d) => bounds.extend({ lat: d.lat, lng: d.lng }));
+      userMovedMap.current = false;
       map.fitBounds(bounds, 40);
     };
 
@@ -140,6 +152,17 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
     run(); // also try immediately — idle may have already fired
     return () => window.google?.maps.event.removeListener(listener);
   }, [donors, gps, radius]);
+
+  // Report the viewport once the user's own pan/zoom settles (not the
+  // programmatic fitBounds calls above, which set userMovedMap back to false).
+  const handleIdle = useCallback(() => {
+    if (!onBoundsChanged || !userMovedMap.current) return;
+    const map = mapRef.current;
+    const b = map?.getBounds();
+    if (!b) return;
+    const ne = b.getNorthEast(), sw = b.getSouthWest();
+    onBoundsChanged({ sw_lat: sw.lat(), sw_lng: sw.lng(), ne_lat: ne.lat(), ne_lng: ne.lng() });
+  }, [onBoundsChanged]);
 
   function findMe() {
     if (!navigator.geolocation) { alert("Location isn't available in this browser"); return; }
@@ -189,6 +212,14 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
             <button onClick={clearGps} className="text-xs text-gray-500 underline">Clear</button>
           </>
         )}
+        {boundsActive && (
+          <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-3 py-1.5 text-xs font-medium">
+            Filtering by map view
+            {onClearBounds && (
+              <button onClick={onClearBounds} className="hover:text-blue-900" aria-label="Clear map filter">×</button>
+            )}
+          </span>
+        )}
       </div>
 
       <GoogleMap
@@ -196,6 +227,9 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
         center={gps ?? BD_CENTER}
         zoom={gps ? 12 : 7}
         onLoad={(m) => { mapRef.current = m; }}
+        onDragStart={() => { userMovedMap.current = true; }}
+        onZoomChanged={() => { userMovedMap.current = true; }}
+        onIdle={handleIdle}
         options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
       >
         {gps && (
