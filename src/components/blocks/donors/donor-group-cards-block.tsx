@@ -28,7 +28,7 @@ export function DonorGroupCardsBlock({ block }: { block: DonorGroupCardsBlockPro
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4">
       {(data.title || data.subtitle) && (
         <div className="text-center mb-8">
           {data.title && <h2 className="text-3xl font-bold mb-2">{data.title}</h2>}

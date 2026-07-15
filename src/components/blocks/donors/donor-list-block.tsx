@@ -166,7 +166,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
   const thanas = filters.district ? BD_LOCATIONS[filters.district] ?? [] : [];
 
   return (
-    <div id="donor-list" className="max-w-5xl mx-auto scroll-mt-24">
+    <div id="donor-list" className="max-w-5xl mx-auto px-4 scroll-mt-24">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
         <div className="flex items-center gap-4 flex-wrap">
           <h2 className="text-2xl font-bold">
