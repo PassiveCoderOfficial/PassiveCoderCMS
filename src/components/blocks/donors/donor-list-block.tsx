@@ -196,12 +196,13 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
           narrower right column; on mobile everything stacks. In list-only
           view there's no map, so filters go full-width. */}
       <div className={view === "map"
-        ? "grid gap-4 mb-5 lg:grid-cols-[1.6fr_1fr] items-start"
+        ? "grid gap-4 mb-5 lg:grid-cols-[1.6fr_1fr] lg:items-stretch"
         : "mb-5"}>
         {view === "map" && (
           <div className="order-2 lg:order-1">
             <DonorsMap
               donors={donors.filter(d => d.lat != null && d.lng != null) as never}
+              height={340}
               onRadiusSearch={onRadiusSearch}
               onBoundsChanged={onMapBoundsChanged}
               boundsActive={!!bounds}
@@ -211,9 +212,9 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         )}
 
         {data.showFilters && (
-          <div className={`space-y-2 ${view === "map" ? "order-1 lg:order-2" : ""}`}>
+          <div className={`space-y-2 ${view === "map" ? "order-1 lg:order-2 lg:flex lg:flex-col" : ""}`}>
             <div className={view === "map"
-              ? "grid grid-cols-2 gap-2"
+              ? "grid grid-cols-2 gap-2 lg:flex-1 lg:content-between"
               : "grid grid-cols-2 sm:grid-cols-4 gap-2"}>
               <select className={selectCls} value={filters.blood_group} onChange={e => set("blood_group", e.target.value)}>
                 <option value="">All groups</option>
