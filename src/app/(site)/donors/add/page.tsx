@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Droplet, Loader2, CheckCircle } from "lucide-react";
+
+const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
 import { inputCls, btnCls, Field, donorApi } from "../ui";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
 
@@ -18,6 +21,8 @@ export default function AddDonorPage() {
     age_mode: "age" as "age" | "birthdate", age_years: "", birthdate: "",
     last_donated_on: "", never_donated: false,
   });
+  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
+  const [showMap, setShowMap] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
@@ -42,6 +47,7 @@ export default function AddDonorPage() {
       age_years: f.age_mode === "age" ? f.age_years : "",
       birthdate: f.age_mode === "birthdate" ? f.birthdate : "",
       last_donated_on: f.never_donated ? "" : f.last_donated_on,
+      lat: geo?.lat, lng: geo?.lng,
     });
     setBusy(false);
     if (!r.ok) { setError(r.data.error ?? "Failed to save"); return; }
@@ -106,7 +112,7 @@ export default function AddDonorPage() {
         <Field label="Phone number" required>
           <div className="flex">
             <span className="inline-flex items-center px-3 border border-r-0 rounded-l-lg bg-gray-50 text-sm text-gray-500">+88</span>
-            <input className={`${inputCls} rounded-l-none`} placeholder="01678669699" inputMode="numeric" maxLength={11}
+            <input className={`${inputCls} rounded-l-none`} placeholder="01XXXXXXXXX" inputMode="numeric" maxLength={11}
               value={f.phone} onChange={e => set("phone", e.target.value.replace(/\D/g, ""))} />
           </div>
         </Field>
@@ -167,10 +173,23 @@ export default function AddDonorPage() {
           </Field>
         </div>
 
-        <Field label="Area / Village">
+        <Field label="Location (area / village)">
           <input className={inputCls} list="donor-areas" value={f.area} onChange={e => set("area", e.target.value)} placeholder="e.g. Mirpur DOHS" />
           <datalist id="donor-areas">{areas.map(a => <option key={a} value={a} />)}</datalist>
         </Field>
+
+        <div>
+          <button type="button" className="text-xs text-red-600 underline"
+            onClick={() => setShowMap(v => !v)}>
+            {showMap ? "Hide map" : geo ? "Change map location" : "Pin location on map (optional)"}
+          </button>
+          {showMap && (
+            <div className="mt-2">
+              <MapPicker value={geo} onChange={setGeo} />
+              <p className="text-[11px] text-gray-500 mt-1">Tap the map to drop the donor&apos;s location pin.</p>
+            </div>
+          )}
+        </div>
 
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -203,6 +222,9 @@ export default function AddDonorPage() {
           {busy && <Loader2 className="w-4 h-4 animate-spin" />} Save donor
         </button>
       </div>
+      <p className="text-center mt-4">
+        <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">← Back to home</Link>
+      </p>
     </div>
   );
 }

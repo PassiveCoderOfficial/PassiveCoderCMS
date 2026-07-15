@@ -4,12 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, X, Copy, Check,
+  Droplet, Loader2, KeyRound, LogOut, ShieldCheck, Plus, X, Copy, Check, Camera, Settings2,
 } from "lucide-react";
 import { inputCls, btnCls, Field, donorApi } from "../ui";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
+import { DonorAvatar } from "@/components/donors/donor-avatar";
 
-interface Me { id: string; name: string; phone: string; blood_group: string }
+interface Me { id: string; name: string; phone: string; blood_group: string; is_admin?: boolean; photo_url?: string | null }
 interface Entry {
   id: string; name: string; blood_group: string;
   district: string | null; area: string | null;
@@ -54,14 +55,25 @@ export default function MyDonorPage() {
   return (
     <div className="max-w-lg mx-auto px-4 py-10 space-y-5">
       <div className="bg-white border rounded-2xl p-5 flex items-center gap-4">
-        <span className="flex items-center justify-center w-12 h-12 rounded-full font-bold bg-red-50 text-red-600">
+        <div className="relative shrink-0">
+          <DonorAvatar photoUrl={me.photo_url} name={me.name} size={56} />
+          <MyPhotoButton onUploaded={load} />
+        </div>
+        <span className="flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold bg-red-50 text-red-600 shrink-0">
           {me.blood_group}
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-bold flex items-center gap-1.5">{me.name} <ShieldCheck className="w-4 h-4 text-green-600" /></p>
           <p className="text-sm text-gray-500">{me.phone}</p>
         </div>
-        <Link href={`/donors/${me.id}`} className="text-sm text-red-600 font-medium hover:underline shrink-0">My profile</Link>
+        <div className="text-right shrink-0 space-y-1">
+          <Link href={`/donors/${me.id}`} className="text-sm text-red-600 font-medium hover:underline block">My profile</Link>
+          {me.is_admin && (
+            <Link href="/donors/admin" className="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1">
+              <Settings2 className="w-3.5 h-3.5" /> Admin panel
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between">
@@ -106,12 +118,39 @@ export default function MyDonorPage() {
         })}
       </div>
 
-      <button onClick={logout} className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 mx-auto">
-        <LogOut className="w-4 h-4" /> Log out
-      </button>
+      <div className="flex items-center justify-center gap-6">
+        <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">← Back to home</Link>
+        <button onClick={logout} className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600">
+          <LogOut className="w-4 h-4" /> Log out
+        </button>
+      </div>
 
       {pwFor && <SetPasswordModal entry={pwFor} onClose={() => setPwFor(null)} onDone={() => { setPwFor(null); load(); }} />}
     </div>
+  );
+}
+
+function MyPhotoButton({ onUploaded }: { onUploaded: () => void }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <>
+      <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 cursor-pointer transition-colors">
+        {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+        <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (!file) return;
+            setBusy(true);
+            const form = new FormData();
+            form.append("file", file);
+            const res = await fetch("/api/donors/photo", { method: "POST", body: form });
+            setBusy(false);
+            if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error ?? "Upload failed"); return; }
+            onUploaded();
+          }} />
+      </label>
+    </>
   );
 }
 

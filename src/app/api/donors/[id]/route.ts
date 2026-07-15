@@ -52,6 +52,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       availability: availabilityOf(donor.last_donated_on),
       is_claimed: donor.is_claimed,
       created_at: donor.created_at,
+      photo_url: donor.photo_url,
+      lat: donor.lat,
+      lng: donor.lng,
     },
     submitted_by: submittedBy,
     viewer: me ? { id: me.id, can_manage: canManage(donor, me.id) } : null,
@@ -84,6 +87,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if ("birthdate" in body) patch.birthdate = body.birthdate || null;
   if ("age_years" in body) patch.age_years = body.age_years ? Number(body.age_years) : null;
   if ("last_donated_on" in body) patch.last_donated_on = body.last_donated_on || null;
+  if ("lat" in body) patch.lat = typeof body.lat === "number" ? body.lat : null;
+  if ("lng" in body) patch.lng = typeof body.lng === "number" ? body.lng : null;
   if ("whatsapp" in body) patch.whatsapp = normalizeBdPhone(body.whatsapp);
   if ("phone" in body) {
     const phone = normalizeBdPhone(body.phone);

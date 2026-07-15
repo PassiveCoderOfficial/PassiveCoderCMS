@@ -81,7 +81,7 @@ function AuthInner() {
             <Field label="Phone number" required>
               <div className="flex">
                 <span className="inline-flex items-center px-3 border border-r-0 rounded-l-lg bg-gray-50 text-sm text-gray-500">+88</span>
-                <input className={`${inputCls} rounded-l-none`} placeholder="01678669699" inputMode="numeric" maxLength={11}
+                <input className={`${inputCls} rounded-l-none`} placeholder="01XXXXXXXXX" inputMode="numeric" maxLength={11}
                   value={f.phone} onChange={e => set("phone", e.target.value.replace(/\D/g, ""))}
                   disabled={mode === "reset"} />
               </div>
@@ -119,6 +119,7 @@ function AuthInner() {
           {mode !== "login" && (
             <p><button className="text-red-600 font-medium" onClick={() => { setMode("login"); setNotice(null); }}>Back to login</button></p>
           )}
+          <p><a href="/" className="underline">← Back to home</a></p>
         </div>
       </div>
     </div>

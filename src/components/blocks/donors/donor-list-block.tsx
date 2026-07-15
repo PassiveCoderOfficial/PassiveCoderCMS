@@ -2,10 +2,14 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type { DonorListBlockProps } from "@/types/cms";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
-import { Droplet, Search, Loader2, Plus, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { DonorAvatar } from "@/components/donors/donor-avatar";
+import { Droplet, Search, Loader2, Plus, ChevronLeft, ChevronRight, MapPin, List, Map as MapIcon } from "lucide-react";
+
+const DonorsMap = dynamic(() => import("@/components/donors/donor-map").then(m => m.DonorsMap), { ssr: false });
 
 interface DonorRow {
   id: string; name: string; blood_group: string;
@@ -13,6 +17,7 @@ interface DonorRow {
   district: string | null; police_station: string | null; area: string | null;
   age: number | null; last_donated_on: string | null;
   availability: Availability;
+  photo_url: string | null; lat: number | null; lng: number | null;
 }
 
 interface Filters {
@@ -47,6 +52,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<"list" | "map">("list");
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async (f: Filters, pg: number) => {
@@ -105,6 +111,17 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         <h2 className="text-2xl font-bold">
           {data.title || "Donors"} <span className="text-sm font-normal text-muted-foreground">({total})</span>
         </h2>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border overflow-hidden">
+            <button onClick={() => setView("list")}
+              className={`px-3 py-2 text-sm flex items-center gap-1.5 ${view === "list" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
+              <List className="w-4 h-4" /> List
+            </button>
+            <button onClick={() => setView("map")}
+              className={`px-3 py-2 text-sm flex items-center gap-1.5 ${view === "map" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
+              <MapIcon className="w-4 h-4" /> Map
+            </button>
+          </div>
         {data.showAddButton && (
           <Link href="/donors/add"
             className="inline-flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90"
@@ -112,6 +129,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             <Plus className="w-4 h-4" /> {data.addButtonLabel || "Become a Donor"}
           </Link>
         )}
+        </div>
       </div>
 
       {data.showFilters && (
@@ -143,7 +161,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             <option value="">Any religion</option>
             {RELIGIONS.map(r => <option key={r} value={r}>{r[0].toUpperCase() + r.slice(1)}</option>)}
           </select>
-          <input className={selectCls} placeholder="Area…" value={filters.area} onChange={e => set("area", e.target.value)} />
+          <input className={selectCls} placeholder="Location…" value={filters.area} onChange={e => set("area", e.target.value)} />
           <div className="relative">
             <Search className="w-4 h-4 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input className={`${selectCls} w-full pl-8`} placeholder="Search name…" value={filters.q} onChange={e => set("q", e.target.value)} />
@@ -151,6 +169,14 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         </div>
       )}
 
+      {view === "map" ? (
+        <div>
+          <DonorsMap donors={donors.filter(d => d.lat != null && d.lng != null) as never} />
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Showing donors on this page that shared a map location. Use filters to narrow, tap a pin for the profile.
+          </p>
+        </div>
+      ) : (
       <div className="border rounded-2xl overflow-hidden bg-white">
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
@@ -163,7 +189,8 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             {donors.map((d) => (
               <Link key={d.id} href={`/donors/${d.id}`}
                 className="flex items-center gap-3 sm:gap-4 px-4 py-3 hover:bg-red-50/50 transition-colors">
-                <span className="flex items-center justify-center w-11 h-11 rounded-full font-bold text-sm shrink-0"
+                <DonorAvatar photoUrl={d.photo_url} name={d.name} size={44} />
+                <span className="flex items-center justify-center w-10 h-10 rounded-full font-bold text-xs shrink-0"
                   style={{ backgroundColor: `${accent}15`, color: accent }}>
                   {d.blood_group}
                 </span>
@@ -183,8 +210,9 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
           </div>
         )}
       </div>
+      )}
 
-      {totalPages > 1 && (
+      {view === "list" && totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 mt-5 text-sm">
           <button disabled={page === 0}
             onClick={() => { const p = page - 1; setPage(p); load(filters, p); }}

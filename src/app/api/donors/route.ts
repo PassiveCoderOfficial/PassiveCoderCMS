@@ -7,7 +7,7 @@ import { BLOOD_GROUPS, BD_DISTRICTS, RELIGIONS, GENDERS } from "@/lib/donors/bd-
 const PAGE_SIZE = 20;
 
 const PUBLIC_FIELDS =
-  "id, name, blood_group, gender, religion, district, police_station, area, birthdate, age_years, last_donated_on, is_claimed, created_at";
+  "id, name, blood_group, gender, religion, district, police_station, area, birthdate, age_years, last_donated_on, is_claimed, created_at, photo_url, lat, lng";
 
 /** Public list with filters — no phone numbers in the list payload. */
 export async function GET(req: NextRequest) {
@@ -96,6 +96,8 @@ export async function POST(req: NextRequest) {
       birthdate: body.birthdate || null,
       age_years: body.age_years ? Number(body.age_years) : null,
       last_donated_on: body.last_donated_on || null,
+      lat: typeof body.lat === "number" ? body.lat : null,
+      lng: typeof body.lng === "number" ? body.lng : null,
       created_by: me.id,
     })
     .select("id")

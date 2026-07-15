@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import {
-  DONOR_COOKIE, createAndSendOtp, consumeOtp, getDonorSession,
+  DONOR_COOKIE, createAndSendOtp, consumeOtp, getDonorSession, getDonorSettings,
   hashPassword, verifyPassword, normalizeBdPhone, signSession,
 } from "@/lib/donors/auth";
 
@@ -35,6 +35,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       .select("id, password_hash").eq("tenant_id", tenantId).eq("phone", phone).maybeSingle();
     if (existing?.password_hash) {
       return NextResponse.json({ error: "This number already has an account — log in instead" }, { status: 409 });
+    }
+
+    const { otp_required } = await getDonorSettings(tenantId);
+    if (!otp_required) {
+      // SMS not configured yet — open signup, no verification.
+      if (existing) {
+        // Unclaimed listing with this phone: without OTP we can't prove
+        // ownership, so don't hand it over — the creator's set-password
+        // handoff covers this case.
+        return NextResponse.json({
+          error: "This number is already listed as a donor. Ask the person who added you to set a password for you.",
+        }, { status: 409 });
+      }
+      const { data: created, error } = await supabase.from("donors").insert({
+        tenant_id: tenantId, name: body.name.trim(), phone, whatsapp: phone,
+        blood_group: body.blood_group ?? "O+",
+        password_hash: hashPassword(body.password),
+        phone_verified: false, is_claimed: true,
+      }).select("id").single();
+      if (error || !created) return NextResponse.json({ error: "Could not create account" }, { status: 500 });
+      return sessionResponse({ ok: true, donorId: created.id }, created.id, tenantId);
     }
 
     const sent = await createAndSendOtp(tenantId, phone, "signup", {
@@ -102,6 +123,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
   if (action === "forgot") {
     const phone = normalizeBdPhone(body.phone);
     if (!phone) return NextResponse.json({ error: "Enter a valid number" }, { status: 400 });
+    const { otp_required: resetOtp } = await getDonorSettings(tenantId);
+    if (!resetOtp) {
+      return NextResponse.json({
+        error: "Password reset by SMS isn't available yet — contact the site admin",
+      }, { status: 400 });
+    }
     const { data: donor } = await supabase.from("donors")
       .select("id, password_hash").eq("tenant_id", tenantId).eq("phone", phone).maybeSingle();
     if (!donor?.password_hash) {
@@ -134,6 +161,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
 
   // ── claim: donor takes over a profile someone else created ────────────────
   if (action === "claim") {
+    const { otp_required: claimOtp } = await getDonorSettings(tenantId);
+    if (!claimOtp) {
+      return NextResponse.json({
+        error: "Claiming by SMS opens soon. For now, ask the person who added you to set a password for you.",
+      }, { status: 400 });
+    }
     const donorId = body.donor_id;
     if (!donorId) return NextResponse.json({ error: "Missing donor id" }, { status: 400 });
     const { data: donor } = await supabase.from("donors")

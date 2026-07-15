@@ -1,12 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   Droplet, Loader2, Phone, MessageCircle, MapPin, User, Calendar,
-  ShieldCheck, Pencil, KeyRound, X,
+  ShieldCheck, Pencil, KeyRound, X, Camera,
 } from "lucide-react";
+import { DonorAvatar } from "@/components/donors/donor-avatar";
+
+const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
+const DonorsMap = dynamic(() => import("@/components/donors/donor-map").then(m => m.DonorsMap), { ssr: false });
 import { inputCls, btnCls, Field, donorApi } from "../ui";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS } from "@/lib/donors/bd-locations";
@@ -17,6 +22,7 @@ interface Profile {
   district: string | null; police_station: string | null; area: string | null;
   age: number | null; last_donated_on: string | null;
   availability: Availability; is_claimed: boolean; created_at: string;
+  photo_url: string | null; lat: number | null; lng: number | null;
 }
 
 export default function DonorProfilePage() {
@@ -49,9 +55,13 @@ export default function DonorProfilePage() {
   return (
     <div className="max-w-lg mx-auto px-4 py-10 space-y-4">
       <div className="bg-white border rounded-2xl p-6 text-center space-y-3">
-        <span className="inline-flex items-center justify-center w-16 h-16 rounded-full text-xl font-extrabold bg-red-50 text-red-600">
-          {profile.blood_group}
-        </span>
+        <div className="relative inline-block">
+          <DonorAvatar photoUrl={profile.photo_url} name={profile.name} size={88} />
+          <span className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-9 h-9 rounded-full text-xs font-extrabold bg-red-600 text-white border-2 border-white">
+            {profile.blood_group}
+          </span>
+          {canManage && <PhotoUploadButton donorId={profile.id} onUploaded={load} />}
+        </div>
         <div>
           <h1 className="text-2xl font-bold flex items-center justify-center gap-1.5">
             {profile.name}
@@ -106,6 +116,13 @@ export default function DonorProfilePage() {
         )}
       </div>
 
+      {profile.lat != null && profile.lng != null && (
+        <DonorsMap height={220} donors={[{
+          id: profile.id, name: profile.name, blood_group: profile.blood_group,
+          lat: profile.lat, lng: profile.lng, area: profile.area, district: profile.district,
+        }]} />
+      )}
+
       <div className="space-y-2">
         {canManage && (
           <button onClick={() => setModal("edit")} className={btnCls} style={{ backgroundColor: "#374151" }}>
@@ -127,6 +144,37 @@ export default function DonorProfilePage() {
         <button onClick={() => router.back()} className="text-sm text-gray-400 hover:text-gray-600">← Back to donor list</button>
       </p>
     </div>
+  );
+}
+
+function PhotoUploadButton({ donorId, onUploaded }: { donorId: string; onUploaded: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    const form = new FormData();
+    form.append("file", file);
+    form.append("donor_id", donorId);
+    const res = await fetch("/api/donors/photo", { method: "POST", body: form });
+    setBusy(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      alert(d.error ?? "Upload failed");
+      return;
+    }
+    onUploaded();
+  }
+
+  return (
+    <>
+      <button onClick={() => inputRef.current?.click()} title="Upload photo"
+        className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-white border shadow flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors">
+        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+      </button>
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+    </>
   );
 }
 
@@ -191,13 +239,17 @@ function EditModal({ profile, onClose, onDone }: { profile: Profile; onClose: ()
     district: profile.district ?? "", police_station: profile.police_station ?? "",
     area: profile.area ?? "", last_donated_on: profile.last_donated_on ?? "",
   });
+  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(
+    profile.lat != null && profile.lng != null ? { lat: profile.lat, lng: profile.lng } : null);
+  const [showMap, setShowMap] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const thanas = f.district ? BD_LOCATIONS[f.district] ?? [] : [];
 
   async function save() {
     setBusy(true); setError(null);
-    const r = await donorApi(`/api/donors/${profile.id}`, "PATCH", f);
+    const r = await donorApi(`/api/donors/${profile.id}`, "PATCH",
+      { ...f, ...(geo ? { lat: geo.lat, lng: geo.lng } : {}) });
     setBusy(false);
     if (!r.ok) { setError(r.data.error); return; }
     onDone();
@@ -225,7 +277,13 @@ function EditModal({ profile, onClose, onDone }: { profile: Profile; onClose: ()
           </select>
         </Field>
       </div>
-      <Field label="Area"><input className={inputCls} value={f.area} onChange={e => setF(p => ({ ...p, area: e.target.value }))} /></Field>
+      <Field label="Location (area / village)"><input className={inputCls} value={f.area} onChange={e => setF(p => ({ ...p, area: e.target.value }))} /></Field>
+      <div>
+        <button type="button" className="text-xs text-red-600 underline" onClick={() => setShowMap(v => !v)}>
+          {showMap ? "Hide map" : geo ? "Change map location" : "Pin location on map"}
+        </button>
+        {showMap && <div className="mt-2"><MapPicker value={geo} onChange={setGeo} height={200} /></div>}
+      </div>
       <Field label="Last donated date">
         <input type="date" className={inputCls} value={f.last_donated_on} onChange={e => setF(p => ({ ...p, last_donated_on: e.target.value }))} />
       </Field>
