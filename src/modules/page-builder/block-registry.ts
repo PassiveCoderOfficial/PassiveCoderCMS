@@ -813,7 +813,7 @@ export const blockRegistry: BlockDefinition[] = [
         title: "Donors",
         accentColor: "#dc2626",
         showAddButton: true,
-        addButtonLabel: "Become a Donor",
+        addButtonLabel: "Add Donor",
         showFilters: true,
       },
     }),

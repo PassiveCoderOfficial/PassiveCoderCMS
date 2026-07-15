@@ -32,8 +32,11 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   const bg = backgroundColor ?? (isDark ? "#0f2418" : "#f8f6f0");
   const fg = textColor ?? (isDark ? "#e5e7eb" : "#1f2937");
   const accent = accentColor ?? "#c9a84c";
-  const mutedFg = isDark ? "#9ca3af" : "#6b7280";
-  const borderCol = isDark ? "#ffffff10" : "#00000010";
+  // When a custom text color is set (e.g. white footer on a red bg), derive
+  // the muted/secondary tone from it instead of the theme grey — otherwise
+  // taglines/links/copyright render grey and vanish on a colored footer.
+  const mutedFg = textColor ? `${textColor}cc` : (isDark ? "#9ca3af" : "#6b7280");
+  const borderCol = textColor ? `${textColor}22` : (isDark ? "#ffffff10" : "#00000010");
   const year = new Date().getFullYear();
 
   return (

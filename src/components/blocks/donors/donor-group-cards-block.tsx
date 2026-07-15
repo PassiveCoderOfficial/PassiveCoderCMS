@@ -40,12 +40,12 @@ export function DonorGroupCardsBlock({ block }: { block: DonorGroupCardsBlockPro
           <button
             key={g}
             onClick={() => pick(g)}
-            className="group relative flex flex-col items-center justify-center rounded-2xl border bg-white py-6 transition-all hover:-translate-y-0.5 hover:shadow-lg"
-            style={{ borderColor: `${accent}33` }}
+            className="group relative flex flex-col items-center justify-center rounded-2xl py-6 text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            style={{ backgroundColor: accent }}
           >
-            <Droplet className="w-6 h-6 mb-2 transition-transform group-hover:scale-110" style={{ color: accent }} />
-            <span className="text-2xl font-extrabold" style={{ color: accent }}>{g}</span>
-            <span className="text-xs text-muted-foreground mt-1">
+            <Droplet className="w-6 h-6 mb-2 text-white/90 transition-transform group-hover:scale-110" fill="currentColor" />
+            <span className="text-2xl font-extrabold text-white">{g}</span>
+            <span className="text-xs text-white/80 mt-1">
               {counts[g] ?? "—"} donor{(counts[g] ?? 0) === 1 ? "" : "s"}
             </span>
           </button>

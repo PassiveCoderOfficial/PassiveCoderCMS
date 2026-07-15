@@ -186,7 +186,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             <Link href="/donors/add"
               className="inline-flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90"
               style={{ backgroundColor: accent }}>
-              <Plus className="w-4 h-4" /> {data.addButtonLabel || "Become a Donor"}
+              <Plus className="w-4 h-4" /> {data.addButtonLabel || "Add Donor"}
             </Link>
           )}
         </div>
@@ -278,6 +278,14 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
       )}
 
       <div className="border rounded-2xl overflow-hidden bg-white">
+        {/* Column header */}
+        <div className="hidden sm:flex items-center gap-3 sm:gap-4 px-4 py-2.5 bg-gray-50 border-b text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+          <span className="w-11 shrink-0" />
+          <span className="w-10 shrink-0 text-center">Group</span>
+          <span className="min-w-0 flex-1">Name &amp; location</span>
+          <span className="shrink-0 w-14 text-center">Age</span>
+          <span className="shrink-0 w-28 text-center">Status</span>
+        </div>
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : donors.length === 0 ? (
@@ -302,10 +310,12 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
                     {[d.area, d.police_station, d.district].filter(Boolean).join(", ") || "Location not set"}
                   </div>
                 </div>
-                {d.age != null && (
-                  <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">{d.age} yrs</span>
-                )}
-                <DaysChip donor={d} />
+                <span className="text-xs text-muted-foreground shrink-0 hidden sm:block w-14 text-center">
+                  {d.age != null ? `${d.age} yrs` : "—"}
+                </span>
+                <span className="shrink-0 sm:w-28 flex sm:justify-center">
+                  <DaysChip donor={d} />
+                </span>
               </Link>
             ))}
           </div>

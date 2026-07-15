@@ -13,7 +13,7 @@ interface Me { id: string; name: string; photo_url: string | null; is_admin?: bo
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Find Donors", href: "/#donor-list" },
-  { label: "Become a Donor", href: "/donors/add" },
+  { label: "Add Donor", href: "/donors/add" },
 ];
 
 /**
