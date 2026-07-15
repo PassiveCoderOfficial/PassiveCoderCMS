@@ -75,7 +75,11 @@ export async function POST(req: NextRequest) {
 
     if (tenantId) orderRow.tenant_id = tenantId;
 
-    const { data: order, error } = await supabase
+    // Insert with the service role — anonymous checkout no longer relies on a
+    // wide-open RLS insert policy (dropped in migration 035)
+    const { createAdminClient } = await import("@/lib/supabase/server");
+    const adminDb = await createAdminClient();
+    const { data: order, error } = await adminDb
       .from("orders")
       .insert(orderRow)
       .select("id, order_number")
