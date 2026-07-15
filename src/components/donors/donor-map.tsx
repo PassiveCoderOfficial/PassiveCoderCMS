@@ -184,11 +184,29 @@ export function DonorsMap({
         return;
       }
       if (donors.length === 0) return;
+
+      // Single-donor (profile display) → drop straight to area-level zoom.
+      if (mode === "display" && donors.length === 1) {
+        userMovedMap.current = false;
+        map.setCenter({ lat: donors[0].lat, lng: donors[0].lng });
+        map.setZoom(14);
+        didInitialFit.current = true;
+        return;
+      }
+
       const bounds = new window.google.maps.LatLngBounds();
       donors.forEach((d) => bounds.extend({ lat: d.lat, lng: d.lng }));
       userMovedMap.current = false;
-      map.fitBounds(bounds, mode === "display" ? 80 : 40);
+      // Cap over-zoom on a tight cluster so it lands at area level, not on top
+      // of the pins. Don't force a MINIMUM zoom — if donors are spread across
+      // the country, fitBounds must keep them all in view.
+      const once = window.google.maps.event.addListenerOnce(map, "idle", () => {
+        const z = map.getZoom() ?? 7;
+        if (z > 14) map.setZoom(14);
+      });
+      map.fitBounds(bounds, mode === "display" ? 60 : 40);
       didInitialFit.current = true;
+      void once;
     };
 
     const listener = window.google.maps.event.addListenerOnce(map, "idle", run);
@@ -246,16 +264,16 @@ export function DonorsMap({
   return (
     <div className="space-y-3">
       {isSearch && (
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={findMe} disabled={locating}
-            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl text-base font-bold shadow-sm transition-colors disabled:opacity-50">
-            {locating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Crosshair className="w-5 h-5" />}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
+            {locating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crosshair className="w-4 h-4" />}
             Find donors near me
           </button>
           {gps && (
             <>
               <select value={radius} onChange={(e) => changeRadius(Number(e.target.value))}
-                className="border rounded-xl px-3 py-3 text-sm bg-white font-medium">
+                className="border rounded-lg px-3 py-2 text-sm bg-white font-medium">
                 {[2, 5, 10, 15, 25, 50].map(k => <option key={k} value={k}>Within {k} km</option>)}
               </select>
               <button onClick={clearGps} className="text-sm text-gray-500 underline">Clear</button>

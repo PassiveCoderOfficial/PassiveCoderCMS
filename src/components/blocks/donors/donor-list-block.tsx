@@ -174,11 +174,11 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border overflow-hidden">
             <button onClick={() => setView("map")}
-              className={`px-3 py-2 text-sm flex items-center gap-1.5 ${view === "map" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
+              className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "map" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
               <MapIcon className="w-4 h-4" /> Map + List
             </button>
             <button onClick={() => setView("list-only")}
-              className={`px-3 py-2 text-sm flex items-center gap-1.5 ${view === "list-only" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
+              className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "list-only" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
               <List className="w-4 h-4" /> List only
             </button>
           </div>
@@ -196,13 +196,13 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
           narrower right column; on mobile everything stacks. In list-only
           view there's no map, so filters go full-width. */}
       <div className={view === "map"
-        ? "grid gap-4 mb-5 lg:grid-cols-[1.6fr_1fr] lg:items-stretch"
+        ? "grid gap-4 mb-5 lg:grid-cols-3 items-start"
         : "mb-5"}>
         {view === "map" && (
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1 lg:col-span-2">
             <DonorsMap
               donors={donors.filter(d => d.lat != null && d.lng != null) as never}
-              height={340}
+              height={420}
               onRadiusSearch={onRadiusSearch}
               onBoundsChanged={onMapBoundsChanged}
               boundsActive={!!bounds}
@@ -212,9 +212,9 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         )}
 
         {data.showFilters && (
-          <div className={`space-y-2 ${view === "map" ? "order-1 lg:order-2 lg:flex lg:flex-col" : ""}`}>
+          <div className={`space-y-2 ${view === "map" ? "order-1 lg:order-2 lg:col-span-1" : ""}`}>
             <div className={view === "map"
-              ? "grid grid-cols-2 gap-2 lg:flex-1 lg:content-between"
+              ? "grid grid-cols-2 lg:grid-cols-1 gap-2"
               : "grid grid-cols-2 sm:grid-cols-4 gap-2"}>
               <select className={selectCls} value={filters.blood_group} onChange={e => set("blood_group", e.target.value)}>
                 <option value="">All groups</option>
