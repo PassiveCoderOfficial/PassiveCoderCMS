@@ -204,7 +204,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         ? "grid gap-4 mb-5 lg:grid-cols-3 items-start"
         : "mb-5"}>
         {view === "map" && (
-          <div className="order-2 lg:order-1 lg:col-span-2">
+          <div className="order-1 lg:col-span-2">
             <DonorsMap
               donors={donors.filter(d => d.lat != null && d.lng != null) as never}
               height={420}
@@ -218,7 +218,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         )}
 
         {data.showFilters && (
-          <div className={`space-y-2 ${view === "map" ? "order-1 lg:order-2 lg:col-span-1" : ""}`}>
+          <div className={`space-y-2 ${view === "map" ? "order-2 lg:col-span-1" : ""}`}>
             <div className={view === "map"
               ? "grid grid-cols-2 lg:grid-cols-1 gap-2"
               : "grid grid-cols-2 sm:grid-cols-4 gap-2"}>
