@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { getDonorSession, getDonorSettings, normalizeBdPhone, hashPassword, displayBdPhone } from "@/lib/donors/auth";
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, GENDERS, RELIGIONS, BD_DISTRICTS } from "@/lib/donors/bd-locations";
+import { normalizeSocials } from "@/lib/donors/socials";
 
 async function requireAdmin(tenantId: string) {
   const me = await getDonorSession(tenantId);
@@ -37,9 +38,10 @@ export async function GET(req: NextRequest) {
       blood_group: d.blood_group, gender: d.gender, religion: d.religion,
       district: d.district, police_station: d.police_station, area: d.area,
       age: ageOf(d.birthdate, d.age_years), birthdate: d.birthdate, age_years: d.age_years,
-      last_donated_on: d.last_donated_on, availability: availabilityOf(d.last_donated_on, d.is_available),
+      last_donated_on: d.last_donated_on, never_donated: d.never_donated,
+      availability: availabilityOf(d.last_donated_on, d.is_available, d.never_donated),
       is_available: d.is_available,
-      photo_url: d.photo_url, lat: d.lat, lng: d.lng,
+      photo_url: d.photo_url, lat: d.lat, lng: d.lng, socials: d.socials ?? {},
       is_claimed: d.is_claimed, is_admin: d.is_admin, is_active: d.is_active,
       has_password: !!d.password_hash, created_at: d.created_at,
     })),
@@ -74,7 +76,9 @@ export async function POST(req: NextRequest) {
     birthdate: body.birthdate || null,
     age_years: body.age_years ? Number(body.age_years) : null,
     last_donated_on: body.last_donated_on || null,
+    never_donated: !!body.never_donated,
     lat: body.lat ?? null, lng: body.lng ?? null,
+    socials: normalizeSocials(body.socials),
     created_by: admin.id,
   }).select("id").single();
 
@@ -111,12 +115,13 @@ export async function PATCH(req: NextRequest) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of ["name", "gender", "religion", "police_station", "area",
                      "birthdate", "age_years", "last_donated_on", "lat", "lng",
-                     "is_active", "is_admin", "is_claimed", "is_available"] as const) {
+                     "is_active", "is_admin", "is_claimed", "is_available", "never_donated"] as const) {
     if (key in fields) patch[key] = fields[key] === "" ? null : fields[key];
   }
   if ("blood_group" in fields && (BLOOD_GROUPS as readonly string[]).includes(fields.blood_group)) {
     patch.blood_group = fields.blood_group;
   }
+  if ("socials" in fields) patch.socials = normalizeSocials(fields.socials);
   if ("district" in fields) patch.district = BD_DISTRICTS.includes(fields.district) ? fields.district : null;
   if ("phone" in fields) {
     const p = normalizeBdPhone(fields.phone);

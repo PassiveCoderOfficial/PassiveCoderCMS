@@ -28,9 +28,8 @@ function AuthInner() {
     } else if (mode === "signup") {
       r = await donorApi("/api/donors/auth/signup", "POST",
         { phone: f.phone, password: f.password, name: f.name, blood_group: f.blood_group });
-      if (r.ok) { setMode("verify"); setNotice("We sent a 6-digit code to your number."); setBusy(false); return; }
-    } else if (mode === "verify") {
-      r = await donorApi("/api/donors/auth/verify-signup", "POST", { phone: f.phone, code: f.code });
+      // Password-only signup: account is created and logged in immediately,
+      // no OTP step.
       if (r.ok) { router.push(next); return; }
     } else if (mode === "forgot") {
       r = await donorApi("/api/donors/auth/forgot", "POST", { phone: f.phone });

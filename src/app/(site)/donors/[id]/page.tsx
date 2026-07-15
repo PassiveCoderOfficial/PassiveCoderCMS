@@ -11,6 +11,7 @@ import {
 import { donorApi } from "../ui";
 import { DonorAvatar } from "@/components/donors/donor-avatar";
 import { PhotoCaptureButton } from "@/components/donors/photo-capture-button";
+import { SocialLinks } from "@/components/donors/social-links";
 import { AVAILABILITY_META, type Availability } from "@/lib/donors/availability";
 
 const DonorsMap = dynamic(() => import("@/components/donors/donor-map").then(m => m.DonorsMap), { ssr: false });
@@ -22,6 +23,7 @@ interface Profile {
   age: number | null; last_donated_on: string | null;
   availability: Availability; is_available: boolean; is_claimed: boolean; created_at: string;
   photo_url: string | null; lat: number | null; lng: number | null;
+  socials: Record<string, string>;
 }
 
 export default function DonorProfilePage() {
@@ -60,7 +62,7 @@ export default function DonorProfilePage() {
   const wa = profile.whatsapp ? `https://wa.me/88${profile.whatsapp}` : null;
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10 space-y-4">
+    <div className="max-w-2xl mx-auto px-4 py-10 space-y-4">
       <div className="bg-white border rounded-2xl p-6 text-center space-y-3">
         <div className="relative inline-block">
           <DonorAvatar photoUrl={profile.photo_url} name={profile.name} size={88} />
@@ -96,6 +98,12 @@ export default function DonorProfilePage() {
           )}
         </div>
         <p className="text-sm text-gray-500">{profile.phone}</p>
+
+        {Object.keys(profile.socials ?? {}).length > 0 && (
+          <div className="pt-3 border-t">
+            <SocialLinks socials={profile.socials} />
+          </div>
+        )}
       </div>
 
       <div className="bg-white border rounded-2xl p-5 space-y-2.5 text-sm">
@@ -126,22 +134,32 @@ export default function DonorProfilePage() {
       </div>
 
       {profile.lat != null && profile.lng != null && (
-        <DonorsMap height={220} donors={[{
-          id: profile.id, name: profile.name, blood_group: profile.blood_group,
-          availability: profile.availability,
-          lat: profile.lat, lng: profile.lng, area: profile.area, district: profile.district,
-        }]} />
+        <div className="bg-white border rounded-2xl p-5 space-y-3">
+          <h2 className="text-sm font-semibold flex items-center gap-1.5">
+            <MapPin className="w-4 h-4 text-red-600" /> {profile.name}&apos;s Location
+          </h2>
+          <DonorsMap mode="display" height={240} donors={[{
+            id: profile.id, name: profile.name, blood_group: profile.blood_group,
+            availability: profile.availability,
+            lat: profile.lat, lng: profile.lng, area: profile.area, district: profile.district,
+          }]} />
+        </div>
       )}
 
       {canManage && (
         <div className="bg-white border rounded-2xl p-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold">Temporarily unavailable</p>
-            <p className="text-xs text-gray-500">Hide the readiness color and mark grey on the map — e.g. traveling or unwell.</p>
+            <p className="text-sm font-semibold">{profile.is_available ? "Available to donate" : "Temporarily unavailable"}</p>
+            <p className="text-xs text-gray-500">
+              {profile.is_available
+                ? "You show with your normal readiness color. Turn off if traveling or unwell."
+                : "You show grey on the map and list. Turn on when you're available again."}
+            </p>
           </div>
           <button onClick={toggleAvailable} disabled={togglingAvail}
-            className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${!profile.is_available ? "bg-gray-500" : "bg-gray-300"}`}>
-            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all ${!profile.is_available ? "left-[22px]" : "left-0.5"}`} />
+            title={profile.is_available ? "Available" : "Unavailable"}
+            className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${profile.is_available ? "bg-green-500" : "bg-gray-300"}`}>
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all ${profile.is_available ? "left-[22px]" : "left-0.5"}`} />
           </button>
         </div>
       )}

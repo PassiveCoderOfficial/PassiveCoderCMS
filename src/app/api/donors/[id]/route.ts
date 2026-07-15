@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { getDonorSession, normalizeBdPhone, hashPassword, displayBdPhone } from "@/lib/donors/auth";
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, BD_DISTRICTS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
+import { normalizeSocials } from "@/lib/donors/socials";
 
 async function loadDonor(tenantId: string, id: string) {
   const supabase = await createAdminClient();
@@ -49,13 +50,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       area: donor.area,
       age: ageOf(donor.birthdate, donor.age_years),
       last_donated_on: donor.last_donated_on,
-      availability: availabilityOf(donor.last_donated_on, donor.is_available),
+      never_donated: donor.never_donated,
+      availability: availabilityOf(donor.last_donated_on, donor.is_available, donor.never_donated),
       is_available: donor.is_available,
       is_claimed: donor.is_claimed,
       created_at: donor.created_at,
       photo_url: donor.photo_url,
       lat: donor.lat,
       lng: donor.lng,
+      socials: donor.socials ?? {},
     },
     submitted_by: submittedBy,
     viewer: me ? { id: me.id, can_manage: canManage(donor, me.id) } : null,
@@ -88,9 +91,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if ("birthdate" in body) patch.birthdate = body.birthdate || null;
   if ("age_years" in body) patch.age_years = body.age_years ? Number(body.age_years) : null;
   if ("last_donated_on" in body) patch.last_donated_on = body.last_donated_on || null;
+  if ("never_donated" in body) patch.never_donated = !!body.never_donated;
   if ("is_available" in body) patch.is_available = !!body.is_available;
   if ("lat" in body) patch.lat = typeof body.lat === "number" ? body.lat : null;
   if ("lng" in body) patch.lng = typeof body.lng === "number" ? body.lng : null;
+  if ("socials" in body) patch.socials = normalizeSocials(body.socials);
   if ("whatsapp" in body) patch.whatsapp = normalizeBdPhone(body.whatsapp);
   if ("phone" in body) {
     const phone = normalizeBdPhone(body.phone);

@@ -14,6 +14,7 @@ import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
+import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import type { Block } from "@/types/cms";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,8 @@ export const dynamic = "force-dynamic";
 export default async function MarketingHomePage() {
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
+  const tenantSlug = reqHeaders.get("x-tenant-slug");
+  const isBloodSite = tenantSlug === "blood";
 
   const supabase = await createAdminClient();
 
@@ -28,7 +31,7 @@ export default async function MarketingHomePage() {
   // The (site)/[...slug] catch-all only fires for /something, not /
   // So we handle the tenant homepage here.
   if (tenantId) {
-    const [{ data: tenantPage }, layout] = await Promise.all([
+    const [{ data: tenantPage }, layout, { data: siteSettings }] = await Promise.all([
       supabase
         .from("pages")
         .select("*")
@@ -37,12 +40,17 @@ export default async function MarketingHomePage() {
         .eq("status", "published")
         .maybeSingle(),
       fetchGlobalLayout(tenantId),
+      supabase.from("site_settings").select("auto_translate_enabled").eq("tenant_id", tenantId).maybeSingle(),
     ]);
 
     const blocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
 
     // Global header/footer/pre-footer. The (site) layout injects these on other pages;
     // root "/" is handled here (catch-all can't match "/"), so inject for parity.
+    // The blood donor site uses a dedicated hardcoded header component (same as
+    // the (site) layout mounts on every /donors/* route) instead of a
+    // page-builder global header block — mirror that here so the homepage's
+    // menu matches the internal pages.
     const { header: globalHeader, footer: globalFooter, prefooter } = layout;
     const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
       ? [...blocks, ...prefooter]
@@ -51,7 +59,9 @@ export default async function MarketingHomePage() {
     if (blocks.length > 0) {
       return (
         <div className="min-h-screen">
-          {globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
+          {isBloodSite
+            ? <DonorSiteHeader showTranslate={!!siteSettings?.auto_translate_enabled} />
+            : globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
           <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>

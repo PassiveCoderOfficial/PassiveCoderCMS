@@ -37,35 +37,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       return NextResponse.json({ error: "This number already has an account — log in instead" }, { status: 409 });
     }
 
-    const { otp_required } = await getDonorSettings(tenantId);
-    if (!otp_required) {
-      // SMS not configured yet — open signup, no verification.
-      if (existing) {
-        // Unclaimed listing with this phone: without OTP we can't prove
-        // ownership, so don't hand it over — the creator's set-password
-        // handoff covers this case.
-        return NextResponse.json({
-          error: "This number is already listed as a donor. Ask the person who added you to set a password for you.",
-        }, { status: 409 });
-      }
-      const { data: created, error } = await supabase.from("donors").insert({
-        tenant_id: tenantId, name: body.name.trim(), phone, whatsapp: phone,
-        blood_group: body.blood_group ?? "O+",
-        password_hash: hashPassword(body.password),
-        phone_verified: false, is_claimed: true,
-      }).select("id").single();
-      if (error || !created) return NextResponse.json({ error: "Could not create account" }, { status: 500 });
-      return sessionResponse({ ok: true, donorId: created.id }, created.id, tenantId);
+    // Signup is always password-only, no OTP (by product decision). OTP is
+    // reserved for claiming someone else's listing and password reset.
+    if (existing) {
+      // Unclaimed listing with this phone: signup can't prove ownership, so
+      // don't hand it over — the creator's set-password handoff, or an OTP
+      // claim once SMS is configured, covers this case.
+      return NextResponse.json({
+        error: "This number is already listed as a donor. Ask the person who added you to set a password for you, or claim the profile.",
+      }, { status: 409 });
     }
-
-    const sent = await createAndSendOtp(tenantId, phone, "signup", {
-      name: body.name.trim(),
+    const { data: created, error } = await supabase.from("donors").insert({
+      tenant_id: tenantId, name: body.name.trim(), phone, whatsapp: phone,
+      blood_group: body.blood_group ?? "O+",
       password_hash: hashPassword(body.password),
-      blood_group: body.blood_group ?? null,
-      existing_donor_id: existing?.id ?? null, // unclaimed entry with this phone → claim it on verify
-    });
-    if (!sent.ok) return NextResponse.json({ error: sent.error }, { status: 400 });
-    return NextResponse.json({ ok: true, next: "verify" });
+      phone_verified: false, is_claimed: true,
+    }).select("id").single();
+    if (error || !created) return NextResponse.json({ error: "Could not create account" }, { status: 500 });
+    return sessionResponse({ ok: true, donorId: created.id }, created.id, tenantId);
   }
 
   // ── verify-signup: consume OTP → create/claim account + session ───────────

@@ -3,11 +3,16 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { getDonorSession, normalizeBdPhone } from "@/lib/donors/auth";
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, BD_DISTRICTS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
+import { normalizeSocials } from "@/lib/donors/socials";
 
 const PAGE_SIZE = 20;
 
 const PUBLIC_FIELDS =
-  "id, name, blood_group, gender, religion, district, police_station, area, birthdate, age_years, last_donated_on, is_available, is_claimed, created_at, photo_url, lat, lng";
+  "id, name, blood_group, gender, religion, district, police_station, area, birthdate, age_years, last_donated_on, never_donated, is_available, is_claimed, created_at, photo_url, lat, lng";
+
+// Ready-first ordering so eligible donors surface, but randomized within each
+// tier so older/less-recent entries still get exposure on each page load.
+const TIER_RANK: Record<string, number> = { ready: 0, soon: 1, unknown: 2, not_ready: 3, unavailable: 4 };
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -25,20 +30,18 @@ export async function GET(req: NextRequest) {
 
   const sp = new URL(req.url).searchParams;
   const page = Math.max(0, parseInt(sp.get("page") ?? "0", 10) || 0);
-  const hasRadius = sp.has("lat") && sp.has("lng") && sp.has("radius_km");
   const hasBounds = sp.has("sw_lat") && sp.has("sw_lng") && sp.has("ne_lat") && sp.has("ne_lng");
-  const skipPagination = hasRadius || hasBounds;
 
   const supabase = await createAdminClient();
+  // Fetch the full matching set (capped) — availability, ready-first
+  // ordering, radius distance and random shuffle are all computed in-app, so
+  // we can't lean on SQL LIMIT/OFFSET for the visible page. Community
+  // directories are small enough that this is fine.
   let q = supabase.from("donors")
     .select(PUBLIC_FIELDS, { count: "exact" })
     .eq("tenant_id", tenantId)
     .eq("is_active", true)
-    .order("last_donated_on", { ascending: true, nullsFirst: false });
-  // Radius / map-bounds search needs every matching geotagged donor in view
-  // (to sort by distance, or to count what's on screen) — skip server
-  // pagination and cap at a generous ceiling instead.
-  q = skipPagination ? q.limit(2000) : q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+    .limit(3000);
 
   const group = sp.get("blood_group");
   if (group && (BLOOD_GROUPS as readonly string[]).includes(group)) q = q.eq("blood_group", group);
@@ -68,13 +71,14 @@ export async function GET(req: NextRequest) {
     q = q.gte("lng", Math.min(swLng, neLng)).lte("lng", Math.max(swLng, neLng));
   }
 
-  const { data, count, error } = await q;
+  const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   let donors = (data ?? []).map((d) => ({
     ...d,
     age: ageOf(d.birthdate, d.age_years),
-    availability: availabilityOf(d.last_donated_on, d.is_available),
+    availability: availabilityOf(d.last_donated_on, d.is_available, d.never_donated),
+    _rand: Math.random(),
     birthdate: undefined,
   }));
 
@@ -84,20 +88,33 @@ export async function GET(req: NextRequest) {
     donors = donors.filter((d) => d.availability === avail);
   }
 
-  // GPS radius filter (?lat=&lng=&radius_km=) — computed post-fetch since it
-  // needs Haversine distance, not a plain column comparison.
+  // GPS radius filter (?lat=&lng=&radius_km=) — Haversine distance, then sort
+  // nearest-first (distance beats the ready-first ordering when searching by
+  // location — closeness is what matters there).
   const lat = parseFloat(sp.get("lat") ?? "");
   const lng = parseFloat(sp.get("lng") ?? "");
   const radiusKm = parseFloat(sp.get("radius_km") ?? "");
+  let sorted;
   if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm)) {
-    donors = donors
+    sorted = donors
       .filter((d) => d.lat != null && d.lng != null)
       .map((d) => ({ ...d, distance_km: Math.round(haversineKm(lat, lng, d.lat as number, d.lng as number) * 10) / 10 }))
       .filter((d) => d.distance_km <= radiusKm)
       .sort((a, b) => a.distance_km - b.distance_km);
+  } else {
+    // Ready donors first, random within each availability tier so older
+    // entries still get shown across page loads.
+    sorted = donors.sort((a, b) => {
+      const t = (TIER_RANK[a.availability] ?? 9) - (TIER_RANK[b.availability] ?? 9);
+      return t !== 0 ? t : a._rand - b._rand;
+    });
   }
 
-  return NextResponse.json({ donors, total: count ?? 0, pageSize: PAGE_SIZE, page });
+  const total = sorted.length;
+  const start = page * PAGE_SIZE;
+  const pageItems = sorted.slice(start, start + PAGE_SIZE).map(({ _rand, ...rest }) => rest);
+
+  return NextResponse.json({ donors: pageItems, total, pageSize: PAGE_SIZE, page });
 }
 
 /** Create a donor entry — requires a logged-in donor account. */
@@ -137,8 +154,10 @@ export async function POST(req: NextRequest) {
       birthdate: body.birthdate || null,
       age_years: body.age_years ? Number(body.age_years) : null,
       last_donated_on: body.last_donated_on || null,
+      never_donated: !!body.never_donated,
       lat: typeof body.lat === "number" ? body.lat : null,
       lng: typeof body.lng === "number" ? body.lng : null,
+      socials: normalizeSocials(body.socials),
       created_by: me.id,
     })
     .select("id")

@@ -8,6 +8,7 @@ import { Droplet, Loader2, CheckCircle } from "lucide-react";
 
 const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
 import { inputCls, btnCls, Field, donorApi } from "../ui";
+import { SocialLinksEditor } from "@/components/donors/social-links";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
 
 export default function AddDonorPage() {
@@ -19,18 +20,28 @@ export default function AddDonorPage() {
     blood_group: "", gender: "", religion: "",
     district: "", police_station: "", area: "",
     age_mode: "age" as "age" | "birthdate", age_years: "", birthdate: "",
-    last_donated_on: "", never_donated: false,
+    last_donated_on: "", never_donated: false, date_unknown: false,
   });
+  const [socials, setSocials] = useState<Record<string, string>>({});
+  const [showSocials, setShowSocials] = useState(false);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
-  const [showMap, setShowMap] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
 
   useEffect(() => {
     donorApi("/api/donors/auth/me", "GET").then(r => setMe(r.data.donor ?? null));
-    donorApi("/api/donors/meta?what=areas", "GET").then(r => setAreas(r.data.areas ?? []));
   }, []);
+
+  // Area suggestions only after district + thana are both picked, scoped to them.
+  useEffect(() => {
+    if (f.district && f.police_station) {
+      donorApi(`/api/donors/meta?what=areas&district=${encodeURIComponent(f.district)}&police_station=${encodeURIComponent(f.police_station)}`, "GET")
+        .then(r => setAreas(r.data.areas ?? []));
+    } else {
+      setAreas([]);
+    }
+  }, [f.district, f.police_station]);
 
   const set = (k: string, v: unknown) => { setF(p => ({ ...p, [k]: v })); setError(null); };
 
@@ -46,7 +57,9 @@ export default function AddDonorPage() {
       district: f.district, police_station: f.police_station, area: f.area,
       age_years: f.age_mode === "age" ? f.age_years : "",
       birthdate: f.age_mode === "birthdate" ? f.birthdate : "",
-      last_donated_on: f.never_donated ? "" : f.last_donated_on,
+      last_donated_on: (f.never_donated || f.date_unknown) ? "" : f.last_donated_on,
+      never_donated: f.never_donated,
+      socials,
       lat: geo?.lat, lng: geo?.lng,
     });
     setBusy(false);
@@ -97,7 +110,7 @@ export default function AddDonorPage() {
   const thanas = f.district ? BD_LOCATIONS[f.district] ?? [] : [];
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="text-center mb-6">
         <Droplet className="w-9 h-9 text-red-600 mx-auto mb-1.5" />
         <h1 className="text-2xl font-bold">Add a Blood Donor</h1>
@@ -160,35 +173,37 @@ export default function AddDonorPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="District">
-            <select className={inputCls} value={f.district} onChange={e => { set("district", e.target.value); set("police_station", ""); }}>
+            <select className={inputCls} value={f.district} onChange={e => { set("district", e.target.value); set("police_station", ""); set("area", ""); }}>
               <option value="">—</option>
               {BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </Field>
           <Field label="Police station / Thana">
-            <select className={inputCls} value={f.police_station} onChange={e => set("police_station", e.target.value)} disabled={!f.district}>
+            <select className={inputCls} value={f.police_station} onChange={e => { set("police_station", e.target.value); set("area", ""); }} disabled={!f.district}>
               <option value="">—</option>
               {thanas.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </Field>
         </div>
 
-        <Field label="Location (area / village)">
-          <input className={inputCls} list="donor-areas" value={f.area} onChange={e => set("area", e.target.value)} placeholder="e.g. Mirpur DOHS" />
-          <datalist id="donor-areas">{areas.map(a => <option key={a} value={a} />)}</datalist>
+        <Field label="Area">
+          <input className={inputCls} list="donor-areas" value={f.area}
+            onChange={e => set("area", e.target.value)}
+            disabled={!f.district || !f.police_station}
+            placeholder={f.district && f.police_station ? "e.g. Mirpur DOHS" : "Pick district & thana first"} />
+          {/* Suggestions only appear once district + thana are set, and only
+              areas already used within that district+thana. */}
+          {f.district && f.police_station && (
+            <datalist id="donor-areas">{areas.map(a => <option key={a} value={a} />)}</datalist>
+          )}
         </Field>
 
         <div>
-          <button type="button" className="text-xs text-red-600 underline"
-            onClick={() => setShowMap(v => !v)}>
-            {showMap ? "Hide map" : geo ? "Change map location" : "Pin location on map (optional)"}
-          </button>
-          {showMap && (
-            <div className="mt-2">
-              <MapPicker value={geo} onChange={setGeo} />
-              <p className="text-[11px] text-gray-500 mt-1">Tap the map to drop the donor&apos;s location pin.</p>
-            </div>
-          )}
+          <label className="block text-xs font-medium text-gray-600 mb-1.5">Pin location on map</label>
+          <MapPicker value={geo} onChange={setGeo} autoGps />
+          <p className="text-[11px] text-gray-500 mt-1">
+            Defaults to your GPS location. Drag the pin or tap the map to adjust, or use the crosshair to recenter.
+          </p>
         </div>
 
         <div>
@@ -209,12 +224,29 @@ export default function AddDonorPage() {
 
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Last donated date</label>
-          <input className={inputCls} type="date" disabled={f.never_donated}
+          <input className={inputCls} type="date" disabled={f.never_donated || f.date_unknown}
             value={f.last_donated_on} onChange={e => set("last_donated_on", e.target.value)} />
-          <label className="flex items-center gap-2 text-sm text-gray-600 mt-1.5">
-            <input type="checkbox" checked={f.never_donated} onChange={e => set("never_donated", e.target.checked)} className="accent-red-600" />
-            Unknown / never donated
-          </label>
+          <div className="flex flex-col gap-1.5 mt-2">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input type="checkbox" checked={f.never_donated}
+                onChange={e => { set("never_donated", e.target.checked); if (e.target.checked) set("date_unknown", false); }}
+                className="accent-green-600" />
+              Never donated <span className="text-[11px] text-green-700">(shows green — eligible)</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input type="checkbox" checked={f.date_unknown}
+                onChange={e => { set("date_unknown", e.target.checked); if (e.target.checked) set("never_donated", false); }}
+                className="accent-yellow-500" />
+              Date unknown <span className="text-[11px] text-yellow-700">(shows yellow)</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <button type="button" className="text-xs text-red-600 underline" onClick={() => setShowSocials(v => !v)}>
+            {showSocials ? "Hide social links" : "Add social / contact links (optional)"}
+          </button>
+          {showSocials && <div className="mt-2"><SocialLinksEditor socials={socials} onChange={setSocials} /></div>}
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

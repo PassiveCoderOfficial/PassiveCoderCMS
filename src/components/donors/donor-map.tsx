@@ -38,17 +38,49 @@ function pinIcon(color: string, label?: string) {
   };
 }
 
-/** Click-to-set location picker used in add/edit/admin forms. */
-export function MapPicker({ value, onChange, height = 260 }: {
+/**
+ * Click / drag-to-set location picker for add/edit/admin forms.
+ * `autoGps` requests the browser location once on mount and drops the pin
+ * there (fallback: no pin, map on Dhaka). A "recenter to my GPS" button lets
+ * the user snap the pin back to their live location if they moved it wrong.
+ */
+export function MapPicker({ value, onChange, height = 260, autoGps = false }: {
   value: { lat: number; lng: number } | null;
   onChange: (v: { lat: number; lng: number }) => void;
   height?: number;
+  autoGps?: boolean;
 }) {
   const { isLoaded } = useMapsLoader();
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const askedGps = useRef(false);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   const onClick = useCallback((e: google.maps.MapMouseEvent) => {
     if (e.latLng) onChange({ lat: e.latLng.lat(), lng: e.latLng.lng() });
   }, [onChange]);
+
+  const gotoGps = useCallback((recenterMap: boolean) => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        onChangeRef.current(p);
+        if (recenterMap && mapRef.current) { mapRef.current.panTo(p); mapRef.current.setZoom(15); }
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, []);
+
+  // Auto-request GPS once, only when no location is set yet.
+  useEffect(() => {
+    if (autoGps && !askedGps.current && !value) {
+      askedGps.current = true;
+      gotoGps(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoGps]);
 
   if (!isLoaded) {
     return <div style={{ height }} className="rounded-xl border flex items-center justify-center bg-gray-50">
@@ -57,15 +89,26 @@ export function MapPicker({ value, onChange, height = 260 }: {
   }
 
   return (
-    <GoogleMap
-      mapContainerStyle={{ height, width: "100%", borderRadius: 12 }}
-      center={value ?? BD_CENTER}
-      zoom={value ? 14 : 7}
-      onClick={onClick}
-      options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
-    >
-      {value && <Marker position={value} icon={pinIcon("#dc2626")} />}
-    </GoogleMap>
+    <div className="relative">
+      <GoogleMap
+        mapContainerStyle={{ height, width: "100%", borderRadius: 12 }}
+        center={value ?? BD_CENTER}
+        zoom={value ? 15 : 7}
+        onClick={onClick}
+        onLoad={(m) => { mapRef.current = m; }}
+        options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
+      >
+        {value && (
+          <Marker position={value} icon={pinIcon("#dc2626")} draggable
+            onDragEnd={(e) => { if (e.latLng) onChange({ lat: e.latLng.lat(), lng: e.latLng.lng() }); }} />
+        )}
+      </GoogleMap>
+      <button type="button" onClick={() => gotoGps(true)}
+        title="Recenter to my GPS location"
+        className="absolute top-2 right-2 bg-white shadow rounded-lg p-2 text-gray-600 hover:text-red-600 border">
+        <Crosshair className="w-4 h-4" />
+      </button>
+    </div>
   );
 }
 
@@ -86,7 +129,7 @@ export interface MapBounds { sw_lat: number; sw_lng: number; ne_lat: number; ne_
  */
 export function DonorsMap({
   donors, height = 420, onRadiusSearch, radiusKm = 15,
-  onBoundsChanged, boundsActive, onClearBounds,
+  onBoundsChanged, boundsActive, onClearBounds, mode = "search",
 }: {
   donors: MapDonor[]; height?: number;
   onRadiusSearch?: (v: { lat: number; lng: number; radiusKm: number } | null) => void;
@@ -94,6 +137,8 @@ export function DonorsMap({
   onBoundsChanged?: (b: MapBounds) => void;
   boundsActive?: boolean;
   onClearBounds?: () => void;
+  /** "display" hides GPS/radius controls + bounds reporting (single profile). */
+  mode?: "search" | "display";
 }) {
   const { isLoaded } = useMapsLoader();
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -102,56 +147,56 @@ export function DonorsMap({
   const [locating, setLocating] = useState(false);
   const [radius, setRadius] = useState(radiusKm);
   const userMovedMap = useRef(false);
+  const didInitialFit = useRef(false);
+  const gpsFitToken = useRef(0);      // bumped when GPS/radius should re-frame
 
-  const MAX_VISIBLE = 40;   // don't try to frame more than the nearest 40 pins
-  const MIN_KM = 30;        // never zoom in tighter than a 30km-wide view
-  const MAX_KM = 60;        // never zoom out further than the chosen radius
+  const MAX_VISIBLE = 40;   // when framing GPS results, cover the nearest 40
+  const MIN_KM = 30;        // GPS frame at least ~30km wide
+  const MAX_KM = 60;        // GPS frame at most ~60km wide
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !window.google) return;
 
-    // fitBounds before the map has finished sizing itself silently no-ops
-    // (or produces a bogus whole-country zoom) — wait for "idle" once.
+    // Auto-frame ONLY on: first load, a GPS search, or a radius change.
+    // Never on plain donor-list refetches (e.g. after the user pans and the
+    // list below reloads) — otherwise the map would keep snapping back and
+    // fight the user's own free zoom/pan.
+    const shouldFit = !didInitialFit.current || gps !== null;
+    if (!shouldFit) return;
+
     const run = () => {
       if (gps) {
-        // Frame the nearest MAX_VISIBLE donors tightly if they're clustered,
-        // otherwise fall back to a fixed-width view around the search point
-        // — so a handful of donors scattered hundreds of miles apart don't
-        // zoom the map out to fit all of them (or the whole country).
         const nearest = [...donors]
           .map((d) => ({ d, dist: haversine(gps.lat, gps.lng, d.lat, d.lng) }))
           .sort((a, b) => a.dist - b.dist)
           .slice(0, MAX_VISIBLE);
-
         const bounds = new window.google.maps.LatLngBounds();
         bounds.extend(gps);
-        if (nearest.length) {
-          const farthestKm = Math.min(Math.max(nearest[nearest.length - 1].dist, MIN_KM / 2), MAX_KM / 2);
-          const circle = new window.google.maps.Circle({ center: gps, radius: farthestKm * 1000 });
-          const cb = circle.getBounds();
-          if (cb) bounds.union(cb);
-        } else {
-          const circle = new window.google.maps.Circle({ center: gps, radius: (MIN_KM / 2) * 1000 });
-          const cb = circle.getBounds();
-          if (cb) bounds.union(cb);
-        }
-        userMovedMap.current = false; // programmatic move, not a user pan
+        const farthestKm = nearest.length
+          ? Math.min(Math.max(nearest[nearest.length - 1].dist, MIN_KM / 2), MAX_KM / 2)
+          : MIN_KM / 2;
+        const cb = new window.google.maps.Circle({ center: gps, radius: farthestKm * 1000 }).getBounds();
+        if (cb) bounds.union(cb);
+        userMovedMap.current = false;
         map.fitBounds(bounds, 30);
+        didInitialFit.current = true;
         return;
       }
-
       if (donors.length === 0) return;
       const bounds = new window.google.maps.LatLngBounds();
       donors.forEach((d) => bounds.extend({ lat: d.lat, lng: d.lng }));
       userMovedMap.current = false;
-      map.fitBounds(bounds, 40);
+      map.fitBounds(bounds, mode === "display" ? 80 : 40);
+      didInitialFit.current = true;
     };
 
     const listener = window.google.maps.event.addListenerOnce(map, "idle", run);
-    run(); // also try immediately — idle may have already fired
+    run();
     return () => window.google?.maps.event.removeListener(listener);
-  }, [donors, gps, radius]);
+    // gpsFitToken forces a re-frame when GPS/radius changes even if gps ref is same
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gps, gpsFitToken.current, isLoaded]);
 
   // Report the viewport once the user's own pan/zoom settles (not the
   // programmatic fitBounds calls above, which set userMovedMap back to false).
@@ -170,6 +215,7 @@ export function DonorsMap({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const point = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        gpsFitToken.current++;
         setGps(point);
         setLocating(false);
         onRadiusSearch?.({ ...point, radiusKm: radius });
@@ -186,7 +232,7 @@ export function DonorsMap({
 
   function changeRadius(km: number) {
     setRadius(km);
-    if (gps) onRadiusSearch?.({ ...gps, radiusKm: km });
+    if (gps) { gpsFitToken.current++; onRadiusSearch?.({ ...gps, radiusKm: km }); }
   }
 
   if (!isLoaded) {
@@ -195,41 +241,45 @@ export function DonorsMap({
     </div>;
   }
 
+  const isSearch = mode === "search";
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 flex-wrap">
-        <button onClick={findMe} disabled={locating}
-          className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50">
-          {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
-          Find donors near me
-        </button>
-        {gps && (
-          <>
-            <select value={radius} onChange={(e) => changeRadius(Number(e.target.value))}
-              className="border rounded-lg px-2 py-1.5 text-xs bg-white">
-              {[2, 5, 10, 15, 25, 50].map(k => <option key={k} value={k}>{k} km radius</option>)}
-            </select>
-            <button onClick={clearGps} className="text-xs text-gray-500 underline">Clear</button>
-          </>
-        )}
-        {boundsActive && (
-          <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-3 py-1.5 text-xs font-medium">
-            Filtering by map view
-            {onClearBounds && (
-              <button onClick={onClearBounds} className="hover:text-blue-900" aria-label="Clear map filter">×</button>
-            )}
-          </span>
-        )}
-      </div>
+    <div className="space-y-3">
+      {isSearch && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <button onClick={findMe} disabled={locating}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl text-base font-bold shadow-sm transition-colors disabled:opacity-50">
+            {locating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Crosshair className="w-5 h-5" />}
+            Find donors near me
+          </button>
+          {gps && (
+            <>
+              <select value={radius} onChange={(e) => changeRadius(Number(e.target.value))}
+                className="border rounded-xl px-3 py-3 text-sm bg-white font-medium">
+                {[2, 5, 10, 15, 25, 50].map(k => <option key={k} value={k}>Within {k} km</option>)}
+              </select>
+              <button onClick={clearGps} className="text-sm text-gray-500 underline">Clear</button>
+            </>
+          )}
+          {boundsActive && (
+            <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-3 py-1.5 text-xs font-medium">
+              Filtering by map view
+              {onClearBounds && (
+                <button onClick={onClearBounds} className="hover:text-blue-900" aria-label="Clear map filter">×</button>
+              )}
+            </span>
+          )}
+        </div>
+      )}
 
       <GoogleMap
         mapContainerStyle={{ height, width: "100%", borderRadius: 16 }}
         center={gps ?? BD_CENTER}
         zoom={gps ? 12 : 7}
         onLoad={(m) => { mapRef.current = m; }}
-        onDragStart={() => { userMovedMap.current = true; }}
-        onZoomChanged={() => { userMovedMap.current = true; }}
-        onIdle={handleIdle}
+        onDragStart={isSearch ? () => { userMovedMap.current = true; } : undefined}
+        onZoomChanged={isSearch ? () => { userMovedMap.current = true; } : undefined}
+        onIdle={isSearch ? handleIdle : undefined}
         options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
       >
         {gps && (
@@ -257,9 +307,11 @@ export function DonorsMap({
           </InfoWindow>
         )}
       </GoogleMap>
-      <p className="text-[11px] text-gray-400">
-        Pin colors match readiness: green = ready, yellow = soon, red = recently donated, orange = unknown, grey = temporarily unavailable.
-      </p>
+      {isSearch && (
+        <p className="text-[11px] text-gray-400">
+          Pin colors match readiness: green = ready, orange = almost ready, red = recently donated, yellow = unknown, grey = temporarily unavailable.
+        </p>
+      )}
     </div>
   );
 }
