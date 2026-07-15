@@ -46,7 +46,7 @@ export function DonorSiteHeader({ showTranslate = false }: { showTranslate?: boo
               <span className="text-[10px] leading-none">powered by</span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"
-                alt="Passive Coder" className="h-4 w-auto bg-white rounded px-1 py-0.5" />
+                alt="Passive Coder" className="h-8 w-auto rounded bg-white px-1 py-0.5" />
             </a>
           </div>
 
