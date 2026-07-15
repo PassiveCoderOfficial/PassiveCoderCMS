@@ -102,8 +102,8 @@ export type HeroBlockProps = BlockBase & {
     title: string;
     subtitle?: string;
     description?: string;
-    primaryButton?: { label: string; url: string; variant: "primary" | "secondary" | "outline" };
-    secondaryButton?: { label: string; url: string; variant: "primary" | "secondary" | "outline" };
+    primaryButton?: { label: string; url: string; variant: "primary" | "secondary" | "outline"; bgColor?: string; textColor?: string };
+    secondaryButton?: { label: string; url: string; variant: "primary" | "secondary" | "outline"; bgColor?: string; textColor?: string };
     imageUrl?: string;
     imageAlt?: string;
     videoUrl?: string;

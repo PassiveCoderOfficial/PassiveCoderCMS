@@ -147,7 +147,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           directory (present on every /donors/* route too, via donors/layout.tsx),
           otherwise the tenant's page-builder global header block. */}
       {isBloodSite ? (
-        <DonorSiteHeader />
+        <DonorSiteHeader showTranslate={!!settings?.auto_translate_enabled} />
       ) : globalHeader.length > 0 ? (
         <PageRenderer blocks={globalHeader} />
       ) : null}

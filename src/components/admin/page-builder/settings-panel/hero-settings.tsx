@@ -86,6 +86,13 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <div className="space-y-1.5">
           <Input value={block.data.primaryButton?.label ?? ""} onChange={(e) => updateButton("primaryButton", "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
           <Input value={block.data.primaryButton?.url ?? ""} onChange={(e) => updateButton("primaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
+          <div className="grid grid-cols-2 gap-1.5">
+            <Input type="color" value={block.data.primaryButton?.bgColor || "#ffffff"} onChange={(e) => updateButton("primaryButton", "bgColor", e.target.value)} className="h-7 p-0.5" title="Background" />
+            <Input type="color" value={block.data.primaryButton?.textColor || "#000000"} onChange={(e) => updateButton("primaryButton", "textColor", e.target.value)} className="h-7 p-0.5" title="Text color" />
+          </div>
+          {block.data.primaryButton?.bgColor && (
+            <button onClick={() => { updateButton("primaryButton", "bgColor", ""); updateButton("primaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
+          )}
         </div>
       </div>
 
@@ -94,6 +101,13 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <div className="space-y-1.5">
           <Input value={block.data.secondaryButton?.label ?? ""} onChange={(e) => updateButton("secondaryButton", "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
           <Input value={block.data.secondaryButton?.url ?? ""} onChange={(e) => updateButton("secondaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
+          <div className="grid grid-cols-2 gap-1.5">
+            <Input type="color" value={block.data.secondaryButton?.bgColor || "#00000000"} onChange={(e) => updateButton("secondaryButton", "bgColor", e.target.value)} className="h-7 p-0.5" title="Background (transparent for outline)" />
+            <Input type="color" value={block.data.secondaryButton?.textColor || "#ffffff"} onChange={(e) => updateButton("secondaryButton", "textColor", e.target.value)} className="h-7 p-0.5" title="Text/border color" />
+          </div>
+          {block.data.secondaryButton?.bgColor && (
+            <button onClick={() => { updateButton("secondaryButton", "bgColor", ""); updateButton("secondaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
+          )}
         </div>
       </div>
 

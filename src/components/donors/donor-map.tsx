@@ -15,6 +15,15 @@ function useMapsLoader() {
   return useJsApiLoader({ id: "pc-google-maps", googleMapsApiKey: MAPS_KEY });
 }
 
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 function pinIcon(color: string, label?: string) {
   if (typeof window === "undefined" || !window.google) return undefined;
   return {
@@ -84,24 +93,52 @@ export function DonorsMap({ donors, height = 420, onRadiusSearch, radiusKm = 15 
   const [locating, setLocating] = useState(false);
   const [radius, setRadius] = useState(radiusKm);
 
+  const MAX_VISIBLE = 40;   // don't try to frame more than the nearest 40 pins
+  const MIN_KM = 30;        // never zoom in tighter than a 30km-wide view
+  const MAX_KM = 60;        // never zoom out further than the chosen radius
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !window.google) return;
 
-    // With GPS active, always frame the search radius itself — never the
-    // full donor scatter, which spans the whole country when few/no donors
-    // are nearby and previously caused the map to zoom out to all of BD.
-    if (gps) {
-      const circle = new window.google.maps.Circle({ center: gps, radius: radius * 1000 });
-      const bounds = circle.getBounds();
-      if (bounds) map.fitBounds(bounds, 20);
-      return;
-    }
+    // fitBounds before the map has finished sizing itself silently no-ops
+    // (or produces a bogus whole-country zoom) — wait for "idle" once.
+    const run = () => {
+      if (gps) {
+        // Frame the nearest MAX_VISIBLE donors tightly if they're clustered,
+        // otherwise fall back to a fixed-width view around the search point
+        // — so a handful of donors scattered hundreds of miles apart don't
+        // zoom the map out to fit all of them (or the whole country).
+        const nearest = [...donors]
+          .map((d) => ({ d, dist: haversine(gps.lat, gps.lng, d.lat, d.lng) }))
+          .sort((a, b) => a.dist - b.dist)
+          .slice(0, MAX_VISIBLE);
 
-    if (donors.length === 0) return;
-    const bounds = new window.google.maps.LatLngBounds();
-    donors.forEach((d) => bounds.extend({ lat: d.lat, lng: d.lng }));
-    map.fitBounds(bounds, 40);
+        const bounds = new window.google.maps.LatLngBounds();
+        bounds.extend(gps);
+        if (nearest.length) {
+          const farthestKm = Math.min(Math.max(nearest[nearest.length - 1].dist, MIN_KM / 2), MAX_KM / 2);
+          const circle = new window.google.maps.Circle({ center: gps, radius: farthestKm * 1000 });
+          const cb = circle.getBounds();
+          if (cb) bounds.union(cb);
+        } else {
+          const circle = new window.google.maps.Circle({ center: gps, radius: (MIN_KM / 2) * 1000 });
+          const cb = circle.getBounds();
+          if (cb) bounds.union(cb);
+        }
+        map.fitBounds(bounds, 30);
+        return;
+      }
+
+      if (donors.length === 0) return;
+      const bounds = new window.google.maps.LatLngBounds();
+      donors.forEach((d) => bounds.extend({ lat: d.lat, lng: d.lng }));
+      map.fitBounds(bounds, 40);
+    };
+
+    const listener = window.google.maps.event.addListenerOnce(map, "idle", run);
+    run(); // also try immediately — idle may have already fired
+    return () => window.google?.maps.event.removeListener(listener);
   }, [donors, gps, radius]);
 
   function findMe() {

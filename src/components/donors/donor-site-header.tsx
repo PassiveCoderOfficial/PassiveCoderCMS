@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Droplet, Menu, X, UserCircle2, ShieldCheck } from "lucide-react";
 import { DonorAvatar } from "./donor-avatar";
 import { donorApi } from "@/app/(site)/donors/ui";
+import { LanguageSwitch } from "@/components/site/language-switch";
 
 interface Me { id: string; name: string; photo_url: string | null; is_admin?: boolean }
 
@@ -20,7 +21,7 @@ const NAV_LINKS = [
  * page and every /donors/* route (auth, add, me, admin, profile) — so the
  * menu and account state are always visible, including on login/signup.
  */
-export function DonorSiteHeader() {
+export function DonorSiteHeader({ showTranslate = false }: { showTranslate?: boolean }) {
   const pathname = usePathname();
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -52,6 +53,7 @@ export function DonorSiteHeader() {
           </nav>
 
           <div className="hidden md:flex items-center gap-2 shrink-0">
+            {showTranslate && <LanguageSwitch />}
             {me === undefined ? null : me ? (
               <Link href="/donors/me"
                 className="flex items-center gap-2 bg-white/15 hover:bg-white/25 rounded-full pl-1.5 pr-3 py-1 text-sm font-medium transition-colors">
@@ -83,6 +85,11 @@ export function DonorSiteHeader() {
               </Link>
             ))}
             <div className="border-t border-white/20 mt-1 pt-2">
+              {showTranslate && (
+                <div className="px-3 py-1.5">
+                  <LanguageSwitch className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold bg-white/15" />
+                </div>
+              )}
               {me ? (
                 <Link href="/donors/me" onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10">

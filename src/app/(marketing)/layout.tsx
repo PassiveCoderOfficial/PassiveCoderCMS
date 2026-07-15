@@ -29,11 +29,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
+  // This layout also serves tenant subdomains that hit these routes (see
+  // generateMetadata above) — the support WhatsApp button must only show on
+  // the root domain, never on a tenant's site, or tenants lose their own
+  // visitor leads to our support number.
+  const tenantId = (await headers()).get("x-tenant-id");
   return (
     <>
       {children}
-      <WhatsAppButton />
+      {!tenantId && <WhatsAppButton />}
     </>
   );
 }

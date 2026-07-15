@@ -27,12 +27,15 @@ function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centere
           href={primaryButton.url}
           className={cn(
             "inline-flex items-center justify-center rounded-lg px-7 py-3.5 text-sm font-semibold transition-all",
-            primaryButton.variant === "outline"
+            primaryButton.bgColor
+              ? "hover:opacity-90 shadow-lg"
+              : primaryButton.variant === "outline"
               ? "border-2 border-current hover:bg-white/10"
               : primaryButton.variant === "secondary"
               ? "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
               : "bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/30",
           )}
+          style={primaryButton.bgColor ? { backgroundColor: primaryButton.bgColor, color: primaryButton.textColor } : undefined}
         >
           {primaryButton.label}
         </Link>
@@ -42,12 +45,17 @@ function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centere
           href={secondaryButton.url}
           className={cn(
             "inline-flex items-center justify-center rounded-lg px-7 py-3.5 text-sm font-medium transition-all",
-            secondaryButton.variant === "outline"
+            secondaryButton.bgColor
+              ? "hover:bg-white/10"
+              : secondaryButton.variant === "outline"
               ? "border-2 border-current hover:bg-white/10"
               : secondaryButton.variant === "secondary"
               ? "bg-white/10 hover:bg-white/20"
               : "bg-transparent border-2 border-primary text-primary hover:bg-primary/10",
           )}
+          style={secondaryButton.bgColor
+            ? { backgroundColor: secondaryButton.bgColor, color: secondaryButton.textColor, border: `2px solid ${secondaryButton.textColor}` }
+            : undefined}
         >
           {secondaryButton.label}
         </Link>

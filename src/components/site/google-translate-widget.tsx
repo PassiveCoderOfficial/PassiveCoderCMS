@@ -35,29 +35,10 @@ export function GoogleTranslateWidget() {
       />
       <div id="google_translate_element" className="gt-widget" />
       <style jsx global>{`
-        .gt-widget {
-          position: fixed;
-          left: 12px;
-          bottom: 12px;
-          z-index: 40;
-        }
-        .goog-te-banner-frame, .skiptranslate { display: none !important; }
+        /* Engine only — the visible switcher is a header button (see
+           useGoogleTranslate/LanguageSwitch) that drives this via cookie. */
+        .gt-widget, .goog-te-banner-frame, .skiptranslate { display: none !important; }
         body { top: 0 !important; }
-        .gt-widget .goog-te-gadget { font-family: inherit !important; font-size: 0 !important; }
-        .gt-widget .goog-te-gadget-simple {
-          background: #111827 !important;
-          border: 1px solid rgba(255,255,255,0.15) !important;
-          border-radius: 9999px !important;
-          padding: 6px 12px !important;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-        }
-        .gt-widget .goog-te-gadget-simple span,
-        .gt-widget .goog-te-gadget-simple a {
-          color: #fff !important;
-          font-size: 12px !important;
-          text-decoration: none !important;
-        }
-        .gt-widget img { display: none !important; }
       `}</style>
     </>
   );
