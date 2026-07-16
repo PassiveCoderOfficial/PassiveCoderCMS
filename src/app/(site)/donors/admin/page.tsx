@@ -17,7 +17,7 @@ interface AdminDonor {
   is_claimed: boolean; is_admin: boolean; is_active: boolean; has_password: boolean;
 }
 
-const inputCls = "bg-white border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30";
+const inputCls = "bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30";
 
 export default function DonorAdminPage() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);

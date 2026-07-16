@@ -35,8 +35,24 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // the root domain, never on a tenant's site, or tenants lose their own
   // visitor leads to our support number.
   const tenantId = (await headers()).get("x-tenant-id");
+
+  // Tenant "/" is rendered here, not by (site)/layout.tsx, so it misses that
+  // layout's theme handling. Pin the tenant's colour scheme (falling back to
+  // light) so browser dark mode doesn't repaint native form controls and text.
+  let scheme: string | null = null;
+  if (tenantId) {
+    const supabase = await createAdminClient();
+    const { data } = await supabase.from("site_settings")
+      .select("site_theme").eq("tenant_id", tenantId).maybeSingle();
+    const t = data?.site_theme ?? "light";
+    if (t !== "system") scheme = t;
+  }
+
   return (
     <>
+      {scheme && (
+        <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:${scheme};}` }} />
+      )}
       {children}
       {!tenantId && <WhatsAppButton />}
     </>

@@ -99,12 +99,16 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   const siteTheme = settings?.site_theme ?? "system";
 
+  // Also pin `color-scheme`: without it the browser renders native form
+  // controls (select popups, date pickers, autofill, scrollbars) using the
+  // visitor's OS dark mode even when the site itself is locked to light —
+  // which is what made input text unreadable on dark-mode devices.
   const themeScript =
     siteTheme === "light"
-      ? `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');`
+      ? `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';`
       : siteTheme === "dark"
-      ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');`
-      : `(function(){var d=document.documentElement;if(window.matchMedia('(prefers-color-scheme: dark)').matches){d.classList.add('dark');d.classList.remove('light');}else{d.classList.add('light');d.classList.remove('dark');}})();`;
+      ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';`
+      : `(function(){var d=document.documentElement;var dark=window.matchMedia('(prefers-color-scheme: dark)').matches;d.classList.add(dark?'dark':'light');d.classList.remove(dark?'light':'dark');d.style.colorScheme=dark?'dark':'light';})();`;
 
   const templateCSSVars = templateIdentity
     ? buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography)
@@ -126,6 +130,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <CartProvider>
+      {/* Pin color-scheme in CSS too, so native form controls are styled
+          correctly from first paint rather than after the script runs. */}
+      {siteTheme !== "system" && (
+        <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:${siteTheme};}` }} />
+      )}
       {/* Theme flash prevention */}
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <script dangerouslySetInnerHTML={{ __html: themeScript }} />

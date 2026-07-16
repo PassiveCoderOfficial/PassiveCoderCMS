@@ -39,7 +39,7 @@ const FILTER_LABELS: Record<keyof Filters, (v: string) => string> = {
   q: (v) => `Name: "${v}"`,
 };
 
-const selectCls = "border rounded-lg px-2.5 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500/30 min-w-0";
+const selectCls = "border border-gray-300 rounded-lg px-2.5 py-2 text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/30 min-w-0";
 
 function DaysChip({ donor }: { donor: DonorRow }) {
   const meta = AVAILABILITY_META[donor.availability];
