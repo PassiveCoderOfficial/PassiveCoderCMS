@@ -3,7 +3,7 @@
 // Supabase auth — donor contributors never touch the SaaS dashboard.
 
 import { createHash, createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from "crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const DONOR_COOKIE = "donor_session";
@@ -56,10 +56,19 @@ export function verifySessionToken(token: string | undefined): { donorId: string
   }
 }
 
-/** Current logged-in donor for this tenant, or null. */
+/**
+ * Current logged-in donor for this tenant, or null.
+ * Web sends the session as an httpOnly cookie; the native app can't use
+ * cookies, so it replays the same signed token as `Authorization: Bearer`.
+ */
 export async function getDonorSession(tenantId: string) {
   const cookieStore = await cookies();
-  const parsed = verifySessionToken(cookieStore.get(DONOR_COOKIE)?.value);
+  let token = cookieStore.get(DONOR_COOKIE)?.value;
+  if (!token) {
+    const auth = (await headers()).get("authorization");
+    if (auth?.startsWith("Bearer ")) token = auth.slice(7);
+  }
+  const parsed = verifySessionToken(token);
   if (!parsed || parsed.tenantId !== tenantId) return null;
   const supabase = await createAdminClient();
   const { data } = await supabase.from("donors")

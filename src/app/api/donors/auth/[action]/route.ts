@@ -5,9 +5,18 @@ import {
   hashPassword, verifyPassword, normalizeBdPhone, signSession,
 } from "@/lib/donors/auth";
 
-function sessionResponse(body: Record<string, unknown>, donorId: string, tenantId: string) {
-  const res = NextResponse.json(body);
-  res.cookies.set(DONOR_COOKIE, signSession(donorId, tenantId), {
+/**
+ * Issues the session. The web app keeps using the httpOnly cookie; native
+ * clients (which can't read cookies) send `X-Client: app` and get the same
+ * signed token back in the JSON body to store themselves and replay as
+ * `Authorization: Bearer <token>`.
+ */
+function sessionResponse(
+  body: Record<string, unknown>, donorId: string, tenantId: string, isApp = false,
+) {
+  const token = signSession(donorId, tenantId);
+  const res = NextResponse.json(isApp ? { ...body, token } : body);
+  res.cookies.set(DONOR_COOKIE, token, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     maxAge: 30 * 86400, path: "/",
   });
@@ -18,6 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
   const { action } = await params;
   const tenantId = req.headers.get("x-tenant-id");
   if (!tenantId) return NextResponse.json({ error: "Tenant not resolved" }, { status: 400 });
+  const isApp = req.headers.get("x-client") === "app";
 
   const body = await req.json().catch(() => ({}));
   const supabase = await createAdminClient();
@@ -54,7 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       phone_verified: false, is_claimed: true,
     }).select("id").single();
     if (error || !created) return NextResponse.json({ error: "Could not create account" }, { status: 500 });
-    return sessionResponse({ ok: true, donorId: created.id }, created.id, tenantId);
+    return sessionResponse({ ok: true, donorId: created.id }, created.id, tenantId, isApp);
   }
 
   // ── verify-signup: consume OTP → create/claim account + session ───────────
@@ -83,7 +93,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       if (error || !created) return NextResponse.json({ error: "Could not create account" }, { status: 500 });
       donorId = created.id;
     }
-    return sessionResponse({ ok: true, donorId }, donorId, tenantId);
+    return sessionResponse({ ok: true, donorId }, donorId, tenantId, isApp);
   }
 
   // ── login ──────────────────────────────────────────────────────────────────
@@ -98,7 +108,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
     if (!donor?.is_active || !verifyPassword(body.password, donor.password_hash)) {
       return NextResponse.json({ error: "Wrong phone number or password" }, { status: 401 });
     }
-    return sessionResponse({ ok: true, donorId: donor.id }, donor.id, tenantId);
+    return sessionResponse({ ok: true, donorId: donor.id }, donor.id, tenantId, isApp);
   }
 
   // ── logout ─────────────────────────────────────────────────────────────────
@@ -145,7 +155,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       password_hash: hashPassword(body.password), phone_verified: true,
       updated_at: new Date().toISOString(),
     }).eq("id", donor.id);
-    return sessionResponse({ ok: true }, donor.id, tenantId);
+    return sessionResponse({ ok: true }, donor.id, tenantId, isApp);
   }
 
   // ── verify-phone: logged-in donor requests an OTP to verify their number ──
@@ -213,7 +223,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
       phone_verified: true, is_claimed: true,
       updated_at: new Date().toISOString(),
     }).eq("id", donor.id);
-    return sessionResponse({ ok: true }, donor.id, tenantId);
+    return sessionResponse({ ok: true }, donor.id, tenantId, isApp);
   }
 
   return NextResponse.json({ error: "Unknown action" }, { status: 404 });
