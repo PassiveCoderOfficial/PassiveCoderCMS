@@ -785,6 +785,21 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "donor_requests",
+    label: "Urgent Blood Requests",
+    description: "Latest urgent requests — 2 columns on mobile, 3 on desktop",
+    icon: "🚨",
+    category: "interactive",
+    create: () => ({
+      ...baseBlock("donor_requests"),
+      type: "donor_requests" as const,
+      data: {
+        title: "Urgent Blood Requests",
+        subtitle: "People who need blood right now. Tap to call.",
+      },
+    }),
+  },
+  {
     type: "donor_map",
     label: "Donor Map",
     description: "Interactive map of donors color-coded by availability, with GPS radius search",

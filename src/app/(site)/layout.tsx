@@ -10,6 +10,7 @@ import { MaintenanceScreen } from "@/components/site/maintenance-screen";
 import { GoogleTranslateWidget } from "@/components/site/google-translate-widget";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { LocationConsent } from "@/components/donors/location-consent";
+import { PushConsent } from "@/components/donors/push-consent";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -180,6 +181,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <>
           <DonorSiteHeader showTranslate={!!settings?.auto_translate_enabled} />
           <LocationConsent />
+          <PushConsent />
         </>
       ) : globalHeader.length > 0 ? (
         <PageRenderer blocks={globalHeader} />

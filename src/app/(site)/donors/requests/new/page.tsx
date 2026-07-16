@@ -15,7 +15,7 @@ export default function NewRequestPage() {
   const [me, setMe] = useState<{ id: string; name: string; phone: string } | null | undefined>(undefined);
   const [f, setF] = useState({
     patient_name: "", blood_group: "", bags_needed: "1", hospital: "",
-    district: "", police_station: "", area: "", contact_phone: "", note: "", needed_by: "",
+    district: "", police_station: "", area: "", contact_phone: "", note: "", needed_by: "", radius_km: "10",
   });
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,6 +40,7 @@ export default function NewRequestPage() {
     const r = await donorApi("/api/donors/requests", "POST", {
       ...f,
       bags_needed: Number(f.bags_needed) || 1,
+      radius_km: Number(f.radius_km) || 10,
       needed_by: f.needed_by ? new Date(f.needed_by).toISOString() : null,
       lat: geo?.lat, lng: geo?.lng,
     });
@@ -147,6 +148,12 @@ export default function NewRequestPage() {
           <label className="block text-xs font-medium text-gray-600 mb-1.5">Pin the location (helps notify the right donors)</label>
           <MapPicker value={geo} onChange={setGeo} height={200} autoGps={!geo} />
         </div>
+
+        <Field label="Notify donors within">
+          <select className={inputCls} value={f.radius_km} onChange={e => set("radius_km", e.target.value)}>
+            {[5, 10, 15, 25, 50].map(k => <option key={k} value={k}>{k} km of this location</option>)}
+          </select>
+        </Field>
 
         <Field label="Contact number" required>
           <div className="flex">

@@ -40,6 +40,7 @@ import { BookingBlock } from "@/components/blocks/booking/booking-block";
 import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
+import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
@@ -99,6 +100,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "donor_group_cards": content = <DonorGroupCardsBlock block={block} />; break;
     case "donor_list":       content = <DonorListBlock block={block} />; break;
     case "donor_map":        content = <DonorMapBlock block={block} />; break;
+    case "donor_requests":   content = <DonorRequestsBlock block={block} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     default:                 content = null;
   }
