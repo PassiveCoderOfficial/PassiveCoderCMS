@@ -232,14 +232,19 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
 function HeroCorporate({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl";
-  const from = data.overlayColor ?? "var(--color-primary, #1a5c38)";
-  const to = data.overlayColorTo ?? "var(--color-secondary, #0f2418)";
+  // overlayColor/overlayColorTo are always literal hex (seeded from the
+  // template palette) — hexToRgba needs a real hex, not a CSS var() reference.
+  const from = data.overlayColor ?? "#1a5c38";
+  const to = data.overlayColorTo ?? "#0f2418";
   return (
     <div className="relative overflow-hidden min-h-[520px] flex items-center justify-center">
       {data.imageUrl && (
         <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
       )}
-      <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${from}f0 0%, ${to}d0 60%, ${from}cc 100%)` }} />
+      <div
+        className="absolute inset-0"
+        style={{ background: `linear-gradient(135deg, ${hexToRgba(from, 0.94)} 0%, ${hexToRgba(to, 0.82)} 60%, ${hexToRgba(from, 0.8)} 100%)` }}
+      />
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }}

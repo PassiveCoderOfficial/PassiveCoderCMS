@@ -314,7 +314,7 @@ function buildHomePageBlocks(t: TemplateIdentity): Block[] {
     id: uid("hero"),
     type: "hero",
     order: order++,
-    padding: ["fullscreen-overlay", "dark-gradient-left"].includes(t.variants.hero)
+    padding: ["fullscreen-overlay", "dark-gradient-left", "corporate"].includes(t.variants.hero)
       ? { top: 0, right: 0, bottom: 0, left: 0 }
       : { top: 80, right: 0, bottom: 80, left: 0 },
     templateVariant: t.variants.hero,
@@ -329,6 +329,8 @@ function buildHomePageBlocks(t: TemplateIdentity): Block[] {
       imageUrl: t.images.hero.url,
       imageAlt: t.images.hero.alt,
       overlayOpacity: 0.55,
+      overlayColor: t.palette.primary,
+      overlayColorTo: t.palette.secondary,
       typography: { titleSize: "6xl", titleColor: "", subtitleColor: "", descColor: "" },
     },
   } as Block);
