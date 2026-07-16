@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import {
   CheckCircle, Circle, Loader2, Search, Globe, ArrowRight,
   Sparkles, ExternalLink, AlertCircle, Star, CreditCard,
-  Clock, MessageSquare, Zap, Layout, Eye, User, LogOut,
+  Clock, MessageSquare, Zap, Layout, Eye, EyeOff, User, LogOut,
 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
@@ -67,6 +67,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
@@ -128,8 +129,18 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
         )}
         <div className="space-y-1.5">
           <Label>Password</Label>
-          <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" className="h-11"
-            onKeyDown={e => e.key === "Enter" && (mode === "signup" ? handleSignup() : handleLogin())} />
+          <div className="relative">
+            <Input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" className="h-11 pr-11"
+              onKeyDown={e => e.key === "Enter" && (mode === "signup" ? handleSignup() : handleLogin())} />
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-0 top-0 h-11 px-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
       </div>
 

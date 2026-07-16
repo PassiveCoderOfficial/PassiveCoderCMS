@@ -43,7 +43,7 @@ export default async function MarketingHomePage() {
       supabase.from("site_settings").select("auto_translate_enabled").eq("tenant_id", tenantId).maybeSingle(),
     ]);
 
-    const blocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
+    const rawBlocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
 
     // Global header/footer/pre-footer. The (site) layout injects these on other pages;
     // root "/" is handled here (catch-all can't match "/"), so inject for parity.
@@ -52,11 +52,22 @@ export default async function MarketingHomePage() {
     // page-builder global header block — mirror that here so the homepage's
     // menu matches the internal pages.
     const { header: globalHeader, footer: globalFooter, prefooter } = layout;
+
+    // Strip per-page nav/footer blocks when site chrome renders them, so they
+    // don't appear twice. Mirrors the same filter in (site)/[...slug]/page.tsx.
+    const hasGlobalHeader = isBloodSite || globalHeader.length > 0;
+    const hasGlobalFooter = globalFooter.length > 0;
+    const blocks: Block[] = rawBlocks.filter((b) => {
+      if (hasGlobalHeader && b.type === "navigation") return false;
+      if (hasGlobalFooter && b.type === "footer") return false;
+      return true;
+    });
+
     const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
       ? [...blocks, ...prefooter]
       : blocks;
 
-    if (blocks.length > 0) {
+    if (rawBlocks.length > 0) {
       return (
         <div className="min-h-screen">
           {isBloodSite
