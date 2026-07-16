@@ -1,83 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Siren, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
-import { inputCls, btnCls, Field, donorApi } from "../../ui";
+import { Siren, Loader2, ArrowLeft } from "lucide-react";
+import { inputCls, btnCls, Field, donorApi } from "../../../ui";
+import { toLocalInput } from "@/lib/donors/deadline";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS } from "@/lib/donors/bd-locations";
-import { defaultDeadlineInput } from "@/lib/donors/deadline";
 
 const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
 
-export default function NewRequestPage() {
+interface Req {
+  id: string; patient_name: string | null; blood_group: string;
+  bags_needed: number; hospital: string | null;
+  district: string | null; police_station: string | null; area: string | null;
+  contact_phone: string; note: string | null; needed_by: string | null;
+  radius_km: number; lat: number | null; lng: number | null;
+  is_mine?: boolean;
+}
+
+export default function EditRequestPage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [me, setMe] = useState<{ id: string; name: string; phone: string } | null | undefined>(undefined);
+  const [allowed, setAllowed] = useState<boolean | null>(null);
   const [f, setF] = useState({
     patient_name: "", blood_group: "", bags_needed: "1", hospital: "",
-    district: "", police_station: "", area: "", contact_phone: "", note: "",
-    needed_by: defaultDeadlineInput(), radius_km: "10",
+    district: "", police_station: "", area: "", contact_phone: "",
+    note: "", needed_by: "", radius_km: "10",
   });
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ notified: number } | null>(null);
 
-  useEffect(() => {
-    donorApi("/api/donors/auth/me", "GET").then(r => {
-      const d = r.data.donor ?? null;
-      setMe(d);
-      if (d?.phone) setF(p => ({ ...p, contact_phone: d.phone.replace(/^\+88/, "") }));
+  const load = useCallback(async () => {
+    // The list endpoint is the only place that resolves is_mine for us.
+    const r = await donorApi("/api/donors/requests?view=mine", "GET");
+    if (r.status === 401) { setAllowed(false); return; }
+    const mine: Req[] = r.data?.requests ?? [];
+    const found = mine.find((x) => x.id === id);
+    if (!found) { setAllowed(false); return; }
+
+    setAllowed(true);
+    setF({
+      patient_name: found.patient_name ?? "",
+      blood_group: found.blood_group,
+      bags_needed: String(found.bags_needed ?? 1),
+      hospital: found.hospital ?? "",
+      district: found.district ?? "",
+      police_station: found.police_station ?? "",
+      area: found.area ?? "",
+      contact_phone: (found.contact_phone ?? "").replace(/^\+88/, ""),
+      note: found.note ?? "",
+      needed_by: toLocalInput(found.needed_by),
+      radius_km: String(found.radius_km ?? 10),
     });
-  }, []);
+    if (found.lat != null && found.lng != null) setGeo({ lat: found.lat, lng: found.lng });
+  }, [id]);
+
+  useEffect(() => { load(); }, [load]);
 
   const set = (k: string, v: unknown) => { setF(p => ({ ...p, [k]: v })); setError(null); };
 
-  async function submit() {
-    if (!f.blood_group || !f.contact_phone) {
-      setError("Blood group and contact number are required"); return;
-    }
+  async function save() {
     setBusy(true); setError(null);
-    const r = await donorApi("/api/donors/requests", "POST", {
+    const r = await donorApi("/api/donors/requests", "PATCH", {
+      id,
       ...f,
       bags_needed: Number(f.bags_needed) || 1,
       radius_km: Number(f.radius_km) || 10,
       needed_by: f.needed_by ? new Date(f.needed_by).toISOString() : null,
-      lat: geo?.lat, lng: geo?.lng,
+      ...(geo ? { lat: geo.lat, lng: geo.lng } : {}),
     });
     setBusy(false);
-    if (!r.ok) { setError(r.data.error ?? "Failed to post"); return; }
-    setDone({ notified: r.data.notified ?? 0 });
+    if (!r.ok) { setError(r.data.error ?? "Failed to save"); return; }
+    router.push("/donors/requests");
   }
 
-  if (me === undefined) {
+  if (allowed === null) {
     return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   }
-  if (me === null) {
+  if (!allowed) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center space-y-3 max-w-sm">
           <Siren className="w-10 h-10 text-red-600 mx-auto" />
-          <h1 className="text-xl font-bold">Post an urgent request</h1>
-          <p className="text-sm text-gray-500">Log in first so donors know who to contact.</p>
-          <Link href="/donors/auth?next=/donors/requests/new" className={btnCls}>Log in / Sign up</Link>
-        </div>
-      </div>
-    );
-  }
-  if (done) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="text-center space-y-3 max-w-sm">
-          <CheckCircle className="w-12 h-12 text-green-600 mx-auto" />
-          <h1 className="text-xl font-bold">Request posted</h1>
-          <p className="text-sm text-gray-500">
-            {done.notified > 0
-              ? `${done.notified} nearby eligible donor${done.notified > 1 ? "s were" : " was"} notified.`
-              : "It's now listed for donors to see."}
-          </p>
-          <Link href="/donors/requests" className={btnCls}>View requests</Link>
+          <p className="text-sm text-gray-500">You can only edit requests you posted.</p>
+          <Link href="/donors/requests" className={btnCls}>Back to requests</Link>
         </div>
       </div>
     );
@@ -93,8 +102,7 @@ export default function NewRequestPage() {
 
       <div className="text-center">
         <Siren className="w-9 h-9 text-red-600 mx-auto mb-1.5" />
-        <h1 className="text-2xl font-bold">Post an Urgent Request</h1>
-        <p className="text-sm text-gray-500">Nearby eligible donors get notified instantly.</p>
+        <h1 className="text-2xl font-bold">Edit Request</h1>
       </div>
 
       <div className="bg-white border rounded-2xl p-5 space-y-4">
@@ -123,8 +131,7 @@ export default function NewRequestPage() {
         </div>
 
         <Field label="Hospital / place">
-          <input className={inputCls} value={f.hospital} onChange={e => set("hospital", e.target.value)}
-            placeholder="e.g. Dhaka Medical College Hospital" />
+          <input className={inputCls} value={f.hospital} onChange={e => set("hospital", e.target.value)} />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
@@ -147,8 +154,8 @@ export default function NewRequestPage() {
         </Field>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Pin the location (helps notify the right donors)</label>
-          <MapPicker value={geo} onChange={setGeo} height={200} autoGps={!geo} />
+          <label className="block text-xs font-medium text-gray-600 mb-1.5">Pin the location</label>
+          <MapPicker value={geo} onChange={setGeo} height={200} />
         </div>
 
         <Field label="Notify donors within">
@@ -171,13 +178,12 @@ export default function NewRequestPage() {
         </Field>
 
         <Field label="Note">
-          <textarea className={inputCls} rows={2} value={f.note} onChange={e => set("note", e.target.value)}
-            placeholder="Any extra detail donors should know" />
+          <textarea className={inputCls} rows={2} value={f.note} onChange={e => set("note", e.target.value)} />
         </Field>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <button onClick={submit} disabled={busy} className={btnCls}>
-          {busy && <Loader2 className="w-4 h-4 animate-spin" />} Post request &amp; notify donors
+        <button onClick={save} disabled={busy} className={btnCls}>
+          {busy && <Loader2 className="w-4 h-4 animate-spin" />} Save changes
         </button>
       </div>
     </div>

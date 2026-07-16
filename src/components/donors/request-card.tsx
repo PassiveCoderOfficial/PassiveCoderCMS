@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, MapPin, Clock, Check, X, Archive, RotateCcw, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Phone, MapPin, Clock, Check, X, Archive, RotateCcw, AlertTriangle, Pencil } from "lucide-react";
 import { donorApi } from "@/app/(site)/donors/ui";
 
 export interface BloodRequest {
@@ -9,7 +10,8 @@ export interface BloodRequest {
   bags_needed: number; hospital: string | null;
   district: string | null; police_station: string | null; area: string | null;
   contact_phone: string; note: string | null;
-  needed_by: string | null; status: string;
+  needed_by: string | null; status: string; radius_km?: number;
+  lat?: number | null; lng?: number | null;
   deadline_over?: boolean; is_mine?: boolean;
   archived_at?: string | null; created_at: string;
 }
@@ -97,8 +99,13 @@ export function RequestCard({ req, compact, onChanged }: {
         {/* Status actions belong to the person who posted it — never public. */}
         {!compact && req.is_mine && (
           <div className="ml-auto flex items-center gap-1.5">
+            <Link href={`/donors/requests/${req.id}/edit`}
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 hover:bg-gray-50">
+              <Pencil className="w-3.5 h-3.5" /> Edit
+            </Link>
             {archived ? (
               <button onClick={() => setStatus("open")} disabled={busy}
+                title="Unarchiving gives it a fresh 6-hour deadline"
                 className="inline-flex items-center gap-1 rounded-lg border border-green-200 px-2.5 py-1.5 text-xs text-green-700 hover:bg-green-50">
                 <RotateCcw className="w-3.5 h-3.5" /> Unarchive
               </button>

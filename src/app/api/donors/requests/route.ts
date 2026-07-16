@@ -10,6 +10,12 @@ import { BLOOD_GROUPS, BD_DISTRICTS } from "@/lib/donors/bd-locations";
 const DEFAULT_RADIUS_KM = 10;  // creator can widen per request
 const NOTIFY_CAP = 200;        // never blast the whole database at once
 const ARCHIVE_AFTER_DEADLINE_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_DEADLINE_HOURS = 6;
+
+/** A request with no stated deadline gets a sensible 6h window. */
+function defaultDeadline(): string {
+  return new Date(Date.now() + DEFAULT_DEADLINE_HOURS * 60 * 60 * 1000).toISOString();
+}
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -142,7 +148,7 @@ export async function POST(req: NextRequest) {
     lat, lng,
     contact_phone: phone,
     note: body.note?.trim() || null,
-    needed_by: body.needed_by || null,
+    needed_by: body.needed_by || defaultDeadline(),
     radius_km: radiusKm,
   }).select("id, blood_group, hospital, area, district").single();
 
@@ -208,7 +214,10 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, id: created.id, notified }, { status: 201 });
 }
 
-/** Close/fulfil a request — creator or admin only. */
+/**
+ * Update a request — creator (or admin) only. Handles both status changes
+ * (fulfil / cancel / archive / unarchive) and editing the request's fields.
+ */
 export async function PATCH(req: NextRequest) {
   const tenantId = req.headers.get("x-tenant-id");
   if (!tenantId) return NextResponse.json({ error: "Tenant not resolved" }, { status: 400 });
@@ -216,26 +225,72 @@ export async function PATCH(req: NextRequest) {
   const me = await getDonorSession(tenantId);
   if (!me) return NextResponse.json({ error: "login_required" }, { status: 401 });
 
-  const { id, status } = await req.json().catch(() => ({}));
-  // "open" doubles as unarchive — putting a request back in the public list.
-  if (!id || !["fulfilled", "cancelled", "archived", "open"].includes(status)) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  const body = await req.json().catch(() => ({}));
+  const { id, status } = body;
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   const supabase = await createAdminClient();
   const { data: reqRow } = await supabase.from("blood_requests")
-    .select("created_by").eq("id", id).eq("tenant_id", tenantId).maybeSingle();
+    .select("created_by, needed_by").eq("id", id).eq("tenant_id", tenantId).maybeSingle();
   if (!reqRow) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (reqRow.created_by !== me.id && !me.is_admin) {
     return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
 
+  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+  if (status !== undefined) {
+    // "open" doubles as unarchive — putting a request back in the public list.
+    if (!["fulfilled", "cancelled", "archived", "open"].includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+    patch.status = status;
+    patch.archived_at = status === "archived" ? new Date().toISOString() : null;
+
+    // Unarchiving a request whose deadline has already passed would put it
+    // straight back in the "deadline over" bucket (and re-archive within the
+    // hour), so give it a fresh 6h window.
+    if (status === "open") {
+      const deadlinePassed = !reqRow.needed_by || new Date(reqRow.needed_by) < new Date();
+      if (deadlinePassed) patch.needed_by = defaultDeadline();
+    }
+  }
+
+  // Field edits
+  if ("patient_name" in body) patch.patient_name = body.patient_name?.trim() || null;
+  if ("hospital" in body) patch.hospital = body.hospital?.trim() || null;
+  if ("area" in body) patch.area = body.area?.trim() || null;
+  if ("note" in body) patch.note = body.note?.trim() || null;
+  if ("needed_by" in body) patch.needed_by = body.needed_by || null;
+  if ("bags_needed" in body) {
+    patch.bags_needed = Math.min(20, Math.max(1, Number(body.bags_needed) || 1));
+  }
+  if ("radius_km" in body) {
+    patch.radius_km = Math.min(100, Math.max(1, Number(body.radius_km) || DEFAULT_RADIUS_KM));
+  }
+  if ("blood_group" in body) {
+    if (!(BLOOD_GROUPS as readonly string[]).includes(body.blood_group)) {
+      return NextResponse.json({ error: "Invalid blood group" }, { status: 400 });
+    }
+    patch.blood_group = body.blood_group;
+  }
+  if ("contact_phone" in body) {
+    const phone = normalizeBdPhone(body.contact_phone);
+    if (!phone) return NextResponse.json({ error: "Invalid contact number" }, { status: 400 });
+    patch.contact_phone = phone;
+  }
+  if ("district" in body) {
+    if (body.district && !BD_DISTRICTS.includes(body.district)) {
+      return NextResponse.json({ error: "Unknown district" }, { status: 400 });
+    }
+    patch.district = body.district || null;
+  }
+  if ("police_station" in body) patch.police_station = body.police_station || null;
+  if (typeof body.lat === "number" && typeof body.lng === "number") {
+    patch.lat = body.lat; patch.lng = body.lng;
+  }
+
   await supabase.from("blood_requests")
-    .update({
-      status,
-      archived_at: status === "archived" ? new Date().toISOString() : null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id).eq("tenant_id", tenantId);
+    .update(patch).eq("id", id).eq("tenant_id", tenantId);
   return NextResponse.json({ ok: true });
 }
