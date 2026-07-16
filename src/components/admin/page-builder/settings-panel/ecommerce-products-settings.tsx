@@ -14,19 +14,24 @@ import type { EcommerceProductsBlockProps } from "@/types/cms";
 type Category = { id: string; name: string };
 
 export function EcommerceProductsSettings({ block }: { block: EcommerceProductsBlockProps }) {
-  const { updateBlock } = useBuilderStore();
+  const { updateBlock, tenantId: pageTenantId } = useBuilderStore();
   const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
   const d = block.data;
 
   const [categories, setCategories] = useState<Category[]>([]);
   useEffect(() => {
     const supabase = createClient();
-    getClientTenantId().then((tenantId) => {
+    // Scope to the tenant that owns the page, not the viewer's own tenant —
+    // they differ when a super admin edits another tenant's page.
+    const resolveTenant = pageTenantId
+      ? Promise.resolve(pageTenantId)
+      : getClientTenantId();
+    resolveTenant.then((tenantId) => {
       let q = supabase.from("categories").select("id,name").eq("type", "product").order("name");
       if (tenantId) q = q.eq("tenant_id", tenantId);
       q.then(({ data }) => setCategories((data as Category[]) ?? []));
     });
-  }, []);
+  }, [pageTenantId]);
 
   // Legacy blocks stored a single categoryId; treat it as a one-item selection.
   const selected = d.categoryIds ?? (d.categoryId ? [d.categoryId] : []);

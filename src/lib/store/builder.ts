@@ -18,6 +18,7 @@ interface BuilderStore extends BuilderState {
   setMode: (mode: BuilderMode) => void;
   setBreakpoint: (breakpoint: Breakpoint) => void;
   setPageId: (id: string) => void;
+  setTenantId: (id: string | undefined) => void;
   setDirty: (dirty: boolean) => void;
   undo: () => void;
   redo: () => void;
@@ -29,6 +30,7 @@ interface BuilderStore extends BuilderState {
 
 const initialState: BuilderState = {
   pageId: undefined,
+  tenantId: undefined,
   blocks: [],
   selectedBlockId: undefined,
   hoveredBlockId: undefined,
@@ -134,6 +136,11 @@ export const useBuilderStore = create<BuilderStore>()(
     setPageId: (id) =>
       set((state) => {
         state.pageId = id;
+      }),
+
+    setTenantId: (id) =>
+      set((state) => {
+        state.tenantId = id;
       }),
 
     setDirty: (dirty) =>

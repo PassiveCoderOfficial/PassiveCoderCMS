@@ -24,7 +24,7 @@ interface BuilderInterfaceProps {
 export function BuilderInterface({ page }: BuilderInterfaceProps) {
   const {
     blocks, mode, breakpoint, isDirty,
-    setBlocks, setMode, setBreakpoint, setPageId, setDirty,
+    setBlocks, setMode, setBreakpoint, setPageId, setTenantId, setDirty,
     undo, redo, canUndo, canRedo,
   } = useBuilderStore();
   const [saving, setSaving] = useState(false);
@@ -33,6 +33,9 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
 
   useEffect(() => {
     setPageId(page.id);
+    // Scope tenant-aware settings panels to the page's own tenant, which is not
+    // the viewer's tenant when a super admin edits another tenant's page.
+    setTenantId(page.tenant_id ?? undefined);
     setBlocks(page.blocks ?? []);
     setDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps

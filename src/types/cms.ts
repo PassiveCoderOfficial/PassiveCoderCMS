@@ -769,6 +769,8 @@ export type PageType = "page" | "post" | "landing" | "portfolio";
 
 export type Page = {
   id: string;
+  /** Owning tenant. Null for root (non-tenant) pages. */
+  tenant_id?: string | null;
   title: string;
   slug: string;
   type: PageType;
@@ -1073,6 +1075,9 @@ export type Breakpoint = "desktop" | "tablet" | "mobile";
 
 export type BuilderState = {
   pageId?: string;
+  /** Tenant that owns the page being edited. Not necessarily the viewer's own
+   *  tenant — a super admin can edit another tenant's page. */
+  tenantId?: string;
   blocks: Block[];
   selectedBlockId?: string;
   hoveredBlockId?: string;
