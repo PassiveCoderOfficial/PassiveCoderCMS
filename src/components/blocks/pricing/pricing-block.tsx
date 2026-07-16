@@ -265,6 +265,58 @@ function PricingMembershipCards({ data }: { data: VariantData }) {
   );
 }
 
+// Full-bleed brand-color band, glass cards, black highlighted tier —
+// manufacturing/corporate/B2B.
+function PricingDark({ data }: { data: VariantData }) {
+  return (
+    <div className="w-full bg-primary">
+      <div className="max-w-4xl mx-auto px-4 py-4">
+        {(data.title || data.subtitle) && (
+          <div className="text-center mb-8">
+            {data.subtitle && <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-primary-foreground/50">{data.subtitle}</p>}
+            {data.title && <h2 className="text-2xl font-extrabold text-primary-foreground">{data.title}</h2>}
+          </div>
+        )}
+        <div className={cn("grid gap-5", data.plans.length === 2 && "sm:grid-cols-2", data.plans.length >= 3 && "sm:grid-cols-3")}>
+          {data.plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={cn(
+                "flex flex-col rounded-xl p-6 border",
+                plan.highlighted ? "bg-primary-foreground border-primary-foreground" : "bg-primary-foreground/10 border-primary-foreground/15",
+              )}
+            >
+              <div className={cn("font-bold text-sm mb-1", plan.highlighted ? "text-primary/70" : "text-primary-foreground/70")}>{plan.name}</div>
+              <div className={cn("font-extrabold text-2xl mb-4", plan.highlighted ? "text-primary" : "text-primary-foreground")}>
+                {plan.displayPrice}
+                {plan.period && <span className="text-xs font-normal opacity-70 ml-1">{plan.period}</span>}
+              </div>
+              <ul className="space-y-2 mb-5 flex-1">
+                {plan.features.map((f, i) => (
+                  <li key={i} className={cn("flex items-start gap-2 text-xs", plan.highlighted ? "text-primary/70" : "text-primary-foreground/60")}>
+                    <Check className="w-3 h-3 mt-0.5 shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
+              {plan.ctaLabel && (
+                <a
+                  href={plan.ctaUrl ?? "#"}
+                  className={cn(
+                    "text-center text-xs font-bold py-2.5 rounded-lg transition-opacity hover:opacity-90",
+                    plan.highlighted ? "bg-primary text-primary-foreground" : "border border-primary-foreground/30 text-primary-foreground",
+                  )}
+                >
+                  {plan.ctaLabel}
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PricingLegacy({ data }: { data: VariantData }) {
   return (
     <div className="max-w-6xl mx-auto">
@@ -342,6 +394,7 @@ export function PricingBlock({ block }: { block: PricingBlockProps }) {
       {variant === "dark-cards" && <PricingDarkCards data={variantData} />}
       {variant === "menu-pricing" && <PricingMenuPricing data={variantData} />}
       {variant === "membership-cards" && <PricingMembershipCards data={variantData} />}
+      {variant === "dark" && <PricingDark data={variantData} />}
       {!variant && <PricingLegacy data={variantData} />}
     </div>
   );

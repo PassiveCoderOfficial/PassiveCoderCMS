@@ -7,7 +7,41 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   email: Mail, website: Globe,
 };
 
+// ─── Variant: avatar-cards ─────────────────────────────────────────────────
+// Rounded-square initial avatars in a per-member brand color, tight 3-up grid,
+// no card border — manufacturing/corporate/B2B.
+function TeamAvatarCards({ data }: { data: TeamBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-3xl mx-auto">
+      {(data.title || data.subtitle) && (
+        <div className="text-center mb-8">
+          {data.subtitle && <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-primary">{data.subtitle}</p>}
+          {data.title && <h2 className="text-2xl font-extrabold">{data.title}</h2>}
+        </div>
+      )}
+      <div className={cn("grid grid-cols-2 gap-6", colClass)}>
+        {data.members.map((m) => (
+          <div key={m.id} className="text-center">
+            <div className="w-20 h-20 rounded-2xl mx-auto overflow-hidden bg-primary flex items-center justify-center text-primary-foreground font-extrabold text-xl mb-3 shadow-lg">
+              {m.avatar ? (
+                <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+              ) : (
+                m.name.charAt(0)
+              )}
+            </div>
+            <h3 className="font-bold text-sm">{m.name}</h3>
+            {m.role && <p className="text-xs font-medium text-primary mb-1">{m.role}</p>}
+            {data.showBio && m.bio && <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">{m.bio}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TeamBlock({ block }: { block: TeamBlockProps }) {
+  if (block.templateVariant === "avatar-cards") return <TeamAvatarCards data={block.data} />;
   const { data } = block;
   const { title, subtitle, layout, columns, members, showBio, showSocial } = data;
 

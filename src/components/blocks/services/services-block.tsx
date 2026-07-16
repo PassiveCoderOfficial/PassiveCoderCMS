@@ -248,6 +248,48 @@ function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }
   );
 }
 
+// ─── Variant: numbered ──────────────────────────────────────────────────────
+// Full-bleed brand-color section, glassy translucent cards, large ghost number
+// badge — manufacturing/corporate/B2B.
+function ServicesNumbered({ data }: { data: ServicesBlockProps["data"] }) {
+  const colMap = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="w-full bg-primary">
+      <div className="max-w-6xl mx-auto px-4 py-4">
+        {(data.title || data.subtitle) && (
+          <div className="text-center mb-10">
+            {data.subtitle && <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-primary-foreground/60">{data.subtitle}</p>}
+            {data.title && <h2 className="text-2xl md:text-3xl font-extrabold text-primary-foreground">{data.title}</h2>}
+          </div>
+        )}
+        <div className={cn("grid grid-cols-2 gap-4", colMap)}>
+          {data.items.map((item, i) => (
+            <div key={item.id} className="service-card group rounded-xl overflow-hidden bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/15 hover:bg-primary-foreground/20 transition-all">
+              {item.imageUrl ? (
+                <div className="relative h-28 w-full">
+                  <Image src={item.imageUrl} alt={item.title} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+                  <div className="absolute top-2 left-3 text-2xl font-black text-primary-foreground/30">0{i + 1}</div>
+                </div>
+              ) : (
+                <div className="p-5 pb-0">
+                  <div className="text-3xl font-black text-primary-foreground/20 mb-3">0{i + 1}</div>
+                  <div className="text-primary-foreground"><ServiceIcon item={item} size="md" /></div>
+                </div>
+              )}
+              <div className="p-4 pt-3">
+                <h3 className="font-bold text-sm text-primary-foreground mb-1">{item.title}</h3>
+                <p className="text-xs text-primary-foreground/60 leading-relaxed line-clamp-2 whitespace-pre-line">{item.description}</p>
+                {item.linkLabel && <p className="mt-2 text-xs font-bold text-primary-foreground/80">{item.linkLabel}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Legacy renderer (fallback) ───────────────────────────────────────────
 
 function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
@@ -315,5 +357,6 @@ export function ServicesBlock({ block }: { block: ServicesBlockProps }) {
   if (variant === "dark-grid-cards") return <ServicesDarkGridCards data={block.data} />;
   if (variant === "menu-cards") return <ServicesMenuCards data={block.data} />;
   if (variant === "program-cards-dark") return <ServicesProgramCardsDark data={block.data} />;
+  if (variant === "numbered") return <ServicesNumbered data={block.data} />;
   return <ServicesLegacy data={block.data} />;
 }

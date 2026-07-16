@@ -2,6 +2,8 @@ import React from "react";
 import type { FeaturesBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
+import { Check } from "lucide-react";
+import Image from "next/image";
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
   if (!name) return null;
@@ -9,7 +11,39 @@ function DynIcon({ name, className }: { name?: string; className?: string }) {
   return Icon ? <Icon className={className} /> : null;
 }
 
+// ─── Variant: dark ─────────────────────────────────────────────────────────
+// Full-bleed brand-gradient section, heading + body on the left, translucent
+// checklist "highlight" cards on the right (each item's title used as a
+// highlight line) — manufacturing/corporate/B2B "about" sections.
+function FeaturesDark({ data }: { data: FeaturesBlockProps["data"] }) {
+  const image = data.items.find((i) => i.imageUrl)?.imageUrl;
+  return (
+    <div className="w-full relative overflow-hidden bg-gradient-to-br from-primary to-secondary">
+      {image && (
+        <div className="absolute inset-0">
+          <Image src={image} alt={data.title ?? ""} fill className="object-cover opacity-20" />
+        </div>
+      )}
+      <div className="relative max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        <div>
+          {data.subtitle && <p className="text-[11px] font-bold uppercase tracking-widest mb-3 text-primary-foreground/50">{data.subtitle}</p>}
+          {data.title && <h2 className="text-2xl md:text-3xl font-extrabold text-primary-foreground mb-4 leading-tight">{data.title}</h2>}
+        </div>
+        <div className="space-y-2.5">
+          {data.items.map((item) => (
+            <div key={item.id} className="flex items-center gap-3 bg-primary-foreground/10 border border-primary-foreground/10 rounded-lg px-4 py-2.5">
+              <Check className="w-3.5 h-3.5 text-primary-foreground/60 shrink-0" />
+              <span className="text-primary-foreground/80 text-sm font-medium">{item.title}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
+  if (block.templateVariant === "dark") return <FeaturesDark data={block.data} />;
   const { data } = block;
   const { title, subtitle, layout, columns, items, style } = data;
 

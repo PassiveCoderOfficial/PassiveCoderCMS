@@ -2510,16 +2510,16 @@ const UNIFORM_PRO: TemplateIdentity = {
   `,
 
   variants: {
-    hero: "dark-gradient-left",
-    services: "icon-cards-grid",
-    testimonials: "formal-cards",
-    features: "alternating-images",
-    stats: "navy-row",
-    cta: "navy-banner",
-    pricing: "highlighted-cards",
-    faq: "accordion-bordered",
+    hero: "corporate",
+    services: "numbered",
+    testimonials: "full-width",
+    features: "dark",
+    stats: "dark-band",
+    cta: "gradient-banner",
+    pricing: "dark",
+    faq: "two-column",
     navigation: "solid-with-cta",
-    team: "formal-cards",
+    team: "avatar-cards",
   },
 
   images: {

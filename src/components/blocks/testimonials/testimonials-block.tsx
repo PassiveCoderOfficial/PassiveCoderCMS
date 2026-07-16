@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import type { TestimonialsBlockProps } from "@/types/cms";
 import { Star, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -208,6 +210,55 @@ function TestimonialsWarmCards({ data }: { data: TestimonialsBlockProps["data"] 
   );
 }
 
+// ─── Variant: full-width ──────────────────────────────────────────────────────
+// Full-bleed brand-color band, single large italic quote, auto-rotating —
+// manufacturing/corporate/B2B.
+function TestimonialsFullWidth({ data }: { data: TestimonialsBlockProps["data"] }) {
+  const [index, setIndex] = useState(0);
+  const items = data.items;
+
+  useEffect(() => {
+    if (items.length < 2) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % items.length), 6000);
+    return () => clearInterval(t);
+  }, [items.length]);
+
+  const item = items[index];
+  if (!item) return null;
+
+  return (
+    <div className="w-full bg-primary">
+      <div className="max-w-3xl mx-auto px-4 py-4 text-center">
+        <Quote className="w-10 h-10 mx-auto mb-6 text-primary-foreground/20" />
+        <blockquote className="text-primary-foreground text-xl font-light leading-relaxed mb-8 italic">
+          &ldquo;{item.content}&rdquo;
+        </blockquote>
+        <div className="flex items-center justify-center gap-3">
+          <Avatar item={item} />
+          <div className="text-left">
+            <p className="text-primary-foreground font-semibold text-sm">{item.name}</p>
+            {(item.role || item.company) && (
+              <p className="text-primary-foreground/50 text-xs">{[item.role, item.company].filter(Boolean).join(", ")}</p>
+            )}
+          </div>
+        </div>
+        {items.length > 1 && (
+          <div className="flex justify-center gap-2 mt-6">
+            {items.map((t, i) => (
+              <button
+                key={t.id}
+                onClick={() => setIndex(i)}
+                aria-label={`Show testimonial ${i + 1}`}
+                className={cn("w-2 h-2 rounded-full transition-colors", i === index ? "bg-primary-foreground" : "bg-primary-foreground/30")}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Legacy fallback ──────────────────────────────────────────────────────────
 
 function TestimonialsLegacy({ data }: { data: TestimonialsBlockProps["data"] }) {
@@ -251,5 +302,6 @@ export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) 
   if (variant === "dark-quote-cards") return <TestimonialsDarkQuoteCards data={block.data} />;
   if (variant === "transformation-cards") return <TestimonialsTransformationCards data={block.data} />;
   if (variant === "warm-cards") return <TestimonialsWarmCards data={block.data} />;
+  if (variant === "full-width") return <TestimonialsFullWidth data={block.data} />;
   return <TestimonialsLegacy data={block.data} />;
 }

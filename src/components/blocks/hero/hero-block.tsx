@@ -226,6 +226,49 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
   );
 }
 
+// ─── Variant: corporate ───────────────────────────────────────────────────────
+// Full-bleed image, diagonal brand-color gradient, subtle grid texture, centered
+// content with a bordered badge — used for manufacturing/B2B/corporate templates.
+function HeroCorporate({ block }: HeroBlockComponentProps) {
+  const { data } = block;
+  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl";
+  const from = data.overlayColor ?? "var(--color-primary, #1a5c38)";
+  const to = data.overlayColorTo ?? "var(--color-secondary, #0f2418)";
+  return (
+    <div className="relative overflow-hidden min-h-[520px] flex items-center justify-center">
+      {data.imageUrl && (
+        <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+      )}
+      <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${from}f0 0%, ${to}d0 60%, ${from}cc 100%)` }} />
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+      />
+      <div className="relative z-10 max-w-4xl mx-auto px-10 py-24 text-center flex flex-col items-center gap-5">
+        {data.badge && (
+          <span className="inline-flex items-center gap-2 border border-white/30 text-white/90 text-xs font-medium px-4 py-2 rounded-sm uppercase tracking-widest">
+            <InlineText blockId={block.id} field="badge" value={data.badge} />
+          </span>
+        )}
+        <h1 className={cn("font-bold text-white leading-tight tracking-tight", titleSize)}>
+          <InlineText blockId={block.id} field="title" value={data.title} />
+        </h1>
+        {data.subtitle && (
+          <p className="text-white/65 text-base leading-relaxed max-w-2xl">
+            <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
+          </p>
+        )}
+        {data.description && (
+          <p className="text-white/60 text-sm leading-relaxed max-w-2xl">
+            <InlineText blockId={block.id} field="description" value={data.description} />
+          </p>
+        )}
+        <HeroButtons data={data} centered />
+      </div>
+    </div>
+  );
+}
+
 // ─── Legacy layouts (used when no templateVariant) ────────────────────────────
 function HeroLegacy({ block }: HeroBlockComponentProps) {
   const { data } = block;
@@ -295,5 +338,6 @@ export function HeroBlock({ block }: HeroBlockComponentProps) {
   if (variant === "fullscreen-overlay") return <HeroFullscreenOverlay block={block} />;
   if (variant === "centered-bold") return <HeroCenteredBold block={block} />;
   if (variant === "dark-gradient-left") return <HeroDarkGradientLeft block={block} />;
+  if (variant === "corporate") return <HeroCorporate block={block} />;
   return <HeroLegacy block={block} />;
 }

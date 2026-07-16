@@ -13,6 +13,25 @@ function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+// Registry navigation variant name -> the navigation block's actual "style" prop.
+// The block only implements "centered", "split", and "default" — this is the
+// single place that maps every registry name onto one of those three.
+function navStyle(t: TemplateIdentity): "centered" | "split" | "default" {
+  const v = t.variants.navigation;
+  if (v.includes("centered")) return "centered";
+  if (v.includes("corporate") || v.includes("solid-with-cta")) return "split";
+  return "default";
+}
+
+// Registry faq variant name -> the faq block's actual "layout" prop. The block
+// only implements "accordion", "grid", and "simple".
+function faqLayout(t: TemplateIdentity): "accordion" | "grid" | "simple" {
+  const v = t.variants.faq;
+  if (v.includes("two-column") || v.includes("grid")) return "grid";
+  if (v.includes("simple")) return "simple";
+  return "accordion";
+}
+
 const BASE_BLOCK = {
   visible: true as const,
   width: "full" as const,
@@ -23,6 +42,13 @@ const BASE_BLOCK = {
 
 /** Build the persistent global header (navigation block) from a template. */
 function buildGlobalHeader(t: TemplateIdentity): Block[] {
+  const style = navStyle(t);
+  // "split" (corporate) nav is a light bar with dark text and hairline
+  // dividers — every other style is a solid brand-color bar with white text.
+  const chrome = style === "split"
+    ? { backgroundColor: "#ffffff", textColor: "#111827", activeColor: t.palette.primary, shadow: false, borderBottom: true }
+    : { backgroundColor: t.palette.primary, textColor: "#ffffff" };
+
   return [
     {
       ...BASE_BLOCK,
@@ -35,9 +61,8 @@ function buildGlobalHeader(t: TemplateIdentity): Block[] {
         logoText: t.siteName,
         items: t.navItems,
         sticky: true,
-        style: t.variants.navigation.includes("centered") ? "centered" : "default",
-        backgroundColor: t.palette.primary,
-        textColor: "#ffffff",
+        style,
+        ...chrome,
         showCta: true,
         ctaLabel: t.heroCTA,
         ctaUrl: "/contact",
@@ -367,22 +392,28 @@ function buildHomePageBlocks(t: TemplateIdentity): Block[] {
       type: "features",
       order: order++,
       templateVariant: t.variants.features,
-      data: {
-        title: t.aboutHeading,
-        subtitle: "",
-        layout: "alternating",
-        columns: 2,
-        style: "minimal",
-        items: [
-          {
-            id: uid("feat"),
+      data: t.variants.features === "dark"
+        ? {
+            title: t.aboutHeading, subtitle: t.aboutBody,
+            layout: "grid", columns: 2, style: "minimal",
+            items: t.aboutHighlights.map((h) => ({ id: uid("feat"), title: h, description: "", imageUrl: t.images.about!.url, icon: "" })),
+          }
+        : {
             title: t.aboutHeading,
-            description: t.aboutBody,
-            imageUrl: t.images.about.url,
-            icon: "",
+            subtitle: "",
+            layout: "alternating",
+            columns: 2,
+            style: "minimal",
+            items: [
+              {
+                id: uid("feat"),
+                title: t.aboutHeading,
+                description: t.aboutBody,
+                imageUrl: t.images.about.url,
+                icon: "",
+              },
+            ],
           },
-        ],
-      },
     } as Block);
   }
 
@@ -499,7 +530,7 @@ function buildHomePageBlocks(t: TemplateIdentity): Block[] {
       data: {
         title: "Frequently Asked Questions",
         subtitle: "",
-        layout: "accordion",
+        layout: faqLayout(t),
         allowMultiple: false,
         items: t.faq.map((f) => ({
           id: f.id,
@@ -602,11 +633,17 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   aboutBlocks.push({
     ...BASE_BLOCK, id: uid("feat"), type: "features", order: o++,
     templateVariant: t.variants.features,
-    data: {
-      title: t.aboutHeading, subtitle: "",
-      layout: "alternating", columns: 2, style: "minimal",
-      items: [{ id: uid("f"), title: t.aboutHeading, description: t.aboutBody, imageUrl: t.images.about?.url ?? "", icon: "" }],
-    },
+    data: t.variants.features === "dark"
+      ? {
+          title: t.aboutHeading, subtitle: t.aboutBody,
+          layout: "grid", columns: 2, style: "minimal",
+          items: t.aboutHighlights.map((h) => ({ id: uid("f"), title: h, description: "", imageUrl: t.images.about?.url ?? "", icon: "" })),
+        }
+      : {
+          title: t.aboutHeading, subtitle: "",
+          layout: "alternating", columns: 2, style: "minimal",
+          items: [{ id: uid("f"), title: t.aboutHeading, description: t.aboutBody, imageUrl: t.images.about?.url ?? "", icon: "" }],
+        },
   } as Block);
   if (t.stats.length > 0) {
     aboutBlocks.push({
@@ -644,7 +681,7 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   if (t.services.length > 0) {
     o = 0;
     const svcBlocks: Block[] = [];
-    svcBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    svcBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, style: navStyle(t), showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
     svcBlocks.push({
       ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++,
       templateVariant: "centered-bold",
@@ -672,7 +709,7 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   if (t.images.gallery.length > 0) {
     o = 0;
     const galBlocks: Block[] = [];
-    galBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    galBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, style: navStyle(t), showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
     galBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Gallery", subtitle: t.tagline, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
     galBlocks.push({
       ...BASE_BLOCK, id: uid("gal"), type: "gallery", order: o++,
@@ -690,7 +727,7 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   if (t.pricing && t.pricing.length > 0) {
     o = 0;
     const prcBlocks: Block[] = [];
-    prcBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    prcBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, style: navStyle(t), showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
     prcBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Pricing", subtitle: "Simple, transparent pricing. No surprises.", typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
     prcBlocks.push({
       ...BASE_BLOCK, id: uid("prc"), type: "pricing", order: o++,
@@ -702,7 +739,7 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
       },
     } as Block);
     if (t.faq && t.faq.length > 0) {
-      prcBlocks.push({ ...BASE_BLOCK, id: uid("faq"), type: "faq", order: o++, templateVariant: t.variants.faq, data: { title: "Pricing FAQ", subtitle: "", layout: "accordion", allowMultiple: false, items: t.faq.map(f => ({ id: f.id, question: f.question, answer: f.answer })) } } as Block);
+      prcBlocks.push({ ...BASE_BLOCK, id: uid("faq"), type: "faq", order: o++, templateVariant: t.variants.faq, data: { title: "Pricing FAQ", subtitle: "", layout: faqLayout(t), allowMultiple: false, items: t.faq.map(f => ({ id: f.id, question: f.question, answer: f.answer })) } } as Block);
     }
     pages.push({ tenant_id: tenantId, title: "Pricing", slug: "pricing", status: "published", blocks: prcBlocks, created_at: now, updated_at: now });
   }
@@ -711,7 +748,7 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   if (t.testimonials.length > 0) {
     o = 0;
     const tesBlocks: Block[] = [];
-    tesBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    tesBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, style: navStyle(t), showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
     tesBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "What Our Clients Say", subtitle: t.tagline, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
     tesBlocks.push({ ...BASE_BLOCK, id: uid("tes"), type: "testimonials", order: o++, templateVariant: t.variants.testimonials, data: { title: "", layout: "grid", items: t.testimonials.map(t => ({ id: t.id, name: t.name, role: t.role, company: t.company, avatar: t.avatar, content: t.content, rating: t.rating })) } } as Block);
     tesBlocks.push({ ...BASE_BLOCK, id: uid("stats"), type: "stats", order: o++, padding: { top: 56, right: 0, bottom: 56, left: 0 }, background: { type: "color", color: t.palette.primary + "12" }, templateVariant: t.variants.stats, data: { title: "", subtitle: "", layout: "row", columns: Math.min(t.stats.length, 4) as 2|3|4, items: t.stats, style: "plain", animate: true } } as Block);
@@ -722,9 +759,9 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   if (t.faq && t.faq.length > 0) {
     o = 0;
     const faqBlocks: Block[] = [];
-    faqBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
+    faqBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, style: navStyle(t), showCta: true, ctaLabel: t.heroCTA, ctaUrl: "/contact" } } as Block);
     faqBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Frequently Asked Questions", subtitle: `Everything you need to know about ${t.siteName}`, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
-    faqBlocks.push({ ...BASE_BLOCK, id: uid("faq"), type: "faq", order: o++, templateVariant: t.variants.faq, data: { title: "", subtitle: "", layout: "accordion", allowMultiple: false, items: t.faq.map(f => ({ id: f.id, question: f.question, answer: f.answer })) } } as Block);
+    faqBlocks.push({ ...BASE_BLOCK, id: uid("faq"), type: "faq", order: o++, templateVariant: t.variants.faq, data: { title: "", subtitle: "", layout: faqLayout(t), allowMultiple: false, items: t.faq.map(f => ({ id: f.id, question: f.question, answer: f.answer })) } } as Block);
     faqBlocks.push({ ...BASE_BLOCK, id: uid("cta"), type: "cta", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, background: { type: "gradient", gradient: `linear-gradient(135deg, ${t.palette.primary}, ${t.palette.secondary})` }, templateVariant: t.variants.cta, data: { title: "Still Have Questions?", description: "Our team is happy to help.", primaryButton: { label: "Contact Us", url: "/contact" }, layout: "centered" } } as Block);
     pages.push({ tenant_id: tenantId, title: "FAQ", slug: "faq", status: "published", blocks: faqBlocks, created_at: now, updated_at: now });
   }
@@ -733,7 +770,7 @@ function buildAllPages(t: TemplateIdentity, tenantId: string, now: string) {
   {
     o = 0;
     const conBlocks: Block[] = [];
-    conBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, showCta: true, ctaLabel: t.heroCTA, ctaUrl: "#form" } } as Block);
+    conBlocks.push({ ...BASE_BLOCK, id: uid("nav"), type: "navigation", order: o++, padding: { top: 0, right: 0, bottom: 0, left: 0 }, templateVariant: t.variants.navigation, data: { logoText: t.siteName, items: t.navItems, sticky: true, style: navStyle(t), showCta: true, ctaLabel: t.heroCTA, ctaUrl: "#form" } } as Block);
     conBlocks.push({ ...BASE_BLOCK, id: uid("hero"), type: "hero", order: o++, templateVariant: "centered-bold", data: { title: "Get In Touch", subtitle: t.tagline, primaryButton: { label: "Call Us", url: `tel:${t.phone.replace(/[^0-9+]/g, "")}`, variant: "primary" }, typography: { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" } } } as Block);
     conBlocks.push({
       ...BASE_BLOCK, id: uid("contact"), type: "contact", order: o++,

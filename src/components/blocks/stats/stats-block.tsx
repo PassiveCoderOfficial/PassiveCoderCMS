@@ -182,6 +182,37 @@ function StatsWarmRow({ data }: { data: StatsBlockProps["data"] }) {
   );
 }
 
+// ─── Variant: dark-band ───────────────────────────────────────────────────────
+// Full-bleed solid brand-color band, white text, vertical dividers between
+// cells — manufacturing/corporate/B2B.
+function StatsDarkBand({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="w-full bg-primary">
+      <div className={cn("max-w-6xl mx-auto grid grid-cols-2", colClass)}>
+        {data.items.map((item, i) => {
+          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const count = useCountUp(num, data.animate);
+          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          return (
+            <div
+              key={item.id}
+              className={cn(
+                "px-6 py-8 text-center border-white/10",
+                i < data.items.length - 1 && "border-r",
+              )}
+            >
+              <p className="stat-value text-3xl font-black text-primary-foreground">{display}</p>
+              <p className="text-primary-foreground/60 text-xs mt-1.5 font-medium uppercase tracking-wider">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Legacy fallback ──────────────────────────────────────────────────────────
 
 function StatsLegacy({ data }: { data: StatsBlockProps["data"] }) {
@@ -232,5 +263,6 @@ export function StatsBlock({ block }: { block: StatsBlockProps }) {
   if (variant === "gradient-numbers") return <StatsGradientNumbers data={block.data} />;
   if (variant === "bold-dark-row") return <StatsBoldDarkRow data={block.data} />;
   if (variant === "warm-row") return <StatsWarmRow data={block.data} />;
+  if (variant === "dark-band") return <StatsDarkBand data={block.data} />;
   return <StatsLegacy data={block.data} />;
 }

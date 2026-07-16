@@ -84,7 +84,9 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
   );
 }
 
-function NavItemDesktop({ item, textColor, activeColor }: { item: NavItem; textColor: string; activeColor: string }) {
+function NavItemDesktop({ item, textColor, activeColor, split, dividerColor }: {
+  item: NavItem; textColor: string; activeColor: string; split?: boolean; dividerColor?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -106,14 +108,21 @@ function NavItemDesktop({ item, textColor, activeColor }: { item: NavItem; textC
   const openNow = () => { if (closeTimer.current) clearTimeout(closeTimer.current); setOpen(true); };
   const closeSoon = () => { closeTimer.current = setTimeout(() => setOpen(false), 120); };
 
+  // "split" cells fill their own height with a right-side divider (corporate look)
+  // instead of floating as rounded pills.
+  const cellClass = split
+    ? "flex items-center h-full px-5 text-sm font-medium border-r hover:bg-black/5 transition-colors"
+    : "px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors";
+  const cellStyle = split ? { borderColor: dividerColor } : undefined;
+
   if (!hasChildren) {
     return (
-      <li>
+      <li className={split ? "flex" : undefined}>
         <Link
           href={item.url}
           target={item.target}
-          className="px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors"
-          style={{ color: isActive ? activeColor : textColor, fontWeight: isActive ? 700 : 500 }}
+          className={cellClass}
+          style={{ ...cellStyle, color: isActive ? activeColor : textColor, fontWeight: isActive ? 700 : 500 }}
         >
           {item.label}
         </Link>
@@ -122,12 +131,12 @@ function NavItemDesktop({ item, textColor, activeColor }: { item: NavItem; textC
   }
 
   return (
-    <li ref={ref} className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
+    <li ref={ref} className={cn("relative", split && "flex")} onMouseEnter={openNow} onMouseLeave={closeSoon}>
       <Link
         href={item.url}
         onClick={() => setOpen(false)}
-        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-black/5 transition-colors"
-        style={{ color: textColor }}
+        className={cn(cellClass, "flex items-center gap-1")}
+        style={{ ...cellStyle, color: textColor }}
       >
         {item.label}
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
@@ -161,15 +170,24 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
   const accent = activeColor ?? fg;
   const logoH = logoHeight ?? 40;
 
+  // "split" (a.k.a. corporate): vertical dividers between logo / links / CTA,
+  // links fill the middle instead of hugging the logo.
+  const isSplit = style === "split";
+  const dividerColor = `${fg}30`;
+
   return (
     <nav
       className={cn("w-full z-50", sticky && "sticky top-0", shadow && "shadow-md", borderBottom && "border-b")}
       style={{ background: bg, color: fg, borderColor: borderBottom ? `${fg}20` : undefined }}
     >
       <div className="max-w-7xl mx-auto px-4">
-        <div className={cn("flex items-center h-16 gap-4", style === "centered" && "justify-center")}>
+        <div className={cn("flex items-stretch h-16 gap-4", style === "centered" && "justify-center", isSplit && "gap-0")}>
           {/* Logo */}
-          <Link href={logoUrl ?? "/"} className="flex items-center gap-2 shrink-0">
+          <Link
+            href={logoUrl ?? "/"}
+            className={cn("flex items-center gap-2 shrink-0", isSplit && "pr-6 mr-2 border-r")}
+            style={isSplit ? { borderColor: dividerColor } : undefined}
+          >
             {logo ? (
               <Image src={logo} alt={logoText ?? "Logo"} width={logoH * 3.2} height={logoH} style={{ height: logoH }} className="w-auto object-contain" />
             ) : (
@@ -178,15 +196,19 @@ export function NavigationBlock({ block, identityLogo, identityLogoDark: _identi
           </Link>
 
           {/* Desktop nav */}
-          <ul className={cn("hidden md:flex items-center gap-0.5", style === "centered" ? "mx-auto" : "ml-2 flex-1")}>
+          <ul className={cn(
+            "hidden md:flex items-stretch gap-0.5",
+            style === "centered" ? "mx-auto" : "ml-2 flex-1",
+            isSplit && "gap-0 ml-0",
+          )}>
             {items.map((item) => (
-              <NavItemDesktop key={item.id} item={item} textColor={fg} activeColor={accent} />
+              <NavItemDesktop key={item.id} item={item} textColor={fg} activeColor={accent} split={isSplit} dividerColor={dividerColor} />
             ))}
           </ul>
 
           {/* CTA button */}
           {showCta && ctaLabel && ctaUrl && (
-            <div className="hidden md:block shrink-0">
+            <div className={cn("hidden md:flex items-center shrink-0", isSplit && "pl-6 ml-2 border-l")} style={isSplit ? { borderColor: dividerColor } : undefined}>
               <Link
                 href={ctaUrl}
                 className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"

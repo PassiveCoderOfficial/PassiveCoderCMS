@@ -61,7 +61,8 @@ export type BlockType =
   | "booking"
   | "donor_group_cards"
   | "donor_list"
-  | "donor_map";
+  | "donor_map"
+  | "donor_requests";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -717,7 +718,8 @@ export type Block =
   | BookingBlockProps
   | DonorGroupCardsBlockProps
   | DonorListBlockProps
-  | DonorMapBlockProps;
+  | DonorMapBlockProps
+  | DonorRequestsBlockProps;
 
 export type DonorGroupCardsBlockProps = BlockBase & {
   type: "donor_group_cards";
@@ -726,6 +728,14 @@ export type DonorGroupCardsBlockProps = BlockBase & {
     subtitle?: string;
     accentColor?: string;      // card accent (blood red default)
     linkTarget?: string;       // where cards send the filter, default "#donor-list"
+  };
+};
+
+export type DonorRequestsBlockProps = BlockBase & {
+  type: "donor_requests";
+  data: {
+    title?: string;
+    subtitle?: string;
   };
 };
 
