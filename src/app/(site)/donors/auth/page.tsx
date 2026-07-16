@@ -67,7 +67,9 @@ function AuthInner() {
                   {BLOOD_GROUPS.map(g => (
                     <button key={g} type="button" onClick={() => set("blood_group", g)}
                       className={`py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
-                        f.blood_group === g ? "bg-red-600 border-red-600 text-white" : "hover:border-red-300"}`}>
+                        f.blood_group === g
+                          ? "bg-red-600 border-red-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900 hover:border-red-300"}`}>
                       {g}
                     </button>
                   ))}

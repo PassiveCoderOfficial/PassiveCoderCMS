@@ -130,10 +130,30 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <CartProvider>
-      {/* Pin color-scheme in CSS too, so native form controls are styled
-          correctly from first paint rather than after the script runs. */}
-      {siteTheme !== "system" && (
-        <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:${siteTheme};}` }} />
+      {/* The root layout mounts <ThemeProvider defaultTheme="system">, which
+          adds .dark to <html> from the visitor's OS setting on mount — that
+          repainted light-locked tenant sites (themed text turned near-white on
+          white cards, worst on form fields). When a tenant pins its theme we
+          re-declare the palette so .dark can't win, and pin color-scheme so
+          native controls follow too. */}
+      {siteTheme === "light" && (
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root, html.dark, html.light { color-scheme: light; }
+          html.dark {
+            --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%; --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%; --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%; --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%; --accent-foreground: 222.2 47.4% 11.2%;
+            --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+          }
+        ` }} />
+      )}
+      {siteTheme === "dark" && (
+        <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
       )}
       {/* Theme flash prevention */}
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
