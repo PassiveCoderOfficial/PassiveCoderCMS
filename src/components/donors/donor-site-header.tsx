@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Droplet, Menu, X, UserCircle2, ShieldCheck } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Droplet, Menu, X, UserCircle2, ShieldCheck, ChevronDown, LogOut } from "lucide-react";
 import { DonorAvatar } from "./donor-avatar";
 import { donorApi } from "@/app/(site)/donors/ui";
 import { LanguageSwitch } from "@/components/site/language-switch";
@@ -24,12 +24,34 @@ const NAV_LINKS = [
  */
 export function DonorSiteHeader({ showTranslate = false }: { showTranslate?: boolean }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     donorApi("/api/donors/auth/me", "GET").then(r => setMe(r.data.donor ?? null)).catch(() => setMe(null));
   }, [pathname]);
+
+  // Close the profile dropdown on an outside click.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [menuOpen]);
+
+  async function logout() {
+    setMenuOpen(false);
+    setMobileOpen(false);
+    await donorApi("/api/donors/auth/logout", "POST", {});
+    setMe(null);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <header className="sticky top-0 z-30 bg-gradient-to-r from-red-700 to-red-600 text-white shadow-md">
@@ -65,12 +87,37 @@ export function DonorSiteHeader({ showTranslate = false }: { showTranslate?: boo
           <div className="hidden md:flex items-center gap-2 shrink-0">
             {showTranslate && <LanguageSwitch />}
             {me === undefined ? null : me ? (
-              <Link href="/donors/me"
-                className="flex items-center gap-2 bg-white/15 hover:bg-white/25 rounded-full pl-1.5 pr-3 py-1 text-sm font-medium transition-colors">
-                <DonorAvatar photoUrl={me.photo_url} name={me.name} size={28} />
-                {me.name.split(" ")[0]}
-                {me.is_admin && <ShieldCheck className="w-3.5 h-3.5" />}
-              </Link>
+              <div className="relative" ref={menuRef}>
+                <button onClick={() => setMenuOpen(v => !v)}
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 rounded-full pl-1.5 pr-2.5 py-1 text-sm font-medium transition-colors">
+                  <DonorAvatar photoUrl={me.photo_url} name={me.name} size={28} />
+                  {me.name.split(" ")[0]}
+                  {me.is_admin && <ShieldCheck className="w-3.5 h-3.5" />}
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-48 overflow-hidden rounded-xl border bg-white py-1 text-gray-700 shadow-lg">
+                    <Link href="/donors/me" onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50">
+                      <UserCircle2 className="w-4 h-4 text-gray-400" /> My account
+                    </Link>
+                    <Link href={`/donors/${me.id}`} onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50">
+                      <DonorAvatar photoUrl={me.photo_url} name={me.name} size={16} /> My profile
+                    </Link>
+                    {me.is_admin && (
+                      <Link href="/donors/admin" onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50">
+                        <ShieldCheck className="w-4 h-4 text-gray-400" /> Admin panel
+                      </Link>
+                    )}
+                    <button onClick={logout}
+                      className="flex w-full items-center gap-2 border-t px-3 py-2.5 text-left text-sm text-red-600 hover:bg-red-50">
+                      <LogOut className="w-4 h-4" /> Log out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link href="/donors/auth"
                 className="flex items-center gap-1.5 bg-white text-red-700 hover:bg-white/90 rounded-full px-4 py-2 text-sm font-semibold transition-colors">
@@ -117,6 +164,12 @@ export function DonorSiteHeader({ showTranslate = false }: { showTranslate?: boo
                   className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10">
                   <ShieldCheck className="w-4 h-4" /> Admin panel
                 </Link>
+              )}
+              {me && (
+                <button onClick={logout}
+                  className="flex w-full items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium hover:bg-white/10">
+                  <LogOut className="w-4 h-4" /> Log out
+                </button>
               )}
             </div>
           </nav>
