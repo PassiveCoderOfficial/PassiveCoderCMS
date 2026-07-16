@@ -396,7 +396,7 @@ function buildHomePageBlocks(t: TemplateIdentity): Block[] {
       templateVariant: t.variants.features,
       data: t.variants.features === "dark"
         ? {
-            title: t.aboutHeading, subtitle: t.aboutBody,
+            title: t.aboutHeading, subtitle: "", description: t.aboutBody,
             layout: "grid", columns: 2, style: "minimal",
             items: t.aboutHighlights.map((h) => ({ id: uid("feat"), title: h, description: "", imageUrl: t.images.about!.url, icon: "" })),
           }

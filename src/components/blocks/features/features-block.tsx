@@ -28,6 +28,7 @@ function FeaturesDark({ data }: { data: FeaturesBlockProps["data"] }) {
         <div>
           {data.subtitle && <p className="text-[11px] font-bold uppercase tracking-widest mb-3 text-primary-foreground/50">{data.subtitle}</p>}
           {data.title && <h2 className="text-2xl md:text-3xl font-extrabold text-primary-foreground mb-4 leading-tight">{data.title}</h2>}
+          {data.description && <p className="text-sm text-primary-foreground/65 leading-relaxed">{data.description}</p>}
         </div>
         <div className="space-y-2.5">
           {data.items.map((item) => (

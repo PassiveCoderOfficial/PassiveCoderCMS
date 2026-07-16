@@ -409,6 +409,8 @@ export type FeaturesBlockProps = BlockBase & {
   data: {
     title?: string;
     subtitle?: string;
+    /** Body paragraph — currently only rendered by the "dark" templateVariant. */
+    description?: string;
     layout: "grid" | "alternating" | "icon-list" | "centered";
     columns: 2 | 3 | 4;
     items: FeatureItem[];
