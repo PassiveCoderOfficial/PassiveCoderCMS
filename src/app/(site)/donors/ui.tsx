@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+
 // Shared UI bits for the public donor pages.
 // Colors are pinned (not theme tokens) so the donor site keeps its light
 // look even when the visitor's browser/OS is in dark mode.
@@ -9,6 +12,39 @@ export const btnCls =
   "w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50";
 export const btnGhostCls =
   "w-full flex items-center justify-center gap-2 border border-gray-300 bg-white text-gray-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors";
+
+/**
+ * Password input with a persistent show/hide toggle — typing a password on a
+ * phone keyboard is error-prone, so let people see what they typed.
+ */
+export function PasswordInput({ value, onChange, placeholder, autoComplete }: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  autoComplete?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        className={`${inputCls} pr-10`}
+        value={value}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((v) => !v)}
+        aria-label={show ? "Hide password" : "Show password"}
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-700"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 export function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (

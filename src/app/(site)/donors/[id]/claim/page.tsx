@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { KeyRound, Loader2, ArrowLeft } from "lucide-react";
-import { inputCls, btnCls, Field, donorApi } from "../../ui";
+import { inputCls, btnCls, Field, PasswordInput, donorApi } from "../../ui";
 
 export default function ClaimDonorPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,7 +61,7 @@ export default function ClaimDonorPage() {
                 value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))} />
             </Field>
             <Field label="Your new password" required>
-              <input type="password" className={inputCls} value={password} onChange={e => setPassword(e.target.value)} />
+              <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" />
             </Field>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button onClick={verify} disabled={busy} className={btnCls}>

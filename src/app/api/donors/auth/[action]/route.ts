@@ -158,6 +158,34 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
     return sessionResponse({ ok: true }, donor.id, tenantId, isApp);
   }
 
+  // ── change-password: logged-in donor, verified by their current one ───────
+  if (action === "change-password") {
+    const me = await getDonorSession(tenantId);
+    if (!me) return NextResponse.json({ error: "login_required" }, { status: 401 });
+
+    if (!body.new_password || body.new_password.length < 6) {
+      return NextResponse.json({ error: "New password must be at least 6 characters" }, { status: 400 });
+    }
+
+    const { data: donor } = await supabase.from("donors")
+      .select("password_hash").eq("id", me.id).eq("tenant_id", tenantId).maybeSingle();
+    if (!donor) return NextResponse.json({ error: "Account not found" }, { status: 404 });
+
+    // A profile whose creator set a starter password still has one, so always
+    // require the current password here — the OTP reset flow is the way in
+    // for anyone who's forgotten it.
+    if (!verifyPassword(body.current_password ?? "", donor.password_hash)) {
+      return NextResponse.json({ error: "Your current password is wrong" }, { status: 401 });
+    }
+
+    await supabase.from("donors").update({
+      password_hash: hashPassword(body.new_password),
+      updated_at: new Date().toISOString(),
+    }).eq("id", me.id).eq("tenant_id", tenantId);
+
+    return NextResponse.json({ ok: true });
+  }
+
   // ── location-consent: record the first-login GPS ask ──────────────────────
   // Donors without coordinates can't be matched to nearby urgent requests, so
   // we ask once after their first login. Either way we set the seen flag so

@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Droplet, Loader2 } from "lucide-react";
-import { inputCls, btnCls, Field, donorApi } from "../ui";
+import { inputCls, btnCls, Field, PasswordInput, donorApi } from "../ui";
 import { BLOOD_GROUPS } from "@/lib/donors/bd-locations";
 
 type Mode = "login" | "signup" | "verify" | "forgot" | "reset";
@@ -98,8 +98,8 @@ function AuthInner() {
 
           {mode !== "verify" && mode !== "forgot" && (
             <Field label={mode === "reset" ? "New password" : "Password"} required>
-              <input type="password" className={inputCls} value={f.password}
-                onChange={e => set("password", e.target.value)} />
+              <PasswordInput value={f.password} onChange={v => set("password", v)}
+                autoComplete={mode === "login" ? "current-password" : "new-password"} />
             </Field>
           )}
 

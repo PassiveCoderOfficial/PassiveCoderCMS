@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Pencil, Loader2, ArrowLeft, Trash2, ShieldCheck, ShieldAlert } from "lucide-react";
-import { inputCls, btnCls, Field, donorApi } from "../../ui";
+import { Pencil, Loader2, ArrowLeft, Trash2, ShieldCheck, ShieldAlert, KeyRound } from "lucide-react";
+import { inputCls, btnCls, btnGhostCls, Field, PasswordInput, donorApi } from "../../ui";
 import { SocialLinksEditor } from "@/components/donors/social-links";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS } from "@/lib/donors/bd-locations";
 
@@ -112,7 +112,10 @@ export default function EditDonorPage() {
       </div>
 
       {isOwnProfile && (
-        <VerifyPhoneCard verified={profile.phone_verified} onVerified={load} />
+        <>
+          <VerifyPhoneCard verified={profile.phone_verified} onVerified={load} />
+          <ChangePasswordCard />
+        </>
       )}
 
       <div className="bg-white border rounded-2xl p-5 space-y-3">
@@ -235,6 +238,67 @@ function VerifyPhoneCard({ verified, onVerified }: { verified: boolean; onVerifi
         </>
       )}
       {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function ChangePasswordCard() {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  async function save() {
+    setBusy(true); setError(null);
+    const r = await donorApi("/api/donors/auth/change-password", "POST", {
+      current_password: current, new_password: next,
+    });
+    setBusy(false);
+    if (!r.ok) { setError(r.data.error ?? "Failed"); return; }
+    setCurrent(""); setNext(""); setDone(true); setOpen(false);
+  }
+
+  if (!open) {
+    return (
+      <div className="rounded-2xl border bg-white p-4">
+        {done && (
+          <p className="mb-2 flex items-center gap-1.5 text-sm text-green-700">
+            <ShieldCheck className="h-4 w-4" /> Password updated.
+          </p>
+        )}
+        <button onClick={() => { setOpen(true); setDone(false); }}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-red-600">
+          <KeyRound className="h-4 w-4" /> Change password
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border bg-white p-5 space-y-3">
+      <p className="flex items-center gap-2 text-sm font-bold text-gray-800">
+        <KeyRound className="h-4 w-4 text-red-600" /> Change password
+      </p>
+      <Field label="Current password" required>
+        <PasswordInput value={current} onChange={setCurrent} autoComplete="current-password" />
+      </Field>
+      <Field label="New password (6+ characters)" required>
+        <PasswordInput value={next} onChange={setNext} autoComplete="new-password" />
+      </Field>
+      <p className="text-xs text-gray-500">
+        Forgot your current password? Log out and use{" "}
+        <Link href="/donors/auth" className="text-red-600 underline">Forgot password</Link>{" "}
+        to reset it by SMS.
+      </p>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      <div className="flex gap-2">
+        <button onClick={save} disabled={busy || !current || next.length < 6} className={btnCls}>
+          {busy && <Loader2 className="h-4 w-4 animate-spin" />} Update password
+        </button>
+        <button onClick={() => { setOpen(false); setError(null); }} className={btnGhostCls}>Cancel</button>
+      </div>
     </div>
   );
 }
