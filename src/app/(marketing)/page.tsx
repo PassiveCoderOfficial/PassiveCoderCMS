@@ -15,6 +15,7 @@ import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
+import { LocationConsent } from "@/components/donors/location-consent";
 import type { Block } from "@/types/cms";
 
 export const dynamic = "force-dynamic";
@@ -70,9 +71,12 @@ export default async function MarketingHomePage() {
     if (rawBlocks.length > 0) {
       return (
         <div className="min-h-screen">
-          {isBloodSite
-            ? <DonorSiteHeader showTranslate={!!siteSettings?.auto_translate_enabled} />
-            : globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
+          {isBloodSite ? (
+            <>
+              <DonorSiteHeader showTranslate={!!siteSettings?.auto_translate_enabled} />
+              <LocationConsent />
+            </>
+          ) : globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
           <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>

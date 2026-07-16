@@ -158,6 +158,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
     return sessionResponse({ ok: true }, donor.id, tenantId, isApp);
   }
 
+  // ── location-consent: record the first-login GPS ask ──────────────────────
+  // Donors without coordinates can't be matched to nearby urgent requests, so
+  // we ask once after their first login. Either way we set the seen flag so
+  // the prompt never nags again.
+  if (action === "location-consent") {
+    const me = await getDonorSession(tenantId);
+    if (!me) return NextResponse.json({ error: "login_required" }, { status: 401 });
+
+    const patch: Record<string, unknown> = {
+      location_prompt_seen: true, updated_at: new Date().toISOString(),
+    };
+    if (typeof body.lat === "number" && typeof body.lng === "number") {
+      patch.lat = body.lat;
+      patch.lng = body.lng;
+    }
+    await supabase.from("donors").update(patch)
+      .eq("id", me.id).eq("tenant_id", tenantId);
+    return NextResponse.json({ ok: true });
+  }
+
   // ── verify-phone: logged-in donor requests an OTP to verify their number ──
   if (action === "verify-phone") {
     const me = await getDonorSession(tenantId);

@@ -9,6 +9,7 @@ import { CartDrawer } from "@/components/site/cart-drawer";
 import { MaintenanceScreen } from "@/components/site/maintenance-screen";
 import { GoogleTranslateWidget } from "@/components/site/google-translate-widget";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
+import { LocationConsent } from "@/components/donors/location-consent";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -176,7 +177,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           directory (present on every /donors/* route too, via donors/layout.tsx),
           otherwise the tenant's page-builder global header block. */}
       {isBloodSite ? (
-        <DonorSiteHeader showTranslate={!!settings?.auto_translate_enabled} />
+        <>
+          <DonorSiteHeader showTranslate={!!settings?.auto_translate_enabled} />
+          <LocationConsent />
+        </>
       ) : globalHeader.length > 0 ? (
         <PageRenderer blocks={globalHeader} />
       ) : null}

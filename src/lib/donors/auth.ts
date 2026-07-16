@@ -72,7 +72,7 @@ export async function getDonorSession(tenantId: string) {
   if (!parsed || parsed.tenantId !== tenantId) return null;
   const supabase = await createAdminClient();
   const { data } = await supabase.from("donors")
-    .select("id, name, phone, blood_group, is_active, is_admin, photo_url")
+    .select("id, name, phone, blood_group, is_active, is_admin, photo_url, lat, lng, location_prompt_seen")
     .eq("id", parsed.donorId).eq("tenant_id", tenantId).maybeSingle();
   return data?.is_active ? data : null;
 }

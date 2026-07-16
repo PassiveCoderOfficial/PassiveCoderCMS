@@ -119,9 +119,12 @@ export async function POST(req: NextRequest) {
     .limit(2000);
 
   let matches = (candidates ?? []).filter((d) => {
-    // Only ping donors who are actually eligible to give right now.
+    // Notify anyone not provably ineligible: "ready" (past cooldown, or
+    // never donated) plus "unknown" (no date on file). Most entries have no
+    // recorded date, so requiring "ready" alone silenced nearly the whole
+    // directory. Only skip donors inside the cooldown or marked unavailable.
     const a = availabilityOf(d.last_donated_on, d.is_available, d.never_donated);
-    return a === "ready";
+    return a === "ready" || a === "unknown";
   });
 
   if (lat != null && lng != null) {
