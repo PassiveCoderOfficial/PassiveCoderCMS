@@ -40,6 +40,15 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
   const orderMap = { latest: "created_at", price_asc: "price", price_desc: "price", featured: "featured" } as const;
   const ascending = sortBy === "price_asc";
 
+  // Category filter — products.category_ids is a jsonb array, so match products
+  // whose array contains ANY of the selected ids. Falls back to the legacy
+  // single-category field. Empty/unset = all categories.
+  const selectedCategories = data.categoryIds?.length
+    ? data.categoryIds
+    : data.categoryId
+      ? [data.categoryId]
+      : [];
+
   let productsQuery = supabase
     .from("products")
     .select("id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity")
@@ -47,6 +56,11 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
     .order(orderMap[sortBy] ?? "created_at", { ascending })
     .limit(displayCount);
   if (tenantId) productsQuery = productsQuery.eq("tenant_id", tenantId);
+  if (selectedCategories.length > 0) {
+    productsQuery = productsQuery.or(
+      selectedCategories.map((id) => `category_ids.cs.["${id}"]`).join(","),
+    );
+  }
   const { data: products } = await productsQuery;
 
   if (!products?.length) {

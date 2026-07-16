@@ -276,7 +276,10 @@ export type EcommerceProductsBlockProps = BlockBase & {
     displayCount: number;
     layout: "grid" | "list" | "featured" | "minimal" | "wide-cards";
     columns: 2 | 3 | 4 | 5;
+    /** @deprecated single-category selection — use categoryIds */
     categoryId?: string;
+    /** Show only products in these categories. Empty/undefined = all categories. */
+    categoryIds?: string[];
     sortBy: "latest" | "price_asc" | "price_desc" | "featured";
     showAddToCart: boolean;
     showDescription: boolean;

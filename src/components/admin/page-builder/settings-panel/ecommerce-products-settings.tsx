@@ -1,17 +1,39 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
+import { cn } from "@/lib/utils";
 import type { EcommerceProductsBlockProps } from "@/types/cms";
+
+type Category = { id: string; name: string };
 
 export function EcommerceProductsSettings({ block }: { block: EcommerceProductsBlockProps }) {
   const { updateBlock } = useBuilderStore();
   const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
   const d = block.data;
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => {
+    const supabase = createClient();
+    getClientTenantId().then((tenantId) => {
+      let q = supabase.from("categories").select("id,name").eq("type", "product").order("name");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => setCategories((data as Category[]) ?? []));
+    });
+  }, []);
+
+  // Legacy blocks stored a single categoryId; treat it as a one-item selection.
+  const selected = d.categoryIds ?? (d.categoryId ? [d.categoryId] : []);
+  const toggleCategory = (id: string) => {
+    const next = selected.includes(id) ? selected.filter((c) => c !== id) : [...selected, id];
+    updateBlock(block.id, { data: { ...d, categoryIds: next, categoryId: undefined } });
+  };
 
   return (
     <div className="space-y-4">
@@ -29,6 +51,35 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
       <div>
         <Label className="text-xs">Display Count</Label>
         <Input type="number" value={d.displayCount} onChange={(e) => update("displayCount", Number(e.target.value))} className="h-8 text-xs mt-1" min={1} max={24} />
+      </div>
+      <div>
+        <Label className="text-xs">Categories</Label>
+        {categories.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground mt-1">No product categories yet.</p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => toggleCategory(c.id)}
+                  className={cn(
+                    "px-2 py-1 rounded-full text-[11px] font-medium border transition-colors",
+                    selected.includes(c.id)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40",
+                  )}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5">
+              {selected.length === 0 ? "Showing all categories" : `Filtering to ${selected.length} selected`}
+            </p>
+          </>
+        )}
       </div>
       <div>
         <Label className="text-xs">Sort By</Label>
