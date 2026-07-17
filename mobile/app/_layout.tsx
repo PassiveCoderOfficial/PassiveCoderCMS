@@ -7,11 +7,11 @@ import { AuthProvider } from "../lib/auth";
 import { colors } from "../lib/theme";
 
 export default function RootLayout() {
-  // Tapping an urgent-request push opens that request.
+  // Tapping an urgent-request push opens the requests tab.
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((res) => {
       const data = res.notification.request.content.data as { type?: string; requestId?: string };
-      if (data?.type === "blood_request") router.push("/requests");
+      if (data?.type === "blood_request") router.push("/(tabs)/requests");
     });
     return () => sub.remove();
   }, []);
@@ -35,6 +35,7 @@ export default function RootLayout() {
           <Stack.Screen name="donor/claim/[id]" options={{ title: "Claim profile" }} />
           <Stack.Screen name="add" options={{ title: "Add Donor" }} />
           <Stack.Screen name="requests/new" options={{ title: "Post request" }} />
+          <Stack.Screen name="requests/edit/[id]" options={{ title: "Edit request" }} />
         </Stack>
       </AuthProvider>
     </SafeAreaProvider>

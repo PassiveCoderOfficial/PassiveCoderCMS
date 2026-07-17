@@ -65,10 +65,6 @@ export default function MeScreen() {
             </Pressable>
           </View>
 
-          {me.is_admin && (
-            <Button title="Admin: manage all donors" variant="dark" icon="shield-checkmark"
-              onPress={() => router.push("/admin" as never)} />
-          )}
 
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <Text style={styles.h2}>My entries ({entries.length})</Text>
