@@ -117,6 +117,25 @@ export function Input(props: TextInputProps) {
   );
 }
 
+export function PasswordInput(props: TextInputProps) {
+  const [show, setShow] = React.useState(false);
+  return (
+    <View style={{ position: "relative", justifyContent: "center" }}>
+      <TextInput
+        secureTextEntry={!show}
+        placeholderTextColor={colors.textFaint}
+        autoCapitalize="none"
+        {...props}
+        style={[styles.input, { paddingRight: 42 }, props.style]}
+      />
+      <Pressable onPress={() => setShow((v) => !v)}
+        style={{ position: "absolute", right: 8, padding: 8 }}>
+        <Ionicons name={show ? "eye-off-outline" : "eye-outline"} size={18} color={colors.textFaint} />
+      </Pressable>
+    </View>
+  );
+}
+
 export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
