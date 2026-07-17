@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "Blood Donors BD",
-    "slug": "blood-donors-bd",
+    "slug": "blooddonorbd",
+    "owner": "passivecoder",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,10 +11,12 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#b91c1c"
+      "resizeMode": "cover",
+      "backgroundColor": "#7f1d1d"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.passivecoder.blooddonorsbd",
@@ -30,12 +33,15 @@
         "backgroundColor": "#b91c1c"
       },
       "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
       ],
       "config": {
         "googleMaps": {
@@ -69,7 +75,7 @@
     "extra": {
       "apiBase": "https://blood.passivecoder.com",
       "eas": {
-        "projectId": "00000000-0000-0000-0000-000000000000"
+        "projectId": "572ce940-25e6-4198-85e8-b8d556b62dad"
       }
     }
   }
