@@ -71,7 +71,8 @@
           "color": "#dc2626"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "extra": {
       "apiBase": "https://blood.passivecoder.com",
