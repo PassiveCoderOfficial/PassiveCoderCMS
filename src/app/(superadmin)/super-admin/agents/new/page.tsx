@@ -12,10 +12,10 @@ interface ProfileResult {
 }
 
 function Field({
-  label, value, onChange, type = "text", placeholder, required, helper,
+  label, value, onChange, type = "text", placeholder, required, helper, disabled,
 }: {
   label: string; value: string; onChange: (v: string) => void;
-  type?: string; placeholder?: string; required?: boolean; helper?: string;
+  type?: string; placeholder?: string; required?: boolean; helper?: string; disabled?: boolean;
 }) {
   return (
     <div>
@@ -28,7 +28,8 @@ function Field({
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
+        disabled={disabled}
+        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
       />
       {helper && <p className="text-xs text-gray-600 mt-1">{helper}</p>}
     </div>
@@ -207,8 +208,12 @@ export default function NewAgentPage() {
           <h2 className="font-semibold text-white text-sm">Agent Information</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Full Name" value={fullName} onChange={setFullName} placeholder="John Smith" required />
-            <Field label="Email" value={email} onChange={setEmail} type="email" placeholder="john@agency.com" required />
+            <Field label="Full Name" value={fullName} onChange={setFullName} placeholder="John Smith" required
+              disabled={mode === "existing" && !!selectedUser}
+              helper={mode === "existing" && selectedUser ? "From linked account" : undefined} />
+            <Field label="Email" value={email} onChange={setEmail} type="email" placeholder="john@agency.com" required
+              disabled={mode === "existing" && !!selectedUser}
+              helper={mode === "existing" && selectedUser ? "From linked account" : undefined} />
           </div>
 
           {mode === "new" && (
