@@ -14,18 +14,24 @@ export function ContainerSettings({ block }: { block: ContainerBlockProps }) {
   const { updateBlock } = useBuilderStore();
   const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
 
-  const addColumn = () => {
-    const cols = [...block.data.columns, { id: generateId(), widthPct: 0, blocks: [] }];
+  // Zustand/immer state is read-only outside set() — rebalancing widths must
+  // produce new column objects, never mutate the ones read from block.data.
+  const rebalanced = (cols: typeof block.data.columns) => {
     const evenWidth = Math.floor(100 / cols.length);
-    cols.forEach((c, i) => { c.widthPct = i === cols.length - 1 ? 100 - evenWidth * (cols.length - 1) : evenWidth; });
+    return cols.map((c, i) => ({
+      ...c,
+      widthPct: i === cols.length - 1 ? 100 - evenWidth * (cols.length - 1) : evenWidth,
+    }));
+  };
+
+  const addColumn = () => {
+    const cols = rebalanced([...block.data.columns, { id: generateId(), widthPct: 0, blocks: [] }]);
     update("columns", cols);
   };
 
   const removeColumn = (i: number) => {
     if (block.data.columns.length <= 1) return;
-    const cols = block.data.columns.filter((_, idx) => idx !== i);
-    const evenWidth = Math.floor(100 / cols.length);
-    cols.forEach((c, idx) => { c.widthPct = idx === cols.length - 1 ? 100 - evenWidth * (cols.length - 1) : evenWidth; });
+    const cols = rebalanced(block.data.columns.filter((_, idx) => idx !== i));
     update("columns", cols);
   };
 
