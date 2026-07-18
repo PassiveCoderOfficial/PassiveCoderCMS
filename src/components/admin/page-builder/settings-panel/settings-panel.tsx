@@ -35,6 +35,7 @@ import { BookingSettings } from "./booking-settings";
 import { DonorGroupCardsSettings, DonorListSettings, DonorMapSettings } from "./donor-settings";
 import { BlockLayoutSettings } from "./block-layout-settings";
 import { ContainerSettings } from "./container-settings";
+import { SettingsBreadcrumb } from "./settings-breadcrumb";
 import { Layers } from "lucide-react";
 import type { Block } from "@/types/cms";
 
@@ -57,6 +58,7 @@ export function SettingsPanel() {
 
   return (
     <div className="flex flex-col h-full">
+      <SettingsBreadcrumb blockId={block.id} />
       <div className="px-3 py-2 border-b">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {block.type.replace(/_/g, " ")} settings

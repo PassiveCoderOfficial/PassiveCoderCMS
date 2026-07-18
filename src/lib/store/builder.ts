@@ -36,6 +36,7 @@ interface BuilderStore extends BuilderState {
   canUndo: () => boolean;
   canRedo: () => boolean;
   getBlock: (id: string) => Block | undefined;
+  getBlockPath: (id: string) => BlockPathEntry[] | undefined;
   reset: () => void;
 }
 
@@ -71,6 +72,32 @@ function findBlockDeep(blocks: Block[], id: string): Block | undefined {
       for (const col of (b as ContainerBlockProps).data.columns) {
         const found = col.blocks.find((c) => c.id === id);
         if (found) return found;
+      }
+    }
+  }
+  return undefined;
+}
+
+/** A single crumb in a block's ancestry, root-first. The last entry is
+ *  always the block itself; a mid entry is its parent container (with the
+ *  column index it lives in), when nested one level deep. */
+export interface BlockPathEntry {
+  id: string;
+  type: string;
+  columnIndex?: number;
+}
+
+/** Root -> [container (+ column)] -> block. Container nesting is capped at
+ *  one level, so this path is at most 2 entries. */
+function getBlockPathDeep(blocks: Block[], id: string): BlockPathEntry[] | undefined {
+  const direct = blocks.find((b) => b.id === id);
+  if (direct) return [{ id: direct.id, type: direct.type }];
+  for (const b of blocks) {
+    if (b.type === "container") {
+      const columns = (b as ContainerBlockProps).data.columns;
+      for (let i = 0; i < columns.length; i++) {
+        const found = columns[i].blocks.find((c) => c.id === id);
+        if (found) return [{ id: b.id, type: b.type }, { id: found.id, type: found.type, columnIndex: i }];
       }
     }
   }
@@ -255,6 +282,7 @@ export const useBuilderStore = create<BuilderStore>()(
     canRedo: () => get().historyIndex < get().history.length - 1,
 
     getBlock: (id) => findBlockDeep(get().blocks, id),
+    getBlockPath: (id) => getBlockPathDeep(get().blocks, id),
 
     reset: () => set(() => ({ ...initialState })),
   })),

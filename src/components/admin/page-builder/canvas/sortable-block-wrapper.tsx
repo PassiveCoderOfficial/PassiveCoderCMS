@@ -42,9 +42,9 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
       style={style}
       className={cn(
         "relative group",
-        isEditing && "outline-2 outline-transparent",
+        isEditing && "outline-2 outline-transparent outline-offset-[-2px]",
         isEditing && isHovered && !isSelected && "outline-blue-300 outline-dashed",
-        isEditing && isSelected && "outline-blue-500 outline-solid",
+        isEditing && isSelected && "outline-4 outline-blue-600 outline-solid shadow-[0_0_0_4px_rgba(37,99,235,0.15)]",
         isDragging && "opacity-30",
       )}
       onClick={(e) => {
@@ -56,7 +56,7 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
       onMouseLeave={() => isEditing && hoverBlock(undefined)}
     >
       {isEditing && (isSelected || isHovered) && (
-        <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} />
+        <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} />
       )}
       <BlockRenderer block={block} isPreview={!isEditing} />
     </div>

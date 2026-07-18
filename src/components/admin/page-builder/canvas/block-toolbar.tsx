@@ -17,9 +17,12 @@ interface BlockToolbarProps {
   dragAttributes?: DraggableAttributes;
   /** Set when this block lives inside a container column, not at page root. */
   path?: ContainerPath;
+  /** Keep visible without hover — set when this block is the current selection,
+   *  so editors can tell what's selected without having to keep the mouse over it. */
+  pinned?: boolean;
 }
 
-export function BlockToolbar({ block, dragListeners, dragAttributes, path }: BlockToolbarProps) {
+export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned }: BlockToolbarProps) {
   const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock } = useBuilderStore();
   const siblings = path
     ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
@@ -43,8 +46,8 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path }: Blo
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          "absolute -top-8 left-0 z-20 flex items-center gap-0.5 rounded-t bg-gray-900 px-1 py-0.5",
-          "opacity-0 group-hover:opacity-100 transition-opacity",
+          "absolute -top-8 left-0 z-20 flex items-center gap-0.5 rounded-t px-1 py-0.5 transition-opacity",
+          pinned ? "bg-blue-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
         )}
         onClick={(e) => e.stopPropagation()}
       >

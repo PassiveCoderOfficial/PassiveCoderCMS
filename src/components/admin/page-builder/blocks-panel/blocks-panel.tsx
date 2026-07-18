@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LayersPanel } from "./layers-panel";
 
 const categoryLabels: Record<string, string> = {
   layout: "Layout",
@@ -20,7 +21,7 @@ const categoryLabels: Record<string, string> = {
 export function BlocksPanel() {
   const { addBlock } = useBuilderStore();
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<"sections" | "blocks">("sections");
+  const [tab, setTab] = useState<"sections" | "blocks" | "layers">("sections");
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
   const q = search.toLowerCase();
@@ -54,6 +55,7 @@ export function BlocksPanel() {
         {([
           { value: "sections", label: "Sections" },
           { value: "blocks", label: "Blocks" },
+          { value: "layers", label: "Layers" },
         ] as const).map((t) => (
           <button
             key={t.value}
@@ -71,19 +73,23 @@ export function BlocksPanel() {
       </div>
 
       {/* Search */}
-      <div className="p-3 border-b shrink-0">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder={tab === "sections" ? "Search sections..." : "Search blocks..."}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 h-8 text-xs"
-          />
+      {tab !== "layers" && (
+        <div className="p-3 border-b shrink-0">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder={tab === "sections" ? "Search sections..." : "Search blocks..."}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 h-8 text-xs"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
-      {tab === "sections" ? (
+      {tab === "layers" ? (
+        <LayersPanel />
+      ) : tab === "sections" ? (
         <div className="flex-1 overflow-y-auto p-2 space-y-4">
           <p className="text-[11px] text-muted-foreground px-1 leading-snug">
             Ready-made sections with text already written — click to add, then change the words to match your business.
