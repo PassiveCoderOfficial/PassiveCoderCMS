@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
-import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings } from "lucide-react";
+import React, { useState } from "react";
+import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings, BookmarkPlus } from "lucide-react";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
+import { SavePresetDialog } from "./save-preset-dialog";
 
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { DraggableAttributes } from "@dnd-kit/core";
@@ -24,6 +25,7 @@ interface BlockToolbarProps {
 
 export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned }: BlockToolbarProps) {
   const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock } = useBuilderStore();
+  const [saveOpen, setSaveOpen] = useState(false);
   const siblings = path
     ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
         ?.data.columns[path.columnIndex]?.blocks ?? [])
@@ -39,6 +41,9 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
     { icon: ChevronUp, label: "Move up", onClick: () => canMoveUp && moveBlock(block.id, siblings[idx - 1].id, path), disabled: !canMoveUp },
     { icon: ChevronDown, label: "Move down", onClick: () => canMoveDown && moveBlock(block.id, siblings[idx + 1].id, path), disabled: !canMoveDown },
     { icon: Copy, label: "Duplicate", onClick: () => duplicateBlock(block.id, path) },
+    ...(block.type === "container"
+      ? [{ icon: BookmarkPlus, label: "Save as section", onClick: () => setSaveOpen(true) }]
+      : []),
     { icon: Trash2, label: "Delete", onClick: () => removeBlock(block.id, path), variant: "destructive" },
   ];
 
@@ -75,6 +80,9 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
           </Tooltip>
         ))}
       </div>
+      {block.type === "container" && (
+        <SavePresetDialog block={block} open={saveOpen} onOpenChange={setSaveOpen} />
+      )}
     </TooltipProvider>
   );
 }
