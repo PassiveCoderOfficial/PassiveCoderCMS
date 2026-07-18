@@ -209,8 +209,8 @@ export default function NewAgentPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Full Name" value={fullName} onChange={setFullName} placeholder="John Smith" required
-              disabled={mode === "existing" && !!selectedUser}
-              helper={mode === "existing" && selectedUser ? "From linked account" : undefined} />
+              disabled={mode === "existing" && !!selectedUser && !!selectedUser.full_name}
+              helper={mode === "existing" && selectedUser ? (selectedUser.full_name ? "From linked account" : "Account has no name set — enter one") : undefined} />
             <Field label="Email" value={email} onChange={setEmail} type="email" placeholder="john@agency.com" required
               disabled={mode === "existing" && !!selectedUser}
               helper={mode === "existing" && selectedUser ? "From linked account" : undefined} />
