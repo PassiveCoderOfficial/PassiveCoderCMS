@@ -25,19 +25,27 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
     updateBlock(block.id, { data: { ...block.data, [btn]: { ...existing, [field]: value } } });
   };
 
+  // "centered-bold" and "corporate" are single-column, always-centered
+  // designs by intent (no image split, no side-pinned text) — Layout has
+  // nothing to control there, so hide it instead of showing a dropdown that
+  // silently does nothing when changed.
+  const layoutApplies = !["centered-bold", "corporate"].includes(block.templateVariant ?? "");
+
   return (
     <div className="space-y-4">
-      <div className="space-y-1.5">
-        <Label className="text-xs">Layout</Label>
-        <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
-          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {["centered", "left", "right", "split"].map((l) => (
-              <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {layoutApplies && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Layout</Label>
+          <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["centered", "left", "right", "split"].map((l) => (
+                <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <FieldGroup label="Badge text">
         <Input value={block.data.badge ?? ""} onChange={(e) => update("badge", e.target.value)} className="h-8 text-xs" placeholder="Optional badge" />

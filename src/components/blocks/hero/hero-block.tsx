@@ -65,34 +65,58 @@ function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centere
 }
 
 // ─── Variant: split-image-right ──────────────────────────────────────────────
-// Image on right, text on left, badge pill, clean bright layout
+// Text + badge pill on one side, image on the other, clean bright layout.
+// data.layout controls which side the image sits on (and whether it shows at
+// all) — "right" (default) / "left" swap column order, "split" is the same as
+// "right", "centered" drops the image column and centers the text.
 function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-6xl";
-  return (
-    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[70vh] py-8">
-      <div className="flex flex-col gap-5">
-        {data.badge && (
-          <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold w-fit">
-            <InlineText blockId={block.id} field="badge" value={data.badge} />
-          </span>
-        )}
-        <h1 className={cn("font-bold tracking-tight leading-[1.1]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
-          <InlineText blockId={block.id} field="title" value={data.title} />
-        </h1>
-        {data.subtitle && (
-          <p className="text-xl font-medium" style={{ color: data.typography?.subtitleColor || undefined }}>
-            <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
-          </p>
-        )}
-        {data.description && (
-          <p className="text-base leading-relaxed text-muted-foreground max-w-lg" style={{ color: data.typography?.descColor || undefined }}>
-            <InlineText blockId={block.id} field="description" value={data.description} />
-          </p>
-        )}
-        <HeroButtons data={data} />
+  const isCentered = data.layout === "centered";
+  const imageFirst = data.layout === "left";
+
+  const textContent = (
+    <div className={cn("flex flex-col gap-5", isCentered && "items-center text-center")}>
+      {data.badge && (
+        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold w-fit">
+          <InlineText blockId={block.id} field="badge" value={data.badge} />
+        </span>
+      )}
+      <h1 className={cn("font-bold tracking-tight leading-[1.1]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
+        <InlineText blockId={block.id} field="title" value={data.title} />
+      </h1>
+      {data.subtitle && (
+        <p className="text-xl font-medium" style={{ color: data.typography?.subtitleColor || undefined }}>
+          <InlineText blockId={block.id} field="subtitle" value={data.subtitle} />
+        </p>
+      )}
+      {data.description && (
+        <p className={cn("text-base leading-relaxed text-muted-foreground", !isCentered && "max-w-lg")} style={{ color: data.typography?.descColor || undefined }}>
+          <InlineText blockId={block.id} field="description" value={data.description} />
+        </p>
+      )}
+      <HeroButtons data={data} centered={isCentered} />
+    </div>
+  );
+
+  if (isCentered) {
+    return (
+      <div className="max-w-3xl mx-auto py-8">
+        {textContent}
       </div>
-      {data.imageUrl && (
+    );
+  }
+
+  return (
+    <div className={cn("max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[70vh] py-8")}>
+      {imageFirst && data.imageUrl && (
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4] order-first lg:order-none">
+          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+        </div>
+      )}
+      {textContent}
+      {!imageFirst && data.imageUrl && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4]">
           <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
@@ -112,21 +136,29 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+// data.layout positions the text block within the full-bleed image: "left" /
+// "right" pin it to that edge, "centered" / "split" (default) keep it centered.
 function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
   const opacity = data.overlayOpacity ?? 0.55;
   const overlayFrom = hexToRgba(data.overlayColor ?? "#000000", opacity);
   const overlayTo = data.overlayColorTo ? hexToRgba(data.overlayColorTo, opacity) : overlayFrom;
+  const isLeft = data.layout === "left";
+  const isRight = data.layout === "right";
+  const isPinned = isLeft || isRight;
   return (
-    <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <div className={cn("relative min-h-[90vh] flex items-center overflow-hidden", isPinned ? (isLeft ? "justify-start" : "justify-end") : "justify-center")}>
       {data.imageUrl && (
         <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
       )}
       <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${overlayFrom}, ${overlayTo})` }} />
       {/* Subtle gradient for readability at bottom */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-      <div className="relative z-10 max-w-4xl mx-auto text-center px-6 flex flex-col items-center gap-6">
+      <div className={cn(
+        "relative z-10 max-w-4xl mx-6 px-6 flex flex-col gap-6",
+        isPinned ? "items-start text-left" : "mx-auto text-center items-center",
+      )}>
         {data.badge && (
           <span className="inline-flex items-center gap-1.5 border border-white/30 backdrop-blur-sm text-white/90 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase">
             <InlineText blockId={block.id} field="badge" value={data.badge} />
@@ -145,14 +177,16 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
             <InlineText blockId={block.id} field="description" value={data.description} />
           </p>
         )}
-        <HeroButtons data={data} centered />
+        <HeroButtons data={data} centered={!isPinned} />
       </div>
     </div>
   );
 }
 
 // ─── Variant: centered-bold ───────────────────────────────────────────────────
-// Centred, very large text, optional bg accent pill — law, finance, authority
+// Centred, very large text, optional bg accent pill — law, finance, authority.
+// Single-column by design (no image split) — data.layout intentionally does
+// not apply here; the settings panel hides the Layout control for this variant.
 function HeroCenteredBold({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
@@ -187,20 +221,31 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
 }
 
 // ─── Variant: dark-gradient-left ─────────────────────────────────────────────
-// Text on left half over dark gradient, image fills right — agencies
+// Text over a dark gradient with a full-bleed background image — agencies.
+// data.layout controls which side the text panel sits on: "left" (default) /
+// "right" flips the gradient + text alignment, "centered" centers the text
+// column instead of pinning it to an edge.
 function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
+  const isRight = data.layout === "right";
+  const isCentered = data.layout === "centered";
+  const gradientDir = isCentered ? "bg-gradient-to-t" : isRight ? "bg-gradient-to-l" : "bg-gradient-to-r";
+
   return (
     <div className="relative min-h-[80vh] flex items-center overflow-hidden">
       {data.imageUrl && (
         <>
           <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/10" />
+          <div className={cn("absolute inset-0 from-background via-background/95 to-background/10", gradientDir)} />
         </>
       )}
-      <div className="relative z-10 max-w-7xl mx-auto w-full px-6">
-        <div className="max-w-xl flex flex-col gap-6">
+      <div className={cn(
+        "relative z-10 max-w-7xl mx-auto w-full px-6",
+        isCentered && "flex justify-center text-center",
+        isRight && "flex justify-end text-right",
+      )}>
+        <div className={cn("max-w-xl flex flex-col gap-6", isCentered && "items-center", isRight && "items-end")}>
           {data.badge && (
             <span className="inline-flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest w-fit">
               <InlineText blockId={block.id} field="badge" value={data.badge} />
@@ -219,7 +264,7 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
               <InlineText blockId={block.id} field="description" value={data.description} />
             </p>
           )}
-          <HeroButtons data={data} />
+          <HeroButtons data={data} centered={isCentered} />
         </div>
       </div>
     </div>
@@ -229,6 +274,8 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
 // ─── Variant: corporate ───────────────────────────────────────────────────────
 // Full-bleed image, diagonal brand-color gradient, subtle grid texture, centered
 // content with a bordered badge — used for manufacturing/B2B/corporate templates.
+// Single-column by design — data.layout intentionally does not apply here; the
+// settings panel hides the Layout control for this variant.
 function HeroCorporate({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl";
