@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Bell, Search, Sun, Moon, Globe, ChevronDown, Star, ExternalLink } from "lucide-react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,14 @@ const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
 const isLocal = ROOT.includes("localhost");
 const proto = isLocal ? "http" : "https";
 
-interface Site { id: string; name: string; slug: string; is_primary: boolean; }
+interface Site {
+  id: string;
+  name: string;
+  slug: string;
+  is_primary: boolean;
+  owner_email?: string;
+  custom_domain?: string;
+}
 
 interface TopbarProps {
   user?: CMSUser;
@@ -33,8 +40,21 @@ interface TopbarProps {
 
 function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: boolean }) {
   const [list] = useState(sites);
+  const [query, setQuery] = useState("");
 
   const active = list.find(s => s.is_primary) ?? list[0];
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.slug.toLowerCase().includes(q) ||
+      `${s.slug}.${ROOT}`.toLowerCase().includes(q) ||
+      s.custom_domain?.toLowerCase().includes(q) ||
+      s.owner_email?.toLowerCase().includes(q)
+    );
+  }, [list, query]);
 
   function exitImpersonation() {
     // SA's own site is the first in the list (ordered by created_at ASC)
@@ -60,12 +80,31 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
           <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
-          {isSuperAdmin ? "All Sites" : "Your Sites"}
+      <DropdownMenuContent align="start" className="w-80 p-0">
+        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-3 pt-3">
+          {isSuperAdmin ? `All Sites (${list.length})` : "Your Sites"}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {list.map(site => (
+        {list.length > 6 && (
+          <div className="px-2 pt-1.5 pb-1">
+            <div className="relative">
+              <Search className="absolute left-2 top-1.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                autoFocus
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.stopPropagation()}
+                placeholder="Search sites..."
+                className="w-full h-7 pl-7 pr-2 text-xs rounded-md border bg-background outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+          </div>
+        )}
+        <DropdownMenuSeparator className="my-0" />
+        <div className="max-h-80 overflow-y-auto py-1">
+          {filtered.length === 0 && (
+            <p className="px-3 py-4 text-xs text-center text-muted-foreground">No sites match &quot;{query}&quot;</p>
+          )}
+          {filtered.map(site => (
           <div key={site.id} className="flex items-center gap-1 px-1 py-0.5">
             {/* Click name → switch dashboard to this site */}
             <button
@@ -77,7 +116,12 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
               }`}
             >
               <span className="text-sm font-medium truncate w-full">{site.name}</span>
-              <span className="text-xs text-muted-foreground truncate w-full">{site.slug}.{ROOT}</span>
+              <span className="text-xs text-muted-foreground truncate w-full">
+                {site.custom_domain ?? `${site.slug}.${ROOT}`}
+              </span>
+              {isSuperAdmin && site.owner_email && (
+                <span className="text-[11px] text-muted-foreground/70 truncate w-full">{site.owner_email}</span>
+              )}
             </button>
             {/* External link — visit site frontend */}
             <a
@@ -104,13 +148,14 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
               </button>
             )}
           </div>
-        ))}
+          ))}
+        </div>
         {isSuperAdmin && list.length > 1 && (
           <>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="my-0" />
             <button
               onClick={exitImpersonation}
-              className="w-full px-2 py-1.5 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+              className="w-full px-3 py-2 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             >
               ← Back to Main
             </button>

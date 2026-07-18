@@ -63,6 +63,26 @@ export async function getCurrentTenantId(): Promise<string> {
       .eq("owner_id", user.id)
       .maybeSingle();
     if (owned) return subdomainTenantId;
+
+    // No access to this subdomain's tenant — do NOT silently fall through to
+    // the user's own tenant (that serves their data under someone else's
+    // domain, which is confusing even if not a data leak). Send them home.
+    const { data: ownTenant } = await adminClient
+      .from("tenant_members")
+      .select("tenant_id, is_primary, tenants(slug)")
+      .eq("user_id", user.id)
+      .order("is_primary", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const ownSlug = ownTenant
+      ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
+      : undefined;
+    if (ownSlug) {
+      const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+      const proto = rootDomain.includes("localhost") ? "http" : "https";
+      redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
+    }
+    redirect("/login?error=unauthorized");
   }
 
   // Regular user — resolve via tenant_members primary flag

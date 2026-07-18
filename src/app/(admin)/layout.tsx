@@ -87,6 +87,30 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/login?error=unauthorized");
   }
 
+  // Force-subdomain isolation: a tenant member on tenant A's subdomain must not
+  // see tenant B's dashboard just because they're logged in. If the subdomain
+  // being visited (x-tenant-id from middleware) isn't one of this user's
+  // memberships, bounce them to their own primary site's dashboard instead.
+  if (!sa && hasTenantAccess) {
+    const reqHeaders = await headers();
+    const subdomainTenantId = reqHeaders.get("x-tenant-id");
+    if (subdomainTenantId) {
+      const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
+      if (!memberTenantIds.has(subdomainTenantId)) {
+        const ownTenant = (memberships ?? []).find(m => m.is_primary) ?? (memberships ?? [])[0];
+        const ownSlug = ownTenant
+          ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
+          : undefined;
+        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+        const proto = rootDomain.includes("localhost") ? "http" : "https";
+        if (ownSlug) {
+          redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
+        }
+        redirect("/login?error=unauthorized");
+      }
+    }
+  }
+
   // Enforce suspended subscriptions for regular tenants (not SA, not agents)
   if (!sa && profile.role !== "agent" && hasTenantAccess) {
     const reqHeaders = await headers();
@@ -124,22 +148,31 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   // Fetch sites for switcher
-  let userSites: { id: string; name: string; slug: string; is_primary: boolean }[] = [];
+  let userSites: { id: string; name: string; slug: string; is_primary: boolean; owner_email?: string; custom_domain?: string }[] = [];
 
   if (sa) {
-    // SA sees all tenants
+    // SA sees all tenants — pull owner_id + custom_domain so the mega menu can
+    // filter by owner email / domain, not just site name.
     const { data: allTenants } = await adminClient
       .from("tenants")
-      .select("id, name, slug")
+      .select("id, name, slug, owner_id, custom_domain")
       .order("created_at", { ascending: true });
 
     const currentViewingId = cookieStore.get(SA_VIEWING_COOKIE)?.value;
     const saOwnedId = allTenants?.[0]?.id;
     const activeTenantId = currentViewingId ?? saOwnedId;
 
+    const ownerIds = [...new Set((allTenants ?? []).map(t => t.owner_id).filter(Boolean))] as string[];
+    const { data: owners } = ownerIds.length
+      ? await adminClient.from("profiles").select("id, email").in("id", ownerIds)
+      : { data: [] as { id: string; email: string }[] };
+    const ownerEmailById = new Map((owners ?? []).map(o => [o.id, o.email]));
+
     userSites = (allTenants ?? []).map(t => ({
       id: t.id, name: t.name, slug: t.slug,
       is_primary: t.id === activeTenantId,
+      owner_email: t.owner_id ? ownerEmailById.get(t.owner_id) : undefined,
+      custom_domain: t.custom_domain ?? undefined,
     }));
   } else {
     userSites = (memberships ?? []).map(m => {
