@@ -28,20 +28,27 @@ export function StatsSettings({ block }: { block: StatsBlockProps }) {
     <div className="space-y-3">
       <div><Label className="text-xs">Title</Label><Input value={block.data.title ?? ""} onChange={e => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={e => update("subtitle", e.target.value)} className="h-8 text-xs mt-1" /></div>
-      <div>
-        <Label className="text-xs">Style</Label>
-        <Select value={block.data.style} onValueChange={v => update("style", v)}>
-          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{["plain","cards","colored"].map(s => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label className="text-xs">Layout</Label>
-        <Select value={block.data.layout} onValueChange={v => update("layout", v)}>
-          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{["row","grid"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
+      {/* Style + Layout only affect StatsLegacy (no templateVariant set) —
+          the 7 designed variants have a fixed look and never read these
+          fields. Animate Count-Up is read universally and stays visible. */}
+      {!block.templateVariant && (
+        <>
+          <div>
+            <Label className="text-xs">Style</Label>
+            <Select value={block.data.style} onValueChange={v => update("style", v)}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>{["plain","cards","colored"].map(s => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Layout</Label>
+            <Select value={block.data.layout} onValueChange={v => update("layout", v)}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>{["row","grid"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
       <div className="flex items-center justify-between">
         <Label className="text-xs">Animate Count-Up</Label>
         <Switch checked={block.data.animate} onCheckedChange={v => update("animate", v)} />

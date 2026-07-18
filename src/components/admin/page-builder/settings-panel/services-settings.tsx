@@ -49,13 +49,20 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
       <div className="space-y-1.5"><Label className="text-xs">Section Title</Label><Input value={block.data.title ?? ""} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs" /></div>
       <div className="space-y-1.5"><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={(e) => update("subtitle", e.target.value)} className="h-8 text-xs" /></div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">Layout</Label>
-        <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
-          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>{["grid","list","cards","icon-list"].map((l) => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
+      {/* Layout + Card Style only affect ServicesLegacy (no templateVariant
+          set). The 7 designed variants have their own fixed card look and
+          don't read these fields — showing dead dropdowns for them just
+          confuses editors, so hide when a variant is active. Columns is
+          read by 6 of 7 variants and stays visible always. */}
+      {!block.templateVariant && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Layout</Label>
+          <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>{["grid","list","cards","icon-list"].map((l) => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label className="text-xs">Columns</Label>
@@ -65,13 +72,15 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
         </Select>
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">Card Style</Label>
-        <Select value={block.data.cardStyle} onValueChange={(v) => update("cardStyle", v)}>
-          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>{["flat","elevated","bordered","gradient"].map((s) => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
+      {!block.templateVariant && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Card Style</Label>
+          <Select value={block.data.cardStyle} onValueChange={(v) => update("cardStyle", v)}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>{["flat","elevated","bordered","gradient"].map((s) => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Source toggle */}
       <div className="border-t pt-3">

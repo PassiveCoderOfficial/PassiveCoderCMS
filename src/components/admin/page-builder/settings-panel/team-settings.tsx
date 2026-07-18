@@ -30,13 +30,18 @@ export function TeamSettings({ block }: { block: TeamBlockProps }) {
     <div className="space-y-3">
       <div><Label className="text-xs">Title</Label><Input value={block.data.title ?? ""} onChange={e => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={e => update("subtitle", e.target.value)} className="h-8 text-xs mt-1" /></div>
-      <div>
-        <Label className="text-xs">Layout</Label>
-        <Select value={block.data.layout} onValueChange={v => update("layout", v)}>
-          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{["grid","list","cards"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
+      {/* Layout + Show Social only affect TeamLegacy (no templateVariant) —
+          "avatar-cards" has a fixed grid look and never reads these.
+          Columns and Show Bio are read by both and stay visible always. */}
+      {!block.templateVariant && (
+        <div>
+          <Label className="text-xs">Layout</Label>
+          <Select value={block.data.layout} onValueChange={v => update("layout", v)}>
+            <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>{["grid","list","cards"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
       <div>
         <Label className="text-xs">Columns</Label>
         <Select value={String(block.data.columns)} onValueChange={v => update("columns", Number(v))}>
@@ -48,10 +53,12 @@ export function TeamSettings({ block }: { block: TeamBlockProps }) {
         <Label className="text-xs">Show Bio</Label>
         <Switch checked={block.data.showBio} onCheckedChange={v => update("showBio", v)} />
       </div>
-      <div className="flex items-center justify-between">
-        <Label className="text-xs">Show Social Links</Label>
-        <Switch checked={block.data.showSocial} onCheckedChange={v => update("showSocial", v)} />
-      </div>
+      {!block.templateVariant && (
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Show Social Links</Label>
+          <Switch checked={block.data.showSocial} onCheckedChange={v => update("showSocial", v)} />
+        </div>
+      )}
       <div className="border-t pt-3">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Members</p>

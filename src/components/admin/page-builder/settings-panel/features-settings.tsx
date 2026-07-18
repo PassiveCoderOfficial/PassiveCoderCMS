@@ -28,27 +28,34 @@ export function FeaturesSettings({ block }: { block: FeaturesBlockProps }) {
     <div className="space-y-3">
       <div><Label className="text-xs">Title</Label><Input value={block.data.title ?? ""} onChange={e => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={e => update("subtitle", e.target.value)} className="h-8 text-xs mt-1" /></div>
-      <div>
-        <Label className="text-xs">Layout</Label>
-        <Select value={block.data.layout} onValueChange={v => update("layout", v)}>
-          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{["grid","alternating","icon-list","centered"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label className="text-xs">Style</Label>
-        <Select value={block.data.style} onValueChange={v => update("style", v)}>
-          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{["minimal","card","gradient"].map(s => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label className="text-xs">Columns</Label>
-        <Select value={String(block.data.columns)} onValueChange={v => update("columns", Number(v))}>
-          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{[2,3,4].map(c => <SelectItem key={c} value={String(c)} className="text-xs">{c}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
+      {/* Layout, Style, and Columns only affect FeaturesLegacy (no
+          templateVariant) — "dark" is a fixed two-column checklist layout
+          and never reads any of these fields. */}
+      {!block.templateVariant && (
+        <>
+          <div>
+            <Label className="text-xs">Layout</Label>
+            <Select value={block.data.layout} onValueChange={v => update("layout", v)}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>{["grid","alternating","icon-list","centered"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Style</Label>
+            <Select value={block.data.style} onValueChange={v => update("style", v)}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>{["minimal","card","gradient"].map(s => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Columns</Label>
+            <Select value={String(block.data.columns)} onValueChange={v => update("columns", Number(v))}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>{[2,3,4].map(c => <SelectItem key={c} value={String(c)} className="text-xs">{c}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
       <div className="border-t pt-3">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Features</p>

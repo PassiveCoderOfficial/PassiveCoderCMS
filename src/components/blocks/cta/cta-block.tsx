@@ -35,14 +35,26 @@ function CTAButtons({ data, dark }: { data: CTABlockProps["data"]; dark?: boolea
   );
 }
 
+// data.layout ("centered" default / "left" / "split") switches every banner
+// variant between a centered stack and a side-by-side text+buttons split —
+// each variant keeps its own color/shape, only the arrangement changes.
+// "left" and "split" render the same split arrangement (no separate
+// left-aligned-but-stacked layout exists for these banners).
+
 // ─── Variant: gradient-banner ─────────────────────────────────────────────────
-// Primary gradient background, centered — cleaning / agency
+// Primary gradient background — cleaning / agency
 function CTAGradientBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId: string }) {
+  const isSplit = data.layout === "left" || data.layout === "split";
   return (
-    <div className="max-w-5xl mx-auto text-center bg-gradient-to-r from-primary to-secondary rounded-2xl px-8 py-14 text-white shadow-xl shadow-primary/20">
-      <h2 className="text-3xl md:text-4xl font-bold mb-3"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
-      {data.description && <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto"><InlineText blockId={blockId} field="description" value={data.description} /></p>}
-      <div className="flex gap-4 justify-center flex-wrap">
+    <div className={cn(
+      "max-w-5xl mx-auto bg-gradient-to-r from-primary to-secondary rounded-2xl px-8 py-14 text-white shadow-xl shadow-primary/20",
+      isSplit ? "flex flex-col md:flex-row items-center justify-between gap-8" : "text-center",
+    )}>
+      <div className={isSplit ? "max-w-xl" : undefined}>
+        <h2 className="text-3xl md:text-4xl font-bold mb-3"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
+        {data.description && <p className={cn("text-white/80 text-lg", isSplit ? "mb-0" : "mb-8 max-w-2xl mx-auto")}><InlineText blockId={blockId} field="description" value={data.description} /></p>}
+      </div>
+      <div className={cn("flex gap-4 flex-wrap", isSplit ? "shrink-0" : "justify-center")}>
         <CTAButtons data={data} dark />
       </div>
     </div>
@@ -50,11 +62,15 @@ function CTAGradientBanner({ data, blockId }: { data: CTABlockProps["data"]; blo
 }
 
 // ─── Variant: dark-split ─────────────────────────────────────────────────────
-// Dark split layout: text left, buttons right — luxury
+// Dark card — luxury
 function CTADarkSplit({ data, blockId }: { data: CTABlockProps["data"]; blockId: string }) {
+  const isCentered = data.layout === "centered" || !data.layout;
   return (
-    <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 bg-card border border-border rounded-xl px-10 py-10">
-      <div className="max-w-xl">
+    <div className={cn(
+      "max-w-6xl mx-auto bg-card border border-border rounded-xl px-10 py-10",
+      isCentered ? "text-center flex flex-col items-center gap-6" : "flex flex-col md:flex-row items-center justify-between gap-8",
+    )}>
+      <div className={isCentered ? "max-w-2xl" : "max-w-xl"}>
         <h2 className="text-2xl md:text-3xl font-light tracking-wide"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
         {data.description && <p className="text-muted-foreground mt-3 text-sm leading-relaxed"><InlineText blockId={blockId} field="description" value={data.description} /></p>}
       </div>
@@ -68,9 +84,13 @@ function CTADarkSplit({ data, blockId }: { data: CTABlockProps["data"]; blockId:
 // ─── Variant: navy-banner ──────────────────────────────────────────────────────
 // Solid navy, serif feel — law firm
 function CTANavyBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId: string }) {
+  const isCentered = data.layout === "centered" || !data.layout;
   return (
-    <div className="max-w-5xl mx-auto bg-primary rounded-none px-10 py-14 text-primary-foreground flex flex-col md:flex-row items-center justify-between gap-8">
-      <div>
+    <div className={cn(
+      "max-w-5xl mx-auto bg-primary rounded-none px-10 py-14 text-primary-foreground",
+      isCentered ? "text-center flex flex-col items-center gap-6" : "flex flex-col md:flex-row items-center justify-between gap-8",
+    )}>
+      <div className={isCentered ? "max-w-2xl" : undefined}>
         <h2 className="text-3xl font-bold mb-2"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
         {data.description && <p className="text-primary-foreground/80 max-w-xl text-sm leading-relaxed"><InlineText blockId={blockId} field="description" value={data.description} /></p>}
       </div>
@@ -84,11 +104,19 @@ function CTANavyBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId
 // ─── Variant: warm-banner ─────────────────────────────────────────────────────
 // Warm amber tones — restaurant
 function CTAWarmBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId: string }) {
+  const isSplit = data.layout === "left" || data.layout === "split";
   return (
-    <div className="max-w-4xl mx-auto text-center bg-primary/10 border border-primary/20 rounded-xl px-8 py-12">
-      <h2 className="text-3xl font-bold italic mb-3"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
-      {data.description && <p className="text-muted-foreground mb-8 max-w-xl mx-auto text-sm leading-relaxed"><InlineText blockId={blockId} field="description" value={data.description} /></p>}
-      <CTAButtons data={data} />
+    <div className={cn(
+      "max-w-4xl mx-auto bg-primary/10 border border-primary/20 rounded-xl px-8 py-12",
+      isSplit ? "flex flex-col md:flex-row items-center justify-between gap-8" : "text-center",
+    )}>
+      <div className={isSplit ? "max-w-xl" : undefined}>
+        <h2 className="text-3xl font-bold italic mb-3"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
+        {data.description && <p className={cn("text-muted-foreground text-sm leading-relaxed", !isSplit && "mb-8 max-w-xl mx-auto")}><InlineText blockId={blockId} field="description" value={data.description} /></p>}
+      </div>
+      <div className="shrink-0">
+        <CTAButtons data={data} />
+      </div>
     </div>
   );
 }
@@ -96,9 +124,10 @@ function CTAWarmBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId
 // ─── Variant: orange-banner ────────────────────────────────────────────────────
 // Solid orange, bold uppercase — gym
 function CTAOrangeBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId: string }) {
+  const isCentered = data.layout === "centered" || !data.layout;
   return (
     <div className="max-w-6xl mx-auto cta-section bg-gradient-to-r from-primary to-secondary rounded-none px-8 py-12 text-white">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className={cn("flex flex-col gap-6", isCentered ? "items-center text-center" : "md:flex-row items-center justify-between gap-6")}>
         <div>
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
           {data.description && <p className="text-white/80 mt-2 text-sm"><InlineText blockId={blockId} field="description" value={data.description} /></p>}
