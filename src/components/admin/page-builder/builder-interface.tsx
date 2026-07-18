@@ -222,9 +222,11 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
                 <BlocksPanel />
               </div>
             )}
-            <div className="hidden lg:flex w-52 border-r shrink-0 overflow-hidden flex-col">
-              <BlocksPanel />
-            </div>
+            {showBlocks && (
+              <div className="hidden lg:flex w-52 border-r shrink-0 overflow-hidden flex-col">
+                <BlocksPanel />
+              </div>
+            )}
           </>
 
           {/* Canvas */}
