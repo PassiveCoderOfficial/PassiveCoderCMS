@@ -74,7 +74,13 @@ export function NewPageForm({ tenantId }: { tenantId: string }) {
       toast.success("Page created! Opening builder...");
       router.push(`/dashboard/pages/${data.id}`);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to create page";
+      // Supabase's PostgrestError is a plain object, not an Error instance —
+      // `err instanceof Error` is false for it, so its real .message was
+      // being discarded in favor of a generic fallback, masking the actual
+      // duplicate-slug cause behind a useless toast.
+      const msg = (err && typeof err === "object" && "message" in err && typeof err.message === "string")
+        ? err.message
+        : "Failed to create page";
       if (msg.includes("duplicate")) {
         form.setError("slug", { message: "This slug is already taken" });
       } else {
