@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const user = await requireSuperAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, slug, plan, owner_user_id, template_id, template_mode } = await req.json();
+  const { name, slug, plan, owner_user_id, template_id, template_mode, assigned_agent_id } = await req.json();
   if (!name || !slug) return NextResponse.json({ error: "Missing name or slug" }, { status: 400 });
 
   const supabase = await createAdminClient();
@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       status: "onboarded",
       owner_id: owner_user_id ?? null,
       onboarding_completed: true,
+      assigned_agent_id: assigned_agent_id ?? null,
     })
     .select("id")
     .single();

@@ -77,10 +77,13 @@ export function TemplateSelect({ value, onChange, dark }: {
                 selected ? cardSelected : cardBase
               }`}
             >
-              <div
-                className="h-20 relative"
-                style={{ background: `linear-gradient(135deg, ${t.thumbFrom}, ${t.thumbTo})` }}
-              >
+              <div className="h-20 relative overflow-hidden bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/images/templates/${t.slug}.jpg`}
+                  alt={`${t.name} preview`}
+                  className="w-full h-full object-cover object-top"
+                />
                 {selected && (
                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                     <CheckCircle className="w-7 h-7 text-primary drop-shadow-lg" />

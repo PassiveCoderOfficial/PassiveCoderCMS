@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Check, Loader2, AlertCircle, Zap } from "lucide-react";
 import { TemplateSelect, type TemplateSelectValue } from "@/components/admin/template-select";
 
 function slugify(s: string) {
@@ -12,6 +12,10 @@ function slugify(s: string) {
 
 export default function NewSitePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const agentId = searchParams.get("agentId");
+  const agentName = searchParams.get("agentName");
+
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
@@ -66,6 +70,7 @@ export default function NewSitePage() {
       body: JSON.stringify({
         name: name.trim(), slug, plan, owner_user_id: userId,
         template_id: template.templateId, template_mode: template.templateMode,
+        assigned_agent_id: agentId ?? undefined,
       }),
     });
 
@@ -88,6 +93,13 @@ export default function NewSitePage() {
         </Link>
         <h1 className="text-2xl font-bold text-white">New Site</h1>
       </div>
+
+      {agentId && (
+        <div className="flex items-center gap-2 bg-indigo-950/40 border border-indigo-800 rounded-lg px-4 py-2.5 text-sm text-indigo-300">
+          <Zap className="w-4 h-4 shrink-0 text-yellow-400" />
+          Will be assigned to agent <strong className="text-white">{agentName ?? agentId}</strong>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">

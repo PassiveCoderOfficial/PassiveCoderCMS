@@ -91,7 +91,7 @@ export default function AgentSidebar({ agent, sites }: { agent: Agent; sites: Si
         ) : sites.length === 1 ? (
           <div className="flex items-center gap-1 px-1">
             <a
-              href={`${proto}://${sites[0].slug}.${ROOT}/dashboard`}
+              href={`/api/agent/sites/${sites[0].id}/view`}
               className="flex flex-1 items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors truncate"
             >
               <Globe className="w-3.5 h-3.5 shrink-0" />
@@ -122,7 +122,7 @@ export default function AgentSidebar({ agent, sites }: { agent: Agent; sites: Si
               {sites.map(site => (
                 <div key={site.id} className="flex items-center gap-1 px-1 py-0.5">
                   <a
-                    href={`${proto}://${site.slug}.${ROOT}/dashboard`}
+                    href={`/api/agent/sites/${site.id}/view`}
                     className="flex-1 flex flex-col px-2 py-1.5 rounded-md hover:bg-accent transition-colors min-w-0"
                     onClick={() => setOpen(false)}
                   >

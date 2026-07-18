@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, Globe, DollarSign, TrendingUp, Percent, ExternalLink,
-  Zap, Link as LinkIcon, Building2, Calendar, CheckCircle, XCircle,
+  Zap, Link as LinkIcon, Building2, Calendar, CheckCircle, XCircle, Plus,
 } from "lucide-react";
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
@@ -16,6 +16,47 @@ function StatusBadge({ status }: { status: string }) {
     status === "suspended" ? "bg-red-900/40 text-red-400" :
     "bg-gray-800 text-gray-400";
   return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{status}</span>;
+}
+
+type SiteRow = {
+  id: string; name: string; slug: string; status: string; plan: string;
+  created_at: string; onboarding_completed: boolean;
+};
+
+function SiteTable({ sites, empty }: { sites: SiteRow[] | null | undefined; empty: string }) {
+  if (!sites?.length) return <p className="text-xs text-gray-600 px-5 py-6 text-center">{empty}</p>;
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-gray-800">
+          {["Site", "Plan", "Status", "Onboarded", "Created", "Visit"].map(h => (
+            <th key={h} className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {sites.map(site => (
+          <tr key={site.id} className="border-b border-gray-800/40 hover:bg-gray-800/20">
+            <td className="px-4 py-2.5 text-white font-medium">{site.name}</td>
+            <td className="px-4 py-2.5 text-gray-400 text-xs capitalize">{site.plan}</td>
+            <td className="px-4 py-2.5"><StatusBadge status={site.status} /></td>
+            <td className="px-4 py-2.5 text-xs">
+              {site.onboarding_completed
+                ? <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                : <XCircle className="w-3.5 h-3.5 text-gray-600" />}
+            </td>
+            <td className="px-4 py-2.5 text-gray-500 text-xs">{new Date(site.created_at).toLocaleDateString()}</td>
+            <td className="px-4 py-2.5">
+              <a href={`${proto}://${site.slug}.${ROOT}`} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300">
+                <ExternalLink className="w-3 h-3" /> Visit
+              </a>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }
 
 export default async function SAAgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -52,42 +93,6 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
     { label: "Commission", value: `${agent.commission_rate}%`, icon: Percent, color: "text-yellow-400 bg-yellow-900/20" },
   ];
 
-  function SiteTable({ sites, empty }: { sites: typeof assigned; empty: string }) {
-    if (!sites?.length) return <p className="text-xs text-gray-600 px-5 py-6 text-center">{empty}</p>;
-    return (
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-gray-800">
-            {["Site", "Plan", "Status", "Onboarded", "Created", "Visit"].map(h => (
-              <th key={h} className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sites.map(site => (
-            <tr key={site.id} className="border-b border-gray-800/40 hover:bg-gray-800/20">
-              <td className="px-4 py-2.5 text-white font-medium">{site.name}</td>
-              <td className="px-4 py-2.5 text-gray-400 text-xs capitalize">{site.plan}</td>
-              <td className="px-4 py-2.5"><StatusBadge status={site.status} /></td>
-              <td className="px-4 py-2.5 text-xs">
-                {site.onboarding_completed
-                  ? <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                  : <XCircle className="w-3.5 h-3.5 text-gray-600" />}
-              </td>
-              <td className="px-4 py-2.5 text-gray-500 text-xs">{new Date(site.created_at).toLocaleDateString()}</td>
-              <td className="px-4 py-2.5">
-                <a href={`${proto}://${site.slug}.${ROOT}`} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300">
-                  <ExternalLink className="w-3 h-3" /> Visit
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  }
-
   return (
     <div className="p-6 space-y-6 max-w-5xl">
       {/* Header */}
@@ -101,6 +106,12 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
           <p className="text-xs text-gray-500">{agent.email}</p>
         </div>
         <StatusBadge status={agent.status} />
+        <Link
+          href={`/super-admin/sites/new?agentId=${agent.id}&agentName=${encodeURIComponent(agent.full_name)}`}
+          className="ml-auto flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-2 rounded-lg transition-colors"
+        >
+          <Plus className="w-4 h-4" /> Create Website
+        </Link>
       </div>
 
       {/* Agent info */}
