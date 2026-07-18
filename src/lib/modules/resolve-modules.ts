@@ -27,7 +27,18 @@ export async function resolveEnabledModules(tenantId: string): Promise<Record<Mo
     .eq("id", tenant.plan)
     .maybeSingle();
 
-  const planModules = (plan?.modules ?? {}) as Record<string, PlanModuleConfig>;
+  // tenants.plan defaults to "free"/"trial"/"agency" pre-subscription states
+  // (clients subscribe to Basic/Pro/Custom AFTER signup — there's no paid
+  // "free" tier), so most tenants have no matching plans row at all. Fail
+  // OPEN in that case — unsubscribed tenants keep full dashboard access,
+  // same as before module gating existed. Restriction only applies once a
+  // tenant is on a plan the SA has actually configured.
+  if (!plan) {
+    for (const key of MODULE_KEYS) result[key] = true;
+    return result;
+  }
+
+  const planModules = (plan.modules ?? {}) as Record<string, PlanModuleConfig>;
   const overrides = (tenant.enabled_modules ?? {}) as Record<string, boolean>;
 
   for (const key of MODULE_KEYS) {

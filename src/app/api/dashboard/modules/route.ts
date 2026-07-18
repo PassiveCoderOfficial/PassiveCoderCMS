@@ -14,9 +14,16 @@ export async function GET() {
   if (!tenant) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
   const { data: plan } = await supabase.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
-  const planModules = (plan?.modules ?? {}) as Record<string, PlanModuleConfig>;
   const overrides = (tenant.enabled_modules ?? {}) as Record<string, boolean>;
 
+  // Pre-subscription tenants (plan = "free"/"trial"/"agency") have no
+  // matching plans row — clients only get a real plan (Basic/Pro/Custom)
+  // after subscribing. Fail open, same fallback as resolveEnabledModules().
+  if (!plan) {
+    return NextResponse.json({ modules: MODULE_KEYS.map((key) => ({ key, enabled: key in overrides ? !!overrides[key] : true })) });
+  }
+
+  const planModules = (plan.modules ?? {}) as Record<string, PlanModuleConfig>;
   const modules = MODULE_KEYS
     .map((key) => {
       const cfg = planModules[key];
@@ -48,9 +55,12 @@ export async function PATCH(req: Request) {
   if (!tenant) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
   const { data: plan } = await supabase.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
-  const planModules = (plan?.modules ?? {}) as Record<string, PlanModuleConfig>;
-  if (!planModules[key]?.included) {
-    return NextResponse.json({ error: "This module isn't included in your plan" }, { status: 403 });
+  // No matching plan row (pre-subscription tenant) — fail open, same as GET.
+  if (plan) {
+    const planModules = (plan.modules ?? {}) as Record<string, PlanModuleConfig>;
+    if (!planModules[key]?.included) {
+      return NextResponse.json({ error: "This module isn't included in your plan" }, { status: 403 });
+    }
   }
 
   const overrides = { ...(tenant.enabled_modules ?? {}), [key]: !!enabled };
