@@ -6,6 +6,36 @@ import * as LucideIcons from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// ─── Group resolution ──────────────────────────────────────────────────────
+// When data.source === "group", items live in the service_groups/service_items
+// tables (Dashboard > Services), not in data.items. Both callers below resolve
+// the live items before handing off to the variant renderers, so the
+// variant components themselves stay unaware of where items came from.
+
+export type ServiceItemRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  icon_type: ServiceItem["iconType"];
+  image_url: string | null;
+  link: string | null;
+  link_label: string | null;
+};
+
+export function mapRows(rows: ServiceItemRow[]): ServiceItem[] {
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    description: r.description ?? "",
+    icon: r.icon ?? undefined,
+    iconType: r.icon_type ?? "lucide",
+    imageUrl: r.image_url ?? undefined,
+    link: r.link ?? undefined,
+    linkLabel: r.link_label ?? undefined,
+  }));
+}
+
 // ─── Icon resolver ─────────────────────────────────────────────────────────
 
 function ServiceIcon({ item, size = "md" }: { item: ServiceItem; size?: "sm" | "md" | "lg" }) {
@@ -347,16 +377,31 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
   );
 }
 
-// ─── Main export ─────────────────────────────────────────────────────────────
+export function ServicesByVariant({ data, variant }: { data: ServicesBlockProps["data"]; variant?: string }) {
+  if (variant === "icon-cards-grid") return <ServicesIconCardsGrid data={data} />;
+  if (variant === "image-cards-dark") return <ServicesImageCardsDark data={data} />;
+  if (variant === "bordered-list") return <ServicesBorderedList data={data} />;
+  if (variant === "dark-grid-cards") return <ServicesDarkGridCards data={data} />;
+  if (variant === "menu-cards") return <ServicesMenuCards data={data} />;
+  if (variant === "program-cards-dark") return <ServicesProgramCardsDark data={data} />;
+  if (variant === "numbered") return <ServicesNumbered data={data} />;
+  return <ServicesLegacy data={data} />;
+}
 
-export function ServicesBlock({ block }: { block: ServicesBlockProps }) {
-  const variant = block.templateVariant;
-  if (variant === "icon-cards-grid") return <ServicesIconCardsGrid data={block.data} />;
-  if (variant === "image-cards-dark") return <ServicesImageCardsDark data={block.data} />;
-  if (variant === "bordered-list") return <ServicesBorderedList data={block.data} />;
-  if (variant === "dark-grid-cards") return <ServicesDarkGridCards data={block.data} />;
-  if (variant === "menu-cards") return <ServicesMenuCards data={block.data} />;
-  if (variant === "program-cards-dark") return <ServicesProgramCardsDark data={block.data} />;
-  if (variant === "numbered") return <ServicesNumbered data={block.data} />;
-  return <ServicesLegacy data={block.data} />;
+// ─── Server (live site) ─────────────────────────────────────────────────────
+// Resolves group items directly from Supabase — used by page-renderer.tsx.
+
+export async function ServicesBlock({ block }: { block: ServicesBlockProps }) {
+  let data = block.data;
+  if (data.source === "group" && data.source_group_id) {
+    const { createAdminClient } = await import("@/lib/supabase/server");
+    const admin = await createAdminClient();
+    const { data: rows } = await admin
+      .from("service_items")
+      .select("id, title, description, icon, icon_type, image_url, link, link_label")
+      .eq("group_id", data.source_group_id)
+      .order("sort_order");
+    data = { ...data, items: mapRows(rows ?? []) };
+  }
+  return <ServicesByVariant data={data} variant={block.templateVariant} />;
 }

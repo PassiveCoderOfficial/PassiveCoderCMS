@@ -66,7 +66,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "slider":           content = <SliderBlock block={block} />; break;
     case "navigation":       content = <NavigationBlock block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />; break;
     case "text":             content = <TextBlock block={block} />; break;
-    case "services":         content = <ServicesBlock block={block} />; break;
+    case "services":         content = await ServicesBlock({ block: block as import("@/types/cms").ServicesBlockProps }); break;
     case "blog":             content = await BlogBlock({ block }); break;
     case "gallery":          content = <GalleryBlock block={block} />; break;
     case "cta":              content = <CTABlock block={block} />; break;
