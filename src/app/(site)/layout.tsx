@@ -11,6 +11,7 @@ import { GoogleTranslateWidget } from "@/components/site/google-translate-widget
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
+import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -82,21 +83,33 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const activeTemplateSlug = identity?.active_template_slug ?? null;
   const templateIdentity = activeTemplateSlug ? getTemplateIdentity(activeTemplateSlug) : null;
 
+  // Is the visitor an admin of THIS tenant (owner/admin/editor member, or a
+  // super admin)? Drives both the maintenance-mode bypass below and the
+  // floating edit widget — resolved once here so neither has to repeat it.
+  const { data: { user } } = await supabase.auth.getUser();
+  let isAdminViewer = false;
+  if (user && tenantId) {
+    const admin = await createAdminClient();
+    const [{ data: sa }, { data: membership }] = await Promise.all([
+      admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
+      admin.from("tenant_members").select("role").eq("user_id", user.id).eq("tenant_id", tenantId)
+        .in("role", ["owner", "admin", "editor"]).maybeSingle(),
+    ]);
+    isAdminViewer = !!sa || !!membership;
+  }
+
   // ── Maintenance mode ────────────────────────────────────────────────────────
   // When on, show the maintenance screen to public visitors. Logged-in users
   // (the owner/staff previewing) bypass it so they can keep working on the site.
-  if (settings?.maintenance_mode) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return (
-        <MaintenanceScreen
-          title={settings?.maintenance_title || undefined}
-          description={settings?.maintenance_message || settings?.meta_description || undefined}
-          logoUrl={identity?.logo_url ?? null}
-          siteName={identity?.site_name ?? settings?.site_name ?? undefined}
-        />
-      );
-    }
+  if (settings?.maintenance_mode && !user) {
+    return (
+      <MaintenanceScreen
+        title={settings?.maintenance_title || undefined}
+        description={settings?.maintenance_message || settings?.meta_description || undefined}
+        logoUrl={identity?.logo_url ?? null}
+        siteName={identity?.site_name ?? settings?.site_name ?? undefined}
+      />
+    );
   }
 
   const siteTheme = settings?.site_theme ?? "system";
@@ -197,6 +210,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {/* Floating cart drawer — always mounted, toggled by cart icon */}
       <CartDrawer />
+
+      {isAdminViewer && <AdminEditWidget />}
 
       {settings?.auto_translate_enabled && <GoogleTranslateWidget />}
 

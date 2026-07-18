@@ -12,7 +12,7 @@ export default async function PagesListPage() {
   const { data: pages } = await supabase
     .from("pages")
     .select("id, title, slug, type, status, created_at, updated_at, published_at")
-    .eq("type", "page")
+    .in("type", ["page", "landing", "portfolio"])
     .eq("tenant_id", tenantId)
     .order("updated_at", { ascending: false });
 
