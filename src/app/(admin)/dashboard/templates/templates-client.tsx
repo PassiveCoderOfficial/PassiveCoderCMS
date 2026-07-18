@@ -6,25 +6,6 @@ import { toast } from "sonner";
 import { Loader2, ExternalLink, CheckCircle, Sparkles, Layout } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const CATEGORY_ICONS: Record<string, string[]> = {
-  "Cleaning":                  ["🧹", "✨", "🪣"],
-  "HVAC & Plumbing":           ["❄️", "🔧", "💨"],
-  "Renovation & Construction": ["🏗️", "🔨", "📐"],
-  "Interior Design":           ["🪑", "🎨", "💡"],
-  "Restaurant & Cafe":         ["🍽️", "👨‍🍳", "🍷"],
-  "Health & Beauty":           ["✂️", "💅", "🌸"],
-  "Fitness & Sports":          ["💪", "🏋️", "🥊"],
-  "Legal & Finance":           ["⚖️", "📊", "🏛️"],
-  "Real Estate":               ["🏠", "🔑", "📍"],
-  "Photography":               ["📸", "🎬", "💍"],
-  "Education":                 ["📚", "🎓", "💻"],
-  "Retail & Shop":             ["🛍️", "🏷️", "📦"],
-  "Automotive":                ["🚗", "🔧", "⚙️"],
-  "Events":                    ["🎉", "💒", "🎭"],
-  "Tech & Agency":             ["💻", "📈", "🎯"],
-  "General Business":          ["📋", "🤝", "🌐"],
-};
-
 export default function TemplatesClient({ tenantId }: { tenantId: string }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
@@ -96,28 +77,21 @@ export default function TemplatesClient({ tenantId }: { tenantId: string }) {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filtered.map(template => {
-          const icons = CATEGORY_ICONS[template.category] ?? ["⭐", "✅", "🎯"];
           const mode = modes[template.slug] ?? "theme";
           const isApplying = applying === template.slug;
 
           return (
             <div key={template.slug} className="rounded-xl border overflow-hidden bg-card hover:shadow-md transition-shadow">
-              {/* Thumbnail */}
-              <div
-                className="h-32 relative"
-                style={{ background: `linear-gradient(135deg, ${template.thumbFrom}, ${template.thumbTo})` }}
-              >
-                <div className="absolute inset-x-2 top-2 bg-black/20 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-1">
-                  <div className="flex gap-0.5"><div className="w-1 h-1 rounded-full bg-red-400/70"/><div className="w-1 h-1 rounded-full bg-yellow-400/70"/><div className="w-1 h-1 rounded-full bg-green-400/70"/></div>
-                  <span className="text-[7px] text-white/50 flex-1 text-center truncate">{template.slug}.passivecoder.com</span>
-                </div>
-                <div className="absolute inset-x-2 bottom-2 grid grid-cols-3 gap-1">
-                  {icons.map((ic, i) => (
-                    <div key={i} className="bg-white/10 backdrop-blur-sm rounded px-1 py-0.5 text-center">
-                      <span className="text-[9px]">{ic}</span>
-                    </div>
-                  ))}
-                </div>
+              {/* Thumbnail — same static screenshot the marketing site's
+                  TemplatesShowcase uses (public/images/templates/<slug>.jpg),
+                  not a fabricated gradient mockup. */}
+              <div className="h-32 relative overflow-hidden bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/images/templates/${template.slug}.jpg`}
+                  alt={`${template.name} preview`}
+                  className="w-full h-full object-cover object-top"
+                />
                 {template.featured && (
                   <div className="absolute top-1.5 right-1.5 bg-orange-500 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-full">Hot</div>
                 )}

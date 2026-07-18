@@ -116,8 +116,8 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
   return (
     <>
       {/* Logo */}
-      <div className="flex h-14 items-center justify-between px-4 border-b">
-        <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center">
+      <div className="flex h-14 items-center justify-between px-4 border-b gap-2">
+        <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"
@@ -125,11 +125,23 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
             className="h-7 w-auto"
           />
         </a>
-        {onClose && (
-          <button onClick={onClose} className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground">
-            <X className="w-5 h-5" />
-          </button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* href="/" resolves relative to the current tenant subdomain, so this
+              always opens that tenant's own live homepage — not passivecoder.com. */}
+          <Link
+            href="/"
+            target="_blank"
+            title="Visit Site"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Link>
+          {onClose && (
+            <button onClick={onClose} className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Nav */}
@@ -265,7 +277,11 @@ export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSupe
           "h-screen flex-col border-r bg-sidebar overflow-hidden transition-[width] duration-200",
           collapsed ? "w-0" : "w-60 flex",
         )}>
-          <div className="w-60">
+          {/* Fixed-width flex column, independent of the parent's animated
+              width, so ScrollArea's flex-1 still has a bounded height to fill
+              — without h-full flex flex-col here the nav list can't scroll
+              and anything past the viewport becomes unreachable. */}
+          <div className="w-60 h-full flex flex-col">
             <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} />
           </div>
         </aside>
