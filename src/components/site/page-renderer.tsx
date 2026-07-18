@@ -6,7 +6,7 @@ import { HeroBlock } from "@/components/blocks/hero/hero-block";
 import { SliderBlock } from "@/components/blocks/slider/slider-block";
 import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
 import { TextBlock } from "@/components/blocks/text/text-block";
-import { ServicesBlock } from "@/components/blocks/services/services-block";
+import { ServicesBlock } from "@/components/blocks/services/services-block-server";
 import { BlogBlock } from "@/components/blocks/blog/blog-block";
 import { GalleryBlock } from "@/components/blocks/gallery/gallery-block";
 import { CTABlock } from "@/components/blocks/cta/cta-block";

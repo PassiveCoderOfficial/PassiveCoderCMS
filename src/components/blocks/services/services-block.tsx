@@ -387,21 +387,3 @@ export function ServicesByVariant({ data, variant }: { data: ServicesBlockProps[
   if (variant === "numbered") return <ServicesNumbered data={data} />;
   return <ServicesLegacy data={data} />;
 }
-
-// ─── Server (live site) ─────────────────────────────────────────────────────
-// Resolves group items directly from Supabase — used by page-renderer.tsx.
-
-export async function ServicesBlock({ block }: { block: ServicesBlockProps }) {
-  let data = block.data;
-  if (data.source === "group" && data.source_group_id) {
-    const { createAdminClient } = await import("@/lib/supabase/server");
-    const admin = await createAdminClient();
-    const { data: rows } = await admin
-      .from("service_items")
-      .select("id, title, description, icon, icon_type, image_url, link, link_label")
-      .eq("group_id", data.source_group_id)
-      .order("sort_order");
-    data = { ...data, items: mapRows(rows ?? []) };
-  }
-  return <ServicesByVariant data={data} variant={block.templateVariant} />;
-}
