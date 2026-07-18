@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getAgent } from "@/lib/agent";
+import { seedTemplate } from "@/lib/templates/seed-template";
 
 export async function POST(req: Request) {
   const authClient = await createClient();
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
   if (!agent) return NextResponse.json({ error: "Not a staff member" }, { status: 403 });
   if (agent.status !== "active") return NextResponse.json({ error: "Staff account is not active" }, { status: 403 });
 
-  const { name, slug, plan, owner_email, is_my_site } = await req.json();
+  const { name, slug, plan, owner_email, is_my_site, template_id, template_mode } = await req.json();
   if (!name?.trim() || !slug?.trim()) return NextResponse.json({ error: "Missing name or slug" }, { status: 400 });
 
   const supabase = await createAdminClient();
@@ -64,6 +65,14 @@ export async function POST(req: Request) {
 
   // Increment agent total_sites
   await supabase.from("agents").update({ total_sites: agent.total_sites + 1 }).eq("id", agent.id);
+
+  // Apply template (best-effort — never fail site creation because seeding errored)
+  await seedTemplate(
+    supabase,
+    site.id,
+    template_id ?? "blank",
+    (template_mode as "theme" | "full") ?? "full",
+  ).catch(err => console.error(`[seed-template] tenant=${site.id} slug=${template_id ?? "blank"}`, err));
 
   return NextResponse.json({ id: site.id });
 }

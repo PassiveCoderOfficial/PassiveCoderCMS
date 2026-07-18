@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
+import { TemplateSelect, type TemplateSelectValue } from "@/components/admin/template-select";
 
 function slugify(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "") || "mysite";
@@ -17,6 +18,7 @@ export default function AgentNewSitePage() {
   const [ownerEmail, setOwnerEmail] = useState("");
   const [plan, setPlan] = useState("basic");
   const [isMySite, setIsMySite] = useState(false);
+  const [template, setTemplate] = useState<TemplateSelectValue>({ templateId: "blank", templateMode: "full" });
   const [checking, setChecking] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [slugMsg, setSlugMsg] = useState("");
@@ -47,7 +49,11 @@ export default function AgentNewSitePage() {
     const res = await fetch("/api/agent/sites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), slug, plan, owner_email: isMySite ? "" : ownerEmail.trim(), is_my_site: isMySite }),
+      body: JSON.stringify({
+        name: name.trim(), slug, plan,
+        owner_email: isMySite ? "" : ownerEmail.trim(), is_my_site: isMySite,
+        template_id: template.templateId, template_mode: template.templateMode,
+      }),
     });
 
     if (!res.ok) {
@@ -132,6 +138,11 @@ export default function AgentNewSitePage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 space-y-3">
+          <label className="block text-sm text-muted-foreground">Starting Template</label>
+          <TemplateSelect value={template} onChange={setTemplate} />
         </div>
 
         {error && (

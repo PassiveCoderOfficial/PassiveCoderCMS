@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireSuperAdmin } from "@/lib/super-admin";
+import { seedTemplate } from "@/lib/templates/seed-template";
 
 export async function GET() {
   const user = await requireSuperAdmin();
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   const user = await requireSuperAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, slug, plan, owner_user_id } = await req.json();
+  const { name, slug, plan, owner_user_id, template_id, template_mode } = await req.json();
   if (!name || !slug) return NextResponse.json({ error: "Missing name or slug" }, { status: 400 });
 
   const supabase = await createAdminClient();
@@ -53,6 +54,14 @@ export async function POST(req: Request) {
       role: "owner",
     });
   }
+
+  // Apply template (best-effort — never fail site creation because seeding errored)
+  await seedTemplate(
+    supabase,
+    data.id,
+    template_id ?? "blank",
+    (template_mode as "theme" | "full") ?? "full",
+  ).catch(err => console.error(`[seed-template] tenant=${data.id} slug=${template_id ?? "blank"}`, err));
 
   return NextResponse.json(data);
 }

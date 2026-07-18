@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, Loader2, AlertCircle } from "lucide-react";
+import { TemplateSelect, type TemplateSelectValue } from "@/components/admin/template-select";
 
 function slugify(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "") || "mysite";
@@ -16,6 +17,7 @@ export default function NewSitePage() {
   const [slugManual, setSlugManual] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState("");
   const [plan, setPlan] = useState("basic");
+  const [template, setTemplate] = useState<TemplateSelectValue>({ templateId: "blank", templateMode: "full" });
   const [checking, setChecking] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [slugMsg, setSlugMsg] = useState("");
@@ -61,7 +63,10 @@ export default function NewSitePage() {
     const res = await fetch("/api/super-admin/sites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), slug, plan, owner_user_id: userId }),
+      body: JSON.stringify({
+        name: name.trim(), slug, plan, owner_user_id: userId,
+        template_id: template.templateId, template_mode: template.templateMode,
+      }),
     });
 
     if (!res.ok) {
@@ -148,6 +153,11 @@ export default function NewSitePage() {
             />
             <p className="text-xs text-gray-600 mt-1">Must be an existing user in the system. Leave blank to create unowned.</p>
           </div>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
+          <label className="block text-sm text-gray-400">Starting Template</label>
+          <TemplateSelect value={template} onChange={setTemplate} dark />
         </div>
 
         {error && (
