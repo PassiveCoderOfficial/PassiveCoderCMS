@@ -28,12 +28,17 @@ export function formatDate(date: string | Date): string {
 }
 
 export function formatDateTime(date: string | Date): string {
+  // timeZone pinned to UTC: without it, toLocaleString resolves the runtime's
+  // system timezone, which differs between the Node server (renders this
+  // during SSR) and the browser (re-renders on hydration) — producing two
+  // different strings for the same timestamp and a React hydration mismatch.
   return new Date(date).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "UTC",
   });
 }
 
