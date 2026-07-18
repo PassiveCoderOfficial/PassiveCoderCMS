@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { CreditCard, Plus, Trash2, Save, CheckCircle, Loader2, Users, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { MODULE_KEYS, MODULE_LABELS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
+
+type PlanModuleConfig = { included?: boolean; defaultOn?: boolean };
 
 interface Plan {
   id: string;
@@ -13,6 +16,7 @@ interface Plan {
   visitor_limit_monthly: number;
   overage_cents_per_1k: number;
   features: string[];
+  modules?: Partial<Record<ModuleKey, PlanModuleConfig>>;
   sort_order?: number;
 }
 
@@ -75,6 +79,16 @@ const DEFAULT_PLANS: Plan[] = [
 
 function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void }) {
   const [newFeature, setNewFeature] = useState("");
+  const modules = plan.modules ?? {};
+
+  const toggleIncluded = (key: ModuleKey, included: boolean) => {
+    const cfg = modules[key] ?? {};
+    onChange({ ...plan, modules: { ...modules, [key]: { ...cfg, included, defaultOn: included ? (cfg.defaultOn ?? true) : false } } });
+  };
+  const toggleDefaultOn = (key: ModuleKey, defaultOn: boolean) => {
+    const cfg = modules[key] ?? {};
+    onChange({ ...plan, modules: { ...modules, [key]: { ...cfg, defaultOn } } });
+  };
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -209,6 +223,39 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
           >
             <Plus className="w-3 h-3" /> Add
           </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs text-gray-500 mb-2 block">Modules</label>
+        <p className="text-[11px] text-gray-600 mb-2">Included = tenants on this plan can use it. Default On = enabled automatically (tenants can still turn it off).</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {MODULE_KEYS.map((key) => {
+            const cfg = modules[key];
+            const included = cfg?.included ?? false;
+            return (
+              <div key={key} className="flex items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={included}
+                  onChange={(e) => toggleIncluded(key, e.target.checked)}
+                  className="accent-indigo-500"
+                />
+                <span className="text-gray-300 flex-1">{MODULE_LABELS[key]}</span>
+                {included && (
+                  <label className="flex items-center gap-1 text-[10px] text-gray-500">
+                    <input
+                      type="checkbox"
+                      checked={cfg?.defaultOn ?? false}
+                      onChange={(e) => toggleDefaultOn(key, e.target.checked)}
+                      className="accent-indigo-500"
+                    />
+                    Default on
+                  </label>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { AdminTopbar } from "@/components/admin/topbar/topbar";
 import { SABanner } from "@/components/admin/sa-banner";
 import { AgentBanner } from "@/components/admin/agent-banner";
 import { SA_VIEWING_COOKIE, AGENT_VIEWING_COOKIE } from "@/lib/tenant/current";
+import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import type { CMSUser } from "@/types/cms";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -215,6 +216,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     created_at: profile.created_at,
   };
 
+  // SA bypasses module gating entirely — only resolve for regular tenant
+  // members and agents viewing a specific site.
+  const dashboardTenantId = agentViewingTenantId
+    ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
+    ?? (memberships ?? [])[0]?.tenant_id;
+  const enabledModules = (!sa && dashboardTenantId)
+    ? await resolveEnabledModules(dashboardTenantId)
+    : undefined;
+
   return (
     <div className="flex h-screen overflow-hidden bg-background flex-col">
       {viewingTenantId && viewingTenantName && (
@@ -224,7 +234,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AgentBanner tenantName={agentViewingTenantName} />
       )}
       <div className="flex flex-1 overflow-hidden">
-        <AdminSidebar isSuperAdmin={!!sa} isAgent={profile.role === "agent"} />
+        <AdminSidebar isSuperAdmin={!!sa} isAgent={profile.role === "agent"} enabledModules={enabledModules} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
           <main className="flex-1 overflow-auto pl-0 lg:pl-0">

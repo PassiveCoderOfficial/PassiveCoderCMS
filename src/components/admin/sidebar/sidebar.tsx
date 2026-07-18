@@ -8,7 +8,7 @@ import { navSections } from "./nav-items";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink, ShieldCheck, Menu, X, LogOut, Zap, MessageCircle, ChevronDown } from "lucide-react";
-import type { NavItem } from "./nav-items";
+import type { NavItem, ModuleKey } from "./nav-items";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
@@ -103,7 +103,9 @@ function NavLinkItem({ item, pathname, onClose, dark = false }: { item: NavItem;
   );
 }
 
-function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: boolean; isAgent: boolean; onClose?: () => void }) {
+function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
+  isSuperAdmin: boolean; isAgent: boolean; enabledModules?: Record<ModuleKey, boolean>; onClose?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -164,6 +166,9 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
                   {section.items.filter((item) => {
                     if (item.saasOnly && !isSaaS) return false;
                     if (item.standaloneOnly && isSaaS) return false;
+                    // enabledModules is undefined for super admins (bypass) —
+                    // only gate when it's actually resolved (regular tenants/agents).
+                    if (item.moduleKey && enabledModules && !enabledModules[item.moduleKey]) return false;
                     return true;
                   }).map((item) => (
                     <NavLinkItem key={item.href} item={item} pathname={pathname} onClose={onClose} dark={isTools} />
@@ -227,7 +232,9 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
 // initial state per route.
 const BUILDER_ROUTE = /^\/dashboard\/pages\/[^/]+$/;
 
-export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSuperAdmin?: boolean; isAgent?: boolean }) {
+export function AdminSidebar({ isSuperAdmin = false, isAgent = false, enabledModules }: {
+  isSuperAdmin?: boolean; isAgent?: boolean; enabledModules?: Record<ModuleKey, boolean>;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const isBuilderRoute = BUILDER_ROUTE.test(pathname) && pathname !== "/dashboard/pages/new";
@@ -268,7 +275,7 @@ export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSupe
         "fixed inset-y-0 left-0 z-50 flex flex-col w-60 border-r bg-sidebar transition-transform duration-200 lg:hidden",
         open ? "translate-x-0" : "-translate-x-full",
       )}>
-        <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} onClose={() => setOpen(false)} />
+        <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} enabledModules={enabledModules} onClose={() => setOpen(false)} />
       </aside>
 
       {/* Desktop sidebar — collapsible; defaults collapsed on the page builder route */}
@@ -282,7 +289,7 @@ export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSupe
               — without h-full flex flex-col here the nav list can't scroll
               and anything past the viewport becomes unreachable. */}
           <div className="w-60 h-full flex flex-col">
-            <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} />
+            <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} enabledModules={enabledModules} />
           </div>
         </aside>
         <button

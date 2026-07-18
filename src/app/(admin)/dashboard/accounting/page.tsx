@@ -1,5 +1,7 @@
-﻿import { createClient } from "@/lib/supabase/server";
+﻿import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
+import { requireModule } from "@/lib/modules/resolve-modules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight } from "lucide-react";
 import { getSiteCurrency } from "@/lib/currency/currency-server";
@@ -9,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 export default async function AccountingDashboard() {
   const tenantId = await getCurrentTenantId();
+  if (!(await requireModule(tenantId, "accounting"))) redirect("/dashboard");
   const supabase = await createClient();
   const cur = await getSiteCurrency(tenantId);
   const fmt = (n: number) => formatMoney(n, cur);
@@ -83,7 +86,7 @@ export default async function AccountingDashboard() {
                   <div>
                     <p className="text-sm font-medium">{tx.description}</p>
                     <p className="text-xs text-muted-foreground">{tx.type} · {tx.date} {tx.customer_name ? `· ${tx.customer_name}` : ""}</p>
-                    {tx.message && <p className="text-xs text-muted-foreground italic mt-0.5">"{tx.message}"</p>}
+                    {tx.message && <p className="text-xs text-muted-foreground italic mt-0.5">&quot;{tx.message}&quot;</p>}
                   </div>
                   <div className="text-right">
                     <p className={`font-semibold text-sm ${tx.type === "expense" ? "text-red-600" : "text-green-600"}`}>

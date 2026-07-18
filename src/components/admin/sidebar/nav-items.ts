@@ -31,6 +31,7 @@
   Upload,
   Briefcase,
   ShoppingCart,
+  ToggleLeft,
   type LucideIcon,
 } from "lucide-react";
 
@@ -41,7 +42,38 @@ export type NavItem = {
   badge?: string;
   saasOnly?: boolean;
   standaloneOnly?: boolean;
+  /** When set, this item only shows if tenants.enabled_modules[moduleKey] is
+   *  truthy (resolved server-side) — see MODULE_KEYS below. Super admins
+   *  always bypass this check. */
+  moduleKey?: ModuleKey;
   children?: NavItem[];
+};
+
+/** Every togglable platform module, keyed the same in plans.modules and
+ *  tenants.enabled_modules. Labels shown in the SA plan editor and the
+ *  tenant Modules dashboard page. */
+export const MODULE_KEYS = [
+  "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
+  "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
+] as const;
+export type ModuleKey = typeof MODULE_KEYS[number];
+
+export const MODULE_LABELS: Record<ModuleKey, string> = {
+  services: "Services",
+  features: "Features",
+  portfolio: "Portfolio",
+  sliders: "Sliders",
+  testimonials: "Testimonials",
+  pricing: "Pricing",
+  bookings: "Bookings",
+  ecommerce: "Ecommerce",
+  crm: "CRM",
+  invoices: "Invoices",
+  marketing: "Marketing",
+  jobs: "Jobs & Staff",
+  pos: "POS",
+  inventory: "Inventory",
+  accounting: "Accounting",
 };
 
 export type NavSection = {
@@ -69,14 +101,14 @@ export const navSections: NavSection[] = [
   {
     label: "Site Sections",
     items: [
-      { label: "Services", href: "/dashboard/services", icon: Wrench },
-      { label: "Features", href: "/dashboard/features", icon: Sparkles },
-      { label: "Portfolio", href: "/dashboard/portfolio", icon: FolderOpen },
-      { label: "Sliders", href: "/dashboard/sliders", icon: SlidersHorizontal },
-      { label: "Testimonials", href: "/dashboard/testimonials", icon: Star },
-      { label: "Pricing", href: "/dashboard/pricing-manager", icon: PricingIcon },
+      { label: "Services", href: "/dashboard/services", icon: Wrench, moduleKey: "services" },
+      { label: "Features", href: "/dashboard/features", icon: Sparkles, moduleKey: "features" },
+      { label: "Portfolio", href: "/dashboard/portfolio", icon: FolderOpen, moduleKey: "portfolio" },
+      { label: "Sliders", href: "/dashboard/sliders", icon: SlidersHorizontal, moduleKey: "sliders" },
+      { label: "Testimonials", href: "/dashboard/testimonials", icon: Star, moduleKey: "testimonials" },
+      { label: "Pricing", href: "/dashboard/pricing-manager", icon: PricingIcon, moduleKey: "pricing" },
       { label: "Contact", href: "/dashboard/contact", icon: Phone },
-      { label: "Bookings", href: "/dashboard/bookings", icon: Calendar },
+      { label: "Bookings", href: "/dashboard/bookings", icon: Calendar, moduleKey: "bookings" },
       { label: "Identity & Nav", href: "/dashboard/identity", icon: Layers },
     ],
   },
@@ -94,6 +126,7 @@ export const navSections: NavSection[] = [
         label: "Products",
         href: "/dashboard/ecommerce/products",
         icon: Package,
+        moduleKey: "ecommerce",
         children: [
           { label: "All Products", href: "/dashboard/ecommerce/products", icon: Package },
           { label: "Add Single", href: "/dashboard/ecommerce/products/new", icon: Plus },
@@ -101,9 +134,9 @@ export const navSections: NavSection[] = [
           { label: "Categories", href: "/dashboard/ecommerce/categories", icon: Tag },
         ],
       },
-      { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag },
-      { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard },
-      { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck },
+      { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag, moduleKey: "ecommerce" },
+      { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard, moduleKey: "ecommerce" },
+      { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck, moduleKey: "ecommerce" },
     ],
   },
   {
@@ -116,6 +149,7 @@ export const navSections: NavSection[] = [
   {
     label: "System",
     items: [
+      { label: "Modules", href: "/dashboard/modules", icon: ToggleLeft },
       { label: "Users", href: "/dashboard/users", icon: Users },
       { label: "Backups", href: "/dashboard/backups", icon: Archive },
       { label: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -130,16 +164,17 @@ export const navSections: NavSection[] = [
     label: "Business Tools",
     variant: "tools",
     items: [
-      { label: "CRM", href: "/dashboard/crm", icon: Users },
-      { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
-      { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles },
-      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase },
-      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart },
-      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package },
+      { label: "CRM", href: "/dashboard/crm", icon: Users, moduleKey: "crm" },
+      { label: "Invoices", href: "/dashboard/invoices", icon: FileText, moduleKey: "invoices" },
+      { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles, moduleKey: "marketing" },
+      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase, moduleKey: "jobs" },
+      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart, moduleKey: "pos" },
+      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },
       {
         label: "Accounting",
         href: "/dashboard/accounting",
         icon: BarChart3,
+        moduleKey: "accounting",
         children: [
           { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
           { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
