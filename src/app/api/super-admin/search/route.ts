@@ -18,8 +18,8 @@ export async function GET(req: Request) {
       .or(`name.ilike.${qLike},slug.ilike.${qLike},custom_domain.ilike.${qLike},phone.ilike.${qLike}`)
       .limit(8),
     supabase.from("profiles")
-      .select("id,full_name,email,phone")
-      .or(`full_name.ilike.${qLike},email.ilike.${qLike},phone.ilike.${qLike}`)
+      .select("id,full_name,email")
+      .or(`full_name.ilike.${qLike},email.ilike.${qLike}`)
       .limit(8),
   ]);
 
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       user_id: p.id,
       user_email: p.email,
       user_name: p.full_name,
-      phone: p.phone ?? null,
+      phone: null,
     })),
   ];
 
