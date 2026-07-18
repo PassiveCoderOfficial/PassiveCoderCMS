@@ -63,7 +63,8 @@ export type BlockType =
   | "donor_list"
   | "donor_map"
   | "donor_requests"
-  | "container";
+  | "container"
+  | "item_box";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -208,6 +209,39 @@ export type ServicesBlockProps = BlockBase & {
     cardStyle: "flat" | "elevated" | "bordered" | "gradient";
     source?: "inline" | "group";
     source_group_id?: string;
+  };
+};
+
+// ─── Item Box: universal card-grid block ───────────────────────────────────
+// Pulls its cards from any existing content source (Services, Features,
+// Portfolio, Testimonials, Blog posts, Pages) or stays fully manual — see
+// item-box-block.tsx / item-box-block-server.tsx for the resolvers.
+
+export type ItemBoxSource = "inline" | "services" | "features" | "portfolio" | "testimonials" | "blog" | "pages";
+
+export type ItemBoxLink =
+  | { type: "manual"; url: string }
+  | { type: "page" | "post" | "service" | "feature"; refId: string; url?: string };
+
+export type ItemBoxItem = {
+  id: string;
+  title: string;
+  description?: string;
+  image?: { type: "url" | "icon" | "none"; value?: string };
+  link?: ItemBoxLink;
+};
+
+export type ItemBoxBlockProps = BlockBase & {
+  type: "item_box";
+  data: {
+    title?: string;
+    subtitle?: string;
+    source: ItemBoxSource;
+    source_group_id?: string;
+    items: ItemBoxItem[];
+    columns: 2 | 3 | 4;
+    layout: "grid" | "list";
+    cardStyle: "flat" | "elevated" | "bordered" | "gradient";
   };
 };
 
@@ -723,7 +757,8 @@ export type Block =
   | DonorListBlockProps
   | DonorMapBlockProps
   | DonorRequestsBlockProps
-  | ContainerBlockProps;
+  | ContainerBlockProps
+  | ItemBoxBlockProps;
 
 export type ContainerColumn = {
   id: string;

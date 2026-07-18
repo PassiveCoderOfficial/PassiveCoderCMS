@@ -8,6 +8,7 @@ import { HeroSettings } from "./hero-settings";
 import { SliderSettings } from "./slider-settings";
 import { TextSettings } from "./text-settings";
 import { ServicesSettings } from "./services-settings";
+import { ItemBoxSettings } from "./item-box-settings";
 import { BlogSettings } from "./blog-settings";
 import { GallerySettings } from "./gallery-settings";
 import { CTASettings } from "./cta-settings";
@@ -88,6 +89,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "slider": return <SliderSettings block={block} />;
     case "text": return <TextSettings block={block} />;
     case "services": return <ServicesSettings block={block} />;
+    case "item_box": return <ItemBoxSettings block={block} />;
     case "blog": return <BlogSettings block={block} />;
     case "gallery": return <GallerySettings block={block} />;
     case "cta": return <CTASettings block={block} />;

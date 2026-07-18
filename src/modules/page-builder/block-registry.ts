@@ -174,6 +174,30 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "item_box",
+    label: "Item Box",
+    description: "Versatile card grid — pull from Services, Features, Portfolio, Testimonials, Blog, Pages, or write items by hand",
+    icon: "🧩",
+    category: "content",
+    create: () => ({
+      ...baseBlock("item_box"),
+      type: "item_box",
+      data: {
+        title: "What We Offer",
+        subtitle: "",
+        source: "inline",
+        layout: "grid",
+        columns: 3,
+        cardStyle: "elevated",
+        items: [
+          { id: generateId(), title: "Item One", description: "Describe this item and how it benefits your customers." },
+          { id: generateId(), title: "Item Two", description: "Describe this item and how it benefits your customers." },
+          { id: generateId(), title: "Item Three", description: "Describe this item and how it benefits your customers." },
+        ],
+      },
+    }),
+  },
+  {
     type: "blog",
     label: "Blog Posts",
     description: "Automatically shows your latest news or blog articles",

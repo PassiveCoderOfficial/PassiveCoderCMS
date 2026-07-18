@@ -7,6 +7,7 @@ import { SliderBlock } from "@/components/blocks/slider/slider-block";
 import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
 import { TextBlock } from "@/components/blocks/text/text-block";
 import { ServicesBlock } from "@/components/blocks/services/services-block-server";
+import { ItemBoxBlock } from "@/components/blocks/item-box/item-box-block-server";
 import { BlogBlock } from "@/components/blocks/blog/blog-block";
 import { GalleryBlock } from "@/components/blocks/gallery/gallery-block";
 import { CTABlock } from "@/components/blocks/cta/cta-block";
@@ -67,6 +68,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "navigation":       content = <NavigationBlock block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />; break;
     case "text":             content = <TextBlock block={block} />; break;
     case "services":         content = await ServicesBlock({ block: block as import("@/types/cms").ServicesBlockProps }); break;
+    case "item_box":         content = await ItemBoxBlock({ block: block as import("@/types/cms").ItemBoxBlockProps }); break;
     case "blog":             content = await BlogBlock({ block }); break;
     case "gallery":          content = <GalleryBlock block={block} />; break;
     case "cta":              content = <CTABlock block={block} />; break;

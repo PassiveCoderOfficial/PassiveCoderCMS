@@ -7,6 +7,7 @@ import { SliderBlock } from "@/components/blocks/slider/slider-block";
 import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
 import { TextBlock } from "@/components/blocks/text/text-block";
 import { ServicesBlockClient } from "@/components/blocks/services/services-block-client";
+import { ItemBoxBlockClient } from "@/components/blocks/item-box/item-box-block-client";
 import { GalleryBlock } from "@/components/blocks/gallery/gallery-block";
 import { CTABlock } from "@/components/blocks/cta/cta-block";
 import { TestimonialsBlock } from "@/components/blocks/testimonials/testimonials-block";
@@ -77,6 +78,7 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
       case "navigation": return <NavigationBlock block={block} />;
       case "text": return <TextBlock block={block} />;
       case "services": return <ServicesBlockClient block={block} />;
+      case "item_box": return <ItemBoxBlockClient block={block} />;
       case "gallery": return <GalleryBlock block={block} />;
       case "cta": return <CTABlock block={block} />;
       case "testimonials": return <TestimonialsBlock block={block} />;
