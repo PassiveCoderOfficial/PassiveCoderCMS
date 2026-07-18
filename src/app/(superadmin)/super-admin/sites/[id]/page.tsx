@@ -6,6 +6,7 @@ import {
   CreditCard, Users, Settings, Zap,
 } from "lucide-react";
 import AssignAgent from "./assign-agent";
+import AssignOwner from "./assign-owner";
 
 export default async function SiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -157,6 +158,12 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
       {/* Members */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
         <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Users className="w-4 h-4 text-gray-400" /> Team Members</h2>
+        <p className="text-xs text-gray-500">
+          Assign an existing user as owner by email. This grants them dashboard access
+          to this site (via tenant_members) and updates the site&apos;s owner record —
+          the site will then show up in their site switcher.
+        </p>
+        <AssignOwner siteId={site.id} />
         {members?.length ? (
           <div className="space-y-2">
             {members.map(m => {

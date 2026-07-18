@@ -4,6 +4,7 @@ import { Users, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
 import GrantSuperAdminButton from "./grant-button";
 import ActivateToggleButton from "./activate-button";
+import VerifyButton from "./verify-button";
 
 export const metadata = { title: "Users & Roles — Super Admin" };
 
@@ -97,6 +98,7 @@ export default async function UsersPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
                       <ActivateToggleButton userId={user.id} isActive={isActive} isSelf={user.id === currentUser?.id} />
+                      <VerifyButton userId={user.id} verified={verification?.verified ?? false} />
                     </div>
                   </td>
                 </tr>

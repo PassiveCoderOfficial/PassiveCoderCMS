@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import GrantSuperAdminButton from "../grant-button";
 import ActivateToggleButton from "../activate-button";
+import VerifyButton from "../verify-button";
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
 const PROTO = ROOT.includes("localhost") ? "http" : "https";
@@ -64,6 +65,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
       <div className="flex gap-3 flex-wrap">
         <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
         <ActivateToggleButton userId={user.id} isActive={isActive} isSelf={user.id === currentUser?.id} />
+        <VerifyButton userId={user.id} verified={verification?.verified ?? false} />
       </div>
 
       {/* Account info */}
