@@ -55,7 +55,11 @@ export default async function AgentSitesPage() {
         <tbody>
           {sites.map(site => (
             <tr key={site.id} className="border-b last:border-0 hover:bg-muted/20">
-              <td className="px-5 py-3 font-medium">{site.name}</td>
+              <td className="px-5 py-3 font-medium">
+                <a href={`/api/agent/sites/${site.id}/view`} className="hover:text-primary hover:underline">
+                  {site.name}
+                </a>
+              </td>
               <td className="px-5 py-3 capitalize text-muted-foreground">{site.plan}</td>
               <td className="px-5 py-3"><StatusBadge status={site.status} /></td>
               <td className="px-5 py-3 text-xs">{site.onboarding_completed ? "Yes" : "No"}</td>

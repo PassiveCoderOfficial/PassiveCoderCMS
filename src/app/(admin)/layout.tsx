@@ -4,7 +4,8 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
 import { AdminTopbar } from "@/components/admin/topbar/topbar";
 import { SABanner } from "@/components/admin/sa-banner";
-import { SA_VIEWING_COOKIE } from "@/lib/tenant/current";
+import { AgentBanner } from "@/components/admin/agent-banner";
+import { SA_VIEWING_COOKIE, AGENT_VIEWING_COOKIE } from "@/lib/tenant/current";
 import type { CMSUser } from "@/types/cms";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -133,9 +134,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
   }
 
-  // Check if SA is impersonating a tenant
+  // Check if SA is impersonating a tenant, or an agent is viewing an
+  // assigned/referred site's dashboard under their own session.
   const cookieStore = await cookies();
   const viewingTenantId = sa ? cookieStore.get(SA_VIEWING_COOKIE)?.value : undefined;
+  const agentViewingTenantId = (!sa && profile.role === "agent") ? cookieStore.get(AGENT_VIEWING_COOKIE)?.value : undefined;
 
   let viewingTenantName: string | null = null;
   if (viewingTenantId) {
@@ -145,6 +148,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .eq("id", viewingTenantId)
       .single();
     viewingTenantName = tenant?.name ?? null;
+  }
+
+  let agentViewingTenantName: string | null = null;
+  if (agentViewingTenantId) {
+    const { data: tenant } = await adminClient
+      .from("tenants")
+      .select("name")
+      .eq("id", agentViewingTenantId)
+      .maybeSingle();
+    agentViewingTenantName = tenant?.name ?? null;
+    if (!agentViewingTenantName) redirect("/agent");
+  } else if (!sa && profile.role === "agent") {
+    // Agent with no viewing cookie and no tenant membership has nothing to
+    // show in /dashboard — send them to their own portal instead.
+    if (!hasTenantAccess) redirect("/agent");
   }
 
   // Fetch sites for switcher
@@ -181,6 +199,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
   }
 
+  // Agent viewing a site has no tenant_members row, so it's not in userSites
+  // above — inject it directly so the topbar switcher still shows something.
+  if (agentViewingTenantId && agentViewingTenantName) {
+    userSites = [{ id: agentViewingTenantId, name: agentViewingTenantName, slug: "", is_primary: true }];
+  }
+
   const cmsUser: CMSUser = {
     id: profile.id,
     email: profile.email,
@@ -195,6 +219,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex h-screen overflow-hidden bg-background flex-col">
       {viewingTenantId && viewingTenantName && (
         <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
+      )}
+      {agentViewingTenantId && agentViewingTenantName && (
+        <AgentBanner tenantName={agentViewingTenantName} />
       )}
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar isSuperAdmin={!!sa} isAgent={profile.role === "agent"} />

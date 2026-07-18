@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 
 export const SA_VIEWING_COOKIE = "sa_viewing_tenant";
+export const AGENT_VIEWING_COOKIE = "agent_viewing_tenant";
 
 export async function getCurrentTenantId(): Promise<string> {
   const supabase = await createClient();
@@ -40,6 +41,26 @@ export async function getCurrentTenantId(): Promise<string> {
 
     if (ownedTenant?.id) return ownedTenant.id;
     redirect("/super-admin");
+  }
+
+  // Agent viewing a tenant's dashboard under their own session (no credential
+  // swap) — only valid if the cookie's tenant matches one this agent is
+  // actually assigned/referred to, re-checked here (not just at cookie-set
+  // time) so a stale cookie can't outlive the assignment.
+  const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
+  if (agentRow) {
+    const cookieStore = await cookies();
+    const viewingTenantId = cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
+    if (viewingTenantId) {
+      const { data: tenant } = await adminClient
+        .from("tenants")
+        .select("id")
+        .eq("id", viewingTenantId)
+        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id}`)
+        .maybeSingle();
+      if (tenant) return viewingTenantId;
+    }
+    redirect("/agent");
   }
 
   // Regular user — subdomain context takes priority

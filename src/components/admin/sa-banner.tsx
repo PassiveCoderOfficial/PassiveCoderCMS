@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShieldCheck, ArrowLeft, LogIn, X } from "lucide-react";
+import { ShieldCheck, ArrowLeft, X } from "lucide-react";
 
 interface SABannerProps {
   tenantName: string;
@@ -17,13 +17,6 @@ export function SABanner({ tenantName, tenantId }: SABannerProps) {
       <span className="text-indigo-100">Browsing as <strong>{tenantName}</strong></span>
 
       <div className="flex items-center gap-2 ml-auto">
-        <a
-          href={`/api/super-admin/impersonate/login-as?tenant_id=${tenantId}`}
-          className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-medium px-3 py-1 rounded-md transition-colors"
-        >
-          <LogIn className="w-3.5 h-3.5" />
-          Login as Site Admin
-        </a>
         <a
           href="/api/super-admin/impersonate/exit"
           className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-medium px-3 py-1 rounded-md transition-colors"

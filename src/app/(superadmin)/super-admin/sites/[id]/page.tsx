@@ -2,11 +2,12 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  Globe, ArrowLeft, ExternalLink, LayoutDashboard, LogIn,
-  CreditCard, Users, Settings, Zap,
+  Globe, ArrowLeft, ExternalLink, LayoutDashboard,
+  CreditCard, Users, Settings, Zap, AlertTriangle,
 } from "lucide-react";
 import AssignAgent from "./assign-agent";
 import AssignOwner from "./assign-owner";
+import DeleteSiteButton from "./delete-site-button";
 
 export default async function SiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -42,6 +43,20 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
         </span>
       </div>
 
+      {/* Deletion requested warning */}
+      {site.deletion_requested_at && (
+        <div className="bg-amber-950/40 border border-amber-800 rounded-xl p-4 text-sm text-amber-300 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400 mt-0.5" />
+          <div>
+            <p className="font-semibold text-amber-400">Site owner requested deletion</p>
+            <p className="text-xs mt-0.5">
+              Requested on {new Date(site.deletion_requested_at).toLocaleString()}. Contact the owner via
+              Team Members below before deleting.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex gap-3 flex-wrap">
         <a
@@ -50,13 +65,6 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
         >
           <LayoutDashboard className="w-4 h-4" />
           Browse as Super Admin
-        </a>
-        <a
-          href={`/api/super-admin/impersonate/login-as?tenant_id=${site.id}`}
-          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          <LogIn className="w-4 h-4" />
-          Login as Site Admin
         </a>
         {site.slug && (
           <a
@@ -69,6 +77,7 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
             Visit Site
           </a>
         )}
+        <DeleteSiteButton siteId={site.id} siteName={site.name} />
       </div>
 
       {/* Site info */}

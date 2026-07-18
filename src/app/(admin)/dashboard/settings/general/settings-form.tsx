@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,105 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle, X } from "lucide-react";
 import { CURRENCIES, PRIORITY_CURRENCIES, OTHER_CURRENCIES } from "@/lib/currency/currencies";
+
+function DeleteRequestCard() {
+  const [status, setStatus] = useState<{ deletion_requested_at: string | null } | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/tenant/request-deletion").then(r => r.json()).then(setStatus).catch(() => {});
+  }, []);
+
+  async function submitRequest() {
+    if (!password) return;
+    setSubmitting(true);
+    const res = await fetch("/api/tenant/request-deletion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    setSubmitting(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.error ?? "Failed to submit request");
+      return;
+    }
+    toast.success("Deletion requested — our team will review and follow up.");
+    setPassword("");
+    setShowConfirm(false);
+    setStatus({ deletion_requested_at: new Date().toISOString() });
+  }
+
+  async function cancelRequest() {
+    setSubmitting(true);
+    const res = await fetch("/api/tenant/request-deletion", { method: "DELETE" });
+    setSubmitting(false);
+    if (!res.ok) { toast.error("Failed to cancel request"); return; }
+    toast.success("Deletion request cancelled");
+    setStatus({ deletion_requested_at: null });
+  }
+
+  if (!status) return null;
+
+  return (
+    <Card className="border-destructive/40">
+      <CardHeader><CardTitle className="text-sm text-destructive">Danger Zone</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        {status.deletion_requested_at ? (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
+            <p className="text-sm font-medium flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" /> Deletion requested
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Requested on {new Date(status.deletion_requested_at).toLocaleString()}. Our team will review and
+              contact you before anything is removed. You can cancel this request any time before then.
+            </p>
+            <Button variant="outline" size="sm" onClick={cancelRequest} disabled={submitting}>
+              {submitting && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+              Cancel Request
+            </Button>
+          </div>
+        ) : showConfirm ? (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-destructive">Confirm your password to request deletion</p>
+              <button onClick={() => setShowConfirm(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This does not delete your site immediately — it flags it for our team to review and reach out to you first.
+            </p>
+            <Input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Your account password"
+              onKeyDown={e => e.key === "Enter" && submitRequest()}
+            />
+            <Button variant="destructive" size="sm" onClick={submitRequest} disabled={submitting || !password}>
+              {submitting && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+              Confirm & Request Deletion
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">
+              Requesting deletion flags your site for our team — it stays fully live until we've confirmed with you.
+            </p>
+            <Button variant="destructive" size="sm" onClick={() => setShowConfirm(true)}>
+              Request Site Deletion
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 const TIMEZONES = [
   "UTC", "Asia/Dhaka", "Asia/Kolkata", "Asia/Karachi", "Asia/Dubai", "Asia/Riyadh",
@@ -241,6 +338,8 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
         Save Settings
       </Button>
+
+      <DeleteRequestCard />
     </div>
   );
 }

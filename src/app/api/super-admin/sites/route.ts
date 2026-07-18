@@ -10,7 +10,7 @@ export async function GET() {
   const supabase = await createAdminClient();
   const { data, error } = await supabase
     .from("tenants")
-    .select("id,name,slug,status,custom_domain,domain_status,created_at,onboarding_completed")
+    .select("id,name,slug,status,custom_domain,domain_status,created_at,onboarding_completed,deletion_requested_at,owner_id")
     .order("created_at", { ascending: false })
     .limit(500);
 
