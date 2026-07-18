@@ -2,11 +2,9 @@
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Copy, Eye, FileText } from "lucide-react";
-import { formatDateTime } from "@/lib/utils";
-import { PageActions } from "./page-actions";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, FileText } from "lucide-react";
+import { PageRow } from "./page-row";
 
 export default async function PagesListPage() {
   const tenantId = await getCurrentTenantId();
@@ -52,25 +50,7 @@ export default async function PagesListPage() {
               </thead>
               <tbody className="divide-y">
                 {pages.map((page) => (
-                  <tr key={page.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <Link href={`/dashboard/pages/${page.id}`} className="font-medium hover:text-primary text-sm">
-                        {page.title}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">/{page.slug}</code>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <StatusBadge status={page.status} />
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">
-                      {formatDateTime(page.updated_at)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <PageActions pageId={page.id} pageSlug={page.slug} />
-                    </td>
-                  </tr>
+                  <PageRow key={page.id} page={page} />
                 ))}
               </tbody>
             </table>
@@ -79,11 +59,4 @@ export default async function PagesListPage() {
       )}
     </div>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, "default" | "success" | "warning" | "outline"> = {
-    published: "success", draft: "outline", scheduled: "warning", archived: "secondary" as never,
-  };
-  return <Badge variant={variants[status] ?? "outline"} className="capitalize text-xs">{status}</Badge>;
 }

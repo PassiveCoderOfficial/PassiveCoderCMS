@@ -2,10 +2,10 @@
 
 import React from "react";
 import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings } from "lucide-react";
-import { useBuilderStore } from "@/lib/store/builder";
+import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Block } from "@/types/cms";
+import type { Block, ContainerBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -15,22 +15,28 @@ interface BlockToolbarProps {
   block: Block;
   dragListeners?: SyntheticListenerMap;
   dragAttributes?: DraggableAttributes;
+  /** Set when this block lives inside a container column, not at page root. */
+  path?: ContainerPath;
 }
 
-export function BlockToolbar({ block, dragListeners, dragAttributes }: BlockToolbarProps) {
+export function BlockToolbar({ block, dragListeners, dragAttributes, path }: BlockToolbarProps) {
   const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock } = useBuilderStore();
-  const idx = blocks.findIndex((b) => b.id === block.id);
+  const siblings = path
+    ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
+        ?.data.columns[path.columnIndex]?.blocks ?? [])
+    : blocks;
+  const idx = siblings.findIndex((b) => b.id === block.id);
   const canMoveUp = idx > 0;
-  const canMoveDown = idx < blocks.length - 1;
+  const canMoveDown = idx < siblings.length - 1;
 
   const actions = [
     { icon: Settings, label: "Edit settings", onClick: () => selectBlock(block.id), variant: "primary" },
     { icon: GripVertical, label: "Drag to reorder", isDragHandle: true },
-    { icon: block.visible ? Eye : EyeOff, label: block.visible ? "Hide block" : "Show block", onClick: () => updateBlock(block.id, { visible: !block.visible }) },
-    { icon: ChevronUp, label: "Move up", onClick: () => canMoveUp && moveBlock(block.id, blocks[idx - 1].id), disabled: !canMoveUp },
-    { icon: ChevronDown, label: "Move down", onClick: () => canMoveDown && moveBlock(block.id, blocks[idx + 1].id), disabled: !canMoveDown },
-    { icon: Copy, label: "Duplicate", onClick: () => duplicateBlock(block.id) },
-    { icon: Trash2, label: "Delete", onClick: () => removeBlock(block.id), variant: "destructive" },
+    { icon: block.visible ? Eye : EyeOff, label: block.visible ? "Hide block" : "Show block", onClick: () => updateBlock(block.id, { visible: !block.visible }, path) },
+    { icon: ChevronUp, label: "Move up", onClick: () => canMoveUp && moveBlock(block.id, siblings[idx - 1].id, path), disabled: !canMoveUp },
+    { icon: ChevronDown, label: "Move down", onClick: () => canMoveDown && moveBlock(block.id, siblings[idx + 1].id, path), disabled: !canMoveDown },
+    { icon: Copy, label: "Duplicate", onClick: () => duplicateBlock(block.id, path) },
+    { icon: Trash2, label: "Delete", onClick: () => removeBlock(block.id, path), variant: "destructive" },
   ];
 
   return (

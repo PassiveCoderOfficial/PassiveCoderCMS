@@ -3,10 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Eye, Copy, Trash2 } from "lucide-react";
+import { Edit, Eye, Copy, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { generateId, createSlug } from "@/lib/utils";
+import { generateId } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface PageActionsProps {
@@ -37,26 +36,22 @@ export function PageActions({ pageId, pageSlug }: PageActionsProps) {
     router.refresh();
   };
 
+  // stopPropagation: the parent row is itself a click target that navigates to
+  // the editor, so these buttons must not also trigger that row-level handler.
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/pages/${pageId}`)}>
-          <Edit className="h-4 w-4 mr-2" /> Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => window.open(`/${pageSlug}`, "_blank")}>
-          <Eye className="h-4 w-4 mr-2" /> View
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDuplicate}>
-          <Copy className="h-4 w-4 mr-2" /> Duplicate
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-          <Trash2 className="h-4 w-4 mr-2" /> Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+      <Button variant="ghost" size="icon" className="h-7 w-7" title="Edit" onClick={() => router.push(`/dashboard/pages/${pageId}`)}>
+        <Edit className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-7 w-7" title="View" onClick={() => window.open(`/${pageSlug}`, "_blank")}>
+        <Eye className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-7 w-7" title="Duplicate" onClick={handleDuplicate}>
+        <Copy className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" title="Delete" onClick={handleDelete}>
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }

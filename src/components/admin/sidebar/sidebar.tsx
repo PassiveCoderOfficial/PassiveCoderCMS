@@ -210,8 +210,27 @@ function SidebarContent({ isSuperAdmin, isAgent, onClose }: { isSuperAdmin: bool
   );
 }
 
+// Routes where the full-width page builder needs the sidebar out of the way by
+// default. Still user-togglable via the rail button — this only sets the
+// initial state per route.
+const BUILDER_ROUTE = /^\/dashboard\/pages\/[^/]+$/;
+
 export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSuperAdmin?: boolean; isAgent?: boolean }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isBuilderRoute = BUILDER_ROUTE.test(pathname) && pathname !== "/dashboard/pages/new";
+
+  // Reset to the route's default collapse state whenever the route itself
+  // changes (e.g. navigating into/out of a page editor), while still letting
+  // the user toggle away from that default within the same route. Storing the
+  // "last seen route" in state (not a ref) keeps this comparison pure during
+  // render instead of mutating a ref or calling setState from an effect.
+  const [lastPath, setLastPath] = useState(pathname);
+  const [collapsed, setCollapsed] = useState(isBuilderRoute);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setCollapsed(isBuilderRoute);
+  }
 
   return (
     <>
@@ -240,10 +259,25 @@ export function AdminSidebar({ isSuperAdmin = false, isAgent = false }: { isSupe
         <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} onClose={() => setOpen(false)} />
       </aside>
 
-      {/* Desktop sidebar — always visible */}
-      <aside className="hidden lg:flex h-screen w-60 flex-col border-r bg-sidebar flex-shrink-0">
-        <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} />
-      </aside>
+      {/* Desktop sidebar — collapsible; defaults collapsed on the page builder route */}
+      <div className="hidden lg:flex h-screen flex-shrink-0 relative">
+        <aside className={cn(
+          "h-screen flex-col border-r bg-sidebar overflow-hidden transition-[width] duration-200",
+          collapsed ? "w-0" : "w-60 flex",
+        )}>
+          <div className="w-60">
+            <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} />
+          </div>
+        </aside>
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 flex items-center justify-center w-6 h-6 rounded-full border bg-background shadow-sm hover:bg-accent transition-colors"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed ? "-rotate-90" : "rotate-90")} />
+        </button>
+      </div>
     </>
   );
 }

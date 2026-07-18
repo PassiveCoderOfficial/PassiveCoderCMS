@@ -574,6 +574,28 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "container",
+    label: "Container",
+    description: "Row/column layout to hold and arrange other blocks side by side",
+    icon: "▦",
+    category: "layout",
+    create: () => ({
+      ...baseBlock("container"),
+      type: "container",
+      data: {
+        columns: [
+          { id: generateId(), widthPct: 50, blocks: [] },
+          { id: generateId(), widthPct: 50, blocks: [] },
+        ],
+        direction: "row",
+        gap: "md",
+        align: "stretch",
+        justify: "start",
+        wrapOnMobile: true,
+      },
+    }),
+  },
+  {
     type: "newsletter",
     label: "Email Signup",
     description: "Collect visitor emails for offers and updates",

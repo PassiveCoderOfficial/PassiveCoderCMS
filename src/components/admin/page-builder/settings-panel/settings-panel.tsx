@@ -34,12 +34,17 @@ import { EnmBookingWidgetSettings } from "./enm-booking-widget-settings";
 import { BookingSettings } from "./booking-settings";
 import { DonorGroupCardsSettings, DonorListSettings, DonorMapSettings } from "./donor-settings";
 import { BlockLayoutSettings } from "./block-layout-settings";
+import { ContainerSettings } from "./container-settings";
 import { Layers } from "lucide-react";
 import type { Block } from "@/types/cms";
 
 export function SettingsPanel() {
-  const { selectedBlockId, blocks } = useBuilderStore();
-  const block = blocks.find((b) => b.id === selectedBlockId);
+  // Subscribe to `blocks` (not just call getBlock()) so this panel re-renders
+  // when the selected block's data changes, including edits to blocks nested
+  // inside a container column.
+  const { selectedBlockId, blocks, getBlock } = useBuilderStore();
+  void blocks;
+  const block = selectedBlockId ? getBlock(selectedBlockId) : undefined;
 
   if (!block) {
     return (
@@ -108,6 +113,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "icon_grid": return <IconGridSettings block={block} />;
     case "enm_lead_form": return <EnmLeadFormSettings block={block} />;
     case "enm_booking_widget": return <EnmBookingWidgetSettings block={block} />;
+    case "container": return <ContainerSettings block={block} />;
     default:
       return <p className="text-xs text-muted-foreground">No settings for this block type.</p>;
   }

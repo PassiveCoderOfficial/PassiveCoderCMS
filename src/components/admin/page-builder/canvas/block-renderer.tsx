@@ -29,7 +29,18 @@ import { StepsBlock } from "@/components/blocks/steps/steps-block";
 import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
 import { EnmBookingWidgetBlock } from "@/components/blocks/enm/enm-booking-widget-block";
+import { FooterBlock } from "@/components/blocks/footer/footer-block";
+import { CountryGridBlock } from "@/components/blocks/country-grid/country-grid-block";
+import { EligibilityCheckerBlock } from "@/components/blocks/eligibility-checker/eligibility-checker-block";
+import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tracker-block";
+import { BookingBlock } from "@/components/blocks/booking/booking-block";
+import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
+import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
+import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
+import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
+import { ContainerBlock } from "./container-block";
 import { getBlockBackground } from "@/modules/page-builder/block-utils";
+import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
 
 interface BlockRendererProps {
@@ -88,6 +99,16 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
       case "icon_grid": return <IconGridBlock block={block} />;
       case "enm_lead_form": return <EnmLeadFormBlock block={block} />;
       case "enm_booking_widget": return <EnmBookingWidgetBlock block={block} />;
+      case "footer": return <FooterBlock block={block as FooterBlockProps} />;
+      case "country_grid": return <CountryGridBlock block={block} />;
+      case "eligibility_checker": return <EligibilityCheckerBlock block={block} />;
+      case "status_tracker": return <StatusTrackerBlock block={block} />;
+      case "booking": return <BookingBlock block={block} />;
+      case "donor_group_cards": return <DonorGroupCardsBlock block={block} />;
+      case "donor_list": return <DonorListBlock block={block} />;
+      case "donor_map": return <DonorMapBlock block={block} />;
+      case "donor_requests": return <DonorRequestsBlock block={block} />;
+      case "container": return <ContainerBlock block={block as ContainerBlockProps} isPreview={isPreview} />;
       // Server data blocks show placeholders in builder
       case "ecommerce_cart":
         return <DataBlockPlaceholder icon={ShoppingBag} label="Shopping Cart — live cart on the public site" />;

@@ -62,7 +62,8 @@ export type BlockType =
   | "donor_group_cards"
   | "donor_list"
   | "donor_map"
-  | "donor_requests";
+  | "donor_requests"
+  | "container";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -721,7 +722,29 @@ export type Block =
   | DonorGroupCardsBlockProps
   | DonorListBlockProps
   | DonorMapBlockProps
-  | DonorRequestsBlockProps;
+  | DonorRequestsBlockProps
+  | ContainerBlockProps;
+
+export type ContainerColumn = {
+  id: string;
+  /** Column width as a flex-basis percentage. Columns in a row should sum to ~100. */
+  widthPct: number;
+  blocks: Block[];
+};
+
+export type ContainerBlockProps = BlockBase & {
+  type: "container";
+  data: {
+    columns: ContainerColumn[];
+    direction: "row" | "column";
+    gap: "none" | "sm" | "md" | "lg";
+    /** Row cross-axis alignment (align-items). */
+    align: "start" | "center" | "end" | "stretch";
+    /** Row main-axis alignment (justify-content). */
+    justify: "start" | "center" | "end" | "between";
+    wrapOnMobile: boolean;
+  };
+};
 
 export type DonorGroupCardsBlockProps = BlockBase & {
   type: "donor_group_cards";
