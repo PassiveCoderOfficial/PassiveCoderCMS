@@ -4,9 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye, Copy, Trash2, RotateCcw, XCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { generateId } from "@/lib/utils";
-import { moveToTrash, restoreFromTrash, deletePermanently } from "./content-status";
+import { moveToTrash, restoreFromTrash, deletePermanently, duplicatePage } from "./content-status";
 import { toast } from "sonner";
 
 interface PageActionsProps {
@@ -19,11 +17,7 @@ export function PageActions({ pageId, pageSlug, inTrash }: PageActionsProps) {
   const router = useRouter();
 
   const handleDuplicate = async () => {
-    const supabase = createClient();
-    const { data: page } = await supabase.from("pages").select("*").eq("id", pageId).single();
-    if (!page) return;
-    const newSlug = `${page.slug}-copy-${generateId(4)}`;
-    const { error } = await supabase.from("pages").insert({ ...page, id: undefined, title: `${page.title} (Copy)`, slug: newSlug, status: "draft", deleted_at: null, created_at: undefined, updated_at: undefined });
+    const { error } = await duplicatePage(pageId);
     if (error) { toast.error("Failed to duplicate page"); return; }
     toast.success("Page duplicated");
     router.refresh();

@@ -22,7 +22,6 @@
   Phone,
   Star,
   FolderOpen,
-  Layout,
   Layers,
   SlidersHorizontal,
   DollarSign as PricingIcon,
@@ -134,13 +133,21 @@ export const navSections: NavSection[] = [
       { label: "Contact", href: "/dashboard/contact", icon: Phone },
       { label: "Bookings", href: "/dashboard/bookings", icon: Calendar, moduleKey: "bookings" },
       { label: "Blood Donors", href: "/dashboard/donors", icon: Droplet, moduleKey: "blood_donation" },
-      { label: "Identity & Nav", href: "/dashboard/identity", icon: Layers },
     ],
   },
   {
     label: "Appearance",
     items: [
-      { label: "Templates", href: "/dashboard/templates", icon: Palette },
+      {
+        label: "Templates",
+        href: "/dashboard/themes",
+        icon: Palette,
+        children: [
+          { label: "Browse Templates", href: "/dashboard/themes", icon: Palette },
+          { label: "Colors & Design", href: "/dashboard/templates/colors", icon: SlidersHorizontal },
+          { label: "Header & Footer", href: "/dashboard/templates/header-footer", icon: Layers },
+        ],
+      },
     ],
   },
   {
@@ -178,7 +185,6 @@ export const navSections: NavSection[] = [
       { label: "Backups", href: "/dashboard/backups", icon: Archive },
       { label: "Settings", href: "/dashboard/settings", icon: Settings },
       { label: "API Keys", href: "/dashboard/settings/api-keys", icon: Puzzle },
-      { label: "Layout Manager", href: "/dashboard/settings/layout-manager", icon: Layout },
       { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },
       { label: "Visit Site", href: "/", icon: Globe },
       { label: "Docs", href: "/dashboard/docs", icon: BookOpen },

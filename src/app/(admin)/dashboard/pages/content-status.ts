@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { generateId } from "@/lib/utils";
 
 // ─── Shared page/post status + trash helpers (build once, reuse everywhere) ──
 // Used by both /dashboard/pages and /dashboard/posts row components. Trash is
@@ -40,4 +41,18 @@ export async function restoreFromTrash(id: string) {
 export async function deletePermanently(id: string) {
   const supabase = createClient();
   return supabase.from("pages").delete().eq("id", id);
+}
+
+export async function duplicatePage(id: string): Promise<{ id: string | null; error: string | null }> {
+  const supabase = createClient();
+  const { data: page } = await supabase.from("pages").select("*").eq("id", id).single();
+  if (!page) return { id: null, error: "Page not found" };
+  const newSlug = `${page.slug}-copy-${generateId(4)}`;
+  const { data: inserted, error } = await supabase
+    .from("pages")
+    .insert({ ...page, id: undefined, title: `${page.title} (Copy)`, slug: newSlug, status: "draft", deleted_at: null, created_at: undefined, updated_at: undefined })
+    .select("id")
+    .single();
+  if (error) return { id: null, error: error.message };
+  return { id: inserted.id as string, error: null };
 }

@@ -62,7 +62,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity")
-            .select("active_template_slug, logo_url, logo_dark_url, site_name, tagline, global_header, global_footer")
+            .select("active_template_slug, logo_url, logo_dark_url, site_name, tagline, global_header, global_footer, color_overrides")
             .eq("tenant_id", tenantId)
             .single()
         )
@@ -78,6 +78,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     tagline?: string;
     global_header?: Block[] | null;
     global_footer?: Block[] | null;
+    color_overrides?: Partial<import("@/modules/themes/template-registry").TemplatePalette> | null;
   } | null;
 
   const activeTemplateSlug = identity?.active_template_slug ?? null;
@@ -125,8 +126,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';`
       : `(function(){var d=document.documentElement;var dark=window.matchMedia('(prefers-color-scheme: dark)').matches;d.classList.add(dark?'dark':'light');d.classList.remove(dark?'light':'dark');d.style.colorScheme=dark?'dark':'light';})();`;
 
-  const templateCSSVars = templateIdentity
-    ? buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography)
+  const mergedPalette = templateIdentity
+    ? { ...templateIdentity.palette, ...(identity?.color_overrides ?? {}) }
+    : null;
+  const templateCSSVars = templateIdentity && mergedPalette
+    ? buildTemplateCSSVars(mergedPalette, templateIdentity.typography)
     : null;
   const templateBodyScript = templateIdentity
     ? buildTemplateBodyScript(templateIdentity.slug)

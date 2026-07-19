@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { toast } from "sonner";
 import type { Page } from "@/types/cms";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
   const [title, setTitle] = useState(page.title);
   const [slug, setSlug] = useState(page.slug);
   const [excerpt, setExcerpt] = useState(page.excerpt ?? "");
+  const [featuredImage, setFeaturedImage] = useState(page.featured_image ?? "");
 
   const seo = (page.seo ?? {}) as Record<string, string | boolean>;
   const settings = (page.settings ?? {}) as Record<string, unknown>;
@@ -50,6 +52,7 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
       title,
       slug,
       excerpt,
+      featured_image: featuredImage || null,
       seo: { title: seoTitle, description: seoDesc, keywords: seoKeywords, og_title: ogTitle, og_description: ogDesc, og_image: ogImage, no_index: noIndex, canonical },
       settings: { show_header: showHeader, show_footer: showFooter, custom_css: customCss, custom_js: customJs },
     }).eq("id", page.id);
@@ -111,6 +114,11 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
               <div className="space-y-1.5">
                 <Label>Excerpt</Label>
                 <Textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} placeholder="Short description..." rows={3} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Featured Image</Label>
+                <MediaPickerInput value={featuredImage} onChange={setFeaturedImage} placeholder="https://…" />
+                <p className="text-xs text-muted-foreground">Used as a fallback image (e.g. Item Box, Blog cards) when no block-level image is set.</p>
               </div>
             </>
           )}
