@@ -69,11 +69,30 @@ function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centere
 // data.layout controls which side the image sits on (and whether it shows at
 // all) — "right" (default) / "left" swap column order, "split" is the same as
 // "right", "centered" drops the image column and centers the text.
+function hexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const num = parseInt(full, 16);
+  const r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
   const { data } = block;
   const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-6xl";
   const isCentered = data.layout === "centered";
   const imageFirst = data.layout === "left";
+
+  // Overlay controls apply here too, not just fullscreen-overlay — any hero
+  // image can take a color wash. No color set = the original subtle
+  // dark-to-transparent gradient used for image-text contrast.
+  const hasOverlay = !!data.overlayColor;
+  const overlayOpacity = data.overlayOpacity ?? 0.55;
+  const overlayFrom = hasOverlay ? hexToRgba(data.overlayColor!, overlayOpacity) : undefined;
+  const overlayTo = hasOverlay
+    ? (data.overlayColorTo ? hexToRgba(data.overlayColorTo, overlayOpacity) : overlayFrom)
+    : undefined;
+  const overlayStyle = hasOverlay ? { background: `linear-gradient(135deg, ${overlayFrom}, ${overlayTo})` } : undefined;
 
   const textContent = (
     <div className={cn("flex flex-col gap-5", isCentered && "items-center text-center")}>
@@ -112,14 +131,14 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
       {imageFirst && data.imageUrl && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4] order-first lg:order-none">
           <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          <div className={cn("absolute inset-0", !hasOverlay && "bg-gradient-to-t from-black/10 to-transparent")} style={overlayStyle} />
         </div>
       )}
       {textContent}
       {!imageFirst && data.imageUrl && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4]">
           <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          <div className={cn("absolute inset-0", !hasOverlay && "bg-gradient-to-t from-black/10 to-transparent")} style={overlayStyle} />
         </div>
       )}
     </div>
@@ -128,13 +147,6 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
 
 // ─── Variant: fullscreen-overlay ─────────────────────────────────────────────
 // Full viewport background image with text overlay — used for spa, restaurant, gym
-function hexToRgba(hex: string, alpha: number): string {
-  const clean = hex.replace("#", "");
-  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
-  const num = parseInt(full, 16);
-  const r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
-  return `rgba(${r},${g},${b},${alpha})`;
-}
 
 // data.layout positions the text block within the full-bleed image: "left" /
 // "right" pin it to that edge, "centered" / "split" (default) keep it centered.

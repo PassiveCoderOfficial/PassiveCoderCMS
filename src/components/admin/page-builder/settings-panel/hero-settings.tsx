@@ -70,7 +70,7 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
       {block.data.imageUrl && (
         <div className="pt-1 border-t space-y-2">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Image Overlay</p>
-          <p className="text-[10px] text-muted-foreground">Only used by the fullscreen-overlay layout.</p>
+          <p className="text-[10px] text-muted-foreground">Tints the hero image — set a color to apply it.</p>
           <div className="grid grid-cols-2 gap-2">
             <FieldGroup label="Overlay Color">
               <Input type="color" value={block.data.overlayColor ?? "#000000"} onChange={(e) => update("overlayColor", e.target.value)} className="h-8 p-1" />
