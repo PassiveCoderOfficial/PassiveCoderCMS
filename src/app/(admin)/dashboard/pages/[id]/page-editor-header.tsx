@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageSettingsDrawer } from "@/components/admin/page-settings/page-settings-drawer";
 import { createClient } from "@/lib/supabase/client";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { toast } from "sonner";
 import type { Page } from "@/types/cms";
 
@@ -17,6 +18,12 @@ export function PageEditorHeader({ page }: { page: Page }) {
   const [status, setStatus] = useState(page.status);
   const [saving, setSaving] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  // The mobile builder shell is a full-screen overlay with its own top bar —
+  // this desktop editor header would just render (uselessly) behind it and
+  // its back link intercepts taps meant for the canvas. Hide it on mobile.
+  if (isMobile) return null;
 
   const handleStatusChange = async (newStatus: string) => {
     setSaving(true);

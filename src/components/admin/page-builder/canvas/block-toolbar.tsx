@@ -53,9 +53,10 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          // Touch-sized on mobile (bigger buttons need more clearance above the
-          // block), compact on desktop where hover-precision is fine.
-          "absolute -top-11 lg:-top-8 left-0 z-20 flex items-center gap-1 lg:gap-0.5 rounded-t px-1.5 lg:px-1 py-1 lg:py-0.5 transition-opacity max-w-[calc(100vw-16px)] overflow-x-auto",
+          // Mobile: sits INSIDE the block's top edge (top-1) so it can never
+          // slide behind the fixed top bar for the first block — always
+          // reachable. Desktop: floats just above the block on hover.
+          "absolute top-1 lg:top-auto lg:-top-8 left-1 lg:left-0 z-20 flex items-center gap-1 lg:gap-0.5 rounded-lg lg:rounded-t px-1.5 lg:px-1 py-1 lg:py-0.5 transition-opacity max-w-[calc(100vw-16px)] overflow-x-auto shadow-lg lg:shadow-none",
           pinned ? "bg-blue-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
         )}
         onClick={(e) => e.stopPropagation()}
