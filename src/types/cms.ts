@@ -92,6 +92,7 @@ export type BlockBackground = {
   gradient?: string;
   imageUrl?: string;
   imageOverlay?: string;
+  imageOverlayTo?: string;
   imageOverlayOpacity?: number;
 };
 

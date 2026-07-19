@@ -40,7 +40,7 @@ import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { ContainerBlock } from "./container-block";
-import { getBlockBackground } from "@/modules/page-builder/block-utils";
+import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
 
@@ -61,7 +61,7 @@ function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType
 }
 
 export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) {
-  const bgStyle = getBlockBackground(block.background);
+  const bgStyle = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding.top,
     paddingRight: block.padding.right,
@@ -131,7 +131,7 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
 
   return (
     <div style={{ ...bgStyle, ...paddingStyle }} className="w-full">
-      {renderBlock()}
+      <div className={getContainerClass(block.width)}>{renderBlock()}</div>
     </div>
   );
 }

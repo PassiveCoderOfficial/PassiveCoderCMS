@@ -42,7 +42,7 @@ import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-car
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
-import { getBlockBackground } from "@/modules/page-builder/block-utils";
+import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 
 interface PageBlockProps {
   block: Block;
@@ -51,7 +51,7 @@ interface PageBlockProps {
 }
 
 async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockProps) {
-  const bgStyle = getBlockBackground(block.background);
+  const bgStyle = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding?.top,
     paddingRight: block.padding?.right,
@@ -109,7 +109,11 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
 
   if (!content) return null;
 
-  return <div style={{ ...bgStyle, ...paddingStyle }} className="w-full">{content}</div>;
+  return (
+    <div style={{ ...bgStyle, ...paddingStyle }} className="w-full">
+      <div className={getContainerClass(block.width)}>{content}</div>
+    </div>
+  );
 }
 
 export async function PageRenderer({ blocks }: { blocks: Block[] }) {

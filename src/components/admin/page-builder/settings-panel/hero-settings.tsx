@@ -25,6 +25,7 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
     updateBlock(block.id, { data: { ...block.data, [btn]: { ...existing, [field]: value } } });
   };
 
+
   // "centered-bold" and "corporate" are single-column, always-centered
   // designs by intent (no image split, no side-pinned text) — Layout has
   // nothing to control there, so hide it instead of showing a dropdown that
