@@ -1,39 +1,65 @@
-﻿import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, FileText } from "lucide-react";
 import { PageRow } from "./page-row";
+import { StatusTabs } from "./status-tabs";
 
-export default async function PagesListPage() {
+const TABS = ["all", "published", "draft", "scheduled", "trash"] as const;
+type Tab = (typeof TABS)[number];
+
+export default async function PagesListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const tab: Tab = (TABS as readonly string[]).includes(status ?? "") ? (status as Tab) : "all";
+
   const tenantId = await getCurrentTenantId();
   const supabase = await createClient();
-  const { data: pages } = await supabase
+  let query = supabase
     .from("pages")
-    .select("id, title, slug, type, status, created_at, updated_at, published_at")
+    .select("id, title, slug, type, status, created_at, updated_at, published_at, scheduled_at, deleted_at")
     .in("type", ["page", "landing", "portfolio"])
     .eq("tenant_id", tenantId)
     .order("updated_at", { ascending: false });
 
+  if (tab === "trash") {
+    query = query.not("deleted_at", "is", null);
+  } else {
+    query = query.is("deleted_at", null);
+    if (tab !== "all") query = query.eq("status", tab);
+  }
+
+  const { data: pages } = await query;
+
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold">Pages</h1>
-          <p className="text-muted-foreground text-sm mt-1">{pages?.length ?? 0} pages total</p>
+          <p className="text-muted-foreground text-sm mt-1">{pages?.length ?? 0} pages</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> New Page</Link>
         </Button>
       </div>
 
+      <StatusTabs basePath="/dashboard/pages" active={tab} />
+
       {!pages?.length ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="font-semibold text-lg mb-2">No pages yet</h3>
-          <p className="text-muted-foreground text-sm mb-4">Create your first page to get started</p>
-          <Button asChild><Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> Create Page</Link></Button>
+          <h3 className="font-semibold text-lg mb-2">{tab === "trash" ? "Trash is empty" : "No pages yet"}</h3>
+          {tab !== "trash" && (
+            <>
+              <p className="text-muted-foreground text-sm mb-4">Create your first page to get started</p>
+              <Button asChild><Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> Create Page</Link></Button>
+            </>
+          )}
         </div>
       ) : (
         <Card>
@@ -50,7 +76,7 @@ export default async function PagesListPage() {
               </thead>
               <tbody className="divide-y">
                 {pages.map((page) => (
-                  <PageRow key={page.id} page={page} />
+                  <PageRow key={page.id} page={page} inTrash={tab === "trash"} />
                 ))}
               </tbody>
             </table>

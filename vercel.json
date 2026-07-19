@@ -16,6 +16,10 @@
     {
       "path": "/api/cron/campaign-sender",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
