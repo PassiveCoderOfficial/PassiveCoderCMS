@@ -32,6 +32,7 @@
   Briefcase,
   ShoppingCart,
   ToggleLeft,
+  Droplet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +56,7 @@ export type NavItem = {
 export const MODULE_KEYS = [
   "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
   "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
+  "visa_tour", "blood_donation",
 ] as const;
 export type ModuleKey = typeof MODULE_KEYS[number];
 
@@ -74,6 +76,8 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   pos: "POS",
   inventory: "Inventory",
   accounting: "Accounting",
+  visa_tour: "Visa & Tour",
+  blood_donation: "Blood Donation",
 };
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
@@ -92,6 +96,8 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
   pos: "Point-of-sale checkout for in-person transactions",
   inventory: "Stock levels and warehouse tracking for products",
   accounting: "Bookkeeping, transactions, and financial reporting",
+  visa_tour: "Visa eligibility checkers, country info, and application status tracking",
+  blood_donation: "Donor directory, requests, and blood-donation site tools",
 };
 
 export type NavSection = {
@@ -127,6 +133,7 @@ export const navSections: NavSection[] = [
       { label: "Pricing", href: "/dashboard/pricing-manager", icon: PricingIcon, moduleKey: "pricing" },
       { label: "Contact", href: "/dashboard/contact", icon: Phone },
       { label: "Bookings", href: "/dashboard/bookings", icon: Calendar, moduleKey: "bookings" },
+      { label: "Blood Donors", href: "/dashboard/donors", icon: Droplet, moduleKey: "blood_donation" },
       { label: "Identity & Nav", href: "/dashboard/identity", icon: Layers },
     ],
   },

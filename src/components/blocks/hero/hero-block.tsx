@@ -83,9 +83,11 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
   const isCentered = data.layout === "centered";
   const imageFirst = data.layout === "left";
 
-  // Overlay controls apply here too, not just fullscreen-overlay — any hero
-  // image can take a color wash. No color set = the original subtle
-  // dark-to-transparent gradient used for image-text contrast.
+  // Overlay tints the whole section (covers the Layout tab's background
+  // image, block.background — rendered by the wrapper outside this
+  // component), not the small foreground photo. No color set = no overlay
+  // layer at all; the foreground photo keeps its own fixed subtle gradient
+  // for image-text contrast, independent of this.
   const hasOverlay = !!data.overlayColor;
   const overlayOpacity = data.overlayOpacity ?? 0.55;
   const overlayFrom = hasOverlay ? hexToRgba(data.overlayColor!, overlayOpacity) : undefined;
@@ -120,27 +122,36 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
 
   if (isCentered) {
     return (
-      <div className="max-w-3xl mx-auto py-8">
-        {textContent}
+      <div className="relative">
+        {hasOverlay && <div className="absolute inset-0 pointer-events-none" style={overlayStyle} />}
+        <div className="relative max-w-3xl mx-auto py-8">
+          {textContent}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={cn("max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[70vh] py-8")}>
-      {imageFirst && data.imageUrl && (
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4] order-first lg:order-none">
-          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
-          <div className={cn("absolute inset-0", !hasOverlay && "bg-gradient-to-t from-black/10 to-transparent")} style={overlayStyle} />
-        </div>
-      )}
-      {textContent}
-      {!imageFirst && data.imageUrl && (
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4]">
-          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
-          <div className={cn("absolute inset-0", !hasOverlay && "bg-gradient-to-t from-black/10 to-transparent")} style={overlayStyle} />
-        </div>
-      )}
+    <div className="relative">
+      {/* Covers block.background (the Layout tab's section background image)
+          which renders on a wrapper outside this component — this is the
+          only place inside the component that spans the full section. */}
+      {hasOverlay && <div className="absolute inset-0 pointer-events-none" style={overlayStyle} />}
+      <div className={cn("relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[70vh] py-8")}>
+        {imageFirst && data.imageUrl && (
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4] order-first lg:order-none">
+            <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          </div>
+        )}
+        {textContent}
+        {!imageFirst && data.imageUrl && (
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4]">
+            <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

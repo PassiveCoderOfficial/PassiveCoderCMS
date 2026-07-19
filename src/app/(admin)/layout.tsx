@@ -172,15 +172,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (sa) {
     // SA sees all tenants — pull owner_id + custom_domain so the mega menu can
-    // filter by owner email / domain, not just site name.
+    // filter by owner email / domain, not just site name. Newest first, not
+    // creation order — that's what "latest sites" means to an SA scanning
+    // for recent signups.
     const { data: allTenants } = await adminClient
       .from("tenants")
       .select("id, name, slug, owner_id, custom_domain")
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
 
+    // "Current site" must reflect the subdomain actually being viewed, not
+    // a stale impersonation cookie — an SA browsing directly to
+    // demo2.passivecoder.com without going through the switcher's "view as"
+    // flow left the topbar showing whatever tenant the cookie last held
+    // (or the fallback owned tenant), not demo2.
+    const subdomainTenantId = (await headers()).get("x-tenant-id");
     const currentViewingId = cookieStore.get(SA_VIEWING_COOKIE)?.value;
     const saOwnedId = allTenants?.[0]?.id;
-    const activeTenantId = currentViewingId ?? saOwnedId;
+    const activeTenantId = subdomainTenantId ?? currentViewingId ?? saOwnedId;
 
     const ownerIds = [...new Set((allTenants ?? []).map(t => t.owner_id).filter(Boolean))] as string[];
     const { data: owners } = ownerIds.length

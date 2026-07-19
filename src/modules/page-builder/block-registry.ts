@@ -766,6 +766,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Grid of country cards with flag, visa types, processing time and link",
     icon: "🌍",
     category: "content",
+    moduleKey: "visa_tour",
     create: () => ({
       ...baseBlock("country_grid"),
       type: "country_grid" as const,
@@ -788,6 +789,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Interactive multi-step visa eligibility quiz with lead capture",
     icon: "✅",
     category: "interactive",
+    moduleKey: "visa_tour",
     create: () => ({
       ...baseBlock("eligibility_checker"),
       type: "eligibility_checker" as const,
@@ -832,6 +834,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "8 blood-group cards with live donor counts — tap to filter the donor list",
     icon: "🩸",
     category: "interactive",
+    moduleKey: "blood_donation",
     create: () => ({
       ...baseBlock("donor_group_cards"),
       type: "donor_group_cards" as const,
@@ -849,6 +852,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Latest urgent requests — 2 columns on mobile, 3 on desktop",
     icon: "🚨",
     category: "interactive",
+    moduleKey: "blood_donation",
     create: () => ({
       ...baseBlock("donor_requests"),
       type: "donor_requests" as const,
@@ -864,6 +868,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Interactive map of donors color-coded by availability, with GPS radius search",
     icon: "🗺️",
     category: "interactive",
+    moduleKey: "blood_donation",
     create: () => ({
       ...baseBlock("donor_map"),
       type: "donor_map" as const,
@@ -880,6 +885,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Filterable blood donor directory with availability status",
     icon: "🫀",
     category: "interactive",
+    moduleKey: "blood_donation",
     create: () => ({
       ...baseBlock("donor_list"),
       type: "donor_list" as const,
@@ -898,6 +904,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Lookup form for clients to track their visa application status",
     icon: "🔎",
     category: "interactive",
+    moduleKey: "visa_tour",
     create: () => ({
       ...baseBlock("status_tracker"),
       type: "status_tracker" as const,
