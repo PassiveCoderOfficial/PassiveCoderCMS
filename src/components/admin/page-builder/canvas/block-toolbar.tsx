@@ -70,8 +70,8 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
               <TooltipTrigger asChild>
                 <button
                   className={cn(
-                    "flex h-8 w-8 lg:h-6 lg:w-6 items-center justify-center rounded text-gray-300 hover:text-white hover:bg-white/20 transition-colors shrink-0",
-                    action.variant === "destructive" && "hover:text-red-300 hover:bg-red-900/40",
+                    "flex h-8 w-8 lg:h-6 lg:w-6 items-center justify-center rounded text-white hover:bg-white/20 transition-colors shrink-0",
+                    action.variant === "destructive" && "hover:text-red-100 hover:bg-red-900/40",
                     action.variant === "primary" && "hover:bg-white/25 hover:text-white",
                     action.disabled && "opacity-30 pointer-events-none",
                     action.isDragHandle && "cursor-grab active:cursor-grabbing touch-none",
