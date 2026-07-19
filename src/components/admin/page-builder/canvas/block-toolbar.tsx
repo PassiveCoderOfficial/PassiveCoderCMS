@@ -24,7 +24,7 @@ interface BlockToolbarProps {
 }
 
 export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned }: BlockToolbarProps) {
-  const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock } = useBuilderStore();
+  const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock, setMobileSheet } = useBuilderStore();
   const [saveOpen, setSaveOpen] = useState(false);
   const siblings = path
     ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
@@ -35,7 +35,9 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
   const canMoveDown = idx < siblings.length - 1;
 
   const actions = [
-    { icon: Settings, label: "Edit settings", onClick: () => selectBlock(block.id), variant: "primary" },
+    // Selects the block and (on mobile) opens its settings sheet — setMobileSheet
+    // is a no-op on desktop where the settings panel is always docked.
+    { icon: Settings, label: "Edit settings", onClick: () => { selectBlock(block.id); setMobileSheet("settings"); }, variant: "primary" },
     { icon: GripVertical, label: "Drag to reorder", isDragHandle: true },
     { icon: block.visible ? Eye : EyeOff, label: block.visible ? "Hide block" : "Show block", onClick: () => updateBlock(block.id, { visible: !block.visible }, path) },
     { icon: ChevronUp, label: "Move up", onClick: () => canMoveUp && moveBlock(block.id, siblings[idx - 1].id, path), disabled: !canMoveUp },
@@ -51,12 +53,14 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          "absolute -top-8 left-0 z-20 flex items-center gap-0.5 rounded-t px-1 py-0.5 transition-opacity",
+          // Touch-sized on mobile (bigger buttons need more clearance above the
+          // block), compact on desktop where hover-precision is fine.
+          "absolute -top-11 lg:-top-8 left-0 z-20 flex items-center gap-1 lg:gap-0.5 rounded-t px-1.5 lg:px-1 py-1 lg:py-0.5 transition-opacity max-w-[calc(100vw-16px)] overflow-x-auto",
           pinned ? "bg-blue-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-[10px] text-gray-400 mr-1 select-none px-1 truncate max-w-[120px]">
+        <span className="hidden lg:inline text-[10px] text-gray-400 mr-1 select-none px-1 truncate max-w-[120px]">
           {block.type.replace(/_/g, " ")}
         </span>
         {actions.map((action, i) => (
@@ -64,16 +68,16 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
             <TooltipTrigger asChild>
               <button
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded text-gray-300 hover:text-white hover:bg-gray-700 transition-colors",
+                  "flex h-9 w-9 lg:h-6 lg:w-6 items-center justify-center rounded text-gray-300 hover:text-white hover:bg-gray-700 transition-colors shrink-0",
                   action.variant === "destructive" && "hover:text-red-400 hover:bg-red-900/40",
                   action.variant === "primary" && "hover:bg-blue-600 hover:text-white",
                   action.disabled && "opacity-30 pointer-events-none",
-                  action.isDragHandle && "cursor-grab active:cursor-grabbing",
+                  action.isDragHandle && "cursor-grab active:cursor-grabbing touch-none",
                 )}
                 onClick={action.onClick}
                 {...(action.isDragHandle ? { ...dragListeners, ...dragAttributes } : {})}
               >
-                <action.icon className="h-3 w-3" />
+                <action.icon className="h-4 w-4 lg:h-3 lg:w-3" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">{action.label}</TooltipContent>

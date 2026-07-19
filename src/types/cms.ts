@@ -1144,6 +1144,11 @@ export type CMSUser = {
 export type BuilderMode = "edit" | "preview" | "responsive";
 export type Breakpoint = "desktop" | "tablet" | "mobile";
 
+/** Which bottom sheet the mobile builder shell has open. Ephemeral UI state
+ *  (never persisted) — lives in the store so the canvas's block toolbar can
+ *  ask the shell to open the settings sheet without prop-drilling. */
+export type MobileSheet = null | "add" | "layers" | "settings";
+
 export type BuilderState = {
   pageId?: string;
   /** Tenant that owns the page being edited. Not necessarily the viewer's own
@@ -1158,4 +1163,5 @@ export type BuilderState = {
   history: Block[][];
   historyIndex: number;
   isDirty: boolean;
+  mobileSheet: MobileSheet;
 };

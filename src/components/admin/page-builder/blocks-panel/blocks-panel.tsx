@@ -29,10 +29,17 @@ const categoryLabels: Record<string, string> = {
   interactive: "Interactive",
 };
 
-export function BlocksPanel() {
-  const { addBlock } = useBuilderStore();
+export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "sections" | "blocks" | "layers" }) {
+  const { addBlock: addBlockRaw, setMobileSheet } = useBuilderStore();
+  // On mobile the panels live in a bottom sheet — adding a block should close
+  // the sheet so the user immediately sees it land on the canvas. Harmless on
+  // desktop (mobileSheet is always null there, so this is a no-op).
+  const addBlock: typeof addBlockRaw = (block, afterId, path) => {
+    addBlockRaw(block, afterId, path);
+    setMobileSheet(null);
+  };
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<"sections" | "blocks" | "layers">("sections");
+  const [tab, setTab] = useState<"sections" | "blocks" | "layers">(initialTab);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [sectionSource, setSectionSource] = useState<"global" | "mine">("global");
   const [savedPresets, setSavedPresets] = useState<SavedPreset[] | null>(null);

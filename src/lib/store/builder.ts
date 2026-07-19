@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import type { Block, BuilderState, BuilderMode, Breakpoint, ContainerBlockProps } from "@/types/cms";
+import type { Block, BuilderState, BuilderMode, Breakpoint, ContainerBlockProps, MobileSheet } from "@/types/cms";
 import { deepClone, generateId } from "@/lib/utils";
 
 const MAX_HISTORY = 50;
@@ -31,6 +31,7 @@ interface BuilderStore extends BuilderState {
   setPageId: (id: string) => void;
   setTenantId: (id: string | undefined) => void;
   setDirty: (dirty: boolean) => void;
+  setMobileSheet: (sheet: MobileSheet) => void;
   undo: () => void;
   redo: () => void;
   canUndo: () => boolean;
@@ -116,6 +117,7 @@ const initialState: BuilderState = {
   history: [],
   historyIndex: -1,
   isDirty: false,
+  mobileSheet: null,
 };
 
 export const useBuilderStore = create<BuilderStore>()(
@@ -258,6 +260,11 @@ export const useBuilderStore = create<BuilderStore>()(
     setDirty: (dirty) =>
       set((state) => {
         state.isDirty = dirty;
+      }),
+
+    setMobileSheet: (sheet) =>
+      set((state) => {
+        state.mobileSheet = sheet;
       }),
 
     undo: () =>

@@ -7,7 +7,14 @@ import { cn } from "@/lib/utils";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
 export function LayersPanel() {
-  const { blocks, selectedBlockId, selectBlock, hoverBlock } = useBuilderStore();
+  const { blocks, selectedBlockId, selectBlock, hoverBlock, setMobileSheet } = useBuilderStore();
+
+  // On mobile, picking a layer closes the sheet so the canvas selection is
+  // visible. No-op on desktop (mobileSheet stays null).
+  const handleSelect = (id: string | undefined) => {
+    selectBlock(id);
+    setMobileSheet(null);
+  };
 
   if (!blocks.length) {
     return <p className="text-center text-xs text-muted-foreground py-6 px-3">No blocks on this page yet</p>;
@@ -21,7 +28,7 @@ export function LayersPanel() {
           block={block}
           depth={0}
           selectedBlockId={selectedBlockId}
-          onSelect={selectBlock}
+          onSelect={handleSelect}
           onHover={hoverBlock}
         />
       ))}

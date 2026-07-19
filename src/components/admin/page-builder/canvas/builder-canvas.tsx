@@ -39,7 +39,7 @@ function findBlockAnywhere(blocks: Block[], id: string): Block | undefined {
 }
 
 export function BuilderCanvas() {
-  const { blocks, mode, breakpoint, moveBlock, selectBlock, selectedBlockId, updateBlock } = useBuilderStore();
+  const { blocks, mode, moveBlock, selectBlock, selectedBlockId, updateBlock } = useBuilderStore();
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
 
   const inlineEdit = React.useMemo<InlineEditContextValue>(() => ({
@@ -121,11 +121,10 @@ export function BuilderCanvas() {
     setActiveBlock(null);
   }, [moveBlock]);
 
-  const containerWidth = {
-    desktop: "100%",
-    tablet: "768px",
-    mobile: "375px",
-  }[breakpoint];
+  // Canvas is always full-width of whatever frame the shell gives it. The
+  // desktop shell wraps this in a fixed-width box for the Tablet/Mobile
+  // breakpoint previews; the mobile shell gives it the full phone width (the
+  // device itself is the preview). Setting width here too would double-apply.
 
   if (blocks.length === 0) {
     return mode === "edit" ? (
@@ -140,10 +139,9 @@ export function BuilderCanvas() {
   return (
     <div
       className={cn(
-        "min-h-full bg-white transition-all duration-300",
+        "min-h-full w-full bg-white transition-all duration-300",
         mode === "preview" && "pointer-events-none",
       )}
-      style={{ width: containerWidth, margin: "0 auto" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) selectBlock(undefined);
       }}
