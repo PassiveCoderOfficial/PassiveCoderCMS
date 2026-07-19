@@ -36,7 +36,12 @@ const chapters: Chapter[] = [
     title: "Appearance",
     sections: [
       { id: "themes",  label: "Themes",  icon: Palette },
-      { id: "plugins", label: "Plugins", icon: Puzzle },
+    ],
+  },
+  {
+    title: "System",
+    sections: [
+      { id: "modules", label: "Modules", icon: Puzzle },
     ],
   },
   {
@@ -149,7 +154,7 @@ const sections: Record<string, React.ReactNode> = {
       <p className="text-muted-foreground text-sm mb-6">A modern, open-source Content Management System built with Next.js 15 and Supabase.</p>
       <Note type="success">Passive Coder is designed to be reused across client websites. It follows a WordPress-inspired architecture but is built on modern, type-safe technology.</Note>
       <H2>What is Passive Coder?</H2>
-      <P>Passive Coder is a full-featured headless CMS with a built-in visual page builder. It provides everything you need to build and manage professional websites — pages, blog posts, ecommerce, accounting, themes, and plugins — all from a single admin panel.</P>
+      <P>Passive Coder is a full-featured headless CMS with a built-in visual page builder. It provides everything you need to build and manage professional websites — pages, blog posts, ecommerce, accounting, themes, and modules — all from a single admin panel.</P>
       <H2>Key Features</H2>
       <Table
         headers={["Feature", "Description"]}
@@ -158,7 +163,7 @@ const sections: Record<string, React.ReactNode> = {
           ["14 Block Types", "Hero, Slider, Navigation, Text, Services, Blog, Gallery, CTA, Testimonials, Divider, Spacer, Products, Donation Feed, Custom HTML"],
           ["Pages & Posts", "Full CRUD with slug management, SEO fields, and draft/publish workflow"],
           ["Themes System", "6 built-in themes, installable and activatable from the admin panel"],
-          ["Plugins System", "10 built-in plugins with toggle activation"],
+          ["Modules System", "Plan-gated feature toggles for Services, Ecommerce, CRM, Accounting, and more"],
           ["Ecommerce", "Products, variants, inventory, orders, 7 payment gateways including BD gateways"],
           ["Accounting", "Bookkeeping, transactions, donation feed block for public pages"],
           ["Media Library", "File management with Supabase Storage"],
@@ -242,7 +247,7 @@ npm start`}</Pre>
 │       ├── posts/                → /dashboard/posts
 │       ├── media/                → /dashboard/media
 │       ├── themes/               → /dashboard/themes
-│       ├── plugins/              → /dashboard/plugins
+│       ├── modules/              → /dashboard/modules
 │       ├── ecommerce/            → /dashboard/ecommerce/*
 │       ├── accounting/           → /dashboard/accounting/*
 │       ├── settings/             → /dashboard/settings/*
@@ -307,7 +312,7 @@ Public visitor opens a page
       <H2>Recent Transactions</H2>
       <P>Shows the 5 most recent accounting transactions, color-coded by type (income = green, expense = red).</P>
       <H2>Quick Actions</H2>
-      <P>One-click buttons to create a new page, post, product, or navigate to themes, plugins, media, and settings.</P>
+      <P>One-click buttons to create a new page, post, product, or navigate to themes, modules, media, and settings.</P>
       <H2>Theme Toggle</H2>
       <P>Click the Sun/Moon icon in the topbar (top right) to switch between light and dark mode. Your preference is saved to localStorage.</P>
     </div>
@@ -643,207 +648,39 @@ h1, h2, h3 { font-family: "Georgia", serif; }
     </div>
   ),
 
-  plugins: (
+  modules: (
     <div>
-      <H1>Plugins</H1>
-      <P>Plugins extend Passive Coder with additional features — SEO tools, contact forms, analytics, booking systems, and more. They can be installed and toggled on/off from <Code>Dashboard → Plugins</Code> without touching code.</P>
+      <H1>Modules</H1>
+      <P>Modules are the platform&apos;s dashboard sections — Services, Ecommerce, CRM, Accounting, and more. A Super Admin decides which modules each plan includes and whether they&apos;re on by default; site admins toggle any included module on/off for their own site at <Code>Dashboard → Modules</Code>.</P>
 
-      <H2>How the Plugin System Works</H2>
-      <P>Each plugin is a TypeScript definition object (<Code>PluginDefinition</Code>) that declares what it provides: new block types, admin pages, hooks, and settings fields. The database stores which plugins are installed and their active state. Application code reads <Code>plugins.is_active</Code> to gate feature execution:</P>
-      <Pre>{`Plugin lifecycle:
-1. Developer defines plugin in built-in-plugins.ts
-2. Admin installs plugin  →  writes row to plugins table (is_active: false)
-3. Admin toggles on       →  is_active: true in DB
-4. App checks at runtime  →  if plugin.is_active, run plugin logic
-5. Admin toggles off      →  is_active: false, feature disabled instantly`}</Pre>
+      <H2>How Module Gating Works</H2>
+      <P>Each plan stores a <Code>modules</Code> JSONB map (<Code>plans.modules</Code>) keyed by module name, e.g. <Code>{`{ "ecommerce": { "included": true, "defaultOn": true } }`}</Code>. A tenant can only use a module if their plan includes it; within that, <Code>tenants.enabled_modules</Code> stores their own on/off choice, falling back to the plan&apos;s <Code>defaultOn</Code> when they haven&apos;t touched it yet.</P>
+      <Pre>{`Resolution order for "is module X usable on this site":
+1. Super admin viewing? → always yes, gating never applies
+2. Plan doesn't include X → no (tenant can't turn it on)
+3. Plan includes X, tenant has an explicit on/off choice → use that
+4. Plan includes X, no tenant choice yet → use the plan's defaultOn`}</Pre>
 
-      <H2>Built-in Plugins</H2>
-      <Table
-        headers={["Plugin", "Slug", "Description", "What it adds"]}
-        rows={[
-          ["SEO Toolkit",         "seo-toolkit",         "Advanced SEO management",                "Sitemap.xml, structured data, meta analyzer"],
-          ["Analytics",           "analytics",           "Page view tracking",                     "Analytics dashboard, heatmaps, UTM tracking"],
-          ["Contact Forms",       "contact-forms",       "Form builder with email notifications",  "Drag-drop form builder, email/webhook delivery"],
-          ["Social Share",        "social-share",        "Social sharing buttons",                 "Share buttons on pages/posts, OG previews"],
-          ["Testimonials Pro",    "testimonials-pro",    "Advanced testimonials",                  "Star ratings, filtering, import/export"],
-          ["Newsletter",          "newsletter",          "Email subscriptions",                    "Signup forms, Mailchimp/ConvertKit sync"],
-          ["Portfolio Pro",       "portfolio-pro",       "Advanced portfolio",                     "Filterable grid, lightbox, case study layout"],
-          ["Appointment Booking", "booking",             "Calendar booking system",                "Time slots, calendar view, email reminders"],
-          ["Live Chat",           "live-chat",           "Real-time chat",                         "Supabase Realtime powered chat widget"],
-          ["CDN & Optimizer",     "cdn-optimizer",       "Image & performance",                    "Auto WebP conversion, lazy load, CDN routing"],
-        ]}
-      />
-
-      <H2>Installing & Managing Plugins (Admin)</H2>
+      <H2>Where Gating Applies</H2>
       <UL>
-        <Li>Go to <Code>Dashboard → Plugins</Code></Li>
-        <Li>Click <strong>Install</strong> — inserts a row into the <Code>plugins</Code> table with <Code>is_active: false</Code></Li>
-        <Li>Toggle the switch to <strong>enable</strong> or <strong>disable</strong> the plugin instantly</Li>
-        <Li>Click <strong>Settings</strong> (gear icon) on an active plugin to configure its options</Li>
-        <Li>Uninstall removes the plugin row and resets all its settings</Li>
+        <Li>Sidebar navigation — a disabled module&apos;s nav items don&apos;t render</Li>
+        <Li>Direct links — visiting a disabled module&apos;s URL redirects to the dashboard home, not just hidden from the menu</Li>
+        <Li>Page builder — blocks tied to a disabled module don&apos;t offer that module&apos;s data as a source</Li>
       </UL>
-      <Note type="warn">Disabling a plugin immediately stops all its features. For example, disabling "Contact Forms" hides all contact form blocks from the public site until re-enabled.</Note>
+      <Note type="warn">Disabling a module hides it from the dashboard; it does not delete any data the tenant already created with it. Re-enabling brings everything back.</Note>
 
-      <H2>Creating a Custom Plugin (Developer Guide)</H2>
-
-      <H3>Step 1 — Define the PluginDefinition</H3>
-      <P>Create a new entry in <Code>src/modules/plugins/built-in-plugins.ts</Code>:</P>
-      <Pre>{`// src/modules/plugins/built-in-plugins.ts
-import type { PluginDefinition } from "@/types/cms";
-
-export const builtInPlugins: PluginDefinition[] = [
-  {
-    id: "my-custom-plugin",
-    name: "My Custom Plugin",
-    description: "Does something awesome.",
-    version: "1.0.0",
-    author: "Your Name",
-
-    // Optional: declare new block types this plugin adds
-    blocks: ["my_custom_block"],
-
-    // Optional: new admin pages (appear in sidebar under Plugins)
-    adminPages: [
-      {
-        path: "/dashboard/plugins/my-custom-plugin",
-        label: "My Plugin Settings",
-        icon: "Settings",
-      },
-    ],
-
-    // Optional: hooks this plugin listens to
-    hooks: ["on_page_publish", "on_order_created"],
-
-    // Optional: configurable settings (rendered in the settings modal)
-    settings: [
-      { key: "api_key",      label: "API Key",       type: "text" },
-      { key: "enable_logs",  label: "Enable Logs",   type: "boolean", default: false },
-      { key: "mode",         label: "Mode",          type: "select",
-        options: ["production", "sandbox"], default: "sandbox" },
-    ],
-  },
-];`}</Pre>
-
-      <H3>Step 2 — Add a custom block type (if needed)</H3>
-      <P>If your plugin introduces new page builder blocks, declare the block type in <Code>src/types/cms.ts</Code> and add it to the <Code>BlockType</Code> union, then create the renderer:</P>
-      <Pre>{`// 1. Add to BlockType union in src/types/cms.ts
-export type BlockType =
-  | "hero" | "text" | ... | "my_custom_block";  // ← add here
-
-// 2. Define props type
-export type MyCustomBlockProps = BlockBase & {
-  type: "my_custom_block";
-  data: {
-    message: string;
-    color?: string;
-  };
-};
-
-// 3. Add to Block union
-export type Block = ... | MyCustomBlockProps;
-
-// 4. Create the renderer
-// src/components/blocks/my-custom-block.tsx
-"use client";
-export function MyCustomBlock({ block }: { block: MyCustomBlockProps }) {
-  return (
-    <div style={{ color: block.data.color }}>
-      {block.data.message}
-    </div>
-  );
-}
-
-// 5. Register in the block renderer switcher
-// src/components/blocks/block-renderer.tsx
-case "my_custom_block":
-  return <MyCustomBlock block={block as MyCustomBlockProps} />;`}</Pre>
-
-      <H3>Step 3 — Gate features behind the plugin toggle</H3>
-      <P>Check <Code>is_active</Code> in your server component or API route before running plugin logic:</P>
-      <Pre>{`// In any server component / route handler:
-const supabase = await createClient();
-const { data: plugin } = await supabase
-  .from("plugins")
-  .select("is_active, settings")
-  .eq("slug", "my-custom-plugin")
-  .single();
-
-if (!plugin?.is_active) return null; // plugin disabled
-
-const apiKey = plugin.settings?.api_key as string;
-// ... run plugin logic`}</Pre>
-
-      <H3>Step 4 — Implement hooks (optional)</H3>
-      <P>Passive Coder uses a simple hook bus. Register listeners in a server-side module:</P>
-      <Pre>{`// src/modules/plugins/hooks.ts
-type Hook = "on_page_publish" | "on_order_created" | "on_media_upload";
-type HookHandler = (payload: unknown) => Promise<void>;
-
-const listeners: Map<Hook, HookHandler[]> = new Map();
-
-export function registerHook(hook: Hook, handler: HookHandler) {
-  if (!listeners.has(hook)) listeners.set(hook, []);
-  listeners.get(hook)!.push(handler);
-}
-
-export async function fireHook(hook: Hook, payload: unknown) {
-  for (const handler of listeners.get(hook) ?? []) {
-    await handler(payload).catch(console.error);
-  }
-}
-
-// In your plugin's init file:
-import { registerHook } from "@/modules/plugins/hooks";
-registerHook("on_page_publish", async (payload) => {
-  // ping sitemap service, notify Slack, etc.
-  console.log("Page published:", payload);
-});`}</Pre>
-
-      <H3>Step 5 — Add a settings UI</H3>
-      <P>Plugin settings are stored as JSON in <Code>plugins.settings</Code>. The settings modal auto-generates form fields from the <Code>settings</Code> array in your <Code>PluginDefinition</Code>. For a custom UI, create a page at the <Code>adminPages</Code> path you declared:</P>
-      <Pre>{`// src/app/(admin)/dashboard/plugins/my-custom-plugin/page.tsx
-import { createAdminClient } from "@/lib/supabase/server";
-
-export default async function MyPluginSettings() {
-  const supabase = await createAdminClient();
-  const { data } = await supabase
-    .from("plugins")
-    .select("settings")
-    .eq("slug", "my-custom-plugin")
-    .single();
-
-  return (
-    <div className="p-6 max-w-xl">
-      <h1 className="text-2xl font-bold mb-4">My Plugin Settings</h1>
-      {/* Render your custom settings form */}
-    </div>
-  );
-}`}</Pre>
-
-      <H2>Plugin Settings Schema</H2>
-      <Table
-        headers={["Field type", "UI element", "DB storage"]}
-        rows={[
-          ["text",    "Text input",   "string"],
-          ["number",  "Number input", "number"],
-          ["boolean", "Toggle",       "boolean"],
-          ["select",  "Dropdown",     "string (one of options)"],
-        ]}
-      />
-
-      <H2>Plugin Security Considerations</H2>
+      <H2>Managing Modules (Super Admin)</H2>
       <UL>
-        <Li>Plugin settings (API keys, secrets) are stored in the <Code>plugins.settings</Code> JSONB column — this is <strong>not</strong> encrypted at rest by default. Use environment variables for sensitive credentials instead.</Li>
-        <Li>Server-side plugin code runs with the permissions of the calling user — use <Code>createAdminClient()</Code> (service role) only when you need to bypass RLS for admin operations.</Li>
-        <Li>Never expose plugin API keys to the client. All external API calls from plugins should be made in Server Components, Server Actions, or API routes.</Li>
-        <Li>Validate all plugin setting inputs on the server — treat <Code>plugins.settings</Code> values as untrusted user input.</Li>
+        <Li>Go to <Code>Super Admin → Plans & Pricing</Code></Li>
+        <Li>Each plan card has a Modules section — check &quot;Included&quot; to grant a module to that plan, and &quot;Default On&quot; to have it enabled automatically for tenants who haven&apos;t chosen</Li>
+        <Li>Save — takes effect immediately for every tenant on that plan</Li>
       </UL>
 
-      <Note type="info">
-        The plugin system is a <strong>feature-flag + convention</strong> system. It does not hot-load plugin code at runtime — all plugin code is compiled into the Next.js bundle at build time. Disabling a plugin hides/stops its execution, but does not remove the code. This is intentional for simplicity, type safety, and build-time optimization.
-      </Note>
+      <H2>Toggling Modules (Site Admin)</H2>
+      <P>At <Code>Dashboard → Modules</Code>, a tenant sees only the modules their current plan includes, each with an on/off switch. Toggling writes to <Code>tenants.enabled_modules</Code> — attempting to enable a module outside the plan is rejected server-side, not just hidden in the UI.</P>
     </div>
   ),
+
 
   products: (
     <div>
@@ -1106,7 +943,7 @@ case "my_block": content = <MyBlock block={block} />; break;`}</Pre>
           ["page_categories", "Many-to-many: pages ↔ categories"],
           ["page_tags", "Many-to-many: pages ↔ tags"],
           ["themes", "Installed themes"],
-          ["plugins", "Installed plugins"],
+          ["plans", "Plan definitions incl. modules jsonb (which modules each plan includes/defaults on)"],
           ["products", "Ecommerce products"],
           ["product_variants", "Product variant SKUs and pricing"],
           ["orders", "Customer orders"],
@@ -1141,7 +978,7 @@ case "my_block": content = <MyBlock block={block} />; break;`}</Pre>
         headers={["Pattern", "Example"]}
         rows={[
           ["Public read", "published pages, active themes, site settings"],
-          ["Auth read", "media library, plugins list"],
+          ["Auth read", "media library, module status"],
           ["Role-based write", "editors can manage pages, admins manage settings"],
           ["Own-record", "users can update their own profile"],
           ["Service role", "server-side code uses service_role key to bypass RLS"],
@@ -1251,7 +1088,7 @@ WHERE email = 'editor@example.com';`}</Pre>
           ["Manage products", "✓", "✓", "✗"],
           ["Manage orders", "✓", "✓", "✗"],
           ["Manage themes", "✓", "✗", "✗"],
-          ["Manage plugins", "✓", "✗", "✗"],
+          ["Manage modules", "✓", "✗", "✗"],
           ["Manage settings", "✓", "✗", "✗"],
           ["Manage users", "✓", "✗", "✗"],
           ["Manage gateways", "✓", "✗", "✗"],

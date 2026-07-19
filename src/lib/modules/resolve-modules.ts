@@ -21,20 +21,23 @@ export async function resolveEnabledModules(tenantId: string): Promise<Record<Mo
     return result;
   }
 
-  const { data: plan } = await admin
+  let { data: plan } = await admin
     .from("plans")
     .select("modules")
     .eq("id", tenant.plan)
     .maybeSingle();
 
   // tenants.plan defaults to "free"/"trial"/"agency" pre-subscription states
-  // (clients subscribe to Basic/Pro/Custom AFTER signup — there's no paid
-  // "free" tier), so most tenants have no matching plans row at all. Fail
-  // OPEN in that case — unsubscribed tenants keep full dashboard access,
-  // same as before module gating existed. Restriction only applies once a
-  // tenant is on a plan the SA has actually configured.
+  // (clients subscribe to Basic/Pro/Custom AFTER signup — there's no separate
+  // paid "free" tier), so these have no plans row of their own. Rather than
+  // adding fake plan rows SA would have to maintain (and that would clutter
+  // the Plans admin UI), fall back to Basic's module config — pre-subscription
+  // tenants get the same restrictions/defaults as the entry-level paid plan.
   if (!plan) {
-    for (const key of MODULE_KEYS) result[key] = true;
+    ({ data: plan } = await admin.from("plans").select("modules").eq("id", "basic").maybeSingle());
+  }
+  if (!plan) {
+    for (const key of MODULE_KEYS) result[key] = false;
     return result;
   }
 

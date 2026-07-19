@@ -7,6 +7,7 @@ import { SABanner } from "@/components/admin/sa-banner";
 import { AgentBanner } from "@/components/admin/agent-banner";
 import { SA_VIEWING_COOKIE, AGENT_VIEWING_COOKIE } from "@/lib/tenant/current";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
+import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
 import type { CMSUser } from "@/types/cms";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -217,13 +218,31 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   };
 
   // SA bypasses module gating entirely — only resolve for regular tenant
-  // members and agents viewing a specific site.
+  // members and agents viewing a specific site. Must be the tenant whose
+  // SUBDOMAIN is actually being visited (already validated as one of this
+  // user's memberships above), not just their primary site — a member of
+  // multiple tenants viewing a non-primary one would otherwise see that
+  // tenant's dashboard gated by the wrong tenant's plan.
+  const currentSubdomainTenantId = (await headers()).get("x-tenant-id");
   const dashboardTenantId = agentViewingTenantId
+    ?? currentSubdomainTenantId
     ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
     ?? (memberships ?? [])[0]?.tenant_id;
   const enabledModules = (!sa && dashboardTenantId)
     ? await resolveEnabledModules(dashboardTenantId)
     : undefined;
+
+  // Direct-link enforcement: hiding a gated item from the sidebar isn't
+  // enough on its own — a bookmarked/typed URL must also be blocked.
+  // resolveModuleKeyForPath is the same lookup the sidebar's own filtering
+  // logic is built from, so this can't drift out of sync with what's hidden.
+  if (enabledModules) {
+    const currentPathname = (await headers()).get("x-invoke-path") ?? (await headers()).get("x-pathname") ?? "";
+    const guardKey = resolveModuleKeyForPath(currentPathname);
+    if (guardKey && !enabledModules[guardKey]) {
+      redirect("/dashboard");
+    }
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background flex-col">

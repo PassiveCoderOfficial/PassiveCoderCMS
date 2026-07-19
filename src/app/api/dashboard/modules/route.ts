@@ -1,39 +1,35 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
-import { MODULE_KEYS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
+import { MODULE_KEYS } from "@/components/admin/sidebar/nav-items";
+import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 
 type PlanModuleConfig = { included?: boolean; defaultOn?: boolean };
 
 export async function GET() {
-  const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: tenant } = await supabase.from("tenants").select("plan, enabled_modules").eq("id", tenantId).maybeSingle();
+  // Only list modules the tenant's plan actually includes (whether currently
+  // on or off) — resolveEnabledModules is the single source of truth for
+  // both "is this usable" (sidebar/route gating) and "should this toggle
+  // even appear" (this page), including the free/trial/agency → basic
+  // fallback, so there's nothing to duplicate here.
+  const supabase = await createClient();
+  const { data: tenant } = await supabase.from("tenants").select("plan").eq("id", tenantId).maybeSingle();
   if (!tenant) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
-  const { data: plan } = await supabase.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
-  const overrides = (tenant.enabled_modules ?? {}) as Record<string, boolean>;
-
-  // Pre-subscription tenants (plan = "free"/"trial"/"agency") have no
-  // matching plans row — clients only get a real plan (Basic/Pro/Custom)
-  // after subscribing. Fail open, same fallback as resolveEnabledModules().
+  const admin = await createAdminClient();
+  let { data: plan } = await admin.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
   if (!plan) {
-    return NextResponse.json({ modules: MODULE_KEYS.map((key) => ({ key, enabled: key in overrides ? !!overrides[key] : true })) });
+    ({ data: plan } = await admin.from("plans").select("modules").eq("id", "basic").maybeSingle());
   }
+  const planModules = (plan?.modules ?? {}) as Record<string, PlanModuleConfig>;
+  const enabledMap = await resolveEnabledModules(tenantId);
 
-  const planModules = (plan.modules ?? {}) as Record<string, PlanModuleConfig>;
   const modules = MODULE_KEYS
-    .map((key) => {
-      const cfg = planModules[key];
-      if (!cfg?.included) return null;
-      return {
-        key,
-        enabled: key in overrides ? !!overrides[key] : (cfg.defaultOn ?? false),
-      };
-    })
-    .filter((m): m is { key: ModuleKey; enabled: boolean } => m !== null);
+    .filter((key) => planModules[key]?.included)
+    .map((key) => ({ key, enabled: enabledMap[key] }));
 
   return NextResponse.json({ modules });
 }
@@ -54,13 +50,13 @@ export async function PATCH(req: Request) {
   const { data: tenant } = await supabase.from("tenants").select("plan, enabled_modules").eq("id", tenantId).maybeSingle();
   if (!tenant) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
-  const { data: plan } = await supabase.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
-  // No matching plan row (pre-subscription tenant) — fail open, same as GET.
-  if (plan) {
-    const planModules = (plan.modules ?? {}) as Record<string, PlanModuleConfig>;
-    if (!planModules[key]?.included) {
-      return NextResponse.json({ error: "This module isn't included in your plan" }, { status: 403 });
-    }
+  let { data: plan } = await admin.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
+  if (!plan) {
+    ({ data: plan } = await admin.from("plans").select("modules").eq("id", "basic").maybeSingle());
+  }
+  const planModules = (plan?.modules ?? {}) as Record<string, PlanModuleConfig>;
+  if (!planModules[key]?.included) {
+    return NextResponse.json({ error: "This module isn't included in your plan" }, { status: 403 });
   }
 
   const overrides = { ...(tenant.enabled_modules ?? {}), [key]: !!enabled };

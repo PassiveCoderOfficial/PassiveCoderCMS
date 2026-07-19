@@ -1,4 +1,5 @@
 import type { BlockType, Block, BlockBackground } from "@/types/cms";
+import type { ModuleKey } from "@/components/admin/sidebar/nav-items";
 import { generateId } from "@/lib/utils";
 
 export type BlockDefinition = {
@@ -8,6 +9,11 @@ export type BlockDefinition = {
   icon: string;
   category: "layout" | "content" | "media" | "ecommerce" | "interactive";
   create: () => Block;
+  /** Set when this block only makes sense with a module the tenant might not
+   *  have — e.g. "ecommerce_products" needs the Ecommerce module. Hidden
+   *  from the Blocks panel when that module is disabled. Most blocks (hero,
+   *  text, gallery, etc.) have no module and are always available. */
+  moduleKey?: ModuleKey;
 };
 
 const defaultBackground: BlockBackground = { type: "none" };
@@ -156,6 +162,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Cards that show what you offer, each with a short description",
     icon: "⚙️",
     category: "content",
+    moduleKey: "services",
     create: () => ({
       ...baseBlock("services"),
       type: "services",
@@ -266,6 +273,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Quotes from happy customers with star ratings",
     icon: "💬",
     category: "content",
+    moduleKey: "testimonials",
     create: () => ({
       ...baseBlock("testimonials"),
       type: "testimonials",
@@ -312,6 +320,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Automatically shows products from your online store",
     icon: "🛍️",
     category: "ecommerce",
+    moduleKey: "ecommerce",
     create: () => ({
       ...baseBlock("ecommerce_products"),
       type: "ecommerce_products",
@@ -341,6 +350,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Live feed of public transactions (donations, etc.)",
     icon: "💰",
     category: "interactive",
+    moduleKey: "accounting",
     create: () => ({
       ...baseBlock("accounting_feed"),
       type: "accounting_feed",
@@ -361,6 +371,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Display the shopping cart with checkout button",
     icon: "🛒",
     category: "ecommerce",
+    moduleKey: "ecommerce",
     create: () => ({
       ...baseBlock("ecommerce_cart"),
       type: "ecommerce_cart",
@@ -431,6 +442,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Show your prices or packages side by side",
     icon: "💳",
     category: "content",
+    moduleKey: "pricing",
     create: () => ({
       ...baseBlock("pricing"),
       type: "pricing",
@@ -799,6 +811,7 @@ export const blockRegistry: BlockDefinition[] = [
     description: "Live availability calendar — visitors pick a slot and book",
     icon: "📅",
     category: "interactive",
+    moduleKey: "bookings",
     create: () => ({
       ...baseBlock("booking"),
       type: "booking" as const,

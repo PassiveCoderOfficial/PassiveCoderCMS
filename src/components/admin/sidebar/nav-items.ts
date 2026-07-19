@@ -76,6 +76,24 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   accounting: "Accounting",
 };
 
+export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
+  services: "Manage service listings shown in Services blocks on your site",
+  features: "Manage feature/selling-point groups for Features blocks",
+  portfolio: "Showcase past work with filterable project galleries",
+  sliders: "Rotating image/content sliders for your pages",
+  testimonials: "Collect and display customer reviews and quotes",
+  pricing: "Pricing tables and package comparisons",
+  bookings: "Appointment scheduling with a live availability calendar",
+  ecommerce: "Full online store — products, orders, payments, delivery",
+  crm: "Track leads, contacts, and customer relationships",
+  invoices: "Create and send invoices, track payment status",
+  marketing: "Email and campaign tools to reach your customers",
+  jobs: "Manage staff, job assignments, and scheduling",
+  pos: "Point-of-sale checkout for in-person transactions",
+  inventory: "Stock levels and warehouse tracking for products",
+  accounting: "Bookkeeping, transactions, and financial reporting",
+};
+
 export type NavSection = {
   label: string;
   items: NavItem[];
@@ -116,7 +134,6 @@ export const navSections: NavSection[] = [
     label: "Appearance",
     items: [
       { label: "Templates", href: "/dashboard/templates", icon: Palette },
-      { label: "Plugins", href: "/dashboard/plugins", icon: Puzzle },
     ],
   },
   {
@@ -185,3 +202,23 @@ export const navSections: NavSection[] = [
     ],
   },
 ];
+
+/** Route-level module gating: given a dashboard pathname, find the moduleKey
+ *  that guards it (if any) by walking every nav item (and its children,
+ *  since e.g. /dashboard/accounting/transactions isn't itself tagged but its
+ *  parent "Accounting" entry is). Longest href match wins so a more specific
+ *  child route's own moduleKey (if it ever gets one) takes priority over an
+ *  ancestor's. Single source of truth — (admin)/layout.tsx uses this to
+ *  enforce direct-link access, so it can never drift from what the sidebar
+ *  hides. */
+export function resolveModuleKeyForPath(pathname: string): ModuleKey | undefined {
+  let best: { href: string; moduleKey: ModuleKey } | undefined;
+  const visit = (item: NavItem) => {
+    if (item.moduleKey && (pathname === item.href || pathname.startsWith(item.href + "/"))) {
+      if (!best || item.href.length > best.href.length) best = { href: item.href, moduleKey: item.moduleKey };
+    }
+    item.children?.forEach(visit);
+  };
+  navSections.forEach((s) => s.items.forEach(visit));
+  return best?.moduleKey;
+}

@@ -183,7 +183,7 @@ export default async function DashboardPage() {
               { label: "Add Product", href: "/dashboard/ecommerce/products/new" },
               { label: "Upload Media", href: "/dashboard/media" },
               { label: "Manage Themes", href: "/dashboard/themes" },
-              { label: "Manage Plugins", href: "/dashboard/plugins" },
+              { label: "Manage Modules", href: "/dashboard/modules" },
               { label: "Site Settings", href: "/dashboard/settings" },
             ].map((action) => (
               <Button key={action.href} asChild variant="outline" size="sm">

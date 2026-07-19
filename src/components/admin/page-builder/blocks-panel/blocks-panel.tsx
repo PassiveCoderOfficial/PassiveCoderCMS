@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { LayersPanel } from "./layers-panel";
 import { deepClone, generateId } from "@/lib/utils";
 import type { Block, ContainerBlockProps } from "@/types/cms";
+import type { ModuleKey } from "@/components/admin/sidebar/nav-items";
 
 interface SavedPreset {
   id: string;
@@ -36,6 +37,21 @@ export function BlocksPanel() {
   const [sectionSource, setSectionSource] = useState<"global" | "mine">("global");
   const [savedPresets, setSavedPresets] = useState<SavedPreset[] | null>(null);
   const loadingSaved = tab === "sections" && sectionSource === "mine" && savedPresets === null;
+
+  // Blocks tied to a disabled module (e.g. "Products" needs Ecommerce)
+  // shouldn't be offered — null while loading means "don't filter yet"
+  // rather than briefly hiding every gated block.
+  const [enabledModuleKeys, setEnabledModuleKeys] = useState<Set<ModuleKey> | null>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard/modules")
+      .then((r) => r.json())
+      .then((data: { modules?: { key: ModuleKey; enabled: boolean }[] }) => {
+        const enabled = (data.modules ?? []).filter((m) => m.enabled).map((m) => m.key);
+        setEnabledModuleKeys(new Set(enabled));
+      })
+      .catch(() => setEnabledModuleKeys(new Set()));
+  }, []);
 
   useEffect(() => {
     if (tab !== "sections" || sectionSource !== "mine" || savedPresets !== null) return;
@@ -69,7 +85,8 @@ export function BlocksPanel() {
   const filteredBlocks = blockRegistry.filter((b) => {
     const matchSearch = !q || b.label.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
     const matchCat = activeCategory === "all" || b.category === activeCategory;
-    return matchSearch && matchCat;
+    const matchModule = !b.moduleKey || !enabledModuleKeys || enabledModuleKeys.has(b.moduleKey);
+    return matchSearch && matchCat && matchModule;
   });
 
   const filteredPresetGroups = presetsByCategory

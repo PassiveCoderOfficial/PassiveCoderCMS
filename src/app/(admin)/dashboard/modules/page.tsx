@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Puzzle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { MODULE_LABELS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
+import { MODULE_LABELS, MODULE_DESCRIPTIONS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
 import { Switch } from "@/components/ui/switch";
 
 interface ModuleRow {
@@ -41,11 +41,11 @@ export default function ModulesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
+    <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2"><Puzzle className="h-6 w-6" /> Modules</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Turn dashboard sections on or off. Only modules included in your plan are shown here.
+          Turn dashboard sections on or off. Only modules included in your plan are shown here — ask your provider to add more.
         </p>
       </div>
 
@@ -58,15 +58,23 @@ export default function ModulesPage() {
           Your current plan doesn&apos;t include any optional modules.
         </p>
       ) : (
-        <div className="rounded-xl border divide-y">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {modules.map((m) => (
-            <div key={m.key} className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm font-medium">{MODULE_LABELS[m.key]}</span>
-              <Switch
-                checked={m.enabled}
-                disabled={saving === m.key}
-                onCheckedChange={(v) => toggle(m.key, v)}
-              />
+            <div key={m.key} className="rounded-xl border p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-semibold text-sm">{MODULE_LABELS[m.key]}</p>
+                  <p className={`text-xs mt-0.5 ${m.enabled ? "text-green-600" : "text-muted-foreground"}`}>
+                    {m.enabled ? "Active" : "Off"}
+                  </p>
+                </div>
+                <Switch
+                  checked={m.enabled}
+                  disabled={saving === m.key}
+                  onCheckedChange={(v) => toggle(m.key, v)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{MODULE_DESCRIPTIONS[m.key]}</p>
             </div>
           ))}
         </div>
