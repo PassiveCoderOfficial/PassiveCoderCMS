@@ -11,6 +11,18 @@ export function createSlug(text: string): string {
   return slugify(text, { lower: true, strict: true, trim: true });
 }
 
+// Site/tenant subdomain slugs: words run together with no separator
+// (e.g. "My Plumbing Co" -> "myplumbingco"), unlike page slugs which keep
+// hyphens. Falls back to "mysite" if nothing alphanumeric survives.
+export function createSiteSlug(text: string): string {
+  const result = text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+  return result || "mysite";
+}
+
 export function generateId(size = 10): string {
   return nanoid(size);
 }

@@ -48,9 +48,13 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
   async function save() {
     setSaving(true);
     const supabase = createClient();
+    // Blank slug shouldn't clear it and accidentally make this the homepage —
+    // fall back to a slug derived from the title, matching how new pages get one.
+    const finalSlug = slug.trim() ? slug : (slugify(title) || page.slug);
+    if (finalSlug !== slug) setSlug(finalSlug);
     const { error } = await supabase.from("pages").update({
       title,
-      slug,
+      slug: finalSlug,
       excerpt,
       featured_image: featuredImage || null,
       seo: { title: seoTitle, description: seoDesc, keywords: seoKeywords, og_title: ogTitle, og_description: ogDesc, og_image: ogImage, no_index: noIndex, canonical },

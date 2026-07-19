@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { createClient } from "@/lib/supabase/client";
-import { cn } from "@/lib/utils";
+import { cn, createSiteSlug } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -421,19 +421,9 @@ function Step2({ onNext }: { onNext: (name: string) => void }) {
 // ─── Step 3: Subdomain ────────────────────────────────────────────────────────
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "cmsstudio.io";
-function slugify(s: string) {
-  const result = s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-  return result || "my-site";
-}
 
 function Step3({ siteName, onNext }: { siteName: string; onNext: (slug: string) => void }) {
-  const [slug, setSlug] = useState(() => slugify(siteName));
+  const [slug, setSlug] = useState(() => createSiteSlug(siteName));
   const [status, setStatus] = useState<"idle" | "checking" | "available" | "taken" | "error">("idle");
   const [reason, setReason] = useState("");
 
@@ -459,7 +449,7 @@ function Step3({ siteName, onNext }: { siteName: string; onNext: (slug: string) 
       <div className="space-y-2">
         <Label>Subdomain</Label>
         <div className="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary">
-          <Input value={slug} onChange={e => setSlug(slugify(e.target.value))} className="border-0 focus-visible:ring-0 h-11 text-base" placeholder="your-site" />
+          <Input value={slug} onChange={e => setSlug(createSiteSlug(e.target.value))} className="border-0 focus-visible:ring-0 h-11 text-base" placeholder="yoursite" />
           <span className="px-3 text-sm text-muted-foreground bg-muted h-11 flex items-center shrink-0 border-l">.{ROOT}</span>
         </div>
         <div className="flex items-center gap-2 text-sm min-h-5">

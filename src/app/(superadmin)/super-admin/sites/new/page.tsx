@@ -5,10 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, Loader2, AlertCircle, Zap } from "lucide-react";
 import { TemplateSelect, type TemplateSelectValue } from "@/components/admin/template-select";
-
-function slugify(s: string) {
-  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "") || "mysite";
-}
+import { createSiteSlug as slugify } from "@/lib/utils";
 
 export default function NewSitePage() {
   const router = useRouter();
