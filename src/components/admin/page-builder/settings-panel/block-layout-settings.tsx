@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { ColorPicker } from "@/components/ui/color-picker";
 import type { Block, BlockBackground } from "@/types/cms";
 
 interface LayoutSettingsProps {
@@ -124,55 +125,18 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
           </SelectContent>
         </Select>
         {block.background.type === "color" && (
-          <div className="flex gap-2 items-center">
-            <input
-              type="color"
-              value={block.background.color ?? "#ffffff"}
-              onChange={(e) => updateBg("color", e.target.value)}
-              className="h-8 w-8 rounded border cursor-pointer"
-            />
-            <Input
-              value={block.background.color ?? "#ffffff"}
-              onChange={(e) => updateBg("color", e.target.value)}
-              className="h-8 text-xs"
-              placeholder="#ffffff"
-            />
-          </div>
+          <ColorPicker value={block.background.color ?? "#ffffff"} onChange={(v) => updateBg("color", v)} />
         )}
         {block.background.type === "gradient" && (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-[10px] text-muted-foreground">From</Label>
-                <div className="flex gap-1.5 items-center mt-0.5">
-                  <input
-                    type="color"
-                    value={gradientFrom}
-                    onChange={(e) => setGradient(gradientAngle, e.target.value, gradientTo)}
-                    className="h-8 w-8 rounded border cursor-pointer shrink-0"
-                  />
-                  <Input
-                    value={gradientFrom}
-                    onChange={(e) => setGradient(gradientAngle, e.target.value, gradientTo)}
-                    className="h-8 text-xs"
-                  />
-                </div>
+                <ColorPicker value={gradientFrom} onChange={(v) => setGradient(gradientAngle, v, gradientTo)} className="mt-0.5" />
               </div>
               <div>
                 <Label className="text-[10px] text-muted-foreground">To</Label>
-                <div className="flex gap-1.5 items-center mt-0.5">
-                  <input
-                    type="color"
-                    value={gradientTo}
-                    onChange={(e) => setGradient(gradientAngle, gradientFrom, e.target.value)}
-                    className="h-8 w-8 rounded border cursor-pointer shrink-0"
-                  />
-                  <Input
-                    value={gradientTo}
-                    onChange={(e) => setGradient(gradientAngle, gradientFrom, e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
+                <ColorPicker value={gradientTo} onChange={(v) => setGradient(gradientAngle, gradientFrom, v)} className="mt-0.5" />
               </div>
             </div>
             <div>

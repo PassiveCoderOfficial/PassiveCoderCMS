@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings, BookmarkPlus, Monitor, Tablet, Smartphone } from "lucide-react";
+import { Monitor, Tablet, Smartphone } from "lucide-react";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Block, ContainerBlockProps } from "@/types/cms";
+import type { Block } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { SavePresetDialog } from "./save-preset-dialog";
+import { useBlockActions } from "./use-block-actions";
 
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { DraggableAttributes } from "@dnd-kit/core";
@@ -30,36 +30,15 @@ const DEVICES = [
 ];
 
 export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned }: BlockToolbarProps) {
-  const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock, setMobileSheet } = useBuilderStore();
+  const { updateBlock } = useBuilderStore();
   const [saveOpen, setSaveOpen] = useState(false);
-  const siblings = path
-    ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
-        ?.data.columns[path.columnIndex]?.blocks ?? [])
-    : blocks;
-  const idx = siblings.findIndex((b) => b.id === block.id);
-  const canMoveUp = idx > 0;
-  const canMoveDown = idx < siblings.length - 1;
   const hideOn = block.hideOn ?? [];
+  const actions = useBlockActions(block, path, () => setSaveOpen(true));
 
   const toggleDevice = (device: "desktop" | "tablet" | "mobile") => {
     const next = hideOn.includes(device) ? hideOn.filter((d) => d !== device) : [...hideOn, device];
     updateBlock(block.id, { hideOn: next, visible: next.length < 3 }, path);
   };
-
-  const actions = [
-    // Selects the block and (on mobile) opens its settings sheet — setMobileSheet
-    // is a no-op on desktop where the settings panel is always docked.
-    { icon: Settings, label: "Edit settings", onClick: () => { selectBlock(block.id); setMobileSheet("settings"); }, variant: "primary" },
-    { icon: GripVertical, label: "Drag to reorder", isDragHandle: true },
-    { icon: block.visible ? Eye : EyeOff, label: block.visible ? "Hide block" : "Show block", onClick: () => updateBlock(block.id, { visible: !block.visible }, path) },
-    { icon: ChevronUp, label: "Move up", onClick: () => canMoveUp && moveBlock(block.id, siblings[idx - 1].id, path), disabled: !canMoveUp },
-    { icon: ChevronDown, label: "Move down", onClick: () => canMoveDown && moveBlock(block.id, siblings[idx + 1].id, path), disabled: !canMoveDown },
-    { icon: Copy, label: "Duplicate", onClick: () => duplicateBlock(block.id, path) },
-    ...(block.type === "container"
-      ? [{ icon: BookmarkPlus, label: "Save as section", onClick: () => setSaveOpen(true) }]
-      : []),
-    { icon: Trash2, label: "Delete", onClick: () => removeBlock(block.id, path), variant: "destructive" },
-  ];
 
   return (
     <TooltipProvider delayDuration={300}>

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { createClient } from "@/lib/supabase/client";
 import { getClientTenantId } from "@/lib/tenant/client";
 import { cn } from "@/lib/utils";
@@ -167,20 +168,9 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
       <div>
         <Label className="text-xs">Background Color</Label>
         <div className="flex items-center gap-2 mt-1">
-          <input
-            type="color"
-            value={d.backgroundColor ?? "#ffffff"}
-            onChange={(e) => update("backgroundColor", e.target.value)}
-            className="h-8 w-10 rounded border cursor-pointer p-0.5"
-          />
-          <Input
-            value={d.backgroundColor ?? ""}
-            onChange={(e) => update("backgroundColor", e.target.value || undefined)}
-            className="h-8 text-xs flex-1"
-            placeholder="transparent"
-          />
+          <ColorPicker value={d.backgroundColor ?? "#ffffff"} onChange={(v) => update("backgroundColor", v)} className="flex-1" />
           {d.backgroundColor && (
-            <button onClick={() => update("backgroundColor", undefined)} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
+            <button onClick={() => update("backgroundColor", undefined)} className="text-xs text-muted-foreground hover:text-foreground shrink-0">Clear</button>
           )}
         </div>
       </div>

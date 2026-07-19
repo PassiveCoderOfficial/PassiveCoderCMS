@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, Star as StarIcon, Eye, EyeOff, Copy } from "lucide-react";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
 
 interface Testimonial {
   id: string;
@@ -113,10 +114,9 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
           <label className="block text-xs text-gray-400 mb-1">Rating</label>
           <StarRating value={item.rating ?? 5} onChange={v => set("rating", v)} />
         </div>
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Avatar URL</label>
-          <input value={item.avatar ?? ""} onChange={e => set("avatar", e.target.value)}
-            className="w-48 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://..." />
+        <div className="w-48">
+          <label className="block text-xs text-gray-400 mb-1">Avatar</label>
+          <MediaPickerInput compact value={item.avatar ?? ""} onChange={v => set("avatar", v)} />
         </div>
         <label className="flex items-center gap-2 mt-4 cursor-pointer">
           <input type="checkbox" checked={item.published ?? true} onChange={e => set("published", e.target.checked)} className="w-4 h-4 rounded" />

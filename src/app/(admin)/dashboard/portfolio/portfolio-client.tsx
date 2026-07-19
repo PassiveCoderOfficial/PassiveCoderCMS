@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, FolderOpen, Copy } from "lucide-react";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
 
 interface PortfolioItem {
   id: string;
@@ -62,9 +63,8 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Image URL *</label>
-          <input value={item.image_url ?? ""} onChange={e => set("image_url", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://..." />
+          <label className="block text-xs text-gray-400 mb-1">Image *</label>
+          <MediaPickerInput compact value={item.image_url ?? ""} onChange={v => set("image_url", v)} />
         </div>
       </div>
       <div>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { ColorPicker } from "@/components/ui/color-picker";
 import type { NavigationBlockProps } from "@/types/cms";
 
 export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
@@ -76,15 +77,15 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
 
       <div className="border-t pt-3 space-y-2">
         <div className="grid grid-cols-2 gap-2">
-          <div><Label className="text-xs">Background</Label><Input type="color" value={block.data.backgroundColor ?? "#1a5c38"} onChange={(e) => update("backgroundColor", e.target.value)} className="h-8 mt-1 p-1" /></div>
-          <div><Label className="text-xs">Gradient To (optional)</Label><Input type="color" value={block.data.backgroundGradientTo || block.data.backgroundColor || "#1a5c38"} onChange={(e) => update("backgroundGradientTo", e.target.value)} className="h-8 mt-1 p-1" /></div>
+          <div><Label className="text-xs">Background</Label><ColorPicker value={block.data.backgroundColor ?? "#1a5c38"} onChange={(v) => update("backgroundColor", v)} className="mt-1" /></div>
+          <div><Label className="text-xs">Gradient To (optional)</Label><ColorPicker value={block.data.backgroundGradientTo || block.data.backgroundColor || "#1a5c38"} onChange={(v) => update("backgroundGradientTo", v)} className="mt-1" /></div>
         </div>
         {block.data.backgroundGradientTo && (
           <button onClick={() => update("backgroundGradientTo", "")} className="text-[11px] text-muted-foreground underline">Clear gradient</button>
         )}
         <div className="grid grid-cols-2 gap-2">
-          <div><Label className="text-xs">Text Color</Label><Input type="color" value={block.data.textColor ?? "#ffffff"} onChange={(e) => update("textColor", e.target.value)} className="h-8 mt-1 p-1" /></div>
-          <div><Label className="text-xs">Active Link Color</Label><Input type="color" value={block.data.activeColor ?? block.data.textColor ?? "#ffffff"} onChange={(e) => update("activeColor", e.target.value)} className="h-8 mt-1 p-1" /></div>
+          <div><Label className="text-xs">Text Color</Label><ColorPicker value={block.data.textColor ?? "#ffffff"} onChange={(v) => update("textColor", v)} className="mt-1" /></div>
+          <div><Label className="text-xs">Active Link Color</Label><ColorPicker value={block.data.activeColor ?? block.data.textColor ?? "#ffffff"} onChange={(v) => update("activeColor", v)} className="mt-1" /></div>
         </div>
       </div>
 

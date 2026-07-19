@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { ColorPicker } from "@/components/ui/color-picker";
 import type { HeroBlockProps } from "@/types/cms";
 
 export function HeroSettings({ block }: { block: HeroBlockProps }) {
@@ -95,12 +96,8 @@ export function HeroStyleSettings({ block }: { block: HeroBlockProps }) {
         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Section Overlay</p>
         <p className="text-[10px] text-muted-foreground">Tints the whole section — covers the background image set in the Layout tab. Set a color to apply it.</p>
         <div className="grid grid-cols-2 gap-2">
-          <FieldGroup label="Overlay Color">
-            <Input type="color" value={block.data.overlayColor ?? "#000000"} onChange={(e) => update("overlayColor", e.target.value)} className="h-8 p-1" />
-          </FieldGroup>
-          <FieldGroup label="Gradient To (optional)">
-            <Input type="color" value={block.data.overlayColorTo || block.data.overlayColor || "#000000"} onChange={(e) => update("overlayColorTo", e.target.value)} className="h-8 p-1" />
-          </FieldGroup>
+          <ColorField label="Overlay Color" value={block.data.overlayColor ?? "#000000"} onChange={(v) => update("overlayColor", v)} />
+          <ColorField label="Gradient To (optional)" value={block.data.overlayColorTo || block.data.overlayColor || "#000000"} onChange={(v) => update("overlayColorTo", v)} />
         </div>
         {block.data.overlayColorTo && (
           <button onClick={() => update("overlayColorTo", "")} className="text-[11px] text-muted-foreground underline">Clear gradient</button>
@@ -117,8 +114,8 @@ export function HeroStyleSettings({ block }: { block: HeroBlockProps }) {
           <Input value={block.data.primaryButton?.label ?? ""} onChange={(e) => updateButton("primaryButton", "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
           <Input value={block.data.primaryButton?.url ?? ""} onChange={(e) => updateButton("primaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
           <div className="grid grid-cols-2 gap-1.5">
-            <Input type="color" value={block.data.primaryButton?.bgColor || "#ffffff"} onChange={(e) => updateButton("primaryButton", "bgColor", e.target.value)} className="h-7 p-0.5" title="Background" />
-            <Input type="color" value={block.data.primaryButton?.textColor || "#000000"} onChange={(e) => updateButton("primaryButton", "textColor", e.target.value)} className="h-7 p-0.5" title="Text color" />
+            <ColorPicker value={block.data.primaryButton?.bgColor || "#ffffff"} onChange={(v) => updateButton("primaryButton", "bgColor", v)} className="h-7" />
+            <ColorPicker value={block.data.primaryButton?.textColor || "#000000"} onChange={(v) => updateButton("primaryButton", "textColor", v)} className="h-7" />
           </div>
           {block.data.primaryButton?.bgColor && (
             <button onClick={() => { updateButton("primaryButton", "bgColor", ""); updateButton("primaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
@@ -132,8 +129,8 @@ export function HeroStyleSettings({ block }: { block: HeroBlockProps }) {
           <Input value={block.data.secondaryButton?.label ?? ""} onChange={(e) => updateButton("secondaryButton", "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
           <Input value={block.data.secondaryButton?.url ?? ""} onChange={(e) => updateButton("secondaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
           <div className="grid grid-cols-2 gap-1.5">
-            <Input type="color" value={block.data.secondaryButton?.bgColor || "#00000000"} onChange={(e) => updateButton("secondaryButton", "bgColor", e.target.value)} className="h-7 p-0.5" title="Background (transparent for outline)" />
-            <Input type="color" value={block.data.secondaryButton?.textColor || "#ffffff"} onChange={(e) => updateButton("secondaryButton", "textColor", e.target.value)} className="h-7 p-0.5" title="Text/border color" />
+            <ColorPicker value={block.data.secondaryButton?.bgColor || "#00000000"} onChange={(v) => updateButton("secondaryButton", "bgColor", v)} className="h-7" />
+            <ColorPicker value={block.data.secondaryButton?.textColor || "#ffffff"} onChange={(v) => updateButton("secondaryButton", "textColor", v)} className="h-7" />
           </div>
           {block.data.secondaryButton?.bgColor && (
             <button onClick={() => { updateButton("secondaryButton", "bgColor", ""); updateButton("secondaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
@@ -175,10 +172,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   return (
     <div>
       <Label className="text-[10px] text-muted-foreground">{label}</Label>
-      <div className="flex gap-2 items-center mt-0.5">
-        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-7 w-7 rounded border cursor-pointer" />
-        <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-7 text-xs" />
-      </div>
+      <ColorPicker value={value} onChange={onChange} className="h-7 mt-0.5" />
     </div>
   );
 }

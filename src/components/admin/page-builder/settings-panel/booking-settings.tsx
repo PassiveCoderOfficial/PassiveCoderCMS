@@ -5,6 +5,7 @@ import { useBuilderStore } from "@/lib/store/builder";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { ColorPicker } from "@/components/ui/color-picker";
 import type { BookingBlockProps } from "@/types/cms";
 
 export function BookingSettings({ block }: { block: BookingBlockProps }) {
@@ -18,7 +19,7 @@ export function BookingSettings({ block }: { block: BookingBlockProps }) {
       <div><Label className="text-xs">Button Label</Label><Input value={block.data.submitLabel} onChange={e => update("submitLabel", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div>
         <Label className="text-xs">Accent Color</Label>
-        <Input type="color" value={block.data.accentColor ?? "#4f46e5"} onChange={e => update("accentColor", e.target.value)} className="h-8 mt-1 p-1" />
+        <ColorPicker value={block.data.accentColor ?? "#4f46e5"} onChange={v => update("accentColor", v)} className="mt-1" />
       </div>
       <div>
         <Label className="text-xs">Days Shown</Label>

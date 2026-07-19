@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { BlockRenderer } from "./block-renderer";
 import { BlockToolbar } from "./block-toolbar";
+import { BlockContextMenu } from "./block-context-menu";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
 
@@ -23,6 +24,8 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
   const { selectedBlockId, hoveredBlockId, selectBlock, hoverBlock } = useBuilderStore();
   const isSelected = selectedBlockId === block.id;
   const isHovered = hoveredBlockId === block.id;
+  const [longPressOpen, setLongPressOpen] = React.useState(false);
+  const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
@@ -34,6 +37,19 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
     transition,
   };
 
+  const clearLongPress = () => {
+    if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+  };
+
+  const handleTouchStart = () => {
+    if (!isEditing) return;
+    clearLongPress();
+    longPressTimer.current = setTimeout(() => {
+      selectBlock(block.id);
+      setLongPressOpen(true);
+    }, 500);
+  };
+
   // Preview mode simulates the live site — hidden blocks stay hidden there.
   // In edit mode, render hidden blocks greyed-out so there's always a way
   // back (via this toolbar's eye icon or the Layers panel) instead of the
@@ -42,39 +58,44 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
   const isHiddenInEditor = isEditing && !block.visible;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "relative group",
-        isEditing && "outline-2 outline-transparent outline-offset-[-2px]",
-        isEditing && isHovered && !isSelected && "outline-orange-300 outline-dashed",
-        isEditing && isSelected && "outline-4 outline-orange-600 outline-solid shadow-[0_0_0_4px_rgba(234,88,12,0.15)]",
-        isDragging && "opacity-30",
-        isHiddenInEditor && "opacity-40 grayscale",
-      )}
-      onClick={(e) => {
-        if (!isEditing) return;
-        e.stopPropagation();
-        selectBlock(block.id);
-      }}
-      onMouseEnter={() => isEditing && hoverBlock(block.id)}
-      onMouseLeave={() => isEditing && hoverBlock(undefined)}
-    >
-      {isEditing && (isSelected || isHovered) && (
-        <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} />
-      )}
-      {isEditing && !isSelected && (
-        <span className="lg:hidden absolute top-1 left-1 z-10 rounded-md bg-black/40 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none capitalize">
-          {block.type.replace(/_/g, " ")}
-        </span>
-      )}
-      {isHiddenInEditor && (
-        <span className="absolute top-1 right-1 z-10 rounded-md bg-black/60 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none">
-          Hidden
-        </span>
-      )}
-      <BlockRenderer block={block} isPreview={!isEditing} />
-    </div>
+    <BlockContextMenu block={block} path={path} open={longPressOpen} onOpenChange={setLongPressOpen}>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          "relative group",
+          isEditing && "outline-2 outline-transparent outline-offset-[-2px]",
+          isEditing && isHovered && !isSelected && "outline-orange-300 outline-dashed",
+          isEditing && isSelected && "outline-4 outline-orange-600 outline-solid shadow-[0_0_0_4px_rgba(234,88,12,0.15)]",
+          isDragging && "opacity-30",
+          isHiddenInEditor && "opacity-40 grayscale",
+        )}
+        onClick={(e) => {
+          if (!isEditing) return;
+          e.stopPropagation();
+          selectBlock(block.id);
+        }}
+        onMouseEnter={() => isEditing && hoverBlock(block.id)}
+        onMouseLeave={() => isEditing && hoverBlock(undefined)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={clearLongPress}
+        onTouchEnd={clearLongPress}
+      >
+        {isEditing && (isSelected || isHovered) && (
+          <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} />
+        )}
+        {isEditing && !isSelected && (
+          <span className="lg:hidden absolute top-1 left-1 z-10 rounded-md bg-black/40 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none capitalize">
+            {block.type.replace(/_/g, " ")}
+          </span>
+        )}
+        {isHiddenInEditor && (
+          <span className="absolute top-1 right-1 z-10 rounded-md bg-black/60 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none">
+            Hidden
+          </span>
+        )}
+        <BlockRenderer block={block} isPreview={!isEditing} />
+      </div>
+    </BlockContextMenu>
   );
 }

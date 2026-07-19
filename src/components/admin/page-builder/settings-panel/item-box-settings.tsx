@@ -11,6 +11,7 @@ import { Plus, Trash2, ExternalLink } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import { ContentPicker } from "@/components/admin/content-picker";
 import { MultiItemPicker } from "@/components/admin/multi-item-picker";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import type { ItemBoxBlockProps, ItemBoxSource } from "@/types/cms";
 
 interface GroupOption {
@@ -174,11 +175,10 @@ export function ItemBoxSettings({ block }: { block: ItemBoxBlockProps }) {
                 </div>
                 <Input value={item.title} onChange={(e) => updateItem(item.id, "title", e.target.value)} className="h-7 text-xs" placeholder="Title" />
                 <Textarea value={item.description ?? ""} onChange={(e) => updateItem(item.id, "description", e.target.value)} className="text-xs resize-none" rows={2} placeholder="Description" />
-                <Input
-                  value={item.image?.type === "url" ? item.image.value ?? "" : item.image?.type === "icon" ? item.image.value ?? "" : ""}
-                  onChange={(e) => updateItem(item.id, "image", e.target.value ? { type: "url", value: e.target.value } : { type: "none" })}
-                  className="h-7 text-xs"
-                  placeholder="Image URL (optional)"
+                <MediaPickerInput
+                  compact
+                  value={item.image?.type === "url" ? item.image.value ?? "" : ""}
+                  onChange={(url) => updateItem(item.id, "image", url ? { type: "url", value: url } : { type: "none" })}
                 />
                 <ContentPicker value={item.link} onChange={(link) => updateItem(item.id, "link", link)} />
               </div>
