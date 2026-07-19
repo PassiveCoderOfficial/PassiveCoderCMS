@@ -31,6 +31,20 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
     updateBlock(block.id, { background: { ...block.background, [field]: value } });
   };
 
+  // Gradient was a raw "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+  // text field — nobody hand-writes CSS gradient syntax. Parse the existing
+  // string into angle + two colors for two color pickers, and always write
+  // back a normalized string so both directions round-trip cleanly.
+  const gradientMatch = /linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{3,8})[^,]*,\s*(#[0-9a-fA-F]{3,8})/.exec(
+    block.background.gradient ?? "",
+  );
+  const gradientAngle = gradientMatch ? Number(gradientMatch[1]) : 135;
+  const gradientFrom = gradientMatch?.[2] ?? "#667eea";
+  const gradientTo = gradientMatch?.[3] ?? "#764ba2";
+  const setGradient = (angle: number, from: string, to: string) => {
+    updateBg("gradient", `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`);
+  };
+
   return (
     <div className="space-y-5">
       {/* Width */}
@@ -87,7 +101,21 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
       {/* Background */}
       <div className="space-y-2">
         <Label className="text-xs">Background</Label>
-        <Select value={block.background.type} onValueChange={(v) => updateBg("type", v)}>
+        <Select
+          value={block.background.type}
+          onValueChange={(v) => {
+            const needsDefaultGradient = v === "gradient" && !block.background.gradient;
+            updateBlock(block.id, {
+              background: {
+                ...block.background,
+                type: v as BlockBackground["type"],
+                ...(needsDefaultGradient
+                  ? { gradient: `linear-gradient(${gradientAngle}deg, ${gradientFrom} 0%, ${gradientTo} 100%)` }
+                  : {}),
+              },
+            });
+          }}
+        >
           <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
             {["none", "color", "gradient", "image"].map((t) => (
@@ -112,12 +140,54 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
           </div>
         )}
         {block.background.type === "gradient" && (
-          <Input
-            value={block.background.gradient ?? ""}
-            onChange={(e) => updateBg("gradient", e.target.value)}
-            className="h-8 text-xs"
-            placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          />
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[10px] text-muted-foreground">From</Label>
+                <div className="flex gap-1.5 items-center mt-0.5">
+                  <input
+                    type="color"
+                    value={gradientFrom}
+                    onChange={(e) => setGradient(gradientAngle, e.target.value, gradientTo)}
+                    className="h-8 w-8 rounded border cursor-pointer shrink-0"
+                  />
+                  <Input
+                    value={gradientFrom}
+                    onChange={(e) => setGradient(gradientAngle, e.target.value, gradientTo)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">To</Label>
+                <div className="flex gap-1.5 items-center mt-0.5">
+                  <input
+                    type="color"
+                    value={gradientTo}
+                    onChange={(e) => setGradient(gradientAngle, gradientFrom, e.target.value)}
+                    className="h-8 w-8 rounded border cursor-pointer shrink-0"
+                  />
+                  <Input
+                    value={gradientTo}
+                    onChange={(e) => setGradient(gradientAngle, gradientFrom, e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label className="text-[10px] text-muted-foreground">Angle ({gradientAngle}°)</Label>
+              <Input
+                type="range"
+                min={0}
+                max={360}
+                step={5}
+                value={gradientAngle}
+                onChange={(e) => setGradient(Number(e.target.value), gradientFrom, gradientTo)}
+                className="h-8"
+              />
+            </div>
+          </div>
         )}
         {block.background.type === "image" && (
           <MediaPickerInput
