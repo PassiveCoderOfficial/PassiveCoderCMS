@@ -221,7 +221,7 @@ function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
           <MessageCircle className="h-3.5 w-3.5" />
           WhatsApp Support
         </a>
-        <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v1.0.0</p>
+        <p className="text-[10px] text-muted-foreground text-center pt-1">Passive Coder v{process.env.NEXT_PUBLIC_APP_VERSION ?? "1.0.0"}</p>
       </div>
     </>
   );
