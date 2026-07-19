@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { BuilderCanvas } from "./canvas/builder-canvas";
+import { PreviewFrame } from "./canvas/preview-frame";
 import { BlocksPanel } from "./blocks-panel/blocks-panel";
 import { SettingsPanel } from "./settings-panel/settings-panel";
 import { MobileBuilderShell } from "./mobile-builder-shell";
@@ -245,9 +246,15 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
                   {breakpoint === "tablet" ? "768px" : "375px"} preview
                 </div>
               )}
-              <div className={cn(breakpoint !== "desktop" && "mx-auto shadow-2xl bg-white overflow-hidden")} style={{ width: breakpoint === "tablet" ? 768 : breakpoint === "mobile" ? 375 : "100%" }}>
+              {breakpoint === "desktop" ? (
                 <BuilderCanvas />
-              </div>
+              ) : (
+                <div className="mx-auto shadow-2xl bg-white overflow-hidden w-fit">
+                  <PreviewFrame width={breakpoint === "tablet" ? 768 : 375}>
+                    <BuilderCanvas />
+                  </PreviewFrame>
+                </div>
+              )}
             </div>
           </div>
 
