@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Database, Pencil } from "lucide-react";
+import { Plus, Trash2, Database, Pencil, ExternalLink } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import type { ServicesBlockProps } from "@/types/cms";
 
@@ -110,6 +110,9 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">Loads live from the Services dashboard.</p>
+          <a href="/dashboard/services" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+            <ExternalLink className="h-3 w-3" /> Manage Service Groups
+          </a>
         </div>
       ) : (
         <div className="space-y-1.5">

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ExternalLink } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import { ContentPicker } from "@/components/admin/content-picker";
 import type { ItemBoxBlockProps, ItemBoxSource } from "@/types/cms";
@@ -32,6 +32,17 @@ const SOURCE_LABELS: Record<ItemBoxSource, string> = {
   testimonials: "Testimonials",
   blog: "Blog Posts",
   pages: "Pages",
+};
+
+// Where "Manage X" / "Add New" jumps to for each non-inline source — the
+// dashboard section that actually owns that content.
+const MANAGE_LINK: Partial<Record<ItemBoxSource, { href: string; label: string }>> = {
+  services: { href: "/dashboard/services", label: "Manage Service Groups" },
+  features: { href: "/dashboard/features", label: "Manage Feature Groups" },
+  portfolio: { href: "/dashboard/portfolio", label: "Manage Portfolio Groups" },
+  testimonials: { href: "/dashboard/testimonials", label: "Manage Testimonial Groups" },
+  blog: { href: "/dashboard/posts/new", label: "Add New Post" },
+  pages: { href: "/dashboard/pages/new", label: "Add New Page" },
 };
 
 export function ItemBoxSettings({ block }: { block: ItemBoxBlockProps }) {
@@ -91,11 +102,23 @@ export function ItemBoxSettings({ block }: { block: ItemBoxBlockProps }) {
             </SelectContent>
           </Select>
           <p className="text-[10px] text-muted-foreground">Items load live from the {SOURCE_LABELS[source]} dashboard.</p>
+          {MANAGE_LINK[source] && (
+            <a href={MANAGE_LINK[source]!.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3" /> {MANAGE_LINK[source]!.label}
+            </a>
+          )}
         </div>
       )}
 
       {(source === "blog" || source === "pages") && (
-        <p className="text-[10px] text-muted-foreground">Shows your published {source === "blog" ? "blog posts" : "pages"} automatically — most recent first.</p>
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-muted-foreground">Shows your published {source === "blog" ? "blog posts" : "pages"} automatically — most recent first.</p>
+          {MANAGE_LINK[source] && (
+            <a href={MANAGE_LINK[source]!.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3" /> {MANAGE_LINK[source]!.label}
+            </a>
+          )}
+        </div>
       )}
 
       <div className="space-y-1.5">

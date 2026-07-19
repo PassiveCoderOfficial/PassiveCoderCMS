@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { ExternalLink } from "lucide-react";
 import type { ItemBoxLink } from "@/types/cms";
 
 type ContentType = "page" | "post" | "service" | "feature";
@@ -12,6 +13,13 @@ const ENDPOINT: Record<ContentType, string> = {
   post: "/api/pages?type=post",
   service: "/api/services",
   feature: "/api/features",
+};
+
+const ADD_NEW_LINK: Record<ContentType, { href: string; label: string }> = {
+  page: { href: "/dashboard/pages/new", label: "Add New Page" },
+  post: { href: "/dashboard/posts/new", label: "Add New Post" },
+  service: { href: "/dashboard/services", label: "Manage Service Groups" },
+  feature: { href: "/dashboard/features", label: "Manage Feature Groups" },
 };
 
 interface Option {
@@ -95,6 +103,12 @@ export function ContentPicker({ value, onChange }: {
             )}
           </SelectContent>
         </Select>
+      )}
+
+      {linkType !== "manual" && (
+        <a href={ADD_NEW_LINK[linkType].href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+          <ExternalLink className="h-3 w-3" /> {ADD_NEW_LINK[linkType].label}
+        </a>
       )}
     </div>
   );
