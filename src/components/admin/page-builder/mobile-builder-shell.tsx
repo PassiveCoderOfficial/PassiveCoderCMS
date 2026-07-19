@@ -8,8 +8,9 @@ import { BlocksPanel } from "./blocks-panel/blocks-panel";
 import { SettingsPanel } from "./settings-panel/settings-panel";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { PageSettingsDrawer } from "@/components/admin/page-settings/page-settings-drawer";
 import {
-  ChevronLeft, Undo2, Redo2, Save, Loader2, Plus, Layers, SlidersHorizontal, Eye, Edit3,
+  ChevronLeft, Undo2, Redo2, Save, Loader2, Plus, Layers, SlidersHorizontal, Eye, Edit3, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Page } from "@/types/cms";
@@ -21,6 +22,7 @@ export function MobileBuilderShell({ page, controls }: { page: Page; controls: B
     undo, redo, canUndo, canRedo,
   } = useBuilderStore();
   const { saving, isDirty, handleSave } = controls;
+  const [pageSettingsOpen, setPageSettingsOpen] = React.useState(false);
 
   const isPreview = mode === "preview";
 
@@ -32,6 +34,7 @@ export function MobileBuilderShell({ page, controls }: { page: Page; controls: B
       onTap: () => setMobileSheet("settings"),
       disabled: !selectedBlockId,
     },
+    { key: "page-settings" as const, icon: Settings, label: "Page", onTap: () => setPageSettingsOpen(true) },
   ];
 
   return (
@@ -110,6 +113,9 @@ export function MobileBuilderShell({ page, controls }: { page: Page; controls: B
           <SettingsPanel />
         </div>
       </Sheet>
+
+      {/* Page-level settings — title/slug/SEO/featured image, same drawer as desktop */}
+      <PageSettingsDrawer page={page} open={pageSettingsOpen} onClose={() => setPageSettingsOpen(false)} />
     </div>
   );
 }

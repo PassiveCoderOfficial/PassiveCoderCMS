@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Bottom sheet built on Radix Dialog — slides up from the bottom, rounded top,
@@ -38,12 +39,22 @@ export function Sheet({ open, onOpenChange, title, heightClass = "max-h-[85vh]",
             className="mx-auto mt-2 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30"
             aria-label="Close"
           />
-          {title && (
-            <DialogPrimitive.Title className="px-4 pb-2 text-sm font-semibold text-foreground shrink-0">
-              {title}
-            </DialogPrimitive.Title>
-          )}
-          {!title && <DialogPrimitive.Title className="sr-only">Panel</DialogPrimitive.Title>}
+          <div className="flex items-center justify-between px-4 pb-2 shrink-0">
+            {title ? (
+              <DialogPrimitive.Title className="text-sm font-semibold text-foreground">
+                {title}
+              </DialogPrimitive.Title>
+            ) : (
+              <DialogPrimitive.Title className="sr-only">Panel</DialogPrimitive.Title>
+            )}
+            <button
+              onClick={() => onOpenChange(false)}
+              className="p-1 -m-1 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
           <div className="flex-1 overflow-y-auto overscroll-contain">{children}</div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

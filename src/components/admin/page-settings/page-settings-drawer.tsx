@@ -78,7 +78,7 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
     <>
       {open && <div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />}
       <div className={cn(
-        "fixed top-0 right-0 h-full w-[380px] z-50 bg-background border-l shadow-2xl flex flex-col transition-transform duration-200",
+        "fixed top-0 right-0 h-full w-full sm:w-[380px] z-50 bg-background border-l shadow-2xl flex flex-col transition-transform duration-200",
         open ? "translate-x-0" : "translate-x-full"
       )}>
         <div className="flex items-center justify-between px-4 h-12 border-b shrink-0">
