@@ -38,7 +38,7 @@ function ColumnDropZone({
       className={cn(
         "flex-1 min-w-0 flex flex-col gap-2 rounded",
         isEditing && "min-h-[64px] outline-1 outline-dashed outline-transparent",
-        isEditing && isOver && "outline-blue-400 bg-blue-50/40",
+        isEditing && isOver && "outline-orange-400 bg-orange-50/40",
         isEditing && column.blocks.length === 0 && "outline-gray-300",
       )}
       style={{ flexBasis: `${column.widthPct}%` }}

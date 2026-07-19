@@ -39,7 +39,7 @@ export function InsertSectionButton({ afterId }: InsertSectionButtonProps) {
       <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSearch(""); }}>
         <PopoverTrigger asChild>
           <button
-            className="flex items-center gap-1 rounded-full bg-blue-600 text-white text-[11px] font-medium pl-1.5 pr-2.5 py-1 shadow-md opacity-0 group-hover/insert:opacity-100 focus:opacity-100 data-[state=open]:opacity-100 transition-opacity hover:bg-blue-700"
+            className="flex items-center gap-1 rounded-full bg-orange-600 text-white text-[11px] font-medium pl-1.5 pr-2.5 py-1 shadow-md opacity-0 group-hover/insert:opacity-100 focus:opacity-100 data-[state=open]:opacity-100 transition-opacity hover:bg-orange-700"
             aria-label="Add a section here"
           >
             <Plus className="h-3.5 w-3.5" />

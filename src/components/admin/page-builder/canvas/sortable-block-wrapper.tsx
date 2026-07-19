@@ -43,8 +43,8 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
       className={cn(
         "relative group",
         isEditing && "outline-2 outline-transparent outline-offset-[-2px]",
-        isEditing && isHovered && !isSelected && "outline-blue-300 outline-dashed",
-        isEditing && isSelected && "outline-4 outline-blue-600 outline-solid shadow-[0_0_0_4px_rgba(37,99,235,0.15)]",
+        isEditing && isHovered && !isSelected && "outline-orange-300 outline-dashed",
+        isEditing && isSelected && "outline-4 outline-orange-600 outline-solid shadow-[0_0_0_4px_rgba(234,88,12,0.15)]",
         isDragging && "opacity-30",
       )}
       onClick={(e) => {
@@ -57,6 +57,11 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
     >
       {isEditing && (isSelected || isHovered) && (
         <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} />
+      )}
+      {isEditing && !isSelected && (
+        <span className="lg:hidden absolute top-1 left-1 z-10 rounded-md bg-black/40 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none capitalize">
+          {block.type.replace(/_/g, " ")}
+        </span>
       )}
       <BlockRenderer block={block} isPreview={!isEditing} />
     </div>

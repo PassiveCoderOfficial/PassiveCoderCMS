@@ -56,34 +56,36 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
           // Mobile: sits INSIDE the block's top edge (top-1) so it can never
           // slide behind the fixed top bar for the first block — always
           // reachable. Desktop: floats just above the block on hover.
-          "absolute top-1 lg:top-auto lg:-top-8 left-1 lg:left-0 z-20 flex items-center gap-1 lg:gap-0.5 rounded-lg lg:rounded-t px-1.5 lg:px-1 py-1 lg:py-0.5 transition-opacity max-w-[calc(100vw-16px)] overflow-x-auto shadow-lg lg:shadow-none",
-          pinned ? "bg-blue-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
+          "absolute top-1 lg:top-auto lg:-top-8 left-1 right-1 lg:left-0 lg:right-auto z-20 flex items-center gap-0.5 rounded-lg lg:rounded-t px-1 py-1 lg:py-0.5 transition-opacity shadow-lg lg:shadow-none overflow-x-auto",
+          pinned ? "bg-orange-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="hidden lg:inline text-[10px] text-gray-400 mr-1 select-none px-1 truncate max-w-[120px]">
+        <span className="hidden lg:inline text-[10px] text-gray-400 mr-1 select-none px-1 truncate max-w-[100px] shrink-0">
           {block.type.replace(/_/g, " ")}
         </span>
-        {actions.map((action, i) => (
-          <Tooltip key={i}>
-            <TooltipTrigger asChild>
-              <button
-                className={cn(
-                  "flex h-9 w-9 lg:h-6 lg:w-6 items-center justify-center rounded text-gray-300 hover:text-white hover:bg-gray-700 transition-colors shrink-0",
-                  action.variant === "destructive" && "hover:text-red-400 hover:bg-red-900/40",
-                  action.variant === "primary" && "hover:bg-blue-600 hover:text-white",
-                  action.disabled && "opacity-30 pointer-events-none",
-                  action.isDragHandle && "cursor-grab active:cursor-grabbing touch-none",
-                )}
-                onClick={action.onClick}
-                {...(action.isDragHandle ? { ...dragListeners, ...dragAttributes } : {})}
-              >
-                <action.icon className="h-4 w-4 lg:h-3 lg:w-3" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">{action.label}</TooltipContent>
-          </Tooltip>
-        ))}
+        <div className="flex items-center gap-0.5 shrink-0 ml-auto lg:ml-0">
+          {actions.map((action, i) => (
+            <Tooltip key={i}>
+              <TooltipTrigger asChild>
+                <button
+                  className={cn(
+                    "flex h-8 w-8 lg:h-6 lg:w-6 items-center justify-center rounded text-gray-300 hover:text-white hover:bg-white/20 transition-colors shrink-0",
+                    action.variant === "destructive" && "hover:text-red-300 hover:bg-red-900/40",
+                    action.variant === "primary" && "hover:bg-white/25 hover:text-white",
+                    action.disabled && "opacity-30 pointer-events-none",
+                    action.isDragHandle && "cursor-grab active:cursor-grabbing touch-none",
+                  )}
+                  onClick={action.onClick}
+                  {...(action.isDragHandle ? { ...dragListeners, ...dragAttributes } : {})}
+                >
+                  <action.icon className="h-4 w-4 lg:h-3 lg:w-3" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">{action.label}</TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
       </div>
       {block.type === "container" && (
         <SavePresetDialog block={block} open={saveOpen} onOpenChange={setSaveOpen} />
