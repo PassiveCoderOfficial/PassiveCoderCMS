@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { ItemBoxBlockProps, ItemBoxItem } from "@/types/cms";
-import { ItemBoxByData, mapItemBoxRows, type ItemBoxRow } from "./item-box-block";
+import { ItemBoxByData, mapItemBoxRows, applyItemOrder, type ItemBoxRow } from "./item-box-block";
 
 type GroupWithItems = { id: string; [itemsKey: string]: unknown };
 
@@ -72,7 +72,9 @@ export function ItemBoxBlockClient({ block }: { block: ItemBoxBlockProps }) {
     }
   }, [data.source, data.source_group_id]);
 
-  const resolved = data.source !== "inline" ? { ...data, items: resolvedItems ?? [] } : data;
+  const resolved = data.source !== "inline"
+    ? { ...data, items: applyItemOrder(resolvedItems ?? [], data.source_item_ids) }
+    : data;
 
   return <ItemBoxByData data={resolved} />;
 }

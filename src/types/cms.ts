@@ -74,6 +74,9 @@ export type BlockBase = {
   type: BlockType;
   order: number;
   visible: boolean;
+  /** Per-device hiding — CSS-driven (live site has no server-side viewport
+   *  info), unlike `visible` which is a true hide on every device. */
+  hideOn?: ("desktop" | "tablet" | "mobile")[];
   // Layout
   width: BlockWidth;
   padding: { top: number; right: number; bottom: number; left: number };
@@ -103,6 +106,8 @@ export type HeroBlockProps = BlockBase & {
   data: {
     layout: "centered" | "left" | "right" | "split";
     badge?: string;
+    badgeBgColor?: string;
+    badgeTextColor?: string;
     title: string;
     subtitle?: string;
     description?: string;
@@ -239,6 +244,9 @@ export type ItemBoxBlockProps = BlockBase & {
     subtitle?: string;
     source: ItemBoxSource;
     source_group_id?: string;
+    /** Chosen subset + custom order for non-inline sources. Empty/absent
+     *  falls back to "all items from group" / "most recent N" as before. */
+    source_item_ids?: string[];
     items: ItemBoxItem[];
     columns: 2 | 3 | 4;
     layout: "grid" | "list";

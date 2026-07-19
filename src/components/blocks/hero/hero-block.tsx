@@ -17,6 +17,11 @@ const titleSizeMap: Record<string, string> = {
   "7xl": "text-6xl md:text-8xl",
 };
 
+function badgeStyle(data: HeroBlockProps["data"]): React.CSSProperties | undefined {
+  if (!data.badgeBgColor && !data.badgeTextColor) return undefined;
+  return { backgroundColor: data.badgeBgColor || undefined, color: data.badgeTextColor || undefined, borderColor: data.badgeTextColor || undefined };
+}
+
 function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centered?: boolean }) {
   const { primaryButton, secondaryButton } = data;
   if (!primaryButton && !secondaryButton) return null;
@@ -86,7 +91,7 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
   const textContent = (
     <div className={cn("flex flex-col gap-5", isCentered && "items-center text-center")}>
       {data.badge && (
-        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold w-fit">
+        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold w-fit" style={badgeStyle(data)}>
           <InlineText blockId={block.id} field="badge" value={data.badge} />
         </span>
       )}
@@ -161,7 +166,7 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
         isPinned ? "items-start text-left" : "mx-auto text-center items-center",
       )}>
         {data.badge && (
-          <span className="inline-flex items-center gap-1.5 border border-white/30 backdrop-blur-sm text-white/90 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase">
+          <span className="inline-flex items-center gap-1.5 border border-white/30 backdrop-blur-sm text-white/90 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase" style={badgeStyle(data)}>
             <InlineText blockId={block.id} field="badge" value={data.badge} />
           </span>
         )}
@@ -194,7 +199,7 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
   return (
     <div className="max-w-5xl mx-auto text-center flex flex-col items-center gap-6 py-12">
       {data.badge && (
-        <span className="inline-flex items-center gap-1.5 bg-secondary/20 text-secondary border border-secondary/30 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase">
+        <span className="inline-flex items-center gap-1.5 bg-secondary/20 text-secondary border border-secondary/30 rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase" style={badgeStyle(data)}>
           <InlineText blockId={block.id} field="badge" value={data.badge} />
         </span>
       )}
@@ -248,7 +253,7 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
       )}>
         <div className={cn("max-w-xl flex flex-col gap-6", isCentered && "items-center", isRight && "items-end")}>
           {data.badge && (
-            <span className="inline-flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest w-fit">
+            <span className="inline-flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest w-fit" style={badgeStyle(data)}>
               <InlineText blockId={block.id} field="badge" value={data.badge} />
             </span>
           )}
@@ -299,7 +304,7 @@ function HeroCorporate({ block }: HeroBlockComponentProps) {
       />
       <div className="relative z-10 max-w-4xl mx-auto px-10 py-24 text-center flex flex-col items-center gap-5">
         {data.badge && (
-          <span className="inline-flex items-center gap-2 border border-white/30 text-white/90 text-xs font-medium px-4 py-2 rounded-sm uppercase tracking-widest">
+          <span className="inline-flex items-center gap-2 border border-white/30 text-white/90 text-xs font-medium px-4 py-2 rounded-sm uppercase tracking-widest" style={badgeStyle(data)}>
             <InlineText blockId={block.id} field="badge" value={data.badge} />
           </span>
         )}
@@ -331,7 +336,7 @@ function HeroLegacy({ block }: HeroBlockComponentProps) {
   const textContent = (
     <div className={cn(layout === "centered" && "text-center items-center", "flex flex-col gap-4")}>
       {badge && (
-        <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium w-fit">
+        <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium w-fit" style={badgeStyle(data)}>
           <InlineText blockId={block.id} field="badge" value={badge} />
         </span>
       )}

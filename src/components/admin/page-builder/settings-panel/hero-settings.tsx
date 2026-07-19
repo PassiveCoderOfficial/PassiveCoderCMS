@@ -16,16 +16,6 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
     updateBlock(block.id, { data: { ...block.data, [field]: value } });
   };
 
-  const updateTypo = (field: string, value: string) => {
-    updateBlock(block.id, { data: { ...block.data, typography: { ...block.data.typography, [field]: value } } });
-  };
-
-  const updateButton = (btn: "primaryButton" | "secondaryButton", field: string, value: string) => {
-    const existing = block.data[btn] ?? { label: "", url: "", variant: "primary" };
-    updateBlock(block.id, { data: { ...block.data, [btn]: { ...existing, [field]: value } } });
-  };
-
-
   // "centered-bold" and "corporate" are single-column, always-centered
   // designs by intent (no image split, no side-pinned text) — Layout has
   // nothing to control there, so hide it instead of showing a dropdown that
@@ -67,6 +57,39 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
       <FieldGroup label="Image">
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={(url) => update("imageUrl", url)} />
       </FieldGroup>
+
+    </div>
+  );
+}
+
+export function HeroStyleSettings({ block }: { block: HeroBlockProps }) {
+  const { updateBlock } = useBuilderStore();
+
+  const update = (field: string, value: unknown) => {
+    updateBlock(block.id, { data: { ...block.data, [field]: value } });
+  };
+
+  const updateTypo = (field: string, value: string) => {
+    updateBlock(block.id, { data: { ...block.data, typography: { ...block.data.typography, [field]: value } } });
+  };
+
+  const updateButton = (btn: "primaryButton" | "secondaryButton", field: string, value: string) => {
+    const existing = block.data[btn] ?? { label: "", url: "", variant: "primary" };
+    updateBlock(block.id, { data: { ...block.data, [btn]: { ...existing, [field]: value } } });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Badge Style</p>
+        <div className="grid grid-cols-2 gap-2">
+          <ColorField label="Background" value={block.data.badgeBgColor ?? "#ffffff"} onChange={(v) => update("badgeBgColor", v)} />
+          <ColorField label="Text Color" value={block.data.badgeTextColor ?? "#000000"} onChange={(v) => update("badgeTextColor", v)} />
+        </div>
+        {(block.data.badgeBgColor || block.data.badgeTextColor) && (
+          <button onClick={() => { update("badgeBgColor", ""); update("badgeTextColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
+        )}
+      </div>
 
       <div className="pt-1 border-t space-y-2">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Section Overlay</p>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, ExternalLink } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import { ContentPicker } from "@/components/admin/content-picker";
+import { MultiItemPicker } from "@/components/admin/multi-item-picker";
 import type { ItemBoxBlockProps, ItemBoxSource } from "@/types/cms";
 
 interface GroupOption {
@@ -107,17 +108,30 @@ export function ItemBoxSettings({ block }: { block: ItemBoxBlockProps }) {
               <ExternalLink className="h-3 w-3" /> {MANAGE_LINK[source]!.label}
             </a>
           )}
+          {block.data.source_group_id && (
+            <MultiItemPicker
+              source={source as "services" | "features" | "portfolio" | "testimonials"}
+              groupId={block.data.source_group_id}
+              value={block.data.source_item_ids ?? []}
+              onChange={(ids) => update("source_item_ids", ids)}
+            />
+          )}
         </div>
       )}
 
       {(source === "blog" || source === "pages") && (
         <div className="space-y-1.5">
-          <p className="text-[10px] text-muted-foreground">Shows your published {source === "blog" ? "blog posts" : "pages"} automatically — most recent first.</p>
+          <p className="text-[10px] text-muted-foreground">Shows your published {source === "blog" ? "blog posts" : "pages"} automatically — most recent first, or pick specific ones below.</p>
           {MANAGE_LINK[source] && (
             <a href={MANAGE_LINK[source]!.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
               <ExternalLink className="h-3 w-3" /> {MANAGE_LINK[source]!.label}
             </a>
           )}
+          <MultiItemPicker
+            source={source}
+            value={block.data.source_item_ids ?? []}
+            onChange={(ids) => update("source_item_ids", ids)}
+          />
         </div>
       )}
 

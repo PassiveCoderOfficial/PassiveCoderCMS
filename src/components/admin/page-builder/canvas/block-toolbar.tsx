@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings, BookmarkPlus } from "lucide-react";
+import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings, BookmarkPlus, Monitor, Tablet, Smartphone } from "lucide-react";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -23,6 +23,12 @@ interface BlockToolbarProps {
   pinned?: boolean;
 }
 
+const DEVICES = [
+  { key: "desktop" as const, icon: Monitor, label: "Desktop" },
+  { key: "tablet" as const, icon: Tablet, label: "Tablet" },
+  { key: "mobile" as const, icon: Smartphone, label: "Mobile" },
+];
+
 export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned }: BlockToolbarProps) {
   const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock, setMobileSheet } = useBuilderStore();
   const [saveOpen, setSaveOpen] = useState(false);
@@ -33,6 +39,12 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
   const idx = siblings.findIndex((b) => b.id === block.id);
   const canMoveUp = idx > 0;
   const canMoveDown = idx < siblings.length - 1;
+  const hideOn = block.hideOn ?? [];
+
+  const toggleDevice = (device: "desktop" | "tablet" | "mobile") => {
+    const next = hideOn.includes(device) ? hideOn.filter((d) => d !== device) : [...hideOn, device];
+    updateBlock(block.id, { hideOn: next, visible: next.length < 3 }, path);
+  };
 
   const actions = [
     // Selects the block and (on mobile) opens its settings sheet — setMobileSheet
@@ -85,6 +97,27 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
               <TooltipContent side="top" className="text-xs">{action.label}</TooltipContent>
             </Tooltip>
           ))}
+          <div className="hidden lg:flex items-center gap-0.5 ml-0.5 pl-1 border-l border-white/20">
+            {DEVICES.map((d) => {
+              const hidden = hideOn.includes(d.key);
+              return (
+                <Tooltip key={d.key}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => toggleDevice(d.key)}
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded transition-colors shrink-0",
+                        hidden ? "text-white/40 hover:bg-white/20" : "bg-white text-black hover:bg-white/90",
+                      )}
+                    >
+                      <d.icon className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">{hidden ? "Show" : "Hide"} on {d.label}</TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
         </div>
       </div>
       {block.type === "container" && (

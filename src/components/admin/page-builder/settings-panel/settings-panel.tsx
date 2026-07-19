@@ -4,7 +4,7 @@ import React from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { HeroSettings } from "./hero-settings";
+import { HeroSettings, HeroStyleSettings } from "./hero-settings";
 import { SliderSettings } from "./slider-settings";
 import { TextSettings } from "./text-settings";
 import { ServicesSettings } from "./services-settings";
@@ -68,13 +68,14 @@ export function SettingsPanel() {
       <Tabs defaultValue="content" className="flex-1 flex flex-col overflow-hidden">
         <TabsList className="mx-3 mt-2 mb-0">
           <TabsTrigger value="content" className="text-xs flex-1">Content</TabsTrigger>
-          <TabsTrigger value="layout" className="text-xs flex-1">Layout</TabsTrigger>
+          <TabsTrigger value="layout" className="text-xs flex-1">Style</TabsTrigger>
         </TabsList>
         <ScrollArea className="flex-1">
           <TabsContent value="content" className="p-3 mt-0">
             <BlockContentSettings block={block} />
           </TabsContent>
-          <TabsContent value="layout" className="p-3 mt-0">
+          <TabsContent value="layout" className="p-3 mt-0 space-y-5">
+            <BlockStyleSettings block={block} />
             <BlockLayoutSettings block={block} />
           </TabsContent>
         </ScrollArea>
@@ -120,5 +121,16 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "container": return <ContainerSettings block={block} />;
     default:
       return <p className="text-xs text-muted-foreground">No settings for this block type.</p>;
+  }
+}
+
+// Per-block color/style controls shown above the generic Layout controls on
+// the Style tab. Only Hero has one so far (badge/overlay/button/typography
+// colors) — this is the pattern other blocks migrate to incrementally, not a
+// claim that every block has been split yet.
+function BlockStyleSettings({ block }: { block: Block }) {
+  switch (block.type) {
+    case "hero": return <HeroStyleSettings block={block} />;
+    default: return null;
   }
 }

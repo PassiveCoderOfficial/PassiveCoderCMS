@@ -2,6 +2,7 @@ import React from "react";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { Block } from "@/types/cms";
+import { cn } from "@/lib/utils";
 import { HeroBlock } from "@/components/blocks/hero/hero-block";
 import { SliderBlock } from "@/components/blocks/slider/slider-block";
 import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
@@ -110,10 +111,30 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
   if (!content) return null;
 
   return (
-    <div style={{ ...bgStyle, ...paddingStyle }} className="w-full">
+    <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", hideOnClasses(block.hideOn))}>
       <div className={getContainerClass(block.width)}>{content}</div>
     </div>
   );
+}
+
+// hideOn is CSS-driven (server has no viewport info, unlike `visible` which
+// is filtered out entirely below). Breakpoints match the project's existing
+// mobile/tablet/desktop convention: <640px mobile, 640-1023px tablet, >=1024px (lg) desktop.
+// Built as an explicit 3-bucket truth table rather than composing toggles —
+// simpler to reason about than "hidden sm:block sm:hidden lg:block" chains.
+function hideOnClasses(hideOn?: ("desktop" | "tablet" | "mobile")[]): string {
+  if (!hideOn?.length) return "";
+  const mobile = hideOn.includes("mobile");
+  const tablet = hideOn.includes("tablet");
+  const desktop = hideOn.includes("desktop");
+  if (mobile && tablet && desktop) return "hidden"; // matches visible:false, kept in sync by the callers
+  if (mobile && tablet) return "hidden lg:block";
+  if (mobile && desktop) return "hidden sm:block lg:hidden";
+  if (tablet && desktop) return "sm:hidden";
+  if (mobile) return "hidden sm:block";
+  if (tablet) return "sm:hidden lg:block";
+  if (desktop) return "lg:hidden";
+  return "";
 }
 
 export async function PageRenderer({ blocks }: { blocks: Block[] }) {

@@ -40,6 +40,15 @@ export function mapItemBoxRows(rows: ItemBoxRow[], sourceType: "page" | "post" |
   }));
 }
 
+// Filters + reorders resolved items to match a chosen subset/order — used by
+// both the server and client resolvers after they've fetched the full list
+// for a source. Empty/undefined ids = no picker used yet, keep natural order.
+export function applyItemOrder(items: ItemBoxItem[], ids?: string[]): ItemBoxItem[] {
+  if (!ids?.length) return items;
+  const byId = new Map(items.map((it) => [it.id, it]));
+  return ids.map((id) => byId.get(id)).filter((it): it is ItemBoxItem => !!it);
+}
+
 function resolveLinkUrl(item: ItemBoxItem): string | undefined {
   if (!item.link) return undefined;
   if (item.link.type === "manual") return item.link.url;

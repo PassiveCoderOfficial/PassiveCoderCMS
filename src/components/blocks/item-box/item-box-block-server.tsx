@@ -1,7 +1,7 @@
 import type { ItemBoxBlockProps } from "@/types/cms";
 import { createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
-import { ItemBoxByData, mapItemBoxRows, type ItemBoxRow } from "./item-box-block";
+import { ItemBoxByData, mapItemBoxRows, applyItemOrder, type ItemBoxRow } from "./item-box-block";
 
 // Server (live site) — resolves items from whichever source table, used by
 // page-renderer.tsx. Kept separate from item-box-block.tsx (see
@@ -92,6 +92,8 @@ export async function ItemBoxBlock({ block }: { block: ItemBoxBlockProps }) {
       ),
     };
   }
+
+  data = { ...data, items: applyItemOrder(data.items, data.source_item_ids) };
 
   return <ItemBoxByData data={data} />;
 }
