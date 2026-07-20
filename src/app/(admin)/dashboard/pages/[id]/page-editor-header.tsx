@@ -16,7 +16,11 @@ import { createSlug } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Page } from "@/types/cms";
 
-export function PageEditorHeader({ page }: { page: Page }) {
+const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+const isLocal = ROOT.includes("localhost");
+const proto = isLocal ? "http" : "https";
+
+export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug: string | null }) {
   const router = useRouter();
   const [status, setStatus] = useState(page.status);
   const [saving, setSaving] = useState(false);
@@ -153,9 +157,18 @@ export function PageEditorHeader({ page }: { page: Page }) {
           </Button>
 
           <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
-            <Link href={`/${page.slug}`} target="_blank">
-              <Eye className="h-3 w-3" /> View
-            </Link>
+            {tenantSlug ? (
+              // Relative /slug resolves against whatever subdomain the tab happens to
+              // be on — wrong when an agent has multiple tenant tabs open. Build the
+              // preview URL against the page's own tenant explicitly.
+              <a href={`${proto}://${tenantSlug}.${ROOT}/${page.slug}`} target="_blank" rel="noopener noreferrer">
+                <Eye className="h-3 w-3" /> View
+              </a>
+            ) : (
+              <Link href={`/${page.slug}`} target="_blank">
+                <Eye className="h-3 w-3" /> View
+              </Link>
+            )}
           </Button>
 
           <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setSettingsOpen(true)}>

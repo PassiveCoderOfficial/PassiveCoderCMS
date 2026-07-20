@@ -29,25 +29,26 @@ export default async function PageEditorPage({ params }: Props) {
   // inject its CSS vars into the builder too.
   let templateCSSVars: string | null = null;
   let templateCustomCss: string | null = null;
+  let tenantSlug: string | null = null;
   if (page.tenant_id) {
     const admin = await createAdminClient();
-    const { data: identity } = await admin
-      .from("site_identity")
-      .select("active_template_slug")
-      .eq("tenant_id", page.tenant_id)
-      .maybeSingle();
+    const [{ data: identity }, { data: tenant }] = await Promise.all([
+      admin.from("site_identity").select("active_template_slug").eq("tenant_id", page.tenant_id).maybeSingle(),
+      admin.from("tenants").select("slug").eq("id", page.tenant_id).maybeSingle(),
+    ]);
     const templateIdentity = identity?.active_template_slug ? getTemplateIdentity(identity.active_template_slug) : null;
     if (templateIdentity) {
       templateCSSVars = buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography);
       templateCustomCss = templateIdentity.customCss ?? null;
     }
+    tenantSlug = tenant?.slug ?? null;
   }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {templateCSSVars && <style dangerouslySetInnerHTML={{ __html: templateCSSVars }} />}
       {templateCustomCss && <style dangerouslySetInnerHTML={{ __html: templateCustomCss }} />}
-      <PageEditorHeader page={page as Page} />
+      <PageEditorHeader page={page as Page} tenantSlug={tenantSlug} />
       <div className="flex-1 overflow-hidden">
         <BuilderInterface page={page as Page} />
       </div>
