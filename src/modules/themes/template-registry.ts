@@ -5974,6 +5974,805 @@ const STRIDE_ACTIVE: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 41: SparkleHome (Residential House Cleaning) ───────────────────
+
+const SPARKLE_HOME: TemplateIdentity = {
+  slug: "sparkle-home",
+  name: "SparkleHome",
+  description: "Fresh and friendly house cleaning template with a light, airy design. Emphasises trust, reliability, and eco-friendly cleaning practices.",
+  category: "Cleaning",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=85&fit=crop",
+  tags: ["house cleaning", "residential", "domestic", "eco-friendly"],
+
+  palette: {
+    primary: "#0d9488",
+    primaryFg: "#ffffff",
+    secondary: "#134e4a",
+    accent: "#5eead4",
+    background: "#f0fdfa",
+    foreground: "#134e4a",
+    muted: "#ccfbf1",
+    mutedFg: "#0f766e",
+    card: "#ffffff",
+    border: "#99f6e4",
+    ring: "#0d9488",
+    borderRadius: "0.75rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-sparkle-home .hero-badge { background: #0d9488; color: white; border-radius: 9999px; }
+    .template-sparkle-home .service-card { border-top: 3px solid #0d9488; }
+    .template-sparkle-home .stat-value { color: #0d9488; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&q=85&fit=crop", alt: "Bright clean home interior" },
+    about: { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=800&q=80&fit=crop", alt: "House cleaning in progress" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", alt: "Regular house cleaning" },
+      { url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80&fit=crop", alt: "Deep cleaning" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", alt: "Move-out cleaning" },
+      { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", alt: "Carpet cleaning" },
+      { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Window cleaning" },
+      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Kitchen deep clean" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Sparkling kitchen" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Clean bathroom" },
+      { url: "https://images.unsplash.com/photo-1600607687644-c7171b47af3b?w=800&q=80&fit=crop", alt: "Living room" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&fit=crop", alt: "Bedroom" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&q=80&fit=crop&face", alt: "Cleaning Team Lead" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=80&fit=crop", alt: "Book a clean" },
+  },
+
+  heroHeadline: "A Cleaner Home, A Happier Life",
+  heroSubline: "Professional house cleaning services using eco-friendly products — book your clean in minutes.",
+  heroBadge: "✨ Eco-Friendly Products",
+  heroCTA: "Book a Clean",
+  heroSecondaryCTA: "Get Free Quote",
+  siteName: "SparkleHome Cleaning",
+  tagline: "A cleaner home, a happier life",
+  phone: "+1 (555) 224-7790",
+  email: "book@sparklehome.com",
+  address: "22 Fresh Start Lane, Metro City",
+  aboutHeading: "Eco-Friendly Cleaning, Trusted by 2,000+ Families",
+  aboutBody: "SparkleHome provides reliable, thorough residential cleaning using biodegradable, family-safe products. Our vetted, insured cleaners follow a consistent 40-point checklist on every visit, so you know exactly what you're getting — every single time.",
+  aboutHighlights: ["Eco-certified, biodegradable products", "Insured & background-checked cleaners", "Consistent 40-point checklist", "100% satisfaction guarantee", "2,000+ homes cleaned"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Regular House Clean", description: "Weekly, bi-weekly or monthly cleaning to keep your home consistently fresh.", icon: "🏠", iconType: "emoji", price: "From $79", imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Deep Clean", description: "Intensive top-to-bottom clean including baseboards, appliances and cabinet interiors.", icon: "✨", iconType: "emoji", price: "From $169", imageUrl: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Move-Out Cleaning", description: "Bond-back guaranteed cleaning to real-estate inspection standards.", icon: "🔑", iconType: "emoji", price: "From $229", imageUrl: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Carpet Cleaning", description: "Hot water extraction steam cleaning for carpets and area rugs.", icon: "🧼", iconType: "emoji", price: "From $69", imageUrl: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Window Cleaning", description: "Streak-free interior window cleaning using purified water systems.", icon: "🪟", iconType: "emoji", price: "From $49", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Kitchen Deep Clean", description: "Inside oven, fridge and cabinets — the spots regular cleans skip.", icon: "🍳", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "2,000+", label: "Homes Cleaned" },
+    { id: uid("st"), value: "97%", label: "Satisfaction Rate" },
+    { id: uid("st"), value: "9 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Average Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Hannah Price", role: "Homeowner", content: "Same cleaner every time, always thorough, always on time. My house has never looked better.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Steven Marsh", role: "Working Parent", content: "The eco-friendly products matter a lot to us with young kids in the house. Highly recommend.", rating: 5 },
+    { id: uid("t"), name: "Olivia Chan", role: "Renter", content: "Move-out clean got us our full deposit back. Worth every penny for the peace of mind.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Basic Clean", price: "$79", period: "/visit", description: "Small apartment, up to 2 bed", features: ["Kitchen & bathrooms", "Vacuuming & mopping", "Surface dusting"], ctaLabel: "Book Basic", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Standard Clean", price: "$139", period: "/visit", description: "Our most popular package", features: ["Up to 4 bedrooms", "All rooms included", "Eco-friendly products", "Window sills & blinds"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Standard", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Deep Clean", price: "$229", period: "/visit", description: "Full white-glove service", features: ["Everything in Standard", "Inside oven & fridge", "Baseboards & cabinets", "Priority scheduling"], ctaLabel: "Book Deep Clean", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do I need to be home during the cleaning?", answer: "No, most clients provide a key or door code. Our cleaners are insured and background-checked." },
+    { id: uid("f"), question: "What products do you use?", answer: "We use eco-certified, biodegradable products that are safe for children and pets." },
+    { id: uid("f"), question: "What if I'm not satisfied?", answer: "We'll return within 24 hours and re-clean for free — no questions asked." },
+  ],
+};
+
+// ─── TEMPLATE 42: CleanCore (Commercial Cleaning) ────────────────────────────
+
+const CLEANCORE_COMMERCIAL: TemplateIdentity = {
+  slug: "cleancore-commercial",
+  name: "CleanCore",
+  description: "Corporate and commercial cleaning template with a bold, confident look. Built for office and industrial cleaning service providers.",
+  category: "Cleaning",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&fit=crop",
+  tags: ["commercial cleaning", "office cleaning", "industrial", "janitorial"],
+
+  palette: {
+    primary: "#1d4ed8",
+    primaryFg: "#ffffff",
+    secondary: "#1e1b4b",
+    accent: "#60a5fa",
+    background: "#1e1b4b",
+    foreground: "#eef2ff",
+    muted: "#312e81",
+    mutedFg: "#a5b4fc",
+    card: "#312e81",
+    border: "#4338ca",
+    ring: "#1d4ed8",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-cleancore-commercial .hero-badge { background: #1d4ed8; color: white; border-radius: 9999px; }
+    .template-cleancore-commercial .service-card { border-top: 3px solid #1d4ed8; background: #312e81; }
+    .template-cleancore-commercial .stat-value { color: #60a5fa; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1600&q=90&fit=crop", alt: "Modern office building" },
+    about: { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=800&q=80&fit=crop", alt: "Commercial cleaning crew" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&fit=crop", alt: "Office cleaning" },
+      { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80&fit=crop", alt: "Corporate lobby cleaning" },
+      { url: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80&fit=crop", alt: "Warehouse cleaning" },
+      { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Window cleaning" },
+      { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", alt: "Carpet cleaning" },
+      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Sanitisation service" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop", alt: "Clean corporate office" },
+      { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80&fit=crop", alt: "Retail space cleaning" },
+      { url: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=800&q=80&fit=crop", alt: "Warehouse floor" },
+      { url: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&q=80&fit=crop", alt: "Building systems check" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Operations Manager" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=80&fit=crop", alt: "Get a commercial quote" },
+  },
+
+  heroHeadline: "Spotless Spaces, Productive Workplaces",
+  heroSubline: "Commercial cleaning solutions trusted by offices, warehouses, and retail spaces across the city.",
+  heroBadge: "🏢 Trusted by 300+ Businesses",
+  heroCTA: "Request a Quote",
+  heroSecondaryCTA: "Our Services",
+  siteName: "CleanCore Commercial",
+  tagline: "Spotless spaces, productive workplaces",
+  phone: "+1 (555) 774-2200",
+  email: "sales@cleancorecommercial.com",
+  address: "150 Corporate Plaza, Suite 500, Metro City",
+  aboutHeading: "Trusted by 300+ Businesses Across the City",
+  aboutBody: "CleanCore delivers scheduled and on-demand commercial cleaning for offices, warehouses, and retail spaces. Our trained crews work around your business hours, use hospital-grade disinfectants, and are fully insured and bonded.",
+  aboutHighlights: ["Fully insured & bonded crews", "Flexible after-hours scheduling", "Hospital-grade disinfection available", "Dedicated account manager", "300+ businesses served"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Office Cleaning", description: "Daily, weekly or after-hours cleaning for offices of every size.", icon: "🏢", iconType: "emoji", price: "From $180/mo", imageUrl: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Warehouse & Industrial", description: "Heavy-duty cleaning for warehouses, factories and industrial facilities.", icon: "🏭", iconType: "emoji", price: "From $450/mo", imageUrl: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Retail & Storefront", description: "Customer-facing cleaning that keeps your storefront presentable during business hours.", icon: "🛍️", iconType: "emoji", price: "From $220/mo", imageUrl: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Window & Facade Cleaning", description: "Interior and exterior window cleaning for multi-storey commercial buildings.", icon: "🪟", iconType: "emoji", price: "From $300", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Carpet & Floor Care", description: "Commercial-grade carpet extraction and hard floor stripping/waxing services.", icon: "🧼", iconType: "emoji", price: "From $0.15/sqft", imageUrl: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Disinfection Services", description: "Hospital-grade sanitisation for high-touch surfaces and shared spaces.", icon: "🧴", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "300+", label: "Businesses Served" },
+    { id: uid("st"), value: "16 yr", label: "In Business" },
+    { id: uid("st"), value: "99.8%", label: "Client Retention" },
+    { id: uid("st"), value: "24/7", label: "Scheduling Available" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Robert Chen", role: "Facilities Director", company: "Meridian Tower", content: "Our office has never looked better, and their after-hours scheduling means zero disruption to our team.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Patricia Nguyen", role: "Warehouse Manager", content: "They handle our industrial site with heavy machinery and hazardous zones professionally and safely.", rating: 5 },
+    { id: uid("t"), name: "David Park", role: "Retail Store Owner", content: "Consistent, reliable and our storefront always looks presentable for customers. Great value.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Small Office", price: "$180", period: "/mo", description: "Under 2,000 sqft", features: ["Weekly cleaning", "Kitchen & restroom service", "Trash removal"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Corporate", price: "$450", period: "/mo", description: "2,000-10,000 sqft", features: ["Daily or 3x weekly cleaning", "Full office service", "Dedicated account manager", "After-hours scheduling"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Enterprise", price: "Custom", description: "Multi-site or industrial", features: ["Custom SLA terms", "Multiple site coverage", "24/7 emergency response"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you work after business hours?", answer: "Yes, most of our commercial contracts are scheduled after-hours or early morning to avoid disrupting your business." },
+    { id: uid("f"), question: "Are your staff insured and bonded?", answer: "Yes, all CleanCore staff are fully insured, bonded, and background-checked before deployment to any site." },
+    { id: uid("f"), question: "Can you handle multiple locations?", answer: "Yes, our Enterprise plan is built for multi-site businesses with consolidated billing and reporting." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Marcus Webb", role: "Operations Director", bio: "16 years managing large-scale commercial cleaning contracts across the region.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 43: FibreFresh (Carpet & Upholstery Cleaning) ──────────────────
+
+const FIBREFRESH: TemplateIdentity = {
+  slug: "fibrefresh",
+  name: "FibreFresh",
+  description: "Specialist carpet and upholstery cleaning template with a warm, approachable design. Showcases detailed service tiers and before/after results.",
+  category: "Cleaning",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1558882224-dda166733046?w=1200&q=85&fit=crop",
+  tags: ["carpet cleaning", "upholstery", "soft furnishings", "deep clean"],
+
+  palette: {
+    primary: "#d97706",
+    primaryFg: "#ffffff",
+    secondary: "#7f1d1d",
+    accent: "#fbbf24",
+    background: "#fffbeb",
+    foreground: "#7c2d12",
+    muted: "#fef3c7",
+    mutedFg: "#92400e",
+    card: "#ffffff",
+    border: "#fde68a",
+    ring: "#d97706",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-fibrefresh .hero-badge { background: #d97706; color: white; border-radius: 9999px; }
+    .template-fibrefresh .service-card { border-top: 3px solid #d97706; }
+    .template-fibrefresh .stat-value { color: #d97706; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=900&q=85&fit=crop", alt: "Carpet cleaning machine in use" },
+    about: { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Clean living room carpet" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", alt: "Carpet steam cleaning" },
+      { url: "https://images.unsplash.com/photo-1600607687644-c7171b47af3b?w=600&q=80&fit=crop", alt: "Sofa upholstery cleaning" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", alt: "Rug cleaning" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop", alt: "Mattress cleaning" },
+      { url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=80&fit=crop", alt: "Curtain cleaning" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", alt: "Stain removal" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=800&q=80&fit=crop", alt: "Before and after carpet clean" },
+      { url: "https://images.unsplash.com/photo-1600607687644-c7171b47af3b?w=800&q=80&fit=crop", alt: "Restored sofa" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Fresh rug" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&fit=crop", alt: "Clean mattress" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Lead Technician" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=1200&q=80&fit=crop", alt: "Book a deep clean" },
+  },
+
+  heroHeadline: "Breathe New Life Into Your Carpets",
+  heroSubline: "Deep-cleaning specialists for carpets, rugs, and upholstery — results you can see and feel.",
+  heroBadge: "🧽 Free Stain Assessment",
+  heroCTA: "Book a Clean",
+  heroSecondaryCTA: "See Results",
+  siteName: "FibreFresh Cleaning",
+  tagline: "Breathe new life into your carpets",
+  phone: "+1 (555) 660-3390",
+  email: "hello@fibrefresh.com",
+  address: "70 Textile Row, Metro City",
+  aboutHeading: "Specialist Deep Cleaning for Carpets & Soft Furnishings",
+  aboutBody: "FibreFresh specialises exclusively in carpet, rug and upholstery cleaning — using hot water extraction technology that removes deep-set dirt, allergens and stains that vacuuming alone can't touch. Every job includes a free stain assessment before we quote.",
+  aboutHighlights: ["Hot water extraction technology", "Pet-safe, child-safe solutions", "Free stain assessment before quoting", "Same-week appointments available"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Results", url: "#gallery" },
+    { id: "n3", label: "Pricing", url: "#pricing" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Carpet Steam Cleaning", description: "Hot water extraction cleaning that removes deep dirt and allergens from carpets.", icon: "🧼", iconType: "emoji", price: "From $0.35/sqft", imageUrl: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Upholstery Cleaning", description: "Sofa, armchair and fabric furniture cleaning using fabric-safe methods.", icon: "🛋️", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1600607687644-c7171b47af3b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Rug Cleaning", description: "Specialist cleaning for area rugs, including delicate and hand-woven pieces.", icon: "🧵", iconType: "emoji", price: "From $59", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Mattress Cleaning", description: "Deep sanitisation to remove dust mites, allergens and stains from mattresses.", icon: "🛏️", iconType: "emoji", price: "From $79", imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Curtain Cleaning", description: "On-site steam cleaning for curtains and drapes without needing to take them down.", icon: "🪟", iconType: "emoji", price: "From $99", imageUrl: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Stain Removal", description: "Targeted treatment for pet stains, wine spills and stubborn set-in marks.", icon: "💧", iconType: "emoji", price: "From $35", imageUrl: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "6,000+", label: "Rooms Cleaned" },
+    { id: uid("st"), value: "8 yr", label: "In Business" },
+    { id: uid("st"), value: "4.8★", label: "Average Rating" },
+    { id: uid("st"), value: "Same-Week", label: "Appointments" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Karen Diaz", role: "Homeowner", content: "Got a wine stain out of our living room carpet that I thought was permanent. Absolutely amazing work.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Brian Foster", role: "Homeowner", content: "Our carpets look and smell brand new. Pet-safe products were important to us with our dog around.", rating: 5 },
+    { id: uid("t"), name: "Michelle Osei", role: "Property Manager", content: "Use them for every tenant turnover. Fast, thorough, and always leaves the carpets looking new.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Room", price: "$59", description: "One room carpet clean", features: ["Hot water extraction", "Stain pre-treatment", "Deodorising included"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Whole Home", price: "$0.35", period: "/sqft", description: "Most popular package", features: ["All carpeted rooms", "Furniture moving included", "Stain pre-treatment", "Deodorising & protectant"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Package", price: "Custom Quote", description: "Carpets + upholstery + rugs", features: ["Everything in Whole Home", "Sofa & chair cleaning", "Area rug cleaning", "Priority scheduling"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How long does it take carpets to dry?", answer: "Typically 4-6 hours with good airflow. We use high-powered extraction to minimise drying time." },
+    { id: uid("f"), question: "Are your products safe for pets and kids?", answer: "Yes, all our cleaning solutions are pet-safe and child-safe, with no harsh chemical residue." },
+    { id: uid("f"), question: "Can you remove old stains?", answer: "In most cases, yes — we offer a free stain assessment to give you an honest expectation before booking." },
+  ],
+};
+
+// ─── TEMPLATE 44: TableFare (Casual Dining Restaurant) ───────────────────────
+
+const TABLEFARE: TemplateIdentity = {
+  slug: "tablefare",
+  name: "TableFare",
+  description: "Warm and inviting casual dining restaurant template with a rich, food-photography-forward layout. Ideal for family restaurants and neighbourhood eateries.",
+  category: "Restaurant & Cafe",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=85&fit=crop",
+  tags: ["restaurant", "dining", "casual", "food", "reservations"],
+
+  palette: {
+    primary: "#dc2626",
+    primaryFg: "#ffffff",
+    secondary: "#451a03",
+    accent: "#f87171",
+    background: "#451a03",
+    foreground: "#fef2f2",
+    muted: "#7c2d12",
+    mutedFg: "#fecaca",
+    card: "#7c2d12",
+    border: "#9a3412",
+    ring: "#dc2626",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-tablefare .hero-badge { background: #dc2626; color: white; border-radius: 9999px; }
+    .template-tablefare .service-card { border-top: 3px solid #dc2626; background: #7c2d12; }
+    .template-tablefare .stat-value { color: #f87171; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&q=90&fit=crop", alt: "Warm restaurant interior" },
+    about: { url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&fit=crop", alt: "Chef preparing food" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80&fit=crop", alt: "Signature main course" },
+      { url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80&fit=crop", alt: "Fresh salad" },
+      { url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80&fit=crop", alt: "Grilled specialty" },
+      { url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80&fit=crop", alt: "Dessert plate" },
+      { url: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=600&q=80&fit=crop", alt: "Pasta dish" },
+      { url: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80&fit=crop", alt: "Craft cocktail" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80&fit=crop", alt: "Dining room ambiance" },
+      { url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&fit=crop", alt: "Signature dish" },
+      { url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&fit=crop", alt: "Kitchen at work" },
+      { url: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80&fit=crop", alt: "Bar area" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face", alt: "Executive Chef" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80&fit=crop", alt: "Reserve your table" },
+  },
+
+  heroHeadline: "Good Food, Good Times",
+  heroSubline: "A neighbourhood favourite serving fresh, flavourful dishes the whole family will love.",
+  heroBadge: "🍽️ Reservations Recommended",
+  heroCTA: "Reserve a Table",
+  heroSecondaryCTA: "View Menu",
+  siteName: "TableFare",
+  tagline: "Good food, good times",
+  phone: "+1 (555) 337-2288",
+  email: "hello@tablefare.com",
+  address: "18 Main Street, Downtown District",
+  aboutHeading: "A Neighbourhood Favourite Since 2010",
+  aboutBody: "TableFare has been serving fresh, made-from-scratch comfort food to our community for over a decade. Every dish is prepared daily using locally sourced ingredients, in a warm dining room built for family dinners, date nights and everything in between.",
+  aboutHighlights: ["Locally sourced, made-from-scratch daily", "Family-friendly dining room", "Full bar with craft cocktails", "Private event space available"],
+
+  navItems: [
+    { id: "n1", label: "Menu", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Reserve", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Signature Mains", description: "Our most-loved entrées, made fresh daily using locally sourced ingredients.", icon: "🍽️", iconType: "emoji", price: "From $18", imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Fresh Salads & Starters", description: "Seasonal salads and shareable starters to kick off your meal.", icon: "🥗", iconType: "emoji", price: "From $9", imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Grilled Specialties", description: "Perfectly grilled meats and seafood, our chef's signature preparations.", icon: "🔥", iconType: "emoji", price: "From $24", imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "House-Made Pasta", description: "Fresh pasta made daily in-house, served with our signature sauces.", icon: "🍝", iconType: "emoji", price: "From $16", imageUrl: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Desserts", description: "House-made desserts, changing with the season, always crowd-pleasers.", icon: "🍰", iconType: "emoji", price: "From $8", imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Craft Cocktails & Bar", description: "Full bar with signature cocktails, local beers and a curated wine list.", icon: "🍹", iconType: "emoji", price: "From $12", imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "15 yr", label: "Serving the Community" },
+    { id: uid("st"), value: "4.7★", label: "Average Rating" },
+    { id: uid("st"), value: "50+", label: "Menu Items" },
+    { id: uid("st"), value: "100%", label: "Locally Sourced Produce" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "George Palmer", role: "Regular Guest", content: "We come every Friday night. The staff know our order and the food never disappoints. Feels like family.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sandra Lee", role: "First-Time Visitor", content: "Every dish we ordered was perfectly cooked. The warm atmosphere made for a great date night.", rating: 5 },
+    { id: uid("t"), name: "Marcus Alan", role: "Local Business Owner", content: "Hosted our company dinner in their private room. Food, service and space were all excellent.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Casual Dining", price: "$18-30", period: "/person", description: "Standard dinner experience", features: ["Full menu access", "Complimentary bread service", "No reservation required"], ctaLabel: "View Menu", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Private Event", price: "From $500", description: "Private dining room hire", features: ["Seats up to 30 guests", "Custom set menu options", "Dedicated event staff"], highlighted: true, badge: "Popular for Groups", ctaLabel: "Inquire Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do I need a reservation?", answer: "Reservations are recommended, especially for weekend dinner service, though walk-ins are always welcome." },
+    { id: uid("f"), question: "Do you accommodate dietary restrictions?", answer: "Yes, we offer vegetarian, vegan and gluten-free options, and can accommodate most allergies with advance notice." },
+    { id: uid("f"), question: "Can you host private events?", answer: "Yes, our private dining room seats up to 30 guests and is available for parties, corporate dinners and celebrations." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Chef Antonio Ricci", role: "Executive Chef", bio: "15 years crafting seasonal, locally sourced menus. Leads the kitchen with a focus on made-from-scratch cooking.", avatar: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 45: BeanCraft (Specialty Coffee & Cafe) ────────────────────────
+
+const BEANCRAFT_CAFE: TemplateIdentity = {
+  slug: "beancraft-cafe",
+  name: "BeanCraft",
+  description: "Stylish coffee shop and cafe template with a minimal, aesthetic-driven design. Perfect for specialty coffee roasters, artisan cafes, and brunch spots.",
+  category: "Restaurant & Cafe",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&q=85&fit=crop",
+  tags: ["cafe", "coffee", "brunch", "specialty coffee", "artisan"],
+
+  palette: {
+    primary: "#f59e0b",
+    primaryFg: "#1c1917",
+    secondary: "#78350f",
+    accent: "#fbbf24",
+    background: "#1c1917",
+    foreground: "#fafaf9",
+    muted: "#292524",
+    mutedFg: "#a8a29e",
+    card: "#292524",
+    border: "#44403c",
+    ring: "#f59e0b",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-beancraft-cafe .hero-badge { background: #f59e0b; color: #1c1917; border-radius: 9999px; }
+    .template-beancraft-cafe .service-card { border-top: 3px solid #f59e0b; background: #292524; }
+    .template-beancraft-cafe .stat-value { color: #f59e0b; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=900&q=85&fit=crop", alt: "Specialty coffee pour-over" },
+    about: { url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&fit=crop", alt: "Cafe interior" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&q=80&fit=crop", alt: "Pour-over coffee" },
+      { url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80&fit=crop", alt: "Latte art" },
+      { url: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=600&q=80&fit=crop", alt: "Fresh pastries" },
+      { url: "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=80&fit=crop", alt: "Brunch plate" },
+      { url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80&fit=crop", alt: "Coffee beans" },
+      { url: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80&fit=crop", alt: "Espresso shot" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&fit=crop", alt: "Cozy cafe corner" },
+      { url: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&q=80&fit=crop", alt: "Barista at work" },
+      { url: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&q=80&fit=crop", alt: "Pastry display" },
+      { url: "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800&q=80&fit=crop", alt: "Brunch spread" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face", alt: "Head Roaster" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&q=80&fit=crop", alt: "Visit BeanCraft" },
+  },
+
+  heroHeadline: "Crafted with Care, Served with Passion",
+  heroSubline: "Specialty coffee and wholesome eats in a space designed for good conversations.",
+  heroBadge: "☕ Freshly Roasted Daily",
+  heroCTA: "View Menu",
+  heroSecondaryCTA: "Find Us",
+  siteName: "BeanCraft Coffee",
+  tagline: "Crafted with care, served with passion",
+  phone: "+1 (555) 448-9021",
+  email: "hello@beancraft.com",
+  address: "42 Roastery Lane, Arts District",
+  aboutHeading: "Small-Batch Roasted, Served with Intention",
+  aboutBody: "BeanCraft roasts small batches of single-origin beans in-house, sourced directly from farms we've built relationships with over years. Every cup is brewed to order, and our kitchen turns out fresh pastries and brunch dishes daily using local, seasonal ingredients.",
+  aboutHighlights: ["Small-batch, in-house roasted", "Direct-trade relationships with growers", "Fresh pastries baked daily", "Free wifi & laptop-friendly seating"],
+
+  navItems: [
+    { id: "n1", label: "Menu", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Visit Us", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Pour-Over Coffee", description: "Single-origin beans, brewed to order using precision pour-over technique.", icon: "☕", iconType: "emoji", price: "From $6", imageUrl: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Espresso & Lattes", description: "Rich espresso drinks crafted by our trained baristas, dairy and plant-based milk options.", icon: "🥛", iconType: "emoji", price: "From $4.50", imageUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Fresh Pastries", description: "Baked daily in-house — croissants, muffins and seasonal specials.", icon: "🥐", iconType: "emoji", price: "From $4", imageUrl: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Brunch Menu", description: "All-day brunch dishes made with local, seasonal ingredients.", icon: "🍳", iconType: "emoji", price: "From $12", imageUrl: "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Whole Bean Retail", description: "Take home our small-batch roasted beans, available whole or ground to order.", icon: "🫘", iconType: "emoji", price: "From $16/bag", imageUrl: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Catering & Events", description: "Coffee cart and pastry catering for offices, weddings and private events.", icon: "🎉", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "8 yr", label: "Roasting Coffee" },
+    { id: uid("st"), value: "4.8★", label: "Average Rating" },
+    { id: uid("st"), value: "12", label: "Origin Countries Sourced" },
+    { id: uid("st"), value: "1,000+", label: "Cups Served Weekly" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Emma Watts", role: "Regular Customer", content: "Best pour-over in the city, hands down. The staff genuinely care about the craft and it shows in every cup.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Daniel Cho", role: "Remote Worker", content: "My go-to spot to work from — great coffee, fast wifi, and nobody rushes you out. Perfect vibe.", rating: 5 },
+    { id: uid("t"), name: "Sofia Martinez", role: "Brunch Regular", content: "The brunch menu changes seasonally and it's always excellent. Their avocado toast is unmatched.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Coffee Lover", price: "$6", description: "Single-origin pour-over", features: ["Fresh roasted beans", "Brewed to order", "Tasting notes provided"], ctaLabel: "Order Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Brunch for Two", price: "$32", description: "Most popular weekend order", features: ["2 brunch mains", "2 specialty coffees", "Shared pastry"], highlighted: true, badge: "Weekend Favorite", ctaLabel: "Reserve a Table", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Office Catering", price: "Custom Quote", description: "Coffee cart for your event", features: ["On-site barista service", "Pastry selection included", "Minimum 20 guests"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Where do you source your beans?", answer: "We work directly with growers across 12 countries, focusing on direct-trade relationships and traceable sourcing." },
+    { id: uid("f"), question: "Do you offer plant-based milk options?", answer: "Yes, we offer oat, almond and soy milk at no extra charge." },
+    { id: uid("f"), question: "Can I buy beans to brew at home?", answer: "Yes, all our roasts are available whole bean or ground to order, in-store or via our online shop." },
+    { id: uid("f"), question: "Do you cater events?", answer: "Yes, our coffee cart and pastry catering is available for offices, weddings and private events with a 20-guest minimum." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Jamie Torres", role: "Head Roaster & Founder", bio: "8 years in specialty coffee, trained with roasters across three continents before opening BeanCraft.", avatar: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 46: StreetBite (Food Truck & Takeaway) ─────────────────────────
+
+const STREETBITE: TemplateIdentity = {
+  slug: "streetbite",
+  name: "StreetBite",
+  description: "Energetic food truck and takeaway template with a street food aesthetic. Bold typography and vibrant colours for fast-casual dining and delivery brands.",
+  category: "Restaurant & Cafe",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=1200&q=85&fit=crop",
+  tags: ["food truck", "takeaway", "fast casual", "delivery", "street food"],
+
+  palette: {
+    primary: "#eab308",
+    primaryFg: "#7c2d12",
+    secondary: "#7c2d12",
+    accent: "#fde047",
+    background: "#fffbeb",
+    foreground: "#7c2d12",
+    muted: "#fef3c7",
+    mutedFg: "#92400e",
+    card: "#ffffff",
+    border: "#fde68a",
+    ring: "#eab308",
+    borderRadius: "1rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-streetbite h1,.template-streetbite h2 { text-transform: uppercase; }
+    .template-streetbite .hero-badge { background: #eab308; color: #7c2d12; border-radius: 9999px; font-weight: 800; }
+    .template-streetbite .service-card { border-radius: 1rem; border-top: 4px solid #eab308; }
+    .template-streetbite .stat-value { color: #eab308; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=900&q=85&fit=crop", alt: "Street food truck" },
+    about: { url: "https://images.unsplash.com/photo-1565299585323-38174c4a6471?w=800&q=80&fit=crop", alt: "Food truck cooking" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=600&q=80&fit=crop", alt: "Loaded tacos" },
+      { url: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600&q=80&fit=crop", alt: "Street burger" },
+      { url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80&fit=crop", alt: "Loaded fries" },
+      { url: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80&fit=crop", alt: "Grilled skewers" },
+      { url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=80&fit=crop", alt: "Fresh wraps" },
+      { url: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=80&fit=crop", alt: "Craft soda" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=800&q=80&fit=crop", alt: "Food truck exterior" },
+      { url: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=800&q=80&fit=crop", alt: "Signature burger" },
+      { url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&fit=crop", alt: "Loaded fries close-up" },
+      { url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&q=80&fit=crop", alt: "Fresh ingredients" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face", alt: "Founder & Head Chef" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=1200&q=80&fit=crop", alt: "Order now" },
+  },
+
+  heroHeadline: "Bold Flavours, Fast & Fresh",
+  heroSubline: "Street-inspired food made with real ingredients — order online or find us at the truck.",
+  heroBadge: "🌮 Order Online for Pickup",
+  heroCTA: "Order Now",
+  heroSecondaryCTA: "Find the Truck",
+  siteName: "StreetBite",
+  tagline: "Bold flavours, fast & fresh",
+  phone: "+1 (555) 990-2277",
+  email: "hey@streetbite.com",
+  address: "Mobile — check our schedule for today's location",
+  aboutHeading: "Street Food Done Right, Since 2018",
+  aboutBody: "StreetBite brings bold, globally-inspired street food to a truck near you. Every dish is made to order with fresh, real ingredients — no shortcuts, no reheats. Follow our schedule to find us, or order online for pickup and skip the line.",
+  aboutHighlights: ["Made-to-order, never reheated", "Real ingredients, no shortcuts", "Order online, skip the line", "Catering available for events"],
+
+  navItems: [
+    { id: "n1", label: "Menu", url: "#services" },
+    { id: "n2", label: "Find Us", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Order Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Loaded Tacos", description: "Street-style tacos loaded with your choice of protein, fresh salsa and toppings.", icon: "🌮", iconType: "emoji", price: "From $4.50", imageUrl: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Signature Burgers", description: "Smash burgers with house sauce, made fresh on the flat top to order.", icon: "🍔", iconType: "emoji", price: "From $9", imageUrl: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Loaded Fries", description: "Crispy fries piled high with toppings — the shareable everyone fights over.", icon: "🍟", iconType: "emoji", price: "From $7", imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Grilled Skewers", description: "Marinated and grilled skewers with a rotating selection of global flavours.", icon: "🍢", iconType: "emoji", price: "From $6", imageUrl: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Fresh Wraps", description: "Made-to-order wraps with fresh vegetables and your choice of protein.", icon: "🌯", iconType: "emoji", price: "From $8", imageUrl: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Catering & Events", description: "Book the truck or a catering package for your next event or office party.", icon: "🎉", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "6 yr", label: "Serving the Streets" },
+    { id: uid("st"), value: "4.7★", label: "Average Rating" },
+    { id: uid("st"), value: "15,000+", label: "Orders Served" },
+    { id: uid("st"), value: "5", label: "City Locations Weekly" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Marcus Reed", role: "Regular Customer", content: "The tacos are unreal, and ordering ahead means I never wait in line. Follow their schedule, worth the chase.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Priya Shah", role: "Office Manager", content: "Booked them for our team lunch and everyone raved about it for weeks. Great catering option.", rating: 5 },
+    { id: uid("t"), name: "Leo Fischer", role: "Food Blogger", content: "Best street food truck in the city, hands down. Bold flavours, generous portions, fair prices.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Solo Meal", price: "$12", description: "Main + side + drink", features: ["Choice of main dish", "Loaded fries or side", "Craft soda"], ctaLabel: "Order Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Group Order", price: "$45", description: "Feeds 4, most popular", features: ["4 mains of choice", "2 loaded fries to share", "4 drinks"], highlighted: true, badge: "Most Popular", ctaLabel: "Order Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Event Catering", price: "Custom Quote", description: "Full truck booking or drop-off", features: ["Minimum 30 guests", "Custom menu selection", "On-site or delivery available"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Where can I find the truck today?", answer: "Check our schedule page or social media for our daily location — we rotate through 5 spots across the city each week." },
+    { id: uid("f"), question: "Can I order ahead?", answer: "Yes, order online for pickup and skip the line entirely — just select your location and pickup time." },
+    { id: uid("f"), question: "Do you cater events?", answer: "Yes, we offer full truck bookings and drop-off catering for events with a 30-guest minimum." },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -6017,6 +6816,12 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   IRONFORGE_GYM,
   PEAK_PT,
   STRIDE_ACTIVE,
+  SPARKLE_HOME,
+  CLEANCORE_COMMERCIAL,
+  FIBREFRESH,
+  TABLEFARE,
+  BEANCRAFT_CAFE,
+  STREETBITE,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
