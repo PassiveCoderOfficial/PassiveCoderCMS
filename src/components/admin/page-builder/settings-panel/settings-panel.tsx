@@ -113,6 +113,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "booking": return <BookingSettings block={block} />;
     case "marketplace_booking": return <MarketplaceBookingSettings block={block} />;
     case "marketplace_request": return <MarketplaceBookingSettings block={block} />;
+    case "marketplace_vendor_directory": return <MarketplaceBookingSettings block={block} />;
     case "donor_group_cards": return <DonorGroupCardsSettings block={block} />;
     case "donor_list": return <DonorListSettings block={block} />;
     case "donor_map": return <DonorMapSettings block={block} />;

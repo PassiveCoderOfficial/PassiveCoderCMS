@@ -37,6 +37,7 @@ import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tr
 import { BookingBlock } from "@/components/blocks/booking/booking-block";
 import { MarketplaceBookingBlock } from "@/components/blocks/marketplace/marketplace-booking-block";
 import { MarketplaceRequestBlock } from "@/components/blocks/marketplace/marketplace-request-block";
+import { MarketplaceVendorDirectoryBlock } from "@/components/blocks/marketplace/marketplace-vendor-directory-block";
 import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
@@ -110,6 +111,7 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
       case "booking": return <BookingBlock block={block} />;
       case "marketplace_booking": return <MarketplaceBookingBlock block={block} />;
       case "marketplace_request": return <MarketplaceRequestBlock block={block} />;
+      case "marketplace_vendor_directory": return <MarketplaceVendorDirectoryBlock block={block} />;
       case "donor_group_cards": return <DonorGroupCardsBlock block={block} />;
       case "donor_list": return <DonorListBlock block={block} />;
       case "donor_map": return <DonorMapBlock block={block} />;

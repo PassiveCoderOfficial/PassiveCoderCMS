@@ -61,6 +61,7 @@ export type BlockType =
   | "booking"
   | "marketplace_booking"
   | "marketplace_request"
+  | "marketplace_vendor_directory"
   | "donor_group_cards"
   | "donor_list"
   | "donor_map"
@@ -766,6 +767,7 @@ export type Block =
   | BookingBlockProps
   | MarketplaceBookingBlockProps
   | MarketplaceRequestBlockProps
+  | MarketplaceVendorDirectoryBlockProps
   | DonorGroupCardsBlockProps
   | DonorListBlockProps
   | DonorMapBlockProps
@@ -862,6 +864,15 @@ export type MarketplaceRequestBlockProps = BlockBase & {
     subtitle?: string;
     accentColor?: string;
     submitLabel: string;
+  };
+};
+
+export type MarketplaceVendorDirectoryBlockProps = BlockBase & {
+  type: "marketplace_vendor_directory";
+  data: {
+    title?: string;
+    subtitle?: string;
+    accentColor?: string;
   };
 };
 

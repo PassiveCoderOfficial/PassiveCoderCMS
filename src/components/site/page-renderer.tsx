@@ -41,6 +41,7 @@ import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tr
 import { BookingBlock } from "@/components/blocks/booking/booking-block";
 import { MarketplaceBookingBlock } from "@/components/blocks/marketplace/marketplace-booking-block";
 import { MarketplaceRequestBlock } from "@/components/blocks/marketplace/marketplace-request-block";
+import { MarketplaceVendorDirectoryBlock } from "@/components/blocks/marketplace/marketplace-vendor-directory-block";
 import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
@@ -104,6 +105,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "booking":          content = <BookingBlock block={block} />; break;
     case "marketplace_booking": content = <MarketplaceBookingBlock block={block} />; break;
     case "marketplace_request": content = <MarketplaceRequestBlock block={block} />; break;
+    case "marketplace_vendor_directory": content = <MarketplaceVendorDirectoryBlock block={block} />; break;
     case "donor_group_cards": content = <DonorGroupCardsBlock block={block} />; break;
     case "donor_list":       content = <DonorListBlock block={block} />; break;
     case "donor_map":        content = <DonorMapBlock block={block} />; break;

@@ -865,6 +865,23 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "marketplace_vendor_directory",
+    label: "Provider Directory",
+    description: "Public grid of approved providers and the services they cover",
+    icon: "🏪",
+    category: "interactive",
+    moduleKey: "marketplace",
+    create: () => ({
+      ...baseBlock("marketplace_vendor_directory"),
+      type: "marketplace_vendor_directory" as const,
+      data: {
+        title: "Our Providers",
+        subtitle: "Vetted, approved providers ready to help.",
+        accentColor: "#4f46e5",
+      },
+    }),
+  },
+  {
     type: "donor_group_cards",
     label: "Blood Group Cards",
     description: "8 blood-group cards with live donor counts — tap to filter the donor list",
