@@ -3,16 +3,20 @@ import { exportAllJson, jsonToBuffer } from "./json-export";
 import { objectsToCsv } from "./csv-export";
 import { generatePdfSummary } from "./pdf-export";
 import { generateWxr } from "./wxr-export";
-import { collectImagePaths, buildImageManifest } from "./image-export";
+import { collectImagePaths } from "./image-export";
+import { buildDbZip } from "./db-zip";
+import { buildFilesZip } from "./files-zip";
 import type { BackupManifest } from "./types";
 
 const BUCKET = "backups";
-const KEEP_DAYS = 7;
+const DEFAULT_DB_RETENTION = 7;
+const DEFAULT_FILES_RETENTION = 2;
 
-export async function runBackup(tenantId: string): Promise<{ runId: string; path: string }> {
+export type BackupType = "db" | "files" | "full";
+
+export async function runBackup(tenantId: string, type: BackupType = "full"): Promise<{ runId: string; path: string }> {
   const supabase = await createAdminClient();
 
-  // Get tenant info
   const { data: tenant } = await supabase
     .from("tenants")
     .select("slug, name")
@@ -27,86 +31,71 @@ export async function runBackup(tenantId: string): Promise<{ runId: string; path
     .single();
 
   const now = new Date();
-  const dateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
-  const basePath = `${tenantId}/${dateStr}`;
+  const dateStr = now.toISOString().slice(0, 10);
+  const basePath = `${tenantId}/${dateStr}-${now.getTime()}`;
 
-  // Insert run record
   const { data: run } = await supabase
     .from("backup_runs")
-    .insert({
-      tenant_id: tenantId,
-      status: "running",
-      storage_path: basePath,
-    })
+    .insert({ tenant_id: tenantId, status: "running", storage_path: basePath, backup_type: type })
     .select("id")
     .single();
   if (!run) throw new Error("Failed to create backup_run record");
 
   try {
-    // Export all table data as JSON
-    const allData = await exportAllJson(supabase, tenantId);
+    let sizeBytes = 0;
 
-    // Upload JSON
-    const jsonBuf = jsonToBuffer(allData);
-    await supabase.storage
-      .from(BUCKET)
-      .upload(`${basePath}/data.json`, jsonBuf, { contentType: "application/json", upsert: true });
+    if (type === "db" || type === "full") {
+      const allData = await exportAllJson(supabase, tenantId);
+      const jsonBuf = jsonToBuffer(allData);
 
-    // Upload CSV per table
-    for (const [table, rows] of Object.entries(allData)) {
-      if (!rows.length) continue;
-      const csvBuf = objectsToCsv(rows as Record<string, unknown>[]);
-      await supabase.storage
-        .from(BUCKET)
-        .upload(`${basePath}/csv/${table}.csv`, csvBuf, { contentType: "text/csv", upsert: true });
-    }
+      const csv: Record<string, Buffer> = {};
+      for (const [table, rows] of Object.entries(allData)) {
+        if (!rows.length) continue;
+        csv[table] = objectsToCsv(rows as Record<string, unknown>[]);
+      }
 
-    // Upload PDF summary
-    const pdfBuf = await generatePdfSummary(tenant.slug, allData, now.toISOString());
-    await supabase.storage
-      .from(BUCKET)
-      .upload(`${basePath}/summary.pdf`, pdfBuf, { contentType: "application/pdf", upsert: true });
+      const pdfBuf = await generatePdfSummary(tenant.slug, allData, now.toISOString());
 
-    // WordPress WXR export
-    const posts = (allData.posts ?? []) as Parameters<typeof generateWxr>[2];
-    const pages = (allData.pages ?? []) as Parameters<typeof generateWxr>[3];
-    const siteUrl = settings?.site_url ?? `https://${tenant.slug}.localhost:3000`;
-    const siteName = settings?.site_name ?? tenant.name;
-    const wxrBuf = generateWxr(siteUrl, siteName, posts, pages);
-    await supabase.storage
-      .from(BUCKET)
-      .upload(`${basePath}/wordpress-export.xml`, wxrBuf, { contentType: "application/xml", upsert: true });
+      const posts = (allData.posts ?? []) as Parameters<typeof generateWxr>[2];
+      const pages = (allData.pages ?? []) as Parameters<typeof generateWxr>[3];
+      const siteUrl = settings?.site_url ?? `https://${tenant.slug}.localhost:3000`;
+      const siteName = settings?.site_name ?? tenant.name;
+      const wxrBuf = generateWxr(siteUrl, siteName, posts, pages);
 
-    // Image manifest (download URLs, organized by folder)
-    const images = await collectImagePaths(supabase, tenantId);
-    const manifestBuf = buildImageManifest(images);
-    await supabase.storage
-      .from(BUCKET)
-      .upload(`${basePath}/images/manifest.tsv`, manifestBuf, { contentType: "text/plain", upsert: true });
+      const manifest: BackupManifest = {
+        tenantId,
+        tenantSlug: tenant.slug,
+        createdAt: now.toISOString(),
+        version: "2.0",
+        tables: Object.keys(allData),
+        imageCount: 0,
+      };
+      const manifestBuf = Buffer.from(JSON.stringify(manifest, null, 2));
 
-    // Upload backup manifest
-    const manifest: BackupManifest = {
-      tenantId,
-      tenantSlug: tenant.slug,
-      createdAt: now.toISOString(),
-      version: "1.0",
-      tables: Object.keys(allData),
-      imageCount: images.length,
-    };
-    await supabase.storage
-      .from(BUCKET)
-      .upload(`${basePath}/manifest.json`, Buffer.from(JSON.stringify(manifest, null, 2)), {
-        contentType: "application/json",
-        upsert: true,
+      const dbZip = await buildDbZip({
+        "data.json": jsonBuf,
+        "summary.pdf": pdfBuf,
+        "wordpress-export.xml": wxrBuf,
+        csv,
+        "manifest.json": manifestBuf,
       });
 
-    // Mark complete
+      await supabase.storage.from(BUCKET).upload(`${basePath}/db.zip`, dbZip, { contentType: "application/zip", upsert: true });
+      sizeBytes += dbZip.byteLength;
+    }
+
+    if (type === "files" || type === "full") {
+      const images = await collectImagePaths(supabase, tenantId);
+      const { buffer: filesZip } = await buildFilesZip(images);
+      await supabase.storage.from(BUCKET).upload(`${basePath}/files.zip`, filesZip, { contentType: "application/zip", upsert: true });
+      sizeBytes += filesZip.byteLength;
+    }
+
     await supabase
       .from("backup_runs")
-      .update({ status: "complete", completed_at: now.toISOString() })
+      .update({ status: "complete", completed_at: now.toISOString(), size_bytes: sizeBytes })
       .eq("id", run.id);
 
-    // Rotate: delete runs older than KEEP_DAYS
     await rotateOldBackups(tenantId);
 
     return { runId: run.id, path: basePath };
@@ -122,24 +111,33 @@ export async function runBackup(tenantId: string): Promise<{ runId: string; path
 async function rotateOldBackups(tenantId: string): Promise<void> {
   const supabase = await createAdminClient();
 
-  const { data: runs } = await supabase
-    .from("backup_runs")
-    .select("id, storage_path, created_at")
+  const { data: settings } = await supabase
+    .from("backup_settings")
+    .select("db_retention_count, files_retention_count")
     .eq("tenant_id", tenantId)
-    .eq("status", "complete")
-    .order("created_at", { ascending: false });
+    .maybeSingle();
 
-  if (!runs || runs.length <= KEEP_DAYS) return;
+  const dbRetention = settings?.db_retention_count ?? DEFAULT_DB_RETENTION;
+  const filesRetention = settings?.files_retention_count ?? DEFAULT_FILES_RETENTION;
 
-  const toDelete = runs.slice(KEEP_DAYS);
-  for (const run of toDelete) {
-    // List and remove all files under the storage path
-    const { data: files } = await supabase.storage.from(BUCKET).list(run.storage_path);
-    if (files?.length) {
-      await supabase.storage
-        .from(BUCKET)
-        .remove(files.map((f) => `${run.storage_path}/${f.name}`));
+  for (const [backupType, retention] of [["db", dbRetention], ["files", filesRetention], ["full", dbRetention]] as const) {
+    const { data: runs } = await supabase
+      .from("backup_runs")
+      .select("id, storage_path, created_at")
+      .eq("tenant_id", tenantId)
+      .eq("backup_type", backupType)
+      .eq("status", "complete")
+      .order("created_at", { ascending: false });
+
+    if (!runs || runs.length <= retention) continue;
+
+    const toDelete = runs.slice(retention);
+    for (const run of toDelete) {
+      const { data: files } = await supabase.storage.from(BUCKET).list(run.storage_path);
+      if (files?.length) {
+        await supabase.storage.from(BUCKET).remove(files.map((f) => `${run.storage_path}/${f.name}`));
+      }
+      await supabase.from("backup_runs").delete().eq("id", run.id);
     }
-    await supabase.from("backup_runs").delete().eq("id", run.id);
   }
 }

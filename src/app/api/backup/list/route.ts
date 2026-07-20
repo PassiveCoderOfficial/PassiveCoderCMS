@@ -42,10 +42,10 @@ export async function GET(req: Request) {
 
   const { data } = await admin
     .from("backup_runs")
-    .select("id,status,storage_path,created_at,completed_at,error")
+    .select("id,status,storage_path,created_at,completed_at,error,backup_type,size_bytes")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false })
-    .limit(7);
+    .limit(30);
 
   return NextResponse.json({ runs: data ?? [] });
 }

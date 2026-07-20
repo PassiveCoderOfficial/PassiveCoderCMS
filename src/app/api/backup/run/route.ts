@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { runBackup } from "@/lib/backup/runner";
+import { runBackup, type BackupType } from "@/lib/backup/runner";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getAgent } from "@/lib/agent";
 
 export async function POST(req: Request) {
-  const { tenantId } = await req.json();
+  const { tenantId, type } = await req.json();
   if (!tenantId) return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+  const backupType: BackupType = ["db", "files", "full"].includes(type) ? type : "full";
 
   // Allow internal cron calls via secret header
   const cronSecret = req.headers.get("x-cron-secret");
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await runBackup(tenantId);
+    const result = await runBackup(tenantId, backupType);
     return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json(
