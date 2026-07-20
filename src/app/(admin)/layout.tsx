@@ -5,6 +5,7 @@ import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
 import { AdminTopbar } from "@/components/admin/topbar/topbar";
 import { SABanner } from "@/components/admin/sa-banner";
 import { AgentBanner } from "@/components/admin/agent-banner";
+import { SetupWizard } from "@/components/admin/setup-wizard";
 import { SA_VIEWING_COOKIE, AGENT_VIEWING_COOKIE } from "@/lib/tenant/current";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
@@ -302,6 +303,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ? await resolveEnabledModules(dashboardTenantId)
     : undefined;
 
+  // First-login setup wizard (logo, favicon, site details) — only for the
+  // actual tenant owner/member on their own site, never for SA or an agent
+  // viewing someone else's site (they didn't onboard this tenant).
+  let showSetupWizard = false;
+  let wizardDefaults = { site_name: "", site_description: "", logo_url: "", favicon_url: "" };
+  if (!sa && !agentViewingTenantId && dashboardTenantId) {
+    const [{ data: tenantRow }, { data: siteSettings }] = await Promise.all([
+      adminClient.from("tenants").select("setup_wizard_completed_at").eq("id", dashboardTenantId).maybeSingle(),
+      adminClient.from("site_settings").select("site_name, site_description, logo_url, favicon_url").eq("tenant_id", dashboardTenantId).maybeSingle(),
+    ]);
+    showSetupWizard = !tenantRow?.setup_wizard_completed_at;
+    wizardDefaults = {
+      site_name: siteSettings?.site_name ?? "",
+      site_description: siteSettings?.site_description ?? "",
+      logo_url: siteSettings?.logo_url ?? "",
+      favicon_url: siteSettings?.favicon_url ?? "",
+    };
+  }
+
   // Direct-link enforcement: hiding a gated item from the sidebar isn't
   // enough on its own — a bookmarked/typed URL must also be blocked.
   // resolveModuleKeyForPath is the same lookup the sidebar's own filtering
@@ -316,6 +336,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex h-screen overflow-hidden bg-background flex-col">
+      {showSetupWizard && (
+        <SetupWizard
+          initialSiteName={wizardDefaults.site_name}
+          initialSiteDescription={wizardDefaults.site_description}
+          initialLogoUrl={wizardDefaults.logo_url}
+          initialFaviconUrl={wizardDefaults.favicon_url}
+        />
+      )}
       {viewingTenantId && viewingTenantName && (
         <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
       )}
