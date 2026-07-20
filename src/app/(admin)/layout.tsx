@@ -251,20 +251,30 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
   }
 
-  // Agent viewing an assigned (not owned) site has no tenant_members row, so
-  // it's missing from userSites above — merge it in rather than replacing the
-  // list, or an agent who both owns a site and is assigned to others loses
-  // their owned sites from the switcher the moment they view an assigned one.
-  if (agentViewingTenantId && agentViewingTenantName) {
-    const { data: viewingTenant } = await adminClient
-      .from("tenants")
-      .select("slug")
-      .eq("id", agentViewingTenantId)
-      .maybeSingle();
-    userSites = [
-      ...userSites.map(s => ({ ...s, is_primary: false })),
-      { id: agentViewingTenantId, name: agentViewingTenantName, slug: viewingTenant?.slug ?? "", is_primary: true },
-    ];
+  // Agents can own a site (tenant_members row, already in userSites above)
+  // AND be assigned/referred to others (no membership row) — the switcher
+  // must show all of them regardless of which one is currently being viewed,
+  // not just the owned ones or just the currently-viewed assigned one.
+  if (!sa && profile.role === "agent") {
+    const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
+    if (agentRow) {
+      const [{ data: assigned }, { data: referred }] = await Promise.all([
+        adminClient.from("tenants").select("id, name, slug").eq("assigned_agent_id", agentRow.id),
+        adminClient.from("tenants").select("id, name, slug").eq("referred_by_agent_id", agentRow.id),
+      ]);
+      const ownedIds = new Set(userSites.map(s => s.id));
+      const extraSites = new Map<string, { id: string; name: string; slug: string }>();
+      for (const t of [...(assigned ?? []), ...(referred ?? [])]) {
+        if (!ownedIds.has(t.id)) extraSites.set(t.id, t);
+      }
+      // Owned sites first, then assigned/referred — current subdomain (or the
+      // viewed tenant, for root-domain access) marked primary, everything else not.
+      const currentId = agentViewingTenantId ?? (userSites.find(s => s.is_primary)?.id);
+      userSites = [
+        ...userSites.map(s => ({ ...s, is_primary: s.id === currentId })),
+        ...[...extraSites.values()].map(t => ({ id: t.id, name: t.name, slug: t.slug, is_primary: t.id === currentId })),
+      ];
+    }
   }
 
   const cmsUser: CMSUser = {
