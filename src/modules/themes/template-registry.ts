@@ -7597,6 +7597,815 @@ const GROWTHLAB_AGENCY: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 53: LensCroft (Photography Studio) ─────────────────────────────
+
+const LENSCROFT_STUDIO: TemplateIdentity = {
+  slug: "lenscroft-studio",
+  name: "LensCroft",
+  description: "Stunning photography studio template with a dark, gallery-forward aesthetic. Showcases portfolios, session packages, and the photographer's unique visual style.",
+  category: "Photography",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=85&fit=crop",
+  tags: ["photography", "studio", "portrait", "wedding", "commercial"],
+
+  palette: {
+    primary: "#f59e0b",
+    primaryFg: "#0a0a0a",
+    secondary: "#404040",
+    accent: "#fbbf24",
+    background: "#0a0a0a",
+    foreground: "#fafafa",
+    muted: "#171717",
+    mutedFg: "#a3a3a3",
+    card: "#171717",
+    border: "#262626",
+    ring: "#f59e0b",
+    borderRadius: "0",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "600",
+    letterSpacing: "0.01em",
+  },
+  customCss: `
+    .template-lenscroft-studio .hero-badge { background: #f59e0b; color: #0a0a0a; }
+    .template-lenscroft-studio .service-card { background: #171717; }
+    .template-lenscroft-studio .stat-value { color: #f59e0b; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "minimal-quote",
+    features: "dark-alternating",
+    stats: "plain-dark",
+    cta: "dark-split",
+    pricing: "minimal-dark",
+    faq: "accordion-minimal",
+    navigation: "transparent-dark",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&q=90&fit=crop", alt: "Photographer with camera" },
+    about: { url: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&q=80&fit=crop", alt: "Photography studio setup" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80&fit=crop", alt: "Wedding photography" },
+      { url: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&q=80&fit=crop", alt: "Portrait session" },
+      { url: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&q=80&fit=crop", alt: "Commercial photography" },
+      { url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80&fit=crop", alt: "Family portraits" },
+      { url: "https://images.unsplash.com/photo-1567696911980-2eed69a46042?w=600&q=80&fit=crop", alt: "Event photography" },
+      { url: "https://images.unsplash.com/photo-1533228100845-08145b01de14?w=600&q=80&fit=crop", alt: "Product photography" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80&fit=crop", alt: "Wedding gallery" },
+      { url: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=800&q=80&fit=crop", alt: "Studio portrait" },
+      { url: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80&fit=crop", alt: "Commercial shoot" },
+      { url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80&fit=crop", alt: "Family session" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400&q=80&fit=crop&face", alt: "Lead Photographer" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80&fit=crop", alt: "Book your session" },
+  },
+
+  heroHeadline: "Every Frame Tells a Story",
+  heroSubline: "Professional photography for weddings, portraits, and brands — capturing moments that last forever.",
+  heroBadge: "📷 500+ Sessions Captured",
+  heroCTA: "Book a Session",
+  heroSecondaryCTA: "View Portfolio",
+  siteName: "LensCroft Studio",
+  tagline: "Every frame tells a story",
+  phone: "+1 (555) 337-8891",
+  email: "hello@lenscroftstudio.com",
+  address: "60 Gallery Row, Arts District",
+  aboutHeading: "500+ Sessions, One Unmistakable Style",
+  aboutBody: "LensCroft blends editorial composition with genuine emotion, whether we're documenting a wedding, capturing a family's story, or shooting product photography for a brand. Every session is shot on premium equipment and delivered with a fast, professional turnaround.",
+  aboutHighlights: ["500+ sessions captured", "Fast 2-week delivery turnaround", "Full print & digital rights included", "Second shooter available for events"],
+
+  navItems: [
+    { id: "n1", label: "Portfolio", url: "#gallery" },
+    { id: "n2", label: "Sessions", url: "#services" },
+    { id: "n3", label: "Pricing", url: "#pricing" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Wedding Photography", description: "Full-day wedding coverage capturing every meaningful moment, from prep to reception.", icon: "💍", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Portrait Sessions", description: "Studio or on-location portrait sessions for individuals, couples and professional headshots.", icon: "📸", iconType: "emoji", price: "From $350", imageUrl: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Photography", description: "Product, brand and corporate photography for marketing and advertising use.", icon: "🏢", iconType: "emoji", price: "From $650", imageUrl: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Family Sessions", description: "Relaxed, natural family photography sessions on-location or in-studio.", icon: "👨‍👩‍👧", iconType: "emoji", price: "From $400", imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Event Photography", description: "Corporate events, parties and celebrations documented candidly and professionally.", icon: "🎉", iconType: "emoji", price: "From $500", imageUrl: "https://images.unsplash.com/photo-1567696911980-2eed69a46042?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Product Photography", description: "Clean, high-resolution product shots for e-commerce and marketing use.", icon: "📦", iconType: "emoji", price: "From $45/item", imageUrl: "https://images.unsplash.com/photo-1533228100845-08145b01de14?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "500+", label: "Sessions Captured" },
+    { id: uid("st"), value: "10 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+    { id: uid("st"), value: "2 wk", label: "Avg. Delivery Time" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Emily & James", role: "Wedding Clients", content: "Every photo felt like it captured exactly how the day felt. We cried looking through the gallery. Absolute artistry.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "David Chen", role: "Brand Founder", content: "Product photography elevated our entire online store. Sales noticeably improved after we updated our listings.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sarah Miller", role: "Family Client", content: "Made our toddler feel completely comfortable and the photos are the most natural we've ever had taken.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Portrait Session", price: "$350", description: "1-hour session", features: ["1 hour session time", "1 location", "20 edited images", "Online gallery"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Wedding Package", price: "$2,800", description: "Full day coverage", features: ["8 hours coverage", "Second shooter included", "400+ edited images", "Online gallery & print rights"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial Shoot", price: "From $650", description: "Brand & product photography", features: ["Half or full day options", "Studio or on-location", "Full usage rights included"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How long until we receive our photos?", answer: "Standard turnaround is 2 weeks for portrait sessions and 4-6 weeks for weddings, with a sneak peek gallery delivered within 48 hours." },
+    { id: uid("f"), question: "Do you provide the raw, unedited files?", answer: "We deliver a curated set of professionally edited images. Raw files are available as an add-on for wedding packages." },
+    { id: uid("f"), question: "Can we choose the location for our session?", answer: "Yes, we shoot both in-studio and on-location — we're happy to recommend spots or work with a location you have in mind." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Alex Rivera", role: "Lead Photographer & Founder", bio: "10 years capturing weddings, portraits and commercial work. Known for a timeless, editorial style.", avatar: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 54: ForeverEvents (Wedding Planning) ───────────────────────────
+
+const FOREVER_EVENTS: TemplateIdentity = {
+  slug: "forever-events",
+  name: "ForeverEvents",
+  description: "Romantic and elegant wedding planning template with a soft, luxurious aesthetic. Highlights planning packages, vendor coordination, and real wedding galleries.",
+  category: "Events",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=85&fit=crop",
+  tags: ["wedding", "events", "planning", "coordination", "celebration"],
+
+  palette: {
+    primary: "#fb7185",
+    primaryFg: "#ffffff",
+    secondary: "#881337",
+    accent: "#fda4af",
+    background: "#fff1f2",
+    foreground: "#4c0519",
+    muted: "#ffe4e6",
+    mutedFg: "#9f1239",
+    card: "#ffffff",
+    border: "#fecdd3",
+    ring: "#fb7185",
+    borderRadius: "1rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "500",
+    letterSpacing: "0",
+  },
+  customCss: `
+    .template-forever-events .hero-badge { background: #fb7185; color: white; border-radius: 9999px; }
+    .template-forever-events .service-card { border-radius: 1rem; border-top: 3px solid #fb7185; }
+    .template-forever-events .stat-value { color: #fb7185; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=85&fit=crop", alt: "Elegant wedding setup" },
+    about: { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80&fit=crop", alt: "Wedding planner arranging details" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80&fit=crop", alt: "Full wedding planning" },
+      { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80&fit=crop", alt: "Day-of coordination" },
+      { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80&fit=crop", alt: "Vendor coordination" },
+      { url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80&fit=crop", alt: "Venue styling" },
+      { url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80&fit=crop", alt: "Floral design" },
+      { url: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80&fit=crop", alt: "Reception planning" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80&fit=crop", alt: "Real wedding celebration" },
+      { url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&q=80&fit=crop", alt: "Floral arrangement" },
+      { url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80&fit=crop", alt: "Reception venue" },
+      { url: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80&fit=crop", alt: "Wedding table setting" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Lead Wedding Planner" },
+      { url: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&q=80&fit=crop&face", alt: "Day-of Coordinator" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=80&fit=crop", alt: "Plan your day" },
+  },
+
+  heroHeadline: "Your Perfect Day, Perfectly Planned",
+  heroSubline: "Award-winning wedding planners creating unforgettable celebrations — tailored to your love story.",
+  heroBadge: "💍 200+ Weddings Planned",
+  heroCTA: "Book a Consultation",
+  heroSecondaryCTA: "View Real Weddings",
+  siteName: "ForeverEvents",
+  tagline: "Your perfect day, perfectly planned",
+  phone: "+1 (555) 774-3391",
+  email: "hello@foreverevents.com",
+  address: "25 Celebration Lane, Metro City",
+  aboutHeading: "200+ Weddings, Each One Uniquely Yours",
+  aboutBody: "ForeverEvents has planned and coordinated over 200 weddings, from intimate elopements to 300-guest celebrations. We handle every detail — vendor sourcing, timeline management, and day-of coordination — so you can actually enjoy your engagement and your wedding day.",
+  aboutHighlights: ["200+ weddings planned", "Trusted vendor network", "Full day-of coordination included", "Personalised planning for every budget"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Real Weddings", url: "#gallery" },
+    { id: "n3", label: "Team", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get Started", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Full Wedding Planning", description: "End-to-end planning from engagement to reception, including vendor sourcing and budget management.", icon: "💍", iconType: "emoji", price: "From $4,500", imageUrl: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Day-of Coordination", description: "Full timeline management and vendor coordination for your wedding day, so you can be present.", icon: "📋", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Vendor Coordination", description: "We manage all vendor communication, contracts and logistics on your behalf.", icon: "🤝", iconType: "emoji", price: "From $1,200", imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Venue Styling", description: "Complete decor and styling design to bring your wedding vision to life.", icon: "🎨", iconType: "emoji", price: "From $2,200", imageUrl: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Floral Design", description: "Custom floral arrangements for ceremony, reception and bridal party.", icon: "💐", iconType: "emoji", price: "From $1,500", imageUrl: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Elopement Packages", description: "Intimate elopement planning for couples wanting a smaller, personal celebration.", icon: "💕", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "200+", label: "Weddings Planned" },
+    { id: uid("st"), value: "12 yr", label: "In Business" },
+    { id: uid("st"), value: "5★", label: "Average Rating" },
+    { id: uid("st"), value: "50+", label: "Trusted Vendor Partners" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Emma & Jack", role: "Married June 2025", content: "They handled everything so seamlessly we actually got to enjoy our own wedding. Every detail was perfect, exactly as we dreamed.", rating: 5, avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Priya & Arjun", role: "Married March 2025", content: "Our planner understood our vision from day one and brought it to life better than we imagined. Worth every penny.", rating: 5 },
+    { id: uid("t"), name: "Chloe & Sam", role: "Eloped 2024", content: "Planned our intimate elopement in just 6 weeks and it was perfect. So grateful for their attention to detail.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Day-of Coordination", price: "$1,800", description: "You plan, we execute", features: ["Timeline creation", "Vendor coordination on the day", "8 hours on-site coordination"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Planning", price: "$4,500", description: "Most popular, complete service", features: ["End-to-end planning", "Vendor sourcing & negotiation", "Budget management", "Day-of coordination included"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Elopement Package", price: "$1,800", description: "Intimate celebration planning", features: ["Venue & vendor sourcing", "Styling & florals coordination", "Day-of coordination"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How far in advance should we book?", answer: "We recommend booking 9-12 months before your wedding date for full planning, though we can accommodate shorter timelines when availability allows." },
+    { id: uid("f"), question: "Do you work with our chosen vendors?", answer: "Absolutely — we're happy to coordinate with vendors you've already selected, and we can recommend from our trusted network for anything you still need." },
+    { id: uid("f"), question: "What's included in day-of coordination?", answer: "Day-of coordination includes full timeline creation, vendor confirmation, and on-site management so you don't have to worry about logistics." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Isabella Grant", role: "Lead Wedding Planner & Founder", bio: "12 years planning weddings, has coordinated over 200 celebrations from intimate elopements to grand affairs.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Maya Torres", role: "Day-of Coordinator", bio: "Manages timeline execution and vendor logistics to keep every wedding day running smoothly.", avatar: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 55: BrightMinds (Tutoring Centre) ──────────────────────────────
+
+const BRIGHTMINDS_TUTOR: TemplateIdentity = {
+  slug: "brightminds-tutor",
+  name: "BrightMinds",
+  description: "Friendly and encouraging tutoring centre template with a bright, student-focused design. Highlights subjects, tutor credentials, and enrolment steps.",
+  category: "Education",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=85&fit=crop",
+  tags: ["tutoring", "education", "students", "learning", "academic"],
+
+  palette: {
+    primary: "#3b82f6",
+    primaryFg: "#ffffff",
+    secondary: "#1e1b4b",
+    accent: "#93c5fd",
+    background: "#eff6ff",
+    foreground: "#1e1b4b",
+    muted: "#dbeafe",
+    mutedFg: "#1e40af",
+    card: "#ffffff",
+    border: "#bfdbfe",
+    ring: "#3b82f6",
+    borderRadius: "1rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-brightminds-tutor .hero-badge { background: #3b82f6; color: white; border-radius: 9999px; }
+    .template-brightminds-tutor .service-card { border-radius: 1rem; border-top: 3px solid #3b82f6; }
+    .template-brightminds-tutor .stat-value { color: #3b82f6; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&q=85&fit=crop", alt: "Tutor helping student" },
+    about: { url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80&fit=crop", alt: "Students studying together" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80&fit=crop", alt: "Math tutoring" },
+      { url: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80&fit=crop", alt: "Science tutoring" },
+      { url: "https://images.unsplash.com/photo-1519452575417-564c1401ecc0?w=600&q=80&fit=crop", alt: "English tutoring" },
+      { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80&fit=crop", alt: "One-on-one tutoring" },
+      { url: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&q=80&fit=crop", alt: "Group study session" },
+      { url: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600&q=80&fit=crop", alt: "Exam preparation" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80&fit=crop", alt: "Tutoring session" },
+      { url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80&fit=crop", alt: "Study group" },
+      { url: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80&fit=crop", alt: "Science lab session" },
+      { url: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=800&q=80&fit=crop", alt: "Exam prep class" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Head Tutor" },
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Math Specialist" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&fit=crop", alt: "Enroll today" },
+  },
+
+  heroHeadline: "Unlock Every Student's Potential",
+  heroSubline: "Expert tutoring across all subjects — tailored lessons that build confidence and results.",
+  heroBadge: "📚 500+ Students Tutored",
+  heroCTA: "Book a Free Assessment",
+  heroSecondaryCTA: "View Subjects",
+  siteName: "BrightMinds Tutoring",
+  tagline: "Unlock every student's potential",
+  phone: "+1 (555) 220-9931",
+  email: "hello@brightmindstutor.com",
+  address: "150 Learning Lane, Metro City",
+  aboutHeading: "Personalised Tutoring That Builds Real Confidence",
+  aboutBody: "BrightMinds pairs students with qualified, encouraging tutors who tailor lessons to each student's learning style and pace. Whether it's catching up, staying ahead, or preparing for exams, our structured approach turns frustration into genuine confidence and results.",
+  aboutHighlights: ["Qualified, background-checked tutors", "Personalised learning plans", "In-person & online sessions available", "Free initial skills assessment"],
+
+  navItems: [
+    { id: "n1", label: "Subjects", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "Tutors", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Enroll Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Math Tutoring", description: "From basic arithmetic to calculus, personalised math support for all grade levels.", icon: "🔢", iconType: "emoji", price: "From $45/hr", imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Science Tutoring", description: "Biology, chemistry and physics tutoring with hands-on explanation of concepts.", icon: "🔬", iconType: "emoji", price: "From $45/hr", imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "English & Writing", description: "Reading comprehension, essay writing and literature analysis support.", icon: "📖", iconType: "emoji", price: "From $45/hr", imageUrl: "https://images.unsplash.com/photo-1519452575417-564c1401ecc0?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Exam Preparation", description: "Targeted prep for standardized tests and major exams with practice tests included.", icon: "📝", iconType: "emoji", price: "From $55/hr", imageUrl: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Group Study Sessions", description: "Small-group tutoring for students who learn well collaboratively, at a lower cost.", icon: "👥", iconType: "emoji", price: "From $25/hr", imageUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Online Tutoring", description: "Live one-on-one online sessions with the same tutors, from the comfort of home.", icon: "💻", iconType: "emoji", price: "From $40/hr", imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "500+", label: "Students Tutored" },
+    { id: uid("st"), value: "92%", label: "Grade Improvement Rate" },
+    { id: uid("st"), value: "11 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Parent Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Jennifer Adams", role: "Parent", content: "My son went from struggling with math to genuinely enjoying it. His tutor's patience made all the difference.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Marcus Lee", role: "High School Student", content: "Helped me raise my SAT score by 200 points. The practice tests and feedback were exactly what I needed.", rating: 5 },
+    { id: uid("t"), name: "Patricia Nguyen", role: "Parent", content: "Both my kids tutor here now. The teachers genuinely care and communicate progress clearly every week.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Session", price: "$45", period: "/hr", description: "One-on-one tutoring", features: ["Personalised lesson plan", "Progress tracking", "In-person or online"], ctaLabel: "Book Session", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Monthly Package", price: "$650", period: "/mo", description: "4 sessions/week, most popular", features: ["16 tutoring sessions", "Dedicated tutor match", "Monthly progress report", "Free skills reassessment"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Group Sessions", price: "$25", period: "/hr", description: "Small group tutoring", features: ["Groups of 3-5 students", "Same subject focus", "Collaborative learning"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How do you match students with tutors?", answer: "We start with a free skills assessment to understand your child's needs and learning style, then match them with the best-suited qualified tutor." },
+    { id: uid("f"), question: "Do you offer online tutoring?", answer: "Yes, we offer live one-on-one online sessions with the same qualified tutors, using interactive tools for an effective learning experience." },
+    { id: uid("f"), question: "How often should my child attend sessions?", answer: "This depends on your child's goals — weekly sessions work well for ongoing support, while more frequent sessions help with exam prep or catching up." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Dr. Susan Whitfield", role: "Head Tutor & Founder", bio: "Former high school teacher with 11 years in tutoring. Oversees curriculum and tutor training.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Michael Torres", role: "Math Specialist", bio: "Specialises in making math approachable for students who struggle with confidence in the subject.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 56: SkillForge (Vocational Training) ───────────────────────────
+
+const SKILLFORGE_TRAINING: TemplateIdentity = {
+  slug: "skillforge-training",
+  name: "SkillForge",
+  description: "Professional vocational training centre template with a structured, outcomes-focused design. Highlights certifications, course listings, and career pathways.",
+  category: "Education",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&q=85&fit=crop",
+  tags: ["vocational training", "certificates", "courses", "skills", "professional development"],
+
+  palette: {
+    primary: "#14b8a6",
+    primaryFg: "#ffffff",
+    secondary: "#064e3b",
+    accent: "#5eead4",
+    background: "#064e3b",
+    foreground: "#f0fdfa",
+    muted: "#065f46",
+    mutedFg: "#6ee7b7",
+    card: "#065f46",
+    border: "#047857",
+    ring: "#14b8a6",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-skillforge-training .hero-badge { background: #14b8a6; color: white; border-radius: 9999px; }
+    .template-skillforge-training .service-card { border-top: 3px solid #14b8a6; background: #065f46; }
+    .template-skillforge-training .stat-value { color: #5eead4; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1600&q=90&fit=crop", alt: "Vocational training class" },
+    about: { url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80&fit=crop", alt: "Hands-on skills training" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80&fit=crop", alt: "Trade skills course" },
+      { url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80&fit=crop", alt: "Classroom training" },
+      { url: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600&q=80&fit=crop", alt: "Certification exam prep" },
+      { url: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80&fit=crop", alt: "Practical workshop" },
+      { url: "https://images.unsplash.com/photo-1552664688-cf412ec27db2?w=600&q=80&fit=crop", alt: "Industry certification" },
+      { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80&fit=crop", alt: "One-on-one mentoring" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80&fit=crop", alt: "Training facility" },
+      { url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80&fit=crop", alt: "Hands-on workshop" },
+      { url: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&fit=crop", alt: "Practical training session" },
+      { url: "https://images.unsplash.com/photo-1552664688-cf412ec27db2?w=800&q=80&fit=crop", alt: "Graduation certification" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Program Director" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&q=80&fit=crop", alt: "Enroll in a course" },
+  },
+
+  heroHeadline: "Build Skills That Open Doors",
+  heroSubline: "Accredited vocational courses and professional certifications to launch or advance your career.",
+  heroBadge: "🎓 Accredited Programs",
+  heroCTA: "Explore Courses",
+  heroSecondaryCTA: "View Career Paths",
+  siteName: "SkillForge Training",
+  tagline: "Build skills that open doors",
+  phone: "+1 (555) 990-3321",
+  email: "admissions@skillforgetraining.com",
+  address: "300 Trade Skills Way, Metro City",
+  aboutHeading: "Accredited Training, Real Career Outcomes",
+  aboutBody: "SkillForge offers hands-on vocational training and industry-recognised certifications across trades, technology and professional skills. Our instructors bring real-world experience, and our job placement support helps graduates transition directly into careers.",
+  aboutHighlights: ["Industry-accredited certifications", "Hands-on, practical training", "Job placement support included", "Flexible evening & weekend classes"],
+
+  navItems: [
+    { id: "n1", label: "Courses", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Enroll Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Trade Certifications", description: "Hands-on training and certification in electrical, plumbing and construction trades.", icon: "🔧", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "IT & Tech Certifications", description: "Industry-recognised IT certifications preparing you for in-demand tech careers.", icon: "💻", iconType: "emoji", price: "From $1,200", imageUrl: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Business & Professional Skills", description: "Project management, leadership and workplace skills courses for career advancement.", icon: "📊", iconType: "emoji", price: "From $850", imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Exam Preparation", description: "Focused certification exam prep with practice tests and pass-rate guarantees.", icon: "📝", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Practical Workshops", description: "Weekend intensive workshops for hands-on skills development in specific trades.", icon: "🛠️", iconType: "emoji", price: "From $350", imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Career Mentoring", description: "One-on-one career guidance and job placement support for program graduates.", icon: "🎯", iconType: "emoji", price: "Included with programs", imageUrl: "https://images.unsplash.com/photo-1552664688-cf412ec27db2?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "3,000+", label: "Graduates" },
+    { id: uid("st"), value: "88%", label: "Job Placement Rate" },
+    { id: uid("st"), value: "15 yr", label: "In Business" },
+    { id: uid("st"), value: "20+", label: "Certification Programs" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Marcus Bell", role: "Electrician Graduate", content: "The hands-on training gave me real confidence walking into my apprenticeship. Instructors actually worked in the trade.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Aisha Johnson", role: "IT Certification Graduate", content: "Passed my certification exam on the first try thanks to their prep program. Now working in my dream field.", rating: 5 },
+    { id: uid("t"), name: "Robert Diaz", role: "Career Changer", content: "Switched careers at 40 and SkillForge's job placement support helped me land a role within a month of graduating.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Course", price: "From $850", description: "One certification course", features: ["Full course materials", "Instructor-led training", "Certification exam included"], ctaLabel: "Enroll Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Career Pathway", price: "From $1,800", description: "Full trade/tech program, most popular", features: ["Multi-course program", "Hands-on practical training", "Job placement support", "Career mentoring included"], highlighted: true, badge: "Most Popular", ctaLabel: "Enroll Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Corporate Training", price: "Custom Quote", description: "Team training for employers", features: ["Custom curriculum", "On-site or online delivery", "Group certification tracking"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Are your certifications industry-recognised?", answer: "Yes, all our programs lead to industry-accredited certifications recognised by employers in their respective fields." },
+    { id: uid("f"), question: "Do you offer job placement support?", answer: "Yes, all career pathway programs include job placement support and career mentoring to help graduates transition into employment." },
+    { id: uid("f"), question: "Can I attend classes in the evening or on weekends?", answer: "Yes, we offer flexible evening and weekend class schedules to accommodate working students." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Patricia Moore", role: "Program Director", bio: "15 years in vocational education, oversees curriculum development and industry partnerships.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 57: Threadline (Fashion Boutique) ──────────────────────────────
+
+const THREADLINE: TemplateIdentity = {
+  slug: "threadline",
+  name: "Threadline",
+  description: "Elegant fashion and clothing store template with an editorial, magazine-inspired layout. Perfect for boutique clothing retailers and online fashion brands.",
+  category: "Retail & Shop",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=85&fit=crop",
+  tags: ["fashion", "clothing", "boutique", "apparel", "retail"],
+
+  palette: {
+    primary: "#f43f5e",
+    primaryFg: "#ffffff",
+    secondary: "#4c0519",
+    accent: "#fb7185",
+    background: "#fff1f2",
+    foreground: "#4c0519",
+    muted: "#ffe4e6",
+    mutedFg: "#9f1239",
+    card: "#ffffff",
+    border: "#fecdd3",
+    ring: "#f43f5e",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "500",
+    letterSpacing: "0.02em",
+  },
+  customCss: `
+    .template-threadline h1,.template-threadline h2 { letter-spacing: 0.03em; text-transform: uppercase; }
+    .template-threadline .service-card { border-radius: 0; }
+    .template-threadline .stat-value { color: #f43f5e; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900&q=85&fit=crop", alt: "Fashion boutique display" },
+    about: { url: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80&fit=crop", alt: "Curated fashion rack" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80&fit=crop", alt: "New arrivals" },
+      { url: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80&fit=crop", alt: "Dresses collection" },
+      { url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80&fit=crop", alt: "Accessories" },
+      { url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80&fit=crop", alt: "Outerwear collection" },
+      { url: "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop", alt: "Shoes collection" },
+      { url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80&fit=crop", alt: "Handbags collection" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80&fit=crop", alt: "Store interior" },
+      { url: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80&fit=crop", alt: "Styled look" },
+      { url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80&fit=crop", alt: "Accessories display" },
+      { url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80&fit=crop", alt: "Seasonal collection" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Founder & Buyer" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80&fit=crop", alt: "Shop the collection" },
+  },
+
+  heroHeadline: "Wear Your Story",
+  heroSubline: "Curated fashion for the modern wardrobe — discover new arrivals and timeless styles.",
+  heroBadge: "✨ New Arrivals Weekly",
+  heroCTA: "Shop New Arrivals",
+  heroSecondaryCTA: "View Lookbook",
+  siteName: "Threadline",
+  tagline: "Wear your story",
+  phone: "+1 (555) 448-7729",
+  email: "hello@threadline.com",
+  address: "88 Fashion District, Metro City",
+  aboutHeading: "Curated Fashion for the Modern Wardrobe",
+  aboutBody: "Threadline curates timeless and on-trend pieces from independent designers and quality manufacturers, so every item feels intentional, not disposable. We refresh our collection weekly and offer free shipping and easy returns on every order.",
+  aboutHighlights: ["Curated from independent designers", "New arrivals every week", "Free shipping over $100", "Easy 30-day returns"],
+
+  navItems: [
+    { id: "n1", label: "Shop", url: "#services" },
+    { id: "n2", label: "Lookbook", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "New Arrivals", description: "Fresh styles added weekly, curated for the modern, versatile wardrobe.", icon: "✨", iconType: "emoji", price: "From $45", imageUrl: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Dresses", description: "From everyday to occasion wear, dresses for every part of your life.", icon: "👗", iconType: "emoji", price: "From $65", imageUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Accessories", description: "Jewelry, scarves and finishing touches to complete any outfit.", icon: "💍", iconType: "emoji", price: "From $20", imageUrl: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Outerwear", description: "Jackets and coats that layer effortlessly with your existing wardrobe.", icon: "🧥", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Shoes", description: "Comfortable, stylish footwear for every occasion.", icon: "👠", iconType: "emoji", price: "From $75", imageUrl: "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Handbags", description: "Statement and everyday bags from independent and established designers.", icon: "👜", iconType: "emoji", price: "From $95", imageUrl: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "10,000+", label: "Happy Customers" },
+    { id: uid("st"), value: "4.7★", label: "Customer Rating" },
+    { id: uid("st"), value: "Weekly", label: "New Arrivals" },
+    { id: uid("st"), value: "30-Day", label: "Easy Returns" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Isabella Cruz", role: "Verified Buyer", content: "The quality is incredible for the price point. I get compliments every time I wear something from Threadline.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Olivia Bennett", role: "Verified Buyer", content: "Returns were completely hassle-free when a dress didn't fit. Will definitely order again.", rating: 5 },
+    { id: uid("t"), name: "Maya Okafor", role: "Verified Buyer", content: "Love that they curate from independent designers — my pieces always feel unique, never generic.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Essentials Bundle", price: "$99", description: "3-piece wardrobe starter", features: ["1 dress or top", "1 accessory", "Free shipping"], ctaLabel: "Shop Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Complete Look", price: "$189", description: "Full outfit, most popular", features: ["1 outerwear or dress", "1 accessory", "1 pair shoes", "Free shipping & returns"], highlighted: true, badge: "Best Value", ctaLabel: "Shop Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What's your return policy?", answer: "We offer easy 30-day returns on unworn items with tags attached, with free return shipping on orders over $100." },
+    { id: uid("f"), question: "How often do you add new items?", answer: "We refresh our collection with new arrivals every week — sign up for our newsletter to be first to shop new drops." },
+    { id: uid("f"), question: "Do you ship internationally?", answer: "Yes, we ship to most countries — shipping costs and delivery times are calculated at checkout based on your location." },
+  ],
+};
+
+// ─── TEMPLATE 58: VaultStore (Storage & Removals) ────────────────────────────
+
+const VAULTSTORE: TemplateIdentity = {
+  slug: "vaultstore",
+  name: "VaultStore",
+  description: "Professional storage and removals template with a trustworthy, clean layout. Ideal for self-storage facilities, moving companies, and packing services.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=1200&q=85&fit=crop",
+  tags: ["storage", "removals", "moving", "self-storage", "packing"],
+
+  palette: {
+    primary: "#3b82f6",
+    primaryFg: "#ffffff",
+    secondary: "#1e3a5f",
+    accent: "#93c5fd",
+    background: "#f8fafc",
+    foreground: "#1e3a5f",
+    muted: "#eff6ff",
+    mutedFg: "#1e40af",
+    card: "#ffffff",
+    border: "#dbeafe",
+    ring: "#3b82f6",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-vaultstore .hero-badge { background: #3b82f6; color: white; border-radius: 9999px; }
+    .template-vaultstore .service-card { border-top: 3px solid #3b82f6; }
+    .template-vaultstore .stat-value { color: #3b82f6; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=900&q=85&fit=crop", alt: "Self-storage facility" },
+    about: { url: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=800&q=80&fit=crop", alt: "Moving truck loading" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&q=80&fit=crop", alt: "Self-storage units" },
+      { url: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=600&q=80&fit=crop", alt: "Residential moving" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", alt: "Packing service" },
+      { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", alt: "Commercial moving" },
+      { url: "https://images.unsplash.com/photo-1600518464658-6a8be0fbb6c9?w=600&q=80&fit=crop", alt: "Climate-controlled storage" },
+      { url: "https://images.unsplash.com/photo-1600880292630-ee8a00847a68?w=600&q=80&fit=crop", alt: "Vehicle storage" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&q=80&fit=crop", alt: "Storage facility exterior" },
+      { url: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=800&q=80&fit=crop", alt: "Moving day" },
+      { url: "https://images.unsplash.com/photo-1600518464658-6a8be0fbb6c9?w=800&q=80&fit=crop", alt: "Climate-controlled unit" },
+      { url: "https://images.unsplash.com/photo-1600880292630-ee8a00847a68?w=800&q=80&fit=crop", alt: "Secure storage" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Operations Manager" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=1200&q=80&fit=crop", alt: "Reserve your unit" },
+  },
+
+  heroHeadline: "Store More, Stress Less",
+  heroSubline: "Secure storage and professional removals — your belongings are safe in our hands.",
+  heroBadge: "🔐 24/7 Secure Access",
+  heroCTA: "Reserve a Unit",
+  heroSecondaryCTA: "Get a Moving Quote",
+  siteName: "VaultStore",
+  tagline: "Store more, stress less",
+  phone: "+1 (555) 660-4471",
+  email: "info@vaultstore.com",
+  address: "500 Storage Way, Metro City",
+  aboutHeading: "Secure Storage & Stress-Free Moving Since 2010",
+  aboutBody: "VaultStore provides secure, climate-controlled self-storage alongside full-service residential and commercial moving. Every unit is monitored 24/7 with individual alarm access, and our moving crews are trained, insured and background-checked.",
+  aboutHighlights: ["24/7 monitored, secure facility", "Climate-controlled units available", "Insured, background-checked moving crews", "Free moving quote, no obligation"],
+
+  navItems: [
+    { id: "n1", label: "Storage", url: "#services" },
+    { id: "n2", label: "Moving", url: "#services" },
+    { id: "n3", label: "Pricing", url: "#pricing" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Self-Storage Units", description: "Secure, climate-controlled storage units in various sizes, month-to-month rental.", icon: "🔐", iconType: "emoji", price: "From $59/mo", imageUrl: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Residential Moving", description: "Full-service home moving, from apartments to full houses, local and long-distance.", icon: "🏠", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Moving", description: "Office and business relocations planned to minimise downtime.", icon: "🏢", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Packing Services", description: "Professional packing and unpacking using quality materials to protect your belongings.", icon: "📦", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Climate-Controlled Storage", description: "Temperature and humidity controlled units for sensitive items like electronics and antiques.", icon: "🌡️", iconType: "emoji", price: "From $89/mo", imageUrl: "https://images.unsplash.com/photo-1600518464658-6a8be0fbb6c9?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Vehicle Storage", description: "Secure indoor and outdoor storage for cars, boats and RVs.", icon: "🚗", iconType: "emoji", price: "From $99/mo", imageUrl: "https://images.unsplash.com/photo-1600880292630-ee8a00847a68?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "800+", label: "Storage Units" },
+    { id: uid("st"), value: "5,000+", label: "Moves Completed" },
+    { id: uid("st"), value: "15 yr", label: "In Business" },
+    { id: uid("st"), value: "24/7", label: "Secure Access" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Rebecca Lang", role: "Homeowner", content: "Our movers were careful with everything and finished ahead of schedule. Stress-free experience from start to finish.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Frank Delgado", role: "Business Owner", content: "Moved our office over a weekend with zero disruption to operations. Highly professional crew.", rating: 5 },
+    { id: uid("t"), name: "Susan Park", role: "Storage Customer", content: "Climate-controlled unit kept my antiques in perfect condition for two years. Facility always felt secure.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Small Unit", price: "$59", period: "/mo", description: "5x5 storage unit", features: ["24/7 secure access", "Month-to-month lease", "Individual unit alarm"], ctaLabel: "Reserve Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Local Move", price: "From $450", description: "Full-service local moving, most popular", features: ["2-3 person crew", "Truck & equipment included", "Basic insurance included"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full-Service Package", price: "Custom Quote", description: "Move + storage + packing", features: ["Packing service included", "Moving + temporary storage", "Full-value insurance available"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How secure is your storage facility?", answer: "Our facility has 24/7 video monitoring, individual unit alarms, and gated keycard access for residents only." },
+    { id: uid("f"), question: "Do you offer climate-controlled units?", answer: "Yes, climate-controlled units are available for sensitive items like electronics, artwork and antiques." },
+    { id: uid("f"), question: "Are your movers insured?", answer: "Yes, all our moving crews are fully insured and background-checked, and we offer additional full-value insurance for high-value moves." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Gary Thompson", role: "Operations Manager", bio: "15 years in storage and logistics, oversees facility security and moving crew training.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -7652,6 +8461,12 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   PROPERTYVAULT_MGMT,
   NETSUPPORT_IT,
   GROWTHLAB_AGENCY,
+  LENSCROFT_STUDIO,
+  FOREVER_EVENTS,
+  BRIGHTMINDS_TUTOR,
+  SKILLFORGE_TRAINING,
+  THREADLINE,
+  VAULTSTORE,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
