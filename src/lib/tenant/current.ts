@@ -55,11 +55,15 @@ export async function getCurrentTenantId(): Promise<string> {
     const reqHeaders = await headers();
     const subdomainTenantId = reqHeaders.get("x-tenant-id");
     if (subdomainTenantId) {
+      // An agent can both own a site directly (owner_id, e.g. built it for
+      // themselves) and be assigned/referred to other sites — check both,
+      // not just the assignment columns, or visiting their own owned site's
+      // subdomain incorrectly bounced them to /agent.
       const { data: tenant } = await adminClient
         .from("tenants")
         .select("id")
         .eq("id", subdomainTenantId)
-        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id}`)
+        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id},owner_id.eq.${user.id}`)
         .maybeSingle();
       if (tenant) return subdomainTenantId;
       redirect("/agent");
@@ -72,7 +76,7 @@ export async function getCurrentTenantId(): Promise<string> {
         .from("tenants")
         .select("id")
         .eq("id", viewingTenantId)
-        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id}`)
+        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id},owner_id.eq.${user.id}`)
         .maybeSingle();
       if (tenant) return viewingTenantId;
     }

@@ -94,22 +94,44 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // see tenant B's dashboard just because they're logged in. If the subdomain
   // being visited (x-tenant-id from middleware) isn't one of this user's
   // memberships, bounce them to their own primary site's dashboard instead.
+  //
+  // Exception: an agent can both own a site (tenant_members row, hasTenantAccess
+  // true) and be assigned/referred to other sites (no membership row, checked
+  // separately below via agentViewingTenantId). Without this carve-out, an
+  // agent visiting an assigned site's subdomain was bounced straight back to
+  // their own owned site before the agent-viewing logic ever ran.
   if (!sa && hasTenantAccess) {
     const reqHeaders = await headers();
     const subdomainTenantId = reqHeaders.get("x-tenant-id");
     if (subdomainTenantId) {
       const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
       if (!memberTenantIds.has(subdomainTenantId)) {
-        const ownTenant = (memberships ?? []).find(m => m.is_primary) ?? (memberships ?? [])[0];
-        const ownSlug = ownTenant
-          ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
-          : undefined;
-        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
-        const proto = rootDomain.includes("localhost") ? "http" : "https";
-        if (ownSlug) {
-          redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
+        let agentHasAccess = false;
+        if (profile.role === "agent") {
+          const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
+          if (agentRow) {
+            const { data: assignedTenant } = await adminClient
+              .from("tenants")
+              .select("id")
+              .eq("id", subdomainTenantId)
+              .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id}`)
+              .maybeSingle();
+            agentHasAccess = !!assignedTenant;
+          }
         }
-        redirect("/login?error=unauthorized");
+
+        if (!agentHasAccess) {
+          const ownTenant = (memberships ?? []).find(m => m.is_primary) ?? (memberships ?? [])[0];
+          const ownSlug = ownTenant
+            ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
+            : undefined;
+          const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+          const proto = rootDomain.includes("localhost") ? "http" : "https";
+          if (ownSlug) {
+            redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
+          }
+          redirect("/login?error=unauthorized");
+        }
       }
     }
   }
@@ -149,7 +171,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   let agentViewingTenantId: string | undefined;
   if (!sa && profile.role === "agent") {
     const subdomainTenantId = (await headers()).get("x-tenant-id");
-    agentViewingTenantId = subdomainTenantId ?? cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
+    const candidateId = subdomainTenantId ?? cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
+    // Only treat this as "agent viewing an assigned site" when it's NOT one of
+    // their own memberships — an agent who also owns a site already has full
+    // access to it via hasTenantAccess/memberships, and forcing it through the
+    // assigned-only lookup below (which doesn't check owner_id) would 404 it.
+    const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
+    if (candidateId && !memberTenantIds.has(candidateId)) {
+      agentViewingTenantId = candidateId;
+    }
   }
 
   let viewingTenantName: string | null = null;
