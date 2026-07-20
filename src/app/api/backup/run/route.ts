@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runBackup } from "@/lib/backup/runner";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { getAgent } from "@/lib/agent";
 
 export async function POST(req: Request) {
   const { tenantId } = await req.json();
@@ -11,19 +12,42 @@ export async function POST(req: Request) {
   const isCron = cronSecret && cronSecret === process.env.INTERNAL_CRON_SECRET;
 
   if (!isCron) {
-    // Verify caller is owner/admin of this tenant
-    const supabase = await createAdminClient();
+    // .auth.getUser() must run on the cookie-bound client — the service-role
+    // admin client has no session context and always returns null here,
+    // which is why this previously 401'd for every real logged-in user.
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { data: member } = await supabase
+    const admin = await createAdminClient();
+
+    const { data: member } = await admin
       .from("tenant_members")
       .select("role")
       .eq("tenant_id", tenantId)
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const { data: sa } = await admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
+
+    let allowed = !!member || !!sa;
+
+    // Agent viewing an assigned/referred site under their own session — not
+    // a tenant_member, so check assignment directly instead.
+    if (!allowed) {
+      const agent = await getAgent();
+      if (agent) {
+        const { data: tenant } = await admin
+          .from("tenants")
+          .select("id")
+          .eq("id", tenantId)
+          .or(`assigned_agent_id.eq.${agent.id},referred_by_agent_id.eq.${agent.id}`)
+          .maybeSingle();
+        allowed = !!tenant;
+      }
+    }
+
+    if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {

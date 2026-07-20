@@ -59,6 +59,12 @@ export async function POST(req: Request) {
 
   const { data, error: dbErr } = await supabase!.from("subscriptions").insert(payload).select("id").single();
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
+
+  // Keep tenants.plan in sync — module gating (resolveEnabledModules) reads
+  // tenants.plan, not subscriptions.plan_id, so a mismatch here silently
+  // locks a tenant out of modules their subscription plan actually includes.
+  await supabase!.from("tenants").update({ plan: plan_id }).eq("id", tenant_id);
+
   return NextResponse.json({ id: data.id });
 }
 
@@ -79,7 +85,7 @@ export async function PATCH(req: Request) {
     if (k in updates) payload[k] = updates[k] === "" ? null : updates[k];
   }
 
-  const { data: sub, error: dbErr } = await supabase!.from("subscriptions").update(payload).eq("id", id).select("tenant_id,status").single();
+  const { data: sub, error: dbErr } = await supabase!.from("subscriptions").update(payload).eq("id", id).select("tenant_id,status,plan_id").single();
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
 
   // Sync tenant status on subscription status change
@@ -89,6 +95,13 @@ export async function PATCH(req: Request) {
       : sub.status === "suspended" ? "suspended"
       : "onboarded";
     await supabase!.from("tenants").update({ status: tenantStatus }).eq("id", sub.tenant_id);
+  }
+
+  // Keep tenants.plan in sync — module gating (resolveEnabledModules) reads
+  // tenants.plan, not subscriptions.plan_id. Without this, changing a
+  // tenant's plan here never actually unlocks/locks Business Tools modules.
+  if (sub?.tenant_id && "plan_id" in payload) {
+    await supabase!.from("tenants").update({ plan: sub.plan_id }).eq("id", sub.tenant_id);
   }
 
   return NextResponse.json({ ok: true });
