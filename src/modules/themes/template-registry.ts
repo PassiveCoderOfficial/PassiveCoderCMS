@@ -8406,9 +8406,1221 @@ const VAULTSTORE: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 59: TorqueAuto (Car Servicing) ─────────────────────────────────
+
+const TORQUE_AUTO: TemplateIdentity = {
+  slug: "torque-auto",
+  name: "TorqueAuto",
+  description: "High-energy car servicing template with a dark, performance-inspired design. Ideal for independent mechanics and automotive service centres.",
+  category: "Automotive",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&q=85&fit=crop",
+  tags: ["car service", "mechanic", "auto repair", "vehicle maintenance"],
+
+  palette: {
+    primary: "#ef4444",
+    primaryFg: "#ffffff",
+    secondary: "#3f3f46",
+    accent: "#f87171",
+    background: "#09090b",
+    foreground: "#fafafa",
+    muted: "#18181b",
+    mutedFg: "#a1a1aa",
+    card: "#18181b",
+    border: "#27272a",
+    ring: "#ef4444",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-torque-auto h1,.template-torque-auto h2 { text-transform: uppercase; }
+    .template-torque-auto .service-card { border-top: 3px solid #ef4444; background: #18181b; }
+    .template-torque-auto .stat-value { color: #ef4444; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1600&q=90&fit=crop", alt: "Mechanic working on car engine" },
+    about: { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=800&q=80&fit=crop", alt: "Auto workshop interior" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80&fit=crop", alt: "Engine diagnostics" },
+      { url: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80&fit=crop", alt: "Logbook servicing" },
+      { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", alt: "Brake repair" },
+      { url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&fit=crop", alt: "Oil change service" },
+      { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80&fit=crop", alt: "Engine repair" },
+      { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", alt: "Vehicle inspection" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80&fit=crop", alt: "Workshop bay" },
+      { url: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80&fit=crop", alt: "Technician at work" },
+      { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=800&q=80&fit=crop", alt: "Fully equipped garage" },
+      { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80&fit=crop", alt: "Vehicle lift bay" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Master Mechanic" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Diagnostic Specialist" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&q=80&fit=crop", alt: "Book a service" },
+  },
+
+  heroHeadline: "Expert Car Care You Can Trust",
+  heroSubline: "Fully equipped workshop with certified mechanics — from logbook servicing to major repairs.",
+  heroBadge: "🔧 ASE Certified Technicians",
+  heroCTA: "Book a Service",
+  heroSecondaryCTA: "Get a Quote",
+  siteName: "TorqueAuto Service Centre",
+  tagline: "Expert car care you can trust",
+  phone: "+1 (555) 337-6620",
+  email: "service@torqueauto.com",
+  address: "90 Mechanic Row, Metro City",
+  aboutHeading: "Certified Mechanics, Honest Pricing Since 2010",
+  aboutBody: "TorqueAuto is a fully equipped independent workshop handling everything from routine logbook servicing to major engine and transmission repairs. Our ASE-certified technicians use manufacturer-grade diagnostic equipment and always call before any additional work — no surprise bills.",
+  aboutHighlights: ["ASE certified technicians", "Manufacturer-grade diagnostic equipment", "No work without your approval first", "Loaner cars available for major repairs"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Logbook Servicing", description: "Manufacturer-scheduled servicing that keeps your warranty valid without dealer prices.", icon: "📋", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Engine Diagnostics", description: "Computerised diagnostics to accurately pinpoint engine and electrical issues.", icon: "🔍", iconType: "emoji", price: "From $95", imageUrl: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Brake Repair & Service", description: "Brake pad, rotor and full brake system repair with a safety inspection included.", icon: "🛑", iconType: "emoji", price: "From $220", imageUrl: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Oil Change", description: "Quick, quality oil and filter changes using manufacturer-recommended products.", icon: "🛢️", iconType: "emoji", price: "From $65", imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Major Repairs", description: "Engine and transmission repair and rebuild for vehicles of all makes and models.", icon: "⚙️", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Pre-Purchase Inspection", description: "Comprehensive inspection before you buy a used vehicle, with a full written report.", icon: "📝", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "20,000+", label: "Services Completed" },
+    { id: uid("st"), value: "16 yr", label: "In Business" },
+    { id: uid("st"), value: "4.8★", label: "Customer Rating" },
+    { id: uid("st"), value: "Same-Day", label: "Service Available" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Chris Donovan", role: "Regular Customer", content: "Half the price of the dealer and my warranty stayed valid. They explain everything before doing any work. Trustworthy shop.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Maria Santos", role: "Customer", content: "Diagnosed and fixed an issue two other shops couldn't figure out. Genuinely skilled technicians here.", rating: 5 },
+    { id: uid("t"), name: "Todd Weber", role: "Fleet Manager", content: "We service our entire company fleet here. Reliable, fair pricing and they work around our schedule.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Basic Service", price: "$180", description: "Standard logbook service", features: ["Oil & filter change", "Multi-point inspection", "Fluid top-ups"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Service", price: "$320", description: "Most popular, comprehensive", features: ["Everything in Basic", "Brake inspection", "Diagnostic scan", "Safety certification"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Major Repair", price: "Custom Quote", description: "Engine, transmission or major work", features: ["Free diagnostic with repair", "Detailed written quote", "Loaner car available"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Will servicing here void my manufacturer warranty?", answer: "No, by law you can service your vehicle at any qualified independent workshop without voiding your manufacturer warranty, as long as we use approved parts and follow the service schedule." },
+    { id: uid("f"), question: "Do you call before doing extra work?", answer: "Always. We never perform work beyond what you've approved without calling you first with a clear explanation and quote." },
+    { id: uid("f"), question: "Do you offer loaner cars?", answer: "Yes, loaner cars are available for major repairs that require your vehicle to stay overnight or longer." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Tony Marchetti", role: "Master Mechanic & Owner", bio: "20 years turning wrenches, ASE certified across all major systems.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Dave Reilly", role: "Diagnostic Specialist", bio: "Specialises in complex electrical and engine diagnostic work.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 60: GripZone (Tyre Shop) ────────────────────────────────────────
+
+const GRIPZONE_TYRES: TemplateIdentity = {
+  slug: "gripzone-tyres",
+  name: "GripZone",
+  description: "Focused tyre shop template with a bold, sporty visual identity. Highlights tyre brands, fitting services, and wheel alignment.",
+  category: "Automotive",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&q=85&fit=crop",
+  tags: ["tyre shop", "wheel alignment", "tyres", "automotive"],
+
+  palette: {
+    primary: "#eab308",
+    primaryFg: "#171717",
+    secondary: "#57534e",
+    accent: "#facc15",
+    background: "#171717",
+    foreground: "#fafaf9",
+    muted: "#292524",
+    mutedFg: "#a8a29e",
+    card: "#292524",
+    border: "#44403c",
+    ring: "#eab308",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-gripzone-tyres h1,.template-gripzone-tyres h2 { text-transform: uppercase; }
+    .template-gripzone-tyres .service-card { border-top: 3px solid #eab308; background: #292524; }
+    .template-gripzone-tyres .stat-value { color: #eab308; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=900&q=85&fit=crop", alt: "Tyre fitting service" },
+    about: { url: "https://images.unsplash.com/photo-1600661653561-629509216228?w=800&q=80&fit=crop", alt: "Tyre shop interior" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80&fit=crop", alt: "Tyre fitting" },
+      { url: "https://images.unsplash.com/photo-1600661653561-629509216228?w=600&q=80&fit=crop", alt: "Wheel alignment" },
+      { url: "https://images.unsplash.com/photo-1518987048-93e29699e79a?w=600&q=80&fit=crop", alt: "Tyre balancing" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Tyre rotation" },
+      { url: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80&fit=crop", alt: "Puncture repair" },
+      { url: "https://images.unsplash.com/photo-1600661653561-629509216228?w=600&q=80&fit=crop", alt: "Wheel and tyre package" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80&fit=crop", alt: "Tyre shop showroom" },
+      { url: "https://images.unsplash.com/photo-1600661653561-629509216228?w=800&q=80&fit=crop", alt: "Alignment bay" },
+      { url: "https://images.unsplash.com/photo-1518987048-93e29699e79a?w=800&q=80&fit=crop", alt: "Tyre stock" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80&fit=crop", alt: "Fitting bay" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Head Fitter" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&q=80&fit=crop", alt: "Book a fitting" },
+  },
+
+  heroHeadline: "Stay Safe on the Road",
+  heroSubline: "Premium tyre fitting and wheel alignment — all major brands, competitive pricing, same-day service.",
+  heroBadge: "🛞 All Major Brands Stocked",
+  heroCTA: "Book a Fitting",
+  heroSecondaryCTA: "Get a Price",
+  siteName: "GripZone Tyres",
+  tagline: "Stay safe on the road",
+  phone: "+1 (555) 220-3391",
+  email: "info@gripzonetyres.com",
+  address: "45 Wheel Way, Metro City",
+  aboutHeading: "All Major Tyre Brands, Fitted Same Day",
+  aboutBody: "GripZone stocks all major tyre brands and offers same-day fitting, wheel alignment and balancing at competitive prices. Our technicians use computerised alignment equipment for precision every time, and we offer a price match guarantee against any local competitor.",
+  aboutHighlights: ["All major tyre brands stocked", "Same-day fitting available", "Computerised wheel alignment", "Price match guarantee"],
+
+  navItems: [
+    { id: "n1", label: "Tyres", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Tyre Fitting", description: "Professional fitting for all tyre brands and sizes, most jobs done in under an hour.", icon: "🛞", iconType: "emoji", price: "From $25/tyre", imageUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Wheel Alignment", description: "Computerised 4-wheel alignment to extend tyre life and improve handling.", icon: "📐", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1600661653561-629509216228?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Wheel Balancing", description: "Precision balancing to eliminate vibration and uneven tyre wear.", icon: "⚖️", iconType: "emoji", price: "From $15/wheel", imageUrl: "https://images.unsplash.com/photo-1518987048-93e29699e79a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Tyre Rotation", description: "Regular rotation to ensure even tread wear and extend tyre lifespan.", icon: "🔄", iconType: "emoji", price: "From $35", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Puncture Repair", description: "Fast, safe puncture repair for tyres that meet legal repair standards.", icon: "🔧", iconType: "emoji", price: "From $25", imageUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Wheel & Tyre Packages", description: "Complete new wheel and tyre packages for a fresh look and improved performance.", icon: "💫", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1600661653561-629509216228?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "50,000+", label: "Tyres Fitted" },
+    { id: uid("st"), value: "12 yr", label: "In Business" },
+    { id: uid("st"), value: "4.7★", label: "Customer Rating" },
+    { id: uid("st"), value: "Same-Day", label: "Fitting Available" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Jake Sullivan", role: "Customer", content: "In and out in 30 minutes with 4 new tyres fitted and balanced. Best price I found locally too.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Rachel Kim", role: "Customer", content: "Alignment fixed a pulling issue my car had for months. Should have come here first.", rating: 5 },
+    { id: uid("t"), name: "Big Rig Logistics", role: "Fleet Customer", content: "They handle tyres for our entire delivery fleet. Fast turnaround keeps our trucks on the road.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Tyre", price: "$25", period: "/tyre", description: "Fitting only", features: ["Professional fitting", "Old tyre disposal", "Pressure check"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Set of 4 + Alignment", price: "From $180", description: "Most popular package", features: ["4 tyres fitted & balanced", "Full wheel alignment", "Old tyre disposal"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Fleet Account", price: "Custom", description: "Business & fleet pricing", features: ["Volume discount pricing", "Priority scheduling", "Monthly invoicing"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How long does tyre fitting take?", answer: "Most standard tyre fittings take 30-45 minutes for a full set of 4, including balancing." },
+    { id: uid("f"), question: "Do you price match?", answer: "Yes, we offer a price match guarantee against any local competitor's advertised price on the same tyre brand and model." },
+    { id: uid("f"), question: "How often should I get a wheel alignment?", answer: "We recommend an alignment check every 10,000 miles or whenever you notice uneven tyre wear or pulling." },
+  ],
+};
+
+// ─── TEMPLATE 61: PanelCraft (Auto Body & Panel Beating) ─────────────────────
+
+const PANELCRAFT: TemplateIdentity = {
+  slug: "panelcraft",
+  name: "PanelCraft",
+  description: "Sleek auto body and panel beating template with a premium feel. Showcases repair quality through service listings and insurance approval badges.",
+  category: "Automotive",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=1200&q=85&fit=crop",
+  tags: ["panel beating", "smash repairs", "auto body", "car paint"],
+
+  palette: {
+    primary: "#0ea5e9",
+    primaryFg: "#ffffff",
+    secondary: "#475569",
+    accent: "#38bdf8",
+    background: "#111827",
+    foreground: "#f9fafb",
+    muted: "#1f2937",
+    mutedFg: "#9ca3af",
+    card: "#1f2937",
+    border: "#374151",
+    ring: "#0ea5e9",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-panelcraft .hero-badge { background: #0ea5e9; color: white; border-radius: 9999px; }
+    .template-panelcraft .service-card { border-top: 3px solid #0ea5e9; background: #1f2937; }
+    .template-panelcraft .stat-value { color: #38bdf8; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=1600&q=90&fit=crop", alt: "Auto body repair shop" },
+    about: { url: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=800&q=80&fit=crop", alt: "Car paint spray booth" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", alt: "Panel beating" },
+      { url: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=600&q=80&fit=crop", alt: "Car paint spraying" },
+      { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80&fit=crop", alt: "Dent repair" },
+      { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", alt: "Insurance claim repair" },
+      { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", alt: "Bumper repair" },
+      { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", alt: "Full body restoration" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=800&q=80&fit=crop", alt: "Before and after repair" },
+      { url: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=800&q=80&fit=crop", alt: "Paint booth work" },
+      { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=800&q=80&fit=crop", alt: "Completed restoration" },
+      { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80&fit=crop", alt: "Bodywork detail" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Master Panel Beater" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=1200&q=80&fit=crop", alt: "Get a repair quote" },
+  },
+
+  heroHeadline: "Restore Your Vehicle to Showroom Condition",
+  heroSubline: "Expert panel beating and auto body repairs — insurance approved and quality guaranteed.",
+  heroBadge: "🏆 Insurance Approved Repairer",
+  heroCTA: "Get a Free Quote",
+  heroSecondaryCTA: "View Our Work",
+  siteName: "PanelCraft Auto Body",
+  tagline: "Restore your vehicle to showroom condition",
+  phone: "+1 (555) 660-9021",
+  email: "quotes@panelcraft.com",
+  address: "120 Bodyshop Ave, Metro City",
+  aboutHeading: "Insurance-Approved Repairs, Showroom Quality",
+  aboutBody: "PanelCraft specialises in panel beating, smash repairs and paint matching to factory standard. As an approved repairer for major insurance companies, we handle the entire claims process on your behalf, so all you need to do is drop off your car.",
+  aboutHighlights: ["Approved repairer for major insurers", "Factory-standard paint matching", "Lifetime warranty on workmanship", "We handle your insurance claim"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get Quote", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Panel Beating", description: "Structural and cosmetic panel repair returning your vehicle to factory shape.", icon: "🔨", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Paint Matching & Spraying", description: "Computer-matched paint spraying for a seamless, invisible repair finish.", icon: "🎨", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Dent Repair", description: "Paintless dent removal for minor dings, and traditional repair for major damage.", icon: "🔵", iconType: "emoji", price: "From $150", imageUrl: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Insurance Claim Repairs", description: "Full-service repairs with direct insurance billing — we manage the whole claim.", icon: "📋", iconType: "emoji", price: "Insurance covered", imageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bumper Repair", description: "Bumper repair and replacement for scrapes, cracks and major damage.", icon: "🚗", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Full Restoration", description: "Complete body restoration for classic cars and major collision damage.", icon: "🏆", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5,000+", label: "Vehicles Repaired" },
+    { id: uid("st"), value: "18 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Customer Rating" },
+    { id: uid("st"), value: "Lifetime", label: "Workmanship Warranty" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Amanda Rivers", role: "Insurance Claim Customer", content: "Handled my entire insurance claim, and the paint match is completely invisible. You'd never know there was damage.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Robert Chen", role: "Customer", content: "Restored my classic car's body to better than original condition. True craftsmen.", rating: 5 },
+    { id: uid("t"), name: "Denise Foster", role: "Customer", content: "Fast turnaround on my bumper repair and the price matched their initial quote exactly.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Minor Repair", price: "From $150", description: "Dent or scratch repair", features: ["Free assessment", "Paintless repair when possible", "Same-week turnaround"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Insurance Claim", price: "Insurance Covered", description: "Most popular, full claim handled", features: ["We manage your claim", "Factory-matched paint", "Lifetime workmanship warranty"], highlighted: true, badge: "Most Popular", ctaLabel: "Start Claim", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Restoration", price: "Custom Quote", description: "Classic car or major damage", features: ["Complete body restoration", "Show-quality finish available", "Detailed project timeline"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you work directly with my insurance company?", answer: "Yes, as an approved repairer for major insurers, we handle the entire claims process directly, so you don't have to deal with the paperwork." },
+    { id: uid("f"), question: "Can you match my car's exact paint color?", answer: "Yes, we use computer color-matching technology to achieve an exact, invisible match to your vehicle's original paint." },
+    { id: uid("f"), question: "How long do repairs typically take?", answer: "Minor repairs are usually completed within a few days, while insurance claims and major restorations can take 1-3 weeks depending on parts availability." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Frank Costa", role: "Master Panel Beater & Owner", bio: "18 years in auto body repair, certified in factory-standard structural repair techniques.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 62: WanderWay (Travel Agency) ──────────────────────────────────
+
+const WANDERWAY: TemplateIdentity = {
+  slug: "wanderway",
+  name: "WanderWay",
+  description: "Vibrant travel agency template with a destination-forward hero and inspiring visual design. Perfect for full-service travel agencies and holiday planners.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=85&fit=crop",
+  tags: ["travel agency", "holidays", "tours", "flights", "accommodation"],
+
+  palette: {
+    primary: "#0ea5e9",
+    primaryFg: "#ffffff",
+    secondary: "#1e1b4b",
+    accent: "#38bdf8",
+    background: "#f0f9ff",
+    foreground: "#1e1b4b",
+    muted: "#e0f2fe",
+    mutedFg: "#0369a1",
+    card: "#ffffff",
+    border: "#bae6fd",
+    ring: "#0ea5e9",
+    borderRadius: "1rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-wanderway .hero-badge { background: #0ea5e9; color: white; border-radius: 9999px; }
+    .template-wanderway .service-card { border-radius: 1rem; }
+    .template-wanderway .stat-value { color: #0ea5e9; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=900&q=85&fit=crop", alt: "Tropical travel destination" },
+    about: { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80&fit=crop", alt: "Travel planning consultation" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80&fit=crop", alt: "Beach holiday" },
+      { url: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80&fit=crop", alt: "Flight booking" },
+      { url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&fit=crop", alt: "Hotel accommodation" },
+      { url: "https://images.unsplash.com/photo-1500835556837-99ac94a94552?w=600&q=80&fit=crop", alt: "Group tour" },
+      { url: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80&fit=crop", alt: "Honeymoon package" },
+      { url: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&q=80&fit=crop", alt: "Adventure travel" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80&fit=crop", alt: "Dream beach destination" },
+      { url: "https://images.unsplash.com/photo-1500835556837-99ac94a94552?w=800&q=80&fit=crop", alt: "Group travel experience" },
+      { url: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80&fit=crop", alt: "Romantic getaway" },
+      { url: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80&fit=crop", alt: "Adventure destination" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Senior Travel Consultant" },
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Group Tour Specialist" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80&fit=crop", alt: "Plan your trip" },
+  },
+
+  heroHeadline: "Your Journey Starts Here",
+  heroSubline: "Tailored travel experiences to destinations worldwide — let us handle every detail.",
+  heroBadge: "✈️ 5,000+ Trips Planned",
+  heroCTA: "Plan My Trip",
+  heroSecondaryCTA: "Browse Destinations",
+  siteName: "WanderWay Travel",
+  tagline: "Your journey starts here",
+  phone: "+1 (555) 774-8821",
+  email: "hello@wanderwaytravel.com",
+  address: "50 Voyager Blvd, Metro City",
+  aboutHeading: "5,000+ Trips Planned, Every Detail Handled",
+  aboutBody: "WanderWay takes the stress out of travel planning — flights, hotels, tours and everything in between, tailored to your budget and style. Our experienced consultants have personally visited the destinations they recommend, so you get honest advice, not just a booking engine.",
+  aboutHighlights: ["5,000+ trips successfully planned", "Consultants who've visited the destinations", "24/7 support while you travel", "Best price guarantee"],
+
+  navItems: [
+    { id: "n1", label: "Destinations", url: "#services" },
+    { id: "n2", label: "Packages", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Plan a Trip", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Beach Holidays", description: "Curated beach getaways to the world's best tropical destinations.", icon: "🏖️", iconType: "emoji", price: "From $1,200", imageUrl: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Flight Booking", description: "Best-fare flight search and booking with flexible date options.", icon: "✈️", iconType: "emoji", price: "No booking fee", imageUrl: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Hotel & Accommodation", description: "Hand-picked hotels and resorts matched to your travel style and budget.", icon: "🏨", iconType: "emoji", price: "Included in packages", imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Group Tours", description: "Small-group guided tours to destinations across every continent.", icon: "🚌", iconType: "emoji", price: "From $2,500", imageUrl: "https://images.unsplash.com/photo-1500835556837-99ac94a94552?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Honeymoon Packages", description: "Romantic, all-inclusive honeymoon experiences designed for two.", icon: "💕", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Adventure Travel", description: "Off-the-beaten-path adventure trips for thrill-seekers and explorers.", icon: "🏔️", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5,000+", label: "Trips Planned" },
+    { id: uid("st"), value: "80+", label: "Countries Covered" },
+    { id: uid("st"), value: "15 yr", label: "In Business" },
+    { id: uid("st"), value: "4.8★", label: "Traveler Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Emma & David", role: "Honeymoon Clients", content: "Every detail of our honeymoon was perfect. Our consultant clearly knew the destination personally, not just from a brochure.", rating: 5, avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "The Patel Family", role: "Group Tour Clients", content: "Our multi-generational family trip was flawlessly organized. Everyone from grandparents to kids had an amazing time.", rating: 5 },
+    { id: uid("t"), name: "Marcus Webb", role: "Solo Traveler", content: "Booked an adventure trip I never would have found on my own. WanderWay's recommendations were spot-on.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Flight Only", price: "No Fee", description: "Best-fare flight booking", features: ["Best fare search", "Flexible date options", "No booking fees"], ctaLabel: "Search Flights", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Complete Package", price: "From $1,200", description: "Most popular, flights + hotel + extras", features: ["Flights & accommodation", "Airport transfers included", "24/7 travel support", "Best price guarantee"], highlighted: true, badge: "Most Popular", ctaLabel: "Plan My Trip", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Custom Itinerary", price: "Consultation-based", description: "Fully bespoke travel planning", features: ["Personal travel consultant", "Fully customized itinerary", "VIP experiences available"], ctaLabel: "Book Consultation", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you offer 24/7 support while traveling?", answer: "Yes, all package clients get access to our 24/7 emergency support line for any issues that arise during your trip." },
+    { id: uid("f"), question: "Can you plan a custom itinerary for us?", answer: "Absolutely, our custom itinerary service builds a fully bespoke trip around your interests, budget and timeline." },
+    { id: uid("f"), question: "Do you price match other travel agencies?", answer: "Yes, we offer a best price guarantee — if you find a better price on an identical package, we'll match it." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Sophie Marchand", role: "Senior Travel Consultant", bio: "15 years in travel planning, has personally visited over 50 countries she recommends to clients.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Carlos Mendez", role: "Group Tour Specialist", bio: "Specialises in multi-generational and large group travel logistics.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 63: TrailBlaze (Adventure Tour Operator) ───────────────────────
+
+const TRAILBLAZE_TOURS: TemplateIdentity = {
+  slug: "trailblaze-tours",
+  name: "TrailBlaze",
+  description: "Adventure-focused tour operator template with dramatic imagery and itinerary showcases. Designed for guided tours, eco-tourism, and experience travel brands.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=85&fit=crop",
+  tags: ["tour operator", "guided tours", "adventure", "eco-tourism", "experiences"],
+
+  palette: {
+    primary: "#22c55e",
+    primaryFg: "#ffffff",
+    secondary: "#16a34a",
+    accent: "#4ade80",
+    background: "#042f2e",
+    foreground: "#f0fdf4",
+    muted: "#134e4a",
+    mutedFg: "#86efac",
+    card: "#134e4a",
+    border: "#166534",
+    ring: "#22c55e",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-trailblaze-tours .hero-badge { background: #22c55e; color: white; border-radius: 9999px; }
+    .template-trailblaze-tours .service-card { border-top: 3px solid #22c55e; background: #134e4a; }
+    .template-trailblaze-tours .stat-value { color: #4ade80; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600&q=90&fit=crop", alt: "Mountain trail adventure" },
+    about: { url: "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?w=800&q=80&fit=crop", alt: "Tour guide with group" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=80&fit=crop", alt: "Mountain hiking tour" },
+      { url: "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?w=600&q=80&fit=crop", alt: "Guided nature tour" },
+      { url: "https://images.unsplash.com/photo-1516939884455-1445c8652f83?w=600&q=80&fit=crop", alt: "Wildlife safari" },
+      { url: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=600&q=80&fit=crop", alt: "Camping expedition" },
+      { url: "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&q=80&fit=crop", alt: "River rafting" },
+      { url: "https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=600&q=80&fit=crop", alt: "Eco-tourism excursion" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80&fit=crop", alt: "Breathtaking trail view" },
+      { url: "https://images.unsplash.com/photo-1516939884455-1445c8652f83?w=800&q=80&fit=crop", alt: "Wildlife encounter" },
+      { url: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=800&q=80&fit=crop", alt: "Group camping" },
+      { url: "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&q=80&fit=crop", alt: "Adventure activity" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Head Guide" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80&fit=crop", alt: "Book an adventure" },
+  },
+
+  heroHeadline: "Explore the World Your Way",
+  heroSubline: "Expert-guided tours to breathtaking destinations — small groups, big adventures.",
+  heroBadge: "🏔️ Small Group Adventures",
+  heroCTA: "Book an Adventure",
+  heroSecondaryCTA: "View Itineraries",
+  siteName: "TrailBlaze Tours",
+  tagline: "Explore the world your way",
+  phone: "+1 (555) 448-2299",
+  email: "adventures@trailblazetours.com",
+  address: "10 Basecamp Road, Metro City",
+  aboutHeading: "Small-Group Adventures, Expertly Guided",
+  aboutBody: "TrailBlaze runs small-group guided tours to some of the world's most breathtaking destinations, with a genuine commitment to responsible, eco-conscious tourism. Our guides are local experts who share deep knowledge of the terrain, culture and wildlife along every route.",
+  aboutHighlights: ["Small groups, max 12 travelers", "Local expert guides", "Eco-conscious tour practices", "All skill levels welcomed"],
+
+  navItems: [
+    { id: "n1", label: "Tours", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Mountain Hiking Tours", description: "Multi-day guided hiking expeditions through breathtaking mountain terrain.", icon: "🏔️", iconType: "emoji", price: "From $850", imageUrl: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Wildlife Safaris", description: "Small-group wildlife tracking and viewing with expert naturalist guides.", icon: "🦁", iconType: "emoji", price: "From $1,400", imageUrl: "https://images.unsplash.com/photo-1516939884455-1445c8652f83?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Camping Expeditions", description: "Guided wilderness camping trips with all equipment and meals included.", icon: "⛺", iconType: "emoji", price: "From $650", imageUrl: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "River Rafting", description: "Guided white-water rafting adventures for beginners through experienced paddlers.", icon: "🚣", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Eco-Tours", description: "Sustainable nature tours focused on conservation and environmental education.", icon: "🌿", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Custom Group Tours", description: "Bespoke tour itineraries designed for private groups and special occasions.", icon: "🎯", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "3,000+", label: "Adventurers Guided" },
+    { id: uid("st"), value: "12", label: "Max Group Size" },
+    { id: uid("st"), value: "14 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Traveler Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Jake Morrison", role: "Hiking Tour Client", content: "The guides' knowledge of the terrain and local ecology made this trip unforgettable. Small group size meant real personal attention.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sarah & Tom", role: "Safari Clients", content: "Best wildlife experience of our lives. Our guide spotted animals we never would have seen on our own.", rating: 5 },
+    { id: uid("t"), name: "Group of 8 Friends", role: "Custom Tour Clients", content: "They built a completely custom itinerary for our friend group. Every detail was handled perfectly.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Day Adventure", price: "From $180", description: "Single-day guided tour", features: ["Expert local guide", "Equipment included", "Small group, max 12"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Multi-Day Expedition", price: "From $850", description: "Most popular, 3-7 day tours", features: ["All meals & equipment", "Expert guide throughout", "Small group experience", "Accommodation included"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Custom Group Tour", price: "Request Quote", description: "Private, fully bespoke itinerary", features: ["Fully customized route", "Private group only", "Flexible dates & duration"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What fitness level do I need for your tours?", answer: "We offer tours for all fitness levels, from easy nature walks to challenging multi-day treks — check each tour's difficulty rating before booking." },
+    { id: uid("f"), question: "What's included in the tour price?", answer: "Most multi-day tours include expert guiding, equipment, meals and accommodation — check each specific tour listing for exact inclusions." },
+    { id: uid("f"), question: "Can you organize a private tour for our group?", answer: "Yes, our custom group tour service builds a fully bespoke itinerary around your group's interests, fitness level and schedule." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Ben Carter", role: "Head Guide & Founder", bio: "14 years leading wilderness expeditions, certified in wilderness first aid and eco-tourism practices.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 64: VisaBridge (Immigration Consultancy) ───────────────────────
+
+const VISABRIDGE: TemplateIdentity = {
+  slug: "visabridge",
+  name: "VisaBridge",
+  description: "Professional visa and immigration consultancy template with a clean, authoritative look. Builds trust through credentials, process timelines, and client success stories.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=85&fit=crop",
+  tags: ["visa", "immigration", "consultancy", "migration", "work permit"],
+
+  palette: {
+    primary: "#4f46e5",
+    primaryFg: "#ffffff",
+    secondary: "#0f172a",
+    accent: "#818cf8",
+    background: "#0f172a",
+    foreground: "#f8fafc",
+    muted: "#1e293b",
+    mutedFg: "#94a3b8",
+    card: "#1e293b",
+    border: "#334155",
+    ring: "#4f46e5",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-visabridge .hero-badge { background: #4f46e5; color: white; border-radius: 9999px; }
+    .template-visabridge .service-card { border-top: 3px solid #4f46e5; background: #1e293b; }
+    .template-visabridge .stat-value { color: #818cf8; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1600&q=90&fit=crop", alt: "Airport travel and passports" },
+    about: { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop", alt: "Immigration consultation" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80&fit=crop", alt: "Work visa consultation" },
+      { url: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=80&fit=crop", alt: "Family visa application" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80&fit=crop", alt: "Student visa guidance" },
+      { url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80&fit=crop", alt: "Permanent residency application" },
+      { url: "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=600&q=80&fit=crop", alt: "Citizenship application" },
+      { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80&fit=crop", alt: "Document review" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80&fit=crop", alt: "Immigration office" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop", alt: "Client consultation" },
+      { url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&fit=crop", alt: "Document preparation" },
+      { url: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&fit=crop", alt: "Family reunification" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Registered Migration Agent" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80&fit=crop", alt: "Start your application" },
+  },
+
+  heroHeadline: "Your Path to a New Beginning",
+  heroSubline: "Registered migration agents guiding you through every step of your visa application.",
+  heroBadge: "🛂 Registered Migration Agents",
+  heroCTA: "Book a Consultation",
+  heroSecondaryCTA: "Check Eligibility",
+  siteName: "VisaBridge Immigration",
+  tagline: "Your path to a new beginning",
+  phone: "+1 (555) 220-4471",
+  email: "info@visabridgeimmigration.com",
+  address: "300 Global Gateway, Suite 400, Metro City",
+  aboutHeading: "Registered Migration Agents, 2,500+ Cases Handled",
+  aboutBody: "VisaBridge provides expert guidance through the visa and immigration process for work, family, study and permanent residency applications. Our registered migration agents stay current on evolving immigration policy so your application has the strongest possible chance of approval.",
+  aboutHighlights: ["Registered migration agents", "2,500+ successful cases", "Transparent, upfront fees", "Multilingual consultation available"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Process", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Success Stories", url: "#testimonials" },
+    { id: "n5", label: "Get Started", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Work Visa Applications", description: "Skilled worker and employer-sponsored visa applications handled start to finish.", icon: "💼", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Family & Partner Visas", description: "Spouse, partner and family reunification visa applications with compassionate guidance.", icon: "👨‍👩‍👧", iconType: "emoji", price: "From $2,200", imageUrl: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Student Visas", description: "Study visa applications and guidance for international students at every stage.", icon: "🎓", iconType: "emoji", price: "From $900", imageUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Permanent Residency", description: "Full support through the permanent residency application process.", icon: "🏡", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Citizenship Applications", description: "Guidance through citizenship eligibility assessment and application submission.", icon: "🏛️", iconType: "emoji", price: "From $1,500", imageUrl: "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Eligibility Assessment", description: "Free initial assessment to determine your best visa pathway options.", icon: "✅", iconType: "emoji", price: "Free", imageUrl: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "2,500+", label: "Cases Handled" },
+    { id: uid("st"), value: "91%", label: "Approval Rate" },
+    { id: uid("st"), value: "17 yr", label: "In Business" },
+    { id: uid("st"), value: "5", label: "Languages Spoken" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Wei Chen", role: "Work Visa Client", content: "Guided us through a complex employer-sponsored visa process with total clarity at every step. Approved without a single issue.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Fatima Hassan", role: "Family Visa Client", content: "Finally reunited with my family after two years apart. VisaBridge made a stressful process feel manageable.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Diego Ramirez", role: "PR Applicant", content: "Their attention to detail on our permanent residency application caught issues we would have missed. Highly recommend.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Eligibility Assessment", price: "Free", description: "30-minute initial consultation", features: ["Visa pathway assessment", "Timeline overview", "No obligation"], ctaLabel: "Book Free Assessment", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Standard Application", price: "From $1,800", description: "Most popular, full application support", features: ["Full application preparation", "Document review & submission", "Regular status updates"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Complex Case", price: "Custom Quote", description: "PR, citizenship or appeals", features: ["Dedicated senior agent", "Comprehensive case strategy", "Priority processing support"], ctaLabel: "Get a Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Are you a registered migration agent?", answer: "Yes, all VisaBridge consultants are registered migration agents, qualified to provide immigration advice and represent your case." },
+    { id: uid("f"), question: "How long does a visa application typically take?", answer: "Processing times vary significantly by visa type and country, ranging from a few weeks to over a year — we provide a realistic timeline during your initial assessment." },
+    { id: uid("f"), question: "What happens if my application is refused?", answer: "We offer appeal and review services for refused applications, and will assess your case to determine the best path forward." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Amara Osei", role: "Principal Migration Agent", bio: "17 years in immigration law and migration consulting, has personally handled over 800 successful applications.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 65: WorkSafeGear (Workwear & Safety Gear Retail) ───────────────
+
+const WORKSAFE_GEAR: TemplateIdentity = {
+  slug: "worksafe-gear",
+  name: "WorkSafeGear",
+  description: "Practical and authoritative workwear and safety gear retail template. Ideal for PPE suppliers, uniform shops, and industrial workwear retailers.",
+  category: "Retail & Shop",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=1200&q=85&fit=crop",
+  tags: ["workwear", "safety gear", "PPE", "uniforms", "industrial"],
+
+  palette: {
+    primary: "#f97316",
+    primaryFg: "#ffffff",
+    secondary: "#431407",
+    accent: "#fb923c",
+    background: "#431407",
+    foreground: "#fff7ed",
+    muted: "#7c2d12",
+    mutedFg: "#fed7aa",
+    card: "#7c2d12",
+    border: "#9a3412",
+    ring: "#f97316",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-worksafe-gear .hero-badge { background: #f97316; color: white; border-radius: 9999px; }
+    .template-worksafe-gear .service-card { border-top: 3px solid #f97316; background: #7c2d12; }
+    .template-worksafe-gear .stat-value { color: #fb923c; font-weight: 800; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=1600&q=90&fit=crop", alt: "Industrial safety gear" },
+    about: { url: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80&fit=crop", alt: "Workwear warehouse" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&q=80&fit=crop", alt: "Safety helmets and PPE" },
+      { url: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80&fit=crop", alt: "Work boots and clothing" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", alt: "High-visibility apparel" },
+      { url: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=600&q=80&fit=crop", alt: "Uniform embroidery" },
+      { url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&q=80&fit=crop", alt: "Fall protection gear" },
+      { url: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80&fit=crop", alt: "Industrial gloves" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=800&q=80&fit=crop", alt: "Safety gear display" },
+      { url: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80&fit=crop", alt: "Workwear warehouse floor" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80&fit=crop", alt: "PPE compliance display" },
+      { url: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=800&q=80&fit=crop", alt: "Custom uniform samples" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Sales & Compliance Manager" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=1200&q=80&fit=crop", alt: "Shop safety gear" },
+  },
+
+  heroHeadline: "Protect Your Team, Equip Your Workforce",
+  heroSubline: "Quality workwear and safety equipment — compliant, durable, and ready when you need it.",
+  heroBadge: "🦺 Compliant & Certified PPE",
+  heroCTA: "Shop Now",
+  heroSecondaryCTA: "Bulk Order Quote",
+  siteName: "WorkSafeGear",
+  tagline: "Protect your team, equip your workforce",
+  phone: "+1 (555) 774-6690",
+  email: "sales@worksafegear.com",
+  address: "700 Industrial Blvd, Metro City",
+  aboutHeading: "Compliant Workwear & Safety Equipment for Every Industry",
+  aboutBody: "WorkSafeGear supplies certified PPE, workwear and uniforms to construction, manufacturing, and industrial businesses. Every product meets current safety compliance standards, and we offer bulk ordering with custom branding for teams of any size.",
+  aboutHighlights: ["Certified compliant PPE", "Bulk ordering with volume discounts", "Custom uniform branding available", "Same-week dispatch on most items"],
+
+  navItems: [
+    { id: "n1", label: "Shop", url: "#services" },
+    { id: "n2", label: "Bulk Orders", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Safety Helmets & Headgear", description: "Certified hard hats and head protection compliant with current safety standards.", icon: "⛑️", iconType: "emoji", price: "From $25", imageUrl: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Work Boots & Footwear", description: "Steel-toe and composite safety boots built for durability on the job site.", icon: "🥾", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "High-Visibility Apparel", description: "Hi-vis vests, jackets and workwear compliant with visibility safety standards.", icon: "🦺", iconType: "emoji", price: "From $35", imageUrl: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Custom Uniforms", description: "Branded uniforms with embroidery and printing for teams of any size.", icon: "👕", iconType: "emoji", price: "From $28/unit", imageUrl: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Fall Protection Gear", description: "Harnesses, lanyards and fall arrest systems for working at height.", icon: "🪢", iconType: "emoji", price: "From $150", imageUrl: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Gloves & Hand Protection", description: "Cut-resistant, chemical-resistant and general purpose work gloves.", icon: "🧤", iconType: "emoji", price: "From $8/pair", imageUrl: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "500+", label: "Businesses Supplied" },
+    { id: uid("st"), value: "100%", label: "Compliance Certified" },
+    { id: uid("st"), value: "14 yr", label: "In Business" },
+    { id: uid("st"), value: "Same-Week", label: "Dispatch on Most Items" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Construction Solutions Inc.", role: "Bulk Order Client", content: "Fitted out our entire 80-person crew with custom-branded uniforms and PPE. Great pricing and fast turnaround.", rating: 5 },
+    { id: uid("t"), name: "Mike Fielding", role: "Site Supervisor", content: "Boots and gloves have held up through months of daily heavy use. Quality is genuinely better than what we used before.", rating: 5 },
+    { id: uid("t"), name: "Metro Manufacturing", role: "Bulk Order Client", content: "Their compliance knowledge saved us from an audit issue. They know PPE regulations inside and out.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Individual Order", price: "Retail Pricing", description: "Single-item purchases", features: ["Standard shipping", "Full product range", "30-day returns"], ctaLabel: "Shop Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Team Bundle", price: "10-20% Off", description: "Most popular, 10+ units", features: ["Volume discount pricing", "Custom branding available", "Dedicated account rep"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Bulk Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Enterprise Supply", price: "Custom Quote", description: "Ongoing supply contract", features: ["Negotiated contract pricing", "Scheduled reordering", "Dedicated account manager"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Is your PPE compliant with safety regulations?", answer: "Yes, all our safety equipment meets current industry compliance standards, and we can provide certification documentation on request." },
+    { id: uid("f"), question: "Do you offer bulk pricing for teams?", answer: "Yes, we offer volume discounts starting at 10 units, with custom branding options available for larger orders." },
+    { id: uid("f"), question: "How fast is delivery on custom uniforms?", answer: "Custom branded uniforms typically ship within 1-2 weeks depending on order size, while stock items ship the same week." },
+  ],
+};
+
+// ─── TEMPLATE 66: PressMark (Printing & Signage) ─────────────────────────────
+
+const PRESSMARK_PRINT: TemplateIdentity = {
+  slug: "pressmark-print",
+  name: "PressMark",
+  description: "Creative printing and signage template with a bold, design-conscious identity. Showcases product categories, turnaround times, and custom quote requests.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1200&q=85&fit=crop",
+  tags: ["printing", "signage", "branding", "banners", "custom print"],
+
+  palette: {
+    primary: "#d946ef",
+    primaryFg: "#ffffff",
+    secondary: "#2e1065",
+    accent: "#e879f9",
+    background: "#2e1065",
+    foreground: "#faf5ff",
+    muted: "#4c1d95",
+    mutedFg: "#e9d5ff",
+    card: "#4c1d95",
+    border: "#6d28d9",
+    ring: "#d946ef",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-pressmark-print .hero-badge { background: #d946ef; color: white; border-radius: 9999px; }
+    .template-pressmark-print .service-card { border-top: 3px solid #d946ef; background: #4c1d95; }
+    .template-pressmark-print .stat-value { color: #e879f9; font-weight: 800; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1600&q=90&fit=crop", alt: "Printing press in action" },
+    about: { url: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&q=80&fit=crop", alt: "Print shop workspace" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=600&q=80&fit=crop", alt: "Business card printing" },
+      { url: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&q=80&fit=crop", alt: "Banner printing" },
+      { url: "https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=600&q=80&fit=crop", alt: "Signage production" },
+      { url: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&q=80&fit=crop", alt: "Marketing materials" },
+      { url: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=600&q=80&fit=crop", alt: "Vehicle wrap printing" },
+      { url: "https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=600&q=80&fit=crop", alt: "Custom apparel printing" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80&fit=crop", alt: "Print production floor" },
+      { url: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80&fit=crop", alt: "Large format banner" },
+      { url: "https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=800&q=80&fit=crop", alt: "Storefront signage" },
+      { url: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&q=80&fit=crop", alt: "Finished print materials" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Print Production Manager" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1200&q=80&fit=crop", alt: "Get a print quote" },
+  },
+
+  heroHeadline: "Print That Makes an Impression",
+  heroSubline: "Custom printing and signage solutions — from business cards to building-sized banners.",
+  heroBadge: "🖨️ 24-Hour Rush Service Available",
+  heroCTA: "Get a Quote",
+  heroSecondaryCTA: "View Products",
+  siteName: "PressMark Printing",
+  tagline: "Print that makes an impression",
+  phone: "+1 (555) 990-7721",
+  email: "orders@pressmarkprint.com",
+  address: "200 Presswork Lane, Metro City",
+  aboutHeading: "Bold Print & Signage, Delivered Fast",
+  aboutBody: "PressMark handles everything from business cards to building-sized banners with in-house design support and fast turnaround. We produce vibrant, durable print work for businesses that want their branding to make a real impression, backed by rush service when deadlines are tight.",
+  aboutHighlights: ["In-house design support available", "24-hour rush service option", "Large-format printing up to 10 feet", "Volume discounts for repeat clients"],
+
+  navItems: [
+    { id: "n1", label: "Products", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get a Quote", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Business Cards", description: "Premium business card printing with a wide range of finishes and stock options.", icon: "💳", iconType: "emoji", price: "From $45/500", imageUrl: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Banners & Signage", description: "Large-format banners and outdoor signage built to withstand the elements.", icon: "🪧", iconType: "emoji", price: "From $65", imageUrl: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Storefront Signage", description: "Custom shop signage and window graphics that make your storefront stand out.", icon: "🏪", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Marketing Materials", description: "Flyers, brochures and marketing collateral designed and printed in-house.", icon: "📄", iconType: "emoji", price: "From $89/250", imageUrl: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Vehicle Wraps & Decals", description: "Full and partial vehicle branding wraps for maximum street visibility.", icon: "🚗", iconType: "emoji", price: "From $800", imageUrl: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Custom Apparel Printing", description: "Screen printing and embroidery for branded team apparel and merchandise.", icon: "👕", iconType: "emoji", price: "From $12/item", imageUrl: "https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "10,000+", label: "Print Jobs Completed" },
+    { id: uid("st"), value: "24 hr", label: "Rush Service Available" },
+    { id: uid("st"), value: "13 yr", label: "In Business" },
+    { id: uid("st"), value: "4.7★", label: "Customer Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Bright Bloom Florist", role: "Repeat Client", content: "Our storefront signage brought in noticeably more walk-in traffic. Design team nailed our brand look perfectly.", rating: 5 },
+    { id: uid("t"), name: "Metro Fitness Studio", role: "Bulk Order Client", content: "Rush ordered 200 branded shirts for an event with 48 hours notice and they delivered on time, quality intact.", rating: 5 },
+    { id: uid("t"), name: "Sunrise Real Estate", role: "Marketing Client", content: "Consistent quality on every print order over 3 years. Their team is genuinely creative, not just an order-taker.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Standard Order", price: "Product Pricing", description: "Standard turnaround", features: ["3-5 business day turnaround", "Free proof review", "Standard shipping"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Rush Service", price: "+50% Fee", description: "Most requested, 24-hour turnaround", features: ["24-hour production", "Priority queue", "Free local pickup available"], highlighted: true, badge: "Most Requested", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Volume Contract", price: "Custom Quote", description: "Ongoing bulk printing needs", features: ["Negotiated volume pricing", "Dedicated account rep", "Scheduled recurring orders"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you offer design services?", answer: "Yes, our in-house design team can create artwork from scratch or work with your existing brand materials at an additional design fee." },
+    { id: uid("f"), question: "How fast is rush service?", answer: "Our 24-hour rush service covers most standard products, with a 50% rush fee on top of standard pricing." },
+    { id: uid("f"), question: "What file formats do you accept?", answer: "We accept print-ready PDF, AI and EPS files, and can also work from your design brief if you don't have print-ready artwork." },
+  ],
+};
+
+// ─── TEMPLATE 67: SwiftDrop (Courier & Delivery) ─────────────────────────────
+
+const SWIFTDROP_COURIER: TemplateIdentity = {
+  slug: "swiftdrop-courier",
+  name: "SwiftDrop",
+  description: "Efficient courier and delivery services template with a clean, logistics-focused design. Highlights same-day delivery, live tracking, and business accounts.",
+  category: "General Business",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=1200&q=85&fit=crop",
+  tags: ["courier", "delivery", "logistics", "same-day", "parcels"],
+
+  palette: {
+    primary: "#f97316",
+    primaryFg: "#ffffff",
+    secondary: "#7f1d1d",
+    accent: "#fb923c",
+    background: "#7f1d1d",
+    foreground: "#fef2f2",
+    muted: "#991b1b",
+    mutedFg: "#fecaca",
+    card: "#991b1b",
+    border: "#b91c1c",
+    ring: "#f97316",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-swiftdrop-courier .hero-badge { background: #f97316; color: white; border-radius: 9999px; }
+    .template-swiftdrop-courier .service-card { border-top: 3px solid #f97316; background: #991b1b; }
+    .template-swiftdrop-courier .stat-value { color: #fb923c; font-weight: 800; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=1600&q=90&fit=crop", alt: "Delivery driver with parcels" },
+    about: { url: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80&fit=crop", alt: "Courier dispatch center" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&q=80&fit=crop", alt: "Same-day delivery" },
+      { url: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80&fit=crop", alt: "Parcel dispatch" },
+      { url: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=600&q=80&fit=crop", alt: "Business courier account" },
+      { url: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80&fit=crop", alt: "Express delivery" },
+      { url: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&q=80&fit=crop", alt: "Document courier" },
+      { url: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=600&q=80&fit=crop", alt: "Bulk parcel delivery" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=800&q=80&fit=crop", alt: "Delivery fleet" },
+      { url: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80&fit=crop", alt: "Dispatch operations" },
+      { url: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=800&q=80&fit=crop", alt: "Parcel handling" },
+      { url: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=800&q=80&fit=crop", alt: "Delivery on route" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Dispatch Manager" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=1200&q=80&fit=crop", alt: "Book a delivery" },
+  },
+
+  heroHeadline: "Delivered on Time, Every Time",
+  heroSubline: "Same-day and express courier services for businesses and individuals — reliable, fast, tracked.",
+  heroBadge: "📦 Live GPS Tracking",
+  heroCTA: "Book a Delivery",
+  heroSecondaryCTA: "Get Business Rates",
+  siteName: "SwiftDrop Courier",
+  tagline: "Delivered on time, every time",
+  phone: "+1 (555) 660-8821",
+  email: "dispatch@swiftdropcourier.com",
+  address: "400 Logistics Way, Metro City",
+  aboutHeading: "Same-Day Delivery You Can Actually Track",
+  aboutBody: "SwiftDrop provides reliable same-day and express courier services with live GPS tracking on every delivery. We serve individuals needing a one-off pickup and businesses needing a dedicated courier account with priority scheduling and volume pricing.",
+  aboutHighlights: ["Live GPS tracking on every delivery", "Same-day service across the metro area", "Business accounts with volume pricing", "98% on-time delivery rate"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Business Accounts", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Same-Day Delivery", description: "Fast local delivery within the metro area, most parcels delivered within 3 hours.", icon: "⚡", iconType: "emoji", price: "From $15", imageUrl: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Express Delivery", description: "Priority rush delivery for time-sensitive parcels, typically within 90 minutes.", icon: "🚀", iconType: "emoji", price: "From $28", imageUrl: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Document Courier", description: "Secure, tracked delivery for time-sensitive legal and business documents.", icon: "📄", iconType: "emoji", price: "From $12", imageUrl: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Business Courier Accounts", description: "Dedicated business accounts with monthly invoicing and volume discount pricing.", icon: "💼", iconType: "emoji", price: "Custom pricing", imageUrl: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bulk Parcel Delivery", description: "Multi-parcel delivery runs for e-commerce businesses and mail-order operations.", icon: "📦", iconType: "emoji", price: "From $8/parcel", imageUrl: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Scheduled Recurring Delivery", description: "Set up regular scheduled deliveries for ongoing business shipping needs.", icon: "🔄", iconType: "emoji", price: "Custom pricing", imageUrl: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "98%", label: "On-Time Delivery Rate" },
+    { id: uid("st"), value: "50,000+", label: "Deliveries Completed" },
+    { id: uid("st"), value: "10 yr", label: "In Business" },
+    { id: uid("st"), value: "Live", label: "GPS Tracking" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Legal Docs Express", role: "Business Account Client", content: "We ship time-sensitive legal documents daily and SwiftDrop has never missed a deadline. Tracking gives our clients peace of mind too.", rating: 5 },
+    { id: uid("t"), name: "Boutique Craft Co.", role: "E-commerce Client", content: "Their bulk delivery service handles all our local order fulfillment. Reliable and much cheaper than the big carriers.", rating: 5 },
+    { id: uid("t"), name: "Rachel Kim", role: "Individual Customer", content: "Needed an urgent same-day delivery across town and they had it there in under an hour. Great tracking app too.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Delivery", price: "From $15", description: "One-off same-day delivery", features: ["Live GPS tracking", "SMS delivery updates", "Signature confirmation"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Business Account", price: "Custom Pricing", description: "Most popular, volume rates", features: ["Monthly invoicing", "Volume discount pricing", "Dedicated dispatch line", "Priority scheduling"], highlighted: true, badge: "Most Popular", ctaLabel: "Set Up Account", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Enterprise Logistics", price: "Custom Quote", description: "High-volume recurring delivery", features: ["Scheduled recurring routes", "Dedicated fleet allocation", "API integration available"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How fast is same-day delivery?", answer: "Most same-day deliveries within our metro service area are completed within 3 hours of booking, often faster." },
+    { id: uid("f"), question: "Can I track my delivery in real time?", answer: "Yes, every delivery includes live GPS tracking accessible via a link sent to you and the recipient." },
+    { id: uid("f"), question: "Do you offer business accounts?", answer: "Yes, business accounts get monthly invoicing, volume discount pricing and a dedicated dispatch line for priority booking." },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
+  TORQUE_AUTO,
+  GRIPZONE_TYRES,
+  PANELCRAFT,
+  WANDERWAY,
+  TRAILBLAZE_TOURS,
+  VISABRIDGE,
+  WORKSAFE_GEAR,
+  PRESSMARK_PRINT,
+  SWIFTDROP_COURIER,
   CLEAN_PRO,
   LUXE_SPA,
   LEX_CORE,
