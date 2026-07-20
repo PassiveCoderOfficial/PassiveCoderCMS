@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const [{ data: categories }, { data: vendorServices }] = await Promise.all([
     supabase
       .from("service_categories")
-      .select("id, name, slug, sort_order, service_subcategories(id, name, sort_order)")
+      .select("id, name, slug, sort_order, icon, service_subcategories(id, name, sort_order)")
       .eq("tenant_id", tenantId)
       .order("sort_order"),
     supabase

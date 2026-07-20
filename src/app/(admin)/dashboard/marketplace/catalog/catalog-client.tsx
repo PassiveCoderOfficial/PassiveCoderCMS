@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Tag, Plus, Trash2, Loader2 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { Tag, Plus, Trash2, Loader2, Shapes } from "lucide-react";
 
 interface Subcategory { id: string; name: string; sort_order: number; }
-interface Category { id: string; name: string; slug: string; sort_order: number; service_subcategories: Subcategory[]; }
+interface Category { id: string; name: string; slug: string; sort_order: number; icon: string | null; service_subcategories: Subcategory[]; }
+
+/** Renders a category's Lucide icon by name (same lookup pattern as
+ *  ServiceIcon in src/components/blocks/services/services-block.tsx),
+ *  falling back to a generic placeholder if unset or unknown. */
+function CategoryIcon({ name, className = "w-4 h-4" }: { name: string | null; className?: string }) {
+  const Icon = name ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name] : null;
+  return Icon ? <Icon className={className} /> : <Shapes className={className} />;
+}
 
 const inputCls = "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
@@ -59,6 +68,14 @@ export default function CatalogClient({ initialCategories }: { initialCategories
     setCategories(l => l.map(c => c.id === categoryId ? { ...c, service_subcategories: c.service_subcategories.filter(s => s.id !== sub.id) } : c));
   }
 
+  async function updateIcon(c: Category, icon: string) {
+    setCategories(l => l.map(x => x.id === c.id ? { ...x, icon } : x));
+    await fetch("/api/marketplace/catalog", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ _type: "category", id: c.id, icon: icon.trim() || null }),
+    });
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -77,8 +94,14 @@ export default function CatalogClient({ initialCategories }: { initialCategories
       <div className="space-y-4">
         {categories.map((c) => (
           <div key={c.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">{c.name}</h3>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <CategoryIcon name={c.icon} className="w-4 h-4 text-indigo-400 shrink-0" />
+                <h3 className="text-sm font-semibold text-white truncate">{c.name}</h3>
+              </div>
+              <input className={`${inputCls} w-36 py-1 text-xs`} placeholder="Lucide icon name"
+                defaultValue={c.icon ?? ""} onBlur={(e) => updateIcon(c, e.target.value)}
+                title="e.g. Wind, Zap, Droplets — see lucide.dev/icons" />
               <button onClick={() => delCategory(c)} className="p-1.5 text-gray-600 hover:text-red-400 rounded-lg hover:bg-gray-800"><Trash2 className="w-4 h-4" /></button>
             </div>
             <div className="space-y-1.5 pl-2">

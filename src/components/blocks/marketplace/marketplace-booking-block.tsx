@@ -2,13 +2,21 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { MarketplaceBookingBlockProps } from "@/types/cms";
-import { Wrench, Loader2, CheckCircle, Store, Calendar, Clock, MapPin } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { Wrench, Loader2, CheckCircle, Store, Calendar, Clock, MapPin, Shapes } from "lucide-react";
 import { MapPicker } from "@/components/donors/donor-map";
 
 const MAP_DEFAULT_CENTER = { lat: 1.3521, lng: 103.8198 };
 
 interface Subcategory { id: string; name: string; sort_order: number; }
-interface Category { id: string; name: string; slug: string; service_subcategories: Subcategory[]; }
+interface Category { id: string; name: string; slug: string; icon: string | null; service_subcategories: Subcategory[]; }
+
+/** Same dynamic Lucide lookup pattern as ServiceIcon in
+ *  src/components/blocks/services/services-block.tsx. */
+function CategoryIcon({ name, className = "w-5 h-5" }: { name: string | null; className?: string }) {
+  const Icon = name ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name] : null;
+  return Icon ? <Icon className={className} /> : <Shapes className={className} />;
+}
 interface VendorOption { subcategory_id: string; price: number | null; vendors: { id: string; name: string; status: string } }
 interface Slot { start: string; end: string }
 
@@ -29,6 +37,7 @@ export function MarketplaceBookingBlock({ block }: { block: MarketplaceBookingBl
   const [categories, setCategories] = useState<Category[]>([]);
   const [vendorServices, setVendorServices] = useState<VendorOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoryId, setCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
   const [vendorId, setVendorId] = useState("");
 
@@ -127,17 +136,35 @@ export function MarketplaceBookingBlock({ block }: { block: MarketplaceBookingBl
       ) : (
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium flex items-center gap-1.5 mb-1"><Wrench className="w-4 h-4" /> Service</label>
-            <select required className="w-full border rounded-lg px-3 py-2 text-sm"
-              value={subcategoryId} onChange={(e) => { setSubcategoryId(e.target.value); setVendorId(""); }}>
-              <option value="">Select a service</option>
-              {categories.map((c) => (
-                <optgroup key={c.id} label={c.name}>
-                  {c.service_subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </optgroup>
-              ))}
-            </select>
+            <label className="text-sm font-medium flex items-center gap-1.5 mb-1"><Wrench className="w-4 h-4" /> What do you need help with?</label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {categories.map((c) => {
+                const active = c.id === categoryId;
+                return (
+                  <button key={c.id} type="button"
+                    onClick={() => { setCategoryId(c.id); setSubcategoryId(""); setVendorId(""); }}
+                    className="flex flex-col items-center gap-1 px-2 py-3 rounded-lg border text-xs text-center"
+                    style={active ? { borderColor: accent, backgroundColor: accent, color: "#fff" } : { borderColor: "#e5e7eb" }}>
+                    <CategoryIcon name={c.icon} />
+                    {c.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {categoryId && (
+            <div>
+              <label className="text-sm font-medium mb-1 block">Which service?</label>
+              <select required className="w-full border rounded-lg px-3 py-2 text-sm"
+                value={subcategoryId} onChange={(e) => { setSubcategoryId(e.target.value); setVendorId(""); }}>
+                <option value="">Select a service</option>
+                {categories.find((c) => c.id === categoryId)?.service_subcategories.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {subcategoryId && (
             <div>

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     if (!body.name?.trim() || !body.slug?.trim()) return NextResponse.json({ error: "Name and slug required" }, { status: 400 });
     const { data, error } = await supabase
       .from("service_categories")
-      .insert({ tenant_id: tenantId, name: body.name.trim(), slug: body.slug.trim(), sort_order: body.sort_order ?? 0 })
+      .insert({ tenant_id: tenantId, name: body.name.trim(), slug: body.slug.trim(), sort_order: body.sort_order ?? 0, icon: body.icon?.trim() || null })
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
