@@ -212,7 +212,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Agent viewing a site has no tenant_members row, so it's not in userSites
   // above — inject it directly so the topbar switcher still shows something.
   if (agentViewingTenantId && agentViewingTenantName) {
-    userSites = [{ id: agentViewingTenantId, name: agentViewingTenantName, slug: "", is_primary: true }];
+    const { data: viewingTenant } = await adminClient
+      .from("tenants")
+      .select("slug")
+      .eq("id", agentViewingTenantId)
+      .maybeSingle();
+    userSites = [{ id: agentViewingTenantId, name: agentViewingTenantName, slug: viewingTenant?.slug ?? "", is_primary: true }];
   }
 
   const cmsUser: CMSUser = {
