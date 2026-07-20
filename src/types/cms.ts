@@ -59,6 +59,8 @@ export type BlockType =
   | "eligibility_checker"
   | "status_tracker"
   | "booking"
+  | "marketplace_booking"
+  | "marketplace_request"
   | "donor_group_cards"
   | "donor_list"
   | "donor_map"
@@ -762,6 +764,8 @@ export type Block =
   | EligibilityCheckerBlockProps
   | StatusTrackerBlockProps
   | BookingBlockProps
+  | MarketplaceBookingBlockProps
+  | MarketplaceRequestBlockProps
   | DonorGroupCardsBlockProps
   | DonorListBlockProps
   | DonorMapBlockProps
@@ -837,6 +841,26 @@ export type BookingBlockProps = BlockBase & {
     daysToShow: number;          // how many upcoming days appear in the picker
     showPhone: boolean;
     showMessage: boolean;
+    submitLabel: string;
+  };
+};
+
+export type MarketplaceBookingBlockProps = BlockBase & {
+  type: "marketplace_booking";
+  data: {
+    title?: string;
+    subtitle?: string;
+    accentColor?: string;
+    submitLabel: string;
+  };
+};
+
+export type MarketplaceRequestBlockProps = BlockBase & {
+  type: "marketplace_request";
+  data: {
+    title?: string;
+    subtitle?: string;
+    accentColor?: string;
     submitLabel: string;
   };
 };

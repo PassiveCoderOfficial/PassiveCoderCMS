@@ -33,6 +33,7 @@ import { IconGridSettings } from "./icon-grid-settings";
 import { EnmLeadFormSettings } from "./enm-lead-form-settings";
 import { EnmBookingWidgetSettings } from "./enm-booking-widget-settings";
 import { BookingSettings } from "./booking-settings";
+import { MarketplaceBookingSettings } from "./marketplace-booking-settings";
 import { DonorGroupCardsSettings, DonorListSettings, DonorMapSettings } from "./donor-settings";
 import { BlockLayoutSettings } from "./block-layout-settings";
 import { ContainerSettings } from "./container-settings";
@@ -110,6 +111,8 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "columns": return <ColumnsSettings block={block} />;
     case "newsletter": return <NewsletterSettings block={block} />;
     case "booking": return <BookingSettings block={block} />;
+    case "marketplace_booking": return <MarketplaceBookingSettings block={block} />;
+    case "marketplace_request": return <MarketplaceBookingSettings block={block} />;
     case "donor_group_cards": return <DonorGroupCardsSettings block={block} />;
     case "donor_list": return <DonorListSettings block={block} />;
     case "donor_map": return <DonorMapSettings block={block} />;

@@ -32,6 +32,8 @@
   ShoppingCart,
   ToggleLeft,
   Droplet,
+  Store,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,7 +57,7 @@ export type NavItem = {
 export const MODULE_KEYS = [
   "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
   "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
-  "visa_tour", "blood_donation",
+  "visa_tour", "blood_donation", "marketplace",
 ] as const;
 export type ModuleKey = typeof MODULE_KEYS[number];
 
@@ -77,6 +79,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   accounting: "Accounting",
   visa_tour: "Visa & Tour",
   blood_donation: "Blood Donation",
+  marketplace: "Marketplace",
 };
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
@@ -97,6 +100,7 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
   accounting: "Bookkeeping, transactions, and financial reporting",
   visa_tour: "Visa eligibility checkers, country info, and application status tracking",
   blood_donation: "Donor directory, requests, and blood-donation site tools",
+  marketplace: "Multi-vendor marketplace — vendors, service catalog, and bookings",
 };
 
 export type NavSection = {
@@ -148,6 +152,15 @@ export const navSections: NavSection[] = [
           { label: "Header & Footer", href: "/dashboard/templates/header-footer", icon: Layers },
         ],
       },
+    ],
+  },
+  {
+    label: "Marketplace",
+    items: [
+      { label: "Vendors", href: "/dashboard/marketplace/vendors", icon: Store, moduleKey: "marketplace" },
+      { label: "Service Catalog", href: "/dashboard/marketplace/catalog", icon: Tag, moduleKey: "marketplace" },
+      { label: "Bookings", href: "/dashboard/marketplace/bookings", icon: Calendar, moduleKey: "marketplace" },
+      { label: "Requests", href: "/dashboard/marketplace/requests", icon: AlertTriangle, moduleKey: "marketplace" },
     ],
   },
   {

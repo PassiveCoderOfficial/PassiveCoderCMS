@@ -45,11 +45,16 @@ function pinIcon(color: string, label?: string) {
  * there (fallback: no pin, map on Dhaka). A "recenter to my GPS" button lets
  * the user snap the pin back to their live location if they moved it wrong.
  */
-export function MapPicker({ value, onChange, height = 260, autoGps = false }: {
+export function MapPicker({ value, onChange, height = 260, autoGps = false, defaultCenter = BD_CENTER, defaultZoom = 7 }: {
   value: { lat: number; lng: number } | null;
   onChange: (v: { lat: number; lng: number }) => void;
   height?: number;
   autoGps?: boolean;
+  /** Map center/zoom when no pin is set yet — defaults to Dhaka (this
+   *  component's original home, the donor module). Callers outside
+   *  Bangladesh (e.g. the Singapore marketplace) should pass their own. */
+  defaultCenter?: { lat: number; lng: number };
+  defaultZoom?: number;
 }) {
   const { isLoaded } = useMapsLoader();
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -93,8 +98,8 @@ export function MapPicker({ value, onChange, height = 260, autoGps = false }: {
     <div className="relative">
       <GoogleMap
         mapContainerStyle={{ height, width: "100%", borderRadius: 12 }}
-        center={value ?? BD_CENTER}
-        zoom={value ? 15 : 7}
+        center={value ?? defaultCenter}
+        zoom={value ? 15 : defaultZoom}
         onClick={onClick}
         onLoad={(m) => { mapRef.current = m; }}
         options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}

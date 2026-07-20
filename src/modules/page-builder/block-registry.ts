@@ -847,6 +847,24 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "marketplace_request",
+    label: "Post a Request",
+    description: "Buyers post a regular or urgent job request without picking a vendor",
+    icon: "🆘",
+    category: "interactive",
+    moduleKey: "marketplace",
+    create: () => ({
+      ...baseBlock("marketplace_request"),
+      type: "marketplace_request" as const,
+      data: {
+        title: "Post a Job Request",
+        subtitle: "Tell us what you need — mark it urgent and nearby providers get notified right away.",
+        accentColor: "#4f46e5",
+        submitLabel: "Post Request",
+      },
+    }),
+  },
+  {
     type: "donor_group_cards",
     label: "Blood Group Cards",
     description: "8 blood-group cards with live donor counts — tap to filter the donor list",
