@@ -5148,6 +5148,832 @@ const TOTALBUILDS_SERVICES: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 35: Lumiere (Beauty Salon) ─────────────────────────────────────
+
+const LUMIERE_SALON: TemplateIdentity = {
+  slug: "lumiere-salon",
+  name: "Lumiere",
+  description: "Luxurious beauty salon template with a soft, elegant aesthetic. Features service menus, team profiles, and seamless online booking integration.",
+  category: "Health & Beauty",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=85&fit=crop",
+  tags: ["beauty salon", "hair", "nails", "beauty", "spa"],
+
+  palette: {
+    primary: "#ec4899",
+    primaryFg: "#ffffff",
+    secondary: "#881337",
+    accent: "#f9a8d4",
+    background: "#fdf2f8",
+    foreground: "#500724",
+    muted: "#fce7f3",
+    mutedFg: "#9d174d",
+    card: "#ffffff",
+    border: "#fbcfe8",
+    ring: "#ec4899",
+    borderRadius: "1rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "600",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-lumiere-salon .hero-badge { background: #ec4899; color: white; border-radius: 9999px; }
+    .template-lumiere-salon .service-card { border-radius: 1rem; }
+    .template-lumiere-salon .stat-value { color: #ec4899; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=85&fit=crop", alt: "Elegant salon interior" },
+    about: { url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80&fit=crop", alt: "Stylist at work" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80&fit=crop", alt: "Hair styling" },
+      { url: "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80&fit=crop", alt: "Hair coloring" },
+      { url: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80&fit=crop", alt: "Manicure service" },
+      { url: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80&fit=crop", alt: "Facial treatment" },
+      { url: "https://images.unsplash.com/photo-1519415943484-9fa1873496d4?w=600&q=80&fit=crop", alt: "Makeup application" },
+      { url: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=80&fit=crop", alt: "Blowout styling" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1522336572468-97b06e8ef143?w=800&q=80&fit=crop", alt: "Salon chairs" },
+      { url: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80&fit=crop", alt: "Finished hairstyle" },
+      { url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80&fit=crop", alt: "Nail art" },
+      { url: "https://images.unsplash.com/photo-1487412912498-0447579c8d4e?w=800&q=80&fit=crop", alt: "Relaxation area" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&q=80&fit=crop&face", alt: "Senior Stylist" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Color Specialist" },
+      { url: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80&fit=crop&face", alt: "Nail Technician" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80&fit=crop", alt: "Book your appointment" },
+  },
+
+  heroHeadline: "Beauty That Speaks for Itself",
+  heroSubline: "A premium salon experience for hair, nails, and beauty — where every visit leaves you glowing.",
+  heroBadge: "💅 Book Online in Seconds",
+  heroCTA: "Book Appointment",
+  heroSecondaryCTA: "View Services",
+  siteName: "Lumiere Salon",
+  tagline: "Beauty that speaks for itself",
+  phone: "+1 (555) 902-4471",
+  email: "hello@lumieresalon.com",
+  address: "212 Blossom Avenue, Uptown District",
+  aboutHeading: "Where Every Visit Leaves You Glowing",
+  aboutBody: "Lumiere brings together a team of award-winning stylists, colorists and beauty specialists in one elegant space. From precision haircuts to full color transformations, bridal styling to gel manicures, we treat every client to a premium, unhurried experience.",
+  aboutHighlights: ["Award-winning senior stylists", "Premium cruelty-free products", "Complimentary consultation with every booking", "Online booking with instant confirmation"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "Team", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Cut & Style", description: "Precision haircut and blowout styling tailored to your face shape and hair type.", icon: "✂️", iconType: "emoji", price: "From $65", imageUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Color & Highlights", description: "Full color, balayage and highlight services using premium ammonia-free formulas.", icon: "🎨", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Manicure & Pedicure", description: "Classic and gel manicures, spa pedicures and nail art by our in-house nail team.", icon: "💅", iconType: "emoji", price: "From $45", imageUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Facials & Skincare", description: "Customised facials targeting hydration, brightening and anti-aging concerns.", icon: "✨", iconType: "emoji", price: "From $85", imageUrl: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bridal & Event Styling", description: "Full hair and makeup packages for weddings and special events, including trials.", icon: "👰", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1519415943484-9fa1873496d4?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Blowout Bar", description: "Express blowouts for special occasions or a mid-week refresh — no appointment needed.", icon: "💨", iconType: "emoji", price: "From $40", imageUrl: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5,000+", label: "Clients Styled" },
+    { id: uid("st"), value: "4.9★", label: "Average Rating" },
+    { id: uid("st"), value: "10 yr", label: "In Business" },
+    { id: uid("st"), value: "8", label: "Master Stylists" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Sophia Reyes", role: "Regular Client", content: "My colorist understands exactly what I want every single time. Best salon experience I've ever had.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Grace Kim", role: "Bride", content: "Trial and wedding-day styling were flawless. My hair held up all night through dancing. Thank you Lumiere!", rating: 5, avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Priya Malhotra", role: "Regular Client", content: "The nail team is incredibly talented — my gel manicures last three weeks without chipping.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Signature", price: "$65", description: "Cut & style", features: ["Consultation included", "Precision cut", "Blowout finish"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Color Package", price: "$180", description: "Full color transformation", features: ["Full color or balayage", "Toner & gloss", "Cut & style included", "Take-home care kit"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Bridal Package", price: "From $450", description: "Complete wedding-day styling", features: ["Trial session included", "Hair & makeup", "On-location available", "Touch-up kit provided"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do I need to book in advance?", answer: "We recommend booking 1-2 weeks ahead for color services and 3+ months for bridal packages, though we do accept walk-ins for blowouts when availability allows." },
+    { id: uid("f"), question: "What products do you use?", answer: "We use premium, cruelty-free and largely ammonia-free product lines across all our color and styling services." },
+    { id: uid("f"), question: "Can I request a specific stylist?", answer: "Absolutely — you can select your preferred stylist during online booking, or we'll match you based on your service needs." },
+    { id: uid("f"), question: "What's your cancellation policy?", answer: "We ask for at least 24 hours notice for cancellations or rescheduling to avoid a cancellation fee." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Isabella Rossi", role: "Senior Stylist & Owner", bio: "15 years in luxury salons across three countries. Specialises in precision cutting and color correction.", avatar: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Maya Chen", role: "Color Specialist", bio: "Certified balayage expert with a passion for natural, dimensional color.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Lucia Fernandez", role: "Nail Technician", bio: "Award-winning nail artist known for intricate hand-painted designs.", avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 36: FadeShop (Barbershop) ──────────────────────────────────────
+
+const FADE_BARBERSHOP: TemplateIdentity = {
+  slug: "fade-barbershop",
+  name: "FadeShop",
+  description: "Cool, urban barbershop template with a dark, masculine aesthetic. Designed for modern barbers and grooming studios targeting style-conscious clients.",
+  category: "Health & Beauty",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=85&fit=crop",
+  tags: ["barbershop", "haircut", "grooming", "barber", "men's hair"],
+
+  palette: {
+    primary: "#fbbf24",
+    primaryFg: "#1c1917",
+    secondary: "#52525b",
+    accent: "#fde68a",
+    background: "#1c1917",
+    foreground: "#fafaf9",
+    muted: "#292524",
+    mutedFg: "#a8a29e",
+    card: "#292524",
+    border: "#44403c",
+    ring: "#fbbf24",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-fade-barbershop h1,.template-fade-barbershop h2 { text-transform: uppercase; }
+    .template-fade-barbershop .service-card { border-top: 3px solid #fbbf24; background: #292524; }
+    .template-fade-barbershop .stat-value { color: #fbbf24; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1600&q=90&fit=crop", alt: "Barber giving a fade haircut" },
+    about: { url: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80&fit=crop", alt: "Barbershop interior" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&q=80&fit=crop", alt: "Fade haircut" },
+      { url: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&q=80&fit=crop", alt: "Beard trim" },
+      { url: "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&q=80&fit=crop", alt: "Hot towel shave" },
+      { url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&q=80&fit=crop", alt: "Kids haircut" },
+      { url: "https://images.unsplash.com/photo-1512690459411-b9245aed614b?w=600&q=80&fit=crop", alt: "Hair design" },
+      { url: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&q=80&fit=crop", alt: "Classic cut" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&q=80&fit=crop", alt: "Finished fade" },
+      { url: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800&q=80&fit=crop", alt: "Sharp beard line-up" },
+      { url: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80&fit=crop", alt: "Shop interior" },
+      { url: "https://images.unsplash.com/photo-1512690459411-b9245aed614b?w=800&q=80&fit=crop", alt: "Custom hair design" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Master Barber" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Senior Barber" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=80&fit=crop", alt: "Book your cut" },
+  },
+
+  heroHeadline: "Sharp Cuts, Clean Lines",
+  heroSubline: "The neighbourhood's go-to barbershop — book your cut and walk out a new man.",
+  heroBadge: "💈 Walk-Ins Welcome",
+  heroCTA: "Book a Cut",
+  heroSecondaryCTA: "View Styles",
+  siteName: "FadeShop Barbers",
+  tagline: "Sharp cuts, clean lines",
+  phone: "+1 (555) 337-9081",
+  email: "book@fadeshop.com",
+  address: "45 Barber Row, Downtown District",
+  aboutHeading: "The Neighbourhood's Go-To Barbershop Since 2016",
+  aboutBody: "FadeShop combines old-school barbering craft with modern style. Our barbers are trained in precision fades, beard sculpting and hot towel shaves, and we've built a loyal following of clients who trust us with their look week after week.",
+  aboutHighlights: ["Licensed master barbers", "Hot towel shave included with every cut", "Walk-ins welcome, appointments preferred", "Kids cuts available"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "Team", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Classic Fade", description: "Precision fade haircut, tailored to your preferred style — skin fade, taper or blowout.", icon: "💇", iconType: "emoji", price: "From $35", imageUrl: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Beard Trim & Line-Up", description: "Sharp beard shaping and line-up with straight razor detailing.", icon: "🧔", iconType: "emoji", price: "From $20", imageUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Hot Towel Shave", description: "Traditional hot towel straight razor shave for the smoothest finish.", icon: "🪒", iconType: "emoji", price: "From $30", imageUrl: "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Kids Cut", description: "Patient, friendly haircuts for kids 12 and under.", icon: "🧒", iconType: "emoji", price: "From $22", imageUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Hair Design", description: "Custom hair art and design work for a truly unique look.", icon: "🎨", iconType: "emoji", price: "From $45", imageUrl: "https://images.unsplash.com/photo-1512690459411-b9245aed614b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Full Grooming Package", description: "Cut, beard trim and hot towel shave combined for the complete refresh.", icon: "✨", iconType: "emoji", price: "From $65", imageUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "8,000+", label: "Cuts Given" },
+    { id: uid("st"), value: "9 yr", label: "In Business" },
+    { id: uid("st"), value: "4.8★", label: "Average Rating" },
+    { id: uid("st"), value: "5", label: "Master Barbers" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Marcus Bell", role: "Regular Client", content: "Been coming here for 3 years. Same barber every time, never disappointed. Best fade in the city.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Andre Watson", role: "Regular Client", content: "The hot towel shave is worth it alone. Clean, professional shop with a great vibe.", rating: 5 },
+    { id: uid("t"), name: "Julian Ford", role: "First-Time Client", content: "Walked in without an appointment on a Saturday and still got seen within 15 minutes. Great cut too.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Cut Only", price: "$35", description: "Classic fade or taper", features: ["Precision fade", "Neck & edge cleanup", "Style finish"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Cut & Beard", price: "$50", description: "Most popular combo", features: ["Precision fade", "Beard trim & line-up", "Hot towel finish"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Grooming", price: "$65", description: "The complete refresh", features: ["Precision fade", "Beard trim & line-up", "Hot towel shave", "Hair styling product included"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you take walk-ins?", answer: "Yes, walk-ins are welcome, though appointments are recommended on weekends to avoid a wait." },
+    { id: uid("f"), question: "How long does a typical cut take?", answer: "A standard cut takes about 30 minutes; the full grooming package takes closer to 50 minutes." },
+    { id: uid("f"), question: "Can I request a specific barber?", answer: "Yes, you can select your preferred barber when booking online or by calling the shop." },
+    { id: uid("f"), question: "Do you cut kids' hair?", answer: "Yes, we offer patient, friendly cuts for kids 12 and under at a discounted rate." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Tony Marchetti", role: "Master Barber & Owner", bio: "20 years behind the chair. Trained in classic and modern fade techniques.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Jerome Banks", role: "Senior Barber", bio: "Specialist in hair design and creative fades. Known for his sharp line-ups.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 37: SmileStudio (Dental Clinic) ────────────────────────────────
+
+const SMILESTUDIO_DENTAL: TemplateIdentity = {
+  slug: "smilestudio-dental",
+  name: "SmileStudio",
+  description: "Clean and reassuring dental clinic template with a modern, clinical-yet-welcoming design. Highlights treatments, team credentials, and patient comfort.",
+  category: "Health & Beauty",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=1200&q=85&fit=crop",
+  tags: ["dental", "dentist", "oral health", "clinic", "teeth"],
+
+  palette: {
+    primary: "#38bdf8",
+    primaryFg: "#ffffff",
+    secondary: "#1e3a5f",
+    accent: "#7dd3fc",
+    background: "#f0f9ff",
+    foreground: "#0c4a6e",
+    muted: "#e0f2fe",
+    mutedFg: "#0369a1",
+    card: "#ffffff",
+    border: "#bae6fd",
+    ring: "#38bdf8",
+    borderRadius: "0.75rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-smilestudio-dental .hero-badge { background: #38bdf8; color: white; border-radius: 9999px; }
+    .template-smilestudio-dental .service-card { border-top: 3px solid #38bdf8; }
+    .template-smilestudio-dental .stat-value { color: #0284c7; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=900&q=85&fit=crop", alt: "Modern dental clinic" },
+    about: { url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80&fit=crop", alt: "Dentist with patient" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=600&q=80&fit=crop", alt: "Dental checkup" },
+      { url: "https://images.unsplash.com/photo-1571772805064-207c8435df79?w=600&q=80&fit=crop", alt: "Teeth whitening" },
+      { url: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=600&q=80&fit=crop", alt: "Dental implants" },
+      { url: "https://images.unsplash.com/photo-1606811842243-e0d92aa76b4d?w=600&q=80&fit=crop", alt: "Orthodontics" },
+      { url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=600&q=80&fit=crop", alt: "Pediatric dentistry" },
+      { url: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600&q=80&fit=crop", alt: "Root canal treatment" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&q=80&fit=crop", alt: "Modern treatment room" },
+      { url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80&fit=crop", alt: "Clinic reception" },
+      { url: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&q=80&fit=crop", alt: "Dental equipment" },
+      { url: "https://images.unsplash.com/photo-1571772805064-207c8435df79?w=800&q=80&fit=crop", alt: "Happy patient smiling" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80&fit=crop&face", alt: "Lead Dentist" },
+      { url: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80&fit=crop&face", alt: "Orthodontist" },
+      { url: "https://images.unsplash.com/photo-1637059824899-a441006a6875?w=400&q=80&fit=crop&face", alt: "Dental Hygienist" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=1200&q=80&fit=crop", alt: "Book your appointment" },
+  },
+
+  heroHeadline: "Your Healthiest Smile Starts Here",
+  heroSubline: "Comprehensive dental care for the whole family — gentle, modern, and always welcoming.",
+  heroBadge: "🦷 New Patients Welcome",
+  heroCTA: "Book Appointment",
+  heroSecondaryCTA: "Our Services",
+  siteName: "SmileStudio Dental",
+  tagline: "Your healthiest smile starts here",
+  phone: "+1 (555) 618-4402",
+  email: "hello@smilestudiodental.com",
+  address: "300 Wellness Blvd, Suite 100, Metro City",
+  aboutHeading: "Gentle, Modern Dental Care for the Whole Family",
+  aboutBody: "SmileStudio combines the latest dental technology with a genuinely welcoming, low-anxiety environment. Our dentists and hygienists take time to explain every step, offer sedation options for anxious patients, and treat every visit — from routine cleanings to full smile makeovers — with the same level of care.",
+  aboutHighlights: ["Same-week appointments available", "Sedation options for anxious patients", "Digital X-rays — 90% less radiation", "In-house payment plans available"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "About", url: "#about" },
+    { id: "n3", label: "Team", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "General Checkups & Cleanings", description: "Comprehensive exams, professional cleanings and preventive care for the whole family.", icon: "🦷", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Teeth Whitening", description: "Professional in-office and take-home whitening treatments for a brighter smile.", icon: "✨", iconType: "emoji", price: "From $299", imageUrl: "https://images.unsplash.com/photo-1571772805064-207c8435df79?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Dental Implants", description: "Permanent tooth replacement with titanium implants and natural-looking crowns.", icon: "🔩", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Orthodontics & Invisalign", description: "Traditional braces and clear aligner treatment for kids, teens and adults.", icon: "😬", iconType: "emoji", price: "From $3,500", imageUrl: "https://images.unsplash.com/photo-1606811842243-e0d92aa76b4d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Pediatric Dentistry", description: "Gentle, kid-friendly dental care in a fun, welcoming environment.", icon: "👶", iconType: "emoji", price: "From $75", imageUrl: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Root Canal Treatment", description: "Comfortable, modern root canal therapy to save damaged or infected teeth.", icon: "🩺", iconType: "emoji", price: "From $950", imageUrl: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "12,000+", label: "Patients Treated" },
+    { id: uid("st"), value: "4.9★", label: "Patient Rating" },
+    { id: uid("st"), value: "20 yr", label: "In Practice" },
+    { id: uid("st"), value: "Same-Week", label: "Appointments" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Rachel Simmons", role: "Patient", content: "I've always been terrified of the dentist, but this team made me feel completely at ease. Best dental experience I've had.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Tom Bradley", role: "Patient", content: "Got my Invisalign treatment here — results were even better than expected and the team explained every step.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Linda Park", role: "Parent", content: "My kids actually look forward to their dental visits now. The pediatric team is amazing with children.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "New Patient Exam", price: "$89", description: "Comprehensive checkup", features: ["Full exam & X-rays", "Professional cleaning", "Treatment plan review"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Family Care Plan", price: "$39", period: "/mo", description: "Ongoing care for the family", features: ["2 cleanings/year per member", "Discounted treatments", "Priority scheduling", "No insurance required"], highlighted: true, badge: "Most Popular", ctaLabel: "Join Plan", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Smile Makeover", price: "Custom Quote", description: "Comprehensive cosmetic treatment", features: ["Free consultation", "Custom treatment plan", "Financing options available"], ctaLabel: "Get Consultation", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you accept dental insurance?", answer: "Yes, we work with most major dental insurance providers and also offer in-house payment plans for uninsured patients." },
+    { id: uid("f"), question: "Do you offer sedation for anxious patients?", answer: "Yes, we offer nitrous oxide and oral sedation options for patients who feel anxious about dental visits." },
+    { id: uid("f"), question: "How often should I get a checkup?", answer: "We recommend a checkup and cleaning every 6 months for most patients, though some cases may need more frequent visits." },
+    { id: uid("f"), question: "Do you see children?", answer: "Yes, our pediatric team specialises in gentle, kid-friendly care starting from a child's first tooth." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Dr. Michael Tran", role: "Lead Dentist & Founder", bio: "20 years in general and cosmetic dentistry. Focuses on making every patient feel comfortable and informed.", avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Dr. Sarah Whitfield", role: "Orthodontist", bio: "Specialist in Invisalign and traditional orthodontics for patients of all ages.", avatar: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Emily Zhang", role: "Dental Hygienist", bio: "Gentle, thorough cleanings with a focus on patient education and preventive care.", avatar: "https://images.unsplash.com/photo-1637059824899-a441006a6875?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 38: IronForge (Gym & Fitness Centre) ───────────────────────────
+
+const IRONFORGE_GYM: TemplateIdentity = {
+  slug: "ironforge-gym",
+  name: "IronForge",
+  description: "Powerful gym and fitness centre template with a dark, motivational aesthetic. Features membership tiers, class schedules, and trainer profiles.",
+  category: "Fitness & Sports",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=85&fit=crop",
+  tags: ["gym", "fitness", "weights", "membership", "classes"],
+
+  palette: {
+    primary: "#ef4444",
+    primaryFg: "#ffffff",
+    secondary: "#111827",
+    accent: "#f87171",
+    background: "#111827",
+    foreground: "#f9fafb",
+    muted: "#1f2937",
+    mutedFg: "#9ca3af",
+    card: "#1f2937",
+    border: "#374151",
+    ring: "#ef4444",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.03em",
+  },
+  customCss: `
+    .template-ironforge-gym h1,.template-ironforge-gym h2 { text-transform: uppercase; letter-spacing: 0.02em; }
+    .template-ironforge-gym .service-card { border-top: 3px solid #ef4444; background: #1f2937; }
+    .template-ironforge-gym .stat-value { color: #ef4444; font-weight: 900; font-size: 2.5rem; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=90&fit=crop", alt: "Gym weight room" },
+    about: { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80&fit=crop", alt: "Group fitness class" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80&fit=crop", alt: "Weight training" },
+      { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80&fit=crop", alt: "Group class" },
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80&fit=crop", alt: "Personal training" },
+      { url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=600&q=80&fit=crop", alt: "Cardio equipment" },
+      { url: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80&fit=crop", alt: "CrossFit training" },
+      { url: "https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=80&fit=crop", alt: "Yoga class" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80&fit=crop", alt: "Main gym floor" },
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80&fit=crop", alt: "Free weights area" },
+      { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80&fit=crop", alt: "Group class in session" },
+      { url: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&q=80&fit=crop", alt: "CrossFit box" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80&fit=crop&face", alt: "Head Trainer" },
+      { url: "https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=400&q=80&fit=crop&face", alt: "Strength Coach" },
+      { url: "https://images.unsplash.com/photo-1550345332-09e3ac987658?w=400&q=80&fit=crop&face", alt: "Yoga Instructor" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80&fit=crop", alt: "Join IronForge" },
+  },
+
+  heroHeadline: "Forge Your Best Self",
+  heroSubline: "State-of-the-art gym with expert trainers, diverse classes, and a community that drives results.",
+  heroBadge: "💪 First Class Free",
+  heroCTA: "Start Free Trial",
+  heroSecondaryCTA: "View Classes",
+  siteName: "IronForge Fitness",
+  tagline: "Forge your best self",
+  phone: "+1 (555) 774-6620",
+  email: "join@ironforgefitness.com",
+  address: "500 Muscle Beach Way, Metro City",
+  aboutHeading: "A Community Built on Results, Since 2013",
+  aboutBody: "IronForge is more than a gym — it's a community. Our 15,000 sq ft facility features free weights, functional training zones, a dedicated CrossFit box and studio space for over 30 weekly classes. Our certified trainers design programs around your goals, not a one-size-fits-all plan.",
+  aboutHighlights: ["15,000 sq ft training facility", "30+ weekly classes included", "Certified personal trainers on staff", "24/7 keycard access", "No long-term contracts required"],
+
+  navItems: [
+    { id: "n1", label: "Membership", url: "#pricing" },
+    { id: "n2", label: "Classes", url: "#services" },
+    { id: "n3", label: "Trainers", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Join Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Open Gym Access", description: "Full access to free weights, machines and cardio equipment during all operating hours.", icon: "🏋️", iconType: "emoji", price: "Included in membership", imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Group Classes", description: "HIIT, spin, strength circuits and more — 30+ classes a week included with membership.", icon: "🔥", iconType: "emoji", price: "Included in membership", imageUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Personal Training", description: "One-on-one coaching with a certified trainer, customised to your specific goals.", icon: "👤", iconType: "emoji", price: "From $65/session", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "CrossFit Training", description: "High-intensity functional fitness classes in our dedicated CrossFit box.", icon: "🏆", iconType: "emoji", price: "From $150/mo", imageUrl: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Yoga & Recovery", description: "Yoga, stretching and mobility classes to balance out your strength training.", icon: "🧘", iconType: "emoji", price: "Included in membership", imageUrl: "https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Nutrition Coaching", description: "One-on-one nutrition planning to complement your training program.", icon: "🥗", iconType: "emoji", price: "From $80/mo", imageUrl: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "2,500+", label: "Active Members" },
+    { id: uid("st"), value: "30+", label: "Weekly Classes" },
+    { id: uid("st"), value: "12 yr", label: "In Business" },
+    { id: uid("st"), value: "24/7", label: "Access Available" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Derek Holloway", role: "Member, 3 years", content: "Lost 40 pounds and gained a community that actually motivates me to show up. Best decision I've made.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Michelle Torres", role: "Member, 1 year", content: "The trainers here actually know what they're doing. My personal trainer built a program around my old knee injury and it's worked wonders.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "James Whitfield", role: "Member, 6 months", content: "24/7 access means I can train at 5am before work. No excuses, no crowds. Perfect for my schedule.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Basic", price: "$49", period: "/mo", description: "Gym floor access", features: ["Open gym access", "Locker room access", "Free fitness assessment", "No contract"], ctaLabel: "Join Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Unlimited", price: "$89", period: "/mo", description: "Everything included", features: ["Open gym access", "Unlimited group classes", "24/7 keycard access", "Guest passes (2/mo)", "No contract"], highlighted: true, badge: "Most Popular", ctaLabel: "Join Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Elite", price: "$179", period: "/mo", description: "Unlimited + personal training", features: ["Everything in Unlimited", "4 PT sessions/month", "Nutrition coaching included", "Priority class booking"], ctaLabel: "Join Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Is there a contract?", answer: "No, all our memberships are month-to-month with no long-term contract required. Cancel any time with 30 days notice." },
+    { id: uid("f"), question: "Can I try before joining?", answer: "Yes, your first class is free — just book online or walk in and mention you're trying us out." },
+    { id: uid("f"), question: "Do I need experience to join a class?", answer: "Not at all, our classes are designed for all fitness levels and our instructors offer modifications for beginners." },
+    { id: uid("f"), question: "Is the gym open 24/7?", answer: "Unlimited and Elite members get 24/7 keycard access. Basic members have access during staffed hours, 5am-11pm daily." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Coach Diesel Martinez", role: "Head Trainer & Owner", bio: "Former competitive powerlifter with 15 years of coaching experience. Leads our strength programming.", avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Coach Alicia Brooks", role: "Strength Coach", bio: "Certified strength and conditioning specialist, focuses on injury-safe programming.", avatar: "https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Coach Priya Nair", role: "Yoga & Mobility Instructor", bio: "500-hour certified yoga instructor specialising in athlete recovery and mobility.", avatar: "https://images.unsplash.com/photo-1550345332-09e3ac987658?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 39: PeakPT (Personal Trainer) ──────────────────────────────────
+
+const PEAK_PT: TemplateIdentity = {
+  slug: "peak-pt",
+  name: "PeakPT",
+  description: "Personal trainer template with a clean, results-driven design. Showcases transformation stories, training packages, and the trainer's philosophy.",
+  category: "Fitness & Sports",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=1200&q=85&fit=crop",
+  tags: ["personal trainer", "PT", "fitness coaching", "weight loss", "strength"],
+
+  palette: {
+    primary: "#7c3aed",
+    primaryFg: "#ffffff",
+    secondary: "#2e1065",
+    accent: "#a78bfa",
+    background: "#faf5ff",
+    foreground: "#3b0764",
+    muted: "#f3e8ff",
+    mutedFg: "#6b21a8",
+    card: "#ffffff",
+    border: "#e9d5ff",
+    ring: "#7c3aed",
+    borderRadius: "0.75rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-peak-pt .hero-badge { background: #7c3aed; color: white; border-radius: 9999px; }
+    .template-peak-pt .service-card { border-top: 3px solid #7c3aed; }
+    .template-peak-pt .stat-value { color: #7c3aed; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=900&q=85&fit=crop", alt: "Personal trainer coaching client" },
+    about: { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80&fit=crop", alt: "Trainer demonstrating exercise" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80&fit=crop", alt: "1-on-1 training session" },
+      { url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=600&q=80&fit=crop", alt: "Strength training" },
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80&fit=crop", alt: "Functional training" },
+      { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80&fit=crop", alt: "Small group training" },
+      { url: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=80&fit=crop", alt: "Nutrition coaching" },
+      { url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&fit=crop", alt: "Online coaching" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=800&q=80&fit=crop", alt: "Client transformation session" },
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80&fit=crop", alt: "Training session" },
+      { url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&q=80&fit=crop", alt: "Weight training progress" },
+      { url: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80&fit=crop", alt: "Meal prep coaching" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80&fit=crop&face", alt: "Founder & Head Coach" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=1200&q=80&fit=crop", alt: "Start your transformation" },
+  },
+
+  heroHeadline: "Train Smarter, Achieve More",
+  heroSubline: "Personalised fitness coaching that fits your goals, your schedule, and your lifestyle.",
+  heroBadge: "🏆 200+ Transformations",
+  heroCTA: "Book Free Consultation",
+  heroSecondaryCTA: "View Packages",
+  siteName: "PeakPT Coaching",
+  tagline: "Train smarter, achieve more",
+  phone: "+1 (555) 220-8834",
+  email: "coach@peakpt.com",
+  address: "Online & In-Person, Metro City",
+  aboutHeading: "200+ Transformations, One Personalised Approach",
+  aboutBody: "PeakPT builds fitness programs around your actual life — not a generic template. Whether you're training for weight loss, strength, or a specific event, every program is built from an initial assessment and adjusted as you progress. Available in-person and fully online.",
+  aboutHighlights: ["Certified strength & conditioning coach", "Custom programs, not templates", "In-person & online coaching available", "Nutrition guidance included", "200+ client transformations"],
+
+  navItems: [
+    { id: "n1", label: "Programs", url: "#services" },
+    { id: "n2", label: "About", url: "#about" },
+    { id: "n3", label: "Results", url: "#gallery" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get Started", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "1-on-1 Personal Training", description: "Fully customised in-person training sessions built around your specific goals.", icon: "💪", iconType: "emoji", price: "From $85/session", imageUrl: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Online Coaching", description: "Remote coaching with custom workout plans, video check-ins and weekly progress reviews.", icon: "💻", iconType: "emoji", price: "From $199/mo", imageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Small Group Training", description: "Semi-private sessions with 2-4 clients for a more affordable, community-driven experience.", icon: "👥", iconType: "emoji", price: "From $45/session", imageUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Nutrition Coaching", description: "Personalised meal planning and nutrition guidance to complement your training.", icon: "🥗", iconType: "emoji", price: "From $120/mo", imageUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Strength Programming", description: "Structured strength training progressions for lifters at any experience level.", icon: "🏋️", iconType: "emoji", price: "From $85/session", imageUrl: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Event Prep Coaching", description: "Specialised programming to prepare for races, competitions or specific fitness goals.", icon: "🏆", iconType: "emoji", price: "Custom Quote", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "200+", label: "Transformations" },
+    { id: uid("st"), value: "9 yr", label: "Coaching Experience" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+    { id: uid("st"), value: "92%", label: "Goal Achievement Rate" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Rebecca Cole", role: "Client, 8 months", content: "Lost 35 pounds and gained more confidence than I've had in years. My coach adjusted the program every step of the way based on how I was actually feeling.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Marcus Webb", role: "Client, 1 year", content: "Trained for my first marathon with this program. Went from couch to 26.2 miles with zero injuries. Incredible coaching.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Diana Foster", role: "Online Client", content: "The online coaching kept me accountable even with a crazy travel schedule. Weekly check-ins made all the difference.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Starter", price: "$85", period: "/session", description: "Single training session", features: ["Full assessment", "Custom workout", "Form coaching", "No commitment"], ctaLabel: "Book Session", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Transform", price: "$650", period: "/mo", description: "8 sessions + full program", features: ["8 in-person sessions", "Custom program design", "Nutrition guidance", "Weekly check-ins"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Online Coaching", price: "$199", period: "/mo", description: "Fully remote coaching", features: ["Custom workout app access", "Weekly video check-ins", "Nutrition guidance", "Unlimited messaging support"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do I need prior gym experience?", answer: "Not at all — programs are built for your current fitness level, whether you're a complete beginner or advanced athlete." },
+    { id: uid("f"), question: "Do you offer online coaching?", answer: "Yes, our online coaching package includes a custom program, weekly video check-ins and unlimited messaging support." },
+    { id: uid("f"), question: "How is the program customised?", answer: "Every client starts with a full movement and goals assessment. Your program is adjusted every 2-4 weeks based on your progress." },
+    { id: uid("f"), question: "Is nutrition coaching included?", answer: "Nutrition guidance is included in the Transform and Online Coaching packages, or can be added separately." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Coach Ryan Pierce", role: "Founder & Head Coach", bio: "Certified strength & conditioning specialist with 9 years of coaching experience. Has guided over 200 clients through complete transformations.", avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 40: StrideActive (Sportswear Retail) ───────────────────────────
+
+const STRIDE_ACTIVE: TemplateIdentity = {
+  slug: "stride-active",
+  name: "StrideActive",
+  description: "Dynamic sportswear and activewear retail template with an energetic, bold design. Built for athletic apparel brands and sports equipment retailers.",
+  category: "Retail & Shop",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=1200&q=85&fit=crop",
+  tags: ["sportswear", "activewear", "athletic", "gym wear", "retail"],
+
+  palette: {
+    primary: "#84cc16",
+    primaryFg: "#052e16",
+    secondary: "#14532d",
+    accent: "#a3e635",
+    background: "#0a0a0a",
+    foreground: "#fafafa",
+    muted: "#171717",
+    mutedFg: "#a3a3a3",
+    card: "#171717",
+    border: "#262626",
+    ring: "#84cc16",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-stride-active h1,.template-stride-active h2 { text-transform: uppercase; }
+    .template-stride-active .service-card { border-top: 3px solid #84cc16; background: #171717; }
+    .template-stride-active .stat-value { color: #84cc16; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=1600&q=90&fit=crop", alt: "Athlete in activewear" },
+    about: { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80&fit=crop", alt: "Activewear collection" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=600&q=80&fit=crop", alt: "Running apparel" },
+      { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80&fit=crop", alt: "Training gear" },
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80&fit=crop", alt: "Gym wear" },
+      { url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80&fit=crop", alt: "Athletic shoes" },
+      { url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&fit=crop", alt: "Outdoor gear" },
+      { url: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80&fit=crop", alt: "Accessories" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80&fit=crop", alt: "New collection lookbook" },
+      { url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80&fit=crop", alt: "Footwear collection" },
+      { url: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80&fit=crop", alt: "Accessories display" },
+      { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80&fit=crop", alt: "Training gear in action" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Brand Founder" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=1200&q=80&fit=crop", alt: "Shop the collection" },
+  },
+
+  heroHeadline: "Gear Up. Go Further.",
+  heroSubline: "Performance activewear designed for every workout — built to move as hard as you do.",
+  heroBadge: "🔥 New Season Drop",
+  heroCTA: "Shop Now",
+  heroSecondaryCTA: "View Collection",
+  siteName: "StrideActive",
+  tagline: "Gear up. Go further.",
+  phone: "+1 (555) 448-2210",
+  email: "support@strideactive.com",
+  address: "88 Performance Way, Metro City",
+  aboutHeading: "Built to Move as Hard as You Do",
+  aboutBody: "StrideActive designs performance apparel for athletes who demand more from their gear. From moisture-wicking running kits to heavy-duty training wear, every piece is tested by real athletes before it hits our shelves. Free shipping on orders over $75, hassle-free 30-day returns.",
+  aboutHighlights: ["Athlete-tested performance fabrics", "Free shipping over $75", "30-day hassle-free returns", "New drops every month"],
+
+  navItems: [
+    { id: "n1", label: "Shop", url: "#services" },
+    { id: "n2", label: "Collection", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Running Apparel", description: "Lightweight, moisture-wicking running gear designed for every distance and weather condition.", icon: "🏃", iconType: "emoji", price: "From $45", imageUrl: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Training Gear", description: "Durable strength and HIIT training apparel built to move with you through every rep.", icon: "🏋️", iconType: "emoji", price: "From $38", imageUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Athletic Footwear", description: "Performance running and training shoes from top brands, fitted by our in-store experts.", icon: "👟", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Outdoor & Trail Gear", description: "Weather-resistant apparel and gear for trail running, hiking and outdoor training.", icon: "⛰️", iconType: "emoji", price: "From $55", imageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Accessories", description: "Gym bags, water bottles, resistance bands and the small gear that makes a big difference.", icon: "🎒", iconType: "emoji", price: "From $15", imageUrl: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Team & Custom Orders", description: "Bulk ordering and custom branding for sports teams and corporate wellness programs.", icon: "👕", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "50,000+", label: "Orders Shipped" },
+    { id: uid("st"), value: "4.7★", label: "Customer Rating" },
+    { id: uid("st"), value: "Free", label: "Shipping Over $75" },
+    { id: uid("st"), value: "30-Day", label: "Easy Returns" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Jordan Lee", role: "Verified Buyer", content: "The running kit held up through a full marathon training block without a single seam issue. Genuinely great quality.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Taylor Reed", role: "Verified Buyer", content: "Ordered the wrong size and the return was completely hassle-free. Will definitely shop here again.", rating: 5 },
+    { id: uid("t"), name: "Casey Nguyen", role: "Verified Buyer", content: "Best training leggings I've owned — no see-through, no rolling down. Worth every penny.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Essentials Pack", price: "$89", description: "3-piece training starter set", features: ["1 training top", "1 pair shorts/leggings", "1 accessory item", "Free shipping"], ctaLabel: "Shop Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Performance Bundle", price: "$149", description: "Complete outfit + footwear", features: ["Full training outfit", "1 pair athletic shoes", "Gym bag included", "Free shipping & returns"], highlighted: true, badge: "Best Value", ctaLabel: "Shop Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Team Order", price: "Custom Quote", description: "Bulk team or corporate orders", features: ["Custom branding available", "Volume discounts", "Dedicated account rep"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What's your return policy?", answer: "We offer hassle-free 30-day returns on unworn items with tags attached. Return shipping is free for orders over $75." },
+    { id: uid("f"), question: "Do you offer team or bulk discounts?", answer: "Yes, we offer volume pricing and custom branding options for sports teams and corporate wellness programs." },
+    { id: uid("f"), question: "How do I know what size to order?", answer: "Each product page includes a detailed size chart, and our support team is happy to help via chat if you're unsure." },
+    { id: uid("f"), question: "When does new stock drop?", answer: "We release new collections monthly — sign up for our newsletter to get early access before public launch." },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -5185,6 +6011,12 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   FLOWMASTER_PLUMBING,
   HEATWAVE_HVAC,
   TOTALBUILDS_SERVICES,
+  LUMIERE_SALON,
+  FADE_BARBERSHOP,
+  SMILESTUDIO_DENTAL,
+  IRONFORGE_GYM,
+  PEAK_PT,
+  STRIDE_ACTIVE,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
