@@ -4336,6 +4336,818 @@ const LIFE_SETTLE: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 29: ApexConstruct (Premium General Contractor) ─────────────────
+
+const APEX_CONSTRUCT: TemplateIdentity = {
+  slug: "apex-construct",
+  name: "ApexConstruct",
+  description: "Premium general contractor template with an editorial hero layout and project showcase. Perfect for high-end renovation and construction firms.",
+  category: "Renovation & Construction",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=85&fit=crop",
+  tags: ["contractor", "construction", "renovation", "building"],
+
+  palette: {
+    primary: "#ca8a04",
+    primaryFg: "#171717",
+    secondary: "#a16207",
+    accent: "#eab308",
+    background: "#171717",
+    foreground: "#fafaf9",
+    muted: "#262626",
+    mutedFg: "#a3a3a3",
+    card: "#262626",
+    border: "#404040",
+    ring: "#ca8a04",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-apex-construct h1,.template-apex-construct h2 { text-transform: uppercase; letter-spacing: 0.02em; }
+    .template-apex-construct .service-card { border-top: 3px solid #ca8a04; }
+    .template-apex-construct .stat-value { color: #ca8a04; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1600&q=90&fit=crop", alt: "Modern construction project" },
+    about: { url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80&fit=crop", alt: "Architectural blueprint review" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop", alt: "New build construction" },
+      { url: "https://images.unsplash.com/photo-1541976590-713941681591?w=600&q=80&fit=crop", alt: "High-end renovation" },
+      { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", alt: "Commercial development" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", alt: "Kitchen extension" },
+      { url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=80&fit=crop", alt: "Structural works" },
+      { url: "https://images.unsplash.com/photo-1590247813693-5541d1c609fd?w=600&q=80&fit=crop", alt: "Project handover" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&q=80&fit=crop", alt: "Completed custom home" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80&fit=crop", alt: "Luxury bathroom build" },
+      { url: "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&q=80&fit=crop", alt: "Open-plan living extension" },
+      { url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80&fit=crop", alt: "Commercial fitout" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Principal Contractor" },
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Head of Projects" },
+      { url: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80&fit=crop&face", alt: "Lead Architect" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=80&fit=crop", alt: "Start your build" },
+  },
+
+  heroHeadline: "Building the Future, One Project at a Time",
+  heroSubline: "Award-winning general contractors delivering quality builds on time and on budget.",
+  heroBadge: "🏆 Award-Winning Contractor",
+  heroCTA: "Request a Consultation",
+  heroSecondaryCTA: "View Our Projects",
+  siteName: "ApexConstruct",
+  tagline: "Premium builds, delivered with precision",
+  phone: "+1 (555) 402-8890",
+  email: "projects@apexconstruct.com",
+  address: "220 Foundation Ave, Suite 400, Metro City",
+  aboutHeading: "Two Decades of Award-Winning Construction",
+  aboutBody: "ApexConstruct has delivered premium residential and commercial builds for over 20 years. Our in-house architects, project managers and master tradespeople work as one team — meaning tighter timelines, cleaner execution and a single point of accountability from groundbreaking to handover.",
+  aboutHighlights: ["Licensed & bonded general contractor", "In-house architecture & design team", "10-year structural warranty", "On-time, on-budget delivery record", "200+ premium builds completed"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Projects", url: "#gallery" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Get Started", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Custom Home Building", description: "Full architectural design-to-build service for bespoke luxury homes, from concept to move-in.", icon: "🏡", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Whole-Home Renovation", description: "Complete gut renovations and structural remodels for existing homes, managed start to finish.", icon: "🛠️", iconType: "emoji", price: "From $85,000", imageUrl: "https://images.unsplash.com/photo-1541976590-713941681591?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Construction", description: "Ground-up commercial builds and tenant fitouts, delivered on schedule with full permit management.", icon: "🏢", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Home Extensions", description: "Second-storey additions, kitchen extensions and granny flats designed to match your existing home.", icon: "📐", iconType: "emoji", price: "From $45,000", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Structural Works", description: "Load-bearing wall removal, foundation repair and structural steel installation by licensed engineers.", icon: "🏗️", iconType: "emoji", price: "From $12,000", imageUrl: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Project Management", description: "End-to-end management for owner-supplied projects — scheduling, trades coordination and QA.", icon: "📋", iconType: "emoji", price: "From $6,000", imageUrl: "https://images.unsplash.com/photo-1590247813693-5541d1c609fd?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "200+", label: "Premium Builds" },
+    { id: uid("st"), value: "20 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+    { id: uid("st"), value: "10 yr", label: "Structural Warranty" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Richard Cole", role: "Homeowner", company: "Hillcrest Estate", content: "ApexConstruct built our dream home exactly to spec, on schedule, with zero surprise costs. The craftsmanship is exceptional.", rating: 5, avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Diane Foster", role: "Property Developer", content: "We've used Apex for three commercial builds now. Their project management is the best in the market — clean, punctual, professional.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Marcus Boyd", role: "Restaurant Owner", content: "Our tenant fitout was completed two weeks ahead of schedule. Communication throughout was excellent.", rating: 5 },
+    { id: uid("t"), name: "Elena Vasquez", role: "Homeowner", content: "The second-storey addition blended so seamlessly you'd never know it wasn't original. Worth every dollar.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Renovation", price: "From $45,000", description: "Single-room to whole-home remodels", features: ["Design consultation", "Licensed trades", "Permit management", "3-year warranty"], ctaLabel: "Request Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Custom Build", price: "From $350,000", description: "Full custom home construction", features: ["In-house architecture", "Dedicated project manager", "Premium fixtures included", "10-year structural warranty", "Fixed-price contract"], highlighted: true, badge: "Most Popular", ctaLabel: "Request Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Commercial", price: "Custom", description: "Ground-up & tenant fitout projects", features: ["Full permit & compliance", "Trades coordination", "Fast-track scheduling", "Post-handover support"], ctaLabel: "Discuss Your Project", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How long does a custom home build take?", answer: "A typical custom home takes 9–14 months from groundbreaking to handover, depending on size and complexity. We provide a detailed schedule before signing." },
+    { id: uid("f"), question: "Do you handle permits and approvals?", answer: "Yes, we manage all permit submissions, inspections and compliance approvals as part of every contract." },
+    { id: uid("f"), question: "Is pricing fixed or does it change during the build?", answer: "We provide fixed-price contracts with clearly itemised scope. Variations only occur if you request additional work in writing." },
+    { id: uid("f"), question: "Can I see examples of your past work?", answer: "Absolutely — our gallery above shows recent projects, and we're happy to arrange a site visit to a completed build near you." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Grant Whitfield", role: "Principal Contractor", bio: "20 years in premium residential and commercial construction. Personally reviews every project plan before groundbreaking.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Alicia Moreno", role: "Head of Projects", bio: "Manages scheduling and trades coordination across every active build, keeping projects on time and on budget.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "David Osei", role: "Lead Architect", bio: "Leads the in-house design team, translating client vision into buildable, permit-ready architectural plans.", avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 30: BuildGuard (Facility Maintenance) ──────────────────────────
+
+const BUILD_GUARD: TemplateIdentity = {
+  slug: "buildguard",
+  name: "BuildGuard",
+  description: "Professional building maintenance template with a clean corporate aesthetic. Designed for facility management and preventive maintenance companies.",
+  category: "Renovation & Construction",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=85&fit=crop",
+  tags: ["building maintenance", "facility management", "commercial", "repairs"],
+
+  palette: {
+    primary: "#2563eb",
+    primaryFg: "#ffffff",
+    secondary: "#0f172a",
+    accent: "#60a5fa",
+    background: "#f8fafc",
+    foreground: "#0f172a",
+    muted: "#e2e8f0",
+    mutedFg: "#475569",
+    card: "#ffffff",
+    border: "#cbd5e1",
+    ring: "#2563eb",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-buildguard .service-card { border-left: 3px solid #2563eb; }
+    .template-buildguard .stat-value { color: #2563eb; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&q=85&fit=crop", alt: "Commercial building facade" },
+    about: { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop", alt: "Facility maintenance technician" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "HVAC maintenance" },
+      { url: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=600&q=80&fit=crop", alt: "Electrical inspection" },
+      { url: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&q=80&fit=crop", alt: "Plumbing repair" },
+      { url: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&fit=crop", alt: "Preventive maintenance" },
+      { url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop", alt: "Facility inspection" },
+      { url: "https://images.unsplash.com/photo-1516216628859-9bccecab13ca?w=600&q=80&fit=crop", alt: "Emergency repairs" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop", alt: "Office building maintained" },
+      { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80&fit=crop", alt: "Retail facility upkeep" },
+      { url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&fit=crop", alt: "Corporate campus" },
+      { url: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&q=80&fit=crop", alt: "Building systems check" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Operations Manager" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Chief Engineer" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Client Relations Lead" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=80&fit=crop", alt: "Schedule maintenance" },
+  },
+
+  heroHeadline: "Building Excellence, Maintained Daily",
+  heroSubline: "Comprehensive facility management and maintenance solutions for commercial properties.",
+  heroBadge: "🔧 Trusted by 150+ Properties",
+  heroCTA: "Get a Maintenance Plan",
+  heroSecondaryCTA: "Request Callout",
+  siteName: "BuildGuard Facility Services",
+  tagline: "Proactive maintenance, zero downtime",
+  phone: "+1 (555) 618-2200",
+  email: "service@buildguard.com",
+  address: "88 Industrial Parkway, Unit 12, Metro City",
+  aboutHeading: "Keeping 150+ Commercial Properties Running Smoothly",
+  aboutBody: "BuildGuard provides preventive maintenance and rapid-response repairs for offices, retail centres and industrial facilities. Our certified technicians cover HVAC, electrical, plumbing and building systems — all coordinated through one service agreement so property managers have a single point of contact.",
+  aboutHighlights: ["24/7 emergency callout line", "Certified multi-trade technicians", "Preventive maintenance scheduling", "Single service agreement, all trades", "150+ properties under contract"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Preventive Maintenance Plans", description: "Scheduled inspections and servicing of HVAC, electrical and plumbing systems to prevent costly failures.", icon: "🗓️", iconType: "emoji", price: "From $450/mo", imageUrl: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "HVAC Servicing", description: "Commercial HVAC inspection, filter replacement and system tuning to keep buildings comfortable and efficient.", icon: "❄️", iconType: "emoji", price: "From $220", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Electrical Maintenance", description: "Panel inspections, lighting repairs and code-compliance electrical work for commercial properties.", icon: "⚡", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Plumbing Repairs", description: "Commercial plumbing repairs, leak detection and fixture replacement with minimal business disruption.", icon: "🚰", iconType: "emoji", price: "From $160", imageUrl: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Emergency Callout", description: "24/7 emergency response for building system failures — average 90-minute arrival within service area.", icon: "🚨", iconType: "emoji", price: "From $280", imageUrl: "https://images.unsplash.com/photo-1516216628859-9bccecab13ca?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Facility Inspections", description: "Comprehensive building health audits with a prioritised repair report for property managers.", icon: "📋", iconType: "emoji", price: "From $350", imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "150+", label: "Properties Managed" },
+    { id: uid("st"), value: "90 min", label: "Avg. Response Time" },
+    { id: uid("st"), value: "18 yr", label: "In Business" },
+    { id: uid("st"), value: "99.2%", label: "Uptime Delivered" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Karen Holt", role: "Property Manager", company: "Riverside Business Park", content: "BuildGuard's preventive maintenance has cut our emergency repair costs by half. Their reporting is thorough and their techs are always professional.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Thomas Reyes", role: "Facilities Director", company: "Metro Office Group", content: "One service agreement covers everything across our 6 buildings. Simplified our vendor management enormously.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Angela Brooks", role: "Retail Centre Manager", content: "Fast emergency response when our HVAC failed on a summer weekend. Saved us from a very bad situation.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Essential", price: "$450", period: "/mo", description: "Single-building preventive plan", features: ["Quarterly HVAC service", "Bi-annual electrical check", "Priority scheduling", "Digital maintenance log"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Professional", price: "$950", period: "/mo", description: "Multi-system full coverage", features: ["Monthly HVAC service", "Quarterly electrical & plumbing", "24/7 emergency callout included", "Dedicated account manager", "Digital maintenance log"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Enterprise", price: "Custom", description: "Multi-property portfolios", features: ["Custom SLA terms", "On-site technician options", "Portfolio-wide reporting", "Dedicated response team"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What's included in a preventive maintenance plan?", answer: "Plans include scheduled inspections and servicing of HVAC, electrical and plumbing systems, tailored to your building's equipment and usage." },
+    { id: uid("f"), question: "How fast is your emergency response?", answer: "Our average arrival time for emergency callouts is 90 minutes within our standard service area, 24 hours a day, 7 days a week." },
+    { id: uid("f"), question: "Can you manage multiple properties under one contract?", answer: "Yes, our Enterprise plan is built for portfolio management with consolidated billing and reporting across all your properties." },
+    { id: uid("f"), question: "Are your technicians certified?", answer: "Yes, all BuildGuard technicians hold relevant trade certifications and undergo background checks before deployment." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Victor Chan", role: "Operations Manager", bio: "Oversees scheduling and technician deployment across all 150+ managed properties.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Michelle Adeyemi", role: "Chief Engineer", bio: "18 years in commercial building systems. Leads technical standards and quality control.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 31: HandyfixPro (Handyman Services) ────────────────────────────
+
+const HANDYFIX_PRO: TemplateIdentity = {
+  slug: "handyfix-pro",
+  name: "HandyfixPro",
+  description: "Bold, trust-forward template for handyman services. Dark-accented hero with service icons and a prominent call-to-action for fast local bookings.",
+  category: "Renovation & Construction",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&q=85&fit=crop",
+  tags: ["handyman", "repairs", "home services", "maintenance"],
+
+  palette: {
+    primary: "#ea580c",
+    primaryFg: "#ffffff",
+    secondary: "#1c1917",
+    accent: "#fb923c",
+    background: "#1c1917",
+    foreground: "#fafaf9",
+    muted: "#292524",
+    mutedFg: "#a8a29e",
+    card: "#292524",
+    border: "#44403c",
+    ring: "#ea580c",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-handyfix-pro .hero-badge { background: #ea580c; color: #fff; border-radius: 9999px; font-weight: 700; }
+    .template-handyfix-pro .service-card { border-top: 3px solid #ea580c; background: #292524; }
+    .template-handyfix-pro .stat-value { color: #ea580c; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=900&q=85&fit=crop", alt: "Handyman with tool belt" },
+    about: { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&fit=crop", alt: "Home repair in progress" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=600&q=80&fit=crop", alt: "Furniture assembly" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", alt: "Drywall repair" },
+      { url: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=600&q=80&fit=crop", alt: "Fixture installation" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Small appliance repair" },
+      { url: "https://images.unsplash.com/photo-1581244277943-fe4a9c777540?w=600&q=80&fit=crop", alt: "Painting touch-up" },
+      { url: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&q=80&fit=crop", alt: "Shelving installation" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Completed shelf install" },
+      { url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80&fit=crop", alt: "Repaired drywall" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&fit=crop", alt: "Small home fix" },
+      { url: "https://images.unsplash.com/photo-1600607687644-c7171b47af3b?w=800&q=80&fit=crop", alt: "Tidy finish job" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Lead Handyman" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&q=80&fit=crop", alt: "Book a handyman" },
+  },
+
+  heroHeadline: "Your Local Handyman, Done Right",
+  heroSubline: "Fast, reliable repairs and maintenance for homes and businesses — no job too small.",
+  heroBadge: "🔨 Same-Day Service Available",
+  heroCTA: "Book a Handyman",
+  heroSecondaryCTA: "Get Free Estimate",
+  siteName: "HandyfixPro",
+  tagline: "No job too small, done right the first time",
+  phone: "+1 (555) 774-3390",
+  email: "jobs@handyfixpro.com",
+  address: "56 Maple Grove Rd, Metro City",
+  aboutHeading: "1,800+ Repairs Done Right, Since 2015",
+  aboutBody: "HandyfixPro handles the jobs that pile up — from leaky faucets and squeaky doors to full furniture assembly and shelving installs. Our vetted, background-checked handymen show up on time, bring their own tools, and clean up before they leave. No job is too small to book.",
+  aboutHighlights: ["Background-checked technicians", "Same-day & next-day booking", "Upfront flat-rate pricing", "100% satisfaction guarantee", "1,800+ jobs completed"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "Gallery", url: "#gallery" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Book Now", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Furniture Assembly", description: "Flat-pack furniture, shelving units and beds assembled quickly and correctly, first time.", icon: "🪑", iconType: "emoji", price: "From $59", imageUrl: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Drywall & Patch Repair", description: "Holes, cracks and water damage patched, sanded and blended seamlessly with existing walls.", icon: "🧱", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Fixture Installation", description: "Light fixtures, ceiling fans, mirrors and TV mounts installed safely and to code.", icon: "💡", iconType: "emoji", price: "From $69", imageUrl: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Small Repairs", description: "Sticking doors, loose hinges, running toilets and dozens of the small jobs on your to-do list.", icon: "🔧", iconType: "emoji", price: "From $49", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Touch-Up Painting", description: "Wall touch-ups, accent walls and small painting jobs completed cleanly with no overspray mess.", icon: "🎨", iconType: "emoji", price: "From $99", imageUrl: "https://images.unsplash.com/photo-1581244277943-fe4a9c777540?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Shelving & Storage", description: "Custom shelving, closet systems and garage storage installed to maximise your space.", icon: "📦", iconType: "emoji", price: "From $79", imageUrl: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "1,800+", label: "Jobs Completed" },
+    { id: uid("st"), value: "Same-Day", label: "Service Available" },
+    { id: uid("st"), value: "4.8★", label: "Average Rating" },
+    { id: uid("st"), value: "9 yr", label: "In Business" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Sam Carter", role: "Homeowner", content: "Booked a same-day fix for a running toilet and a loose cabinet door. Both done in under an hour, fair price, super friendly.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Nadia Hussain", role: "Renter", content: "Assembled my entire bedroom furniture set in one visit. Cleaned up all the packaging too. Highly recommend.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Greg Palmer", role: "Small Business Owner", content: "They've become our go-to for office maintenance. Reliable, fast and always fair on pricing.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Quick Fix", price: "$49", period: "/first hour", description: "Single small repair", features: ["One repair job", "Tools included", "Upfront pricing", "Same-week booking"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Task List", price: "$149", period: "/2 hours", description: "Multiple small jobs in one visit", features: ["Up to 4 small tasks", "Tools & materials included", "Priority scheduling", "Satisfaction guarantee"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Half-Day", price: "$389", period: "/4 hours", description: "Bigger project or long task list", features: ["Up to 4 hours on-site", "Dedicated handyman", "Materials sourcing help", "Follow-up visit included"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you bring your own tools?", answer: "Yes, our handymen arrive fully equipped for the job you've booked. You don't need to provide anything." },
+    { id: uid("f"), question: "Can I book multiple jobs in one visit?", answer: "Absolutely — our Task List package covers up to 4 small jobs in a single 2-hour visit, which is more cost-effective than booking separately." },
+    { id: uid("f"), question: "Is same-day service really available?", answer: "In most cases, yes. Book before noon for same-day availability in our core service area, subject to technician schedules." },
+    { id: uid("f"), question: "What if I'm not happy with the work?", answer: "We offer a 100% satisfaction guarantee — if something isn't right, we'll return and fix it at no additional charge." },
+  ],
+};
+
+// ─── TEMPLATE 32: FlowMaster (Emergency Plumbing) ────────────────────────────
+
+const FLOWMASTER_PLUMBING: TemplateIdentity = {
+  slug: "flowmaster-plumbing",
+  name: "FlowMaster",
+  description: "Clean professional plumbing specialist template with an emergency callout focus. Features 24/7 availability messaging and trust badges.",
+  category: "HVAC & Plumbing",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1621905251918-96b8b47c5f8e?w=1200&q=85&fit=crop",
+  tags: ["plumbing", "emergency plumber", "pipes", "drainage"],
+
+  palette: {
+    primary: "#2563eb",
+    primaryFg: "#ffffff",
+    secondary: "#1e293b",
+    accent: "#60a5fa",
+    background: "#1e293b",
+    foreground: "#f1f5f9",
+    muted: "#334155",
+    mutedFg: "#94a3b8",
+    card: "#334155",
+    border: "#475569",
+    ring: "#2563eb",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-flowmaster-plumbing .hero-badge { background: #2563eb; color: #fff; border-radius: 9999px; font-weight: 700; }
+    .template-flowmaster-plumbing .service-card { border-top: 3px solid #2563eb; background: #334155; }
+    .template-flowmaster-plumbing .stat-value { color: #60a5fa; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1621905251918-96b8b47c5f8e?w=1600&q=90&fit=crop", alt: "Plumber repairing pipes" },
+    about: { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80&fit=crop", alt: "Plumbing tools and pipes" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=600&q=80&fit=crop", alt: "Leak detection" },
+      { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", alt: "Drain cleaning" },
+      { url: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&q=80&fit=crop", alt: "Pipe replacement" },
+      { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", alt: "Water heater service" },
+      { url: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=600&q=80&fit=crop", alt: "Bathroom plumbing" },
+      { url: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&q=80&fit=crop", alt: "Emergency plumbing repair" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Repaired bathroom plumbing" },
+      { url: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=800&q=80&fit=crop", alt: "Fixed leak" },
+      { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80&fit=crop", alt: "Cleared drain" },
+      { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80&fit=crop", alt: "New water heater install" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Master Plumber" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1621905251918-96b8b47c5f8e?w=1200&q=80&fit=crop", alt: "Call for emergency plumbing" },
+  },
+
+  heroHeadline: "Fast Plumbing Fixes, 24 Hours a Day",
+  heroSubline: "Licensed plumbers on call around the clock — from leaky taps to full pipe replacements.",
+  heroBadge: "🚰 24/7 Emergency Service",
+  heroCTA: "Call Now",
+  heroSecondaryCTA: "Book Online",
+  siteName: "FlowMaster Plumbing",
+  tagline: "Licensed plumbers, available around the clock",
+  phone: "+1 (555) 209-4471",
+  email: "help@flowmasterplumbing.com",
+  address: "34 Waterworks Lane, Metro City",
+  aboutHeading: "Licensed Plumbers, On Call 24/7 Since 2011",
+  aboutBody: "FlowMaster Plumbing handles everything from dripping taps to full pipe replacements and emergency burst-pipe callouts. Every plumber is licensed, insured and drug-tested, and we offer upfront pricing before any work begins — no surprises on the invoice.",
+  aboutHighlights: ["Licensed & insured plumbers", "24/7 emergency callout", "Upfront pricing before work starts", "Fully stocked trucks — most jobs same visit", "12+ years serving the community"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Emergency", url: "#contact" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Emergency Callout", description: "Burst pipes, major leaks and no-water emergencies — our on-call plumber responds day or night.", icon: "🚨", iconType: "emoji", price: "From $220", imageUrl: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Leak Detection & Repair", description: "Non-invasive leak detection technology finds hidden leaks before they cause major damage.", icon: "💧", iconType: "emoji", price: "From $150", imageUrl: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Drain Cleaning", description: "Blocked drains cleared fast with hydro-jetting and camera inspection to confirm the fix.", icon: "🌀", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Pipe Replacement", description: "Full or partial repiping for ageing homes, using modern durable materials with minimal wall disruption.", icon: "🔧", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Water Heater Service", description: "Installation, repair and maintenance of tank and tankless water heaters, all major brands.", icon: "🔥", iconType: "emoji", price: "From $320", imageUrl: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bathroom Plumbing", description: "New fixture installs, toilet repairs and full bathroom re-plumbing for renovations.", icon: "🚽", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "24/7", label: "Emergency Availability" },
+    { id: uid("st"), value: "45 min", label: "Avg. Callout Time" },
+    { id: uid("st"), value: "12 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Customer Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Bill Sanderson", role: "Homeowner", content: "Burst pipe at 2am and they had someone out within the hour. Fixed it fast and the price matched the quote exactly.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Carla Jimenez", role: "Homeowner", content: "Found a hidden slab leak that two other plumbers missed. Saved us from major foundation damage. Forever grateful.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Pete Wallace", role: "Property Manager", content: "Our go-to for all rental property plumbing. Always upfront on price, always shows up when they say they will.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Standard Callout", price: "$120", period: "/visit", description: "Business hours service call", features: ["Diagnostic included", "Upfront quote before work", "Fully stocked truck", "90-day workmanship warranty"], ctaLabel: "Book Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Emergency Callout", price: "$220", period: "/visit", description: "24/7 after-hours response", features: ["Available nights & weekends", "45-min average response", "Diagnostic included", "1-year workmanship warranty"], highlighted: true, badge: "Most Requested", ctaLabel: "Call Now", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Repipe Project", price: "Custom Quote", description: "Full or partial home repiping", features: ["Free on-site assessment", "Modern PEX or copper options", "Minimal wall disruption", "5-year workmanship warranty"], ctaLabel: "Get Assessment", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How fast can you respond to an emergency?", answer: "Our average response time for emergency callouts is 45 minutes within our core service area, available 24 hours a day." },
+    { id: uid("f"), question: "Do you charge extra for after-hours calls?", answer: "Yes, after-hours and weekend emergency callouts have a separate rate from standard business-hours visits, quoted upfront before any work begins." },
+    { id: uid("f"), question: "Can you detect leaks without breaking walls?", answer: "Yes, we use acoustic and thermal leak-detection technology to pinpoint hidden leaks with minimal to no demolition." },
+    { id: uid("f"), question: "Are your plumbers licensed?", answer: "Yes, every FlowMaster plumber is fully licensed, insured and background-checked before joining our team." },
+  ],
+};
+
+// ─── TEMPLATE 33: HeatWave (Gas & Heating Specialist) ─────────────────────────
+
+const HEATWAVE_HVAC: TemplateIdentity = {
+  slug: "heatwave-hvac",
+  name: "HeatWave",
+  description: "Bold gas and heating specialist template with a dark industrial aesthetic. Perfect for boiler installation, gas fitting, and central heating companies.",
+  category: "HVAC & Plumbing",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=1200&q=85&fit=crop",
+  tags: ["gas fitting", "heating", "boiler", "HVAC"],
+
+  palette: {
+    primary: "#dc2626",
+    primaryFg: "#ffffff",
+    secondary: "#18181b",
+    accent: "#f87171",
+    background: "#18181b",
+    foreground: "#fafafa",
+    muted: "#27272a",
+    mutedFg: "#a1a1aa",
+    card: "#27272a",
+    border: "#3f3f46",
+    ring: "#dc2626",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-heatwave-hvac h1,.template-heatwave-hvac h2 { text-transform: uppercase; }
+    .template-heatwave-hvac .service-card { border-top: 3px solid #dc2626; background: #27272a; }
+    .template-heatwave-hvac .stat-value { color: #dc2626; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=1600&q=90&fit=crop", alt: "Gas engineer servicing boiler" },
+    about: { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=800&q=80&fit=crop", alt: "Central heating system" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=600&q=80&fit=crop", alt: "Boiler installation" },
+      { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", alt: "Gas safety check" },
+      { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", alt: "Water heater servicing" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", alt: "Radiator installation" },
+      { url: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=600&q=80&fit=crop", alt: "Heating system repair" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Gas line inspection" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=800&q=80&fit=crop", alt: "New boiler install" },
+      { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80&fit=crop", alt: "Water heater upgrade" },
+      { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80&fit=crop", alt: "Serviced gas system" },
+      { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=800&q=80&fit=crop", alt: "Central heating upgrade" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Gas Safe Engineer" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=1200&q=80&fit=crop", alt: "Book a gas engineer" },
+  },
+
+  heroHeadline: "Warmth You Can Count On, All Year Round",
+  heroSubline: "Certified gas fitters and heating engineers — boiler installs, servicing, and emergency callouts.",
+  heroBadge: "🔥 Gas Safe Registered",
+  heroCTA: "Book a Service",
+  heroSecondaryCTA: "Emergency Callout",
+  siteName: "HeatWave Heating & Gas",
+  tagline: "Certified gas fitters and heating specialists",
+  phone: "+1 (555) 833-9012",
+  email: "service@heatwaveheating.com",
+  address: "12 Furnace Row, Metro City",
+  aboutHeading: "Gas Safe Registered Since 2009",
+  aboutBody: "HeatWave installs, services and repairs boilers, gas heating systems and hot water systems for homes and businesses. Every engineer is Gas Safe registered and every job is backed by a written warranty. We offer same-week servicing and emergency callouts for no-heat situations.",
+  aboutHighlights: ["Gas Safe registered engineers", "Written workmanship warranty", "Same-week servicing available", "Emergency no-heat callouts", "15+ years in gas & heating"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Boiler Installation", description: "New boiler supply and installation with full commissioning and Gas Safe certification.", icon: "🔥", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Boiler Servicing", description: "Annual boiler service and safety check to keep your system efficient and your warranty valid.", icon: "🛠️", iconType: "emoji", price: "From $110", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Gas Safety Checks", description: "Landlord gas safety certificates (CP12) and full appliance safety inspections.", icon: "✅", iconType: "emoji", price: "From $95", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Central Heating Installation", description: "Full central heating system design and installation for new builds and upgrades.", icon: "🏠", iconType: "emoji", price: "From $4,500", imageUrl: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Water Heater Installation", description: "Tank and tankless hot water system installation and replacement, all major brands.", icon: "🚿", iconType: "emoji", price: "From $850", imageUrl: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Emergency No-Heat Callout", description: "Same-day emergency response for boiler breakdowns and complete loss of heating.", icon: "🚨", iconType: "emoji", price: "From $195", imageUrl: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "15 yr", label: "Gas Safe Registered" },
+    { id: uid("st"), value: "3,200+", label: "Boilers Serviced" },
+    { id: uid("st"), value: "Same-Week", label: "Servicing Available" },
+    { id: uid("st"), value: "4.9★", label: "Customer Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Harold Bennett", role: "Homeowner", content: "New boiler installed in a single day, fully certified, and they explained everything clearly. No pressure, no upselling.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Denise Okafor", role: "Landlord", content: "They handle CP12 certificates for all 6 of my rental properties every year. Always on time, always thorough.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Ray Torres", role: "Homeowner", content: "Boiler broke down in the middle of winter and they had a technician out same day. Absolute lifesavers.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Annual Service", price: "$110", period: "/year", description: "Standard boiler service", features: ["Full safety inspection", "Efficiency tune-up", "Warranty compliance check", "Service record provided"], ctaLabel: "Book Service", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Boiler Install", price: "From $2,800", description: "New boiler, fully installed", features: ["Free on-site quote", "Gas Safe certified install", "Old boiler removed", "7-year manufacturer warranty", "1-year labour warranty"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Care Plan", price: "$18", period: "/mo", description: "Ongoing coverage & priority service", features: ["Annual service included", "Priority emergency callout", "Discounted parts & labour", "No-heat response within 24hrs"], ctaLabel: "Join Care Plan", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Are your engineers Gas Safe registered?", answer: "Yes, every HeatWave engineer is Gas Safe registered and their ID card can be checked on-site before any work begins." },
+    { id: uid("f"), question: "How often should my boiler be serviced?", answer: "We recommend an annual service to maintain efficiency, safety, and manufacturer warranty compliance." },
+    { id: uid("f"), question: "Do you provide landlord gas safety certificates?", answer: "Yes, we issue CP12 landlord gas safety certificates same-day following inspection, valid for 12 months." },
+    { id: uid("f"), question: "What happens if my boiler breaks down in winter?", answer: "Call our emergency line — we prioritise no-heat situations and typically dispatch a technician the same day." },
+  ],
+};
+
+// ─── TEMPLATE 34: TotalBuilds (Multi-Trade Building Services) ────────────────
+
+const TOTALBUILDS_SERVICES: TemplateIdentity = {
+  slug: "totalbuilds-services",
+  name: "TotalBuilds",
+  description: "Full-spectrum building services template covering plumbing, electrical, and HVAC under one roof. Designed for multi-trade service companies.",
+  category: "HVAC & Plumbing",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=1200&q=85&fit=crop",
+  tags: ["building services", "multi-trade", "HVAC", "plumbing", "electrical"],
+
+  palette: {
+    primary: "#16a34a",
+    primaryFg: "#ffffff",
+    secondary: "#0f172a",
+    accent: "#4ade80",
+    background: "#f0fdf4",
+    foreground: "#0f172a",
+    muted: "#dcfce7",
+    mutedFg: "#166534",
+    card: "#ffffff",
+    border: "#bbf7d0",
+    ring: "#16a34a",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-totalbuilds-services .service-card { border-left: 3px solid #16a34a; }
+    .template-totalbuilds-services .stat-value { color: #16a34a; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=900&q=85&fit=crop", alt: "Multi-trade technician on site" },
+    about: { url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80&fit=crop", alt: "Building services team" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "HVAC service" },
+      { url: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=600&q=80&fit=crop", alt: "Electrical work" },
+      { url: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&q=80&fit=crop", alt: "Plumbing service" },
+      { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", alt: "Water heater install" },
+      { url: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&fit=crop", alt: "Preventive maintenance" },
+      { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", alt: "Drainage service" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop", alt: "Serviced commercial building" },
+      { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80&fit=crop", alt: "Residential building services" },
+      { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=800&q=80&fit=crop", alt: "HVAC install" },
+      { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=800&q=80&fit=crop", alt: "Heating system upgrade" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Operations Lead" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Senior Technician" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=1200&q=80&fit=crop", alt: "Get a quote" },
+  },
+
+  heroHeadline: "One Call Covers It All",
+  heroSubline: "Complete building services — plumbing, heating, and electrical solutions from a single trusted team.",
+  heroBadge: "🔧 All Trades, One Team",
+  heroCTA: "Request Service",
+  heroSecondaryCTA: "View Services",
+  siteName: "TotalBuilds Services",
+  tagline: "Plumbing, heating and electrical — one team, one call",
+  phone: "+1 (555) 460-7712",
+  email: "service@totalbuilds.com",
+  address: "77 Multiservice Drive, Metro City",
+  aboutHeading: "One Team, Every Trade You Need",
+  aboutBody: "TotalBuilds brings plumbing, electrical and HVAC under one roof, so property owners get one point of contact instead of juggling three contractors. Every technician is licensed in their trade, and our coordinated scheduling means multi-trade jobs get done in fewer visits.",
+  aboutHighlights: ["Licensed in plumbing, electrical & HVAC", "One point of contact for every trade", "Coordinated multi-trade scheduling", "Upfront, itemised quotes", "10+ years serving the community"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "HVAC Services", description: "Installation, repair and maintenance of heating and cooling systems for homes and businesses.", icon: "❄️", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Electrical Services", description: "Panel upgrades, rewiring, lighting installation and code-compliance electrical work.", icon: "⚡", iconType: "emoji", price: "From $150", imageUrl: "https://images.unsplash.com/photo-1621905252472-943afaa20e20?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Plumbing Services", description: "Leak repairs, drain cleaning, fixture installation and pipe replacement.", icon: "🚰", iconType: "emoji", price: "From $130", imageUrl: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Water Heater Services", description: "Installation and repair of tank and tankless water heaters, all major brands.", icon: "🔥", iconType: "emoji", price: "From $290", imageUrl: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Preventive Maintenance", description: "Multi-trade maintenance plans covering HVAC, plumbing and electrical inspections.", icon: "🗓️", iconType: "emoji", price: "From $380/mo", imageUrl: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Drainage & Sewer", description: "Drain clearing, sewer line inspection and repair using camera diagnostic equipment.", icon: "🌀", iconType: "emoji", price: "From $140", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "3", label: "Trades Under One Roof" },
+    { id: uid("st"), value: "10 yr", label: "In Business" },
+    { id: uid("st"), value: "1,900+", label: "Jobs Completed" },
+    { id: uid("st"), value: "4.8★", label: "Customer Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Louise Grant", role: "Homeowner", content: "Rewired our kitchen and replaced our water heater in the same visit. So much easier than booking two separate companies.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Omar Farouk", role: "Property Manager", content: "One maintenance plan covers HVAC, plumbing and electrical across our whole building portfolio. Massive time saver.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Vanessa Cruz", role: "Homeowner", content: "Straightforward pricing and technicians who actually explained what was wrong instead of just fixing and leaving. Great experience.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Trade", price: "From $130", description: "One-off repair or service", features: ["Choose plumbing, electrical or HVAC", "Upfront quote", "Same-week booking", "90-day workmanship warranty"], ctaLabel: "Request Service", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Multi-Trade Plan", price: "$380", period: "/mo", description: "Coordinated maintenance, all trades", features: ["Quarterly HVAC service", "Bi-annual electrical & plumbing check", "Priority scheduling", "10% off additional repairs"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Portfolio Plan", price: "Custom", description: "Multi-property management", features: ["Custom SLA per property", "Consolidated billing", "Dedicated account manager"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Can one technician handle multiple trades?", answer: "Each job is handled by a technician licensed in that specific trade — plumbing, electrical or HVAC — but our scheduling coordinates them so multi-trade jobs happen in as few visits as possible." },
+    { id: uid("f"), question: "Do you offer maintenance plans across all trades?", answer: "Yes, our Multi-Trade Plan bundles HVAC, plumbing and electrical inspections into one coordinated maintenance schedule." },
+    { id: uid("f"), question: "Are you licensed in every trade you offer?", answer: "Yes, every TotalBuilds technician is fully licensed and insured in their specific trade before working on any job." },
+    { id: uid("f"), question: "Can you manage maintenance for multiple properties?", answer: "Yes, our Portfolio Plan is designed for property managers with multiple buildings, offering consolidated billing and a dedicated account manager." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Frank Delgado", role: "Operations Lead", bio: "Coordinates scheduling across all three trades to minimise site visits and turnaround time.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Wendy Zhao", role: "Senior Technician", bio: "10 years across HVAC and electrical trades. Leads training for new multi-trade hires.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -4367,6 +5179,12 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   MEDPLUS_CLINIC,
   DRIVE_ACADEMY,
   LIFE_SETTLE,
+  APEX_CONSTRUCT,
+  BUILD_GUARD,
+  HANDYFIX_PRO,
+  FLOWMASTER_PLUMBING,
+  HEATWAVE_HVAC,
+  TOTALBUILDS_SERVICES,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
