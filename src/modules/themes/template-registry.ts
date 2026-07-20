@@ -6773,6 +6773,830 @@ const STREETBITE: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 47: LexBridge (Law Firm) ────────────────────────────────────────
+
+const LEXBRIDGE_LAW: TemplateIdentity = {
+  slug: "lexbridge-law",
+  name: "LexBridge",
+  description: "Authoritative law firm template with a sophisticated dark design. Conveys professionalism through structured practice area listings and attorney profiles.",
+  category: "Legal & Finance",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=85&fit=crop",
+  tags: ["law firm", "legal", "solicitors", "attorneys", "legal services"],
+
+  palette: {
+    primary: "#b45309",
+    primaryFg: "#ffffff",
+    secondary: "#374151",
+    accent: "#d97706",
+    background: "#111827",
+    foreground: "#f9fafb",
+    muted: "#1f2937",
+    mutedFg: "#9ca3af",
+    card: "#1f2937",
+    border: "#374151",
+    ring: "#b45309",
+    borderRadius: "0.25rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-lexbridge-law .hero-badge { background: #b45309; color: white; border-radius: 0.25rem; }
+    .template-lexbridge-law .service-card { border-top: 3px solid #b45309; background: #1f2937; }
+    .template-lexbridge-law .stat-value { color: #d97706; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "centered-bold",
+    services: "bordered-list",
+    testimonials: "formal-cards",
+    features: "alternating-images",
+    stats: "navy-row",
+    cta: "navy-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&q=90&fit=crop", alt: "Law firm boardroom" },
+    about: { url: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=800&q=80&fit=crop", alt: "Attorney reviewing documents" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80&fit=crop", alt: "Corporate law consultation" },
+      { url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80&fit=crop", alt: "Contract review" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80&fit=crop", alt: "Litigation support" },
+      { url: "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=600&q=80&fit=crop", alt: "Estate planning" },
+      { url: "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=600&q=80&fit=crop", alt: "Family law consultation" },
+      { url: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=600&q=80&fit=crop", alt: "Real estate closing" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&fit=crop", alt: "Firm office" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop", alt: "Conference room" },
+      { url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80&fit=crop", alt: "Consultation in progress" },
+      { url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&fit=crop", alt: "Legal library" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Managing Partner" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Senior Associate" },
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Litigation Counsel" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80&fit=crop", alt: "Schedule a consultation" },
+  },
+
+  heroHeadline: "Legal Expertise You Can Rely On",
+  heroSubline: "Dedicated legal counsel for individuals and businesses — protecting your rights, advancing your interests.",
+  heroBadge: "⚖️ 25+ Years Combined Experience",
+  heroCTA: "Schedule a Consultation",
+  heroSecondaryCTA: "Our Practice Areas",
+  siteName: "LexBridge Law",
+  tagline: "Legal expertise you can rely on",
+  phone: "+1 (555) 902-1188",
+  email: "info@lexbridgelaw.com",
+  address: "500 Justice Plaza, Suite 900, Metro City",
+  aboutHeading: "25+ Years of Combined Legal Experience",
+  aboutBody: "LexBridge Law provides sophisticated legal counsel across corporate, litigation, real estate and family law matters. Our attorneys combine deep legal expertise with a genuinely client-first approach — clear communication, transparent fees, and results-driven strategy.",
+  aboutHighlights: ["25+ years combined experience", "Free initial consultation", "Transparent fee structures", "Responsive client communication"],
+
+  navItems: [
+    { id: "n1", label: "Practice Areas", url: "#services" },
+    { id: "n2", label: "Attorneys", url: "#team" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Corporate Law", description: "Business formation, contracts, mergers and ongoing corporate counsel.", icon: "🏢", iconType: "emoji", price: "From $350/hr", imageUrl: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Litigation", description: "Civil litigation representation from pre-suit negotiation through trial.", icon: "⚖️", iconType: "emoji", price: "From $400/hr", imageUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Real Estate Law", description: "Residential and commercial property transactions, leases and closings.", icon: "🏠", iconType: "emoji", price: "From $1,200 flat", imageUrl: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Family Law", description: "Divorce, custody and family matters handled with discretion and care.", icon: "👨‍👩‍👧", iconType: "emoji", price: "From $300/hr", imageUrl: "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Estate Planning", description: "Wills, trusts and estate planning to protect your assets and family.", icon: "📜", iconType: "emoji", price: "From $1,500 flat", imageUrl: "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Contract Review", description: "Thorough contract review and negotiation for businesses and individuals.", icon: "📄", iconType: "emoji", price: "From $500 flat", imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "25 yr", label: "Combined Experience" },
+    { id: uid("st"), value: "1,200+", label: "Cases Handled" },
+    { id: uid("st"), value: "94%", label: "Favorable Outcomes" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Robert Kane", role: "Business Owner", content: "LexBridge guided us through a complex acquisition with clarity and confidence at every step. Exceptional counsel.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Diane Foster", role: "Client", content: "Handled our estate planning with genuine care and made a difficult process feel manageable. Highly recommend.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Michael Brennan", role: "Property Investor", content: "Fast, thorough closings every time. Their real estate team is the best I've worked with.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Consultation", price: "Free", description: "30-minute initial review", features: ["Case evaluation", "Strategic overview", "Fee structure discussion", "No obligation"], ctaLabel: "Book Free Consult", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Flat Fee Matters", price: "From $500", description: "Fixed-cost legal work", features: ["Document drafting", "Contract review", "Simple transactions", "Clear upfront pricing"], highlighted: true, badge: "Most Transparent", ctaLabel: "Discuss Options", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Retainer", price: "Custom", description: "Ongoing representation", features: ["Dedicated attorney", "Priority response", "Unlimited consultations", "Full litigation support"], ctaLabel: "Get a Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you offer a free consultation?", answer: "Yes, we offer a free 30-minute initial consultation to evaluate your case and discuss fee structures." },
+    { id: uid("f"), question: "How are your fees structured?", answer: "We offer both hourly and flat-fee billing depending on the matter — flat fees for predictable work like document drafting and closings, hourly for litigation." },
+    { id: uid("f"), question: "What areas of law do you practice?", answer: "We practice corporate law, litigation, real estate, family law and estate planning." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "James Whitfield, Esq.", role: "Managing Partner", bio: "25 years in corporate and litigation law. Leads the firm's largest client relationships.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Sarah Chen, Esq.", role: "Senior Associate", bio: "Specialises in real estate and estate planning. Known for clear client communication.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "David Osei, Esq.", role: "Litigation Counsel", bio: "Trial attorney with a strong track record in civil litigation and dispute resolution.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 48: ClearTax (Accounting & Tax Services) ───────────────────────
+
+const CLEARTAX_ACCOUNTING: TemplateIdentity = {
+  slug: "cleartax-accounting",
+  name: "ClearTax",
+  description: "Clean and professional accounting and tax services template. Builds credibility through clear service descriptions, pricing transparency, and client testimonials.",
+  category: "Legal & Finance",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=85&fit=crop",
+  tags: ["accounting", "tax", "bookkeeping", "BAS", "financial services"],
+
+  palette: {
+    primary: "#16a34a",
+    primaryFg: "#ffffff",
+    secondary: "#052e16",
+    accent: "#4ade80",
+    background: "#f0fdf4",
+    foreground: "#052e16",
+    muted: "#dcfce7",
+    mutedFg: "#166534",
+    card: "#ffffff",
+    border: "#bbf7d0",
+    ring: "#16a34a",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-cleartax-accounting .hero-badge { background: #16a34a; color: white; border-radius: 9999px; }
+    .template-cleartax-accounting .service-card { border-top: 3px solid #16a34a; }
+    .template-cleartax-accounting .stat-value { color: #16a34a; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=85&fit=crop", alt: "Accountant reviewing finances" },
+    about: { url: "https://images.unsplash.com/photo-1554224154-22dec7ec8818?w=800&q=80&fit=crop", alt: "Financial planning meeting" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80&fit=crop", alt: "Tax preparation" },
+      { url: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=600&q=80&fit=crop", alt: "Bookkeeping services" },
+      { url: "https://images.unsplash.com/photo-1554224155-1696413565d3?w=600&q=80&fit=crop", alt: "Payroll processing" },
+      { url: "https://images.unsplash.com/photo-1554224153-21c9dfa62e5c?w=600&q=80&fit=crop", alt: "Business advisory" },
+      { url: "https://images.unsplash.com/photo-1554224154-a5f0f7e5e5d5?w=600&q=80&fit=crop", alt: "Financial statements" },
+      { url: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&fit=crop", alt: "Client consultation" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&fit=crop", alt: "Modern accounting office" },
+      { url: "https://images.unsplash.com/photo-1554224154-22dec7ec8818?w=800&q=80&fit=crop", alt: "Client meeting" },
+      { url: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80&fit=crop", alt: "Tax season prep" },
+      { url: "https://images.unsplash.com/photo-1554224153-21c9dfa62e5c?w=800&q=80&fit=crop", alt: "Business advisory session" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Lead CPA" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Tax Advisor" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&fit=crop", alt: "Book a consultation" },
+  },
+
+  heroHeadline: "Smart Accounting, Stress-Free Tax",
+  heroSubline: "Trusted accountants and tax advisors helping businesses and individuals keep more of what they earn.",
+  heroBadge: "📊 Certified CPAs",
+  heroCTA: "Book Consultation",
+  heroSecondaryCTA: "View Services",
+  siteName: "ClearTax Accounting",
+  tagline: "Smart accounting, stress-free tax",
+  phone: "+1 (555) 226-3390",
+  email: "hello@cleartaxaccounting.com",
+  address: "88 Finance Row, Suite 200, Metro City",
+  aboutHeading: "Certified CPAs Helping You Keep More of What You Earn",
+  aboutBody: "ClearTax provides accounting, bookkeeping and tax services for small businesses and individuals who want clarity, not confusion. Our certified CPAs handle everything from monthly bookkeeping to complex tax strategy, always with transparent, upfront pricing.",
+  aboutHighlights: ["Certified public accountants", "Transparent, flat-fee pricing", "Year-round tax planning, not just filing season", "Cloud-based bookkeeping tools included"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Individual Tax Preparation", description: "Accurate, maximised tax returns for individuals and families.", icon: "📋", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Business Tax Services", description: "Corporate tax preparation, planning and quarterly estimates for businesses.", icon: "🏢", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bookkeeping", description: "Ongoing monthly bookkeeping using cloud-based accounting software.", icon: "📚", iconType: "emoji", price: "From $250/mo", imageUrl: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Payroll Processing", description: "Full-service payroll management, filings and compliance for small businesses.", icon: "💵", iconType: "emoji", price: "From $120/mo", imageUrl: "https://images.unsplash.com/photo-1554224155-1696413565d3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Business Advisory", description: "Strategic financial guidance to help you plan, grow and make confident decisions.", icon: "📈", iconType: "emoji", price: "From $200/hr", imageUrl: "https://images.unsplash.com/photo-1554224153-21c9dfa62e5c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Audit Support", description: "Professional representation and support through tax audits and reviews.", icon: "🔍", iconType: "emoji", price: "From $300/hr", imageUrl: "https://images.unsplash.com/photo-1554224154-a5f0f7e5e5d5?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "800+", label: "Clients Served" },
+    { id: uid("st"), value: "$2.4M", label: "Tax Savings Found" },
+    { id: uid("st"), value: "14 yr", label: "In Business" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Nancy Ruiz", role: "Small Business Owner", content: "Switched to ClearTax three years ago and they've saved us thousands in missed deductions our old accountant never caught.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Kevin Park", role: "Freelancer", content: "Finally an accountant who explains things in plain English. Tax season stress is gone.", rating: 5 },
+    { id: uid("t"), name: "Lisa Monroe", role: "Restaurant Owner", content: "Their monthly bookkeeping keeps us organized year-round, not just scrambling every April.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Individual Return", price: "$180", description: "Standard individual tax return", features: ["Federal & state filing", "Deduction optimisation", "E-file included"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Small Business", price: "$250", period: "/mo", description: "Bookkeeping + tax bundle", features: ["Monthly bookkeeping", "Quarterly tax estimates", "Year-end tax prep included", "Cloud software included"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full-Service", price: "Custom Quote", description: "Bookkeeping + payroll + advisory", features: ["Everything in Small Business", "Payroll processing included", "Quarterly advisory sessions"], ctaLabel: "Get a Quote", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Do you work with small businesses or just individuals?", answer: "Both — we serve individuals, freelancers, and small to medium businesses across all our service lines." },
+    { id: uid("f"), question: "Is pricing really flat-fee?", answer: "Yes, most of our services are quoted as a flat fee upfront, so you know exactly what you're paying before we start." },
+    { id: uid("f"), question: "Can you help if I'm being audited?", answer: "Yes, we offer full audit support and representation for both individual and business tax audits." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Rachel Adams, CPA", role: "Founder & Lead CPA", bio: "14 years in public accounting. Specialises in small business tax strategy and planning.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Tom Baxter, EA", role: "Tax Advisor", bio: "Enrolled agent specialising in complex individual and freelancer tax situations.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 49: PrimeProperty (Real Estate Agent) ──────────────────────────
+
+const PRIME_PROPERTY: TemplateIdentity = {
+  slug: "prime-property",
+  name: "PrimeProperty",
+  description: "Sleek property agent template with a clean split-image hero and featured listings grid. Ideal for residential sales agents and boutique real estate offices.",
+  category: "Real Estate",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=85&fit=crop",
+  tags: ["real estate", "property", "sales", "listings", "agent"],
+
+  palette: {
+    primary: "#3b82f6",
+    primaryFg: "#ffffff",
+    secondary: "#1e1b4b",
+    accent: "#60a5fa",
+    background: "#f8fafc",
+    foreground: "#1e1b4b",
+    muted: "#eff6ff",
+    mutedFg: "#1e40af",
+    card: "#ffffff",
+    border: "#dbeafe",
+    ring: "#3b82f6",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-prime-property .hero-badge { background: #3b82f6; color: white; border-radius: 9999px; }
+    .template-prime-property .service-card { border-top: 3px solid #3b82f6; }
+    .template-prime-property .stat-value { color: #3b82f6; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=85&fit=crop", alt: "Modern home exterior" },
+    about: { url: "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=800&q=80&fit=crop", alt: "Real estate agent with clients" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80&fit=crop", alt: "Family home listing" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", alt: "Modern apartment listing" },
+      { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", alt: "Investment property" },
+      { url: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&q=80&fit=crop", alt: "Luxury home listing" },
+      { url: "https://images.unsplash.com/photo-1600210492486-715a3c85c2a1?w=600&q=80&fit=crop", alt: "Condo listing" },
+      { url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop", alt: "Open house" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fit=crop", alt: "Featured listing exterior" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Living room interior" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Kitchen space" },
+      { url: "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&q=80&fit=crop", alt: "Master bedroom" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Lead Agent" },
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Buyer's Agent" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&fit=crop", alt: "Find your property" },
+  },
+
+  heroHeadline: "Find Your Perfect Property",
+  heroSubline: "Local experts connecting buyers, sellers, and investors with the right properties at the right price.",
+  heroBadge: "🏡 200+ Homes Sold",
+  heroCTA: "View Listings",
+  heroSecondaryCTA: "Get a Valuation",
+  siteName: "PrimeProperty",
+  tagline: "Find your perfect property",
+  phone: "+1 (555) 774-1029",
+  email: "info@primeproperty.com",
+  address: "300 Realty Row, Metro City",
+  aboutHeading: "200+ Homes Sold, One Trusted Local Team",
+  aboutBody: "PrimeProperty combines deep local market knowledge with a genuinely client-first approach. Whether you're buying your first home, selling for top dollar, or building an investment portfolio, our agents guide you through every step with clear communication and honest advice.",
+  aboutHighlights: ["200+ homes sold locally", "Free home valuation", "Dedicated buyer & seller agents", "Average 12 days on market"],
+
+  navItems: [
+    { id: "n1", label: "Listings", url: "#services" },
+    { id: "n2", label: "Gallery", url: "#gallery" },
+    { id: "n3", label: "Agents", url: "#team" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Home Buying", description: "Full buyer representation, from search to closing, protecting your interests every step.", icon: "🔑", iconType: "emoji", price: "No cost to buyer", imageUrl: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Home Selling", description: "Strategic pricing, professional photography and marketing to sell for top dollar, fast.", icon: "💰", iconType: "emoji", price: "Commission-based", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Investment Properties", description: "Identify and acquire investment properties with strong rental yield and appreciation.", icon: "📈", iconType: "emoji", price: "Consultation-based", imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Free Home Valuation", description: "Get a data-backed estimate of your home's current market value, no obligation.", icon: "📊", iconType: "emoji", price: "Free", imageUrl: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "New Construction", description: "Representation for buyers purchasing new-build homes directly from developers.", icon: "🏗️", iconType: "emoji", price: "No cost to buyer", imageUrl: "https://images.unsplash.com/photo-1600210492486-715a3c85c2a1?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Relocation Services", description: "Full-service support for clients relocating to or from the area.", icon: "📦", iconType: "emoji", price: "No cost to buyer", imageUrl: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "200+", label: "Homes Sold" },
+    { id: uid("st"), value: "12 days", label: "Avg. Days on Market" },
+    { id: uid("st"), value: "$85M+", label: "Sales Volume" },
+    { id: uid("st"), value: "4.9★", label: "Client Rating" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Jennifer Walsh", role: "Home Buyer", content: "Our agent found us the perfect home before it even hit the open market. Couldn't have asked for better guidance.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Mark Sullivan", role: "Home Seller", content: "Sold our house in 8 days, $15k over asking. Their marketing strategy and staging advice made all the difference.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Angela Torres", role: "Investor", content: "Helped me build a 4-property rental portfolio over two years. Sharp market insight every time.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Buyer Representation", price: "$0", description: "No cost to buyers", features: ["Full property search", "Negotiation support", "Closing coordination"], ctaLabel: "Start Searching", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Seller Listing", price: "Commission-based", description: "Full-service selling package", features: ["Free home valuation", "Professional photography", "Marketing & staging advice", "Negotiation & closing support"], highlighted: true, badge: "Most Popular", ctaLabel: "Get a Valuation", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Investment Consulting", price: "Custom", description: "Portfolio building guidance", features: ["Market analysis", "Rental yield projections", "Acquisition strategy"], ctaLabel: "Book Consultation", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "Does it cost anything to work with a buyer's agent?", answer: "No, buyer representation is typically at no cost to you — the seller pays agent commissions in most transactions." },
+    { id: uid("f"), question: "How do you determine my home's listing price?", answer: "We provide a free, data-backed valuation using recent comparable sales, current market conditions and your home's unique features." },
+    { id: uid("f"), question: "How long does it typically take to sell?", answer: "Our average time on market is 12 days, though this varies by property type, price point and current market conditions." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Michelle Grant", role: "Lead Agent & Broker", bio: "15 years in local real estate, over $85M in career sales volume.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Carlos Mendez", role: "Buyer's Agent", bio: "Specialises in first-time homebuyers, known for patient, thorough guidance.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 50: PropertyVault (Property Management) ────────────────────────
+
+const PROPERTYVAULT_MGMT: TemplateIdentity = {
+  slug: "propertyvault-mgmt",
+  name: "PropertyVault",
+  description: "Professional property management template built for landlords and portfolio owners. Showcases management services, rental processes, and transparent fee structures.",
+  category: "Real Estate",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=85&fit=crop",
+  tags: ["property management", "landlord", "rental", "leasing", "real estate"],
+
+  palette: {
+    primary: "#14b8a6",
+    primaryFg: "#ffffff",
+    secondary: "#042f2e",
+    accent: "#2dd4bf",
+    background: "#042f2e",
+    foreground: "#f0fdfa",
+    muted: "#134e4a",
+    mutedFg: "#5eead4",
+    card: "#134e4a",
+    border: "#0f766e",
+    ring: "#14b8a6",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-propertyvault-mgmt .hero-badge { background: #14b8a6; color: white; border-radius: 9999px; }
+    .template-propertyvault-mgmt .service-card { border-top: 3px solid #14b8a6; background: #134e4a; }
+    .template-propertyvault-mgmt .stat-value { color: #2dd4bf; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&q=90&fit=crop", alt: "Rental property exterior" },
+    about: { url: "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=800&q=80&fit=crop", alt: "Property manager meeting" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", alt: "Tenant sourcing" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80&fit=crop", alt: "Property inspection" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", alt: "Maintenance coordination" },
+      { url: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&fit=crop", alt: "Rent collection" },
+      { url: "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=600&q=80&fit=crop", alt: "Lease management" },
+      { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80&fit=crop", alt: "Property portfolio" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&fit=crop", alt: "Managed property" },
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Rental unit interior" },
+      { url: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&fit=crop", alt: "Property inspection" },
+      { url: "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&q=80&fit=crop", alt: "Well-maintained unit" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Portfolio Manager" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&fit=crop", alt: "Get a management quote" },
+  },
+
+  heroHeadline: "Hands-Off Property Management You Can Trust",
+  heroSubline: "We manage your investment property from tenant sourcing to maintenance — stress-free ownership.",
+  heroBadge: "🔑 Managing 400+ Units",
+  heroCTA: "Get a Free Quote",
+  heroSecondaryCTA: "Our Process",
+  siteName: "PropertyVault Management",
+  tagline: "Hands-off property management you can trust",
+  phone: "+1 (555) 660-2299",
+  email: "info@propertyvault.com",
+  address: "200 Landlord Way, Metro City",
+  aboutHeading: "Managing 400+ Rental Units Across the Metro Area",
+  aboutBody: "PropertyVault handles every aspect of property management so you don't have to — tenant screening and placement, rent collection, maintenance coordination, and full financial reporting. Our transparent fee structure means no hidden costs, ever.",
+  aboutHighlights: ["400+ units under management", "24/7 maintenance coordination", "Transparent, flat management fees", "Monthly owner financial reports"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Tenant Sourcing & Screening", description: "Marketing, showings and thorough background checks to find quality tenants fast.", icon: "🔍", iconType: "emoji", price: "First month's rent", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Rent Collection", description: "Automated rent collection with same-week owner disbursement.", icon: "💵", iconType: "emoji", price: "Included in management fee", imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Maintenance Coordination", description: "24/7 maintenance request handling with a vetted network of licensed contractors.", icon: "🛠️", iconType: "emoji", price: "Included in management fee", imageUrl: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Property Inspections", description: "Regular property condition inspections with photo documentation for owners.", icon: "📋", iconType: "emoji", price: "Included in management fee", imageUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Lease Management", description: "Lease drafting, renewals and compliance handled to local landlord-tenant law.", icon: "📄", iconType: "emoji", price: "Included in management fee", imageUrl: "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Financial Reporting", description: "Monthly income and expense statements delivered through your owner portal.", icon: "📊", iconType: "emoji", price: "Included in management fee", imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "400+", label: "Units Managed" },
+    { id: uid("st"), value: "97%", label: "Occupancy Rate" },
+    { id: uid("st"), value: "13 yr", label: "In Business" },
+    { id: uid("st"), value: "24/7", label: "Maintenance Line" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "William Foster", role: "Property Owner, 6 units", content: "Went from stressed landlord to totally hands-off owner. Monthly reports are clear and rent always arrives on time.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Cynthia Park", role: "Portfolio Investor", content: "Managing 12 units across the city used to consume my weekends. PropertyVault handles it all seamlessly now.", rating: 5 },
+    { id: uid("t"), name: "Robert Nguyen", role: "Property Owner", content: "Their tenant screening process found us excellent long-term renters. Zero vacancy issues since switching.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Single Property", price: "8%", period: "of rent", description: "One rental property", features: ["Tenant sourcing", "Rent collection", "Maintenance coordination", "Monthly reporting"], ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Portfolio", price: "7%", period: "of rent", description: "2-10 rental properties", features: ["Everything in Single Property", "Priority maintenance response", "Dedicated portfolio manager", "Quarterly market reviews"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Quote", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Large Portfolio", price: "Custom", description: "10+ rental properties", features: ["Custom fee structure", "Dedicated account team", "Priority everything"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What's included in your management fee?", answer: "Our management fee covers tenant sourcing, rent collection, maintenance coordination, inspections, lease management and financial reporting — no hidden add-on fees." },
+    { id: uid("f"), question: "How do you screen tenants?", answer: "We conduct thorough background checks including credit history, employment verification, rental history and criminal background checks." },
+    { id: uid("f"), question: "How fast do you respond to maintenance issues?", answer: "Our maintenance line is available 24/7, with emergency issues addressed within hours and routine requests typically within 48 hours." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Gregory Adams", role: "Portfolio Manager", bio: "13 years managing rental portfolios, oversees relationships with our 400+ managed units.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 51: NetSupport (IT Managed Services) ───────────────────────────
+
+const NETSUPPORT_IT: TemplateIdentity = {
+  slug: "netsupport-it",
+  name: "NetSupport",
+  description: "Professional IT support and managed services template with a clean, corporate tech aesthetic. Built for MSPs, IT helpdesks, and technology support businesses.",
+  category: "Tech & Agency",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=85&fit=crop",
+  tags: ["IT support", "managed services", "helpdesk", "technology", "MSP"],
+
+  palette: {
+    primary: "#06b6d4",
+    primaryFg: "#ffffff",
+    secondary: "#0c1a2e",
+    accent: "#22d3ee",
+    background: "#0c1a2e",
+    foreground: "#f0f9ff",
+    muted: "#1e293b",
+    mutedFg: "#94a3b8",
+    card: "#1e293b",
+    border: "#334155",
+    ring: "#06b6d4",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "700",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-netsupport-it .hero-badge { background: #06b6d4; color: #0c1a2e; border-radius: 9999px; font-weight: 700; }
+    .template-netsupport-it .service-card { border-top: 3px solid #06b6d4; background: #1e293b; }
+    .template-netsupport-it .stat-value { color: #22d3ee; font-weight: 700; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=90&fit=crop", alt: "IT technician at server rack" },
+    about: { url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&fit=crop", alt: "Network operations center" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80&fit=crop", alt: "Network monitoring" },
+      { url: "https://images.unsplash.com/photo-1516110833967-0b5716ca1387?w=600&q=80&fit=crop", alt: "Helpdesk support" },
+      { url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80&fit=crop", alt: "Cybersecurity monitoring" },
+      { url: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=80&fit=crop", alt: "Cloud infrastructure" },
+      { url: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80&fit=crop", alt: "Server maintenance" },
+      { url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&q=80&fit=crop", alt: "IT consulting session" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80&fit=crop", alt: "Data center operations" },
+      { url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&fit=crop", alt: "Network operations" },
+      { url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80&fit=crop", alt: "Security monitoring dashboard" },
+      { url: "https://images.unsplash.com/photo-1516110833967-0b5716ca1387?w=800&q=80&fit=crop", alt: "Support team at work" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "IT Director" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Senior Network Engineer" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&fit=crop", alt: "Get IT support" },
+  },
+
+  heroHeadline: "IT That Just Works",
+  heroSubline: "Managed IT support for businesses of all sizes — proactive, responsive, and always on.",
+  heroBadge: "💻 24/7 Helpdesk Support",
+  heroCTA: "Get a Free Assessment",
+  heroSecondaryCTA: "Our Services",
+  siteName: "NetSupport IT",
+  tagline: "IT that just works",
+  phone: "+1 (555) 448-6620",
+  email: "support@netsupportit.com",
+  address: "400 Tech Park Drive, Metro City",
+  aboutHeading: "Proactive IT Support for 150+ Businesses",
+  aboutBody: "NetSupport provides fully managed IT services so your team can focus on the work that matters — not troubleshooting. We monitor your network 24/7, patch vulnerabilities before they're exploited, and resolve most helpdesk tickets in under an hour.",
+  aboutHighlights: ["24/7 network monitoring", "Sub-1-hour average ticket response", "Proactive cybersecurity patching", "Flat monthly pricing, no surprise bills"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Pricing", url: "#pricing" },
+    { id: "n3", label: "About", url: "#about" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Managed IT Support", description: "Full helpdesk and IT infrastructure management with flat monthly pricing.", icon: "💻", iconType: "emoji", price: "From $95/user/mo", imageUrl: "https://images.unsplash.com/photo-1516110833967-0b5716ca1387?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Cybersecurity Services", description: "Endpoint protection, threat monitoring and security awareness training.", icon: "🔒", iconType: "emoji", price: "From $45/user/mo", imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Cloud Migration", description: "Migrate infrastructure and applications to the cloud with zero downtime planning.", icon: "☁️", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Network Monitoring", description: "24/7 proactive monitoring that catches issues before they cause downtime.", icon: "📡", iconType: "emoji", price: "Included in support plan", imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Data Backup & Recovery", description: "Automated backups with tested disaster recovery plans for business continuity.", icon: "💾", iconType: "emoji", price: "From $25/user/mo", imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "IT Consulting", description: "Strategic technology planning to align your IT infrastructure with business goals.", icon: "🎯", iconType: "emoji", price: "From $175/hr", imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "150+", label: "Businesses Supported" },
+    { id: uid("st"), value: "<1hr", label: "Avg. Ticket Response" },
+    { id: uid("st"), value: "99.9%", label: "Uptime Delivered" },
+    { id: uid("st"), value: "11 yr", label: "In Business" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Amanda Reyes", role: "Operations Director", company: "Meridian Logistics", content: "Switched from reactive break-fix IT to NetSupport's managed model and our downtime dropped to nearly zero.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Kevin Chow", role: "CFO", company: "Horizon Financial", content: "Their cybersecurity monitoring caught a phishing attempt before any damage was done. Worth every dollar.", rating: 5 },
+    { id: uid("t"), name: "Rachel Kim", role: "Office Manager", content: "Helpdesk tickets get resolved fast, and their techs actually explain what happened instead of just fixing and leaving.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Essentials", price: "$65", period: "/user/mo", description: "Core helpdesk support", features: ["Business-hours helpdesk", "Remote support", "Basic security patching"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Managed IT", price: "$95", period: "/user/mo", description: "Full managed services", features: ["24/7 helpdesk & monitoring", "Cybersecurity included", "Data backup included", "Quarterly IT strategy review"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Enterprise", price: "Custom", description: "Complex, multi-site environments", features: ["Custom SLA terms", "Dedicated account team", "On-site support options"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "What's your average response time?", answer: "Our average ticket response time is under one hour, with critical issues prioritised for immediate attention." },
+    { id: uid("f"), question: "Do you support remote and hybrid teams?", answer: "Yes, our support model is fully equipped for remote, hybrid and in-office teams across multiple locations." },
+    { id: uid("f"), question: "Can you migrate us from our current IT provider?", answer: "Yes, we handle the full transition process, including documentation review and infrastructure assessment, with minimal disruption." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Daniel Okafor", role: "IT Director", bio: "11 years in managed services, oversees strategy for all NetSupport client accounts.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Laura Bennett", role: "Senior Network Engineer", bio: "Specialises in network security and infrastructure design for growing businesses.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+  ],
+};
+
+// ─── TEMPLATE 52: GrowthLab (Digital Marketing Agency) ───────────────────────
+
+const GROWTHLAB_AGENCY: TemplateIdentity = {
+  slug: "growthlab-agency",
+  name: "GrowthLab",
+  description: "Bold digital marketing agency template with an editorial, results-focused design. Showcases service offerings, client results, and the agency's strategic approach.",
+  category: "Tech & Agency",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=1200&q=85&fit=crop",
+  tags: ["digital marketing", "agency", "SEO", "social media", "growth"],
+
+  palette: {
+    primary: "#8b5cf6",
+    primaryFg: "#ffffff",
+    secondary: "#2e1065",
+    accent: "#c4b5fd",
+    background: "#2e1065",
+    foreground: "#faf5ff",
+    muted: "#4c1d95",
+    mutedFg: "#ddd6fe",
+    card: "#4c1d95",
+    border: "#6d28d9",
+    ring: "#8b5cf6",
+    borderRadius: "0.5rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  customCss: `
+    .template-growthlab-agency h1,.template-growthlab-agency h2 { letter-spacing: -0.03em; }
+    .template-growthlab-agency .service-card { border-top: 3px solid #8b5cf6; background: #4c1d95; }
+    .template-growthlab-agency .stat-value { color: #c4b5fd; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "dark-gradient-left",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "gradient-numbers",
+    cta: "dark-split",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "dark-minimal",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=1600&q=90&fit=crop", alt: "Marketing team analyzing data" },
+    about: { url: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80&fit=crop", alt: "Agency team collaboration" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80&fit=crop", alt: "SEO strategy" },
+      { url: "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&q=80&fit=crop", alt: "Social media marketing" },
+      { url: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=600&q=80&fit=crop", alt: "Analytics dashboard" },
+      { url: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80&fit=crop", alt: "Content strategy" },
+      { url: "https://images.unsplash.com/photo-1553484771-047a44eee27b?w=600&q=80&fit=crop", alt: "PPC advertising" },
+      { url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80&fit=crop", alt: "Brand strategy session" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=800&q=80&fit=crop", alt: "Agency workspace" },
+      { url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&fit=crop", alt: "SEO analytics review" },
+      { url: "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=800&q=80&fit=crop", alt: "Social campaign planning" },
+      { url: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80&fit=crop", alt: "Strategy session" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Founder & CEO" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Head of SEO" },
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Creative Director" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=1200&q=80&fit=crop", alt: "Grow with us" },
+  },
+
+  heroHeadline: "Grow Faster. Rank Higher. Convert More.",
+  heroSubline: "Data-driven digital marketing strategies that deliver measurable results for ambitious brands.",
+  heroBadge: "🚀 300+ Campaigns Launched",
+  heroCTA: "Get a Free Audit",
+  heroSecondaryCTA: "View Our Work",
+  siteName: "GrowthLab Agency",
+  tagline: "Grow faster. Rank higher. Convert more.",
+  phone: "+1 (555) 990-4471",
+  email: "hello@growthlabagency.com",
+  address: "77 Innovation Hub, Suite 300, Metro City",
+  aboutHeading: "Data-Driven Growth for Ambitious Brands",
+  aboutBody: "GrowthLab combines SEO, paid media, content and social strategy into unified growth campaigns that deliver measurable ROI. We don't chase vanity metrics — every strategy is built around the numbers that actually move your business forward: leads, revenue and customer lifetime value.",
+  aboutHighlights: ["300+ campaigns launched", "Average 3.2x ROI for clients", "Dedicated strategist per account", "Transparent monthly reporting"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Work", url: "#gallery" },
+    { id: "n3", label: "Team", url: "#team" },
+    { id: "n4", label: "Results", url: "#testimonials" },
+    { id: "n5", label: "Get a Quote", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "SEO Strategy", description: "Technical, on-page and content SEO to drive sustainable organic growth.", icon: "🔍", iconType: "emoji", price: "From $1,800/mo", imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Paid Media & PPC", description: "Google Ads and paid social campaigns optimised for conversion, not just clicks.", icon: "🎯", iconType: "emoji", price: "From $2,200/mo + ad spend", imageUrl: "https://images.unsplash.com/photo-1553484771-047a44eee27b?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Social Media Marketing", description: "Content creation and community management that builds real engagement.", icon: "📱", iconType: "emoji", price: "From $1,500/mo", imageUrl: "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Content Marketing", description: "Strategic content that ranks, builds authority and drives qualified traffic.", icon: "✍️", iconType: "emoji", price: "From $1,200/mo", imageUrl: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Brand Strategy", description: "Positioning, messaging and visual identity work to sharpen how your brand shows up.", icon: "🎨", iconType: "emoji", price: "From $5,000 project", imageUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Analytics & Reporting", description: "Custom dashboards and monthly strategy reviews tied to real business outcomes.", icon: "📊", iconType: "emoji", price: "Included in all packages", imageUrl: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "300+", label: "Campaigns Launched" },
+    { id: uid("st"), value: "3.2x", label: "Average Client ROI" },
+    { id: uid("st"), value: "9 yr", label: "In Business" },
+    { id: uid("st"), value: "94%", label: "Client Retention" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Sophia Reyes", role: "Marketing Director", company: "Northwind Retail", content: "GrowthLab tripled our organic traffic in 8 months and our leads have never been higher quality. Real strategists, not just tacticians.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Marcus Webb", role: "Founder", company: "Vantage SaaS", content: "Their paid media team cut our cost-per-lead in half while increasing volume. Genuinely data-driven, not just buzzwords.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Elena Rossi", role: "CMO", company: "Bright Home Goods", content: "Best agency partnership we've had. They think like an extension of our team, not an outside vendor.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Growth Starter", price: "$2,500", period: "/mo", description: "Single-channel focus", features: ["One core channel (SEO or PPC)", "Monthly strategy call", "Standard reporting dashboard"], ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Full Funnel", price: "$5,500", period: "/mo", description: "Most popular, multi-channel", features: ["SEO + paid media + social", "Dedicated strategist", "Bi-weekly strategy calls", "Custom analytics dashboard"], highlighted: true, badge: "Most Popular", ctaLabel: "Get Started", ctaUrl: "#contact" },
+    { id: uid("p"), name: "Enterprise", price: "Custom", description: "Full-service growth partnership", features: ["All channels included", "Dedicated account team", "Weekly strategy sessions"], ctaLabel: "Talk to Sales", ctaUrl: "#contact" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How soon will we see results?", answer: "Paid media typically shows results within weeks, while SEO and content strategies build momentum over 3-6 months for sustainable, compounding growth." },
+    { id: uid("f"), question: "Do you require long-term contracts?", answer: "We recommend a minimum 6-month engagement for meaningful results, but we don't lock clients into long-term contracts beyond that." },
+    { id: uid("f"), question: "How do you report on results?", answer: "Every client gets a custom analytics dashboard plus regular strategy calls tied to actual business metrics — leads, revenue and ROI, not just vanity numbers." },
+  ],
+
+  team: [
+    { id: uid("tm"), name: "Jordan Ellis", role: "Founder & CEO", bio: "9 years building growth strategies for SaaS and e-commerce brands. Leads agency-wide strategy.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Priya Nair", role: "Head of SEO", bio: "Technical SEO specialist with a track record of tripling organic traffic for enterprise clients.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Marcus Chen", role: "Creative Director", bio: "Leads brand strategy and creative campaigns across all client accounts.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
@@ -6822,6 +7646,12 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   TABLEFARE,
   BEANCRAFT_CAFE,
   STREETBITE,
+  LEXBRIDGE_LAW,
+  CLEARTAX_ACCOUNTING,
+  PRIME_PROPERTY,
+  PROPERTYVAULT_MGMT,
+  NETSUPPORT_IT,
+  GROWTHLAB_AGENCY,
 ];
 
 // Maps every DB template slug → closest registry identity slug.
