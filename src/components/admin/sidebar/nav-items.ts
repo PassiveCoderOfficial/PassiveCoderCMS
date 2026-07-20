@@ -106,8 +106,9 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
 export type NavSection = {
   label: string;
   items: NavItem[];
-  /** "tools" renders as the dark business-tools block at the bottom */
-  variant?: "tools";
+  /** "tools" renders as the dark business-tools block at the bottom.
+   *  "brand" renders as the Passive Coder dark-orange block near the top. */
+  variant?: "tools" | "brand";
 };
 
 export const navSections: NavSection[] = [
@@ -115,6 +116,14 @@ export const navSections: NavSection[] = [
     label: "Overview",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Account",
+    variant: "brand",
+    items: [
+      { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard, saasOnly: true },
+      { label: "Support", href: "/dashboard/support", icon: BookMarked },
     ],
   },
   {
@@ -181,13 +190,6 @@ export const navSections: NavSection[] = [
       { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag, moduleKey: "ecommerce" },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard, moduleKey: "ecommerce" },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck, moduleKey: "ecommerce" },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard, saasOnly: true },
-      { label: "Support", href: "/dashboard/support", icon: BookMarked },
     ],
   },
   {

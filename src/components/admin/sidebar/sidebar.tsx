@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
 
-function NavLinkItem({ item, pathname, onClose, dark = false }: { item: NavItem; pathname: string; onClose?: () => void; dark?: boolean }) {
+function NavLinkItem({ item, pathname, onClose, dark = false, brand = false }: { item: NavItem; pathname: string; onClose?: () => void; dark?: boolean; brand?: boolean }) {
   const isExternal = item.href === "/";
   const hasChildren = (item.children?.length ?? 0) > 0;
 
@@ -28,16 +28,23 @@ function NavLinkItem({ item, pathname, onClose, dark = false }: { item: NavItem;
         ? pathname === item.href // parent only "active" on its own exact page
         : withinParent;
 
-  // Tone classes — the "tools" section sits on a dark panel in both themes
-  const idle = dark
-    ? "text-gray-400 hover:bg-white/10 hover:text-white"
-    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground";
-  const active = dark
-    ? "bg-indigo-600 text-white"
-    : "bg-primary text-primary-foreground";
-  const parentOpen = dark
-    ? "bg-white/10 text-white"
-    : "bg-accent/50 text-foreground";
+  // Tone classes — the "tools" section sits on a dark panel in both themes;
+  // "brand" (Subscription/Support) is always white-on-orange regardless of theme.
+  const idle = brand
+    ? "text-white/90 hover:bg-black/10 hover:text-white"
+    : dark
+      ? "text-gray-400 hover:bg-white/10 hover:text-white"
+      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground";
+  const active = brand
+    ? "bg-black/20 text-white"
+    : dark
+      ? "bg-indigo-600 text-white"
+      : "bg-primary text-primary-foreground";
+  const parentOpen = brand
+    ? "bg-black/10 text-white"
+    : dark
+      ? "bg-white/10 text-white"
+      : "bg-accent/50 text-foreground";
 
   if (hasChildren) {
     return (
@@ -151,14 +158,19 @@ function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
         <nav className="px-2 py-3 space-y-4">
           {navSections.map((section) => {
             const isTools = section.variant === "tools";
+            const isBrand = section.variant === "brand";
             return (
               <div
                 key={section.label}
-                className={cn(isTools && "rounded-xl bg-gray-950 border border-gray-800 p-2 shadow-inner")}
+                className={cn(
+                  isTools && "rounded-xl bg-gray-950 border border-gray-800 p-2 shadow-inner",
+                  isBrand && "rounded-xl p-2 shadow-sm",
+                )}
+                style={isBrand ? { backgroundColor: "#C2410C" } : undefined}
               >
                 <p className={cn(
                   "px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest",
-                  isTools ? "text-gray-500 pt-1" : "text-muted-foreground",
+                  isTools ? "text-gray-500 pt-1" : isBrand ? "text-white/70 pt-1" : "text-muted-foreground",
                 )}>
                   {section.label}
                 </p>
@@ -171,7 +183,7 @@ function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
                     if (item.moduleKey && enabledModules && !enabledModules[item.moduleKey]) return false;
                     return true;
                   }).map((item) => (
-                    <NavLinkItem key={item.href} item={item} pathname={pathname} onClose={onClose} dark={isTools} />
+                    <NavLinkItem key={item.href} item={item} pathname={pathname} onClose={onClose} dark={isTools} brand={isBrand} />
                   ))}
                 </ul>
               </div>
