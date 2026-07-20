@@ -44,11 +44,27 @@ export async function getCurrentTenantId(): Promise<string> {
   }
 
   // Agent viewing a tenant's dashboard under their own session (no credential
-  // swap) — only valid if the cookie's tenant matches one this agent is
-  // actually assigned/referred to, re-checked here (not just at cookie-set
-  // time) so a stale cookie can't outlive the assignment.
+  // swap). The cookie is shared across every *.passivecoder.com subdomain, so
+  // if the agent has two sites open in different tabs the cookie reflects
+  // whichever was clicked last — not necessarily the subdomain actually being
+  // browsed. The hostname (x-tenant-id, set by middleware from the real
+  // subdomain) is the source of truth whenever present; the cookie is only a
+  // fallback for root-domain /dashboard access with no subdomain context.
   const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
   if (agentRow) {
+    const reqHeaders = await headers();
+    const subdomainTenantId = reqHeaders.get("x-tenant-id");
+    if (subdomainTenantId) {
+      const { data: tenant } = await adminClient
+        .from("tenants")
+        .select("id")
+        .eq("id", subdomainTenantId)
+        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id}`)
+        .maybeSingle();
+      if (tenant) return subdomainTenantId;
+      redirect("/agent");
+    }
+
     const cookieStore = await cookies();
     const viewingTenantId = cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
     if (viewingTenantId) {

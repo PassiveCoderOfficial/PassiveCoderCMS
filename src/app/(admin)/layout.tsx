@@ -140,7 +140,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // assigned/referred site's dashboard under their own session.
   const cookieStore = await cookies();
   const viewingTenantId = sa ? cookieStore.get(SA_VIEWING_COOKIE)?.value : undefined;
-  const agentViewingTenantId = (!sa && profile.role === "agent") ? cookieStore.get(AGENT_VIEWING_COOKIE)?.value : undefined;
+
+  // The viewing cookie is shared across every *.passivecoder.com subdomain —
+  // with two site tabs open it reflects whichever was clicked last, not the
+  // subdomain actually being browsed. The hostname (x-tenant-id, set by
+  // middleware from the real subdomain) must win whenever present; the
+  // cookie is only a fallback for root-domain /dashboard access.
+  let agentViewingTenantId: string | undefined;
+  if (!sa && profile.role === "agent") {
+    const subdomainTenantId = (await headers()).get("x-tenant-id");
+    agentViewingTenantId = subdomainTenantId ?? cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
+  }
 
   let viewingTenantName: string | null = null;
   if (viewingTenantId) {
@@ -154,10 +164,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   let agentViewingTenantName: string | null = null;
   if (agentViewingTenantId) {
+    const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
     const { data: tenant } = await adminClient
       .from("tenants")
       .select("name")
       .eq("id", agentViewingTenantId)
+      .or(`assigned_agent_id.eq.${agentRow?.id ?? "null"},referred_by_agent_id.eq.${agentRow?.id ?? "null"}`)
       .maybeSingle();
     agentViewingTenantName = tenant?.name ?? null;
     if (!agentViewingTenantName) redirect("/agent");
