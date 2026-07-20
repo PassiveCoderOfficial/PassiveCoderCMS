@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CreditCard, Loader2, Check, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Tenant { id: string; name: string; slug: string; }
 interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; currency: string; }
@@ -71,99 +76,105 @@ export default function NewSubscriptionPage() {
     router.push("/super-admin/subscriptions");
   }
 
-  if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>;
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div className="p-6 max-w-lg space-y-6">
       <div className="flex items-center gap-3">
-        <CreditCard className="w-6 h-6 text-green-400" />
-        <h1 className="text-2xl font-bold text-white">New Subscription</h1>
+        <CreditCard className="w-6 h-6 text-green-500" />
+        <h1 className="text-2xl font-bold">New Subscription</h1>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-        <div>
-          <label className="text-xs text-gray-400 block mb-1">Site *</label>
-          <select value={form.tenant_id} onChange={e => set("tenant_id", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-            <option value="">— select site —</option>
-            {tenants.map(t => <option key={t.id} value={t.id}>{t.name} ({t.slug})</option>)}
-          </select>
-        </div>
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-1.5">
+            <Label>Site *</Label>
+            <Select value={form.tenant_id} onValueChange={(v) => set("tenant_id", v)}>
+              <SelectTrigger><SelectValue placeholder="— select site —" /></SelectTrigger>
+              <SelectContent>
+                {tenants.map(t => <SelectItem key={t.id} value={t.id}>{t.name} ({t.slug})</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <label className="text-xs text-gray-400 block mb-1">Plan *</label>
-          <select value={form.plan_id} onChange={e => {
-            const plan = plans.find(p => p.id === e.target.value);
-            if (plan) setForm(f => ({ ...f, plan_id: e.target.value, amount_cents: planPrice(plan, f.billing_cycle).toString(), currency: plan.currency }));
-            else set("plan_id", e.target.value);
-          }}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-            <option value="">— select plan —</option>
-            {plans.map(p => <option key={p.id} value={p.id}>{p.name} ({p.currency} {p.price_yearly}/yr)</option>)}
-          </select>
-        </div>
+          <div className="space-y-1.5">
+            <Label>Plan *</Label>
+            <Select
+              value={form.plan_id}
+              onValueChange={(v) => {
+                const plan = plans.find(p => p.id === v);
+                if (plan) setForm(f => ({ ...f, plan_id: v, amount_cents: planPrice(plan, f.billing_cycle).toString(), currency: plan.currency }));
+                else set("plan_id", v);
+              }}
+            >
+              <SelectTrigger><SelectValue placeholder="— select plan —" /></SelectTrigger>
+              <SelectContent>
+                {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.currency} {p.price_yearly}/yr)</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <label className="text-xs text-gray-400 block mb-1">Billing Cycle</label>
-          <select value={form.billing_cycle} onChange={e => {
-            const cycle = e.target.value;
-            const plan = plans.find(p => p.id === form.plan_id);
-            setForm(f => ({ ...f, billing_cycle: cycle, ...(plan ? { amount_cents: planPrice(plan, cycle).toString() } : {}) }));
-          }}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-            {["monthly","yearly"].map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
+          <div className="space-y-1.5">
+            <Label>Billing Cycle</Label>
+            <Select
+              value={form.billing_cycle}
+              onValueChange={(cycle) => {
+                const plan = plans.find(p => p.id === form.plan_id);
+                setForm(f => ({ ...f, billing_cycle: cycle, ...(plan ? { amount_cents: planPrice(plan, cycle).toString() } : {}) }));
+              }}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["monthly", "yearly"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Status</label>
-            <select value={form.status} onChange={e => set("status", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-              {["onboarded","pending","active","past_due","suspended","cancelled","expired"].map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => set("status", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["onboarded", "pending", "active", "past_due", "suspended", "cancelled", "expired"].map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Payment Provider</Label>
+              <Input value={form.payment_provider} onChange={e => set("payment_provider", e.target.value)} placeholder="stripe, manual…" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Amount ($/yr)</Label>
+              <Input type="number" min="0" step="0.01" value={form.amount_cents} onChange={e => set("amount_cents", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Currency</Label>
+              <Input value={form.currency} onChange={e => set("currency", e.target.value)} placeholder="USD" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Trial Ends</Label>
+              <Input type="date" value={form.trial_ends_at} onChange={e => set("trial_ends_at", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Period End</Label>
+              <Input type="date" value={form.current_period_end} onChange={e => set("current_period_end", e.target.value)} />
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Payment Provider</label>
-            <input value={form.payment_provider} onChange={e => set("payment_provider", e.target.value)}
-              placeholder="stripe, manual…"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Amount ($/yr)</label>
-            <input type="number" min="0" step="0.01" value={form.amount_cents} onChange={e => set("amount_cents", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Currency</label>
-            <input value={form.currency} onChange={e => set("currency", e.target.value)}
-              placeholder="USD"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Trial Ends</label>
-            <input type="date" value={form.trial_ends_at} onChange={e => set("trial_ends_at", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Period End</label>
-            <input type="date" value={form.current_period_end} onChange={e => set("current_period_end", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
-          </div>
-        </div>
 
-        <div className="flex gap-2 pt-1">
-          <button onClick={save} disabled={saving || !form.tenant_id || !form.plan_id}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            Create Subscription
-          </button>
-          <button onClick={() => router.push("/super-admin/subscriptions")}
-            className="flex items-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg">
-            <X className="w-4 h-4" /> Cancel
-          </button>
-        </div>
-      </div>
+          <div className="flex gap-2 pt-1">
+            <Button onClick={save} disabled={saving || !form.tenant_id || !form.plan_id}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              Create Subscription
+            </Button>
+            <Button variant="secondary" onClick={() => router.push("/super-admin/subscriptions")}>
+              <X className="w-4 h-4" /> Cancel
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { CreditCard, Plus, Trash2, Save, CheckCircle, Loader2, Users, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MODULE_KEYS, MODULE_LABELS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type PlanModuleConfig = { included?: boolean; defaultOn?: boolean };
 
@@ -91,174 +95,166 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: (p: Plan) => void 
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Plan Name</label>
-          <input
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-            value={plan.name}
-            onChange={e => onChange({ ...plan, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Plan ID (slug)</label>
-          <input
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-400 text-sm focus:outline-none cursor-not-allowed"
-            value={plan.id}
-            disabled
-          />
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Monthly Price (USD)</label>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm">$</span>
-            <input
-              type="number"
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-              value={plan.price_monthly ?? 0}
-              onChange={e => onChange({ ...plan, price_monthly: Number(e.target.value) })}
-            />
-            <span className="text-gray-500 text-xs">/mo</span>
+    <Card>
+      <CardContent className="pt-6 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label>Plan Name</Label>
+            <Input value={plan.name} onChange={e => onChange({ ...plan, name: e.target.value })} />
           </div>
-          <p className="text-xs text-gray-600 mt-1">0 = hide monthly option</p>
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Yearly Price (USD)</label>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm">$</span>
-            <input
-              type="number"
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-              value={plan.price_yearly}
-              onChange={e => onChange({ ...plan, price_yearly: Number(e.target.value) })}
-            />
-            <span className="text-gray-500 text-xs">/yr</span>
+          <div className="space-y-1.5">
+            <Label>Plan ID (slug)</Label>
+            <Input value={plan.id} disabled className="cursor-not-allowed" />
           </div>
-          {plan.id !== "custom" && plan.price_monthly > 0 && plan.price_yearly > 0 && (
-            <p className="text-xs text-green-600 mt-1">
-              Save ${(plan.price_monthly * 12 - plan.price_yearly).toFixed(0)}/yr vs monthly
-            </p>
-          )}
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block flex items-center gap-1">
-            <Users className="w-3 h-3" /> Visitors/Month Included
-          </label>
-          <input
-            type="number"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-            value={plan.visitor_limit_monthly ?? 0}
-            onChange={e => onChange({ ...plan, visitor_limit_monthly: Number(e.target.value) })}
-          />
-          <p className="text-xs text-gray-600 mt-1">0 = unlimited</p>
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block flex items-center gap-1">
-            <Zap className="w-3 h-3" /> Overage (¢ per 1k visitors)
-          </label>
-          <input
-            type="number"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-            value={plan.overage_cents_per_1k ?? 0}
-            onChange={e => onChange({ ...plan, overage_cents_per_1k: Number(e.target.value) })}
-          />
-          <p className="text-xs text-gray-600 mt-1">e.g. 200 = $2/1k visitors</p>
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Storage (GB)</label>
-          <input
-            type="number"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-            value={plan.storage_gb}
-            onChange={e => onChange({ ...plan, storage_gb: Number(e.target.value) })}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="text-xs text-gray-500 mb-2 block">Features</label>
-        <div className="space-y-1.5 mb-2">
-          {plan.features.map((f, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
-              <input
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-indigo-500"
-                value={f}
-                onChange={e => {
-                  const features = [...plan.features];
-                  features[i] = e.target.value;
-                  onChange({ ...plan, features });
-                }}
+          <div className="space-y-1.5">
+            <Label>Monthly Price (USD)</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">$</span>
+              <Input
+                type="number"
+                className="flex-1"
+                value={plan.price_monthly ?? 0}
+                onChange={e => onChange({ ...plan, price_monthly: Number(e.target.value) })}
               />
-              <button
-                onClick={() => onChange({ ...plan, features: plan.features.filter((_, j) => j !== i) })}
-                className="text-gray-600 hover:text-red-400 transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              <span className="text-muted-foreground text-xs">/mo</span>
             </div>
-          ))}
+            <p className="text-xs text-muted-foreground">0 = hide monthly option</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Yearly Price (USD)</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">$</span>
+              <Input
+                type="number"
+                className="flex-1"
+                value={plan.price_yearly}
+                onChange={e => onChange({ ...plan, price_yearly: Number(e.target.value) })}
+              />
+              <span className="text-muted-foreground text-xs">/yr</span>
+            </div>
+            {plan.id !== "custom" && plan.price_monthly > 0 && plan.price_yearly > 0 && (
+              <p className="text-xs text-green-600 dark:text-green-500">
+                Save ${(plan.price_monthly * 12 - plan.price_yearly).toFixed(0)}/yr vs monthly
+              </p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1">
+              <Users className="w-3 h-3" /> Visitors/Month Included
+            </Label>
+            <Input
+              type="number"
+              value={plan.visitor_limit_monthly ?? 0}
+              onChange={e => onChange({ ...plan, visitor_limit_monthly: Number(e.target.value) })}
+            />
+            <p className="text-xs text-muted-foreground">0 = unlimited</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1">
+              <Zap className="w-3 h-3" /> Overage (¢ per 1k visitors)
+            </Label>
+            <Input
+              type="number"
+              value={plan.overage_cents_per_1k ?? 0}
+              onChange={e => onChange({ ...plan, overage_cents_per_1k: Number(e.target.value) })}
+            />
+            <p className="text-xs text-muted-foreground">e.g. 200 = $2/1k visitors</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Storage (GB)</Label>
+            <Input
+              type="number"
+              value={plan.storage_gb}
+              onChange={e => onChange({ ...plan, storage_gb: Number(e.target.value) })}
+            />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <input
-            className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-xs placeholder:text-gray-600 focus:outline-none focus:border-indigo-500"
-            placeholder="Add feature…"
-            value={newFeature}
-            onChange={e => setNewFeature(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter" && newFeature.trim()) {
+
+        <div className="space-y-2">
+          <Label>Features</Label>
+          <div className="space-y-1.5">
+            {plan.features.map((f, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                <Input
+                  className="flex-1 h-8 text-xs"
+                  value={f}
+                  onChange={e => {
+                    const features = [...plan.features];
+                    features[i] = e.target.value;
+                    onChange({ ...plan, features });
+                  }}
+                />
+                <button
+                  onClick={() => onChange({ ...plan, features: plan.features.filter((_, j) => j !== i) })}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              className="flex-1 h-8 text-xs"
+              placeholder="Add feature…"
+              value={newFeature}
+              onChange={e => setNewFeature(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && newFeature.trim()) {
+                  onChange({ ...plan, features: [...plan.features, newFeature.trim()] });
+                  setNewFeature("");
+                }
+              }}
+            />
+            <Button
+              size="sm"
+              className="h-8 text-xs px-2"
+              onClick={() => {
+                if (!newFeature.trim()) return;
                 onChange({ ...plan, features: [...plan.features, newFeature.trim()] });
                 setNewFeature("");
-              }
-            }}
-          />
-          <button
-            onClick={() => {
-              if (!newFeature.trim()) return;
-              onChange({ ...plan, features: [...plan.features, newFeature.trim()] });
-              setNewFeature("");
-            }}
-            className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-xs transition-colors flex items-center gap-1"
-          >
-            <Plus className="w-3 h-3" /> Add
-          </button>
+              }}
+            >
+              <Plus className="w-3 h-3" /> Add
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label className="text-xs text-gray-500 mb-2 block">Modules</label>
-        <p className="text-[11px] text-gray-600 mb-2">Included = tenants on this plan can use it. Default On = enabled automatically (tenants can still turn it off).</p>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {MODULE_KEYS.map((key) => {
-            const cfg = modules[key];
-            const included = cfg?.included ?? false;
-            return (
-              <div key={key} className="flex items-center gap-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={included}
-                  onChange={(e) => toggleIncluded(key, e.target.checked)}
-                  className="accent-indigo-500"
-                />
-                <span className="text-gray-300 flex-1">{MODULE_LABELS[key]}</span>
-                {included && (
-                  <label className="flex items-center gap-1 text-[10px] text-gray-500">
-                    <input
-                      type="checkbox"
-                      checked={cfg?.defaultOn ?? false}
-                      onChange={(e) => toggleDefaultOn(key, e.target.checked)}
-                      className="accent-indigo-500"
-                    />
-                    Default on
-                  </label>
-                )}
-              </div>
-            );
-          })}
+        <div>
+          <Label className="mb-2 block">Modules</Label>
+          <p className="text-[11px] text-muted-foreground mb-2">Included = tenants on this plan can use it. Default On = enabled automatically (tenants can still turn it off).</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {MODULE_KEYS.map((key) => {
+              const cfg = modules[key];
+              const included = cfg?.included ?? false;
+              return (
+                <div key={key} className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={included}
+                    onChange={(e) => toggleIncluded(key, e.target.checked)}
+                    className="accent-primary"
+                  />
+                  <span className="flex-1">{MODULE_LABELS[key]}</span>
+                  {included && (
+                    <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={cfg?.defaultOn ?? false}
+                        onChange={(e) => toggleDefaultOn(key, e.target.checked)}
+                        className="accent-primary"
+                      />
+                      Default on
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -308,32 +304,28 @@ export default function PlansPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <CreditCard className="w-6 h-6 text-indigo-400" /> Plans & Pricing
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <CreditCard className="w-6 h-6 text-indigo-500" /> Plans & Pricing
         </h1>
-        <button
-          onClick={handleSave}
-          disabled={saving || loading}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
-        >
+        <Button onClick={handleSave} disabled={saving || loading}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? "Saving…" : "Save Changes"}
-        </button>
+        </Button>
       </div>
 
-      <p className="text-gray-400 text-sm">
+      <p className="text-muted-foreground text-sm">
         Configure the plans shown to users during onboarding. Changes take effect immediately on the marketing homepage.
       </p>
 
       {loading || !plans ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {plans.map((plan, i) => (
             <div key={plan.id}>
-              <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">{plan.name}</h3>
+              <h3 className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-semibold">{plan.name}</h3>
               <PlanCard plan={plan} onChange={updated => updatePlan(i, updated)} />
             </div>
           ))}

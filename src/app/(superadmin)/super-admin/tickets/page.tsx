@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TicketIcon, Plus, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Ticket {
   id: string;
@@ -18,15 +21,14 @@ interface Ticket {
 
 interface Dept { id: string; name: string; slug: string; }
 
-const STATUS_COLORS: Record<string, string> = {
-  open: "bg-red-900/50 text-red-400",
-  in_progress: "bg-amber-900/50 text-amber-400",
-  waiting: "bg-yellow-900/50 text-yellow-400",
-  resolved: "bg-green-900/50 text-green-400",
-  closed: "bg-gray-800 text-gray-500",
-};
-
 const STATUSES = ["", "open", "in_progress", "waiting", "resolved", "closed"];
+
+function statusVariant(s: string) {
+  if (s === "open") return "destructive" as const;
+  if (s === "in_progress" || s === "waiting") return "warning" as const;
+  if (s === "resolved") return "success" as const;
+  return "secondary" as const;
+}
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -55,82 +57,82 @@ export default function TicketsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <TicketIcon className="w-6 h-6 text-amber-400" /> Support Tickets
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <TicketIcon className="w-6 h-6 text-amber-500" /> Support Tickets
         </h1>
-        <Link href="/super-admin/tickets/new"
-          className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg">
-          <Plus className="w-4 h-4" /> Open Ticket
-        </Link>
+        <Button asChild>
+          <Link href="/super-admin/tickets/new">
+            <Plus className="w-4 h-4" /> Open Ticket
+          </Link>
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {STATUSES.map(s => (
-          <button key={s} onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === s ? "bg-indigo-600 text-white" : "bg-gray-900 border border-gray-700 text-gray-400 hover:border-gray-600"}`}>
+          <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
             {s || "All Status"}
-          </button>
+          </Button>
         ))}
-        <div className="w-px bg-gray-700 mx-1" />
-        <button onClick={() => setDeptFilter("")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${deptFilter === "" ? "bg-indigo-600 text-white" : "bg-gray-900 border border-gray-700 text-gray-400 hover:border-gray-600"}`}>
+        <div className="w-px bg-border mx-1" />
+        <Button variant={deptFilter === "" ? "default" : "outline"} size="sm" onClick={() => setDeptFilter("")}>
           All Depts
-        </button>
+        </Button>
         {depts.map(d => (
-          <button key={d.id} onClick={() => setDeptFilter(d.slug)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${deptFilter === d.slug ? "bg-indigo-600 text-white" : "bg-gray-900 border border-gray-700 text-gray-400 hover:border-gray-600"}`}>
+          <Button key={d.id} variant={deptFilter === d.slug ? "default" : "outline"} size="sm" onClick={() => setDeptFilter(d.slug)}>
             {d.name}
-          </button>
+          </Button>
         ))}
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>
+        <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[420px]">
-            <thead>
-              <tr className="border-b border-gray-800">
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">#</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Subject</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">From</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Dept</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Priority</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Status</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Date</th>
-                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(t => (
-                <tr key={t.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                  <td className="px-4 py-3 text-gray-600 text-xs font-mono hidden lg:table-cell">{t.id.slice(0, 8)}</td>
-                  <td className="px-4 py-3 text-white font-medium max-w-xs truncate">{t.subject}</td>
-                  <td className="px-4 py-3 text-gray-400 text-xs hidden lg:table-cell">
-                    {t.guest_name ?? "Site User"}
-                    {t.guest_email && <div className="text-gray-600">{t.guest_email}</div>}
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">{deptLabel(t.department)}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium ${t.priority === "urgent" ? "text-red-400" : t.priority === "high" ? "text-amber-400" : "text-gray-500"}`}>{t.priority}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[t.status] ?? STATUS_COLORS.open}`}>{t.status}</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs hidden lg:table-cell">{new Date(t.created_at).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">
-                    <Link href={`/super-admin/tickets/${t.id}`} className="text-xs text-indigo-400 hover:text-indigo-300">View →</Link>
-                  </td>
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto"><table className="w-full text-sm min-w-[420px]">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">#</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Subject</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">From</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden md:table-cell">Dept</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Priority</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Status</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Date</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium"></th>
                 </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={8} className="px-5 py-10 text-center text-gray-600">No tickets found</td></tr>
-              )}
-            </tbody>
-          </table></div>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map(t => (
+                  <tr key={t.id} className="border-b last:border-0 hover:bg-accent/50 transition-colors">
+                    <td className="px-4 py-3 text-muted-foreground text-xs font-mono hidden lg:table-cell">{t.id.slice(0, 8)}</td>
+                    <td className="px-4 py-3 font-medium max-w-xs truncate">{t.subject}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
+                      {t.guest_name ?? "Site User"}
+                      {t.guest_email && <div className="text-muted-foreground/70">{t.guest_email}</div>}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <Badge variant="secondary">{deptLabel(t.department)}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium ${t.priority === "urgent" ? "text-red-500" : t.priority === "high" ? "text-amber-500" : "text-muted-foreground"}`}>{t.priority}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">{new Date(t.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-3">
+                      <Link href={`/super-admin/tickets/${t.id}`} className="text-xs text-primary hover:underline">View →</Link>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">No tickets found</td></tr>
+                )}
+              </tbody>
+            </table></div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

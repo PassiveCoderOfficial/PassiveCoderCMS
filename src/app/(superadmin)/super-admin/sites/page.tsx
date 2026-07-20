@@ -5,6 +5,10 @@ import { Globe, ExternalLink, Search, Trash2, Loader2, AlertTriangle, X, Mail, P
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SiteDeleteModal } from "@/components/admin/site-delete-modal";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface Site {
   id: string;
@@ -39,42 +43,42 @@ function ContactModal({ site, onClose }: { site: Site; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-sm shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-          <span className="font-semibold text-white">{site.name}</span>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+      <Card className="w-full max-w-sm shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b">
+          <span className="font-semibold">{site.name}</span>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 space-y-3">
+        <CardContent className="p-5 space-y-3">
           {loading ? (
-            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-gray-600" /></div>
+            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
           ) : (
             <>
               {contact?.owner_name && (
-                <p className="text-sm text-gray-300">{contact.owner_name}</p>
+                <p className="text-sm">{contact.owner_name}</p>
               )}
               <div className="flex items-center gap-2 text-sm">
-                <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 {contact?.owner_email
-                  ? <a href={`mailto:${contact.owner_email}`} className="text-indigo-400 hover:underline">{contact.owner_email}</a>
-                  : <span className="text-gray-600">No owner email on file</span>}
+                  ? <a href={`mailto:${contact.owner_email}`} className="text-primary hover:underline">{contact.owner_email}</a>
+                  : <span className="text-muted-foreground">No owner email on file</span>}
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 {contact?.site_phone
-                  ? <a href={`tel:${contact.site_phone}`} className="text-indigo-400 hover:underline">{contact.site_phone}</a>
-                  : <span className="text-gray-600">No phone on file</span>}
+                  ? <a href={`tel:${contact.site_phone}`} className="text-primary hover:underline">{contact.site_phone}</a>
+                  : <span className="text-muted-foreground">No phone on file</span>}
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <MessageCircle className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                <MessageCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 {contact?.site_whatsapp
-                  ? <a href={`https://wa.me/${contact.site_whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline">{contact.site_whatsapp}</a>
-                  : <span className="text-gray-600">No WhatsApp on file</span>}
+                  ? <a href={`https://wa.me/${contact.site_whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{contact.site_whatsapp}</a>
+                  : <span className="text-muted-foreground">No WhatsApp on file</span>}
               </div>
               {site.deletion_requested_at && (
-                <div className="mt-2 bg-amber-950/40 border border-amber-800 rounded-lg p-3 text-xs text-amber-300">
-                  <p className="font-semibold text-amber-400 flex items-center gap-1.5 mb-1">
+                <div className="mt-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-700 dark:text-amber-300">
+                  <p className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 mb-1">
                     <AlertTriangle className="w-3.5 h-3.5" /> Deletion requested
                   </p>
                   <p>Requested {new Date(site.deletion_requested_at).toLocaleString()}. Contact the owner above before proceeding.</p>
@@ -82,27 +86,26 @@ function ContactModal({ site, onClose }: { site: Site; onClose: () => void }) {
               )}
             </>
           )}
-        </div>
+        </CardContent>
         <div className="px-5 pb-5">
-          <Link href={`/super-admin/sites/${site.id}`}
-            className="block text-center bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg py-2 transition-colors">
-            Manage Site
-          </Link>
+          <Button variant="secondary" className="w-full" asChild>
+            <Link href={`/super-admin/sites/${site.id}`}>Manage Site</Link>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  active: "bg-green-900/50 text-green-400",
-  onboarded: "bg-blue-900/50 text-blue-400",
-  suspended: "bg-red-900/50 text-red-400",
-  cancelled: "bg-gray-800 text-gray-500",
-  enm_pending: "bg-orange-900/50 text-orange-400",
-};
-
 const STATUSES = ["", "onboarded", "active", "suspended", "cancelled", "enm_pending"];
+
+function statusVariant(status: string) {
+  if (status === "active") return "success" as const;
+  if (status === "onboarded") return "info" as const;
+  if (status === "suspended" || status === "cancelled") return "destructive" as const;
+  if (status === "enm_pending") return "warning" as const;
+  return "secondary" as const;
+}
 
 export default function AllSitesPage() {
   const [sites, setSites] = useState<Site[]>([]);
@@ -137,98 +140,95 @@ export default function AllSitesPage() {
 
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Globe className="w-6 h-6 text-blue-400" /> All Sites
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Globe className="w-6 h-6 text-blue-500" /> All Sites
           </h1>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="Search by name or slug…"
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              className="pl-9"
             />
           </div>
           {STATUSES.map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)}
-              className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-                statusFilter === s ? "bg-indigo-600 text-white" : "bg-gray-900 border border-gray-700 text-gray-400 hover:border-gray-600")}>
+            <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
               {s || "All"}
-            </button>
+            </Button>
           ))}
         </div>
 
         {/* Table */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[420px]">
             <thead>
-              <tr className="border-b border-gray-800">
-                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Site Name</th>
-                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Domain</th>
-                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Status</th>
-                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Onboarded</th>
-                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Created</th>
-                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium"></th>
+              <tr className="border-b">
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Site Name</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden md:table-cell">Domain</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Status</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Onboarded</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Created</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium"></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-5 py-12 text-center"><Loader2 className="w-5 h-5 animate-spin text-gray-600 mx-auto" /></td></tr>
+                <tr><td colSpan={6} className="px-5 py-12 text-center"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground mx-auto" /></td></tr>
               ) : filtered.map(site => (
                 <tr key={site.id} className={cn(
-                  "border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors group",
-                  site.deletion_requested_at && "bg-amber-950/20 hover:bg-amber-950/30",
+                  "border-b last:border-0 hover:bg-accent/50 transition-colors group",
+                  site.deletion_requested_at && "bg-amber-500/10 hover:bg-amber-500/15",
                 )}>
                   <td className="px-5 py-3">
                     <button
                       onClick={() => setContactSite(site)}
-                      className="text-white font-medium hover:text-indigo-400 hover:underline text-left flex items-center gap-1.5"
+                      className="font-medium hover:text-primary hover:underline text-left flex items-center gap-1.5"
                       title="View contact info"
                     >
-                      {site.deletion_requested_at && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                      {site.deletion_requested_at && <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
                       {site.name}
                     </button>
                     {site.deletion_requested_at && (
-                      <p className="text-[10px] text-amber-400 mt-0.5">Deletion requested</p>
+                      <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">Deletion requested</p>
                     )}
                   </td>
                   <td className="px-5 py-3 hidden md:table-cell">
                     {site.custom_domain ? (
                       <a href={`https://${site.custom_domain}`} target="_blank" rel="noopener noreferrer"
-                        className="text-indigo-400 hover:text-indigo-300 hover:underline text-sm flex items-center gap-1">
+                        className="text-primary hover:underline text-sm flex items-center gap-1">
                         {site.custom_domain} <ExternalLink className="w-3 h-3" />
                       </a>
                     ) : (
                       <a href={`https://${site.slug}.passivecoder.com`} target="_blank" rel="noopener noreferrer"
-                        className="text-indigo-400 hover:text-indigo-300 hover:underline text-sm flex items-center gap-1">
+                        className="text-primary hover:underline text-sm flex items-center gap-1">
                         {site.slug}.passivecoder.com <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
                   </td>
                   <td className="px-5 py-3">
-                    <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", STATUS_COLOR[site.status] ?? "bg-gray-800 text-gray-400")}>
-                      {site.status}
-                    </span>
+                    <Badge variant={statusVariant(site.status)}>{site.status}</Badge>
                   </td>
                   <td className="px-5 py-3 hidden lg:table-cell">
-                    <span className={cn("text-xs", site.onboarding_completed ? "text-green-400" : "text-gray-500")}>
+                    <span className={cn("text-xs", site.onboarding_completed ? "text-green-500" : "text-muted-foreground")}>
                       {site.onboarding_completed ? "Yes" : "Pending"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-gray-500 text-xs hidden lg:table-cell">{new Date(site.created_at).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-muted-foreground text-xs hidden lg:table-cell">{new Date(site.created_at).toLocaleDateString()}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3 justify-end">
                       <Link href={`/super-admin/sites/${site.id}`}
-                        className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+                        className="text-xs text-primary hover:underline flex items-center gap-1">
                         Manage <ExternalLink className="w-3 h-3" />
                       </Link>
                       <button onClick={() => setDeletingSite(site)}
-                        className="text-gray-600 hover:text-red-400 p-1 rounded transition-colors">
+                        className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -236,12 +236,13 @@ export default function AllSitesPage() {
                 </tr>
               ))}
               {!loading && filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-gray-600">No sites found</td></tr>
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">No sites found</td></tr>
               )}
             </tbody>
           </table>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Settings, Plus, Trash2, Pencil, Check, X, Loader2, GripVertical } from "lucide-react";
 
@@ -85,91 +87,86 @@ export default function DepartmentsPage() {
   }
 
   const formPanel = (
-    <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
-      <h3 className="font-semibold text-white text-sm">{editingId ? "Edit Department" : "New Department"}</h3>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label className="text-xs text-gray-400 mb-1 block">Name *</Label>
-          <input value={form.name} onChange={e => handleNameChange(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-            placeholder="Technical Support" />
+    <Card>
+      <CardContent className="pt-6 space-y-4">
+        <h3 className="font-semibold text-sm">{editingId ? "Edit Department" : "New Department"}</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label>Name *</Label>
+            <Input value={form.name} onChange={e => handleNameChange(e.target.value)} placeholder="Technical Support" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Slug</Label>
+            <Input value={form.slug} onChange={e => set("slug", e.target.value)} placeholder="technical-support" />
+          </div>
+          <div className="col-span-2 space-y-1.5">
+            <Label>Description</Label>
+            <Input value={form.description} onChange={e => set("description", e.target.value)} placeholder="Optional description shown to users" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={form.is_active} onCheckedChange={v => set("is_active", v)} id="active" />
+            <Label htmlFor="active" className="font-normal">Active</Label>
+          </div>
         </div>
-        <div>
-          <Label className="text-xs text-gray-400 mb-1 block">Slug</Label>
-          <input value={form.slug} onChange={e => set("slug", e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-            placeholder="technical-support" />
+        <div className="flex gap-2">
+          <Button onClick={save} disabled={saving || !form.name.trim()}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {editingId ? "Update" : "Create"}
+          </Button>
+          <Button variant="secondary" onClick={() => { setAdding(false); setEditingId(null); setForm({ name: "", slug: "", description: "", is_active: true }); }}>
+            <X className="w-4 h-4" /> Cancel
+          </Button>
         </div>
-        <div className="col-span-2">
-          <Label className="text-xs text-gray-400 mb-1 block">Description</Label>
-          <input value={form.description} onChange={e => set("description", e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-            placeholder="Optional description shown to users" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Switch checked={form.is_active} onCheckedChange={v => set("is_active", v)} id="active" />
-          <label htmlFor="active" className="text-sm text-gray-300">Active</label>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button onClick={save} disabled={saving || !form.name.trim()}
-          className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-          {editingId ? "Update" : "Create"}
-        </button>
-        <button onClick={() => { setAdding(false); setEditingId(null); setForm({ name: "", slug: "", description: "", is_active: true }); }}
-          className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg">
-          <X className="w-4 h-4" /> Cancel
-        </button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 
   return (
     <div className="p-6 space-y-6 max-w-2xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Settings className="w-6 h-6 text-indigo-400" /> Support Departments
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Settings className="w-6 h-6 text-indigo-500" /> Support Departments
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage departments users can route tickets to. Deleted departments are retained on existing tickets.</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage departments users can route tickets to. Deleted departments are retained on existing tickets.</p>
         </div>
         {!adding && !editingId && (
-          <button onClick={() => setAdding(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          <Button onClick={() => setAdding(true)}>
             <Plus className="w-4 h-4" /> Add Department
-          </button>
+          </Button>
         )}
       </div>
 
       {adding && !editingId && formPanel}
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>
+        <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : (
         <div className="space-y-2">
           {depts.map(d => (
             editingId === d.id ? <div key={d.id}>{formPanel}</div> : (
-              <div key={d.id} className={`bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center gap-4 ${!d.is_active ? "opacity-50" : ""}`}>
-                <GripVertical className="w-4 h-4 text-gray-600 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-white text-sm">{d.name}</p>
-                    <span className="text-xs font-mono text-gray-500">/{d.slug}</span>
-                    {!d.is_active && <span className="text-xs bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">Inactive</span>}
+              <Card key={d.id} className={!d.is_active ? "opacity-50" : ""}>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm">{d.name}</p>
+                      <span className="text-xs font-mono text-muted-foreground">/{d.slug}</span>
+                      {!d.is_active && <Badge variant="secondary">Inactive</Badge>}
+                    </div>
+                    {d.description && <p className="text-xs text-muted-foreground mt-0.5">{d.description}</p>}
                   </div>
-                  {d.description && <p className="text-xs text-gray-500 mt-0.5">{d.description}</p>}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Switch checked={d.is_active} onCheckedChange={() => toggleActive(d)} />
-                  <button onClick={() => startEdit(d)} className="text-gray-500 hover:text-white p-1 rounded"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => remove(d.id, d.name)} className="text-gray-600 hover:text-red-400 p-1 rounded"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Switch checked={d.is_active} onCheckedChange={() => toggleActive(d)} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(d)}><Pencil className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => remove(d.id, d.name)}><Trash2 className="w-4 h-4" /></Button>
+                  </div>
+                </CardContent>
+              </Card>
             )
           ))}
           {depts.length === 0 && !adding && (
-            <div className="text-center py-12 border border-dashed border-gray-800 rounded-xl text-gray-600">
+            <div className="text-center py-12 border border-dashed rounded-xl text-muted-foreground">
               No departments yet. Add your first one.
             </div>
           )}

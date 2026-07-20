@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Power, PowerOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function ActivateToggleButton({ userId, isActive, isSelf }: { userId: string; isActive: boolean; isSelf: boolean }) {
   const [loading, setLoading] = useState(false);
@@ -25,18 +26,16 @@ export default function ActivateToggleButton({ userId, isActive, isSelf }: { use
   }
 
   return (
-    <button
+    <Button
+      size="sm"
+      variant={isActive ? "destructive" : "outline"}
+      className={isActive ? "" : "text-green-500 border-green-800 hover:bg-green-900/20"}
       onClick={toggle}
       disabled={loading || isSelf}
-      className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 ${
-        isActive
-          ? "bg-red-900/30 text-red-400 hover:bg-red-900/50"
-          : "bg-green-900/30 text-green-400 hover:bg-green-900/50"
-      }`}
     >
       {loading ? <Loader2 className="w-3 h-3 animate-spin" /> :
         isActive ? <PowerOff className="w-3 h-3" /> : <Power className="w-3 h-3" />}
       {isActive ? "Deactivate" : "Activate"}
-    </button>
+    </Button>
   );
 }

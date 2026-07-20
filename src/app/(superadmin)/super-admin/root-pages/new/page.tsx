@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,43 +51,44 @@ export default function NewRootPagePage() {
   }
 
   return (
-    <div className="p-6 max-w-md space-y-6">
+    <div className="p-6 max-w-md mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Globe className="w-6 h-6 text-indigo-400" />
-        <h1 className="text-2xl font-bold text-white">New Root Page</h1>
+        <h1 className="text-2xl font-bold">New Root Page</h1>
       </div>
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-        <div>
-          <Label className="text-gray-400 text-xs">Page Title</Label>
-          <Input
-            value={title}
-            onChange={e => handleTitle(e.target.value)}
-            placeholder="Home, About, Pricing…"
-            className="mt-1 bg-gray-800 border-gray-700 text-white"
-            autoFocus
-          />
-        </div>
-        <div>
-          <Label className="text-gray-400 text-xs">URL Slug</Label>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-500">passivecoder.com/</span>
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Page Title</Label>
             <Input
-              value={slug}
-              onChange={e => { setSlugEdited(true); setSlug(slugify(e.target.value)); }}
-              placeholder="home"
-              className="bg-gray-800 border-gray-700 text-white font-mono"
+              value={title}
+              onChange={e => handleTitle(e.target.value)}
+              placeholder="Home, About, Pricing…"
+              autoFocus
             />
           </div>
-          <p className="text-xs text-gray-600 mt-1">Use <span className="font-mono text-amber-400">home</span> to replace the root homepage.</p>
-        </div>
-        <div className="flex gap-2 pt-1">
-          <Button onClick={create} disabled={loading} className="bg-indigo-600 hover:bg-indigo-500">
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Create & Open Builder
-          </Button>
-          <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
-        </div>
-      </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">URL Slug</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">passivecoder.com/</span>
+              <Input
+                value={slug}
+                onChange={e => { setSlugEdited(true); setSlug(slugify(e.target.value)); }}
+                placeholder="home"
+                className="font-mono"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Use <span className="font-mono text-amber-400">home</span> to replace the root homepage.</p>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <Button onClick={create} disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Create & Open Builder
+            </Button>
+            <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

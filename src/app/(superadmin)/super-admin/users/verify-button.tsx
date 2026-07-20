@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function VerifyButton({ userId, verified }: { userId: string; verified: boolean }) {
   const [loading, setLoading] = useState(false);
@@ -25,13 +26,15 @@ export default function VerifyButton({ userId, verified }: { userId: string; ver
   if (verified) return null;
 
   return (
-    <button
+    <Button
+      size="sm"
+      variant="outline"
+      className="text-blue-500 border-blue-800 hover:bg-blue-900/20"
       onClick={verify}
       disabled={loading}
-      className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 bg-blue-900/30 text-blue-400 hover:bg-blue-900/50"
     >
       {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
       Verify
-    </button>
+    </Button>
   );
 }

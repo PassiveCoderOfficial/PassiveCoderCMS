@@ -6,6 +6,11 @@ import Link from "next/link";
 import { ArrowLeft, Check, Loader2, AlertCircle, Zap } from "lucide-react";
 import { TemplateSelect, type TemplateSelectValue } from "@/components/admin/template-select";
 import { createSiteSlug as slugify } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function NewSitePage() {
   const router = useRouter();
@@ -85,109 +90,106 @@ export default function NewSitePage() {
   return (
     <div className="p-6 max-w-xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/super-admin/sites" className="text-gray-500 hover:text-white transition-colors">
+        <Link href="/super-admin/sites" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-white">New Site</h1>
+        <h1 className="text-2xl font-bold">New Site</h1>
       </div>
 
       {agentId && (
-        <div className="flex items-center gap-2 bg-indigo-950/40 border border-indigo-800 rounded-lg px-4 py-2.5 text-sm text-indigo-300">
-          <Zap className="w-4 h-4 shrink-0 text-yellow-400" />
-          Will be assigned to agent <strong className="text-white">{agentName ?? agentId}</strong>
+        <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-300">
+          <Zap className="w-4 h-4 shrink-0 text-yellow-500" />
+          Will be assigned to agent <strong>{agentName ?? agentId}</strong>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Site Name *</label>
-            <input
-              value={name}
-              onChange={e => handleNameChange(e.target.value)}
-              placeholder="Premier Clean Co."
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Subdomain *</label>
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <input
-                  value={slug}
-                  onChange={e => {
-                    setSlugManual(true);
-                    setSlug(e.target.value);
-                    setSlugAvailable(null);
-                  }}
-                  onBlur={e => checkSlug(e.target.value)}
-                  placeholder="premier-clean"
-                  required
-                  className={`w-full bg-gray-800 border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none ${
-                    slugAvailable === true ? "border-green-500" : slugAvailable === false ? "border-red-500" : "border-gray-700 focus:border-indigo-500"
-                  }`}
-                />
-                {checking && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-gray-500" />}
-              </div>
-              <span className="text-gray-500 text-sm whitespace-nowrap">.passivecoder.com</span>
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label>Site Name *</Label>
+              <Input
+                value={name}
+                onChange={e => handleNameChange(e.target.value)}
+                placeholder="Premier Clean Co."
+                required
+              />
             </div>
-            {slugAvailable === true && <p className="text-green-400 text-xs mt-1">Available</p>}
-            {slugAvailable === false && <p className="text-red-400 text-xs mt-1">{slugMsg || "Not available"}</p>}
-          </div>
 
-          <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Plan</label>
-            <select
-              value={plan}
-              onChange={e => setPlan(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="free">Free</option>
-              <option value="starter">Starter</option>
-              <option value="pro">Pro</option>
-              <option value="agency">Agency</option>
-            </select>
-          </div>
+            <div className="space-y-1.5">
+              <Label>Subdomain *</Label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    value={slug}
+                    onChange={e => {
+                      setSlugManual(true);
+                      setSlug(e.target.value);
+                      setSlugAvailable(null);
+                    }}
+                    onBlur={e => checkSlug(e.target.value)}
+                    placeholder="premier-clean"
+                    required
+                    className={
+                      slugAvailable === true ? "border-green-500" : slugAvailable === false ? "border-red-500" : ""
+                    }
+                  />
+                  {checking && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />}
+                </div>
+                <span className="text-muted-foreground text-sm whitespace-nowrap">.passivecoder.com</span>
+              </div>
+              {slugAvailable === true && <p className="text-green-500 text-xs">Available</p>}
+              {slugAvailable === false && <p className="text-red-500 text-xs">{slugMsg || "Not available"}</p>}
+            </div>
 
-          <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Owner Email <span className="text-gray-600">(optional)</span></label>
-            <input
-              value={ownerEmail}
-              onChange={e => setOwnerEmail(e.target.value)}
-              placeholder="client@example.com"
-              type="email"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none"
-            />
-            <p className="text-xs text-gray-600 mt-1">Must be an existing user in the system. Leave blank to create unowned.</p>
-          </div>
-        </div>
+            <div className="space-y-1.5">
+              <Label>Plan</Label>
+              <Select value={plan} onValueChange={setPlan}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="starter">Starter</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="agency">Agency</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
-          <label className="block text-sm text-gray-400">Starting Template</label>
-          <TemplateSelect value={template} onChange={setTemplate} dark />
-        </div>
+            <div className="space-y-1.5">
+              <Label>Owner Email <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input
+                value={ownerEmail}
+                onChange={e => setOwnerEmail(e.target.value)}
+                placeholder="client@example.com"
+                type="email"
+              />
+              <p className="text-xs text-muted-foreground">Must be an existing user in the system. Leave blank to create unowned.</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6 space-y-3">
+            <Label>Starting Template</Label>
+            <TemplateSelect value={template} onChange={setTemplate} dark />
+          </CardContent>
+        </Card>
 
         {error && (
-          <div className="flex items-center gap-2 bg-red-950/40 border border-red-800 rounded-lg px-4 py-3 text-red-400 text-sm">
+          <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/30 rounded-lg px-4 py-3 text-destructive text-sm">
             <AlertCircle className="w-4 h-4 shrink-0" />
             {error}
           </div>
         )}
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving || !name.trim() || !slug.trim() || slugAvailable === false}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
-          >
+          <Button type="submit" disabled={saving || !name.trim() || !slug.trim() || slugAvailable === false}>
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             Create Site
-          </button>
-          <Link href="/super-admin/sites" className="px-6 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 transition-colors">
-            Cancel
-          </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/super-admin/sites">Cancel</Link>
+          </Button>
         </div>
       </form>
     </div>

@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2, Check, X, Link as LinkIcon, Trash2, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function AgentActions({
   agentId,
@@ -113,31 +117,29 @@ export default function AgentActions({
       {editingCommission ? (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
-            <input type="number" min={0} max={100} step={0.5} value={commission}
+            <Input type="number" min={0} max={100} step={0.5} value={commission}
               onChange={e => setCommission(e.target.value)}
-              className="w-16 text-xs bg-gray-800 border border-gray-600 rounded px-1.5 py-1 text-white" />
-            <span className="text-gray-500 text-xs">%</span>
+              className="w-16 h-7 text-xs px-1.5" />
+            <span className="text-muted-foreground text-xs">%</span>
           </div>
           <div className="flex gap-1">
             {(["recurring", "one_time"] as const).map(t => (
-              <button key={t} type="button" onClick={() => setCommissionType(t)}
-                className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
-                  commissionType === t ? "bg-indigo-600 border-indigo-500 text-white" : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500"
-                }`}>
+              <Button key={t} type="button" size="sm" variant={commissionType === t ? "default" : "outline"}
+                className="h-6 text-[10px] px-1.5"
+                onClick={() => setCommissionType(t)}>
                 {t === "recurring" ? "Recurring" : "One-Time"}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="flex gap-1">
-            <button onClick={saveCommission} disabled={loading}
-              className="text-xs bg-green-700 hover:bg-green-600 text-white px-2 py-1 rounded disabled:opacity-50">
+            <Button size="sm" className="h-6 text-xs px-2" onClick={saveCommission} disabled={loading}>
               {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
-            </button>
-            <button onClick={() => setEditingCommission(false)} className="text-xs text-gray-500 hover:text-gray-300 px-1">Cancel</button>
+            </Button>
+            <Button size="sm" variant="ghost" className="h-6 text-xs px-1" onClick={() => setEditingCommission(false)}>Cancel</Button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setEditingCommission(true)} className="text-xs text-blue-400 hover:text-blue-300 transition-colors text-left">
+        <button onClick={() => setEditingCommission(true)} className="text-xs text-primary hover:underline transition-colors text-left">
           Edit %
         </button>
       )}
@@ -146,29 +148,28 @@ export default function AgentActions({
       {editingCode ? (
         <div className="flex flex-col gap-1.5">
           <div className="relative flex items-center gap-1">
-            <input
+            <Input
               value={code}
               onChange={e => { setCode(e.target.value); setCodeAvailable(null); }}
               placeholder="refcode"
-              className={`w-28 text-xs bg-gray-800 border rounded px-1.5 py-1 text-white font-mono ${
-                codeAvailable === true ? "border-green-500" : codeAvailable === false ? "border-red-500" : "border-gray-600"
+              className={`w-28 h-7 text-xs px-1.5 font-mono ${
+                codeAvailable === true ? "border-green-500" : codeAvailable === false ? "border-red-500" : ""
               }`}
             />
-            {codeChecking && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
-            {codeAvailable === true && <Check className="w-3 h-3 text-green-400" />}
-            {codeAvailable === false && <X className="w-3 h-3 text-red-400" />}
+            {codeChecking && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+            {codeAvailable === true && <Check className="w-3 h-3 text-green-500" />}
+            {codeAvailable === false && <X className="w-3 h-3 text-red-500" />}
           </div>
-          <p className="text-[10px] text-gray-600">→ {cleanedCode || "…"}</p>
+          <p className="text-[10px] text-muted-foreground">→ {cleanedCode || "…"}</p>
           <div className="flex gap-1">
-            <button onClick={saveCode} disabled={loading || codeAvailable === false || cleanedCode.length < 3}
-              className="text-xs bg-green-700 hover:bg-green-600 text-white px-2 py-1 rounded disabled:opacity-50">
+            <Button size="sm" className="h-6 text-xs px-2" onClick={saveCode} disabled={loading || codeAvailable === false || cleanedCode.length < 3}>
               {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
-            </button>
-            <button onClick={() => { setEditingCode(false); setCode(currentReferralCode); }} className="text-xs text-gray-500 hover:text-gray-300 px-1">Cancel</button>
+            </Button>
+            <Button size="sm" variant="ghost" className="h-6 text-xs px-1" onClick={() => { setEditingCode(false); setCode(currentReferralCode); }}>Cancel</Button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setEditingCode(true)} className="flex items-center gap-1 text-xs text-yellow-400 hover:text-yellow-300 transition-colors">
+        <button onClick={() => setEditingCode(true)} className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400 hover:underline transition-colors">
           <LinkIcon className="w-3 h-3" /> Edit Code
         </button>
       )}
@@ -176,53 +177,49 @@ export default function AgentActions({
       {/* Status toggle */}
       {currentStatus === "active" ? (
         <button onClick={() => updateStatus("suspended")} disabled={loading}
-          className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 text-left">
+          className="text-xs text-destructive hover:underline transition-colors disabled:opacity-50 text-left">
           Suspend
         </button>
       ) : (
         <button onClick={() => updateStatus("active")} disabled={loading}
-          className="text-xs text-green-400 hover:text-green-300 transition-colors disabled:opacity-50 text-left">
+          className="text-xs text-green-600 dark:text-green-400 hover:underline transition-colors disabled:opacity-50 text-left">
           Activate
         </button>
       )}
 
       {/* Staff settings */}
       {editingStaff ? (
-        <div className="flex flex-col gap-1.5 bg-indigo-900/10 border border-indigo-800/30 rounded-lg p-2">
+        <div className="flex flex-col gap-1.5 bg-indigo-500/10 border border-indigo-500/30 rounded-lg p-2">
           <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-3 h-3 text-indigo-400" />
-            <span className="text-xs font-semibold text-indigo-300">Staff Settings</span>
+            <Shield className="w-3 h-3 text-indigo-500" />
+            <span className="text-xs font-semibold text-indigo-500">Staff Settings</span>
           </div>
-          <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer">
-            <input type="checkbox" checked={isStaff} onChange={e => setIsStaff(e.target.checked)}
-              className="rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500" />
-            Is Staff (gets recurring commission)
-          </label>
+          <div className="flex items-center gap-2">
+            <Switch checked={isStaff} onCheckedChange={setIsStaff} className="scale-90" />
+            <Label className="text-xs font-normal cursor-pointer" onClick={() => setIsStaff(v => !v)}>Is Staff (gets recurring commission)</Label>
+          </div>
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-gray-500">One-time % override (blank = platform default 10%)</label>
-            <input type="number" min="0" max="100" step="0.5" value={oneTimePct} onChange={e => setOneTimePct(e.target.value)}
-              placeholder="e.g. 10"
-              className="w-20 text-xs bg-gray-800 border border-gray-600 rounded px-1.5 py-1 text-white" />
+            <Label className="text-[10px] text-muted-foreground font-normal">One-time % override (blank = platform default 10%)</Label>
+            <Input type="number" min="0" max="100" step="0.5" value={oneTimePct} onChange={e => setOneTimePct(e.target.value)}
+              placeholder="e.g. 10" className="w-20 h-7 text-xs px-1.5" />
           </div>
           {isStaff && (
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-gray-500">Recurring % override (blank = platform default 10%)</label>
-              <input type="number" min="0" max="100" step="0.5" value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)}
-                placeholder="e.g. 10"
-                className="w-20 text-xs bg-gray-800 border border-gray-600 rounded px-1.5 py-1 text-white" />
+              <Label className="text-[10px] text-muted-foreground font-normal">Recurring % override (blank = platform default 10%)</Label>
+              <Input type="number" min="0" max="100" step="0.5" value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)}
+                placeholder="e.g. 10" className="w-20 h-7 text-xs px-1.5" />
             </div>
           )}
           <div className="flex gap-1">
-            <button onClick={saveStaff} disabled={loading}
-              className="text-xs bg-green-700 hover:bg-green-600 text-white px-2 py-1 rounded disabled:opacity-50">
+            <Button size="sm" className="h-6 text-xs px-2" onClick={saveStaff} disabled={loading}>
               {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
-            </button>
-            <button onClick={() => setEditingStaff(false)} className="text-xs text-gray-500 hover:text-gray-300 px-1">Cancel</button>
+            </Button>
+            <Button size="sm" variant="ghost" className="h-6 text-xs px-1" onClick={() => setEditingStaff(false)}>Cancel</Button>
           </div>
         </div>
       ) : (
         <button onClick={() => setEditingStaff(true)}
-          className={`flex items-center gap-1 text-xs transition-colors ${currentIsStaff ? "text-indigo-400 hover:text-indigo-300" : "text-gray-500 hover:text-gray-300"}`}>
+          className={`flex items-center gap-1 text-xs transition-colors ${currentIsStaff ? "text-indigo-500 hover:underline" : "text-muted-foreground hover:text-foreground"}`}>
           <Shield className="w-3 h-3" /> {currentIsStaff ? "Staff ✓" : "Staff settings"}
         </button>
       )}
@@ -230,16 +227,15 @@ export default function AgentActions({
       {/* Remove agent */}
       {confirmRemove ? (
         <div className="flex items-center gap-1">
-          <span className="text-[10px] text-red-400">Sure?</span>
-          <button onClick={removeAgent} disabled={loading}
-            className="text-[10px] bg-red-800 hover:bg-red-700 text-white px-1.5 py-0.5 rounded">
+          <span className="text-[10px] text-destructive">Sure?</span>
+          <Button size="sm" variant="destructive" className="h-5 text-[10px] px-1.5" onClick={removeAgent} disabled={loading}>
             Yes
-          </button>
-          <button onClick={() => setConfirmRemove(false)} className="text-[10px] text-gray-500 hover:text-gray-300">No</button>
+          </Button>
+          <button onClick={() => setConfirmRemove(false)} className="text-[10px] text-muted-foreground hover:text-foreground">No</button>
         </div>
       ) : (
         <button onClick={() => setConfirmRemove(true)}
-          className="flex items-center gap-1 text-xs text-red-500 hover:text-red-400 transition-colors">
+          className="flex items-center gap-1 text-xs text-destructive hover:underline transition-colors">
           <Trash2 className="w-3 h-3" /> Remove
         </button>
       )}

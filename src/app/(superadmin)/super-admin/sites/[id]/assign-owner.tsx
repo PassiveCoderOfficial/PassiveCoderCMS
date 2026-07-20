@@ -4,6 +4,8 @@ import { useState } from "react";
 import { UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function AssignOwner({ siteId }: { siteId: string }) {
   const [email, setEmail] = useState("");
@@ -31,22 +33,18 @@ export default function AssignOwner({ siteId }: { siteId: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      <input
+      <Input
         type="email"
         value={email}
         onChange={e => setEmail(e.target.value)}
         onKeyDown={e => e.key === "Enter" && assign()}
         placeholder="user@example.com"
-        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+        className="flex-1"
       />
-      <button
-        onClick={assign}
-        disabled={saving || !email.trim()}
-        className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-      >
+      <Button size="sm" onClick={assign} disabled={saving || !email.trim()}>
         {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
         Assign Owner
-      </button>
+      </Button>
     </div>
   );
 }

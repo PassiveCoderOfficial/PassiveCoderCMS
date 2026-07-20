@@ -5,6 +5,9 @@ import Link from "next/link";
 import GrantSuperAdminButton from "./grant-button";
 import ActivateToggleButton from "./activate-button";
 import VerifyButton from "./verify-button";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata = { title: "Users & Roles — Super Admin" };
 
@@ -24,34 +27,35 @@ export default async function UsersPage() {
   const users = recentUsers?.users ?? [];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
           <Users className="w-6 h-6 text-purple-400" /> Users & Roles
         </h1>
-        <Link href="/super-admin/users/new"
-          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors">
-          <UserPlus className="w-4 h-4" /> Add User
-        </Link>
+        <Button asChild>
+          <Link href="/super-admin/users/new">
+            <UserPlus className="w-4 h-4" /> Add User
+          </Link>
+        </Button>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-800 flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <div className="px-5 py-4 border-b flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-indigo-400" />
-          <h2 className="font-semibold text-white text-sm">All Users</h2>
-          <span className="text-xs text-gray-500">({users.length})</span>
+          <h2 className="font-semibold text-sm">All Users</h2>
+          <span className="text-xs text-muted-foreground">({users.length})</span>
         </div>
         <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead>
-            <tr className="border-b border-gray-800">
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Email</th>
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Created</th>
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Last Sign In</th>
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Role</th>
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Status</th>
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Verification</th>
-              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Actions</th>
+            <tr className="border-b">
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Email</th>
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Created</th>
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Last Sign In</th>
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Role</th>
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden md:table-cell">Status</th>
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden md:table-cell">Verification</th>
+              <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -61,35 +65,29 @@ export default async function UsersPage() {
               const isActive = profile?.is_active ?? true;
               const verification = profile ? computeVerificationStatus(profile) : null;
               return (
-                <tr key={user.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                <tr key={user.id} className="border-b last:border-0 hover:bg-accent/50 transition-colors">
                   <td className="px-5 py-3">
-                    <Link href={`/super-admin/users/${user.id}`} className="text-white hover:text-indigo-400 hover:underline transition-colors">
+                    <Link href={`/super-admin/users/${user.id}`} className="hover:text-indigo-400 hover:underline transition-colors">
                       {user.email}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-gray-500 text-xs hidden lg:table-cell">{new Date(user.created_at).toLocaleDateString()}</td>
-                  <td className="px-5 py-3 text-gray-500 text-xs hidden lg:table-cell">
+                  <td className="px-5 py-3 text-muted-foreground text-xs hidden lg:table-cell">{new Date(user.created_at).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-muted-foreground text-xs hidden lg:table-cell">
                     {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
                   </td>
                   <td className="px-5 py-3">
                     {isSA ? (
-                      <span className="inline-flex items-center gap-1 bg-indigo-900/50 text-indigo-400 text-xs font-medium px-2 py-0.5 rounded-full">
-                        <ShieldCheck className="w-3 h-3" /> Super Admin
-                      </span>
+                      <Badge variant="info" className="gap-1"><ShieldCheck className="w-3 h-3" /> Super Admin</Badge>
                     ) : (
-                      <span className="text-xs text-gray-500">User</span>
+                      <span className="text-xs text-muted-foreground">User</span>
                     )}
                   </td>
                   <td className="px-5 py-3 hidden md:table-cell">
-                    {isActive ? (
-                      <span className="inline-flex items-center gap-1 bg-green-900/30 text-green-400 text-xs font-medium px-2 py-0.5 rounded-full">Active</span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 bg-red-900/30 text-red-400 text-xs font-medium px-2 py-0.5 rounded-full">Inactive</span>
-                    )}
+                    <Badge variant={isActive ? "success" : "destructive"}>{isActive ? "Active" : "Inactive"}</Badge>
                   </td>
                   <td className="px-5 py-3 hidden md:table-cell">
                     {!verification ? (
-                      <span className="text-xs text-gray-500">—</span>
+                      <span className="text-xs text-muted-foreground">—</span>
                     ) : verification.verified ? (
                       <span className="text-xs text-green-400">Verified</span>
                     ) : verification.locked ? (
@@ -111,7 +109,7 @@ export default async function UsersPage() {
           </tbody>
         </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

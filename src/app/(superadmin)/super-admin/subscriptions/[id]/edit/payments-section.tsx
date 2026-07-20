@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Plus, Download, Mail, Receipt, DollarSign } from "lucide-react";
 import { formatUsd, receiptAmountLabel, type PayCurrency } from "@/lib/billing/money";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Payment {
   id: string;
@@ -18,7 +24,7 @@ interface Payment {
   emailed_at: string | null;
 }
 
-const METHODS = ["", "bkash", "nagad", "bank", "shurjopay", "dodo", "manual"];
+const METHODS = ["__none__", "bkash", "nagad", "bank", "shurjopay", "dodo", "manual"];
 
 export default function PaymentsSection({
   subscriptionId, totalBilledCents, totalPaidCents, balanceDueCents,
@@ -91,117 +97,121 @@ export default function PaymentsSection({
   }
 
   return (
-    <div className="border-t border-gray-800 pt-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
           <Receipt className="w-3.5 h-3.5" /> Payments &amp; Receipts
         </p>
-        <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 text-xs bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-600/30 text-indigo-400 px-2.5 py-1.5 rounded-lg transition-colors">
+        <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)}>
           <Plus className="w-3.5 h-3.5" /> Record Payment
-        </button>
+        </Button>
       </div>
 
       {/* Statement */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-gray-800/60 rounded-lg p-3">
-          <p className="text-[10px] text-gray-500 uppercase">Total Billed</p>
-          <p className="text-sm font-semibold text-white">{formatUsd(totals.billed)}</p>
-        </div>
-        <div className="bg-gray-800/60 rounded-lg p-3">
-          <p className="text-[10px] text-gray-500 uppercase">Total Paid</p>
-          <p className="text-sm font-semibold text-green-400">{formatUsd(totals.paid)}</p>
-        </div>
-        <div className="bg-gray-800/60 rounded-lg p-3">
-          <p className="text-[10px] text-gray-500 uppercase">Balance Due</p>
-          <p className={`text-sm font-semibold ${totals.due > 0 ? "text-amber-400" : "text-gray-500"}`}>{formatUsd(totals.due)}</p>
-        </div>
+      <div className="grid grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Total Billed</p>
+            <p className="text-sm font-semibold">{formatUsd(totals.billed)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Total Paid</p>
+            <p className="text-sm font-semibold text-green-400">{formatUsd(totals.paid)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Balance Due</p>
+            <p className={`text-sm font-semibold ${totals.due > 0 ? "text-amber-400" : "text-muted-foreground"}`}>{formatUsd(totals.due)}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Record payment form */}
       {showForm && (
-        <div className="bg-gray-800/40 border border-gray-700 rounded-lg p-4 mb-4 space-y-3">
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Currency</label>
-              <select value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value as PayCurrency }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-                <option value="USD">USD ($)</option>
-                <option value="BDT">BDT (৳)</option>
-              </select>
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label>Currency</Label>
+                <Select value={form.currency} onValueChange={(v) => setForm(f => ({ ...f, currency: v as PayCurrency }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="BDT">BDT (৳)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Amount ({form.currency === "BDT" ? "৳" : "$"})</Label>
+                <Input type="number" min="0" step={form.currency === "BDT" ? "1" : "0.01"} value={form.orig_amount}
+                  onChange={e => setForm(f => ({ ...f, orig_amount: e.target.value }))}
+                  placeholder={form.currency === "BDT" ? "20000" : "160.00"} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Method</Label>
+                <Select value={form.method || "__none__"} onValueChange={(v) => setForm(f => ({ ...f, method: v === "__none__" ? "" : v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {METHODS.map(m => <SelectItem key={m} value={m}>{m === "__none__" ? "— not set —" : m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Amount ({form.currency === "BDT" ? "৳" : "$"})</label>
-              <input type="number" min="0" step={form.currency === "BDT" ? "1" : "0.01"} value={form.orig_amount}
-                onChange={e => setForm(f => ({ ...f, orig_amount: e.target.value }))}
-                placeholder={form.currency === "BDT" ? "20000" : "160.00"}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Date Paid</Label>
+                <Input type="date" value={form.paid_at} onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))} />
+              </div>
+              <div className="flex items-center gap-2 pt-6">
+                <Switch checked={form.is_advance} onCheckedChange={(v) => setForm(f => ({ ...f, is_advance: v }))} />
+                <Label className="font-normal">Advance / partial payment</Label>
+              </div>
             </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Method</label>
-              <select value={form.method} onChange={e => setForm(f => ({ ...f, method: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-                {METHODS.map(m => <option key={m} value={m}>{m || "— not set —"}</option>)}
-              </select>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
+                placeholder="e.g. Paid via bKash, ref #12345" />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Date Paid</label>
-              <input type="date" value={form.paid_at} onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <div className="flex gap-2">
+              <Button onClick={recordPayment} disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
+                Save Payment
+              </Button>
+              <Button variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
             </div>
-            <div className="flex items-end pb-2">
-              <label className="flex items-center gap-2 text-sm text-gray-300">
-                <input type="checkbox" checked={form.is_advance} onChange={e => setForm(f => ({ ...f, is_advance: e.target.checked }))}
-                  className="rounded border-gray-700 bg-gray-800" />
-                Advance / partial payment
-              </label>
-            </div>
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Note (optional)</label>
-            <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
-              placeholder="e.g. Paid via bKash, ref #12345"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
-          </div>
-          <div className="flex gap-2">
-            <button onClick={recordPayment} disabled={saving}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
-              Save Payment
-            </button>
-            <button onClick={() => setShowForm(false)} className="text-sm text-gray-400 hover:text-white px-3 py-2">Cancel</button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Ledger */}
       {loading ? (
-        <div className="flex justify-center py-6"><Loader2 className="w-4 h-4 animate-spin text-gray-500" /></div>
+        <div className="flex justify-center py-6"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
       ) : payments.length === 0 ? (
-        <p className="text-xs text-gray-600 py-3">No payments recorded yet.</p>
+        <p className="text-xs text-muted-foreground py-3">No payments recorded yet.</p>
       ) : (
         <div className="space-y-2">
           {payments.map(p => (
-            <div key={p.id} className="flex items-center justify-between bg-gray-800/40 rounded-lg px-3 py-2.5 text-sm">
+            <div key={p.id} className="flex items-center justify-between bg-accent/40 rounded-lg px-3 py-2.5 text-sm">
               <div>
-                <p className="text-white font-medium flex items-center gap-2">
+                <p className="font-medium flex items-center gap-2">
                   {p.receipt_number}
                   {p.is_advance && <span className="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">ADVANCE</span>}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {receiptAmountLabel(p)} · {p.method || "—"} · {new Date(p.paid_at).toLocaleDateString()}
                   {p.emailed_at && <span className="text-green-500"> · emailed</span>}
                 </p>
               </div>
               <div className="flex gap-1.5">
                 <a href={`/api/receipts/${p.id}/pdf`} target="_blank" rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors" title="Download PDF">
+                  className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Download PDF">
                   <Download className="w-3.5 h-3.5" />
                 </a>
                 <button onClick={() => emailReceipt(p.id)} disabled={emailingId === p.id}
-                  className="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors disabled:opacity-50" title="Email receipt">
+                  className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50" title="Email receipt">
                   {emailingId === p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
                 </button>
               </div>

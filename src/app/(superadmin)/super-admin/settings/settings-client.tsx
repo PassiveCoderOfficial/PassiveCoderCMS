@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Save, Loader2, Zap, UserCheck, ToggleLeft, ToggleRight, Smartphone, DollarSign, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
+import { Save, Loader2, Zap, UserCheck, Smartphone, DollarSign, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 interface PlatformSettings {
   default_commission_rate?: number;
@@ -49,11 +56,11 @@ function Field({ label, value, onChange, placeholder, type = "text", mono = fals
   placeholder?: string; type?: string; mono?: boolean;
 }) {
   return (
-    <div>
-      <label className="text-xs text-gray-400 block mb-1">{label}</label>
-      <input
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Input
         type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className={`w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-indigo-500 ${mono ? "font-mono" : ""}`}
+        className={mono ? "font-mono" : ""}
       />
     </div>
   );
@@ -62,14 +69,14 @@ function Field({ label, value, onChange, placeholder, type = "text", mono = fals
 function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden">
+    <Card className="overflow-hidden">
       <button type="button" onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-800/60 hover:bg-gray-800 transition-colors text-left">
-        <span className="text-xs font-semibold text-gray-300">{title}</span>
-        {open ? <ChevronUp className="w-3.5 h-3.5 text-gray-500" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-500" />}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-accent/60 hover:bg-accent transition-colors text-left">
+        <span className="text-xs font-semibold">{title}</span>
+        {open ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
       </button>
-      {open && <div className="p-3 space-y-3 bg-gray-900/40">{children}</div>}
-    </div>
+      {open && <div className="p-3 space-y-3">{children}</div>}
+    </Card>
   );
 }
 
@@ -177,12 +184,10 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
     return (
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-white">{label}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
         </div>
-        <button onClick={() => onChange(!value)} className="text-gray-400 hover:text-white transition-colors">
-          {value ? <ToggleRight className="w-8 h-8 text-indigo-400" /> : <ToggleLeft className="w-8 h-8" />}
-        </button>
+        <Switch checked={value} onCheckedChange={onChange} />
       </div>
     );
   }
@@ -191,14 +196,21 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
     return (
       <div className="grid grid-cols-2 gap-2">
         {(["sandbox", "live"] as const).map(m => (
-          <button key={m} type="button" onClick={() => setMode(m)}
-            className={`text-xs px-3 py-2 rounded-lg border font-medium transition-colors ${
+          <Button
+            key={m}
+            type="button"
+            variant="outline"
+            onClick={() => setMode(m)}
+            className={
               mode === m
-                ? m === "live" ? "border-green-500 bg-green-500/10 text-green-400" : "border-yellow-500 bg-yellow-500/10 text-yellow-400"
-                : "border-gray-700 text-gray-500 hover:border-gray-600"
-            }`}>
+                ? m === "live"
+                  ? "border-green-500 bg-green-500/10 text-green-500 hover:bg-green-500/10 hover:text-green-500"
+                  : "border-yellow-500 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-500"
+                : "text-muted-foreground"
+            }
+          >
             {m === "sandbox" ? "🧪 Sandbox" : "🟢 Live"}
-          </button>
+          </Button>
         ))}
       </div>
     );
@@ -207,189 +219,179 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   return (
     <div className="space-y-5">
       {/* Commission defaults */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-5">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
-          <Zap className="w-4 h-4 text-yellow-400" />
-          <h2 className="font-semibold text-white text-sm">Commission Defaults</h2>
-        </div>
-        <p className="text-xs text-gray-500">Platform-wide defaults. Individual agents can override with per-agent rates.</p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs text-gray-400 block mb-1.5">Agent one-time % <span className="text-gray-600">(first payment only)</span></label>
-            <div className="flex items-center gap-2">
-              <input type="number" min={0} max={100} step={0.5} value={agentOneTimePct} onChange={e => setAgentOneTimePct(e.target.value)}
-                className="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
-              <span className="text-gray-500 text-sm">%</span>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Commission Defaults</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">Platform-wide defaults. Individual agents can override with per-agent rates.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Agent one-time % <span className="text-muted-foreground font-normal">(first payment only)</span></Label>
+              <div className="flex items-center gap-2">
+                <Input type="number" min={0} max={100} step={0.5} value={agentOneTimePct} onChange={e => setAgentOneTimePct(e.target.value)} className="w-24" />
+                <span className="text-muted-foreground text-sm">%</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Applies to all agents (staff + external)</p>
             </div>
-            <p className="text-xs text-gray-600 mt-1">Applies to all agents (staff + external)</p>
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1.5">Staff recurring % <span className="text-gray-600">(each renewal)</span></label>
-            <div className="flex items-center gap-2">
-              <input type="number" min={0} max={100} step={0.5} value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)}
-                className="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
-              <span className="text-gray-500 text-sm">%</span>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Staff recurring % <span className="text-muted-foreground font-normal">(each renewal)</span></Label>
+              <div className="flex items-center gap-2">
+                <Input type="number" min={0} max={100} step={0.5} value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)} className="w-24" />
+                <span className="text-muted-foreground text-sm">%</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Only for agents with is_staff = true</p>
             </div>
-            <p className="text-xs text-gray-600 mt-1">Only for agents with is_staff = true</p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Agent signup settings */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-5">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
-          <UserCheck className="w-4 h-4 text-blue-400" />
-          <h2 className="font-semibold text-white text-sm">Agent Signup</h2>
-        </div>
-        <Toggle value={agentSignup} onChange={setAgentSignup} label="Allow self-signup (/become-agent)"
-          desc="If off, the become-agent form returns an error. Only SA can create agents." />
-        <Toggle value={autoApprove} onChange={setAutoApprove} label="Auto-approve new agents"
-          desc="If on, agents get 'active' status immediately. If off, they get 'pending' and must be activated by SA." />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2"><UserCheck className="w-4 h-4 text-blue-400" /> Agent Signup</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Toggle value={agentSignup} onChange={setAgentSignup} label="Allow self-signup (/become-agent)"
+            desc="If off, the become-agent form returns an error. Only SA can create agents." />
+          <Toggle value={autoApprove} onChange={setAutoApprove} label="Auto-approve new agents"
+            desc="If on, agents get 'active' status immediately. If off, they get 'pending' and must be activated by SA." />
+        </CardContent>
+      </Card>
 
       {/* Manual payment methods */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
-          <Smartphone className="w-4 h-4 text-green-400" />
-          <h2 className="font-semibold text-white text-sm">Manual Payment Methods</h2>
-        </div>
-        <p className="text-xs text-gray-500">Shown to clients at subscription checkout. Leave blank to hide a method.</p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs text-gray-400 block mb-1.5">bKash number</label>
-            <input value={bkash} onChange={e => setBkash(e.target.value)} placeholder="01XXXXXXXXX"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2"><Smartphone className="w-4 h-4 text-green-400" /> Manual Payment Methods</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">Shown to clients at subscription checkout. Leave blank to hide a method.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="bKash number" value={bkash} onChange={setBkash} placeholder="01XXXXXXXXX" />
+            <Field label="Nagad number" value={nagad} onChange={setNagad} placeholder="01XXXXXXXXX" />
           </div>
-          <div>
-            <label className="text-xs text-gray-400 block mb-1.5">Nagad number</label>
-            <input value={nagad} onChange={e => setNagad(e.target.value)} placeholder="01XXXXXXXXX"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+          <div className="space-y-1.5">
+            <Label className="text-xs">Bank transfer details</Label>
+            <Textarea value={bankDetails} onChange={e => setBankDetails(e.target.value)} rows={3}
+              placeholder="Bank name, account name, account number, branch/routing…" />
           </div>
-        </div>
-        <div>
-          <label className="text-xs text-gray-400 block mb-1.5">Bank transfer details</label>
-          <textarea value={bankDetails} onChange={e => setBankDetails(e.target.value)} rows={3}
-            placeholder="Bank name, account name, account number, branch/routing…"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
-        </div>
-        <div>
-          <label className="text-xs text-gray-400 block mb-1.5">Extra instructions (optional)</label>
-          <textarea value={manualNote} onChange={e => setManualNote(e.target.value)} rows={2}
-            placeholder="e.g. Send money as 'Payment', include your site name in reference."
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
-        </div>
-      </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Extra instructions (optional)</Label>
+            <Textarea value={manualNote} onChange={e => setManualNote(e.target.value)} rows={2}
+              placeholder="e.g. Send money as 'Payment', include your site name in reference." />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Currency rate */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
-          <DollarSign className="w-4 h-4 text-emerald-400" />
-          <h2 className="font-semibold text-white text-sm">Currency Conversion</h2>
-        </div>
-        <p className="text-xs text-gray-500">Used by Pricing blocks with USD/BDT switcher enabled.</p>
-        <div>
-          <label className="text-xs text-gray-400 block mb-1.5">1 USD = ? BDT</label>
-          <div className="flex items-center gap-2">
-            <input type="number" min={1} step={0.5} value={bdtRate} onChange={e => setBdtRate(e.target.value)}
-              className="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
-            <span className="text-gray-500 text-sm">BDT</span>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2"><DollarSign className="w-4 h-4 text-emerald-400" /> Currency Conversion</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">Used by Pricing blocks with USD/BDT switcher enabled.</p>
+          <div className="space-y-1.5">
+            <Label className="text-xs">1 USD = ? BDT</Label>
+            <div className="flex items-center gap-2">
+              <Input type="number" min={1} step={0.5} value={bdtRate} onChange={e => setBdtRate(e.target.value)} className="w-28" />
+              <span className="text-muted-foreground text-sm">BDT</span>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Payment gateways */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-5">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-4">
-          <CreditCard className="w-4 h-4 text-violet-400" />
-          <h2 className="font-semibold text-white text-sm">Payment Gateways</h2>
-        </div>
-        <p className="text-xs text-gray-500">Configure credentials for each gateway. Toggle mode to switch between Sandbox and Live without redeploying.</p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2"><CreditCard className="w-4 h-4 text-violet-400" /> Payment Gateways</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-xs text-muted-foreground">Configure credentials for each gateway. Toggle mode to switch between Sandbox and Live without redeploying.</p>
 
-        {/* ── shurjoPay ── */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-200">shurjoPay</span>
-            <span className="text-xs text-gray-500">— Bangladesh</span>
+          {/* ── shurjoPay ── */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold">shurjoPay</span>
+              <Badge variant="secondary">Bangladesh</Badge>
+            </div>
+            <ModeToggle mode={shurjopayMode} setMode={setShurjopayMode} />
+            {shurjopayMode === "sandbox" && (
+              <p className="text-xs text-yellow-500">Sandbox active — payments hit test environment, no real money charged.</p>
+            )}
+
+            <Section title="Live credentials" defaultOpen={shurjopayMode === "live"}>
+              <Field label="Base URL" value={spLiveBase} onChange={setSpLiveBase}
+                placeholder="https://engine.shurjopayment.com" />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Username" value={spLiveUser} onChange={setSpLiveUser} placeholder="sp_username" mono />
+                <Field label="Prefix" value={spLivePrefix} onChange={setSpLivePrefix} placeholder="sp" mono />
+              </div>
+              <Field label="Password" value={spLivePass} onChange={setSpLivePass} type="password" placeholder="••••••••" mono />
+            </Section>
+
+            <Section title="Sandbox credentials" defaultOpen={shurjopayMode === "sandbox"}>
+              <p className="text-xs text-muted-foreground">Leave blank to use shurjoPay public sandbox defaults (sp_sandbox / pyyk97hu&amp;6u6).</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Username" value={spSandboxUser} onChange={setSpSandboxUser} placeholder="sp_sandbox" mono />
+                <Field label="Prefix" value={spSandboxPrefix} onChange={setSpSandboxPrefix} placeholder="sp" mono />
+              </div>
+              <Field label="Password" value={spSandboxPass} onChange={setSpSandboxPass} type="password" placeholder="••••••••" mono />
+            </Section>
           </div>
-          <ModeToggle mode={shurjopayMode} setMode={setShurjopayMode} />
-          {shurjopayMode === "sandbox" && (
-            <p className="text-xs text-yellow-600">Sandbox active — payments hit test environment, no real money charged.</p>
-          )}
 
-          <Section title="Live credentials" defaultOpen={shurjopayMode === "live"}>
-            <Field label="Base URL" value={spLiveBase} onChange={setSpLiveBase}
-              placeholder="https://engine.shurjopayment.com" />
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Username" value={spLiveUser} onChange={setSpLiveUser} placeholder="sp_username" mono />
-              <Field label="Prefix" value={spLivePrefix} onChange={setSpLivePrefix} placeholder="sp" mono />
+          <div className="border-t" />
+
+          {/* ── Dodo Payments ── */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold">Dodo Payments</span>
+              <Badge variant="secondary">International cards / PayPal</Badge>
             </div>
-            <Field label="Password" value={spLivePass} onChange={setSpLivePass} type="password" placeholder="••••••••" mono />
-          </Section>
+            <ModeToggle mode={dodoMode} setMode={setDodoMode} />
+            {dodoMode === "sandbox" && (
+              <p className="text-xs text-yellow-500">Sandbox active — use test card 4242 4242 4242 4242, any future expiry.</p>
+            )}
 
-          <Section title="Sandbox credentials" defaultOpen={shurjopayMode === "sandbox"}>
-            <p className="text-xs text-gray-500">Leave blank to use shurjoPay public sandbox defaults (sp_sandbox / pyyk97hu&amp;6u6).</p>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Username" value={spSandboxUser} onChange={setSpSandboxUser} placeholder="sp_sandbox" mono />
-              <Field label="Prefix" value={spSandboxPrefix} onChange={setSpSandboxPrefix} placeholder="sp" mono />
-            </div>
-            <Field label="Password" value={spSandboxPass} onChange={setSpSandboxPass} type="password" placeholder="••••••••" mono />
-          </Section>
-        </div>
+            <Section title="Live credentials" defaultOpen={dodoMode === "live"}>
+              <Field label="API Key" value={dodoLiveKey} onChange={setDodoLiveKey} type="password" placeholder="m_1-..." mono />
+              <Field label="Webhook Secret" value={dodoLiveWebhook} onChange={setDodoLiveWebhook} type="password" placeholder="whsec_..." mono />
+              <p className="text-xs text-muted-foreground pt-1">Product IDs (from Dodo dashboard → Products → Live mode)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Basic — Yearly" value={dodoLiveBasicYearly} onChange={setDodoLiveBasicYearly} placeholder="pdt_..." mono />
+                <Field label="Pro — Yearly" value={dodoLiveProYearly} onChange={setDodoLiveProYearly} placeholder="pdt_..." mono />
+                <Field label="Basic — Monthly" value={dodoLiveBasicMonthly} onChange={setDodoLiveBasicMonthly} placeholder="pdt_..." mono />
+                <Field label="Pro — Monthly" value={dodoLiveProMonthly} onChange={setDodoLiveProMonthly} placeholder="pdt_..." mono />
+              </div>
+            </Section>
 
-        <div className="border-t border-gray-800" />
-
-        {/* ── Dodo Payments ── */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-200">Dodo Payments</span>
-            <span className="text-xs text-gray-500">— International cards / PayPal</span>
+            <Section title="Sandbox / Test credentials" defaultOpen={dodoMode === "sandbox"}>
+              <Field label="Test API Key" value={dodoSandboxKey} onChange={setDodoSandboxKey} type="password" placeholder="m_1-test-..." mono />
+              <Field label="Test Webhook Secret" value={dodoSandboxWebhook} onChange={setDodoSandboxWebhook} type="password" placeholder="whsec_..." mono />
+              <p className="text-xs text-muted-foreground pt-1">Product IDs (from Dodo dashboard → Products → Test mode)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Basic — Yearly" value={dodoSandboxBasicYearly} onChange={setDodoSandboxBasicYearly} placeholder="pdt_..." mono />
+                <Field label="Pro — Yearly" value={dodoSandboxProYearly} onChange={setDodoSandboxProYearly} placeholder="pdt_..." mono />
+                <Field label="Basic — Monthly" value={dodoSandboxBasicMonthly} onChange={setDodoSandboxBasicMonthly} placeholder="pdt_..." mono />
+                <Field label="Pro — Monthly" value={dodoSandboxProMonthly} onChange={setDodoSandboxProMonthly} placeholder="pdt_..." mono />
+              </div>
+            </Section>
           </div>
-          <ModeToggle mode={dodoMode} setMode={setDodoMode} />
-          {dodoMode === "sandbox" && (
-            <p className="text-xs text-yellow-600">Sandbox active — use test card 4242 4242 4242 4242, any future expiry.</p>
-          )}
 
-          <Section title="Live credentials" defaultOpen={dodoMode === "live"}>
-            <Field label="API Key" value={dodoLiveKey} onChange={setDodoLiveKey} type="password" placeholder="m_1-..." mono />
-            <Field label="Webhook Secret" value={dodoLiveWebhook} onChange={setDodoLiveWebhook} type="password" placeholder="whsec_..." mono />
-            <p className="text-xs text-gray-500 pt-1">Product IDs (from Dodo dashboard → Products → Live mode)</p>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Basic — Yearly" value={dodoLiveBasicYearly} onChange={setDodoLiveBasicYearly} placeholder="pdt_..." mono />
-              <Field label="Pro — Yearly" value={dodoLiveProYearly} onChange={setDodoLiveProYearly} placeholder="pdt_..." mono />
-              <Field label="Basic — Monthly" value={dodoLiveBasicMonthly} onChange={setDodoLiveBasicMonthly} placeholder="pdt_..." mono />
-              <Field label="Pro — Monthly" value={dodoLiveProMonthly} onChange={setDodoLiveProMonthly} placeholder="pdt_..." mono />
-            </div>
-          </Section>
+          <div className="border-t" />
 
-          <Section title="Sandbox / Test credentials" defaultOpen={dodoMode === "sandbox"}>
-            <Field label="Test API Key" value={dodoSandboxKey} onChange={setDodoSandboxKey} type="password" placeholder="m_1-test-..." mono />
-            <Field label="Test Webhook Secret" value={dodoSandboxWebhook} onChange={setDodoSandboxWebhook} type="password" placeholder="whsec_..." mono />
-            <p className="text-xs text-gray-500 pt-1">Product IDs (from Dodo dashboard → Products → Test mode)</p>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Basic — Yearly" value={dodoSandboxBasicYearly} onChange={setDodoSandboxBasicYearly} placeholder="pdt_..." mono />
-              <Field label="Pro — Yearly" value={dodoSandboxProYearly} onChange={setDodoSandboxProYearly} placeholder="pdt_..." mono />
-              <Field label="Basic — Monthly" value={dodoSandboxBasicMonthly} onChange={setDodoSandboxBasicMonthly} placeholder="pdt_..." mono />
-              <Field label="Pro — Monthly" value={dodoSandboxProMonthly} onChange={setDodoSandboxProMonthly} placeholder="pdt_..." mono />
-            </div>
-          </Section>
-        </div>
+          {/* WhatsApp */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">WhatsApp number <span className="text-muted-foreground font-normal">(international format, no +)</span></Label>
+            <Input value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="e.g. 8801678669699" />
+            <p className="text-xs text-muted-foreground">Used in checkout &quot;WhatsApp&quot; button for manual payment requests.</p>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="border-t border-gray-800" />
-
-        {/* WhatsApp */}
-        <div>
-          <label className="text-xs text-gray-400 block mb-1.5">WhatsApp number <span className="text-gray-600">(international format, no +)</span></label>
-          <input value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="e.g. 8801678669699"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
-          <p className="text-xs text-gray-600 mt-1">Used in checkout &quot;WhatsApp&quot; button for manual payment requests.</p>
-        </div>
-      </div>
-
-      <button onClick={save} disabled={saving}
-        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors">
+      <Button onClick={save} disabled={saving}>
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         Save Settings
-      </button>
+      </Button>
     </div>
   );
 }

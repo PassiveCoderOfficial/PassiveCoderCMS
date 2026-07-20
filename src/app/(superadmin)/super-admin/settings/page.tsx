@@ -9,9 +9,9 @@ export default async function SettingsPage() {
   const { data: settings } = await supabase.from("platform_settings").select("*").eq("id", 1).single();
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <Settings className="w-6 h-6 text-gray-400" /> Platform Settings
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold flex items-center gap-2">
+        <Settings className="w-6 h-6 text-muted-foreground" /> Platform Settings
       </h1>
       <SASettingsClient settings={settings} />
     </div>

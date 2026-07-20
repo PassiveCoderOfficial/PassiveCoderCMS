@@ -5,17 +5,16 @@ import {
   ArrowLeft, Globe, DollarSign, TrendingUp, Percent, ExternalLink,
   Zap, Link as LinkIcon, Building2, Calendar, CheckCircle, XCircle, Plus,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
 const proto = ROOT.includes("localhost") ? "http" : "https";
 
 function StatusBadge({ status }: { status: string }) {
-  const cls =
-    status === "active"    ? "bg-green-900/40 text-green-400" :
-    status === "onboarded" ? "bg-blue-900/40 text-blue-400" :
-    status === "suspended" ? "bg-red-900/40 text-red-400" :
-    "bg-gray-800 text-gray-400";
-  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{status}</span>;
+  const variant = status === "active" ? "success" : status === "onboarded" ? "info" : status === "suspended" ? "destructive" : "secondary";
+  return <Badge variant={variant}>{status}</Badge>;
 }
 
 type SiteRow = {
@@ -24,38 +23,38 @@ type SiteRow = {
 };
 
 function SiteTable({ sites, empty }: { sites: SiteRow[] | null | undefined; empty: string }) {
-  if (!sites?.length) return <p className="text-xs text-gray-600 px-5 py-6 text-center">{empty}</p>;
+  if (!sites?.length) return <p className="text-xs text-muted-foreground px-5 py-6 text-center">{empty}</p>;
   return (
-    <table className="w-full text-sm">
+    <div className="overflow-x-auto"><table className="w-full text-sm">
       <thead>
-        <tr className="border-b border-gray-800">
+        <tr className="border-b">
           {["Site", "Plan", "Status", "Onboarded", "Created", "Visit"].map(h => (
-            <th key={h} className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">{h}</th>
+            <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground font-medium">{h}</th>
           ))}
         </tr>
       </thead>
       <tbody>
         {sites.map(site => (
-          <tr key={site.id} className="border-b border-gray-800/40 hover:bg-gray-800/20">
-            <td className="px-4 py-2.5 text-white font-medium">{site.name}</td>
-            <td className="px-4 py-2.5 text-gray-400 text-xs capitalize">{site.plan}</td>
+          <tr key={site.id} className="border-b last:border-0 hover:bg-accent/50 transition-colors">
+            <td className="px-4 py-2.5 font-medium">{site.name}</td>
+            <td className="px-4 py-2.5 text-muted-foreground text-xs capitalize">{site.plan}</td>
             <td className="px-4 py-2.5"><StatusBadge status={site.status} /></td>
             <td className="px-4 py-2.5 text-xs">
               {site.onboarding_completed
                 ? <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                : <XCircle className="w-3.5 h-3.5 text-gray-600" />}
+                : <XCircle className="w-3.5 h-3.5 text-muted-foreground" />}
             </td>
-            <td className="px-4 py-2.5 text-gray-500 text-xs">{new Date(site.created_at).toLocaleDateString()}</td>
+            <td className="px-4 py-2.5 text-muted-foreground text-xs">{new Date(site.created_at).toLocaleDateString()}</td>
             <td className="px-4 py-2.5">
               <a href={`${proto}://${site.slug}.${ROOT}`} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300">
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
                 <ExternalLink className="w-3 h-3" /> Visit
               </a>
             </td>
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></div>
   );
 }
 
@@ -86,143 +85,157 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
   const referralUrl = `${proto}://${ROOT}/onboarding?ref=${agent.referral_code}`;
 
   const stats = [
-    { label: "Assigned Sites", value: String(assigned?.length ?? 0), icon: Globe, color: "text-indigo-400 bg-indigo-900/20" },
-    { label: "Referred Sites", value: String(referred?.length ?? 0), icon: LinkIcon, color: "text-blue-400 bg-blue-900/20" },
-    { label: "Total Earned", value: `$${totalEarned.toFixed(2)}`, icon: DollarSign, color: "text-green-400 bg-green-900/20" },
-    { label: "Pending Payout", value: `$${pendingEarned.toFixed(2)}`, icon: TrendingUp, color: "text-amber-400 bg-amber-900/20" },
-    { label: "Commission", value: `${agent.commission_rate}%`, icon: Percent, color: "text-yellow-400 bg-yellow-900/20" },
+    { label: "Assigned Sites", value: String(assigned?.length ?? 0), icon: Globe, color: "text-indigo-500 bg-indigo-500/10" },
+    { label: "Referred Sites", value: String(referred?.length ?? 0), icon: LinkIcon, color: "text-blue-500 bg-blue-500/10" },
+    { label: "Total Earned", value: `$${totalEarned.toFixed(2)}`, icon: DollarSign, color: "text-green-500 bg-green-500/10" },
+    { label: "Pending Payout", value: `$${pendingEarned.toFixed(2)}`, icon: TrendingUp, color: "text-amber-500 bg-amber-500/10" },
+    { label: "Commission", value: `${agent.commission_rate}%`, icon: Percent, color: "text-yellow-500 bg-yellow-500/10" },
   ];
 
   return (
     <div className="p-6 space-y-6 max-w-5xl">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/super-admin/agents" className="text-gray-500 hover:text-gray-300 transition-colors">
+        <Link href="/super-admin/agents" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <Zap className="w-5 h-5 text-yellow-400" />
+        <Zap className="w-5 h-5 text-yellow-500" />
         <div>
-          <h1 className="text-2xl font-bold text-white">{agent.full_name}</h1>
-          <p className="text-xs text-gray-500">{agent.email}</p>
+          <h1 className="text-2xl font-bold">{agent.full_name}</h1>
+          <p className="text-xs text-muted-foreground">{agent.email}</p>
         </div>
         <StatusBadge status={agent.status} />
-        <Link
-          href={`/super-admin/sites/new?agentId=${agent.id}&agentName=${encodeURIComponent(agent.full_name)}`}
-          className="ml-auto flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3.5 py-2 rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" /> Create Website
-        </Link>
+        <Button asChild className="ml-auto">
+          <Link href={`/super-admin/sites/new?agentId=${agent.id}&agentName=${encodeURIComponent(agent.full_name)}`}>
+            <Plus className="w-4 h-4" /> Create Website
+          </Link>
+        </Button>
       </div>
 
       {/* Agent info */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-        <div>
-          <p className="text-xs text-gray-500 mb-0.5">Referral Code</p>
-          <span className="font-mono text-yellow-400 bg-yellow-900/20 px-2 py-0.5 rounded text-sm">{agent.referral_code}</span>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500 mb-0.5">Commission</p>
-          <p className="text-white">{agent.commission_rate}% · {agent.commission_type === "one_time" ? "One-Time" : "Recurring"}</p>
-        </div>
-        {agent.company && (
+      <Card>
+        <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Company</p>
-            <p className="text-gray-300 flex items-center gap-1"><Building2 className="w-3 h-3" />{agent.company}</p>
+            <p className="text-xs text-muted-foreground mb-0.5">Referral Code</p>
+            <span className="font-mono text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded text-sm">{agent.referral_code}</span>
           </div>
-        )}
-        <div>
-          <p className="text-xs text-gray-500 mb-0.5">Member Since</p>
-          <p className="text-gray-300 flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(agent.created_at).toLocaleDateString()}</p>
-        </div>
-      </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">Commission</p>
+            <p>{agent.commission_rate}% · {agent.commission_type === "one_time" ? "One-Time" : "Recurring"}</p>
+          </div>
+          {agent.company && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Company</p>
+              <p className="flex items-center gap-1"><Building2 className="w-3 h-3" />{agent.company}</p>
+            </div>
+          )}
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">Member Since</p>
+            <p className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(agent.created_at).toLocaleDateString()}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Referral link */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-1.5">
-        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Referral Link</p>
-        <code className="block text-sm text-indigo-300 font-mono bg-gray-800 rounded px-3 py-2 truncate">{referralUrl}</code>
-      </div>
+      <Card>
+        <CardContent className="pt-6 space-y-1.5">
+          <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Referral Link</p>
+          <code className="block text-sm text-primary font-mono bg-muted rounded px-3 py-2 truncate">{referralUrl}</code>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {stats.map(s => (
-          <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-2">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${s.color}`}>
-              <s.icon className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-white leading-tight">{s.value}</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">{s.label}</p>
-            </div>
-          </div>
+          <Card key={s.label}>
+            <CardContent className="p-4 space-y-2">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${s.color}`}>
+                <s.icon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-lg font-bold leading-tight">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{s.label}</p>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {/* Assigned sites */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-800 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-yellow-400" />
-          <h2 className="font-semibold text-white text-sm">Assigned Sites</h2>
-          <span className="text-xs text-gray-500">({assigned?.length ?? 0})</span>
-        </div>
-        <SiteTable sites={assigned} empty="No sites assigned." />
-      </div>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b py-3.5">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Zap className="w-4 h-4 text-yellow-500" /> Assigned Sites
+            <span className="text-xs text-muted-foreground font-normal">({assigned?.length ?? 0})</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <SiteTable sites={assigned} empty="No sites assigned." />
+        </CardContent>
+      </Card>
 
       {/* Referred sites */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-800 flex items-center gap-2">
-          <LinkIcon className="w-4 h-4 text-blue-400" />
-          <h2 className="font-semibold text-white text-sm">Referred Sites</h2>
-          <span className="text-xs text-gray-500">({referredOnly.length})</span>
-        </div>
-        <SiteTable sites={referredOnly} empty="No referrals yet." />
-      </div>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b py-3.5">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <LinkIcon className="w-4 h-4 text-blue-500" /> Referred Sites
+            <span className="text-xs text-muted-foreground font-normal">({referredOnly.length})</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <SiteTable sites={referredOnly} empty="No referrals yet." />
+        </CardContent>
+      </Card>
 
       {/* Commissions ledger */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-green-400" />
-          <h2 className="font-semibold text-white text-sm">Commission Ledger</h2>
-        </div>
-        {!commissions?.length ? (
-          <p className="text-xs text-gray-600 px-5 py-6 text-center">No commissions recorded.</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-800">
-                {["Site", "Amount", "Status", "Description", "Date"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {commissions.map(c => {
-                const t = (Array.isArray(c.tenants) ? c.tenants[0] : c.tenants) as { name: string; slug: string } | null;
-                return (
-                  <tr key={c.id} className="border-b border-gray-800/40 hover:bg-gray-800/20">
-                    <td className="px-4 py-2.5 text-gray-300 text-xs">{t?.name ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-white font-medium">${Number(c.amount).toFixed(2)}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
-                        c.status === "paid" ? "bg-green-900/40 text-green-400" :
-                        c.status === "pending" ? "bg-amber-900/40 text-amber-400" :
-                        "bg-gray-800 text-gray-400"
-                      }`}>{c.status}</span>
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500 text-xs">{c.description ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-gray-500 text-xs">{new Date(c.created_at).toLocaleDateString()}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b py-3.5">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-green-500" /> Commission Ledger
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {!commissions?.length ? (
+            <p className="text-xs text-muted-foreground px-5 py-6 text-center">No commissions recorded.</p>
+          ) : (
+            <div className="overflow-x-auto"><table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  {["Site", "Amount", "Status", "Description", "Date"].map(h => (
+                    <th key={h} className="text-left px-4 py-2.5 text-xs text-muted-foreground font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {commissions.map(c => {
+                  const t = (Array.isArray(c.tenants) ? c.tenants[0] : c.tenants) as { name: string; slug: string } | null;
+                  return (
+                    <tr key={c.id} className="border-b last:border-0 hover:bg-accent/50 transition-colors">
+                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{t?.name ?? "—"}</td>
+                      <td className="px-4 py-2.5 font-medium">${Number(c.amount).toFixed(2)}</td>
+                      <td className="px-4 py-2.5">
+                        <Badge variant={c.status === "paid" ? "success" : c.status === "pending" ? "warning" : "secondary"}>{c.status}</Badge>
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{c.description ?? "—"}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{new Date(c.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table></div>
+          )}
+        </CardContent>
+      </Card>
 
       {agent.notes && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Internal Notes</p>
-          <p className="text-gray-300 text-sm whitespace-pre-wrap">{agent.notes}</p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xs text-muted-foreground uppercase tracking-wide">Internal Notes</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <p className="text-sm whitespace-pre-wrap">{agent.notes}</p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
