@@ -40,25 +40,27 @@ export default async function RootPagesPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[500px]">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="border-b border-gray-800">
-                {["Title", "Slug", "Status", "Updated", ""].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
-                ))}
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Title</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden sm:table-cell">Slug</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Status</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Updated</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium"></th>
               </tr>
             </thead>
             <tbody>
               {(pages ?? []).map(page => (
                 <tr key={page.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                   <td className="px-4 py-3 text-white font-medium">{page.title}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-400">/{page.slug}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-gray-400 hidden sm:table-cell">/{page.slug}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[page.status] ?? "bg-gray-800 text-gray-400"}`}>
                       {page.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-gray-500 text-xs hidden lg:table-cell">
                     {new Date(page.updated_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">

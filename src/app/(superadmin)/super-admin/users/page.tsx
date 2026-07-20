@@ -42,12 +42,16 @@ export default async function UsersPage() {
           <span className="text-xs text-gray-500">({users.length})</span>
         </div>
         <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm min-w-[520px]">
           <thead>
             <tr className="border-b border-gray-800">
-              {["Email", "Created", "Last Sign In", "Role", "Status", "Verification", "Actions"].map(h => (
-                <th key={h} className="text-left px-5 py-3 text-xs text-gray-500 font-medium">{h}</th>
-              ))}
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Email</th>
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Created</th>
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Last Sign In</th>
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Role</th>
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Status</th>
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Verification</th>
+              <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -63,8 +67,8 @@ export default async function UsersPage() {
                       {user.email}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-gray-500 text-xs">{new Date(user.created_at).toLocaleDateString()}</td>
-                  <td className="px-5 py-3 text-gray-500 text-xs">
+                  <td className="px-5 py-3 text-gray-500 text-xs hidden lg:table-cell">{new Date(user.created_at).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-gray-500 text-xs hidden lg:table-cell">
                     {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
                   </td>
                   <td className="px-5 py-3">
@@ -76,14 +80,14 @@ export default async function UsersPage() {
                       <span className="text-xs text-gray-500">User</span>
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 hidden md:table-cell">
                     {isActive ? (
                       <span className="inline-flex items-center gap-1 bg-green-900/30 text-green-400 text-xs font-medium px-2 py-0.5 rounded-full">Active</span>
                     ) : (
                       <span className="inline-flex items-center gap-1 bg-red-900/30 text-red-400 text-xs font-medium px-2 py-0.5 rounded-full">Inactive</span>
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 hidden md:table-cell">
                     {!verification ? (
                       <span className="text-xs text-gray-500">—</span>
                     ) : verification.verified ? (

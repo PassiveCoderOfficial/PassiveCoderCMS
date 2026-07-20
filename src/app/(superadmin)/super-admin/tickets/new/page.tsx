@@ -291,8 +291,8 @@ export default function NewSATicketPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="" className="w-full h-full object-cover" />
                 <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}
-                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <Trash2 className="w-4 h-4 text-white" />
+                  className="absolute top-0.5 right-0.5 bg-black/70 hover:bg-red-900/80 rounded-full p-1 transition-colors">
+                  <Trash2 className="w-3 h-3 text-white" />
                 </button>
               </div>
             ))}

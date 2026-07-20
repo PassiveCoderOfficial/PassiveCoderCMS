@@ -117,7 +117,7 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
       {subscription && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2"><CreditCard className="w-4 h-4 text-gray-400" /> Subscription</h2>
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-xs text-gray-500 mb-0.5">Plan</p>
               <p className="text-gray-200 capitalize">{subscription.plan_id ?? "—"}</p>

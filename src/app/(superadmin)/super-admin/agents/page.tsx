@@ -34,12 +34,19 @@ export default async function AgentsPage() {
         {!agents?.length ? (
           <div className="p-10 text-center text-gray-500 text-sm">No agents registered yet.</div>
         ) : (
-          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[900px]">
+          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-800">
-                {["Name", "Email", "Company", "Referral Code", "Commission", "Type", "Sites", "Status", "Joined", "Actions"].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
-                ))}
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Name</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden xl:table-cell">Company</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden xl:table-cell">Referral Code</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Commission</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Type</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden xl:table-cell">Sites</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Status</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Joined</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -54,9 +61,9 @@ export default async function AgentsPage() {
                       </Link>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">{agent.email}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{agent.company ?? "—"}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-gray-400 text-xs hidden lg:table-cell">{agent.email}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs hidden xl:table-cell">{agent.company ?? "—"}</td>
+                  <td className="px-4 py-3 hidden xl:table-cell">
                     <span className="font-mono text-xs text-yellow-400 bg-yellow-900/20 px-1.5 py-0.5 rounded">{agent.referral_code}</span>
                   </td>
                   <td className="px-4 py-3 text-xs">
@@ -65,7 +72,7 @@ export default async function AgentsPage() {
                       {agent.is_staff && <span className="text-indigo-300">{agent.staff_recurring_pct ?? 10}% recurring</span>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs">
+                  <td className="px-4 py-3 text-xs hidden lg:table-cell">
                     <div className="flex flex-col gap-0.5">
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
                         agent.commission_type === "one_time"
@@ -77,7 +84,7 @@ export default async function AgentsPage() {
                       {agent.is_staff && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-900/40 text-indigo-300 font-medium">Staff</span>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-300 text-xs">{agent.total_sites}</td>
+                  <td className="px-4 py-3 text-gray-300 text-xs hidden xl:table-cell">{agent.total_sites}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full ${
                       agent.status === "active" ? "bg-green-900/40 text-green-400" :
@@ -87,7 +94,7 @@ export default async function AgentsPage() {
                       {agent.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{new Date(agent.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs hidden lg:table-cell">{new Date(agent.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <AgentActions
                       agentId={agent.id}

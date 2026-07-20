@@ -143,7 +143,7 @@ export default function EditSubscriptionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-5">
 
         {/* Plan + Billing Cycle + Status */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="text-xs text-gray-400 block mb-1">Plan</label>
             <select value={form.plan_id} onChange={e => {
@@ -180,7 +180,7 @@ export default function EditSubscriptionPage() {
         {/* Pricing section */}
         <div className="border-t border-gray-800 pt-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Pricing</p>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-gray-400 block mb-1">Plan Price (USD{cycleLabel})</label>
               <input type="number" min="0" step="0.01" value={form.amount_cents} onChange={e => set("amount_cents", e.target.value)}

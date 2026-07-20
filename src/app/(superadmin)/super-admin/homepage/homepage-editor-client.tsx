@@ -191,7 +191,7 @@ export default function HomepageEditorClient({ settings: initial }: { settings: 
           </SectionCard>
 
           <SectionCard title="Hero Stats">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Sites Launched" value={s.stat_sites} onChange={v => set("stat_sites", v)} placeholder="17+" />
               <Field label="Countries" value={s.stat_businesses} onChange={v => set("stat_businesses", v)} placeholder="8" />
               <Field label="Uptime" value={s.stat_uptime} onChange={v => set("stat_uptime", v)} placeholder="99.9%" />
@@ -259,7 +259,7 @@ export default function HomepageEditorClient({ settings: initial }: { settings: 
                 </div>
                 <Field label="Quote" value={t.quote} onChange={v => updateTestimonial(i, "quote", v)} textarea
                   placeholder="Got our site up in a day..." />
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Field label="Country Flag" value={t.country} onChange={v => updateTestimonial(i, "country", v)} placeholder="🇦🇪" />
                   <Field label="Result Badge" value={t.result} onChange={v => updateTestimonial(i, "result", v)} placeholder="3 new clients/week" />
                   <div>

@@ -115,12 +115,14 @@ function BillingTable<T extends {
   }
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm min-w-[560px]">
+      <table className="w-full text-sm min-w-[420px]">
         <thead>
           <tr className="border-b border-gray-800">
-            {["Site", "Plan", "Due Date", "Balance Due", ""].map(h => (
-              <th key={h} className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">{h}</th>
-            ))}
+            <th className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">Site</th>
+            <th className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium hidden sm:table-cell">Plan</th>
+            <th className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">Due Date</th>
+            <th className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium">Balance Due</th>
+            <th className="text-left px-4 py-2.5 text-xs text-gray-500 font-medium"></th>
           </tr>
         </thead>
         <tbody>
@@ -133,7 +135,7 @@ function BillingTable<T extends {
                   <div className="text-white font-medium">{tenant?.name ?? "—"}</div>
                   <div className="text-xs text-gray-500">{tenant?.tenant_number ? `T${tenant.tenant_number} · ` : ""}{tenant?.slug}</div>
                 </td>
-                <td className="px-4 py-2.5 text-gray-300 capitalize">{r.plan_id}</td>
+                <td className="px-4 py-2.5 text-gray-300 capitalize hidden sm:table-cell">{r.plan_id}</td>
                 <td className={`px-4 py-2.5 text-xs font-medium ${tone === "red" ? "text-red-400" : "text-amber-400"}`}>
                   {due ? new Date(due).toLocaleDateString() : "—"}
                 </td>

@@ -143,8 +143,8 @@ export default function AllSitesPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3">
-          <div className="flex-1 relative">
+        <div className="flex flex-wrap gap-3">
+          <div className="flex-1 min-w-[200px] relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               value={q}
@@ -165,12 +165,15 @@ export default function AllSitesPage() {
         {/* Table */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
+          <table className="w-full text-sm min-w-[420px]">
             <thead>
               <tr className="border-b border-gray-800">
-                {["Site Name", "Domain", "Status", "Onboarded", "Created", ""].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-xs text-gray-500 font-medium">{h}</th>
-                ))}
+                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Site Name</th>
+                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Domain</th>
+                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium">Status</th>
+                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Onboarded</th>
+                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Created</th>
+                <th className="text-left px-5 py-3 text-xs text-gray-500 font-medium"></th>
               </tr>
             </thead>
             <tbody>
@@ -194,7 +197,7 @@ export default function AllSitesPage() {
                       <p className="text-[10px] text-amber-400 mt-0.5">Deletion requested</p>
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 hidden md:table-cell">
                     {site.custom_domain ? (
                       <a href={`https://${site.custom_domain}`} target="_blank" rel="noopener noreferrer"
                         className="text-indigo-400 hover:text-indigo-300 hover:underline text-sm flex items-center gap-1">
@@ -212,12 +215,12 @@ export default function AllSitesPage() {
                       {site.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 hidden lg:table-cell">
                     <span className={cn("text-xs", site.onboarding_completed ? "text-green-400" : "text-gray-500")}>
                       {site.onboarding_completed ? "Yes" : "Pending"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-gray-500 text-xs">{new Date(site.created_at).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-gray-500 text-xs hidden lg:table-cell">{new Date(site.created_at).toLocaleDateString()}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3 justify-end">
                       <Link href={`/super-admin/sites/${site.id}`}
@@ -225,7 +228,7 @@ export default function AllSitesPage() {
                         Manage <ExternalLink className="w-3 h-3" />
                       </Link>
                       <button onClick={() => setDeletingSite(site)}
-                        className="text-gray-600 hover:text-red-400 p-1 rounded transition-colors opacity-0 group-hover:opacity-100">
+                        className="text-gray-600 hover:text-red-400 p-1 rounded transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>

@@ -42,7 +42,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
         </Link>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {STATUSES.map(s => (
           <Link key={s} href={s ? `/super-admin/subscriptions?status=${s}` : "/super-admin/subscriptions"}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${(status ?? "") === s ? "bg-indigo-600 text-white" : "bg-gray-900 border border-gray-700 text-gray-400 hover:border-gray-600"}`}>
@@ -52,12 +52,17 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto"><table className="w-full text-sm min-w-[640px]">
+        <div className="overflow-x-auto"><table className="w-full text-sm min-w-[480px]">
           <thead>
             <tr className="border-b border-gray-800">
-              {["Site", "Plan", "Status", "Provider", "Amount", "Period End", "Created", ""].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
-              ))}
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Site</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Plan</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Status</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden xl:table-cell">Provider</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Amount</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Period End</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden xl:table-cell">Created</th>
+              <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium"></th>
             </tr>
           </thead>
           <tbody>
@@ -72,20 +77,20 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
                     <div className="text-white font-medium">{tenant?.name ?? "—"}</div>
                     <div className="text-xs text-gray-500">{tenant?.tenant_number ? `T${tenant.tenant_number} · ` : ""}{tenant?.slug}</div>
                   </td>
-                  <td className="px-4 py-3 text-gray-300 capitalize">{sub.plan_id}</td>
+                  <td className="px-4 py-3 text-gray-300 capitalize hidden lg:table-cell">{sub.plan_id}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[sub.status] ?? "bg-gray-800 text-gray-400"}`}>{sub.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 capitalize">{sub.payment_provider ?? "—"}</td>
+                  <td className="px-4 py-3 text-gray-400 capitalize hidden xl:table-cell">{sub.payment_provider ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-300">
                     {displayAmt ? `$${(displayAmt / 100).toFixed(0)}${cycleLabel}` : "—"}
                     {sub.custom_amount_cents && <span className="text-xs text-amber-400 ml-1">custom</span>}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-gray-500 text-xs hidden lg:table-cell">
                     {sub.next_payment_due ? new Date(sub.next_payment_due).toLocaleDateString() :
                      sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : "—"}
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{new Date(sub.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-gray-600 text-xs hidden xl:table-cell">{new Date(sub.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <Link href={`/super-admin/subscriptions/${sub.id}/edit`}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-400 transition-colors">

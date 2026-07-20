@@ -88,24 +88,29 @@ export default function TicketsPage() {
         <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[580px]">
+          <div className="overflow-x-auto"><table className="w-full text-sm min-w-[420px]">
             <thead>
               <tr className="border-b border-gray-800">
-                {["#", "Subject", "From", "Dept", "Priority", "Status", "Date", ""].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-medium">{h}</th>
-                ))}
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">#</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Subject</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">From</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden md:table-cell">Dept</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Priority</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Status</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium hidden lg:table-cell">Date</th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium"></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(t => (
                 <tr key={t.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                  <td className="px-4 py-3 text-gray-600 text-xs font-mono">{t.id.slice(0, 8)}</td>
+                  <td className="px-4 py-3 text-gray-600 text-xs font-mono hidden lg:table-cell">{t.id.slice(0, 8)}</td>
                   <td className="px-4 py-3 text-white font-medium max-w-xs truncate">{t.subject}</td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">
+                  <td className="px-4 py-3 text-gray-400 text-xs hidden lg:table-cell">
                     {t.guest_name ?? "Site User"}
                     {t.guest_email && <div className="text-gray-600">{t.guest_email}</div>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 hidden md:table-cell">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">{deptLabel(t.department)}</span>
                   </td>
                   <td className="px-4 py-3">
@@ -114,7 +119,7 @@ export default function TicketsPage() {
                   <td className="px-4 py-3">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[t.status] ?? STATUS_COLORS.open}`}>{t.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{new Date(t.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-gray-600 text-xs hidden lg:table-cell">{new Date(t.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <Link href={`/super-admin/tickets/${t.id}`} className="text-xs text-indigo-400 hover:text-indigo-300">View →</Link>
                   </td>

@@ -162,7 +162,7 @@ export default function TicketDetailPage() {
       {/* Management panel */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
         <h2 className="text-sm font-semibold text-white">Ticket Management</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="text-xs text-gray-400 block mb-1">Department</label>
             <select value={editDept} onChange={e => setEditDept(e.target.value)}
