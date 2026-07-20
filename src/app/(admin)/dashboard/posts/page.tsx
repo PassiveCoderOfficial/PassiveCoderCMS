@@ -66,7 +66,7 @@ export default async function PostsPage({
       ) : (
         <Card>
           <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full min-w-[480px]">
+            <table className="w-full min-w-[300px]">
               <thead>
                 <tr className="border-b text-xs text-muted-foreground">
                   <th className="px-4 py-3 text-left font-medium">Title</th>

@@ -33,8 +33,8 @@ export function PageRow({ page, inTrash }: PageRowProps) {
       className="hover:bg-muted/30 transition-colors cursor-pointer"
       onClick={() => router.push(`/dashboard/pages/${page.id}`)}
     >
-      <td className="px-4 py-3">
-        <span className="font-medium text-sm">{page.title}</span>
+      <td className="px-4 py-3 max-w-[140px] sm:max-w-none">
+        <span className="font-medium text-sm block truncate">{page.title}</span>
       </td>
       <td className="px-4 py-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
         <a
