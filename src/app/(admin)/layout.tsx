@@ -251,15 +251,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
   }
 
-  // Agent viewing a site has no tenant_members row, so it's not in userSites
-  // above — inject it directly so the topbar switcher still shows something.
+  // Agent viewing an assigned (not owned) site has no tenant_members row, so
+  // it's missing from userSites above — merge it in rather than replacing the
+  // list, or an agent who both owns a site and is assigned to others loses
+  // their owned sites from the switcher the moment they view an assigned one.
   if (agentViewingTenantId && agentViewingTenantName) {
     const { data: viewingTenant } = await adminClient
       .from("tenants")
       .select("slug")
       .eq("id", agentViewingTenantId)
       .maybeSingle();
-    userSites = [{ id: agentViewingTenantId, name: agentViewingTenantName, slug: viewingTenant?.slug ?? "", is_primary: true }];
+    userSites = [
+      ...userSites.map(s => ({ ...s, is_primary: false })),
+      { id: agentViewingTenantId, name: agentViewingTenantName, slug: viewingTenant?.slug ?? "", is_primary: true },
+    ];
   }
 
   const cmsUser: CMSUser = {
