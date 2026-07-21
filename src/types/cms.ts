@@ -190,6 +190,9 @@ export type NavigationBlockProps = BlockBase & {
     /** Rounded floating bar detached from the top edge (premium look). */
     floating?: boolean;
     showCart?: boolean; // hide the cart icon on non-ecommerce sites
+    /** Render the coded SVG icon+wordmark BrandLogo instead of plain text
+     *  when no uploaded logo image is set. */
+    useBrandMark?: boolean;
   };
 };
 

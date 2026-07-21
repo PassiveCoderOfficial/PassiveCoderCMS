@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart/cart-context";
+import { BrandLogo } from "@/components/site/brand-logo";
 
 /* ── Dropdown / mega-menu (token-driven surfaces) ───────────────────────── */
 function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
@@ -233,6 +234,8 @@ export function NavigationBlock({ block, identityLogo }: {
           <Link href={logoUrl ?? "/"} className="flex items-center gap-2 shrink-0">
             {logo ? (
               <Image src={logo} alt={logoText ?? "Logo"} width={logoH * 3.4} height={logoH} style={{ height: logoH }} className="w-auto object-contain" />
+            ) : data.useBrandMark ? (
+              <BrandLogo size={logoH} textColor={fg} color={BRAND_PRIMARY} text={logoText ?? "Brand"} />
             ) : (
               <span className="text-[1.15rem] font-extrabold tracking-tight" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>
                 {logoText ?? "Brand"}
@@ -296,7 +299,7 @@ export function NavigationBlock({ block, identityLogo }: {
       {mobileOpen && (
         <>
           <div className="md:hidden fixed inset-0 top-[4.5rem] bg-black/40 z-40 animate-in fade-in" onClick={() => setMobileOpen(false)} />
-          <div className="md:hidden absolute left-0 right-0 top-full z-50 bg-card text-card-foreground border-t border-border shadow-[var(--shadow-xl)] animate-in slide-in-from-top-2 duration-200">
+          <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "#ffffff", color: "#0B1F3A" }}>
             <ul className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
               {items.map((item) => {
                 const hasChildren = (item.children?.length ?? 0) > 0;
