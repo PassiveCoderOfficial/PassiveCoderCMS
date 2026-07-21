@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react";
 import type { MarketplaceVendorDirectoryBlockProps } from "@/types/cms";
 import * as LucideIcons from "lucide-react";
 import { Loader2, Store, MapPin, Shapes, ArrowRight, ShieldCheck } from "lucide-react";
+import { GenericMap, type MapPin as MapPinData } from "@/components/map/generic-map";
 
 interface VendorCategory { id: string; name: string; icon: string | null }
-interface Vendor { id: string; name: string; address: string | null; categories: VendorCategory[] }
+interface Vendor { id: string; name: string; address: string | null; lat: number | null; lng: number | null; categories: VendorCategory[] }
 
 function CategoryIcon({ name, className = "w-3.5 h-3.5" }: { name: string | null; className?: string }) {
   const Icon = name ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name] : null;
@@ -44,7 +45,31 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
           <p className="text-muted-foreground">No providers listed yet — check back soon.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <>
+          {vendors.some((v) => v.lat != null && v.lng != null) && (
+            <div className="mb-10">
+              <GenericMap
+                height={360}
+                defaultCenter={{ lat: 1.3521, lng: 103.8198 }}
+                defaultZoom={11}
+                pins={vendors
+                  .filter((v): v is Vendor & { lat: number; lng: number } => v.lat != null && v.lng != null)
+                  .map((v): MapPinData => ({
+                    id: v.id,
+                    lat: v.lat,
+                    lng: v.lng,
+                    color: accent,
+                    render: () => (
+                      <div>
+                        <strong>{v.name}</strong>
+                        {v.address && <><br />{v.address}</>}
+                      </div>
+                    ),
+                  }))}
+              />
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {vendors.map((v) => (
             <div key={v.id} className="group bg-card border border-border rounded-2xl p-5 space-y-3.5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
               <div className="flex items-start justify-between gap-2">
@@ -78,7 +103,8 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
               </a>
             </div>
           ))}
-        </div>
+          </div>
+        </>
       )}
     </section>
   );

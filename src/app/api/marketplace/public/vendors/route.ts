@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await supabase
     .from("vendors")
     .select(
-      "id, name, address, vendor_services!inner(subcategory_id, service_subcategories(id, name, category_id, service_categories(id, name, icon)))"
+      "id, name, address, lat, lng, vendor_services!inner(subcategory_id, service_subcategories(id, name, category_id, service_categories(id, name, icon)))"
     )
     .eq("tenant_id", tenantId)
     .eq("status", "approved")
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       const cat = vs.service_subcategories?.service_categories;
       if (cat && !categoryMap.has(cat.id)) categoryMap.set(cat.id, cat);
     }
-    return { id: v.id, name: v.name, address: v.address, categories: Array.from(categoryMap.values()) };
+    return { id: v.id, name: v.name, address: v.address, lat: v.lat, lng: v.lng, categories: Array.from(categoryMap.values()) };
   });
 
   return NextResponse.json({ vendors });
