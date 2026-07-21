@@ -47,9 +47,9 @@ function CTAGradientBanner({ data, blockId }: { data: CTABlockProps["data"]; blo
   const isSplit = data.layout === "left" || data.layout === "split";
   return (
     <div className={cn(
-      "max-w-5xl mx-auto bg-gradient-to-r from-primary to-secondary rounded-2xl px-8 py-14 text-white shadow-xl shadow-primary/20",
+      "max-w-5xl mx-auto rounded-2xl px-8 py-14 text-white shadow-xl",
       isSplit ? "flex flex-col md:flex-row items-center justify-between gap-8" : "text-center",
-    )}>
+    )} style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%))" }}>
       <div className={isSplit ? "max-w-xl" : undefined}>
         <h2 className="text-3xl md:text-4xl font-bold mb-3"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
         {data.description && <p className={cn("text-white/80 text-lg", isSplit ? "mb-0" : "mb-8 max-w-2xl mx-auto")}><InlineText blockId={blockId} field="description" value={data.description} /></p>}

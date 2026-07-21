@@ -82,7 +82,7 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             {loading ? "Sending…" : data.submitLabel || "Send Message"}
@@ -129,7 +129,7 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
   );
 
   return (
-    <div className={cn("max-w-5xl mx-auto", data.layout === "centered" && "max-w-2xl")}>
+    <div className={cn("max-w-5xl mx-auto px-4 sm:px-0", data.layout === "centered" && "max-w-2xl")}>
       {data.layout === "split" ? (
         <div className="grid md:grid-cols-2 gap-12">
           {infoPanel}
