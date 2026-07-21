@@ -12,13 +12,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from("vendors")
-    .select(`
-      id, name, address,
-      vendor_services!inner(
-        subcategory_id,
-        service_subcategories(id, name, category_id, service_categories(id, name, icon))
-      )
-    `)
+    .select(
+      "id, name, address, vendor_services!inner(subcategory_id, service_subcategories(id, name, category_id, service_categories(id, name, icon)))"
+    )
     .eq("tenant_id", tenantId)
     .eq("status", "approved")
     .eq("vendor_services.active", true);
