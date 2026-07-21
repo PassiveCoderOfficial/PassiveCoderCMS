@@ -159,8 +159,9 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
         <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
       )}
       <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${overlayFrom}, ${overlayTo})` }} />
-      {/* Subtle gradient for readability at bottom */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+      {/* Subtle bottom-anchored gradient for text legibility without muddying
+          the whole image — lighter than a full black wash. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
       <div className={cn(
         "relative z-10 max-w-4xl mx-6 px-6 flex flex-col gap-6",
         isPinned ? "items-start text-left" : "mx-auto text-center items-center",
