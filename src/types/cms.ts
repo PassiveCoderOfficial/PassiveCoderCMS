@@ -246,7 +246,7 @@ export type ServicesBlockProps = BlockBase & {
 // Portfolio, Testimonials, Blog posts, Pages) or stays fully manual — see
 // item-box-block.tsx / item-box-block-server.tsx for the resolvers.
 
-export type ItemBoxSource = "inline" | "services" | "features" | "portfolio" | "testimonials" | "blog" | "pages";
+export type ItemBoxSource = "inline" | "services" | "features" | "portfolio" | "testimonials" | "blog" | "pages" | "marketplace_catalog";
 
 export type ItemBoxLink =
   | { type: "manual"; url: string }

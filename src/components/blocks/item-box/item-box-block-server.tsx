@@ -12,7 +12,7 @@ export async function ItemBoxBlock({ block }: { block: ItemBoxBlockProps }) {
   let data = block.data;
   const { source, source_group_id } = data;
 
-  if (source === "inline" || (!source_group_id && source !== "blog" && source !== "pages")) {
+  if (source === "inline" || (!source_group_id && source !== "blog" && source !== "pages" && source !== "marketplace_catalog")) {
     return <ItemBoxByData data={data} />;
   }
 
@@ -71,6 +71,24 @@ export async function ItemBoxBlock({ block }: { block: ItemBoxBlockProps }) {
         ((rows ?? []) as { id: string; title: string; excerpt: string | null; featured_image: string | null; slug: string }[])
           .map((r) => ({ id: r.id, title: r.title, description: r.excerpt, image_url: r.featured_image, slug: r.slug })),
         "post",
+      ),
+    };
+  } else if (source === "marketplace_catalog") {
+    // No source_group_id needed — categories belong to the tenant directly,
+    // not a "group". Links to /book so picking a category jumps straight
+    // into the booking flow (see marketplace-booking-block.tsx).
+    const tenantId = (await headers()).get("x-tenant-id") ?? "";
+    const { data: rows } = await admin
+      .from("service_categories")
+      .select("id, name, description, icon, image_url")
+      .eq("tenant_id", tenantId)
+      .order("sort_order");
+    data = {
+      ...data,
+      items: mapItemBoxRows(
+        ((rows ?? []) as { id: string; name: string; description: string | null; icon: string | null; image_url: string | null }[])
+          .map((r) => ({ id: r.id, title: r.name, description: r.description, icon: r.icon, icon_type: "lucide" as const, image_url: r.image_url, link: "/book" })),
+        null,
       ),
     };
   } else if (source === "pages") {

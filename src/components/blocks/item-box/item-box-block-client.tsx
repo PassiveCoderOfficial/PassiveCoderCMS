@@ -56,6 +56,21 @@ export function ItemBoxBlockClient({ block }: { block: ItemBoxBlockProps }) {
       return () => { cancelled = true; };
     }
 
+    if (source === "marketplace_catalog") {
+      let cancelled = false;
+      fetch("/api/marketplace/catalog")
+        .then((r) => r.json())
+        .then((rows: { id: string; name: string; description?: string | null; icon?: string | null; image_url?: string | null }[]) => {
+          if (cancelled) return;
+          setResolvedItems(mapItemBoxRows(
+            (Array.isArray(rows) ? rows : []).map((r) => ({ id: r.id, title: r.name, description: r.description ?? null, icon: r.icon ?? null, icon_type: "lucide", image_url: r.image_url ?? null, link: "/book" })),
+            null,
+          ));
+        })
+        .catch(() => !cancelled && setResolvedItems([]));
+      return () => { cancelled = true; };
+    }
+
     if (source === "blog" || source === "pages") {
       let cancelled = false;
       fetch(`/api/pages?type=${source === "blog" ? "post" : "page"}`)
