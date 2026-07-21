@@ -896,6 +896,10 @@ export type MarketplaceVendorDirectoryBlockProps = BlockBase & {
     title?: string;
     subtitle?: string;
     accentColor?: string;
+    /** Hide the vendor card grid, showing only the coverage map — used for
+     *  a compact home-page "where we operate" section (default true = show cards). */
+    showCards?: boolean;
+    mapHeight?: number;
   };
 };
 

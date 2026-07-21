@@ -21,6 +21,7 @@ function CategoryIcon({ name, className = "w-3.5 h-3.5" }: { name: string | null
 export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceVendorDirectoryBlockProps }) {
   const { data } = block;
   const accent = data.accentColor || "#4f46e5";
+  const showCards = data.showCards !== false;
 
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,9 +48,9 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
       ) : (
         <>
           {vendors.some((v) => v.lat != null && v.lng != null) && (
-            <div className="mb-10">
+            <div className={showCards ? "mb-10" : ""}>
               <GenericMap
-                height={360}
+                height={data.mapHeight ?? 360}
                 defaultCenter={{ lat: 1.3521, lng: 103.8198 }}
                 defaultZoom={11}
                 pins={vendors
@@ -69,6 +70,7 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
               />
             </div>
           )}
+          {showCards && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {vendors.map((v) => (
             <div key={v.id} className="group bg-card border border-border rounded-2xl p-5 space-y-3.5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
@@ -104,6 +106,7 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
             </div>
           ))}
           </div>
+          )}
         </>
       )}
     </section>
