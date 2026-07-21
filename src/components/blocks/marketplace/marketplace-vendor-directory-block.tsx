@@ -39,7 +39,9 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
       {data.subtitle && <p className="text-muted-foreground text-center mb-10 max-w-md mx-auto">{data.subtitle}</p>}
 
       {loading ? (
-        <div className="flex justify-center py-14"><Loader2 className="w-6 h-6 animate-spin" style={{ color: accent }} /></div>
+        <div className="flex justify-center items-center" style={{ minHeight: showCards ? 480 : (data.mapHeight ?? 360) }}>
+          <Loader2 className="w-6 h-6 animate-spin" style={{ color: accent }} />
+        </div>
       ) : vendors.length === 0 ? (
         <div className="text-center py-14 bg-muted/40 rounded-2xl">
           <Store className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
