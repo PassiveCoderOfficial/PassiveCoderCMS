@@ -74,9 +74,9 @@ function ItemIcon({ item }: { item: ItemBoxItem }) {
 }
 
 const colMap: Record<2 | 3 | 4, string> = {
-  2: "md:grid-cols-2",
-  3: "md:grid-cols-3",
-  4: "md:grid-cols-2 lg:grid-cols-4",
+  2: "grid-cols-2",
+  3: "grid-cols-2 md:grid-cols-3",
+  4: "grid-cols-2 lg:grid-cols-4",
 };
 
 const cardClassMap: Record<ItemBoxBlockProps["data"]["cardStyle"], string> = {
@@ -121,20 +121,26 @@ export function ItemBoxByData({ data }: { data: ItemBoxBlockProps["data"] }) {
           })}
         </div>
       ) : (
-        <div className={cn("grid grid-cols-1 gap-6", colMap[columns] ?? colMap[3])}>
+        <div className={cn("grid gap-4 sm:gap-6", colMap[columns] ?? colMap[3])}>
           {items.map((item) => {
             const url = resolveLinkUrl(item);
+            const CardTag = url ? Link : "div";
+            const cardProps = url ? { href: url } : {};
             return (
-              <div key={item.id} className={cn(cardClass, "flex flex-col")}>
+              <CardTag
+                key={item.id}
+                {...(cardProps as { href: string })}
+                className={cn(cardClass, "flex flex-col", url && "transition-all hover:shadow-lg hover:-translate-y-0.5")}
+              >
                 <ItemIcon item={item} />
                 <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
                 {item.description && <p className="text-muted-foreground text-sm flex-1 whitespace-pre-line">{item.description}</p>}
                 {url && (
-                  <Link href={url} className="inline-flex items-center gap-1 text-sm text-primary mt-4 hover:underline font-medium">
+                  <span className="inline-flex items-center gap-1 text-sm text-primary mt-4 font-medium">
                     Learn More <ArrowRight className="h-3 w-3" />
-                  </Link>
+                  </span>
                 )}
-              </div>
+              </CardTag>
             );
           })}
         </div>

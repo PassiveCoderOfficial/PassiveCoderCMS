@@ -60,10 +60,10 @@ export function ItemBoxBlockClient({ block }: { block: ItemBoxBlockProps }) {
       let cancelled = false;
       fetch("/api/marketplace/catalog")
         .then((r) => r.json())
-        .then((rows: { id: string; name: string; description?: string | null; icon?: string | null; image_url?: string | null }[]) => {
+        .then((rows: { id: string; name: string; slug?: string | null; description?: string | null; icon?: string | null; image_url?: string | null }[]) => {
           if (cancelled) return;
           setResolvedItems(mapItemBoxRows(
-            (Array.isArray(rows) ? rows : []).map((r) => ({ id: r.id, title: r.name, description: r.description ?? null, icon: r.icon ?? null, icon_type: "lucide", image_url: r.image_url ?? null, link: "/book" })),
+            (Array.isArray(rows) ? rows : []).map((r) => ({ id: r.id, title: r.name, description: r.description ?? null, icon: r.icon ?? null, icon_type: "lucide", image_url: r.image_url ?? null, link: `/book?category=${r.slug ?? r.id}` })),
             null,
           ));
         })

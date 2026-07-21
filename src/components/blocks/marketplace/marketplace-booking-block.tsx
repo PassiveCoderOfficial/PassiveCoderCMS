@@ -6,6 +6,8 @@ import * as LucideIcons from "lucide-react";
 import { Wrench, Loader2, CheckCircle, Store, Calendar, Clock, MapPin, Shapes, Check } from "lucide-react";
 import { MapPicker } from "@/components/donors/donor-map";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const MAP_DEFAULT_CENTER = { lat: 1.3521, lng: 103.8198 };
 
@@ -57,8 +59,18 @@ function StepDots({ steps, active }: { steps: string[]; active: number }) {
 }
 
 export function MarketplaceBookingBlock({ block }: { block: MarketplaceBookingBlockProps }) {
+  return (
+    <Suspense fallback={<div className="py-20 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+      <MarketplaceBookingBlockInner block={block} />
+    </Suspense>
+  );
+}
+
+function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBlockProps }) {
   const { data } = block;
   const accent = data.accentColor || "#4f46e5";
+  const searchParams = useSearchParams();
+  const preselectCategory = searchParams.get("category");
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [vendorServices, setVendorServices] = useState<VendorOption[]>([]);
@@ -87,8 +99,17 @@ export function MarketplaceBookingBlock({ block }: { block: MarketplaceBookingBl
   useEffect(() => {
     fetch("/api/marketplace/public")
       .then((r) => r.json())
-      .then((d) => { setCategories(d.categories ?? []); setVendorServices(d.vendorServices ?? []); })
+      .then((d) => {
+        const cats: Category[] = d.categories ?? [];
+        setCategories(cats);
+        setVendorServices(d.vendorServices ?? []);
+        if (preselectCategory) {
+          const match = cats.find((c) => c.id === preselectCategory || c.slug === preselectCategory);
+          if (match) setCategoryId(match.id);
+        }
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const vendorOptions = vendorServices.filter((v) => v.subcategory_id === subcategoryId);

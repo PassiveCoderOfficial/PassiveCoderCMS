@@ -80,14 +80,14 @@ export async function ItemBoxBlock({ block }: { block: ItemBoxBlockProps }) {
     const tenantId = (await headers()).get("x-tenant-id") ?? "";
     const { data: rows } = await admin
       .from("service_categories")
-      .select("id, name, description, icon, image_url")
+      .select("id, name, slug, description, icon, image_url")
       .eq("tenant_id", tenantId)
       .order("sort_order");
     data = {
       ...data,
       items: mapItemBoxRows(
-        ((rows ?? []) as { id: string; name: string; description: string | null; icon: string | null; image_url: string | null }[])
-          .map((r) => ({ id: r.id, title: r.name, description: r.description, icon: r.icon, icon_type: "lucide" as const, image_url: r.image_url, link: "/book" })),
+        ((rows ?? []) as { id: string; name: string; slug: string | null; description: string | null; icon: string | null; image_url: string | null }[])
+          .map((r) => ({ id: r.id, title: r.name, description: r.description, icon: r.icon, icon_type: "lucide" as const, image_url: r.image_url, link: `/book?category=${r.slug ?? r.id}` })),
         null,
       ),
     };

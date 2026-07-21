@@ -22,16 +22,19 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Brand accent (amber check-badge color from BrandLogo) — dot inside the pin.
+const ACCENT_DOT = "#F59E0B";
+
 export function pinIcon(color: string) {
   if (typeof window === "undefined" || !window.google) return undefined;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="34" viewBox="0 0 24 34">
+    <path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8z" fill="${color}" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="12" cy="10" r="3.2" fill="${ACCENT_DOT}"/>
+  </svg>`;
   return {
-    path: "M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8z",
-    fillColor: color,
-    fillOpacity: 1,
-    strokeColor: "#ffffff",
-    strokeWeight: 1.5,
-    scale: 1.6,
-    anchor: new window.google.maps.Point(12, 22),
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new window.google.maps.Size(24, 34),
+    anchor: new window.google.maps.Point(12, 32),
     labelOrigin: new window.google.maps.Point(12, 10),
   };
 }
