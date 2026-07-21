@@ -8,6 +8,7 @@ import {
 import GrantSuperAdminButton from "../grant-button";
 import ActivateToggleButton from "../activate-button";
 import VerifyButton from "../verify-button";
+import ResetPasswordButton from "../reset-password-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -62,6 +63,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
         <ActivateToggleButton userId={user.id} isActive={isActive} isSelf={user.id === currentUser?.id} />
         <VerifyButton userId={user.id} verified={verification?.verified ?? false} />
+        <ResetPasswordButton userId={user.id} email={user.email ?? ""} />
       </div>
 
       {/* Account info */}

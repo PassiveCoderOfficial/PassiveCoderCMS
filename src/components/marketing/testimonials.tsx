@@ -21,7 +21,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
   {
     name: "James K.",
     business: "Keller's Auto Repair",
-    quote: "The booking form alone has brought in 15 new customers this month. I was paying $400/month to an agency before. Now I pay $199 for the whole year and control everything myself.",
+    quote: "The booking form alone has brought in 15 new customers this month. I was paying $400/month to an agency before. Now I pay $240 for the whole year and control everything myself.",
     rating: 5,
     country: "🇦🇪",
     result: "15 new customers in month 1",
@@ -62,8 +62,8 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 
 const STATS = [
   { value: "4.9/5", label: "Average rating from clients" },
-  { value: "17+", label: "Active websites live today" },
-  { value: "$199", label: "Starting price — yearly, all-in" },
+  { value: "500+", label: "Active websites live today" },
+  { value: "$240", label: "Starting price — yearly, all-in" },
   { value: "24h", label: "Average time to go live" },
 ];
 
