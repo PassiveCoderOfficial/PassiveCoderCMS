@@ -122,6 +122,9 @@ export type HeroBlockProps = BlockBase & {
     overlayOpacity?: number;
     overlayColor?: string;       // base color for the fullscreen-overlay gradient (default black)
     overlayColorTo?: string;     // second gradient stop; omit for a flat color
+    /** Shorter banner height for interior/section-header heroes (fullscreen
+     *  variant only). Full height when omitted. */
+    compact?: boolean;
     accentColor?: string;
     typography: { titleSize: string; titleColor: string; subtitleColor: string; descColor: string };
   };

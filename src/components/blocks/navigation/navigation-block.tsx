@@ -195,16 +195,22 @@ export function NavigationBlock({ block, identityLogo }: {
         ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", boxShadow: "var(--shadow-primary)" }
         : { backgroundImage: "var(--brand-gradient)", color: "#fff", boxShadow: "var(--shadow-primary)" };
 
+  // Overlay mode (scrollAware): the bar is FIXED across the top so it floats
+  // over the hero instead of consuming layout height above it (which caused an
+  // ugly white strip). It stays fixed and just swaps transparent → solid/glass
+  // on scroll — no layout jump. Pages using this must open with a full-height
+  // hero (content flows under the fixed bar), which every marketplace page does.
+  // Non-overlay navs stay plain sticky in flow.
   return (
     <nav
       className={cn(
         "w-full z-50 transition-all duration-300",
-        sticky && "sticky top-0",
+        overlayHero ? "fixed top-0 left-0 right-0" : sticky && "sticky top-0",
         solid && !floating && "border-b border-border/60",
         solid && glass && "backdrop-blur-xl",
       )}
       style={{
-        background: floating ? "transparent" : barBg,
+        background: floating || !solid ? "transparent" : barBg,
         color: fg,
         boxShadow: solid && !floating ? "var(--shadow-sm)" : undefined,
       }}

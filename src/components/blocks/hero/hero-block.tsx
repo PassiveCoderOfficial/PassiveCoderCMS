@@ -22,25 +22,35 @@ function badgeStyle(data: HeroBlockProps["data"]): React.CSSProperties | undefin
   return { backgroundColor: data.badgeBgColor || undefined, color: data.badgeTextColor || undefined, borderColor: data.badgeTextColor || undefined };
 }
 
-function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centered?: boolean }) {
+function HeroButtons({ data, centered, onDark }: { data: HeroBlockProps["data"]; centered?: boolean; onDark?: boolean }) {
   const { primaryButton, secondaryButton } = data;
   if (!primaryButton && !secondaryButton) return null;
+  // Outline/secondary buttons need white-glass treatment on dark image
+  // overlays, but brand-token treatment on light heroes.
+  const outlineCls = onDark
+    ? "border-2 border-white/70 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20"
+    : "border-2 border-primary text-primary hover:bg-primary/5";
+  const secondaryCls = onDark
+    ? "bg-white/15 text-white hover:bg-white/25 backdrop-blur-sm"
+    : "bg-muted text-foreground hover:bg-muted/70";
   return (
     <div className={cn("flex flex-wrap gap-3 mt-2", centered && "justify-center")}>
       {primaryButton && (
         <Link
           href={primaryButton.url}
           className={cn(
-            "inline-flex items-center justify-center rounded-lg px-7 py-3.5 text-sm font-semibold transition-all",
+            "inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm font-semibold transition-all hover:-translate-y-0.5",
             primaryButton.bgColor
               ? "hover:opacity-90 shadow-lg"
               : primaryButton.variant === "outline"
-              ? "border-2 border-current hover:bg-white/10"
+              ? outlineCls
               : primaryButton.variant === "secondary"
-              ? "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
-              : "bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/30",
+              ? secondaryCls
+              : "text-white shadow-[var(--shadow-primary)]",
           )}
-          style={primaryButton.bgColor ? { backgroundColor: primaryButton.bgColor, color: primaryButton.textColor } : undefined}
+          style={primaryButton.bgColor
+            ? { backgroundColor: primaryButton.bgColor, color: primaryButton.textColor }
+            : (!primaryButton.variant || primaryButton.variant === "primary") ? { backgroundImage: "var(--brand-gradient)" } : undefined}
         >
           {primaryButton.label}
         </Link>
@@ -49,13 +59,13 @@ function HeroButtons({ data, centered }: { data: HeroBlockProps["data"]; centere
         <Link
           href={secondaryButton.url}
           className={cn(
-            "inline-flex items-center justify-center rounded-lg px-7 py-3.5 text-sm font-medium transition-all",
+            "inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm font-semibold transition-all hover:-translate-y-0.5",
             secondaryButton.bgColor
               ? "hover:bg-white/10"
               : secondaryButton.variant === "outline"
-              ? "border-2 border-current hover:bg-white/10"
+              ? outlineCls
               : secondaryButton.variant === "secondary"
-              ? "bg-white/10 hover:bg-white/20"
+              ? secondaryCls
               : "bg-transparent border-2 border-primary text-primary hover:bg-primary/10",
           )}
           style={secondaryButton.bgColor
@@ -153,8 +163,11 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
   const isLeft = data.layout === "left";
   const isRight = data.layout === "right";
   const isPinned = isLeft || isRight;
+  // Compact banner for interior pages vs full-height landing hero. Extra top
+  // padding on both so content clears the fixed overlay nav.
+  const heightCls = data.compact ? "min-h-[52vh] pt-28 pb-16" : "min-h-[90vh] pt-24";
   return (
-    <div className={cn("relative min-h-[90vh] flex items-center overflow-hidden", isPinned ? (isLeft ? "justify-start" : "justify-end") : "justify-center")}>
+    <div className={cn("relative flex items-center overflow-hidden", heightCls, isPinned ? (isLeft ? "justify-start" : "justify-end") : "justify-center")}>
       {data.imageUrl && (
         <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
       )}
@@ -184,7 +197,7 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
             <InlineText blockId={block.id} field="description" value={data.description} />
           </p>
         )}
-        <HeroButtons data={data} centered={!isPinned} />
+        <HeroButtons data={data} centered={!isPinned} onDark />
       </div>
     </div>
   );
@@ -271,7 +284,7 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
               <InlineText blockId={block.id} field="description" value={data.description} />
             </p>
           )}
-          <HeroButtons data={data} centered={isCentered} />
+          <HeroButtons data={data} centered={isCentered} onDark />
         </div>
       </div>
     </div>
