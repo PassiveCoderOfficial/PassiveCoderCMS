@@ -175,25 +175,30 @@ export function NavigationBlock({ block, identityLogo }: {
   const solid = !overlayHero || scrolled;
   const logoH = logoHeight ?? 34;
 
-  // Colors: token mode uses brand CSS vars; legacy uses stored hexes.
+  // Colors: token mode uses brand CSS vars where the platform's per-tenant
+  // template injection is live, falling back to explicit brand hexes here
+  // (activeColor/backgroundColor still override both). This keeps the
+  // component correct today even where the CSS-var pipeline isn't wired up
+  // for a given tenant, per [[project_template_injection_bug]].
+  const BRAND_PRIMARY = "#2563EB";
   const barBg = !solid
     ? "transparent"
     : tokenMode
-      ? (glass ? "hsl(var(--card) / 0.72)" : "hsl(var(--card))")
+      ? (glass ? "rgba(255,255,255,0.85)" : "#ffffff")
       : (backgroundColor ?? "#0B1F3A");
   const fg = !solid
     ? "#ffffff"
-    : tokenMode ? "hsl(var(--foreground))" : (textColor ?? "#ffffff");
-  const accent = tokenMode ? "hsl(var(--primary))" : (activeColor ?? fg);
+    : tokenMode ? "#0B1F3A" : (textColor ?? "#ffffff");
+  const accent = activeColor ?? (tokenMode ? BRAND_PRIMARY : fg);
 
   const ctaV = ctaVariant ?? "gradient";
   const ctaClasses = "inline-flex items-center px-5 py-2.5 text-[0.9rem] font-semibold rounded-full transition-all hover:-translate-y-0.5";
   const ctaStyleObj: React.CSSProperties =
     ctaV === "outline"
-      ? { background: "transparent", color: solid ? accent : "#fff", border: `1.5px solid ${solid ? "hsl(var(--primary))" : "rgba(255,255,255,0.6)"}` }
+      ? { background: "transparent", color: solid ? accent : "#fff", border: `1.5px solid ${solid ? BRAND_PRIMARY : "rgba(255,255,255,0.6)"}` }
       : ctaV === "solid"
-        ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", boxShadow: "var(--shadow-primary)" }
-        : { backgroundImage: "var(--brand-gradient)", color: "#fff", boxShadow: "var(--shadow-primary)" };
+        ? { background: BRAND_PRIMARY, color: "#fff", boxShadow: "0 8px 20px -6px rgba(37,99,235,0.45)" }
+        : { backgroundImage: "linear-gradient(135deg, #2563EB 0%, #F59E0B 100%)", color: "#fff", boxShadow: "0 8px 20px -6px rgba(37,99,235,0.45)" };
 
   // Overlay mode (scrollAware): the bar is FIXED across the top so it floats
   // over the hero instead of consuming layout height above it (which caused an
@@ -267,7 +272,7 @@ export function NavigationBlock({ block, identityLogo }: {
               >
                 <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none" style={{ background: "hsl(var(--primary))" }}>
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none" style={{ background: BRAND_PRIMARY }}>
                     {itemCount > 99 ? "99+" : itemCount}
                   </span>
                 )}
@@ -331,7 +336,7 @@ export function NavigationBlock({ block, identityLogo }: {
               })}
               <li className="pt-3 space-y-2">
                 {showCta && ctaLabel && ctaUrl && (
-                  <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold text-white" style={{ backgroundImage: "var(--brand-gradient)", boxShadow: "var(--shadow-primary)" }} onClick={() => setMobileOpen(false)}>
+                  <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold text-white" style={{ backgroundImage: "linear-gradient(135deg, #2563EB 0%, #F59E0B 100%)", boxShadow: "0 8px 20px -6px rgba(37,99,235,0.45)" }} onClick={() => setMobileOpen(false)}>
                     {ctaLabel}
                   </Link>
                 )}

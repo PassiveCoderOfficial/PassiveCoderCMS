@@ -32,9 +32,9 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   // Default to brand tokens (deep secondary bg + primary accent) rather than
   // the old hardcoded green/gold, so footers match the active template. An
   // explicit backgroundColor/accentColor in block data still wins.
-  const bg = backgroundColor ?? (isDark ? "hsl(var(--secondary))" : "hsl(var(--muted))");
-  const fg = textColor ?? (isDark ? "rgba(255,255,255,0.82)" : "hsl(var(--foreground))");
-  const accent = accentColor ?? "hsl(var(--primary))";
+  const bg = backgroundColor ?? (isDark ? "#0B1F3A" : "#F4F6FA");
+  const fg = textColor ?? (isDark ? "rgba(255,255,255,0.82)" : "#0B1F3A");
+  const accent = accentColor ?? "#2563EB";
   // When a custom text color is set (e.g. white footer on a red bg), derive
   // the muted/secondary tone from it instead of the theme grey — otherwise
   // taglines/links/copyright render grey and vanish on a colored footer.
@@ -98,7 +98,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
                   <button
                     type="submit"
                     className="px-3 py-2 text-sm font-semibold rounded-lg shrink-0"
-                    style={{ backgroundColor: accent, color: "hsl(var(--primary-foreground))" }}
+                    style={{ backgroundColor: accent, color: "#ffffff" }}
                   >
                     →
                   </button>
