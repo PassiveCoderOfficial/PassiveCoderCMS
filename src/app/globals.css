@@ -76,6 +76,23 @@ html {
   --color-sidebar: hsl(var(--sidebar));
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --radius: var(--radius);
+
+  /* Extended design-system tokens — surfaces, soft fills, shadows.
+     These map the CSS custom properties emitted by template-css.ts into
+     Tailwind utilities (bg-surface-1, bg-primary-soft, shadow-lg, …) so
+     every block can consume brand-aware design values as classes. The
+     var fallbacks keep the admin dashboard (no template injection) sane. */
+  --color-surface-1: hsl(var(--surface-1, var(--card)));
+  --color-surface-2: hsl(var(--surface-2, var(--muted)));
+  --color-primary-soft: hsl(var(--primary-soft, var(--muted)));
+  --color-accent-soft: hsl(var(--accent-soft, var(--muted)));
+  --shadow-xs: var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  --shadow-sm: var(--shadow-sm, 0 1px 3px 0 rgb(0 0 0 / 0.08));
+  --shadow-md: var(--shadow-md, 0 4px 12px -2px rgb(0 0 0 / 0.10));
+  --shadow-lg: var(--shadow-lg, 0 12px 28px -6px rgb(0 0 0 / 0.14));
+  --shadow-xl: var(--shadow-xl, 0 24px 48px -12px rgb(0 0 0 / 0.20));
+  --shadow-primary: var(--shadow-primary, 0 8px 24px -6px rgb(0 0 0 / 0.20));
+  --ease-out: var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
 @layer base {
@@ -83,6 +100,48 @@ html {
   body { background: hsl(var(--background)); color: hsl(var(--foreground)); }
   html, body { height: 100%; }
 }
+
+/* ── Reusable brand-gradient + surface utilities ────────────────────────── */
+.bg-brand-gradient { background-image: var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)); }
+.bg-brand-gradient-soft { background-image: var(--brand-gradient-soft, linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%)); }
+.text-gradient {
+  background-image: var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.shadow-brand { box-shadow: var(--shadow-primary); }
+
+/* ── Scroll-reveal: elements fade+rise in when they enter the viewport.
+   Opt-in via the `data-reveal` attribute; a tiny IntersectionObserver in
+   ScrollReveal (src/components/site/scroll-reveal.tsx) toggles
+   `data-revealed`. Respects reduced-motion. ─────────────────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--dur-slow, 400ms) var(--ease-out, ease), transform var(--dur-slow, 400ms) var(--ease-out, ease);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal][data-revealed] { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+/* Shimmer for skeleton loaders */
+@keyframes pc-shimmer { 100% { transform: translateX(100%); } }
+.pc-skeleton {
+  position: relative; overflow: hidden;
+  background: hsl(var(--muted));
+}
+.pc-skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, hsl(var(--card) / 0.6), transparent);
+  animation: pc-shimmer 1.5s infinite;
+}
+
+/* Subtle float for hero accents */
+@keyframes pc-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.pc-float { animation: pc-float 5s ease-in-out infinite; }
 
 /* Prose styling for rich text blocks */
 .prose h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 1.5rem; margin-top: 0; }

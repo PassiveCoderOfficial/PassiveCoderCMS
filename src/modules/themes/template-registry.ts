@@ -9609,9 +9609,164 @@ const SWIFTDROP_COURIER: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE: Marketplace Pro (home-services marketplace) ────────────────────
+// "Modern Trust" design system — deep navy + electric blue + warm amber.
+// Purpose-built for a multi-vendor home-services marketplace (My Service SG).
+
+const MARKETPLACE_PRO: TemplateIdentity = {
+  slug: "marketplace-pro",
+  name: "Marketplace Pro",
+  description: "Multi-vendor home-services marketplace. Trust-forward navy + electric-blue design with a fullscreen hero, live booking, provider directory and urgent-request flow.",
+  category: "Marketplace",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=85&fit=crop",
+  tags: ["marketplace", "home services", "booking", "multi-vendor", "singapore"],
+
+  palette: {
+    primary: "#2563EB",       // electric blue
+    primaryFg: "#ffffff",
+    secondary: "#0B1F3A",     // deep navy
+    accent: "#F59E0B",        // warm amber
+    background: "#FBFCFE",     // warm white
+    foreground: "#0B1F3A",    // navy ink
+    muted: "#EEF3FA",         // cool light
+    mutedFg: "#5B6B84",
+    card: "#ffffff",
+    border: "#E2E9F3",
+    ring: "#2563EB",
+    borderRadius: "0.9rem",
+  },
+  typography: {
+    headingFont: "Plus Jakarta Sans",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.025em",
+  },
+  customCss: `
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+    .template-marketplace-pro h1,.template-marketplace-pro h2,.template-marketplace-pro h3 { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.025em; }
+    .template-marketplace-pro .stat-value { color: #2563EB; }
+    .template-marketplace-pro .service-card { transition: transform .24s var(--ease-out,ease), box-shadow .24s var(--ease-out,ease); }
+    .template-marketplace-pro .service-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  `,
+
+  variants: {
+    hero: "fullscreen-overlay",
+    services: "icon-cards-grid",
+    testimonials: "quote-cards",
+    features: "alternating-images",
+    stats: "colored-row",
+    cta: "gradient-banner",
+    pricing: "highlighted-cards",
+    faq: "accordion-bordered",
+    navigation: "solid-with-cta",
+    team: "avatar-cards",
+  },
+
+  images: {
+    hero: {
+      url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1600&q=85&fit=crop",
+      alt: "Professional home-services technician at work",
+    },
+    heroSecondary: {
+      url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=700&q=80&fit=crop",
+      alt: "Technician servicing an air conditioner",
+    },
+    about: {
+      url: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&q=80&fit=crop",
+      alt: "Home-services professional",
+    },
+    services: [
+      { url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&q=80&fit=crop", alt: "Aircon servicing" },
+      { url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop", alt: "Electrical work" },
+      { url: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80&fit=crop", alt: "Plumbing repair" },
+      { url: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80&fit=crop", alt: "House painting" },
+      { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "Waterproofing" },
+      { url: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80&fit=crop", alt: "Handyman services" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Finished home interior" },
+      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80&fit=crop", alt: "Serviced bathroom" },
+      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80&fit=crop", alt: "Freshly painted room" },
+      { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&fit=crop", alt: "Clean living space" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&q=80&fit=crop&face", alt: "Operations lead" },
+      { url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&fit=crop&face", alt: "Vendor success" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Customer care" },
+    ],
+    cta: {
+      url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80&fit=crop",
+      alt: "Book a trusted home-services provider",
+    },
+  },
+
+  heroHeadline: "Trusted Home Services in Singapore",
+  heroSubline: "Book vetted providers or post an urgent job in minutes — aircon, electrical, plumbing, painting and more.",
+  heroBadge: "★ Vetted providers across Singapore",
+  heroCTA: "Book a Service",
+  heroSecondaryCTA: "Post a Request",
+  siteName: "My Service SG",
+  tagline: "Trusted home services in Singapore",
+  phone: "+65 9622 0740",
+  email: "hello@myservicesg.com",
+  address: "27 Lembu Road, Singapore 208455",
+  aboutHeading: "One Platform for Every Home Service",
+  aboutBody: "My Service SG connects Singapore homeowners with vetted, approved local providers. Choose a service, pick a trusted provider and time, or post an urgent request and let nearby providers come to you — with fair, transparent pricing on every job.",
+  aboutHighlights: ["Every provider vetted before approval", "Urgent requests notify nearby providers fast", "Live availability and instant booking", "Fair, transparent commission"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "/services" },
+    { id: "n2", label: "Providers", url: "/providers" },
+    { id: "n3", label: "Become a Provider", url: "/become-a-provider" },
+    { id: "n4", label: "Contact", url: "/contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Aircon", description: "Servicing, chemical wash, gas top-up, repairs and troubleshooting for all aircon types.", icon: "Wind", iconType: "lucide", price: "From $45", imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&q=80&fit=crop", link: "/book" },
+    { id: uid("svc"), title: "Electrician", description: "Lights, sockets, circuit breakers, fans and power-trip resolution by licensed electricians.", icon: "Zap", iconType: "lucide", price: "From $60", imageUrl: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop", link: "/book" },
+    { id: uid("svc"), title: "Plumber", description: "Taps, toilets, water heaters, leaks, chokes and drainage — fixed right the first time.", icon: "Droplets", iconType: "lucide", price: "From $70", imageUrl: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80&fit=crop", link: "/book" },
+    { id: uid("svc"), title: "Painting", description: "Full-house, epoxy, spray and ceiling painting with clean prep and tidy finish.", icon: "PaintRoller", iconType: "lucide", price: "From $350", imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80&fit=crop", link: "/book" },
+    { id: uid("svc"), title: "PU Grouting & Waterproofing", description: "PU grouting, injection and waterproofing to stop leaks at the source.", icon: "ShieldCheck", iconType: "lucide", price: "From $280", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "/book" },
+    { id: uid("svc"), title: "Urgent Requests", description: "Something broke? Post an urgent job and nearby providers are notified right away.", icon: "Siren", iconType: "lucide", price: "Fast response", imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80&fit=crop", link: "/post-request" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "5", label: "Service Categories" },
+    { id: uid("st"), value: "44", label: "Services Offered" },
+    { id: uid("st"), value: "100%", label: "Island-wide Coverage" },
+    { id: uid("st"), value: "24/7", label: "Urgent Response" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Wei Ling", role: "Homeowner, Toa Payoh", content: "Booked an aircon servicing in minutes and the provider showed up on time. So much easier than calling around.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Rajesh K.", role: "Homeowner, Serangoon", content: "Posted an urgent plumbing request at night and got a call back within 20 minutes. Genuinely impressed.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Amanda T.", role: "Homeowner, Bukit Timah", content: "Straightforward booking flow, clear pricing, no endless WhatsApp back-and-forth. This is how it should work.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Marcus L.", role: "Condo Owner, Tampines", content: "Repainted the whole unit through My Service SG. Vetted painter, fair quote, tidy job. Will use again.", rating: 5 },
+    { id: uid("t"), name: "Siti N.", role: "Homeowner, Jurong", content: "The waterproofing team stopped a leak two other contractors couldn't. Booking and follow-up were seamless.", rating: 5 },
+    { id: uid("t"), name: "Daniel O.", role: "Landlord, Punggol", content: "I manage three units and use this for every fix now. Reliable providers, one place to book everything.", rating: 5 },
+  ],
+
+  pricing: [
+    { id: uid("p"), name: "Book a Service", price: "Pick a provider", description: "Choose a specific provider and time", features: ["Browse by category", "See live availability", "Pick your preferred provider", "Transparent per-job pricing"], ctaLabel: "Book Now", ctaUrl: "/book" },
+    { id: uid("p"), name: "Post a Request", price: "Let providers come to you", description: "Describe the job, get matched", features: ["No need to pick a provider", "Nearby providers notified", "Regular or urgent priority", "Compare who responds"], highlighted: true, badge: "Most Flexible", ctaLabel: "Post a Request", ctaUrl: "/post-request" },
+    { id: uid("p"), name: "Urgent Job", price: "Fast response", description: "For things that can't wait", features: ["Nearest 5 providers alerted", "Escalates until claimed", "Direct call & WhatsApp", "Round-the-clock"], ctaLabel: "Post Urgent", ctaUrl: "/post-request" },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How do I book a service?", answer: "Go to Book a Service, choose a category and service, pick a provider and a time that suits you, and confirm. You'll get a confirmation and the provider's contact once the job is set." },
+    { id: uid("f"), question: "What if my request is urgent?", answer: "Use Post a Request and mark it urgent. The nearest available providers are notified immediately, with follow-up waves until someone accepts, so you get help fast." },
+    { id: uid("f"), question: "Are providers vetted?", answer: "Yes. Every provider is reviewed and approved before they appear on the marketplace, and you can see the categories they cover on the Providers page." },
+    { id: uid("f"), question: "How is pricing handled?", answer: "Pricing is per job and shown transparently. There are no hidden platform fees for customers — you see what the service costs upfront." },
+    { id: uid("f"), question: "Do you cover all of Singapore?", answer: "Yes, providers cover locations island-wide. Pinning your location during booking helps us match you with the nearest available provider." },
+  ],
+};
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
+  MARKETPLACE_PRO,
   TORQUE_AUTO,
   GRIPZONE_TYRES,
   PANELCRAFT,

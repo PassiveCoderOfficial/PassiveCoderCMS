@@ -12,6 +12,7 @@ import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
 import { AdminEditWidget } from "@/components/site/admin-edit-widget";
+import { ScrollReveal } from "@/components/site/scroll-reveal";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -214,6 +215,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {/* Floating cart drawer — always mounted, toggled by cart icon */}
       <CartDrawer />
+
+      {/* One IntersectionObserver drives all [data-reveal] scroll animations */}
+      <ScrollReveal />
 
       {isAdminViewer && <AdminEditWidget />}
 
