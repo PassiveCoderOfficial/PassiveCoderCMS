@@ -105,7 +105,7 @@ function globalHeader() {
     data: {
       logoText: "Suteki Engineering", logo: LOGO_URL, items: NAV_ITEMS,
       sticky: true, transparent: false, style: "default",
-      backgroundColor: "#ffffff", textColor: DARK,
+      backgroundColor: "#ffffff", textColor: DARK, logoHeight: 56,
       showCta: true, ctaLabel: "Get a Quote", ctaUrl: "/contact",
     },
   };

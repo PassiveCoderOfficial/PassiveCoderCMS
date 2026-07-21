@@ -1,6 +1,7 @@
 import type { Block, BlockType } from "@/types/cms";
 import { createBlock } from "./block-registry";
 import { generateId } from "@/lib/utils";
+import type { PresetThumbKind } from "@/components/admin/page-builder/blocks-panel/preset-thumbnail";
 
 /**
  * Section presets — ready-made, pre-written sections aimed at local service
@@ -26,6 +27,8 @@ export type SectionPreset = {
   icon: string;
   category: PresetCategory;
   blockType: BlockType;
+  /** Layout silhouette shown in the picker so presets are visually distinguishable. */
+  thumb: PresetThumbKind;
   create: () => Block;
 };
 
@@ -58,6 +61,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🏠",
     category: "top",
     blockType: "hero",
+    thumb: "hero-split",
     create: () =>
       preset(
         "hero",
@@ -80,6 +84,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🖼️",
     category: "top",
     blockType: "hero",
+    thumb: "hero-fullscreen",
     create: () =>
       preset(
         "hero",
@@ -100,6 +105,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "📢",
     category: "top",
     blockType: "hero",
+    thumb: "hero-centered",
     create: () =>
       preset(
         "hero",
@@ -122,6 +128,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🛠️",
     category: "services",
     blockType: "services",
+    thumb: "cards-3",
     create: () =>
       preset("services", {
         title: "What We Do",
@@ -141,6 +148,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "📋",
     category: "services",
     blockType: "services",
+    thumb: "cards-6",
     create: () =>
       preset("services", {
         title: "Everything We Offer",
@@ -163,6 +171,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "💵",
     category: "services",
     blockType: "pricing",
+    thumb: "pricing-cards",
     create: () =>
       preset("pricing", {
         title: "Simple, Honest Pricing",
@@ -183,6 +192,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "⭐",
     category: "trust",
     blockType: "testimonials",
+    thumb: "quote-cards",
     create: () =>
       preset("testimonials", {
         title: "What Our Customers Say",
@@ -200,6 +210,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🔢",
     category: "trust",
     blockType: "stats",
+    thumb: "stats-row",
     create: () =>
       preset("stats", {
         title: "Why Neighbors Choose Us",
@@ -218,6 +229,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🏆",
     category: "trust",
     blockType: "features",
+    thumb: "feature-checklist",
     create: () =>
       preset("features", {
         title: "Why Choose Us",
@@ -241,6 +253,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "👣",
     category: "info",
     blockType: "steps",
+    thumb: "steps-row",
     create: () =>
       preset("steps", {
         title: "How It Works",
@@ -259,6 +272,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "❓",
     category: "info",
     blockType: "faq",
+    thumb: "faq-accordion",
     create: () =>
       preset("faq", {
         title: "Common Questions",
@@ -278,6 +292,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "👋",
     category: "info",
     blockType: "text",
+    thumb: "text-center",
     create: () =>
       preset("text", {
         content:
@@ -292,6 +307,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "👥",
     category: "info",
     blockType: "team",
+    thumb: "avatar-grid",
     create: () =>
       preset("team", {
         title: "Meet the Team",
@@ -312,6 +328,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "📣",
     category: "action",
     blockType: "cta",
+    thumb: "cta-banner",
     create: () =>
       preset(
         "cta",
@@ -331,6 +348,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "✉️",
     category: "action",
     blockType: "contact",
+    thumb: "form-split",
     create: () =>
       preset("contact", {
         title: "Get in Touch",
@@ -346,6 +364,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "📬",
     category: "action",
     blockType: "newsletter",
+    thumb: "newsletter-bar",
     create: () =>
       preset("newsletter", {
         title: "Get Seasonal Tips & Offers",
@@ -360,6 +379,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "⏳",
     category: "action",
     blockType: "countdown",
+    thumb: "countdown-bar",
     create: () =>
       preset("countdown", {
         title: "Spring Special — 20% Off Ends Soon",
@@ -374,6 +394,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "📸",
     category: "media",
     blockType: "gallery",
+    thumb: "gallery-grid",
     create: () =>
       preset("gallery", {
         title: "Recent Work",
@@ -386,6 +407,7 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🎬",
     category: "media",
     blockType: "video",
+    thumb: "video-embed",
     create: () => preset("video", {}),
   },
   {
@@ -395,7 +417,402 @@ export const sectionPresets: SectionPreset[] = [
     icon: "🎠",
     category: "media",
     blockType: "slider",
+    thumb: "slider-dots",
     create: () => preset("slider", {}),
+  },
+
+  // ─── Top of Page — more hero variety ────────────────────────────────────────
+  {
+    id: "hero-dark-split",
+    label: "Welcome — Dark Split",
+    description: "Moody dark photo panel beside a bold promise — premium, corporate feel",
+    icon: "🌙",
+    category: "top",
+    blockType: "hero",
+    thumb: "hero-dark-split",
+    create: () =>
+      preset(
+        "hero",
+        {
+          badge: "Trusted since day one",
+          title: "Serious Work Deserves a Serious Team",
+          subtitle: "Precision, reliability, and results you can measure",
+          description: "We handle the details so you don't have to — from first call to final walkthrough.",
+          primaryButton: { label: "Request a Quote", url: "#contact", variant: "primary" },
+          secondaryButton: { label: "Our Services", url: "#services", variant: "outline" },
+        },
+        { templateVariant: "dark-gradient-left" },
+      ),
+  },
+  {
+    id: "hero-corporate",
+    label: "Welcome — Corporate",
+    description: "Understated, text-first layout with a side accent bar — B2B and professional services",
+    icon: "🏢",
+    category: "top",
+    blockType: "hero",
+    thumb: "hero-corporate",
+    create: () =>
+      preset(
+        "hero",
+        {
+          badge: "Since 2010",
+          title: "Dependable Expertise, Every Time",
+          subtitle: "The partner professionals trust for the work that matters",
+          primaryButton: { label: "Get in Touch", url: "#contact", variant: "primary" },
+          secondaryButton: { label: "Learn More", url: "#about", variant: "outline" },
+        },
+        { templateVariant: "corporate" },
+      ),
+  },
+
+  // ─── Tell Your Story — more layout variety ──────────────────────────────────
+  {
+    id: "why-choose-bento",
+    label: "Why Choose Us — Bento Grid",
+    description: "One big feature tile plus supporting tiles — modern, SaaS-style layout",
+    icon: "🧩",
+    category: "info",
+    blockType: "features",
+    thumb: "bento-grid",
+    create: () =>
+      preset(
+        "features",
+        {
+          title: "Why We're Different",
+          subtitle: "More than just another service provider",
+          items: [
+            item({ icon: "ShieldCheck", title: "Fully Licensed & Insured", description: "Every job is backed by proper licensing and full insurance coverage, so you're never at risk." }),
+            item({ icon: "Clock", title: "On-Time, Every Time", description: "We show up when we say we will." }),
+            item({ icon: "HandCoins", title: "Fair, Upfront Pricing", description: "No surprises on the invoice." }),
+            item({ icon: "PhoneCall", title: "Real Support", description: "A real person answers the phone." }),
+          ],
+        },
+        { templateVariant: "bento-grid" },
+      ),
+  },
+  {
+    id: "why-choose-icon-list",
+    label: "Why Choose Us — Icon List",
+    description: "Clean bordered cards in a vertical stack — easy to scan on mobile",
+    icon: "📝",
+    category: "info",
+    blockType: "features",
+    thumb: "icon-list-cards",
+    create: () =>
+      preset(
+        "features",
+        {
+          title: "What Sets Us Apart",
+          items: [
+            item({ icon: "BadgeCheck", title: "Licensed & Insured", description: "Fully certified, so you're covered no matter what." }),
+            item({ icon: "MapPin", title: "Local & Reliable", description: "We know the area and we show up when we say we will." }),
+            item({ icon: "ShieldCheck", title: "Work Guaranteed", description: "If something's not right, we come back and fix it free." }),
+          ],
+        },
+        { templateVariant: "icon-list-cards" },
+      ),
+  },
+  {
+    id: "steps-timeline",
+    label: "How It Works — Timeline",
+    description: "Connected vertical timeline — great for a longer, more detailed process",
+    icon: "🧵",
+    category: "info",
+    blockType: "steps",
+    thumb: "timeline",
+    create: () =>
+      preset(
+        "steps",
+        {
+          title: "Our Process",
+          subtitle: "From first contact to finished job",
+          items: [
+            item({ title: "Reach Out", description: "Call, message, or fill in the form — tell us what you need." }),
+            item({ title: "Site Visit & Quote", description: "We assess the job in person and give you a clear, fixed price." }),
+            item({ title: "Scheduled Work", description: "We arrive on time and get to work — no surprises." }),
+            item({ title: "Final Walkthrough", description: "We review everything together before we call it done." }),
+          ],
+        },
+        { templateVariant: "timeline-connected" },
+      ),
+  },
+  {
+    id: "steps-numbered-tiles",
+    label: "How It Works — Numbered Tiles",
+    description: "Bold oversized step numbers in a grid — punchy and visual",
+    icon: "🔢",
+    category: "info",
+    blockType: "steps",
+    thumb: "numbered-tiles",
+    create: () =>
+      preset(
+        "steps",
+        {
+          title: "How It Works",
+          subtitle: "Getting help is easy",
+          items: [
+            item({ title: "Get in Touch", description: "Tell us what you need." }),
+            item({ title: "Get a Quote", description: "Clear, fixed pricing." }),
+            item({ title: "We Get to Work", description: "On time, every time." }),
+            item({ title: "Job Done Right", description: "Satisfaction guaranteed." }),
+          ],
+        },
+        { templateVariant: "numbered-cards" },
+      ),
+  },
+  {
+    id: "team-avatar-cards",
+    label: "Meet the Team — Cards",
+    description: "Bordered cards with photo, name, and role — polished and professional",
+    icon: "🧑‍🤝‍🧑",
+    category: "info",
+    blockType: "team",
+    thumb: "avatar-cards",
+    create: () =>
+      preset(
+        "team",
+        {
+          title: "Meet the Team",
+          subtitle: "The people who'll be looking after you",
+          showBio: true,
+          members: [
+            item({ name: "Alex Morgan", role: "Owner & Lead Technician", bio: "Started the company 15 years ago. Still answers the phone himself." }),
+            item({ name: "Jamie Lee", role: "Service Manager", bio: "Keeps every job on schedule and every customer in the loop." }),
+            item({ name: "Sam Carter", role: "Technician", bio: "The one customers always ask for by name." }),
+          ],
+        },
+        { templateVariant: "avatar-cards" },
+      ),
+  },
+  {
+    id: "team-minimal-list",
+    label: "Meet the Team — Compact List",
+    description: "Dense rows for a bigger team — no bulky cards taking over the page",
+    icon: "📇",
+    category: "info",
+    blockType: "team",
+    thumb: "team-list",
+    create: () =>
+      preset(
+        "team",
+        {
+          title: "Our Team",
+          members: [
+            item({ name: "Alex Morgan", role: "Owner & Lead Technician" }),
+            item({ name: "Jamie Lee", role: "Service Manager" }),
+            item({ name: "Sam Carter", role: "Technician" }),
+            item({ name: "Priya Nair", role: "Technician" }),
+            item({ name: "Wei Ming Tan", role: "Office Manager" }),
+          ],
+        },
+        { templateVariant: "minimal-list" },
+      ),
+  },
+  {
+    id: "faq-accordion-bordered",
+    label: "Common Questions — Accordion",
+    description: "Bordered click-to-expand accordion — keeps the page short and tidy",
+    icon: "🗂️",
+    category: "info",
+    blockType: "faq",
+    thumb: "accordion",
+    create: () =>
+      preset(
+        "faq",
+        {
+          title: "Common Questions",
+          subtitle: "Everything you might want to know before booking",
+          items: [
+            item({ question: "What areas do you serve?", answer: "We cover the whole local area — just ask if you're not sure." }),
+            item({ question: "How much will it cost?", answer: "Every job gets a clear quote before we start. No surprises." }),
+            item({ question: "Do you handle emergencies?", answer: "Yes — call any time and we'll get someone out fast." }),
+          ],
+        },
+        { templateVariant: "accordion-bordered" },
+      ),
+  },
+  {
+    id: "faq-two-column",
+    label: "Common Questions — Grid",
+    description: "Every question visible at once — great for SEO and quick scanning",
+    icon: "📚",
+    category: "info",
+    blockType: "faq",
+    thumb: "faq-grid",
+    create: () =>
+      preset(
+        "faq",
+        {
+          title: "Frequently Asked Questions",
+          items: [
+            item({ question: "Are you licensed and insured?", answer: "Fully. We're happy to show certificates on request." }),
+            item({ question: "Do you offer free quotes?", answer: "Yes, every quote is free and comes with no obligation." }),
+            item({ question: "How fast can you get here?", answer: "Most jobs are scheduled within 48 hours, sooner for emergencies." }),
+            item({ question: "Do you guarantee your work?", answer: "Yes — if something's not right, we come back and fix it free." }),
+          ],
+        },
+        { templateVariant: "two-column-grid" },
+      ),
+  },
+
+  // ─── Photos & Video — more variety ──────────────────────────────────────────
+  {
+    id: "gallery-masonry",
+    label: "Photos — Masonry with Captions",
+    description: "Mixed photo sizes with always-visible captions — great for real project shots",
+    icon: "🖼️",
+    category: "media",
+    blockType: "gallery",
+    thumb: "masonry",
+    create: () =>
+      preset(
+        "gallery",
+        { title: "Our Work" },
+        { templateVariant: "masonry-captioned" },
+      ),
+  },
+  {
+    id: "gallery-clean-grid",
+    label: "Photos — Clean Grid",
+    description: "Tight, minimal grid — no hover effects, editorial and understated",
+    icon: "🎞️",
+    category: "media",
+    blockType: "gallery",
+    thumb: "gallery-clean",
+    create: () =>
+      preset(
+        "gallery",
+        { title: "Portfolio" },
+        { templateVariant: "grid-clean" },
+      ),
+  },
+
+  // ─── Build Trust — more variety ─────────────────────────────────────────────
+  {
+    id: "icon-grid-colored",
+    label: "Our Capabilities — Colored Tiles",
+    description: "Bold colored tiles with icons — punchy showcase of services or certifications",
+    icon: "🎨",
+    category: "trust",
+    blockType: "icon_grid",
+    thumb: "colored-tiles",
+    create: () =>
+      preset("icon_grid", {
+        title: "What We Cover",
+        items: [
+          item({ icon: "Wrench", label: "Repairs" }),
+          item({ icon: "Hammer", label: "Installations" }),
+          item({ icon: "ShieldCheck", label: "Warranty Work" }),
+          item({ icon: "Clock", label: "24/7 Emergency" }),
+        ],
+      }, { templateVariant: "colored-tiles" }),
+  },
+  {
+    id: "icon-grid-badges",
+    label: "Certifications — Badge List",
+    description: "Compact inline badges — licenses, certifications, and quick trust signals",
+    icon: "🏷️",
+    category: "trust",
+    blockType: "icon_grid",
+    thumb: "pill-list",
+    create: () =>
+      preset("icon_grid", {
+        title: "Licensed & Certified",
+        items: [
+          item({ icon: "BadgeCheck", label: "Licensed" }),
+          item({ icon: "ShieldCheck", label: "Insured" }),
+          item({ icon: "Clock", label: "24/7 Support" }),
+          item({ icon: "Award", label: "Certified Technicians" }),
+        ],
+      }, { templateVariant: "minimal-inline" }),
+  },
+  {
+    id: "stats-dark-band",
+    label: "Numbers — Dark Band",
+    description: "Full-width dark stats strip — bold, confident, great above the footer",
+    icon: "📊",
+    category: "trust",
+    blockType: "stats",
+    thumb: "stats-dark",
+    create: () =>
+      preset(
+        "stats",
+        {
+          items: [
+            item({ value: "15", label: "Years in Business", suffix: "+" }),
+            item({ value: "2500", label: "Jobs Completed", suffix: "+" }),
+            item({ value: "4.9", label: "Average Rating", suffix: "★" }),
+            item({ value: "24", label: "Hour Response", suffix: "/7" }),
+          ],
+        },
+        { templateVariant: "bold-dark-row" },
+      ),
+  },
+  {
+    id: "reviews-formal",
+    label: "Reviews — Formal Cards",
+    description: "A more corporate, understated take on customer testimonials",
+    icon: "🗣️",
+    category: "trust",
+    blockType: "testimonials",
+    thumb: "quote-cards",
+    create: () =>
+      preset(
+        "testimonials",
+        {
+          title: "Client Feedback",
+          items: [
+            item({ name: "Robert Chen", role: "Facilities Manager", company: "", content: "Professional from the first call to the final invoice. Exactly what we needed for our building maintenance contract.", rating: 5 }),
+            item({ name: "Linda Park", role: "Property Owner", company: "", content: "Consistent, reliable, and always easy to reach. We've used them for every project since.", rating: 5 }),
+          ],
+        },
+        { templateVariant: "formal-cards" },
+      ),
+  },
+
+  // ─── Get Customers — more variety ───────────────────────────────────────────
+  {
+    id: "cta-split-banner",
+    label: "Call to Action — Split",
+    description: "Text on one side, button on the other — compact and effective",
+    icon: "➡️",
+    category: "action",
+    blockType: "cta",
+    thumb: "cta-split",
+    create: () =>
+      preset(
+        "cta",
+        {
+          title: "Still Have Questions?",
+          description: "Talk to a real person — no forms, no waiting.",
+          primaryButton: { label: "Call Us Now", url: "tel:+1234567890" },
+        },
+        { templateVariant: "dark-split" },
+      ),
+  },
+  {
+    id: "pricing-dark-cards",
+    label: "Price List — Dark Cards",
+    description: "Premium dark pricing cards with a highlighted middle plan",
+    icon: "💳",
+    category: "services",
+    blockType: "pricing",
+    thumb: "pricing-dark",
+    create: () =>
+      preset(
+        "pricing",
+        {
+          title: "Choose Your Plan",
+          subtitle: "Simple pricing, no surprises",
+          plans: [
+            item({ name: "Basic", price: "$99", period: "", description: "For small jobs", features: ["Up to 1 hour on site", "Free assessment"], ctaLabel: "Book Now", ctaUrl: "#contact" }),
+            item({ name: "Standard", price: "$249", period: "", description: "Our most popular option", features: ["Up to half a day", "All standard parts included", "Workmanship guarantee"], highlighted: true, badge: "Most Popular", ctaLabel: "Book Now", ctaUrl: "#contact" }),
+            item({ name: "Premium", price: "Custom", period: "", description: "Large projects", features: ["Free on-site quote", "Fixed price before we start", "Dedicated project contact"], ctaLabel: "Request a Quote", ctaUrl: "#contact" }),
+          ],
+        },
+        { templateVariant: "dark-cards" },
+      ),
   },
 ];
 

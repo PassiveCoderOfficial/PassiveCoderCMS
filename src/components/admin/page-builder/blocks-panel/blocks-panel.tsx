@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Search, Plus, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayersPanel } from "./layers-panel";
+import { PresetThumbnail } from "./preset-thumbnail";
 import { deepClone, generateId } from "@/lib/utils";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 import type { ModuleKey } from "@/components/admin/sidebar/nav-items";
@@ -284,16 +285,21 @@ function PresetRow({ preset, onAdd }: { preset: SectionPreset; onAdd: () => void
   return (
     <button
       onClick={onAdd}
-      className="w-full flex items-start gap-2.5 p-2.5 rounded-lg border hover:border-primary hover:bg-primary/5 transition-all text-left group"
+      className="w-full flex flex-col rounded-lg border hover:border-primary hover:bg-primary/5 transition-all text-left group overflow-hidden"
     >
-      <span className="text-lg leading-none mt-0.5">{preset.icon}</span>
-      <span className="flex-1 min-w-0">
-        <span className="block text-xs font-semibold leading-tight">{preset.label}</span>
-        <span className="block text-[10px] text-muted-foreground leading-snug mt-0.5">
-          {preset.description}
+      <div className="p-1.5 pb-0">
+        <PresetThumbnail kind={preset.thumb} />
+      </div>
+      <div className="flex items-start gap-2 p-2.5 pt-2">
+        <span className="text-sm leading-none mt-0.5 shrink-0">{preset.icon}</span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-xs font-semibold leading-tight">{preset.label}</span>
+          <span className="block text-[10px] text-muted-foreground leading-snug mt-0.5">
+            {preset.description}
+          </span>
         </span>
-      </span>
-      <Plus className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 mt-1" />
+        <Plus className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 mt-1" />
+      </div>
     </button>
   );
 }

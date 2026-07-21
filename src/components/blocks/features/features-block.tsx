@@ -43,8 +43,114 @@ function FeaturesDark({ data }: { data: FeaturesBlockProps["data"] }) {
   );
 }
 
+// ─── Variant: icon-list-cards ──────────────────────────────────────────────
+// Vertical stack of clean bordered cards — icon in a colored circle on the
+// left, title + description on the right, generous spacing and a subtle
+// hover lift. Good for professional/corporate "why choose us" sections.
+function FeaturesIconListCards({ data }: { data: FeaturesBlockProps["data"] }) {
+  return (
+    <div className="max-w-3xl mx-auto">
+      {(data.title || data.subtitle) && (
+        <div className="text-center mb-12">
+          {data.subtitle && <p className="text-xs font-bold uppercase tracking-widest mb-3 text-primary">{data.subtitle}</p>}
+          {data.title && <h2 className="text-3xl font-bold mb-3">{data.title}</h2>}
+          {data.description && <p className="text-muted-foreground leading-relaxed">{data.description}</p>}
+        </div>
+      )}
+      <div className="space-y-5">
+        {data.items.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center gap-5 border rounded-2xl p-6 bg-background transition-all hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              {item.imageUrl ? (
+                <Image src={item.imageUrl} alt={item.title} width={40} height={40} className="rounded-full object-cover w-10 h-10" />
+              ) : (
+                <DynIcon name={item.icon} className="w-6 h-6 text-primary" />
+              )}
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
+              {item.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.description}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: bento-grid ────────────────────────────────────────────────────
+// Asymmetric bento-box grid — first item spans two columns as a large
+// feature tile, the rest render as smaller single-col tiles. Modern SaaS
+// landing-page feel. Falls back to a plain grid when there aren't enough
+// items (<3) to make the asymmetry read as intentional.
+function FeaturesBentoGrid({ data }: { data: FeaturesBlockProps["data"] }) {
+  const { items } = data;
+  const canBento = items.length >= 3;
+
+  const Tile = ({ item, large }: { item: (typeof items)[number]; large?: boolean }) => (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/5 to-secondary/5 p-6 flex flex-col",
+        large ? "sm:col-span-2 row-span-2 justify-end min-h-[220px]" : "min-h-[160px] justify-end",
+      )}
+    >
+      {item.imageUrl && (
+        <div className="absolute inset-0">
+          <Image src={item.imageUrl} alt={item.title} fill className="object-cover opacity-15" />
+        </div>
+      )}
+      <div className="relative">
+        <div className={cn(
+          "rounded-xl bg-primary/10 flex items-center justify-center mb-4",
+          large ? "w-14 h-14" : "w-11 h-11",
+        )}>
+          <DynIcon name={item.icon} className={cn("text-primary", large ? "w-7 h-7" : "w-5 h-5")} />
+        </div>
+        <h3 className={cn("font-semibold mb-2", large ? "text-xl" : "text-base")}>{item.title}</h3>
+        {item.description && (
+          <p className={cn("text-muted-foreground leading-relaxed whitespace-pre-line", large ? "text-sm" : "text-xs")}>
+            {item.description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      {(data.title || data.subtitle) && (
+        <div className="mb-12 text-center">
+          {data.subtitle && <p className="text-xs font-bold uppercase tracking-widest mb-3 text-primary">{data.subtitle}</p>}
+          {data.title && <h2 className="text-3xl font-bold mb-3">{data.title}</h2>}
+          {data.description && <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto">{data.description}</p>}
+        </div>
+      )}
+      {canBento ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {items.map((item, i) => (
+            <Tile key={item.id} item={item} large={i === 0} />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {items.map((item) => (
+            <Tile key={item.id} item={item} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
   if (block.templateVariant === "dark") return <FeaturesDark data={block.data} />;
+  if (block.templateVariant === "icon-list-cards") return <FeaturesIconListCards data={block.data} />;
+  if (block.templateVariant === "bento-grid") return <FeaturesBentoGrid data={block.data} />;
   const { data } = block;
   const { title, subtitle, layout, columns, items, style } = data;
 
