@@ -34,6 +34,7 @@ const SOURCE_LABELS: Record<ItemBoxSource, string> = {
   testimonials: "Testimonials",
   blog: "Blog Posts",
   pages: "Pages",
+  marketplace_catalog: "Marketplace Categories",
 };
 
 // Where "Manage X" / "Add New" jumps to for each non-inline source — the
