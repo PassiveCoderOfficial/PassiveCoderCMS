@@ -170,6 +170,23 @@ export type NavigationBlockProps = BlockBase & {
     ctaLabel?: string;
     ctaUrl?: string;
     ctaStyle?: "solid" | "outline";
+    // ── Modern nav upgrades (all optional, backward compatible) ──────────
+    /** "token" makes the bar read brand tokens (card/primary/foreground)
+     *  instead of the legacy hardcoded colors — the recommended default for
+     *  new templates. "legacy" keeps the old backgroundColor/textColor look. */
+    colorMode?: "token" | "legacy";
+    /** Overlays transparent on the hero, then becomes a solid/glass bar once
+     *  the user scrolls past a threshold. Great for image heroes. */
+    scrollAware?: boolean;
+    /** Frosted-glass backdrop blur when solid (modern SaaS look). */
+    glass?: boolean;
+    /** Pill-style CTA vs default rounded; and optional secondary "ghost" link. */
+    ctaVariant?: "solid" | "gradient" | "outline";
+    secondaryCtaLabel?: string;
+    secondaryCtaUrl?: string;
+    /** Rounded floating bar detached from the top edge (premium look). */
+    floating?: boolean;
+    showCart?: boolean; // hide the cart icon on non-ecommerce sites
   };
 };
 
