@@ -17,6 +17,23 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
     updateBlock(block.id, { data: { ...block.data, [field]: value } });
   };
 
+  // "fullscreen-overlay" renders its photo as the whole section's background
+  // (painted by the shared BlockRenderer wrapper via block.background so it
+  // covers padding too — see block-utils.ts getBlockBackground()), not as an
+  // inline content image. Keep block.background in sync here so picking a
+  // photo from this Content tab actually shows up section-wide.
+  const isFullscreen = block.templateVariant === "fullscreen-overlay";
+  const updateImage = (url: string) => {
+    if (isFullscreen) {
+      updateBlock(block.id, {
+        data: { ...block.data, imageUrl: url },
+        background: { ...block.background, type: "image", imageUrl: url },
+      });
+    } else {
+      update("imageUrl", url);
+    }
+  };
+
   // "centered-bold" and "corporate" are single-column, always-centered
   // designs by intent (no image split, no side-pinned text) — Layout has
   // nothing to control there, so hide it instead of showing a dropdown that
@@ -56,7 +73,7 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
       </FieldGroup>
 
       <FieldGroup label="Image">
-        <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={(url) => update("imageUrl", url)} />
+        <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={updateImage} />
       </FieldGroup>
 
     </div>

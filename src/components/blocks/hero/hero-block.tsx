@@ -166,9 +166,18 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
   // Compact banner for interior pages vs full-height landing hero. Extra top
   // padding on both so content clears the fixed overlay nav.
   const heightCls = data.compact ? "min-h-[52vh] pt-28 pb-16" : "min-h-[90vh] pt-24";
+  // The section wrapper (BlockRenderer) already paints block.background.imageUrl
+  // as a CSS background-image sized to the full padded box via
+  // getBlockBackground() — no-repeat, cover, centered (see block-utils.ts).
+  // A same-component <Image fill> only covers this inner min-h box, leaving
+  // any top/bottom padding unpainted (looked like the photo "repeating"/
+  // cutting off at the edge). Only render our own <Image> as a fallback when
+  // the wrapper isn't already covering it (block.background not set to an
+  // image — e.g. only data.imageUrl was set from the Content tab).
+  const wrapperPaintsImage = block.background?.type === "image" && !!block.background.imageUrl;
   return (
     <div className={cn("relative flex items-center overflow-hidden", heightCls, isPinned ? (isLeft ? "justify-start" : "justify-end") : "justify-center")}>
-      {data.imageUrl && (
+      {!wrapperPaintsImage && data.imageUrl && (
         <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
       )}
       <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${overlayFrom}, ${overlayTo})` }} />
