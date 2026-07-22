@@ -31,6 +31,7 @@ const PHONE_DISPLAY = "+65 9035 5235";
 const EMAIL = "info@sutekiengsg.com";
 const WA = `https://wa.me/${PHONE.replace(/\+/g, "")}`;
 const FB = "https://www.facebook.com/share/194UQd8eLK/?mibextid=wwXIfr";
+const UEN = "UEN No. 202104846K";
 
 const ZERO_PAD = { top: 0, right: 0, bottom: 0, left: 0 };
 const BASE = {
@@ -48,23 +49,35 @@ const SERVICES = [
     img: media["renovation-08-living-room-complete.jpg"],
     gallery: [
       media["renovation-01-kitchen-pot-filler.jpg"], media["renovation-02-bathroom-vessel-sink.jpg"],
-      media["renovation-03-pendant-light.jpg"], media["renovation-04-kitchen-cabinets.jpg"],
-      media["renovation-05-staircase.jpg"], media["renovation-06-kitchen-sink-faucet.jpg"],
+      media["renovation-03-pendant-light.jpg"], media["renovation-06-kitchen-sink-faucet.jpg"],
       media["renovation-07-ceiling-fan-light.jpg"], media["renovation-09-bathroom-mirror-sink.jpg"],
       media["renovation-10-shower-fitting.jpg"],
+      media["renovation-11-bathroom-yellow-vanity.jpg"], media["renovation-12-bathroom-marble-sink.jpg"],
+      media["renovation-13-feature-wall-led.jpg"], media["renovation-14-bathtub-marble.jpg"],
+      media["renovation-15-bathroom-green-tile.jpg"], media["renovation-16-bathroom-vessel-sink.jpg"],
+      media["renovation-17-bathroom-wood-vanity.jpg"], media["renovation-18-kitchen-living-room.jpg"],
+      media["renovation-19-bathroom-mirror-cabinet.jpg"], media["renovation-20-bathroom-wood-cabinet.jpg"],
     ],
   },
   {
     slug: "reinstatement", icon: "🔨", title: "Reinstatement",
     short: "Office & unit reinstatement to original condition — hacking, tiling and full handover-ready finishing.",
-    img: media["reinstatement-03-kitchen-floor-retile.jpg"],
-    gallery: [media["reinstatement-01-floor-tile-removal.jpg"], media["reinstatement-02-floor-hacking.jpg"], media["reinstatement-03-kitchen-floor-retile.jpg"]],
+    img: media["reinstatement-05-commercial-shower-room.jpg"],
+    gallery: [
+      media["reinstatement-01-floor-tile-removal.jpg"], media["reinstatement-02-floor-hacking.jpg"],
+      media["reinstatement-04-commercial-toilet.jpg"], media["reinstatement-05-commercial-shower-room.jpg"],
+      media["reinstatement-06-office-inprogress.jpg"],
+    ],
   },
   {
     slug: "electrical", icon: "⚡", title: "Electrical",
     short: "Licensed electrical works — DB box rewiring, power points, lighting circuits and fault-finding.",
     img: media["electrical-03-db-box-completed.jpg"],
-    gallery: [media["electrical-01-db-wiring.jpg"], media["electrical-02-db-box-rewiring.jpg"], media["electrical-03-db-box-completed.jpg"]],
+    gallery: [
+      media["electrical-01-db-wiring.jpg"], media["electrical-02-db-box-rewiring.jpg"], media["electrical-03-db-box-completed.jpg"],
+      media["electrical-04-track-lighting-fan.jpg"], media["electrical-05-db-box-wiring.jpg"],
+      media["electrical-06-ceiling-fan-light-install.jpg"],
+    ],
   },
   {
     slug: "plumbing", icon: "🔧", title: "Plumbing",
@@ -74,17 +87,14 @@ const SERVICES = [
       media["plumbing-01-water-heater.jpg"], media["plumbing-02-sink-pipe-rough-in.jpg"],
       media["plumbing-03-floor-drain-install.jpg"], media["plumbing-04-bathroom-sink-rough-in.jpg"],
       media["plumbing-05-sink-trap-install.jpg"], media["plumbing-06-water-heater-install.jpg"],
-      media["plumbing-07-shower-set-install.jpg"],
+      media["plumbing-07-shower-set-install.jpg"], media["plumbing-08-shower-heater-install.jpg"],
     ],
   },
   {
     slug: "handyman", icon: "🛠️", title: "Handyman",
-    short: "Aircon servicing, exhaust blower cleaning, garden clean-up and general home maintenance — no job too small.",
-    img: media["handyman-01-aircon-service-after.jpg"],
-    gallery: [
-      media["handyman-01-aircon-service-after.jpg"], media["handyman-02-aircon-service-before.jpg"],
-      media["handyman-03-exhaust-blower-service.jpg"], media["handyman-04-garden-cleanup.jpg"],
-    ],
+    short: "General home maintenance and repairs — no job too small.",
+    img: media["renovation-13-feature-wall-led.jpg"],
+    gallery: [],
   },
 ];
 
@@ -105,7 +115,7 @@ function globalHeader() {
     data: {
       logoText: "Suteki Engineering", logo: LOGO_URL, items: NAV_ITEMS,
       sticky: true, transparent: false, style: "default",
-      backgroundColor: "#ffffff", textColor: DARK, logoHeight: 56,
+      backgroundColor: "#ffffff", textColor: DARK, logoHeight: 56, logoCaption: UEN,
       showCta: true, ctaLabel: "Get a Quote", ctaUrl: "/contact",
     },
   };
@@ -118,6 +128,7 @@ function globalFooter() {
     data: {
       logoText: "Suteki Engineering Pte Ltd",
       tagline: SLOGAN,
+      logoCaption: UEN,
       style: "dark", backgroundColor: DARK, accentColor: SECONDARY, textColor: "#cdd7e0",
       copyrightText: "© {year} Suteki Engineering Pte Ltd. All rights reserved.",
       copyrightYear: true, showNewsletter: false,
@@ -229,7 +240,7 @@ function whyChooseUsBlock(order) {
       items: [{
         id: uid("f"), title: "Trusted by Homeowners & Businesses Across Singapore",
         description: "Suteki Engineering Pte Ltd delivers renovation, reinstatement, electrical, plumbing and handyman services with one team, one point of contact, and consistent quality from start to finish.\n\n✅ Responsive, on-time service\n✅ Experienced tradesmen across all trades\n✅ Clean, professional workmanship\n✅ Transparent quotes — no hidden costs\n✅ Residential & commercial projects",
-        imageUrl: media["renovation-08-living-room-complete.jpg"], icon: "",
+        imageUrl: media["renovation-14-bathtub-marble.jpg"], icon: "",
       }],
     },
   };
@@ -302,10 +313,11 @@ function buildHome() {
     servicesGrid(o++, SERVICES, { bg: "#ffffff" }),
     whyChooseUsBlock(o++),
     galleryBlock(o++, [
-      media["renovation-08-living-room-complete.jpg"], media["reinstatement-03-kitchen-floor-retile.jpg"],
+      media["renovation-08-living-room-complete.jpg"], media["reinstatement-05-commercial-shower-room.jpg"],
       media["electrical-03-db-box-completed.jpg"], media["plumbing-06-water-heater-install.jpg"],
-      media["renovation-02-bathroom-vessel-sink.jpg"], media["renovation-04-kitchen-cabinets.jpg"],
-    ], "Recent Projects", "A glimpse of our completed work across Singapore."),
+      media["renovation-14-bathtub-marble.jpg"], media["renovation-18-kitchen-living-room.jpg"],
+      media["renovation-11-bathroom-yellow-vanity.jpg"], media["electrical-04-track-lighting-fan.jpg"],
+    ], "Recent Projects"),
     stepsBlock(o++),
     testimonialsBlock(o++),
     faqBlock(o++),
@@ -320,11 +332,24 @@ function buildAbout() {
     heroBlock(o++, {
       badge: "About Suteki Engineering", title: "Your Trusted Multi-Trade Partner",
       subtitle: SLOGAN, description: "One team for renovation, reinstatement, electrical, plumbing and handyman services.",
-      img: media["renovation-05-staircase.jpg"],
+      img: media["renovation-18-kitchen-living-room.jpg"],
       primary: { label: "Contact Us", url: "/contact", variant: "primary" },
       secondary: { label: "Our Services", url: "/services", variant: "outline" },
     }),
     whyChooseUsBlock(o++),
+    {
+      ...BASE, id: uid("feat"), type: "features", order: o++,
+      background: { type: "color", color: LIGHT },
+      templateVariant: "icon-list-cards",
+      data: {
+        title: "Every Trade, One Trusted Team", subtitle: "",
+        layout: "grid", columns: 2, style: "minimal",
+        items: [
+          { id: uid("f"), icon: "Hammer", title: "Renovation & Reinstatement", description: "From full home renovations to office reinstatement before lease handover — finished to a standard that passes inspection.", imageUrl: media["renovation-19-bathroom-mirror-cabinet.jpg"] },
+          { id: uid("f"), icon: "Zap", title: "Electrical & Plumbing", description: "Licensed electricians and plumbers handling everything from DB box rewiring to water heater installs, done safely and to code.", imageUrl: media["electrical-05-db-box-wiring.jpg"] },
+        ],
+      },
+    },
     stepsBlock(o++),
     ctaBlock(o++, "Let's Get Started", "Reach out today for a free, no-obligation quote."),
     contactBlock(o++),
@@ -367,7 +392,7 @@ function buildServicePage(s) {
         }],
       },
     },
-    galleryBlock(o++, s.gallery, `${s.title} — Our Work`, `Real ${s.title.toLowerCase()} projects completed by our team.`),
+    ...(s.gallery.length ? [galleryBlock(o++, s.gallery, `${s.title} — Our Work`)] : []),
     stepsBlock(o++),
     ctaBlock(o++, `Need ${s.title} Done?`, "Call or WhatsApp us for a free quote today."),
     contactBlock(o++, `${s.title} Enquiry`, "Tell us about your project — we'll respond fast."),
@@ -394,7 +419,7 @@ function buildContactPage() {
     heroBlock(0, {
       badge: "📞 Get In Touch", title: "Contact Us",
       subtitle: SLOGAN, description: "Call, WhatsApp, or send us a message — we respond fast.",
-      img: media["electrical-01-db-wiring.jpg"],
+      img: media["renovation-13-feature-wall-led.jpg"],
       primary: { label: "Call Now", url: `tel:${PHONE}`, variant: "primary" },
       secondary: { label: "WhatsApp", url: WA, variant: "outline" },
     }),

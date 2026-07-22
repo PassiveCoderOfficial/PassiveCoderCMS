@@ -23,7 +23,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
     copyrightText, copyrightYear = true,
     backgroundColor, textColor, accentColor,
     showNewsletter, newsletterLabel, newsletterPlaceholder,
-    bottomLinks = [], style = "dark",
+    bottomLinks = [], style = "dark", logoCaption,
   } = data;
 
   const [email, setEmail] = useState("");
@@ -60,7 +60,10 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               )}
             </Link>
             {tagline && (
-              <p className="text-sm leading-relaxed mb-5" style={{ color: mutedFg }}>{tagline}</p>
+              <p className="text-sm leading-relaxed mb-2" style={{ color: mutedFg }}>{tagline}</p>
+            )}
+            {logoCaption && (
+              <p className="text-xs mb-5" style={{ color: mutedFg }}>{logoCaption}</p>
             )}
             {/* Socials */}
             {socials.length > 0 && (

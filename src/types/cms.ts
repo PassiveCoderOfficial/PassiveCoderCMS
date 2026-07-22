@@ -193,6 +193,9 @@ export type NavigationBlockProps = BlockBase & {
     /** Render the coded SVG icon+wordmark BrandLogo instead of plain text
      *  when no uploaded logo image is set. */
     useBrandMark?: boolean;
+    /** Small caption rendered beside the logo (e.g. a business registration
+     *  number). Purely cosmetic — omit for the old logo-only look. */
+    logoCaption?: string;
   };
 };
 
@@ -693,6 +696,9 @@ export type FooterBlockProps = BlockBase & {
     newsletterPlaceholder?: string;
     bottomLinks?: FooterColumnLink[];
     style?: "dark" | "light" | "colored";
+    /** Small line rendered beneath the logo/tagline (e.g. a business
+     *  registration number). Purely cosmetic — omit for the old look. */
+    logoCaption?: string;
   };
 };
 

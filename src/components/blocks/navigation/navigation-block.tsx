@@ -153,7 +153,7 @@ export function NavigationBlock({ block, identityLogo }: {
     backgroundColor, textColor, activeColor,
     logoHeight, showCta, ctaLabel, ctaUrl,
     colorMode, scrollAware, glass, ctaVariant, secondaryCtaLabel, secondaryCtaUrl,
-    floating, showCart,
+    floating, showCart, logoCaption,
   } = data;
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -239,6 +239,11 @@ export function NavigationBlock({ block, identityLogo }: {
             ) : (
               <span className="text-[1.15rem] font-extrabold tracking-tight" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>
                 {logoText ?? "Brand"}
+              </span>
+            )}
+            {logoCaption && (
+              <span className="hidden sm:inline text-[0.68rem] leading-tight opacity-60 border-l pl-2 ml-0.5" style={{ color: fg, borderColor: fg }}>
+                {logoCaption}
               </span>
             )}
           </Link>

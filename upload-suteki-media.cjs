@@ -8,11 +8,12 @@ const TENANT_ID = "46384b67-7497-4ec2-aedf-27fe4a9f836f";
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-const SRC_DIR = path.join(__dirname, "..", "clients", "SUTEKI");
+const SRC_DIR = path.join(__dirname, "..", "clients", "SUTEKI", "Update 1");
+const URLS_PATH = path.join(__dirname, "suteki-media-urls.json");
 
 async function main() {
-  const files = fs.readdirSync(SRC_DIR).filter(f => f.endsWith(".jpg") || f.endsWith(".png"));
-  const urls = {};
+  const files = fs.readdirSync(SRC_DIR).filter(f => (f.endsWith(".jpg") || f.endsWith(".png")) && !f.startsWith("need to remove"));
+  const urls = fs.existsSync(URLS_PATH) ? JSON.parse(fs.readFileSync(URLS_PATH, "utf8")) : {};
 
   for (const file of files) {
     const filePath = path.join(SRC_DIR, file);
@@ -36,10 +37,7 @@ async function main() {
     console.log(`OK ${file} -> ${pub.publicUrl}`);
   }
 
-  fs.writeFileSync(
-    path.join(__dirname, "suteki-media-urls.json"),
-    JSON.stringify(urls, null, 2),
-  );
+  fs.writeFileSync(URLS_PATH, JSON.stringify(urls, null, 2));
   console.log("\nSaved suteki-media-urls.json");
 }
 
