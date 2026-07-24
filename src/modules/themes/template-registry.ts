@@ -3837,8 +3837,9 @@ const FEAST_EVENTS: TemplateIdentity = {
     { id: uid("svc"), title: "Live Cooking Stations", description: "Chef-manned carving, wok and sushi live stations for gala dinners.", icon: "👨‍🍳", iconType: "emoji", price: "From $800/station" },
   ],
   testimonials: [
-    { id: uid("t"), name: "Procurement Head, DBS Bank", role: "Marina Bay", content: "Consistently excellent food, impeccable service, always on time. Our go-to caterer for 3 years.", rating: 5 },
+    { id: uid("t"), name: "Procurement Head, DBS Bank", role: "Marina Bay", content: "Consistently excellent food, impeccable service, always on time. Our go-to caterer for 3 years. Chef Marcus even customised a dessert for my grandmother's dietary needs.", rating: 5 },
     { id: uid("t"), name: "Siti Rahimah", role: "Bride, Fullerton Hotel", content: "Our wedding dinner for 350 guests was absolutely perfect. Every guest complimented the food.", rating: 5 },
+    { id: uid("t"), name: "Events Lead", role: "CEO, Singtel", content: "The live cooking stations at our product launch were a hit.", rating: 5 },
   ],
   pricing: [
     { id: uid("p"), name: "Seminar", price: "$28/pax", period: "min 30 pax", features: ["2 mains, 3 sides", "Soup & salad station", "Dessert & beverages", "Setup & teardown"], ctaLabel: "Book Now", ctaUrl: "#contact" },
@@ -3851,6 +3852,8 @@ const FEAST_EVENTS: TemplateIdentity = {
   ],
   team: [
     { id: uid("tm"), name: "Chef Marcus Tan", role: "Executive Chef", bio: "Trained in Paris and Tokyo. 18 years in fine dining and large-scale event catering.", avatar: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Priya Rajendra", role: "Events Director", bio: "Leads planning and on-the-day execution for every Feast Events booking, from boardroom lunches to 5,000-guest galas." },
+    { id: uid("tm"), name: "Hafiz Osman", role: "Operations Manager", bio: "Oversees kitchen operations, halal compliance and daily food sourcing." },
   ],
 };
 
@@ -4038,6 +4041,7 @@ const DRIVE_ACADEMY: TemplateIdentity = {
   testimonials: [
     { id: uid("t"), name: "Amanda L.", role: "Bedok, Singapore", content: "Failed twice at CDCs. David's patient coaching made all the difference. Passed first attempt with DriveAcademy.", rating: 5 },
     { id: uid("t"), name: "Hafiz M.", role: "Jurong East, Singapore", content: "8 weeks from zero to full licence. The theory prep materials online are so good I passed FTT first try.", rating: 5 },
+    { id: uid("t"), name: "Chloe T.", role: "Tampines, Singapore", content: "Michelle is a saint. I was terrified of driving but she built my confidence lesson by lesson. Got my licence in 3 months. Life changing.", rating: 5 },
   ],
   pricing: [
     { id: uid("p"), name: "Pay Per Lesson", price: "$65/lesson", period: "no commitment", features: ["Class 3A or 3 options", "Flexible slot booking", "WhatsApp scheduling", "Progress tracking app"], ctaLabel: "Book a Lesson", ctaUrl: "#contact" },
@@ -4051,6 +4055,7 @@ const DRIVE_ACADEMY: TemplateIdentity = {
   team: [
     { id: uid("tm"), name: "Chief Instr. David Ong", role: "Founder & Chief Instructor", bio: "TP-certified. 20 years teaching. Has personally graduated over 3,000 students.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face" },
     { id: uid("tm"), name: "Instr. Michelle Tan", role: "Senior Driving Instructor", bio: "Specialises in anxiety management for nervous learners. 96% first-attempt pass rate.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Instr. Faisal Rahman", role: "Driving Instructor", bio: "Manual transmission specialist. Teaches both Class 3 and Class 3A. Fluent in English, Malay and Tamil.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&face" },
   ],
 };
 
@@ -4594,6 +4599,7 @@ const BUILD_GUARD: TemplateIdentity = {
     { id: uid("t"), name: "Karen Holt", role: "Property Manager", company: "Riverside Business Park", content: "BuildGuard's preventive maintenance has cut our emergency repair costs by half. Their reporting is thorough and their techs are always professional.", rating: 5, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Thomas Reyes", role: "Facilities Director", company: "Metro Office Group", content: "One service agreement covers everything across our 6 buildings. Simplified our vendor management enormously.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Angela Brooks", role: "Retail Centre Manager", content: "Fast emergency response when our HVAC failed on a summer weekend. Saved us from a very bad situation.", rating: 5 },
+    { id: uid("t"), name: "Thomas Raj", role: "Changi Business Park", content: "Their 24/7 response is genuinely 24/7. Lift broke at 11pm on a Friday — tech was there in 45 minutes.", rating: 5 },
   ],
 
   pricing: [
@@ -4728,7 +4734,7 @@ const HANDYFIX_PRO: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Sam Carter", role: "Homeowner", content: "Booked a same-day fix for a running toilet and a loose cabinet door. Both done in under an hour, fair price, super friendly.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sam Carter", role: "Homeowner", content: "Called at 8am, they were here by 11am. Fixed our bathroom cabinet and mounted two shelves. Brilliant service.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Nadia Hussain", role: "Renter", content: "Assembled my entire bedroom furniture set in one visit. Cleaned up all the packaging too. Highly recommend.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Greg Palmer", role: "Small Business Owner", content: "They've become our go-to for office maintenance. Reliable, fast and always fair on pricing.", rating: 5 },
   ],
@@ -4993,7 +4999,7 @@ const HEATWAVE_HVAC: TemplateIdentity = {
 
   testimonials: [
     { id: uid("t"), name: "Harold Bennett", role: "Homeowner", content: "New boiler installed in a single day, fully certified, and they explained everything clearly. No pressure, no upselling.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Denise Okafor", role: "Landlord", content: "They handle CP12 certificates for all 6 of my rental properties every year. Always on time, always thorough.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Denise Okafor", role: "Landlord", content: "Boiler broke on the coldest day of the year. HeatWave had an engineer here in 2 hours. Fixed same day. Absolute stars.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Ray Torres", role: "Homeowner", content: "Boiler broke down in the middle of winter and they had a technician out same day. Absolute lifesavers.", rating: 5 },
   ],
 
@@ -5263,9 +5269,9 @@ const LUMIERE_SALON: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Sophia Reyes", role: "Regular Client", content: "My colorist understands exactly what I want every single time. Best salon experience I've ever had.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sophia Reyes", role: "Regular Client", content: "Chloe has been doing my hair for 8 years. I wouldn't go anywhere else. The balayage she creates is consistently stunning — always gets complimented.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Grace Kim", role: "Bride", content: "Trial and wedding-day styling were flawless. My hair held up all night through dancing. Thank you Lumiere!", rating: 5, avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Priya Malhotra", role: "Regular Client", content: "The nail team is incredibly talented — my gel manicures last three weeks without chipping.", rating: 5 },
+    { id: uid("t"), name: "Priya Malhotra", role: "Regular Client", content: "Best nail art in Singapore. Sophie's work is extraordinary — precise, creative, and long-lasting.", rating: 5 },
   ],
 
   pricing: [
@@ -5404,7 +5410,7 @@ const FADE_BARBERSHOP: TemplateIdentity = {
   testimonials: [
     { id: uid("t"), name: "Marcus Bell", role: "Regular Client", content: "Been coming here for 3 years. Same barber every time, never disappointed. Best fade in the city.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Andre Watson", role: "Regular Client", content: "The hot towel shave is worth it alone. Clean, professional shop with a great vibe.", rating: 5 },
-    { id: uid("t"), name: "Julian Ford", role: "First-Time Client", content: "Walked in without an appointment on a Saturday and still got seen within 15 minutes. Great cut too.", rating: 5 },
+    { id: uid("t"), name: "Patrick N.", role: "First-Time Client", content: "My son is 8 and used to hate haircuts. The FadeShop team made it fun for him and the cut looked brilliant. Now he asks to come back.", rating: 5 },
   ],
 
   pricing: [
@@ -5423,6 +5429,7 @@ const FADE_BARBERSHOP: TemplateIdentity = {
   team: [
     { id: uid("tm"), name: "Tony Marchetti", role: "Master Barber & Owner", bio: "20 years behind the chair. Trained in classic and modern fade techniques.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
     { id: uid("tm"), name: "Jerome Banks", role: "Senior Barber", bio: "Specialist in hair design and creative fades. Known for his sharp line-ups.", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Jay Thompson", role: "Barber & Trainer", bio: "Trained in London. Textured hair and afro specialist.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
   ],
 };
 
@@ -6088,8 +6095,8 @@ const SPARKLE_HOME: TemplateIdentity = {
 
   testimonials: [
     { id: uid("t"), name: "Hannah Price", role: "Homeowner", content: "Same cleaner every time, always thorough, always on time. My house has never looked better.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Steven Marsh", role: "Working Parent", content: "The eco-friendly products matter a lot to us with young kids in the house. Highly recommend.", rating: 5 },
-    { id: uid("t"), name: "Olivia Chan", role: "Renter", content: "Move-out clean got us our full deposit back. Worth every penny for the peace of mind.", rating: 5 },
+    { id: uid("t"), name: "Steven Marsh", role: "Working Parent", content: "Used them for an end-of-lease clean and got our full bond back. The real estate agent said it was the best presented property she'd seen.", rating: 5 },
+    { id: uid("t"), name: "Olivia Chan", role: "Renter", content: "Love that they use eco products — my toddler crawls everywhere and I feel completely safe. Quality is brilliant too.", rating: 5 },
   ],
 
   pricing: [
@@ -6484,9 +6491,9 @@ const TABLEFARE: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "George Palmer", role: "Regular Guest", content: "We come every Friday night. The staff know our order and the food never disappoints. Feels like family.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Sandra Lee", role: "First-Time Visitor", content: "Every dish we ordered was perfectly cooked. The warm atmosphere made for a great date night.", rating: 5 },
-    { id: uid("t"), name: "Marcus Alan", role: "Local Business Owner", content: "Hosted our company dinner in their private room. Food, service and space were all excellent.", rating: 5 },
+    { id: uid("t"), name: "George Palmer", role: "Regular Guest", content: "The Sunday roast here is the best in Manchester — full stop. We've tried everywhere and TableFare wins every time. Book ahead, it fills up fast.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sandra Lee", role: "First-Time Visitor", content: "Our anniversary dinner was perfect. Staff were attentive without being intrusive, food was exceptional. Exactly what a special meal should be.", rating: 5 },
+    { id: uid("t"), name: "Marcus Alan", role: "Local Business Owner", content: "Love this place. It's become our weekly ritual — good food, good atmosphere, and staff who actually know your name after a few visits.", rating: 5 },
   ],
 
   pricing: [
@@ -6501,7 +6508,7 @@ const TABLEFARE: TemplateIdentity = {
   ],
 
   team: [
-    { id: uid("tm"), name: "Chef Antonio Ricci", role: "Executive Chef", bio: "15 years crafting seasonal, locally sourced menus. Leads the kitchen with a focus on made-from-scratch cooking.", avatar: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Chef Antonio Ricci", role: "Executive Chef", bio: "Trained at The Ivy. 20 years of kitchen experience, passionate about seasonal British cuisine.", avatar: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&q=80&fit=crop&face" },
   ],
 };
 
@@ -6889,7 +6896,7 @@ const LEXBRIDGE_LAW: TemplateIdentity = {
 
   testimonials: [
     { id: uid("t"), name: "Robert Kane", role: "Business Owner", content: "LexBridge guided us through a complex acquisition with clarity and confidence at every step. Exceptional counsel.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Diane Foster", role: "Client", content: "Handled our estate planning with genuine care and made a difficult process feel manageable. Highly recommend.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Diane Foster", role: "Client", content: "Michelle represented me in a complex commercial dispute. Her preparation and court presence were exceptional. Won the case. Cannot thank the team enough.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Michael Brennan", role: "Property Investor", content: "Fast, thorough closings every time. Their real estate team is the best I've worked with.", rating: 5 },
   ],
 
@@ -6900,7 +6907,7 @@ const LEXBRIDGE_LAW: TemplateIdentity = {
   ],
 
   faq: [
-    { id: uid("f"), question: "Do you offer a free consultation?", answer: "Yes, we offer a free 30-minute initial consultation to evaluate your case and discuss fee structures." },
+    { id: uid("f"), question: "Do you offer a free consultation?", answer: "We offer a 30-minute fixed-fee initial consultation at $150, which is credited against fees if you proceed. This ensures we give you proper, considered advice from the outset." },
     { id: uid("f"), question: "How are your fees structured?", answer: "We offer both hourly and flat-fee billing depending on the matter — flat fees for predictable work like document drafting and closings, hourly for litigation." },
     { id: uid("f"), question: "What areas of law do you practice?", answer: "We practice corporate law, litigation, real estate, family law and estate planning." },
   ],
@@ -7026,7 +7033,7 @@ const CLEARTAX_ACCOUNTING: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Nancy Ruiz", role: "Small Business Owner", content: "Switched to ClearTax three years ago and they've saved us thousands in missed deductions our old accountant never caught.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Michael K.", role: "Melbourne", content: "Rebecca restructured our business and we saved $38,000 in tax in the first year.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Kevin Park", role: "Freelancer", content: "Finally an accountant who explains things in plain English. Tax season stress is gone.", rating: 5 },
     { id: uid("t"), name: "Lisa Monroe", role: "Restaurant Owner", content: "Their monthly bookkeeping keeps us organized year-round, not just scrambling every April.", rating: 5 },
   ],
@@ -7299,8 +7306,8 @@ const PROPERTYVAULT_MGMT: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "William Foster", role: "Property Owner, 6 units", content: "Went from stressed landlord to totally hands-off owner. Monthly reports are clear and rent always arrives on time.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Cynthia Park", role: "Portfolio Investor", content: "Managing 12 units across the city used to consume my weekends. PropertyVault handles it all seamlessly now.", rating: 5 },
+    { id: uid("t"), name: "William Foster", role: "Property Owner, 6 units", content: "PropertyVault manages 8 of my London properties. I'm in Nigeria and I genuinely don't worry about them. Rent lands every month, issues are handled. Perfect service.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Cynthia Park", role: "Portfolio Investor", content: "Transferred our portfolio of 12 units from a larger agency. The personal service and occupancy improvement has been remarkable. Wish we'd changed sooner.", rating: 5 },
     { id: uid("t"), name: "Robert Nguyen", role: "Property Owner", content: "Their tenant screening process found us excellent long-term renters. Zero vacancy issues since switching.", rating: 5 },
   ],
 
@@ -7437,7 +7444,7 @@ const NETSUPPORT_IT: TemplateIdentity = {
   testimonials: [
     { id: uid("t"), name: "Amanda Reyes", role: "Operations Director", company: "Meridian Logistics", content: "Switched from reactive break-fix IT to NetSupport's managed model and our downtime dropped to nearly zero.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Kevin Chow", role: "CFO", company: "Horizon Financial", content: "Their cybersecurity monitoring caught a phishing attempt before any damage was done. Worth every dollar.", rating: 5 },
-    { id: uid("t"), name: "Rachel Kim", role: "Office Manager", content: "Helpdesk tickets get resolved fast, and their techs actually explain what happened instead of just fixing and leaving.", rating: 5 },
+    { id: uid("t"), name: "Rachel Kim", role: "Office Manager", content: "Had a ransomware attempt last year. NetSupport's security stack blocked it and their incident response was incredible. Can't put a value on that.", rating: 5 },
   ],
 
   pricing: [
@@ -7573,7 +7580,7 @@ const GROWTHLAB_AGENCY: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Sophia Reyes", role: "Marketing Director", company: "Northwind Retail", content: "GrowthLab tripled our organic traffic in 8 months and our leads have never been higher quality. Real strategists, not just tacticians.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sophia Reyes", role: "Marketing Director", company: "Northwind Retail", content: "GrowthLab took our e-commerce from $80k to $420k monthly revenue in 9 months through SEO and paid ads. The ROI speaks for itself. Outstanding team.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Marcus Webb", role: "Founder", company: "Vantage SaaS", content: "Their paid media team cut our cost-per-lead in half while increasing volume. Genuinely data-driven, not just buzzwords.", rating: 5, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Elena Rossi", role: "CMO", company: "Bright Home Goods", content: "Best agency partnership we've had. They think like an extension of our team, not an outside vendor.", rating: 5 },
   ],
@@ -7588,6 +7595,7 @@ const GROWTHLAB_AGENCY: TemplateIdentity = {
     { id: uid("f"), question: "How soon will we see results?", answer: "Paid media typically shows results within weeks, while SEO and content strategies build momentum over 3-6 months for sustainable, compounding growth." },
     { id: uid("f"), question: "Do you require long-term contracts?", answer: "We recommend a minimum 6-month engagement for meaningful results, but we don't lock clients into long-term contracts beyond that." },
     { id: uid("f"), question: "How do you report on results?", answer: "Every client gets a custom analytics dashboard plus regular strategy calls tied to actual business metrics — leads, revenue and ROI, not just vanity numbers." },
+    { id: uid("f"), question: "Do you guarantee results?", answer: "We offer performance-based KPI commitments on campaigns with 3+ month terms. If agreed KPIs aren't met, we work for free until they are." },
   ],
 
   team: [
@@ -7682,7 +7690,7 @@ const LENSCROFT_STUDIO: TemplateIdentity = {
   email: "hello@lenscroftstudio.com",
   address: "60 Gallery Row, Arts District",
   aboutHeading: "500+ Sessions, One Unmistakable Style",
-  aboutBody: "LensCroft blends editorial composition with genuine emotion, whether we're documenting a wedding, capturing a family's story, or shooting product photography for a brand. Every session is shot on premium equipment and delivered with a fast, professional turnaround.",
+  aboutBody: "LensCroft was founded by photographer James Croft in 2012 with a belief that great photography should tell a story. Over 12 years and 600+ sessions, our work has been published in Vogue, The Guardian Weekend, and used in campaigns for global brands.",
   aboutHighlights: ["500+ sessions captured", "Fast 2-week delivery turnaround", "Full print & digital rights included", "Second shooter available for events"],
 
   navItems: [
@@ -7710,7 +7718,7 @@ const LENSCROFT_STUDIO: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Emily & James", role: "Wedding Clients", content: "Every photo felt like it captured exactly how the day felt. We cried looking through the gallery. Absolute artistry.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Emily & James", role: "Wedding Clients", content: "James shot our wedding and the photos are beyond anything we imagined. He was invisible on the day but somehow captured every moment that mattered. Truly exceptional.", rating: 5, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "David Chen", role: "Brand Founder", content: "Product photography elevated our entire online store. Sales noticeably improved after we updated our listings.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Sarah Miller", role: "Family Client", content: "Made our toddler feel completely comfortable and the photos are the most natural we've ever had taken.", rating: 5 },
   ],
@@ -7861,6 +7869,7 @@ const FOREVER_EVENTS: TemplateIdentity = {
     { id: uid("f"), question: "How far in advance should we book?", answer: "We recommend booking 9-12 months before your wedding date for full planning, though we can accommodate shorter timelines when availability allows." },
     { id: uid("f"), question: "Do you work with our chosen vendors?", answer: "Absolutely — we're happy to coordinate with vendors you've already selected, and we can recommend from our trusted network for anything you still need." },
     { id: uid("f"), question: "What's included in day-of coordination?", answer: "Day-of coordination includes full timeline creation, vendor confirmation, and on-site management so you don't have to worry about logistics." },
+    { id: uid("f"), question: "What happens if something goes wrong on the day?", answer: "We have a full backup plan and crisis protocol for every wedding. Our team handles every issue quietly behind the scenes so you never know about it." },
   ],
 
   team: [
@@ -8520,9 +8529,9 @@ const TORQUE_AUTO: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Chris Donovan", role: "Regular Customer", content: "Half the price of the dealer and my warranty stayed valid. They explain everything before doing any work. Trustworthy shop.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Maria Santos", role: "Customer", content: "Diagnosed and fixed an issue two other shops couldn't figure out. Genuinely skilled technicians here.", rating: 5 },
-    { id: uid("t"), name: "Todd Weber", role: "Fleet Manager", content: "We service our entire company fleet here. Reliable, fair pricing and they work around our schedule.", rating: 5 },
+    { id: uid("t"), name: "Chris Donovan", role: "Regular Customer", content: "Most honest mechanics I've ever dealt with. Told me exactly what needed fixing now vs what could wait. Saved me $400. Brilliant.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Maria Santos", role: "Customer", content: "Log book service done properly, warranty intact, and they showed me photos of everything they checked. This is how it should be done.", rating: 5 },
+    { id: uid("t"), name: "Todd Weber", role: "Fleet Manager", content: "Bought a used car interstate and had TorqueAuto do a pre-purchase inspection. They found issues the seller didn't disclose. Absolute value.", rating: 5 },
   ],
 
   pricing: [
@@ -8640,7 +8649,7 @@ const GRIPZONE_TYRES: TemplateIdentity = {
   ],
 
   services: [
-    { id: uid("svc"), title: "Tyre Fitting", description: "Professional fitting for all tyre brands and sizes, most jobs done in under an hour.", icon: "🛞", iconType: "emoji", price: "From $25/tyre", imageUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Tyre Fitting", description: "All major brands in stock — Michelin, Bridgestone, Pirelli, Continental, and value brands. Same-day fitting.", icon: "🛞", iconType: "emoji", price: "From $25/tyre", imageUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Wheel Alignment", description: "Computerised 4-wheel alignment to extend tyre life and improve handling.", icon: "📐", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1600661653561-629509216228?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Wheel Balancing", description: "Precision balancing to eliminate vibration and uneven tyre wear.", icon: "⚖️", iconType: "emoji", price: "From $15/wheel", imageUrl: "https://images.unsplash.com/photo-1518987048-93e29699e79a?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Tyre Rotation", description: "Regular rotation to ensure even tread wear and extend tyre lifespan.", icon: "🔄", iconType: "emoji", price: "From $35", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
@@ -8657,7 +8666,7 @@ const GRIPZONE_TYRES: TemplateIdentity = {
 
   testimonials: [
     { id: uid("t"), name: "Jake Sullivan", role: "Customer", content: "In and out in 30 minutes with 4 new tyres fitted and balanced. Best price I found locally too.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Rachel Kim", role: "Customer", content: "Alignment fixed a pulling issue my car had for months. Should have come here first.", rating: 5 },
+    { id: uid("t"), name: "Rachel Kim", role: "Customer", content: "Got a puncture at 6pm. GripZone fitted a new tyre and had me back on the road by 6:45. Fast, professional, fair price.", rating: 5 },
     { id: uid("t"), name: "Big Rig Logistics", role: "Fleet Customer", content: "They handle tyres for our entire delivery fleet. Fast turnaround keeps our trucks on the road.", rating: 5 },
   ],
 
@@ -8787,8 +8796,8 @@ const PANELCRAFT: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Amanda Rivers", role: "Insurance Claim Customer", content: "Handled my entire insurance claim, and the paint match is completely invisible. You'd never know there was damage.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Robert Chen", role: "Customer", content: "Restored my classic car's body to better than original condition. True craftsmen.", rating: 5 },
+    { id: uid("t"), name: "Amanda Rivers", role: "Insurance Claim Customer", content: "My car was T-boned and looked written off. PanelCraft restored it perfectly — you'd never know it was in an accident. Lifetime warranty is the real deal.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Robert Chen", role: "Customer", content: "Got a hail damage assessment done in 20 minutes. They handled the entire insurance claim. Car came back looking new. Outstanding.", rating: 5 },
     { id: uid("t"), name: "Denise Foster", role: "Customer", content: "Fast turnaround on my bumper repair and the price matched their initial quote exactly.", rating: 5 },
   ],
 
@@ -8923,9 +8932,9 @@ const WANDERWAY: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Emma & David", role: "Honeymoon Clients", content: "Every detail of our honeymoon was perfect. Our consultant clearly knew the destination personally, not just from a brochure.", rating: 5, avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "The Patel Family", role: "Group Tour Clients", content: "Our multi-generational family trip was flawlessly organized. Everyone from grandparents to kids had an amazing time.", rating: 5 },
-    { id: uid("t"), name: "Marcus Webb", role: "Solo Traveler", content: "Booked an adventure trip I never would have found on my own. WanderWay's recommendations were spot-on.", rating: 5 },
+    { id: uid("t"), name: "Emma & David", role: "Honeymoon Clients", content: "WanderWay planned our honeymoon to the Maldives. Every single detail was perfect — the villa, transfers, dining. Genuinely magical.", rating: 5, avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "The Patel Family", role: "Group Tour Clients", content: "Third holiday booked through WanderWay. They always find better deals than we can ourselves and the personal service is excellent.", rating: 5 },
+    { id: uid("t"), name: "Marcus Webb", role: "Solo Traveler", content: "Organised a group trip of 18 people to Istanbul. Flawless logistics, great hotel, excellent guiding. Will absolutely use again.", rating: 5 },
   ],
 
   pricing: [
@@ -9059,9 +9068,9 @@ const TRAILBLAZE_TOURS: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Jake Morrison", role: "Hiking Tour Client", content: "The guides' knowledge of the terrain and local ecology made this trip unforgettable. Small group size meant real personal attention.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Sarah & Tom", role: "Safari Clients", content: "Best wildlife experience of our lives. Our guide spotted animals we never would have seen on our own.", rating: 5 },
-    { id: uid("t"), name: "Group of 8 Friends", role: "Custom Tour Clients", content: "They built a completely custom itinerary for our friend group. Every detail was handled perfectly.", rating: 5 },
+    { id: uid("t"), name: "Jake Morrison", role: "Hiking Tour Client", content: "Did the Patagonia trekking expedition. One of the best experiences of my life. Jake was an exceptional guide — knowledgeable, funny, and genuinely passionate.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Sarah & Tom", role: "Safari Clients", content: "Small group made all the difference. We made genuine friendships and the access to places other tourists can't get to was incredible.", rating: 5 },
+    { id: uid("t"), name: "Group of 8 Friends", role: "Custom Tour Clients", content: "Third TrailBlaze tour. They keep raising the bar. The Morocco desert camp was absolutely extraordinary. Already booked my fourth.", rating: 5 },
   ],
 
   pricing: [
@@ -9194,9 +9203,9 @@ const VISABRIDGE: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Wei Chen", role: "Work Visa Client", content: "Guided us through a complex employer-sponsored visa process with total clarity at every step. Approved without a single issue.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Fatima Hassan", role: "Family Visa Client", content: "Finally reunited with my family after two years apart. VisaBridge made a stressful process feel manageable.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
-    { id: uid("t"), name: "Diego Ramirez", role: "PR Applicant", content: "Their attention to detail on our permanent residency application caught issues we would have missed. Highly recommend.", rating: 5 },
+    { id: uid("t"), name: "Wei Chen", role: "Work Visa Client", content: "Got refused elsewhere. VisaBridge lodged a review and we were granted in 4 months. Wish we'd come here first. Exceptional expertise.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Fatima Hassan", role: "Family Visa Client", content: "Rachel managed our entire partner visa process from start to finish. Communication was excellent and our visa was granted without a single request for further information.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Diego Ramirez", role: "PR Applicant", content: "Our go-to agency for all employee sponsorship visas. Professional, efficient, and the success rate speaks for itself.", rating: 5 },
   ],
 
   pricing: [
@@ -9212,7 +9221,7 @@ const VISABRIDGE: TemplateIdentity = {
   ],
 
   team: [
-    { id: uid("tm"), name: "Amara Osei", role: "Principal Migration Agent", bio: "17 years in immigration law and migration consulting, has personally handled over 800 successful applications.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Amara Osei", role: "Principal Migration Agent", bio: "MARA-registered with 15 years experience. Former Dept. of Home Affairs reviewer. Over 2,000 visas granted.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
   ],
 };
 
@@ -9461,8 +9470,8 @@ const PRESSMARK_PRINT: TemplateIdentity = {
 
   testimonials: [
     { id: uid("t"), name: "Bright Bloom Florist", role: "Repeat Client", content: "Our storefront signage brought in noticeably more walk-in traffic. Design team nailed our brand look perfectly.", rating: 5 },
-    { id: uid("t"), name: "Metro Fitness Studio", role: "Bulk Order Client", content: "Rush ordered 200 branded shirts for an event with 48 hours notice and they delivered on time, quality intact.", rating: 5 },
-    { id: uid("t"), name: "Sunrise Real Estate", role: "Marketing Client", content: "Consistent quality on every print order over 3 years. Their team is genuinely creative, not just an order-taker.", rating: 5 },
+    { id: uid("t"), name: "Metro Fitness Studio", role: "Bulk Order Client", content: "Office building signage was complex — 3D lettering, 4 floors. PressMark handled everything from design sign-off to installation. Excellent result.", rating: 5 },
+    { id: uid("t"), name: "Sunrise Real Estate", role: "Marketing Client", content: "Fleet wrapping for 12 vehicles. Brand-consistent across all of them, finished 2 days ahead of schedule. Will go nowhere else.", rating: 5 },
   ],
 
   pricing: [
