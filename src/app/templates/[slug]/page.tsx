@@ -1,17 +1,18 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Layout, Zap } from "lucide-react";
-import { TEMPLATES } from "@/lib/templates/templates-data";
-import { getTemplateContent } from "@/lib/templates/template-content";
-import { TemplateDemoRenderer } from "@/components/template-preview";
+import { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
+import { buildTemplateCSSVars } from "@/modules/themes/template-css";
+import { buildHomePageBlocks } from "@/lib/templates/seed-template";
+import { PageRenderer } from "@/components/site/page-renderer";
 
 export async function generateStaticParams() {
-  return TEMPLATES.map(t => ({ slug: t.slug }));
+  return TEMPLATE_REGISTRY.map(t => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const t = TEMPLATES.find(x => x.slug === slug);
+  const t = TEMPLATE_REGISTRY.find(x => x.slug === slug);
   if (!t) return {};
   return {
     title: `${t.name} — Website Template | Passive Coder`,
@@ -21,13 +22,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function TemplatePreviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const template = TEMPLATES.find(t => t.slug === slug);
+  const template = TEMPLATE_REGISTRY.find(t => t.slug === slug);
   if (!template) notFound();
 
-  const content = getTemplateContent(slug);
+  // Same blocks seedTemplate() writes to a real tenant, rendered through the
+  // same PageRenderer a live site uses — this preview IS the applied result,
+  // not a separate mockup, so it can never drift from what "Build With This"
+  // actually produces.
+  const blocks = buildHomePageBlocks(template);
+  const cssVars = buildTemplateCSSVars(template.palette, template.typography);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen template-${template.slug}`}>
+      <style dangerouslySetInnerHTML={{ __html: cssVars }} />
+      {template.customCss && <style dangerouslySetInnerHTML={{ __html: template.customCss }} />}
 
       {/* ── Fixed top bar ──────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -46,7 +54,6 @@ export default async function TemplatePreviewPage({ params }: { params: Promise<
             </span>
           </div>
 
-          {/* Template switcher hint */}
           <div className="hidden md:flex items-center gap-2 text-xs text-gray-400">
             <span>Previewing demo · </span>
             <span className="font-medium text-gray-600">{template.name}</span>
@@ -69,9 +76,10 @@ export default async function TemplatePreviewPage({ params }: { params: Promise<
         </div>
       </div>
 
-      {/* ── Full-width demo site ────────────────────────────────────────────── */}
-      <TemplateDemoRenderer template={template} content={content} />
-
+      {/* ── Full-width demo site — real blocks, real renderer ──────────────── */}
+      <div style={{ background: template.palette.background }}>
+        <PageRenderer blocks={blocks} />
+      </div>
     </div>
   );
 }

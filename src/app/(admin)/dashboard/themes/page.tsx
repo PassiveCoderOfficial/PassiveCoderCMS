@@ -1,7 +1,7 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
-import { TemplateApplyButton } from "./template-apply-button";
+import { TemplateBrowser } from "./template-browser";
 import { CheckCircle } from "lucide-react";
 
 export default async function ThemesPage() {
@@ -18,13 +18,6 @@ export default async function ThemesPage() {
       .eq("tenant_id", tenantId)
       .single();
     activeTemplateSlug = (data as { active_template_slug?: string } | null)?.active_template_slug ?? null;
-  }
-
-  // Group by category
-  const byCategory: Record<string, typeof TEMPLATE_REGISTRY> = {};
-  for (const t of TEMPLATE_REGISTRY) {
-    if (!byCategory[t.category]) byCategory[t.category] = [];
-    byCategory[t.category].push(t);
   }
 
   return (
@@ -84,86 +77,12 @@ export default async function ThemesPage() {
         );
       })()}
 
-      {/* Templates by category */}
-      {Object.entries(byCategory).map(([category, templates]) => (
-        <div key={category}>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">{category}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {templates.map(template => {
-              const isActive = template.slug === activeTemplateSlug;
-              return (
-                <div key={template.slug} className={`rounded-xl border overflow-hidden bg-card hover:shadow-lg transition-all duration-200 ${isActive ? "ring-2 ring-primary" : ""}`}>
-                  {/* Preview image */}
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={template.previewImage}
-                      alt={template.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    {isActive && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 font-semibold">
-                        <CheckCircle className="h-3 w-3" /> Active
-                      </div>
-                    )}
-                    {/* Color palette swatch */}
-                    <div className="absolute bottom-2 left-2 flex gap-1">
-                      {[template.palette.primary, template.palette.secondary, template.palette.accent, template.palette.background].map((color, i) => (
-                        <div key={i} className="w-4 h-4 rounded-full border border-white/40 shadow-sm" style={{ background: color }} />
-                      ))}
-                    </div>
-                    {/* Font name */}
-                    <div className="absolute bottom-2 right-2 bg-black/40 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded">
-                      {template.typography.headingFont}
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="p-4 space-y-3">
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-bold text-base">{template.name}</h3>
-                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">{template.category}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{template.description}</p>
-                    </div>
-
-                    {/* Layout variants preview */}
-                    <div className="grid grid-cols-3 gap-1 text-[9px] text-muted-foreground">
-                      <div className="bg-muted/50 rounded px-1.5 py-1 text-center truncate" title={template.variants.hero}>
-                        Hero: {template.variants.hero.split("-")[0]}
-                      </div>
-                      <div className="bg-muted/50 rounded px-1.5 py-1 text-center truncate" title={template.variants.services}>
-                        Services: {template.variants.services.split("-")[0]}
-                      </div>
-                      <div className="bg-muted/50 rounded px-1.5 py-1 text-center truncate" title={template.variants.testimonials}>
-                        Reviews: {template.variants.testimonials.split("-")[0]}
-                      </div>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex gap-1 flex-wrap">
-                      {template.tags.slice(0, 4).map(tag => (
-                        <span key={tag} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">{tag}</span>
-                      ))}
-                    </div>
-
-                    {/* Actions */}
-                    <TemplateApplyButton
-                      templateSlug={template.slug}
-                      templateName={template.name}
-                      isActive={isActive}
-                      tenantId={tenantId ?? ""}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+      {/* Templates — search, category filter, apply */}
+      <TemplateBrowser
+        templates={TEMPLATE_REGISTRY}
+        activeTemplateSlug={activeTemplateSlug}
+        tenantId={tenantId ?? ""}
+      />
     </div>
   );
 }

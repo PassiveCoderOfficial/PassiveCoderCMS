@@ -284,7 +284,10 @@ export async function seedTemplate(
   await logImport(supabase, tenantId, templateSlug, mode);
 }
 
-function buildHomePageBlocks(t: TemplateIdentity): Block[] {
+/** Pure, DB-free: the exact blocks seedTemplate writes as a template's home
+ *  page. Reused by the public showcase preview so it renders through the
+ *  same pipeline a real applied site does — no separate preview renderer. */
+export function buildHomePageBlocks(t: TemplateIdentity): Block[] {
   const blocks: Block[] = [];
   let order = 0;
 
