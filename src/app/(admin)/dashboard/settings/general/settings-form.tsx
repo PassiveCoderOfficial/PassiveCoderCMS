@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,11 +179,18 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Site Name</Label>
-            <Input value={settings.site_name as string ?? ""} onChange={(e) => update("site_name", e.target.value)} placeholder="My CMS Site" />
+            <p className="text-sm text-muted-foreground">
+              Set under{" "}
+              <Link href="/dashboard/templates/header-footer" className="text-primary underline underline-offset-2">
+                Templates → Header &amp; Footer → Site Identity
+              </Link>
+              {" "}— that&apos;s the name shown across your site header, browser tab, and search results. Logo and favicon live there too.
+            </p>
           </div>
           <div className="space-y-1.5">
             <Label>Site Description</Label>
             <Textarea value={settings.site_description as string ?? ""} onChange={(e) => update("site_description", e.target.value)} rows={3} placeholder="Brief description of your site" />
+            <p className="text-xs text-muted-foreground">Used for SEO — search engines and social previews.</p>
           </div>
         </CardContent>
       </Card>
