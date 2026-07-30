@@ -240,9 +240,9 @@ const CLEAN_PRO: TemplateIdentity = {
       alt: "Cleaning service in action",
     },
     services: [
-      { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", alt: "House cleaning" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "House cleaning" },
       { url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80&fit=crop", alt: "Deep cleaning" },
-      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Office cleaning" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Office cleaning" },
       { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Window cleaning" },
       { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", alt: "Carpet cleaning" },
       { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", alt: "End of lease cleaning" },
@@ -287,10 +287,10 @@ const CLEAN_PRO: TemplateIdentity = {
   ],
 
   services: [
-    { id: uid("svc"), title: "Regular House Clean", description: "Weekly, bi-weekly or monthly scheduled cleaning for a consistently fresh home.", icon: "🏠", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Regular House Clean", description: "Weekly, bi-weekly or monthly scheduled cleaning for a consistently fresh home.", icon: "🏠", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Deep Clean", description: "Top-to-bottom intensive clean including behind appliances, baseboards and inside cabinets.", icon: "✨", iconType: "emoji", price: "From $189", imageUrl: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "End-of-Lease Clean", description: "Bond-back guarantee. We clean to real-estate inspection standards.", icon: "🔑", iconType: "emoji", price: "From $249", imageUrl: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Office Cleaning", description: "Daily, weekly or after-hours commercial cleaning for offices of all sizes.", icon: "🏢", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Office Cleaning", description: "Daily, weekly or after-hours commercial cleaning for offices of all sizes.", icon: "🏢", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Carpet & Upholstery", description: "Hot water extraction steam cleaning for carpets, rugs and fabric sofas.", icon: "🛋️", iconType: "emoji", price: "From $79", imageUrl: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Window Cleaning", description: "Streak-free interior and exterior window cleaning using purified water systems.", icon: "🪟", iconType: "emoji", price: "From $59", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
   ],
@@ -847,7 +847,7 @@ const AROMA_TABLE: TemplateIdentity = {
       { url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=85&fit=crop", alt: "Grilled salmon" },
       { url: "https://images.unsplash.com/photo-1432139509613-5c4255815697?w=600&q=85&fit=crop", alt: "Steak" },
       { url: "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&q=85&fit=crop", alt: "Dessert" },
-      { url: "https://images.unsplash.com/photo-1474502561271-d09bd8716b4c?w=600&q=85&fit=crop", alt: "Cocktails" },
+      { url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=85&fit=crop", alt: "Cocktails" },
       { url: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=85&fit=crop", alt: "Pizza" },
     ],
     gallery: [
@@ -857,7 +857,7 @@ const AROMA_TABLE: TemplateIdentity = {
       { url: "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=800&q=80&fit=crop", alt: "Kitchen" },
     ],
     team: [
-      { url: "https://images.unsplash.com/photo-1607631568010-a87245c0daf7?w=400&q=80&fit=crop&face", alt: "Chef Marco" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Chef Marco" },
       { url: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&q=80&fit=crop&face", alt: "Chef Sofia" },
       { url: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=400&q=80&fit=crop&face", alt: "Sommelier" },
     ],
@@ -894,7 +894,7 @@ const AROMA_TABLE: TemplateIdentity = {
     { id: uid("svc"), title: "Seafood Mains", description: "Pan-seared halibut, chargrilled octopus, citrus-cured salmon with fennel and capers.", icon: "🐟", iconType: "emoji", price: "$34 – $56", imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=85&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Grilled & Roasted", description: "28-day dry-aged ribeye, lamb rack with rosemary jus, free-range chicken with preserved lemon.", icon: "🥩", iconType: "emoji", price: "$38 – $68", imageUrl: "https://images.unsplash.com/photo-1432139509613-5c4255815697?w=600&q=85&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Artisan Desserts", description: "Sicilian cannoli, burnt basque cheesecake, seasonal sorbets and our signature tiramisu.", icon: "🍮", iconType: "emoji", price: "$14 – $18", imageUrl: "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&q=85&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Signature Cocktails", description: "House-crafted cocktails using fresh herbs, house-made syrups and premium spirits. Zero-proof options available.", icon: "🍹", iconType: "emoji", price: "$14 – $22", imageUrl: "https://images.unsplash.com/photo-1474502561271-d09bd8716b4c?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Signature Cocktails", description: "House-crafted cocktails using fresh herbs, house-made syrups and premium spirits. Zero-proof options available.", icon: "🍹", iconType: "emoji", price: "$14 – $22", imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=85&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Wood-Fired Pizzas", description: "Traditional Neapolitan-style pizzas fired at 900°F. 72-hour fermented dough with DOP-certified toppings.", icon: "🍕", iconType: "emoji", price: "$22 – $34", imageUrl: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=85&fit=crop", link: "#contact" },
   ],
 
@@ -926,7 +926,7 @@ const AROMA_TABLE: TemplateIdentity = {
   ],
 
   team: [
-    { id: uid("tm"), name: "Chef Marco Ricci", role: "Executive Chef & Founder", bio: "Trained in Palermo and Paris. 20 years in fine dining. Michelin-recognised twice for his farm-to-table philosophy.", avatar: "https://images.unsplash.com/photo-1607631568010-a87245c0daf7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Chef Marco Ricci", role: "Executive Chef & Founder", bio: "Trained in Palermo and Paris. 20 years in fine dining. Michelin-recognised twice for his farm-to-table philosophy.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
     { id: uid("tm"), name: "Sofia De Luca", role: "Pastry Chef", bio: "World-class pastry techniques meet Mediterranean soul. Sofia's desserts are the reason many return.", avatar: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&q=80&fit=crop&face" },
     { id: uid("tm"), name: "Antoine Beaumont", role: "Head Sommelier", bio: "WSET Level 4 certified. Curates our 400-bottle cellar with a passion for small-producer natural wines.", avatar: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=400&q=80&fit=crop&face" },
   ],
@@ -1010,7 +1010,7 @@ const FIT_FORGE: TemplateIdentity = {
     team: [
       { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80&fit=crop&face", alt: "Coach Jake" },
       { url: "https://images.unsplash.com/photo-1571732154690-f6d1c3e5178a?w=400&q=80&fit=crop&face", alt: "Coach Mia" },
-      { url: "https://images.unsplash.com/photo-1567013127542-490d757e6349?w=400&q=80&fit=crop&face", alt: "Coach Chris" },
+      { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Coach Chris" },
     ],
     cta: {
       url: "https://images.unsplash.com/photo-1517963879433-6ad2171073fb?w=1200&q=80&fit=crop",
@@ -1079,7 +1079,7 @@ const FIT_FORGE: TemplateIdentity = {
   team: [
     { id: uid("tm"), name: "Jake Carter", role: "Head Coach & Founder", bio: "NSCA-certified S&C coach. Former semi-pro athlete. 500+ client transformations in 10 years.", avatar: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80&fit=crop&face" },
     { id: uid("tm"), name: "Mia Santos", role: "Endurance Coach", bio: "3× marathon finisher. Specialises in running, triathlon and cardio programming for all levels.", avatar: "https://images.unsplash.com/photo-1571732154690-f6d1c3e5178a?w=400&q=80&fit=crop&face" },
-    { id: uid("tm"), name: "Chris Blake", role: "Strength Coach", bio: "Powerlifting champion. Specialises in progressive overload, form correction and injury prevention.", avatar: "https://images.unsplash.com/photo-1567013127542-490d757e6349?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Chris Blake", role: "Strength Coach", bio: "Powerlifting champion. Specialises in progressive overload, form correction and injury prevention.", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face" },
   ],
 };
 
@@ -1629,7 +1629,7 @@ const BREW_HAVEN: TemplateIdentity = {
       { url: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80&fit=crop", alt: "Reading nook" },
     ],
     team: [
-      { url: "https://images.unsplash.com/photo-1607631568010-a87245c0daf7?w=400&q=80&fit=crop&face", alt: "Leo Barros" },
+      { url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face", alt: "Leo Barros" },
       { url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face", alt: "Zara Kim" },
     ],
     cta: {
@@ -1696,7 +1696,7 @@ const BREW_HAVEN: TemplateIdentity = {
   ],
 
   team: [
-    { id: uid("tm"), name: "Leo Barros", role: "Founder & Head Roaster", bio: "Former finance, now coffee obsessive. Spent a year training with roasters in Colombia, Ethiopia and Tokyo before opening BrewHaven.", avatar: "https://images.unsplash.com/photo-1607631568010-a87245c0daf7?w=400&q=80&fit=crop&face" },
+    { id: uid("tm"), name: "Leo Barros", role: "Founder & Head Roaster", bio: "Former finance, now coffee obsessive. Spent a year training with roasters in Colombia, Ethiopia and Tokyo before opening BrewHaven.", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&fit=crop&face" },
     { id: uid("tm"), name: "Zara Kim", role: "Head Barista & Baker", bio: "3× Portland barista champion. Trained pastry chef. Responsible for every croissant that sells out by 9am.", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&face" },
   ],
 };
@@ -1768,13 +1768,13 @@ const BLISS_BRIDE: TemplateIdentity = {
       { url: "https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=600&q=85&fit=crop", alt: "Reception decor" },
       { url: "https://images.unsplash.com/photo-1583939411023-14783179e581?w=600&q=85&fit=crop", alt: "Floral arrangements" },
       { url: "https://images.unsplash.com/photo-1525772764200-be829a350797?w=600&q=85&fit=crop", alt: "Wedding cake" },
-      { url: "https://images.unsplash.com/photo-1511795409834-432f9ce0049e?w=600&q=85&fit=crop", alt: "Venue styling" },
-      { url: "https://images.unsplash.com/photo-1578985824572-deb00b70bab9?w=600&q=85&fit=crop", alt: "Bridal details" },
+      { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=85&fit=crop", alt: "Venue styling" },
+      { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=85&fit=crop", alt: "Bridal details" },
     ],
     gallery: [
       { url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=85&fit=crop", alt: "Ceremony aisle" },
       { url: "https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=800&q=85&fit=crop", alt: "Table setting" },
-      { url: "https://images.unsplash.com/photo-1511795409834-432f9ce0049e?w=800&q=85&fit=crop", alt: "Venue night" },
+      { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=85&fit=crop", alt: "Venue night" },
       { url: "https://images.unsplash.com/photo-1583939411023-14783179e581?w=800&q=85&fit=crop", alt: "Bridal bouquet" },
       { url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=800&q=85&fit=crop", alt: "First dance" },
       { url: "https://images.unsplash.com/photo-1525772764200-be829a350797?w=800&q=85&fit=crop", alt: "Wedding cake detail" },
@@ -1816,8 +1816,8 @@ const BLISS_BRIDE: TemplateIdentity = {
     { id: uid("svc"), title: "Reception Styling", description: "Tablescape design, floral direction, lighting and decor. We transform venues into scenes straight out of your moodboard.", icon: "🕯️", iconType: "emoji", price: "From $3,200", imageUrl: "https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=600&q=85&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Floral Design", description: "From bridal bouquets to 8-foot ceremony arches. All flowers ethically sourced and arranged by our in-house floral team.", icon: "🌿", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1583939411023-14783179e581?w=600&q=85&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Wedding Cake Design", description: "Custom multi-tier cakes designed to match your wedding aesthetic. Tasting sessions available in studio.", icon: "🎂", iconType: "emoji", price: "From $950", imageUrl: "https://images.unsplash.com/photo-1525772764200-be829a350797?w=600&q=85&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Venue Sourcing & Styling", description: "Access to 80+ exclusive venues. We negotiate rates, style the space and ensure every detail matches your vision.", icon: "🏰", iconType: "emoji", price: "From $2,400", imageUrl: "https://images.unsplash.com/photo-1511795409834-432f9ce0049e?w=600&q=85&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Day-of Coordination", description: "Your personal coordinator on the day. Timeline management, vendor liaison and every detail handled — so you can simply be present.", icon: "📋", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1578985824572-deb00b70bab9?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Venue Sourcing & Styling", description: "Access to 80+ exclusive venues. We negotiate rates, style the space and ensure every detail matches your vision.", icon: "🏰", iconType: "emoji", price: "From $2,400", imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=85&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Day-of Coordination", description: "Your personal coordinator on the day. Timeline management, vendor liaison and every detail handled — so you can simply be present.", icon: "📋", iconType: "emoji", price: "From $1,800", imageUrl: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=85&fit=crop", link: "#contact" },
   ],
 
   stats: [
@@ -2383,8 +2383,8 @@ const PEST_SHIELD: TemplateIdentity = {
       { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", alt: "General pest control" },
       { url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop", alt: "Termite treatment" },
       { url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80&fit=crop", alt: "Rodent control" },
-      { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", alt: "Bed bug treatment" },
-      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Mosquito fogging" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Bed bug treatment" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Mosquito fogging" },
       { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Commercial pest contract" },
     ],
     gallery: [
@@ -2430,8 +2430,8 @@ const PEST_SHIELD: TemplateIdentity = {
     { id: uid("svc"), title: "General Pest Control", description: "Treatment for cockroaches, ants, flies, silverfish and common household insects. Gel bait + residual spray.", icon: "🐛", iconType: "emoji", price: "From $80/treatment", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Termite Treatment", description: "Soil treatment, baiting systems and structural pre-treatment. 5-year termite warranty available.", icon: "🪲", iconType: "emoji", price: "From $350", imageUrl: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Rodent Control", description: "Rat and mouse elimination using tamper-resistant bait stations and exclusion works. Monthly monitoring available.", icon: "🐀", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Bed Bug Treatment", description: "Heat treatment and chemical residual treatment for complete bed bug elimination. 3-month warranty.", icon: "🛏️", iconType: "emoji", price: "From $280", imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Mosquito Control & Fogging", description: "ULV thermal fogging, larviciding and misting systems for gardens, estates and commercial compounds.", icon: "🦟", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Bed Bug Treatment", description: "Heat treatment and chemical residual treatment for complete bed bug elimination. 3-month warranty.", icon: "🛏️", iconType: "emoji", price: "From $280", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Mosquito Control & Fogging", description: "ULV thermal fogging, larviciding and misting systems for gardens, estates and commercial compounds.", icon: "🦟", iconType: "emoji", price: "From $120", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Commercial Contracts", description: "NEA-compliant annual pest management contracts for F&B, hospitality, healthcare and manufacturing.", icon: "🏢", iconType: "emoji", price: "From $800/year", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
   ],
 
@@ -4676,7 +4676,7 @@ const HANDYFIX_PRO: TemplateIdentity = {
     hero: { url: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=900&q=85&fit=crop", alt: "Handyman with tool belt" },
     about: { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&fit=crop", alt: "Home repair in progress" },
     services: [
-      { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=600&q=80&fit=crop", alt: "Furniture assembly" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Furniture assembly" },
       { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", alt: "Drywall repair" },
       { url: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=600&q=80&fit=crop", alt: "Fixture installation" },
       { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Small appliance repair" },
@@ -4718,7 +4718,7 @@ const HANDYFIX_PRO: TemplateIdentity = {
   ],
 
   services: [
-    { id: uid("svc"), title: "Furniture Assembly", description: "Flat-pack furniture, shelving units and beds assembled quickly and correctly, first time.", icon: "🪑", iconType: "emoji", price: "From $59", imageUrl: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Furniture Assembly", description: "Flat-pack furniture, shelving units and beds assembled quickly and correctly, first time.", icon: "🪑", iconType: "emoji", price: "From $59", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Drywall & Patch Repair", description: "Holes, cracks and water damage patched, sanded and blended seamlessly with existing walls.", icon: "🧱", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Fixture Installation", description: "Light fixtures, ceiling fans, mirrors and TV mounts installed safely and to code.", icon: "💡", iconType: "emoji", price: "From $69", imageUrl: "https://images.unsplash.com/photo-1581093458791-9d42e3c7e117?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Small Repairs", description: "Sticking doors, loose hinges, running toilets and dozens of the small jobs on your to-do list.", icon: "🔧", iconType: "emoji", price: "From $49", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
@@ -4762,7 +4762,7 @@ const FLOWMASTER_PLUMBING: TemplateIdentity = {
   category: "HVAC & Plumbing",
   author: "Passive Coder",
   version: "1.0.0",
-  previewImage: "https://images.unsplash.com/photo-1621905251918-96b8b47c5f8e?w=1200&q=85&fit=crop",
+  previewImage: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=85&fit=crop",
   tags: ["plumbing", "emergency plumber", "pipes", "drainage"],
 
   palette: {
@@ -4805,7 +4805,7 @@ const FLOWMASTER_PLUMBING: TemplateIdentity = {
   },
 
   images: {
-    hero: { url: "https://images.unsplash.com/photo-1621905251918-96b8b47c5f8e?w=1600&q=90&fit=crop", alt: "Plumber repairing pipes" },
+    hero: { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1600&q=90&fit=crop", alt: "Plumber repairing pipes" },
     about: { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80&fit=crop", alt: "Plumbing tools and pipes" },
     services: [
       { url: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=600&q=80&fit=crop", alt: "Leak detection" },
@@ -4824,7 +4824,7 @@ const FLOWMASTER_PLUMBING: TemplateIdentity = {
     team: [
       { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Master Plumber" },
     ],
-    cta: { url: "https://images.unsplash.com/photo-1621905251918-96b8b47c5f8e?w=1200&q=80&fit=crop", alt: "Call for emergency plumbing" },
+    cta: { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=80&fit=crop", alt: "Call for emergency plumbing" },
   },
 
   heroHeadline: "Fast Plumbing Fixes, 24 Hours a Day",
@@ -4894,7 +4894,7 @@ const HEATWAVE_HVAC: TemplateIdentity = {
   category: "HVAC & Plumbing",
   author: "Passive Coder",
   version: "1.0.0",
-  previewImage: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=1200&q=85&fit=crop",
+  previewImage: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&q=85&fit=crop",
   tags: ["gas fitting", "heating", "boiler", "HVAC"],
 
   palette: {
@@ -4937,10 +4937,10 @@ const HEATWAVE_HVAC: TemplateIdentity = {
   },
 
   images: {
-    hero: { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=1600&q=90&fit=crop", alt: "Gas engineer servicing boiler" },
-    about: { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=800&q=80&fit=crop", alt: "Central heating system" },
+    hero: { url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1600&q=90&fit=crop", alt: "Gas engineer servicing boiler" },
+    about: { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80&fit=crop", alt: "Central heating system" },
     services: [
-      { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=600&q=80&fit=crop", alt: "Boiler installation" },
+      { url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop", alt: "Boiler installation" },
       { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", alt: "Gas safety check" },
       { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", alt: "Water heater servicing" },
       { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", alt: "Radiator installation" },
@@ -4948,15 +4948,15 @@ const HEATWAVE_HVAC: TemplateIdentity = {
       { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", alt: "Gas line inspection" },
     ],
     gallery: [
-      { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=800&q=80&fit=crop", alt: "New boiler install" },
+      { url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80&fit=crop", alt: "New boiler install" },
       { url: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80&fit=crop", alt: "Water heater upgrade" },
       { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80&fit=crop", alt: "Serviced gas system" },
-      { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=800&q=80&fit=crop", alt: "Central heating upgrade" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80&fit=crop", alt: "Central heating upgrade" },
     ],
     team: [
       { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Gas Safe Engineer" },
     ],
-    cta: { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=1200&q=80&fit=crop", alt: "Book a gas engineer" },
+    cta: { url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&q=80&fit=crop", alt: "Book a gas engineer" },
   },
 
   heroHeadline: "Warmth You Can Count On, All Year Round",
@@ -4982,10 +4982,10 @@ const HEATWAVE_HVAC: TemplateIdentity = {
   ],
 
   services: [
-    { id: uid("svc"), title: "Boiler Installation", description: "New boiler supply and installation with full commissioning and Gas Safe certification.", icon: "🔥", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Boiler Installation", description: "New boiler supply and installation with full commissioning and Gas Safe certification.", icon: "🔥", iconType: "emoji", price: "From $2,800", imageUrl: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Boiler Servicing", description: "Annual boiler service and safety check to keep your system efficient and your warranty valid.", icon: "🛠️", iconType: "emoji", price: "From $110", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Gas Safety Checks", description: "Landlord gas safety certificates (CP12) and full appliance safety inspections.", icon: "✅", iconType: "emoji", price: "From $95", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Central Heating Installation", description: "Full central heating system design and installation for new builds and upgrades.", icon: "🏠", iconType: "emoji", price: "From $4,500", imageUrl: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Central Heating Installation", description: "Full central heating system design and installation for new builds and upgrades.", icon: "🏠", iconType: "emoji", price: "From $4,500", imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Water Heater Installation", description: "Tank and tankless hot water system installation and replacement, all major brands.", icon: "🚿", iconType: "emoji", price: "From $850", imageUrl: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Emergency No-Heat Callout", description: "Same-day emergency response for boiler breakdowns and complete loss of heating.", icon: "🚨", iconType: "emoji", price: "From $195", imageUrl: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&fit=crop", link: "#contact" },
   ],
@@ -5081,8 +5081,8 @@ const TOTALBUILDS_SERVICES: TemplateIdentity = {
     gallery: [
       { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop", alt: "Serviced commercial building" },
       { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80&fit=crop", alt: "Residential building services" },
-      { url: "https://images.unsplash.com/photo-1621905252507-c17c00d5d0e5?w=800&q=80&fit=crop", alt: "HVAC install" },
-      { url: "https://images.unsplash.com/photo-1621905252189-72b656b799d5?w=800&q=80&fit=crop", alt: "Heating system upgrade" },
+      { url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80&fit=crop", alt: "HVAC install" },
+      { url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80&fit=crop", alt: "Heating system upgrade" },
     ],
     team: [
       { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Operations Lead" },
@@ -6034,14 +6034,14 @@ const SPARKLE_HOME: TemplateIdentity = {
 
   images: {
     hero: { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&q=85&fit=crop", alt: "Bright clean home interior" },
-    about: { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=800&q=80&fit=crop", alt: "House cleaning in progress" },
+    about: { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&fit=crop", alt: "House cleaning in progress" },
     services: [
-      { url: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", alt: "Regular house cleaning" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Regular house cleaning" },
       { url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80&fit=crop", alt: "Deep cleaning" },
       { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", alt: "Move-out cleaning" },
       { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", alt: "Carpet cleaning" },
       { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Window cleaning" },
-      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Kitchen deep clean" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Kitchen deep clean" },
     ],
     gallery: [
       { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop", alt: "Sparkling kitchen" },
@@ -6078,12 +6078,12 @@ const SPARKLE_HOME: TemplateIdentity = {
   ],
 
   services: [
-    { id: uid("svc"), title: "Regular House Clean", description: "Weekly, bi-weekly or monthly cleaning to keep your home consistently fresh.", icon: "🏠", iconType: "emoji", price: "From $79", imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94ebb3cfe?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Regular House Clean", description: "Weekly, bi-weekly or monthly cleaning to keep your home consistently fresh.", icon: "🏠", iconType: "emoji", price: "From $79", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Deep Clean", description: "Intensive top-to-bottom clean including baseboards, appliances and cabinet interiors.", icon: "✨", iconType: "emoji", price: "From $169", imageUrl: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Move-Out Cleaning", description: "Bond-back guaranteed cleaning to real-estate inspection standards.", icon: "🔑", iconType: "emoji", price: "From $229", imageUrl: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Carpet Cleaning", description: "Hot water extraction steam cleaning for carpets and area rugs.", icon: "🧼", iconType: "emoji", price: "From $69", imageUrl: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Window Cleaning", description: "Streak-free interior window cleaning using purified water systems.", icon: "🪟", iconType: "emoji", price: "From $49", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Kitchen Deep Clean", description: "Inside oven, fridge and cabinets — the spots regular cleans skip.", icon: "🍳", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Kitchen Deep Clean", description: "Inside oven, fridge and cabinets — the spots regular cleans skip.", icon: "🍳", iconType: "emoji", price: "From $89", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
   ],
 
   stats: [
@@ -6165,14 +6165,14 @@ const CLEANCORE_COMMERCIAL: TemplateIdentity = {
 
   images: {
     hero: { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1600&q=90&fit=crop", alt: "Modern office building" },
-    about: { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=800&q=80&fit=crop", alt: "Commercial cleaning crew" },
+    about: { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&fit=crop", alt: "Commercial cleaning crew" },
     services: [
       { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&fit=crop", alt: "Office cleaning" },
       { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80&fit=crop", alt: "Corporate lobby cleaning" },
       { url: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80&fit=crop", alt: "Warehouse cleaning" },
       { url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", alt: "Window cleaning" },
       { url: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", alt: "Carpet cleaning" },
-      { url: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", alt: "Sanitisation service" },
+      { url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", alt: "Sanitisation service" },
     ],
     gallery: [
       { url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&fit=crop", alt: "Clean corporate office" },
@@ -6214,7 +6214,7 @@ const CLEANCORE_COMMERCIAL: TemplateIdentity = {
     { id: uid("svc"), title: "Retail & Storefront", description: "Customer-facing cleaning that keeps your storefront presentable during business hours.", icon: "🛍️", iconType: "emoji", price: "From $220/mo", imageUrl: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Window & Facade Cleaning", description: "Interior and exterior window cleaning for multi-storey commercial buildings.", icon: "🪟", iconType: "emoji", price: "From $300", imageUrl: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Carpet & Floor Care", description: "Commercial-grade carpet extraction and hard floor stripping/waxing services.", icon: "🧼", iconType: "emoji", price: "From $0.15/sqft", imageUrl: "https://images.unsplash.com/photo-1558882224-dda166733046?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Disinfection Services", description: "Hospital-grade sanitisation for high-touch surfaces and shared spaces.", icon: "🧴", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1585421514284-efb74320b7ca?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Disinfection Services", description: "Hospital-grade sanitisation for high-touch surfaces and shared spaces.", icon: "🧴", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80&fit=crop", link: "#contact" },
   ],
 
   stats: [
@@ -6702,7 +6702,7 @@ const STREETBITE: TemplateIdentity = {
 
   images: {
     hero: { url: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=900&q=85&fit=crop", alt: "Street food truck" },
-    about: { url: "https://images.unsplash.com/photo-1565299585323-38174c4a6471?w=800&q=80&fit=crop", alt: "Food truck cooking" },
+    about: { url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&q=80&fit=crop", alt: "Food truck cooking" },
     services: [
       { url: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=600&q=80&fit=crop", alt: "Loaded tacos" },
       { url: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600&q=80&fit=crop", alt: "Street burger" },
@@ -8333,10 +8333,10 @@ const VAULTSTORE: TemplateIdentity = {
 
   images: {
     hero: { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=900&q=85&fit=crop", alt: "Self-storage facility" },
-    about: { url: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=800&q=80&fit=crop", alt: "Moving truck loading" },
+    about: { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&q=80&fit=crop", alt: "Moving truck loading" },
     services: [
       { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&q=80&fit=crop", alt: "Self-storage units" },
-      { url: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=600&q=80&fit=crop", alt: "Residential moving" },
+      { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&q=80&fit=crop", alt: "Residential moving" },
       { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", alt: "Packing service" },
       { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", alt: "Commercial moving" },
       { url: "https://images.unsplash.com/photo-1600518464658-6a8be0fbb6c9?w=600&q=80&fit=crop", alt: "Climate-controlled storage" },
@@ -8344,7 +8344,7 @@ const VAULTSTORE: TemplateIdentity = {
     ],
     gallery: [
       { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&q=80&fit=crop", alt: "Storage facility exterior" },
-      { url: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=800&q=80&fit=crop", alt: "Moving day" },
+      { url: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&q=80&fit=crop", alt: "Moving day" },
       { url: "https://images.unsplash.com/photo-1600518464658-6a8be0fbb6c9?w=800&q=80&fit=crop", alt: "Climate-controlled unit" },
       { url: "https://images.unsplash.com/photo-1600880292630-ee8a00847a68?w=800&q=80&fit=crop", alt: "Secure storage" },
     ],
@@ -8378,7 +8378,7 @@ const VAULTSTORE: TemplateIdentity = {
 
   services: [
     { id: uid("svc"), title: "Self-Storage Units", description: "Secure, climate-controlled storage units in various sizes, month-to-month rental.", icon: "🔐", iconType: "emoji", price: "From $59/mo", imageUrl: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Residential Moving", description: "Full-service home moving, from apartments to full houses, local and long-distance.", icon: "🏠", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1580250891028-7a71a56ef8a2?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Residential Moving", description: "Full-service home moving, from apartments to full houses, local and long-distance.", icon: "🏠", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Commercial Moving", description: "Office and business relocations planned to minimise downtime.", icon: "🏢", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Packing Services", description: "Professional packing and unpacking using quality materials to protect your belongings.", icon: "📦", iconType: "emoji", price: "From $180", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Climate-Controlled Storage", description: "Temperature and humidity controlled units for sensitive items like electronics and antiques.", icon: "🌡️", iconType: "emoji", price: "From $89/mo", imageUrl: "https://images.unsplash.com/photo-1600518464658-6a8be0fbb6c9?w=600&q=80&fit=crop", link: "#contact" },
@@ -8692,7 +8692,7 @@ const PANELCRAFT: TemplateIdentity = {
   category: "Automotive",
   author: "Passive Coder",
   version: "1.0.0",
-  previewImage: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=1200&q=85&fit=crop",
+  previewImage: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85&fit=crop",
   tags: ["panel beating", "smash repairs", "auto body", "car paint"],
 
   palette: {
@@ -8735,26 +8735,26 @@ const PANELCRAFT: TemplateIdentity = {
   },
 
   images: {
-    hero: { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=1600&q=90&fit=crop", alt: "Auto body repair shop" },
-    about: { url: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=800&q=80&fit=crop", alt: "Car paint spray booth" },
+    hero: { url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=90&fit=crop", alt: "Auto body repair shop" },
+    about: { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80&fit=crop", alt: "Car paint spray booth" },
     services: [
-      { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", alt: "Panel beating" },
-      { url: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=600&q=80&fit=crop", alt: "Car paint spraying" },
+      { url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&fit=crop", alt: "Panel beating" },
+      { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", alt: "Car paint spraying" },
       { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80&fit=crop", alt: "Dent repair" },
       { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", alt: "Insurance claim repair" },
       { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", alt: "Bumper repair" },
-      { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", alt: "Full body restoration" },
+      { url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&fit=crop", alt: "Full body restoration" },
     ],
     gallery: [
-      { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=800&q=80&fit=crop", alt: "Before and after repair" },
-      { url: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=800&q=80&fit=crop", alt: "Paint booth work" },
+      { url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&fit=crop", alt: "Before and after repair" },
+      { url: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80&fit=crop", alt: "Paint booth work" },
       { url: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=800&q=80&fit=crop", alt: "Completed restoration" },
       { url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80&fit=crop", alt: "Bodywork detail" },
     ],
     team: [
       { url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80&fit=crop&face", alt: "Master Panel Beater" },
     ],
-    cta: { url: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=1200&q=80&fit=crop", alt: "Get a repair quote" },
+    cta: { url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80&fit=crop", alt: "Get a repair quote" },
   },
 
   heroHeadline: "Restore Your Vehicle to Showroom Condition",
@@ -8780,12 +8780,12 @@ const PANELCRAFT: TemplateIdentity = {
   ],
 
   services: [
-    { id: uid("svc"), title: "Panel Beating", description: "Structural and cosmetic panel repair returning your vehicle to factory shape.", icon: "🔨", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Paint Matching & Spraying", description: "Computer-matched paint spraying for a seamless, invisible repair finish.", icon: "🎨", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1632823471565-1ecdf7c8b1d3?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Panel Beating", description: "Structural and cosmetic panel repair returning your vehicle to factory shape.", icon: "🔨", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Paint Matching & Spraying", description: "Computer-matched paint spraying for a seamless, invisible repair finish.", icon: "🎨", iconType: "emoji", price: "From $450", imageUrl: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Dent Repair", description: "Paintless dent removal for minor dings, and traditional repair for major damage.", icon: "🔵", iconType: "emoji", price: "From $150", imageUrl: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Insurance Claim Repairs", description: "Full-service repairs with direct insurance billing — we manage the whole claim.", icon: "📋", iconType: "emoji", price: "Insurance covered", imageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80&fit=crop", link: "#contact" },
     { id: uid("svc"), title: "Bumper Repair", description: "Bumper repair and replacement for scrapes, cracks and major damage.", icon: "🚗", iconType: "emoji", price: "From $250", imageUrl: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&q=80&fit=crop", link: "#contact" },
-    { id: uid("svc"), title: "Full Restoration", description: "Complete body restoration for classic cars and major collision damage.", icon: "🏆", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7c93?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Full Restoration", description: "Complete body restoration for classic cars and major collision damage.", icon: "🏆", iconType: "emoji", price: "Request Quote", imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&fit=crop", link: "#contact" },
   ],
 
   stats: [
