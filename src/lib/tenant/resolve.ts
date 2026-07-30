@@ -12,12 +12,14 @@ export interface Tenant {
   onboarding_completed: boolean;
 }
 
-const cache = new Map<string, Tenant | null>();
+const CACHE_TTL_MS = 30_000;
+const cache = new Map<string, { tenant: Tenant | null; expiresAt: number }>();
 
 export async function resolveTenant(host: string): Promise<Tenant | null> {
   if (!isSaaS) return null;
   const hostname = host.split(":")[0].toLowerCase();
-  if (cache.has(hostname)) return cache.get(hostname) ?? null;
+  const cached = cache.get(hostname);
+  if (cached && cached.expiresAt > Date.now()) return cached.tenant;
 
   const supabase = await createAdminClient();
   let tenant: Tenant | null = null;
@@ -48,6 +50,6 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
     tenant = data ?? null;
   }
 
-  cache.set(hostname, tenant);
+  cache.set(hostname, { tenant, expiresAt: Date.now() + CACHE_TTL_MS });
   return tenant;
 }
