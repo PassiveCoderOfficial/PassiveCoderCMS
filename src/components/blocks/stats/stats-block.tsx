@@ -29,6 +29,27 @@ function useCountUp(target: number, animate: boolean, duration = 1500) {
   return animate ? count : target;
 }
 
+/** Stat values are a single combined string like "4.9★" or "4,200+" — there's
+ *  no separate numeric field. Split off the leading number (decimals allowed)
+ *  from whatever text surrounds it, so the count-up animation can tick the
+ *  number while keeping the rest ("★", "+", "%", "yr") as a static suffix. */
+function parseStatValue(value: string): { number: number; suffix: string } {
+  const match = /^(\d[\d,]*\.?\d*)/.exec(value.trim());
+  if (!match) return { number: 0, suffix: value };
+  const number = parseFloat(match[1].replace(/,/g, "")) || 0;
+  const suffix = value.slice(match[1].length);
+  return { number, suffix };
+}
+
+function useStatDisplay(item: StatItem, animate: boolean): string {
+  const { number, suffix } = parseStatValue(item.value);
+  const isDecimal = !Number.isInteger(number);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const count = useCountUp(number, animate && !isDecimal);
+  if (!animate || number === 0 || isDecimal) return item.value;
+  return `${item.prefix ?? ""}${count.toLocaleString()}${suffix}`;
+}
+
 type StatItem = StatsBlockProps["data"]["items"][number];
 
 // ─── Variant: colored-row ─────────────────────────────────────────────────────
@@ -39,10 +60,8 @@ function StatsColoredRow({ data }: { data: StatsBlockProps["data"] }) {
     <div className="max-w-6xl mx-auto">
       <div className={cn("grid grid-cols-2 gap-px bg-primary/20 rounded-xl overflow-hidden", colClass)}>
         {data.items.map((item) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="stat-value-wrap bg-card flex flex-col items-center text-center p-8">
               <p className="stat-value text-4xl md:text-5xl font-extrabold text-primary tracking-tight">{display}</p>
@@ -63,10 +82,8 @@ function StatsPlainDark({ data }: { data: StatsBlockProps["data"] }) {
     <div className="max-w-5xl mx-auto">
       <div className={cn("grid grid-cols-2 gap-8", colClass)}>
         {data.items.map((item) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="flex flex-col items-center text-center">
               <p className="stat-value text-5xl font-light text-primary">{display}</p>
@@ -88,10 +105,8 @@ function StatsNavyRow({ data }: { data: StatsBlockProps["data"] }) {
     <div className="max-w-6xl mx-auto">
       <div className={cn("grid grid-cols-2 gap-8", colClass)}>
         {data.items.map((item) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="text-center">
               <p className="stat-value text-4xl md:text-5xl font-bold text-primary">{display}</p>
@@ -112,10 +127,8 @@ function StatsGradientNumbers({ data }: { data: StatsBlockProps["data"] }) {
     <div className="max-w-6xl mx-auto">
       <div className={cn("grid grid-cols-2 gap-8", colClass)}>
         {data.items.map((item) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="flex flex-col items-center text-center p-6 border border-border rounded-xl">
               {item.icon && (
@@ -141,10 +154,8 @@ function StatsBoldDarkRow({ data }: { data: StatsBlockProps["data"] }) {
     <div className="max-w-6xl mx-auto">
       <div className={cn("grid grid-cols-2 gap-1 bg-border", colClass)}>
         {data.items.map((item) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="bg-card flex flex-col items-center text-center p-8">
               <p className="stat-value text-5xl font-black text-primary">{display}</p>
@@ -165,10 +176,8 @@ function StatsWarmRow({ data }: { data: StatsBlockProps["data"] }) {
     <div className="max-w-5xl mx-auto">
       <div className={cn("grid grid-cols-2 gap-8", colClass)}>
         {data.items.map((item) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="text-center">
               <p className="stat-value text-4xl md:text-5xl font-bold text-primary italic">{display}</p>
@@ -191,10 +200,8 @@ function StatsDarkBand({ data }: { data: StatsBlockProps["data"] }) {
     <div className="w-full bg-primary">
       <div className={cn("max-w-6xl mx-auto grid grid-cols-2", colClass)}>
         {data.items.map((item, i) => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, data.animate);
-          const display = data.animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, data.animate);
           return (
             <div
               key={item.id}
