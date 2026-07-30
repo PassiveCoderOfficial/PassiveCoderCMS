@@ -4753,6 +4753,137 @@ const HANDYFIX_PRO: TemplateIdentity = {
   ],
 };
 
+// ─── TEMPLATE 31b: ARA M&E Construction (Reinstatement / Demolition / Reno) ──
+
+const ARA_CONSTRUCTION: TemplateIdentity = {
+  slug: "ara-construction",
+  name: "ARA M&E Construction",
+  description: "Trust-forward template for reinstatement, demolition and renovation contractors. Dual Call + WhatsApp CTAs throughout, built for fast commercial and residential lead capture.",
+  category: "Renovation & Construction",
+  author: "Passive Coder",
+  version: "1.0.0",
+  previewImage: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=85&fit=crop",
+  tags: ["reinstatement", "demolition", "renovation", "construction", "singapore"],
+
+  palette: {
+    primary: "#c2410c",
+    primaryFg: "#ffffff",
+    secondary: "#111827",
+    accent: "#f97316",
+    background: "#ffffff",
+    foreground: "#111827",
+    muted: "#f3f4f6",
+    mutedFg: "#4b5563",
+    card: "#ffffff",
+    border: "#e5e7eb",
+    ring: "#c2410c",
+    borderRadius: "0.375rem",
+  },
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    headingWeight: "800",
+    letterSpacing: "-0.01em",
+  },
+  customCss: `
+    .template-ara-construction .hero-badge { background: #c2410c; color: #fff; border-radius: 9999px; font-weight: 700; }
+    .template-ara-construction .service-card { border-top: 3px solid #c2410c; }
+    .template-ara-construction .stat-value { color: #c2410c; font-weight: 900; }
+  `,
+
+  variants: {
+    hero: "split-image-right",
+    services: "dark-grid-cards",
+    testimonials: "dark-quote-cards",
+    features: "dark-alternating",
+    stats: "bold-dark-row",
+    cta: "orange-banner",
+    pricing: "dark-cards",
+    faq: "accordion-dark",
+    navigation: "solid-with-cta",
+    team: "dark-avatar-cards",
+  },
+
+  images: {
+    hero: { url: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=85&fit=crop", alt: "Commercial reinstatement and demolition work" },
+    about: { url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80&fit=crop", alt: "Construction team on site" },
+    services: [
+      { url: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&q=80&fit=crop", alt: "Office reinstatement" },
+      { url: "https://images.unsplash.com/photo-1580901369030-0b290ad57ff2?w=600&q=80&fit=crop", alt: "Retail shop reinstatement" },
+      { url: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&fit=crop", alt: "Commercial demolition" },
+      { url: "https://images.unsplash.com/photo-1541976590-713941681591?w=600&q=80&fit=crop", alt: "Industrial demolition" },
+      { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", alt: "F&B kitchen demolition" },
+      { url: "https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=600&q=80&fit=crop", alt: "HDB home renovation" },
+      { url: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=600&q=80&fit=crop", alt: "Condo renovation" },
+      { url: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&q=80&fit=crop", alt: "Kitchen renovation" },
+    ],
+    gallery: [
+      { url: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&fit=crop", alt: "Completed office reinstatement" },
+      { url: "https://images.unsplash.com/photo-1541976590-713941681591?w=800&q=80&fit=crop", alt: "Industrial demolition site" },
+      { url: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&q=80&fit=crop", alt: "Renovated condo living room" },
+      { url: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800&q=80&fit=crop", alt: "Renovated kitchen" },
+    ],
+    team: [
+      { url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&fit=crop&face", alt: "Site Supervisor" },
+    ],
+    cta: { url: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=80&fit=crop", alt: "Request a free site inspection" },
+  },
+
+  heroHeadline: "Reinstatement, Demolition & Renovation Done Right",
+  heroSubline: "ARA M&E Construction Pte. Ltd. delivers reliable reinstatement, demolition and home renovation services across Singapore — on time, on budget, fully compliant.",
+  heroBadge: "🛠️ Free Site Inspection & Quotation",
+  heroCTA: "Call Us Now",
+  heroSecondaryCTA: "WhatsApp Us",
+  siteName: "ARA M&E Construction",
+  tagline: "Experienced specialists in reinstatement, demolition and renovation",
+  phone: "+65 8485 9928",
+  email: "info@araconstruction.com",
+  address: "Singapore",
+  aboutHeading: "Complete Reinstatement, Demolition & Renovation Solutions",
+  aboutBody: "ARA M&E Construction Pte. Ltd. manages every stage of reinstatement, demolition and renovation projects with careful planning, quality workmanship, and strict adherence to landlord and building management guidelines. Whether you're relocating, closing a business, or renovating your home, we deliver efficient, hassle-free solutions across Singapore.",
+  aboutHighlights: ["Experienced specialists across all trades", "Complete end-to-end project management", "Fast turnaround times", "Transparent, competitive pricing", "Compliance with landlord & building requirements", "Reliable after-service support"],
+
+  navItems: [
+    { id: "n1", label: "Services", url: "#services" },
+    { id: "n2", label: "Why Us", url: "#features" },
+    { id: "n3", label: "Gallery", url: "#gallery" },
+    { id: "n4", label: "Reviews", url: "#testimonials" },
+    { id: "n5", label: "Contact", url: "#contact" },
+  ],
+
+  services: [
+    { id: uid("svc"), title: "Office Reinstatement", description: "Partition dismantling, false ceiling removal, flooring removal, electrical point removal, painting and final site cleaning — restored to landlord's original condition.", icon: "🏢", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Retail Shop Reinstatement", description: "Careful dismantling of shop fittings, display shelves, counters, signage and lighting for malls, boutiques, salons and showrooms.", icon: "🏬", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1580901369030-0b290ad57ff2?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial Reinstatement", description: "Demolition works, glass partition removal, ceiling restoration, wall patching, electrical and plumbing reinstatement for commercial units of all sizes.", icon: "🏗️", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "F&B Reinstatement", description: "Kitchen dismantling, exhaust duct and grease trap removal, plumbing restoration and electrical disconnection for restaurants, cafés and commercial kitchens.", icon: "🍽️", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Commercial & Industrial Demolition", description: "Safe, controlled demolition for offices, retail, warehouses and factories — modern equipment, full compliance with Singapore safety standards.", icon: "🧱", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1541976590-713941681591?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Interior Demolition", description: "Dismantling of drywall and glass partitions, suspended ceilings, floor finishes and built-in furniture for renovation and fit-out projects.", icon: "🔨", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "HDB & Condo Renovation", description: "Living room, bedroom, kitchen and bathroom renovation, flooring, false ceilings, painting, carpentry, lighting, plumbing and electrical upgrades.", icon: "🏠", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=600&q=80&fit=crop", link: "#contact" },
+    { id: uid("svc"), title: "Kitchen & Bathroom Renovation", description: "Cabinet and countertop installation, wall and floor tiling, waterproofing, plumbing and lighting upgrades for kitchens and bathrooms.", icon: "🚿", iconType: "emoji", imageUrl: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&q=80&fit=crop", link: "#contact" },
+  ],
+
+  stats: [
+    { id: uid("st"), value: "Free", label: "Site Inspection" },
+    { id: uid("st"), value: "Islandwide", label: "Singapore Coverage" },
+    { id: uid("st"), value: "100%", label: "Compliance Guaranteed" },
+    { id: uid("st"), value: "Fast", label: "Turnaround" },
+  ],
+
+  testimonials: [
+    { id: uid("t"), name: "Wei Ling Tan", role: "Office Manager", content: "ARA handled our office reinstatement quickly and passed landlord inspection first try. Transparent quotation, no hidden charges.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Marcus Lee", role: "Restaurant Owner", content: "Kitchen demolition and grease trap removal done safely and on schedule. Site left clean and ready for the next tenant.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Priya Nair", role: "Homeowner", content: "Renovated our whole HDB flat — kitchen, bathroom and living room. Great workmanship and they kept us updated throughout.", rating: 5 },
+  ],
+
+  faq: [
+    { id: uid("f"), question: "How much do reinstatement services cost in Singapore?", answer: "Cost depends on property size, type of premises, scope of work, and reinstatement requirements. Contact us for a free site assessment and quotation." },
+    { id: uid("f"), question: "How long does a reinstatement or demolition project take?", answer: "Most projects complete within a few days to a few weeks, depending on complexity and size of the premises." },
+    { id: uid("f"), question: "Do you handle electrical and plumbing reinstatement?", answer: "Yes — our team provides complete electrical, plumbing, demolition, painting, flooring and restoration services as part of every reinstatement project." },
+    { id: uid("f"), question: "Do you provide free quotations?", answer: "Yes. We offer free site inspections and no-obligation quotations throughout Singapore." },
+    { id: uid("f"), question: "Do you renovate HDB flats and condominiums?", answer: "Yes — we provide renovation services for HDB flats, BTO units, condominiums, apartments and landed properties throughout Singapore." },
+  ],
+};
+
 // ─── TEMPLATE 32: FlowMaster (Emergency Plumbing) ────────────────────────────
 
 const FLOWMASTER_PLUMBING: TemplateIdentity = {
@@ -9816,6 +9947,7 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   APEX_CONSTRUCT,
   BUILD_GUARD,
   HANDYFIX_PRO,
+  ARA_CONSTRUCTION,
   FLOWMASTER_PLUMBING,
   HEATWAVE_HVAC,
   TOTALBUILDS_SERVICES,

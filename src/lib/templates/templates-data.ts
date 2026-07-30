@@ -744,6 +744,18 @@ export const TEMPLATES: Template[] = [
     heroHeadline: "Grow Faster. Rank Higher. Convert More.",
     heroSubline: "Data-driven digital marketing strategies that deliver measurable results for ambitious brands.",
   },
+  {
+    id: "tpl-110", slug: "ara-construction", name: "ARA M&E Construction", category: "Renovation & Construction",
+    description: "Trust-forward template for reinstatement, demolition and renovation contractors. Dual Call + WhatsApp CTAs throughout, built for fast commercial and residential lead capture.",
+    tags: ["reinstatement", "demolition", "renovation", "construction", "singapore"],
+    gradient: "from-orange-700 to-gray-900", accentColor: "orange", accentColorHex: "#c2410c",
+    primaryColor: "#111827", secondaryColor: "#c2410c",
+    thumbFrom: "#c2410c", thumbTo: "#111827",
+    heroImage: "https://images.pexels.com/photos/439416/pexels-photo-439416.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    pages: 6, hasDemo: true, badge: "New",
+    heroHeadline: "Reinstatement, Demolition & Renovation Done Right",
+    heroSubline: "Reliable reinstatement, demolition and home renovation services across Singapore — on time, on budget, fully compliant.",
+  },
 ];
 
 export const TEMPLATE_CATEGORIES = [

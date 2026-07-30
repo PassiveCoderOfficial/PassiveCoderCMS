@@ -23,6 +23,20 @@ function navStyle(t: TemplateIdentity): "centered" | "split" | "default" {
   return "default";
 }
 
+// Templates whose hero/CTA copy explicitly calls out Call + WhatsApp (rather
+// than generic "Book Now"/anchor scrolling) get real tel:/wa.me links on
+// those two buttons instead of "#contact" — every other template is untouched.
+function dualCtaLinks(t: TemplateIdentity): { primaryUrl: string; secondaryUrl: string } | null {
+  const wantsCall = /call/i.test(t.heroCTA);
+  const wantsWhatsapp = /whatsapp/i.test(t.heroSecondaryCTA);
+  if (!wantsCall || !wantsWhatsapp) return null;
+  const digits = t.phone.replace(/[^0-9]/g, "");
+  return {
+    primaryUrl: `tel:${t.phone.replace(/\s+/g, "")}`,
+    secondaryUrl: `https://wa.me/${digits}?text=${encodeURIComponent(`Hello! I am interested in your services (${t.siteName}).`)}`,
+  };
+}
+
 // Registry faq variant name -> the faq block's actual "layout" prop. The block
 // only implements "accordion", "grid", and "simple".
 function faqLayout(t: TemplateIdentity): "accordion" | "grid" | "simple" {
@@ -186,7 +200,7 @@ export async function seedTemplate(
     .insert({
       tenant_id: tenantId,
       name: `${template.name} Services`,
-      description: template.description,
+      slug: "main-services",
       sort_order: 0,
     })
     .select("id")
@@ -196,79 +210,93 @@ export async function seedTemplate(
     const serviceRows = template.services.map((s, i) => ({
       tenant_id: tenantId,
       group_id: grp.id,
-      name: s.title,
+      title: s.title,
       description: s.description,
-      price: s.price ?? null,
       icon_type: s.iconType,
-      icon_value: s.icon,
+      icon: s.icon,
       image_url: s.imageUrl ?? null,
+      link: s.link ?? null,
       sort_order: i,
-      active: true,
     }));
     await supabase.from("service_items").insert(serviceRows);
   }
 
   // ── 5. Testimonials ──────────────────────────────────────────────────────────
   if (template.testimonials.length > 0) {
-    const rows = template.testimonials.map((t, i) => ({
-      tenant_id: tenantId,
-      reviewer_name: t.name,
-      reviewer_location: t.role + (t.company ? `, ${t.company}` : ""),
-      review_text: t.content,
-      rating: t.rating,
-      avatar_url: t.avatar ?? null,
-      source: "manual" as const,
-      published: true,
-      sort_order: i,
-    }));
-    await supabase.from("testimonials").insert(rows);
-  }
-
-  // ── 6. Pricing ───────────────────────────────────────────────────────────────
-  if (template.pricing && template.pricing.length > 0) {
-    const { data: pGrp } = await supabase
-      .from("pricing_groups")
+    const { data: tGrp } = await supabase
+      .from("testimonial_groups")
       .insert({
         tenant_id: tenantId,
-        name: "Main Pricing",
-        subtitle: "Simple, transparent pricing",
+        name: "Main Testimonials",
+        slug: "main-testimonials",
         sort_order: 0,
       })
       .select("id")
       .single();
 
-    if (pGrp) {
+    if (tGrp) {
+      const rows = template.testimonials.map((t, i) => ({
+        tenant_id: tenantId,
+        group_id: tGrp.id,
+        source: "custom" as const,
+        name: t.name,
+        role: t.role + (t.company ? `, ${t.company}` : ""),
+        content: t.content,
+        rating: t.rating,
+        avatar: t.avatar ?? null,
+        published: true,
+        sort_order: i,
+      }));
+      await supabase.from("testimonials").insert(rows);
+    }
+  }
+
+  // ── 6. Pricing ───────────────────────────────────────────────────────────────
+  if (template.pricing && template.pricing.length > 0) {
+    const { data: pTable } = await supabase
+      .from("pricing_tables")
+      .insert({
+        tenant_id: tenantId,
+        name: "Main Pricing",
+        slug: "main-pricing",
+        sort_order: 0,
+      })
+      .select("id")
+      .single();
+
+    if (pTable) {
       const rows = template.pricing.map((tier, i) => ({
         tenant_id: tenantId,
-        group_id: pGrp.id,
+        table_id: pTable.id,
         name: tier.name,
         price: tier.price,
-        period: tier.period ?? null,
+        price_suffix: tier.period ?? null,
         description: tier.description ?? null,
         features: tier.features,
         cta_label: tier.ctaLabel,
-        is_highlighted: tier.highlighted ?? false,
+        cta_url: tier.ctaUrl ?? null,
+        is_featured: tier.highlighted ?? false,
         badge: tier.badge ?? null,
         sort_order: i,
-        active: true,
       }));
-      await supabase.from("pricing_items").insert(rows);
+      await supabase.from("pricing_packages").insert(rows);
     }
   }
 
   // ── 7. Contact details ───────────────────────────────────────────────────────
-  await supabase.from("contact_details").upsert(
-    {
-      tenant_id: tenantId,
-      phone: template.phone,
-      email: template.email,
-      address: template.address,
-      show_floating_whatsapp: true,
-      floating_whatsapp_number: template.phone.replace(/[^0-9]/g, ""),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "tenant_id" },
-  );
+  // No unique constraint on tenant_id alone, so upsert-by-onConflict isn't
+  // available here — clear the old primary row and insert fresh.
+  await supabase.from("contact_details").delete().eq("tenant_id", tenantId).eq("is_primary", true);
+  await supabase.from("contact_details").insert({
+    tenant_id: tenantId,
+    label: "Main",
+    phone: template.phone,
+    whatsapp: template.phone,
+    email: template.email,
+    address: template.address,
+    floating_whatsapp: true,
+    is_primary: true,
+  });
 
   // ── 8. Multi-page seeding ────────────────────────────────────────────────────
   // Delete all existing pages for this tenant, then insert a full site.
@@ -312,6 +340,7 @@ export function buildHomePageBlocks(t: TemplateIdentity): Block[] {
   } as Block);
 
   // Hero — always gets the real hero image + template variant
+  const heroCta = dualCtaLinks(t);
   blocks.push({
     ...BASE_BLOCK,
     id: uid("hero"),
@@ -327,8 +356,8 @@ export function buildHomePageBlocks(t: TemplateIdentity): Block[] {
       title: t.heroHeadline,
       subtitle: t.heroSubline,
       description: t.aboutBody.split(".")[0] + ".",
-      primaryButton: { label: t.heroCTA, url: "#contact", variant: "primary" },
-      secondaryButton: { label: t.heroSecondaryCTA, url: "#services", variant: "outline" },
+      primaryButton: { label: t.heroCTA, url: heroCta?.primaryUrl ?? "#contact", variant: "primary" },
+      secondaryButton: { label: t.heroSecondaryCTA, url: heroCta?.secondaryUrl ?? "#services", variant: "outline" },
       imageUrl: t.images.hero.url,
       imageAlt: t.images.hero.alt,
       overlayOpacity: 0.55,
@@ -560,8 +589,10 @@ export function buildHomePageBlocks(t: TemplateIdentity): Block[] {
     data: {
       title: `Ready to Get Started?`,
       description: t.tagline,
-      primaryButton: { label: t.heroCTA, url: "#contact" },
-      secondaryButton: { label: "Learn More", url: "#services" },
+      primaryButton: { label: t.heroCTA, url: heroCta?.primaryUrl ?? "#contact" },
+      secondaryButton: heroCta
+        ? { label: t.heroSecondaryCTA, url: heroCta.secondaryUrl }
+        : { label: "Learn More", url: "#services" },
       layout: "centered",
     },
   } as Block);
