@@ -9,10 +9,12 @@ const REF_COOKIE = "ref_code";
 const REF_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
 
 async function updateSession(request: NextRequest) {
-  // Inject pathname so server layouts can read it via headers()
-  const requestWithPathname = new NextRequest(request, {
-    headers: { "x-pathname": request.nextUrl.pathname },
-  });
+  // Inject pathname so server layouts can read it via headers() — merge onto
+  // the existing header set rather than replacing it, so upstream headers
+  // (e.g. x-tenant-id set by the subdomain-routing block below) survive.
+  const mergedHeaders = new Headers(request.headers);
+  mergedHeaders.set("x-pathname", request.nextUrl.pathname);
+  const requestWithPathname = new NextRequest(request, { headers: mergedHeaders });
   request = requestWithPathname;
   let supabaseResponse = NextResponse.next({ request });
 

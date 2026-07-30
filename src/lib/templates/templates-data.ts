@@ -745,7 +745,7 @@ export const TEMPLATES: Template[] = [
     heroSubline: "Data-driven digital marketing strategies that deliver measurable results for ambitious brands.",
   },
   {
-    id: "tpl-110", slug: "ara-construction", name: "ARA M&E Construction", category: "Renovation & Construction",
+    id: "tpl-110", slug: "construction-pro", name: "ConstructionPro", category: "Renovation & Construction",
     description: "Trust-forward template for reinstatement, demolition and renovation contractors. Dual Call + WhatsApp CTAs throughout, built for fast commercial and residential lead capture.",
     tags: ["reinstatement", "demolition", "renovation", "construction", "singapore"],
     gradient: "from-orange-700 to-gray-900", accentColor: "orange", accentColorHex: "#c2410c",

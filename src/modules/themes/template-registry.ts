@@ -4753,11 +4753,11 @@ const HANDYFIX_PRO: TemplateIdentity = {
   ],
 };
 
-// ─── TEMPLATE 31b: ARA M&E Construction (Reinstatement / Demolition / Reno) ──
+// ─── TEMPLATE 31b: ConstructionPro (Reinstatement / Demolition / Reno) ───────
 
-const ARA_CONSTRUCTION: TemplateIdentity = {
-  slug: "ara-construction",
-  name: "ARA M&E Construction",
+const CONSTRUCTION_PRO: TemplateIdentity = {
+  slug: "construction-pro",
+  name: "ConstructionPro",
   description: "Trust-forward template for reinstatement, demolition and renovation contractors. Dual Call + WhatsApp CTAs throughout, built for fast commercial and residential lead capture.",
   category: "Renovation & Construction",
   author: "Passive Coder",
@@ -4786,9 +4786,9 @@ const ARA_CONSTRUCTION: TemplateIdentity = {
     letterSpacing: "-0.01em",
   },
   customCss: `
-    .template-ara-construction .hero-badge { background: #c2410c; color: #fff; border-radius: 9999px; font-weight: 700; }
-    .template-ara-construction .service-card { border-top: 3px solid #c2410c; }
-    .template-ara-construction .stat-value { color: #c2410c; font-weight: 900; }
+    .template-construction-pro .hero-badge { background: #c2410c; color: #fff; border-radius: 9999px; font-weight: 700; }
+    .template-construction-pro .service-card { border-top: 3px solid #c2410c; }
+    .template-construction-pro .stat-value { color: #c2410c; font-weight: 900; }
   `,
 
   variants: {
@@ -4830,17 +4830,17 @@ const ARA_CONSTRUCTION: TemplateIdentity = {
   },
 
   heroHeadline: "Reinstatement, Demolition & Renovation Done Right",
-  heroSubline: "ARA M&E Construction Pte. Ltd. delivers reliable reinstatement, demolition and home renovation services across Singapore — on time, on budget, fully compliant.",
+  heroSubline: "We deliver reliable reinstatement, demolition and home renovation services across Singapore — on time, on budget, fully compliant.",
   heroBadge: "🛠️ Free Site Inspection & Quotation",
   heroCTA: "Call Us Now",
   heroSecondaryCTA: "WhatsApp Us",
-  siteName: "ARA M&E Construction",
+  siteName: "ConstructionPro",
   tagline: "Experienced specialists in reinstatement, demolition and renovation",
-  phone: "+65 8485 9928",
-  email: "info@araconstruction.com",
+  phone: "+65 6123 4567",
+  email: "hello@constructionpro.com",
   address: "Singapore",
   aboutHeading: "Complete Reinstatement, Demolition & Renovation Solutions",
-  aboutBody: "ARA M&E Construction Pte. Ltd. manages every stage of reinstatement, demolition and renovation projects with careful planning, quality workmanship, and strict adherence to landlord and building management guidelines. Whether you're relocating, closing a business, or renovating your home, we deliver efficient, hassle-free solutions across Singapore.",
+  aboutBody: "We manage every stage of reinstatement, demolition and renovation projects with careful planning, quality workmanship, and strict adherence to landlord and building management guidelines. Whether you're relocating, closing a business, or renovating your home, we deliver efficient, hassle-free solutions across Singapore.",
   aboutHighlights: ["Experienced specialists across all trades", "Complete end-to-end project management", "Fast turnaround times", "Transparent, competitive pricing", "Compliance with landlord & building requirements", "Reliable after-service support"],
 
   navItems: [
@@ -4870,7 +4870,7 @@ const ARA_CONSTRUCTION: TemplateIdentity = {
   ],
 
   testimonials: [
-    { id: uid("t"), name: "Wei Ling Tan", role: "Office Manager", content: "ARA handled our office reinstatement quickly and passed landlord inspection first try. Transparent quotation, no hidden charges.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
+    { id: uid("t"), name: "Wei Ling Tan", role: "Office Manager", content: "They handled our office reinstatement quickly and passed landlord inspection first try. Transparent quotation, no hidden charges.", rating: 5, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Marcus Lee", role: "Restaurant Owner", content: "Kitchen demolition and grease trap removal done safely and on schedule. Site left clean and ready for the next tenant.", rating: 5, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80&fit=crop&face" },
     { id: uid("t"), name: "Priya Nair", role: "Homeowner", content: "Renovated our whole HDB flat — kitchen, bathroom and living room. Great workmanship and they kept us updated throughout.", rating: 5 },
   ],
@@ -9947,7 +9947,7 @@ export const TEMPLATE_REGISTRY: TemplateIdentity[] = [
   APEX_CONSTRUCT,
   BUILD_GUARD,
   HANDYFIX_PRO,
-  ARA_CONSTRUCTION,
+  CONSTRUCTION_PRO,
   FLOWMASTER_PLUMBING,
   HEATWAVE_HVAC,
   TOTALBUILDS_SERVICES,
