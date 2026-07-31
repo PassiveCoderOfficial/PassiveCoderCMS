@@ -37,6 +37,14 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
     transition,
   };
 
+  // Selecting a block from the Layers tab (or anywhere off-screen) should
+  // bring it into view — dnd-kit's own ref stays put on drag, so this only
+  // fires from a genuine selection change, not every render.
+  const elRef = React.useRef<HTMLDivElement | null>(null);
+  React.useEffect(() => {
+    if (isSelected) elRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [isSelected]);
+
   const clearLongPress = () => {
     if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
   };
@@ -60,7 +68,7 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
   return (
     <BlockContextMenu block={block} path={path} open={longPressOpen} onOpenChange={setLongPressOpen}>
       <div
-        ref={setNodeRef}
+        ref={(node) => { setNodeRef(node); elRef.current = node; }}
         style={style}
         className={cn(
           "relative group",

@@ -5,14 +5,13 @@ import { useBuilderStore } from "@/lib/store/builder";
 import { BuilderCanvas } from "./canvas/builder-canvas";
 import { PreviewFrame } from "./canvas/preview-frame";
 import { BlocksPanel } from "./blocks-panel/blocks-panel";
-import { SettingsPanel } from "./settings-panel/settings-panel";
 import { MobileBuilderShell } from "./mobile-builder-shell";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Monitor, Tablet, Smartphone, Eye, Edit3, Undo2, Redo2,
-  Save, PanelLeft, PanelRight, Loader2
+  Save, PanelLeft, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -133,7 +132,6 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
   } = useBuilderStore();
   const { saving, isDirty, lastSavedAt, handleSave } = controls;
   const [showBlocks, setShowBlocks] = useState(true);
-  const [showSettings, setShowSettings] = useState(true);
 
   const breakpoints = [
     { value: "desktop", icon: Monitor, label: "Desktop" },
@@ -216,14 +214,6 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
             <span className="text-xs text-muted-foreground hidden sm:inline">
               {saving ? "Saving…" : isDirty ? "Unsaved changes" : lastSavedAt ? "All changes saved" : ""}
             </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className={cn("h-8 w-8", !showSettings && "text-muted-foreground")} onClick={() => setShowSettings(!showSettings)}>
-                  <PanelRight className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Toggle settings panel</TooltipContent>
-            </Tooltip>
             <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-8 gap-1.5">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               {saving ? "Saving..." : "Save"}
@@ -234,7 +224,7 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
         {/* Main */}
         <div className="flex flex-1 overflow-hidden relative">
           {showBlocks && (
-            <div className="flex w-52 border-r shrink-0 overflow-hidden flex-col">
+            <div className="flex w-64 border-r shrink-0 overflow-hidden flex-col">
               <BlocksPanel />
             </div>
           )}
@@ -257,12 +247,6 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
               )}
             </div>
           </div>
-
-          {showSettings && mode === "edit" && (
-            <div className="flex w-64 border-l shrink-0 overflow-hidden flex-col">
-              <SettingsPanel />
-            </div>
-          )}
         </div>
       </div>
     </TooltipProvider>

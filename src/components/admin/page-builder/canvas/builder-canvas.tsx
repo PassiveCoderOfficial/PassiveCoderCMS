@@ -139,7 +139,12 @@ export function BuilderCanvas() {
   return (
     <div
       className={cn(
-        "min-h-full w-full bg-white transition-all duration-300",
+        // isolate caps every descendant's z-index (including blocks like the
+        // nav's z-[9999] mega-menu, authored for a real page's stacking
+        // context) so it can never render above the builder's own chrome —
+        // toolbars, the left panel, dialogs — regardless of the block's own
+        // z-index value.
+        "min-h-full w-full bg-white transition-all duration-300 isolate",
         mode === "preview" && "pointer-events-none",
       )}
       onClick={(e) => {

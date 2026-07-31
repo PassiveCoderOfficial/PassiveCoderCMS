@@ -13,12 +13,17 @@ export default function GrantSuperAdminButton({ userId, isSuperAdmin, isSelf }: 
 
   async function toggle() {
     setLoading(true);
-    await fetch("/api/super-admin/grant", {
+    const res = await fetch("/api/super-admin/grant", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, action: isSuperAdmin ? "revoke" : "grant" }),
     });
-    router.refresh();
+    if (res.ok) {
+      router.refresh();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.error ?? `Failed to ${isSuperAdmin ? "revoke" : "grant"} super admin`);
+    }
     setLoading(false);
   }
 

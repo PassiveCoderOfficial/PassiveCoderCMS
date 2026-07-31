@@ -11,9 +11,12 @@ export async function POST(req: Request) {
 
   if (action === "grant") {
     const { error } = await supabase.from("super_admins").insert({ user_id: userId, granted_by: caller.id });
-    if (error && error.code !== "23505") throw error; // ignore duplicate
+    if (error && error.code !== "23505") { // ignore duplicate
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   } else {
-    await supabase.from("super_admins").delete().eq("user_id", userId);
+    const { error } = await supabase.from("super_admins").delete().eq("user_id", userId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

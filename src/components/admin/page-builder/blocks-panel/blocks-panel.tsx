@@ -9,9 +9,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Search, Plus, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayersPanel } from "./layers-panel";
+import { SettingsPanel } from "../settings-panel/settings-panel";
 import { PresetThumbnail } from "./preset-thumbnail";
 import { deepClone, generateId } from "@/lib/utils";
-import type { Block, ContainerBlockProps } from "@/types/cms";
+import { createClient } from "@/lib/supabase/client";
+import type { Block, ContainerBlockProps, NavigationBlockProps } from "@/types/cms";
 import type { ModuleKey } from "@/components/admin/sidebar/nav-items";
 
 interface SavedPreset {
@@ -30,8 +32,8 @@ const categoryLabels: Record<string, string> = {
   interactive: "Interactive",
 };
 
-export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "sections" | "blocks" | "layers" }) {
-  const { addBlock: addBlockRaw, setMobileSheet } = useBuilderStore();
+export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "sections" | "blocks" | "layers" | "config" }) {
+  const { addBlock: addBlockRaw, setMobileSheet, selectedBlockId, tenantId } = useBuilderStore();
   // On mobile the panels live in a bottom sheet — adding a block should close
   // the sheet so the user immediately sees it land on the canvas. Harmless on
   // desktop (mobileSheet is always null there, so this is a no-op).
@@ -39,8 +41,38 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
     addBlockRaw(block, afterId, path);
     setMobileSheet(null);
   };
+  // A freshly-added nav block ships with placeholder links (Home/About/
+  // Services/Contact) — if the tenant already has a real header menu saved,
+  // use that instead so the block isn't obviously fake the moment it lands.
+  async function addBlockSmart(block: Block, afterId?: string, path?: Parameters<typeof addBlockRaw>[2]) {
+    if (block.type === "navigation" && tenantId) {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("nav_menus")
+          .select("items")
+          .eq("tenant_id", tenantId)
+          .eq("location", "header")
+          .maybeSingle();
+        const items = (data?.items as NavigationBlockProps["data"]["items"] | null) ?? null;
+        if (items && items.length > 0) {
+          (block as NavigationBlockProps).data.items = items;
+        }
+      } catch {
+        // Fall through with the placeholder items — never block adding the section.
+      }
+    }
+    addBlock(block, afterId, path);
+  }
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<"sections" | "blocks" | "layers">(initialTab);
+  const [tab, setTab] = useState<"sections" | "blocks" | "layers" | "config">(initialTab);
+  // Selecting a block anywhere (canvas click, layer click) jumps straight to
+  // its settings — no need to manually flip to the Config tab every time.
+  const prevSelectedRef = React.useRef(selectedBlockId);
+  useEffect(() => {
+    if (selectedBlockId && selectedBlockId !== prevSelectedRef.current) setTab("config");
+    prevSelectedRef.current = selectedBlockId;
+  }, [selectedBlockId]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [sectionSource, setSectionSource] = useState<"global" | "mine">("global");
   const [savedPresets, setSavedPresets] = useState<SavedPreset[] | null>(null);
@@ -124,21 +156,25 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
     return acc;
   }, {} as Record<string, BlockDefinition[]>);
 
+  // Primary tabs are just "Blocks" and "Config" — Sections/Blocks/Layers are
+  // sub-views inside the "Blocks" group so this panel alone covers what used
+  // to be split across a left blocks panel and a right settings panel.
+  const primaryTab = tab === "config" ? "config" : "blocks";
+
   return (
     <div className="flex flex-col h-full">
-      {/* Tabs */}
+      {/* Primary tabs */}
       <div className="flex border-b shrink-0">
         {([
-          { value: "sections", label: "Sections" },
           { value: "blocks", label: "Blocks" },
-          { value: "layers", label: "Layers" },
+          { value: "config", label: "Config" },
         ] as const).map((t) => (
           <button
             key={t.value}
-            onClick={() => setTab(t.value)}
+            onClick={() => setTab(t.value === "config" ? "config" : "sections")}
             className={cn(
               "flex-1 py-2 text-xs font-semibold transition-colors border-b-2",
-              tab === t.value
+              primaryTab === t.value
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground",
             )}
@@ -148,6 +184,34 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
         ))}
       </div>
 
+      {/* Sub-tabs (only inside the "Blocks" group) */}
+      {primaryTab === "blocks" && (
+        <div className="flex border-b shrink-0 bg-muted/30">
+          {([
+            { value: "sections", label: "Sections" },
+            { value: "blocks", label: "Blocks" },
+            { value: "layers", label: "Layers" },
+          ] as const).map((t) => (
+            <button
+              key={t.value}
+              onClick={() => setTab(t.value)}
+              className={cn(
+                "flex-1 py-1.5 text-[11px] font-medium transition-colors border-b-2",
+                tab === t.value
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {tab === "config" ? (
+        <SettingsPanel />
+      ) : (
+        <>
       {/* Search */}
       {tab !== "layers" && (
         <div className="p-3 border-b shrink-0">
@@ -199,7 +263,7 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
                   </p>
                   <div className="space-y-1.5">
                     {group.presets.map((p) => (
-                      <PresetRow key={p.id} preset={p} onAdd={() => addBlock(p.create())} />
+                      <PresetRow key={p.id} preset={p} onAdd={() => void addBlockSmart(p.create())} />
                     ))}
                   </div>
                 </div>
@@ -225,7 +289,7 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
                   </p>
                   <div className="space-y-1.5">
                     {group.presets.map((p) => (
-                      <SavedPresetRow key={p.id} preset={p} onAdd={() => addBlock(freshIds(p.blocks))} onDelete={() => deleteSavedPreset(p.id)} />
+                      <SavedPresetRow key={p.id} preset={p} onAdd={() => void addBlockSmart(freshIds(p.blocks))} onDelete={() => deleteSavedPreset(p.id)} />
                     ))}
                   </div>
                 </div>
@@ -264,17 +328,19 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 mb-1">
                       {categoryLabels[cat]}
                     </p>
-                    <BlockGrid blocks={blocks} onAdd={(def) => addBlock(def.create())} />
+                    <BlockGrid blocks={blocks} onAdd={(def) => void addBlockSmart(def.create())} />
                   </div>
                 ) : null,
               )
             ) : (
-              <BlockGrid blocks={filteredBlocks} onAdd={(def) => addBlock(def.create())} />
+              <BlockGrid blocks={filteredBlocks} onAdd={(def) => void addBlockSmart(def.create())} />
             )}
             {!filteredBlocks.length && (
               <p className="text-center text-xs text-muted-foreground py-6">No blocks found</p>
             )}
           </div>
+        </>
+      )}
         </>
       )}
     </div>
