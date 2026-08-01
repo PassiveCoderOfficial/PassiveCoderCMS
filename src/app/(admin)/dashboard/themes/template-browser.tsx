@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplateApplyButton } from "./template-apply-button";
-import type { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
+import type { BrowserTemplateItem } from "@/modules/templates/to-browser-item";
 
-type Template = (typeof TEMPLATE_REGISTRY)[number];
+type Template = BrowserTemplateItem;
 
 export function TemplateBrowser({
   templates,
@@ -94,13 +94,22 @@ export function TemplateBrowser({
                   )}
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={template.previewImage}
-                      alt={template.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+                    {template.previewImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={template.previewImage}
+                        alt={template.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      // Engine-authored templates have no screenshot until one
+                      // is captured — show their palette rather than a broken image.
+                      <div
+                        className="w-full h-full"
+                        style={{ background: `linear-gradient(135deg, ${template.palette.primary}, ${template.palette.secondary})` }}
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     {isActive && (
                       <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 font-semibold">

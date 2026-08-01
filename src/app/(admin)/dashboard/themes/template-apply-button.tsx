@@ -17,6 +17,9 @@ interface Props {
 export function TemplateApplyButton({ templateSlug, templateName, isActive, tenantId }: Props) {
   const [applying, setApplying] = useState(false);
   const [mode, setMode] = useState<"theme" | "full">("theme");
+  // Archiving is opt-in and never destructive — archived pages stay
+  // recoverable, so a template apply can't silently lose a site's content.
+  const [archiveExistingPages, setArchiveExistingPages] = useState(false);
   const router = useRouter();
 
   async function apply() {
@@ -25,7 +28,7 @@ export function TemplateApplyButton({ templateSlug, templateName, isActive, tena
       return;
     }
     const confirmMsg = mode === "full"
-      ? `Apply "${templateName}" in Full Demo mode? This will overwrite your home page with template content, services, testimonials, pricing, gallery and contact details.`
+      ? `Apply "${templateName}" in Full Demo mode? This will overwrite your home page with template content, services, testimonials, pricing, gallery and contact details.${archiveExistingPages ? "\n\nYour existing pages will be archived (recoverable, not deleted)." : ""}`
       : `Apply "${templateName}" in Theme mode? This changes colors, fonts and layout variants only. Your existing content is preserved.`;
     if (!confirm(confirmMsg)) return;
 
@@ -34,11 +37,14 @@ export function TemplateApplyButton({ templateSlug, templateName, isActive, tena
       const res = await fetch("/api/templates/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, templateSlug, mode }),
+        body: JSON.stringify({ tenantId, templateSlug, mode, archiveExistingPages: mode === "full" && archiveExistingPages }),
       });
-      const data = await res.json() as { error?: string };
+      const data = await res.json() as { error?: string; pagesCreated?: number; pagesArchived?: number };
       if (!res.ok) throw new Error(data.error ?? "Apply failed");
-      toast.success(`"${templateName}" applied! Your site now uses this template.`);
+      const detail = data.pagesCreated
+        ? ` ${data.pagesCreated} page${data.pagesCreated === 1 ? "" : "s"} added${data.pagesArchived ? `, ${data.pagesArchived} archived` : ""}.`
+        : "";
+      toast.success(`"${templateName}" applied!${detail}`);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to apply template");
@@ -87,6 +93,19 @@ export function TemplateApplyButton({ templateSlug, templateName, isActive, tena
           ? "Colors, fonts & layout variants only. Content unchanged."
           : "Full rebuild: real images, services, testimonials, pricing, home page."}
       </p>
+      {mode === "full" && (
+        <label className="flex items-start gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={archiveExistingPages}
+            onChange={(e) => setArchiveExistingPages(e.target.checked)}
+            className="mt-0.5 h-3 w-3 shrink-0 cursor-pointer"
+          />
+          <span className="text-[9px] leading-tight text-muted-foreground">
+            Archive my existing pages — they stay recoverable, nothing is deleted.
+          </span>
+        </label>
+      )}
       {/* Apply button */}
       <button
         onClick={apply}

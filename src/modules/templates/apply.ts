@@ -1,0 +1,191 @@
+/**
+ * Apply a DB-backed template to a tenant.
+ *
+ * This is the counterpart to `snapshot.ts` and the DB-driven replacement for
+ * `lib/templates/seed-template.ts` (which builds pages from the hardcoded
+ * TEMPLATE_REGISTRY). Both coexist until the registry is retired: callers
+ * pick based on whether the slug resolves to a DB template or a registry one.
+ *
+ * Copy-on-apply, always: the tenant gets its own copies of the template's
+ * pages. Later edits to the template never reach tenants that already applied
+ * it, and a tenant editing its pages never affects the template.
+ */
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Block, NavItem } from "@/types/cms";
+import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-registry";
+
+export type ApplyMode = "theme" | "full";
+
+export type ApplyOptions = {
+  /** Archive the tenant's current pages instead of leaving them alongside. */
+  archiveExistingPages?: boolean;
+};
+
+export type ApplyResult = {
+  pagesCreated: number;
+  pagesArchived: number;
+};
+
+type TemplateRow = {
+  id: string;
+  slug: string;
+  name: string;
+  palette: TemplatePalette | null;
+  typography: TemplateTypography | null;
+  custom_css: string | null;
+  logo_url: string | null;
+  favicon_url: string | null;
+  global_header: Block[] | null;
+  global_footer: Block[] | null;
+  nav_items: NavItem[] | null;
+};
+
+/**
+ * Applies `templateId` to `tenantId`.
+ *
+ * "theme" mode replaces the site's visual identity only — colours, fonts,
+ * nav, header/footer — leaving existing pages untouched. "full" additionally
+ * copies the template's pages in.
+ *
+ * Deliberately preserved on the tenant (never overwritten by a template):
+ * site_name, contact details, and anything outside site_identity's visual
+ * columns. Those are the tenant's own business facts, not template design.
+ */
+export async function applyDbTemplate(
+  supabase: SupabaseClient,
+  tenantId: string,
+  templateId: string,
+  mode: ApplyMode,
+  options: ApplyOptions = {},
+): Promise<ApplyResult> {
+  const { data: template } = await supabase
+    .from("templates")
+    .select("id, slug, name, palette, typography, custom_css, logo_url, favicon_url, global_header, global_footer, nav_items")
+    .eq("id", templateId)
+    .maybeSingle();
+
+  if (!template) throw new Error("Template not found");
+  const tpl = template as TemplateRow;
+
+  // ── 1. Visual identity ──────────────────────────────────────────────────
+  // `active_template_slug` still drives the live CSS-var pipeline, which
+  // resolves through the registry. A DB template has no registry entry, so
+  // its palette is written to `color_overrides` — the same field a tenant's
+  // manual colour tweaks live in, and which (site)/layout.tsx already layers
+  // on top of the active template's palette.
+  const identityPatch: Record<string, unknown> = {
+    tenant_id: tenantId,
+    active_template_slug: tpl.slug,
+    updated_at: new Date().toISOString(),
+  };
+  if (tpl.palette) {
+    identityPatch.color_overrides = tpl.palette;
+    identityPatch.primary_color = tpl.palette.primary;
+    identityPatch.secondary_color = tpl.palette.secondary;
+  }
+  if (tpl.logo_url) identityPatch.logo_url = tpl.logo_url;
+  if (tpl.favicon_url) identityPatch.favicon_url = tpl.favicon_url;
+  if (tpl.global_header) identityPatch.global_header = tpl.global_header;
+  if (tpl.global_footer) identityPatch.global_footer = tpl.global_footer;
+
+  await supabase.from("site_identity").upsert(identityPatch, { onConflict: "tenant_id" });
+
+  // ── 2. Navigation ───────────────────────────────────────────────────────
+  if (tpl.nav_items?.length) {
+    await supabase.from("nav_menus").upsert(
+      {
+        tenant_id: tenantId,
+        name: "Main Navigation",
+        location: "header",
+        items: tpl.nav_items,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "tenant_id,location" },
+    );
+  }
+
+  await supabase.from("tenant_template_imports").insert({
+    tenant_id: tenantId,
+    template_id: tpl.id,
+    template_slug: tpl.slug,
+    mode,
+    applied_at: new Date().toISOString(),
+  });
+
+  if (mode === "theme") {
+    return { pagesCreated: 0, pagesArchived: 0 };
+  }
+
+  // ── 3. Pages (full mode) ────────────────────────────────────────────────
+  // Archiving is soft and reversible by design — a template apply must never
+  // be the thing that destroys a customer's existing content.
+  let pagesArchived = 0;
+  if (options.archiveExistingPages) {
+    const { data: archived } = await supabase
+      .from("pages")
+      .update({ status: "archived", updated_at: new Date().toISOString() })
+      .eq("tenant_id", tenantId)
+      .is("deleted_at", null)
+      .neq("status", "archived")
+      .select("id");
+    pagesArchived = archived?.length ?? 0;
+  }
+
+  const { data: templatePages } = await supabase
+    .from("pages")
+    .select("title, slug, type, blocks, seo, settings, order_index, featured_image, excerpt")
+    .eq("template_id", templateId)
+    .is("deleted_at", null)
+    .order("order_index", { ascending: true });
+
+  const pages = templatePages ?? [];
+  if (pages.length === 0) return { pagesCreated: 0, pagesArchived };
+
+  // A tenant can't have two live pages on the same slug. Anything colliding
+  // with an incoming template page is archived rather than overwritten, so
+  // the old version stays recoverable.
+  const incomingSlugs = pages.map((p) => p.slug as string);
+  const { data: collisions } = await supabase
+    .from("pages")
+    .update({ status: "archived", updated_at: new Date().toISOString() })
+    .eq("tenant_id", tenantId)
+    .in("slug", incomingSlugs)
+    .is("deleted_at", null)
+    .neq("status", "archived")
+    .select("id");
+  pagesArchived += collisions?.length ?? 0;
+
+  const now = new Date().toISOString();
+  const rows = pages.map((p, i) => ({
+    tenant_id: tenantId,
+    template_id: null,
+    title: p.title,
+    slug: p.slug,
+    type: p.type ?? "page",
+    status: "published",
+    blocks: p.blocks ?? [],
+    seo: p.seo ?? {},
+    settings: p.settings ?? {},
+    featured_image: p.featured_image ?? null,
+    excerpt: p.excerpt ?? null,
+    order_index: p.order_index ?? i,
+    created_at: now,
+    updated_at: now,
+  }));
+
+  const { error } = await supabase.from("pages").insert(rows);
+  if (error) throw new Error(`Failed to copy template pages: ${error.message}`);
+
+  return { pagesCreated: rows.length, pagesArchived };
+}
+
+/** True when `slug` resolves to a DB-authored template rather than a registry one. */
+export async function isDbTemplate(supabase: SupabaseClient, slug: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("templates")
+    .select("id")
+    .eq("slug", slug)
+    .not("owner_id", "is", null)
+    .maybeSingle();
+  return data?.id ?? null;
+}
