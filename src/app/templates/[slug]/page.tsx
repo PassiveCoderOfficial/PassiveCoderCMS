@@ -5,6 +5,13 @@ import { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
 import { buildHomePageBlocks } from "@/lib/templates/seed-template";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { createAdminClient } from "@/lib/supabase/server";
+import { resolvePreviewTemplate } from "@/modules/templates/preview";
+
+// Engine-authored templates live in the DB and change at runtime, so this
+// route can't be fully static any more. Registry slugs are still
+// pre-rendered; DB ones render on demand.
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   return TEMPLATE_REGISTRY.map(t => ({ slug: t.slug }));
@@ -12,24 +19,34 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const t = TEMPLATE_REGISTRY.find(x => x.slug === slug);
-  if (!t) return {};
+  const admin = await createAdminClient();
+  const resolved = await resolvePreviewTemplate(admin, slug);
+  if (!resolved) return {};
   return {
-    title: `${t.name} — Website Template | Passive Coder`,
-    description: t.description,
+    title: `${resolved.name} — Website Template | Passive Coder`,
+    description: resolved.description,
   };
 }
 
-export default async function TemplatePreviewPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function TemplatePreviewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { slug } = await params;
-  const template = TEMPLATE_REGISTRY.find(t => t.slug === slug);
+  const { page: pageSlug } = await searchParams;
+  const admin = await createAdminClient();
+
+  // Resolves a registry template or a published DB one into the same shape:
+  // blocks to render + the palette/typography to render them under. Either
+  // way the preview IS the applied result — same PageRenderer a live tenant
+  // site uses — so it can't drift from what "Build With This" produces.
+  const template = await resolvePreviewTemplate(admin, slug, pageSlug);
   if (!template) notFound();
 
-  // Same blocks seedTemplate() writes to a real tenant, rendered through the
-  // same PageRenderer a live site uses — this preview IS the applied result,
-  // not a separate mockup, so it can never drift from what "Build With This"
-  // actually produces.
-  const blocks = buildHomePageBlocks(template);
+  const blocks = template.blocks;
   const cssVars = buildTemplateCSSVars(template.palette, template.typography);
 
   return (
@@ -54,10 +71,26 @@ export default async function TemplatePreviewPage({ params }: { params: Promise<
             </span>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 text-xs text-gray-400">
-            <span>Previewing demo · </span>
-            <span className="font-medium text-gray-600">{template.name}</span>
-          </div>
+          {/* Multi-page templates get a page switcher; single-page ones just
+              show the label, so the bar doesn't look broken either way. */}
+          {template.pages.length > 1 ? (
+            <div className="hidden md:flex items-center gap-1 overflow-x-auto">
+              {template.pages.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/templates/${template.slug}?page=${p.slug}`}
+                  className="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  {p.title}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-2 text-xs text-gray-400">
+              <span>Previewing demo · </span>
+              <span className="font-medium text-gray-600">{template.name}</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <Link

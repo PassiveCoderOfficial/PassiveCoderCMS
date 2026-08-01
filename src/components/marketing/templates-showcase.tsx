@@ -65,16 +65,29 @@ const TEMPLATE_SERVICES: Record<string, string[]> = {
 };
 
 function TemplateThumbnail({ template }: { template: Template }) {
+  const src = template.slug in TEMPLATE_SERVICES
+    ? `/images/templates/${template.slug}.jpg`
+    : template.heroImage;
+
   return (
     <div className="w-full aspect-[4/3] rounded-t-xl overflow-hidden relative bg-gray-100">
-      <Image
-        src={template.slug in TEMPLATE_SERVICES ? `/images/templates/${template.slug}.jpg` : template.heroImage}
-        alt={template.name}
-        fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        className="object-cover object-top"
-        loading="lazy"
-      />
+      {src ? (
+        <Image
+          src={src}
+          alt={template.name}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover object-top"
+          loading="lazy"
+        />
+      ) : (
+        // Engine-authored templates have no screenshot until one is captured
+        // — show their brand colours rather than a broken/empty image.
+        <div
+          className="w-full h-full"
+          style={{ background: `linear-gradient(135deg, ${template.thumbFrom}, ${template.thumbTo})` }}
+        />
+      )}
     </div>
   );
 }
@@ -168,18 +181,25 @@ function TemplateCard({ template }: { template: Template }) {
 
 const ITEMS_PER_PAGE = 12;
 
-export default function TemplatesShowcase() {
+/**
+ * @param extraTemplates engine-authored templates from the DB, listed ahead
+ *   of the static catalog. Defaults to none so existing callers that render
+ *   the marketing catalog alone keep working unchanged.
+ */
+export default function TemplatesShowcase({ extraTemplates = [] }: { extraTemplates?: Template[] } = {}) {
   const [category, setCategory] = useState<string>("All");
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
 
+  const allTemplates = useMemo(() => [...extraTemplates, ...TEMPLATES], [extraTemplates]);
+
   const filtered = useMemo(() => {
-    return TEMPLATES.filter(t => {
+    return allTemplates.filter(t => {
       const matchCat = category === "All" || t.category === category;
       const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
       return matchCat && matchSearch;
     });
-  }, [category, search]);
+  }, [allTemplates, category, search]);
 
   const displayed = showAll ? filtered : filtered.slice(0, ITEMS_PER_PAGE);
   const hasMore = filtered.length > ITEMS_PER_PAGE && !showAll;
@@ -190,7 +210,7 @@ export default function TemplatesShowcase() {
         {/* Header */}
         <div className="text-center mb-12">
           <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-            <Sparkles className="w-3 h-3" /> {TEMPLATES.length} Industry Templates
+            <Sparkles className="w-3 h-3" /> {allTemplates.length} Industry Templates
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
             Pick a template. Launch in minutes.

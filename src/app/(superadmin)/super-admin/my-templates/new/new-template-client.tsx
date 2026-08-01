@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
-import { slugifyTemplateName } from "@/modules/templates/permissions";
+import { slugifyTemplateName } from "@/modules/templates/slug";
 import type { TemplateCategory } from "@/modules/templates/types";
 
 export default function NewTemplateClient({

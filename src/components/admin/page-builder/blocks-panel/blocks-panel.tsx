@@ -6,10 +6,11 @@ import { presetsByCategory, presetCategoryLabels, type SectionPreset, type Prese
 import { useBuilderStore } from "@/lib/store/builder";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, Trash2, Loader2 } from "lucide-react";
+import { Search, Plus, Trash2, Loader2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayersPanel } from "./layers-panel";
 import { SettingsPanel } from "../settings-panel/settings-panel";
+import { ImportDialog } from "../import/import-dialog";
 import { PresetThumbnail } from "./preset-thumbnail";
 import { deepClone, generateId } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -75,6 +76,7 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
   }, [selectedBlockId]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [sectionSource, setSectionSource] = useState<"global" | "mine">("global");
+  const [importOpen, setImportOpen] = useState(false);
   const [savedPresets, setSavedPresets] = useState<SavedPreset[] | null>(null);
   const loadingSaved = tab === "sections" && sectionSource === "mine" && savedPresets === null;
 
@@ -212,6 +214,19 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
         <SettingsPanel />
       ) : (
         <>
+      {/* Import — pull a layout in from another page or a template */}
+      {tab !== "layers" && (
+        <div className="px-2 pt-2 shrink-0">
+          <button
+            onClick={() => setImportOpen(true)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed py-2 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <Download className="h-3 w-3" /> Import from page or template
+          </button>
+        </div>
+      )}
+      <ImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+
       {/* Search */}
       {tab !== "layers" && (
         <div className="p-3 border-b shrink-0">

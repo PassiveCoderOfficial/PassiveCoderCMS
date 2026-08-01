@@ -41,13 +41,7 @@ export async function requireTemplateAuthor(): Promise<TemplateAuthor | null> {
   return agent ? { user, isSuperAdmin: false } : null;
 }
 
-/** Slugify a template name into a URL-safe, collision-checkable slug. */
-export function slugifyTemplateName(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-}
+// Re-exported for the server routes that already import it from here; the
+// implementation lives in `slug.ts` so client components can use it without
+// pulling this module's server-only Supabase imports into their bundle.
+export { slugifyTemplateName } from "./slug";
