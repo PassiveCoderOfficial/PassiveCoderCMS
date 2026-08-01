@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, CreditCard, Users, TicketIcon,
   Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, Plus, Menu, X, FileText, ChevronDown, Receipt,
+  LayoutTemplate,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,15 @@ const NAV: NavItem[] = [
   { label: "Agents",          href: "/super-admin/agents",       icon: Zap,             add: "/super-admin/agents/new" },
   { label: "Homepage Editor", href: "/super-admin/homepage",     icon: Edit3 },
   { label: "Root Pages",      href: "/super-admin/root-pages",   icon: FileText,        add: "/super-admin/root-pages/new" },
+  {
+    label: "My Templates",
+    href: "/super-admin/my-templates",
+    icon: LayoutTemplate,
+    add: "/super-admin/my-templates/new",
+    children: [
+      { label: "Categories", href: "/super-admin/my-templates/categories", icon: Settings2 },
+    ],
+  },
   { label: "Settings",        href: "/super-admin/settings",     icon: Settings },
 ];
 

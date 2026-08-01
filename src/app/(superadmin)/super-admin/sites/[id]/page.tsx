@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   Globe, ArrowLeft, ExternalLink, LayoutDashboard,
-  CreditCard, Users, Settings, Zap, AlertTriangle,
+  CreditCard, Users, Settings, Zap, AlertTriangle, LayoutTemplate,
 } from "lucide-react";
 import AssignAgent from "./assign-agent";
 import AssignOwner from "./assign-owner";
@@ -76,6 +76,14 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
             </a>
           </Button>
         )}
+        {/* Snapshots this site (pages, colours, nav, footer) into a new
+            reusable template. Read-only for the site itself. */}
+        <Button variant="secondary" asChild>
+          <Link href={`/super-admin/my-templates/new?from=${site.id}`}>
+            <LayoutTemplate className="w-4 h-4" />
+            Save as Template
+          </Link>
+        </Button>
         <DeleteSiteButton siteId={site.id} siteName={site.name} />
       </div>
 

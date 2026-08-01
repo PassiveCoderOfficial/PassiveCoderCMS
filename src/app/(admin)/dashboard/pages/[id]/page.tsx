@@ -42,6 +42,20 @@ export default async function PageEditorPage({ params }: Props) {
       templateCustomCss = templateIdentity.customCss ?? null;
     }
     tenantSlug = tenant?.slug ?? null;
+  } else if (page.template_id) {
+    // Template-owned page: theme the canvas from the template's own stored
+    // palette rather than a tenant's site_identity, so authoring a template
+    // looks the same as editing a real site using it.
+    const admin = await createAdminClient();
+    const { data: tpl } = await admin
+      .from("templates")
+      .select("palette, typography, custom_css")
+      .eq("id", page.template_id)
+      .maybeSingle();
+    if (tpl?.palette && tpl?.typography) {
+      templateCSSVars = buildTemplateCSSVars(tpl.palette, tpl.typography);
+    }
+    templateCustomCss = (tpl?.custom_css as string | null) ?? null;
   }
 
   return (
