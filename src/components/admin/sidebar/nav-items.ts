@@ -26,6 +26,7 @@
   SlidersHorizontal,
   DollarSign as PricingIcon,
   Calendar,
+  CalendarClock,
   Plus,
   Upload,
   Briefcase,
@@ -57,7 +58,7 @@ export type NavItem = {
 export const MODULE_KEYS = [
   "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
   "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
-  "visa_tour", "blood_donation", "marketplace",
+  "visa_tour", "blood_donation", "marketplace", "content_scheduler",
 ] as const;
 export type ModuleKey = typeof MODULE_KEYS[number];
 
@@ -80,6 +81,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   visa_tour: "Visa & Tour",
   blood_donation: "Blood Donation",
   marketplace: "Marketplace",
+  content_scheduler: "Content Scheduler",
 };
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
@@ -101,6 +103,7 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
   visa_tour: "Visa eligibility checkers, country info, and application status tracking",
   blood_donation: "Donor directory, requests, and blood-donation site tools",
   marketplace: "Multi-vendor marketplace — vendors, service catalog, and bookings",
+  content_scheduler: "Plan and schedule social content across brands and platforms",
 };
 
 export type NavSection = {
@@ -212,6 +215,17 @@ export const navSections: NavSection[] = [
       { label: "CRM", href: "/dashboard/crm", icon: Users, moduleKey: "crm" },
       { label: "Invoices", href: "/dashboard/invoices", icon: FileText, moduleKey: "invoices" },
       { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles, moduleKey: "marketing" },
+      {
+        label: "Content Scheduler",
+        href: "/dashboard/scheduler",
+        icon: CalendarClock,
+        moduleKey: "content_scheduler",
+        children: [
+          { label: "Calendar & Queue", href: "/dashboard/scheduler", icon: CalendarClock },
+          { label: "Brands", href: "/dashboard/scheduler/brands", icon: Layers },
+          { label: "Access", href: "/dashboard/scheduler/access", icon: Users },
+        ],
+      },
       { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase, moduleKey: "jobs" },
       { label: "POS", href: "/dashboard/pos", icon: ShoppingCart, moduleKey: "pos" },
       { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },

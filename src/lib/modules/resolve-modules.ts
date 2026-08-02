@@ -50,7 +50,44 @@ export async function resolveEnabledModules(tenantId: string): Promise<Record<Mo
     if (!included) { result[key] = false; continue; }
     result[key] = key in overrides ? !!overrides[key] : (cfg?.defaultOn ?? false);
   }
+
+  // The content scheduler is additionally gated per-user: the plan/tenant
+  // toggle only decides whether the module exists for this tenant at all,
+  // then tenant owners/admins plus explicitly granted users see it. Without
+  // this, every member of a Pro tenant would find the scheduler in their nav
+  // the moment it's switched on — it's meant for whoever runs the content.
+  if (result.content_scheduler) {
+    result.content_scheduler = await hasSchedulerAccess(tenantId);
+  }
   return result;
+}
+
+/** Owner/admin of the tenant, or holder of a content_module_grants row. */
+async function hasSchedulerAccess(tenantId: string): Promise<boolean> {
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  if (!user) return false;
+
+  const admin = await createAdminClient();
+  const { data: sa } = await admin
+    .from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
+  if (sa) return true;
+
+  const { data: member } = await admin
+    .from("tenant_members")
+    .select("role")
+    .eq("tenant_id", tenantId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (member && ["owner", "admin"].includes(member.role as string)) return true;
+
+  const { data: grant } = await admin
+    .from("content_module_grants")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return !!grant;
 }
 
 /** Server-route guard — returns whether a module is usable for the given
