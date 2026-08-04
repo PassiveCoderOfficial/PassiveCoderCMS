@@ -30,7 +30,22 @@ export async function getCurrentTenantId(): Promise<string> {
     const viewing = cookieStore.get(SA_VIEWING_COOKIE)?.value;
     if (viewing) return viewing;
 
-    // SA on root domain — use their own first tenant
+    // SA on root domain — use the actual root site, identified by slug
+    // matching the root domain (e.g. "passivecoder" for passivecoder.com),
+    // not "oldest tenant this SA happens to own" — an SA can own many demo/
+    // test tenants created before the real root site, so oldest-first
+    // silently picked a random demo tenant instead (the reported bug).
+    const rootSlug = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(".")[0];
+    const { data: rootTenant } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("owner_id", user.id)
+      .eq("slug", rootSlug)
+      .maybeSingle();
+    if (rootTenant?.id) return rootTenant.id;
+
+    // Fallback: no tenant slug matches the root domain — use their oldest
+    // owned tenant rather than leaving the dashboard with nothing to show.
     const { data: ownedTenant } = await adminClient
       .from("tenants")
       .select("id")

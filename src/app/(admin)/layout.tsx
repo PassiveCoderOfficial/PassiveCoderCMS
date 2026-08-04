@@ -238,17 +238,29 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // dashboard content it's showing drift apart (the actual bug reported).
     const subdomainTenantId = (await headers()).get("x-tenant-id");
     const currentViewingId = cookieStore.get(SA_VIEWING_COOKIE)?.value;
-    // Oldest-first, matching getCurrentTenantId()'s SA fallback exactly —
-    // an SA who owns multiple tenants must land on the same one as the
-    // dashboard content actually resolves, not "most recently created".
-    const { data: saOwnedTenant } = await adminClient
+    // Must match getCurrentTenantId()'s SA fallback exactly — slug matching
+    // the root domain (e.g. "passivecoder" for passivecoder.com) identifies
+    // the actual root site, since an SA can own many demo/test tenants
+    // created before it (oldest-first alone picked a random demo tenant).
+    const rootSlug = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(".")[0];
+    const { data: rootTenant } = await adminClient
       .from("tenants")
       .select("id")
       .eq("owner_id", user.id)
-      .order("created_at", { ascending: true })
-      .limit(1)
+      .eq("slug", rootSlug)
       .maybeSingle();
-    const activeTenantId = subdomainTenantId ?? currentViewingId ?? saOwnedTenant?.id;
+    let saOwnedId = rootTenant?.id;
+    if (!saOwnedId) {
+      const { data: oldestOwned } = await adminClient
+        .from("tenants")
+        .select("id")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      saOwnedId = oldestOwned?.id;
+    }
+    const activeTenantId = subdomainTenantId ?? currentViewingId ?? saOwnedId;
 
     const ownerIds = [...new Set((allTenants ?? []).map(t => t.owner_id).filter(Boolean))] as string[];
     const { data: owners } = ownerIds.length
