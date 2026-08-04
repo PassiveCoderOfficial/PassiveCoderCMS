@@ -228,10 +228,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // demo2.passivecoder.com without going through the switcher's "view as"
     // flow left the topbar showing whatever tenant the cookie last held
     // (or the fallback owned tenant), not demo2.
+    //
+    // Root-domain fallback (no subdomain, no viewing cookie) must be the SA's
+    // OWN tenant specifically — allTenants[0] was "whatever tenant was
+    // created most recently across the entire platform", so an SA hitting
+    // passivecoder.com/dashboard landed on a random other tenant's dashboard
+    // instead of their own root site. Must match getCurrentTenantId()'s
+    // resolution exactly, or the switcher's "current site" highlight and the
+    // dashboard content it's showing drift apart (the actual bug reported).
     const subdomainTenantId = (await headers()).get("x-tenant-id");
     const currentViewingId = cookieStore.get(SA_VIEWING_COOKIE)?.value;
-    const saOwnedId = allTenants?.[0]?.id;
-    const activeTenantId = subdomainTenantId ?? currentViewingId ?? saOwnedId;
+    // Oldest-first, matching getCurrentTenantId()'s SA fallback exactly —
+    // an SA who owns multiple tenants must land on the same one as the
+    // dashboard content actually resolves, not "most recently created".
+    const { data: saOwnedTenant } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const activeTenantId = subdomainTenantId ?? currentViewingId ?? saOwnedTenant?.id;
 
     const ownerIds = [...new Set((allTenants ?? []).map(t => t.owner_id).filter(Boolean))] as string[];
     const { data: owners } = ownerIds.length
