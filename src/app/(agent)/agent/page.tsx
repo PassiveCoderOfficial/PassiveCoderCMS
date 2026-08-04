@@ -19,13 +19,12 @@ export default async function AgentDashboardPage() {
   const pendingEarned = (commissions ?? []).filter(c => c.status === "pending").reduce((s, c) => s + Number(c.amount), 0);
   const siteCount = sites?.length ?? 0;
   const referralUrl = `${process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes("localhost") ? "http" : "https"}://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com"}/onboarding?ref=${agent.referral_code}`;
-  const commissionTypeLabel = (agent as { commission_type?: string }).commission_type === "one_time" ? "One-Time" : "Recurring";
 
   const stats = [
     { label: "Sites Referred", value: String(siteCount), icon: Globe, color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20" },
     { label: "Total Earned", value: `$${totalEarned.toFixed(2)}`, icon: DollarSign, color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
     { label: "Pending Payout", value: `$${pendingEarned.toFixed(2)}`, icon: TrendingUp, color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20" },
-    { label: "Commission", value: `${agent.commission_rate}% · ${commissionTypeLabel}`, icon: Percent, color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20" },
+    { label: "Commission", value: `${agent.staff_recurring_pct ?? 10}% recurring`, icon: Percent, color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20" },
   ];
 
   return (

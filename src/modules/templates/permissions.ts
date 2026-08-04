@@ -1,9 +1,9 @@
 /**
  * Who may author templates.
  *
- * Per the Ticket 5 spec: super admins, plus "Staff Admins" — which in this
- * codebase means an active agent row with `is_staff = true` (the same flag
- * the recurring-commission logic in `lib/commissions.ts` keys off). Regular
+ * Super admins, managers, and staff (any active agents row) can all author
+ * templates — is_staff no longer gates this (that flag was removed when the
+ * commission model became recurring-only for every staff member). Regular
  * tenant owners/editors cannot create templates.
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -34,7 +34,6 @@ export async function requireTemplateAuthor(): Promise<TemplateAuthor | null> {
     .from("agents")
     .select("id")
     .eq("user_id", user.id)
-    .eq("is_staff", true)
     .eq("status", "active")
     .maybeSingle();
 

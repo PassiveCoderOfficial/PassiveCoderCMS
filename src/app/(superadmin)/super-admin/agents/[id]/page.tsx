@@ -121,7 +121,7 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">Commission</p>
-            <p>{agent.commission_rate}% · {agent.commission_type === "one_time" ? "One-Time" : "Recurring"}</p>
+            <p>{agent.staff_recurring_pct ?? 10}% recurring</p>
           </div>
           {agent.company && (
             <div>

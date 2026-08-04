@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 
 interface ProfileResult {
   id: string;
@@ -60,10 +59,6 @@ export default function NewAgentPage() {
   const [company, setCompany] = useState("");
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
-  const [commissionRate, setCommissionRate] = useState("10");
-  const [commissionType, setCommissionType] = useState<"recurring" | "one_time">("one_time");
-  const [isStaff, setIsStaff] = useState(false);
-  const [oneTimePct, setOneTimePct] = useState("");
   const [staffRecurringPct, setStaffRecurringPct] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -110,10 +105,6 @@ export default function NewAgentPage() {
         company,
         website,
         bio,
-        commission_rate: parseFloat(commissionRate) || 10,
-        commission_type: commissionType,
-        is_staff: isStaff,
-        one_time_pct_override: oneTimePct ? parseFloat(oneTimePct) : undefined,
         staff_recurring_pct: staffRecurringPct ? parseFloat(staffRecurringPct) : undefined,
         notes,
         existing_user_id: mode === "existing" && selectedUser ? selectedUser.id : undefined,
@@ -247,38 +238,19 @@ export default function NewAgentPage() {
         {/* Settings */}
         <Card>
           <CardContent className="pt-6 space-y-4">
-            <h2 className="font-semibold text-sm">Commission & Staff</h2>
+            <h2 className="font-semibold text-sm">Commission</h2>
 
-            {/* Is staff toggle */}
-            <div className="flex items-center gap-3">
-              <Switch checked={isStaff} onCheckedChange={setIsStaff} />
-              <div>
-                <p className="text-sm font-medium">Staff member</p>
-                <p className="text-xs text-muted-foreground">Staff earns ongoing recurring commission on every renewal</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>One-time % (blank = platform default 10%)</Label>
-                <Input
-                  type="number" min="0" max="100" step="0.5" value={oneTimePct}
-                  onChange={e => setOneTimePct(e.target.value)}
-                  placeholder="10"
-                />
-                <p className="text-xs text-muted-foreground">% of first payment</p>
-              </div>
-              {isStaff && (
-                <div className="space-y-1.5">
-                  <Label>Recurring % (blank = platform default 10%)</Label>
-                  <Input
-                    type="number" min="0" max="100" step="0.5" value={staffRecurringPct}
-                    onChange={e => setStaffRecurringPct(e.target.value)}
-                    placeholder="10"
-                  />
-                  <p className="text-xs text-muted-foreground">% of each renewal while site is active</p>
-                </div>
-              )}
+            <div className="space-y-1.5">
+              <Label>Recurring % (blank = platform default 10%)</Label>
+              <Input
+                type="number" min="0" max="100" step="0.5" value={staffRecurringPct}
+                onChange={e => setStaffRecurringPct(e.target.value)}
+                placeholder="10"
+              />
+              <p className="text-xs text-muted-foreground">
+                % of each renewal while site is active — only paid out if the platform-wide
+                Staff Commission toggle is on (SA Settings).
+              </p>
             </div>
 
             <div className="space-y-1.5">

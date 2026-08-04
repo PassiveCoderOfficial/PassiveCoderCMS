@@ -3,45 +3,30 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2, Check, X, Link as LinkIcon, Trash2, Shield } from "lucide-react";
+import { Loader2, Check, X, Link as LinkIcon, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 
 export default function AgentActions({
   agentId,
   currentStatus,
-  currentCommission,
-  currentCommissionType,
   currentReferralCode,
-  currentIsStaff,
-  currentOneTimePct,
   currentStaffRecurringPct,
 }: {
   agentId: string;
   currentStatus: string;
-  currentCommission: number;
-  currentCommissionType: "recurring" | "one_time";
   currentReferralCode: string;
-  currentIsStaff: boolean;
-  currentOneTimePct: number | null;
   currentStaffRecurringPct: number | null;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [editingCommission, setEditingCommission] = useState(false);
   const [editingCode, setEditingCode] = useState(false);
-  const [editingStaff, setEditingStaff] = useState(false);
-  const [commission, setCommission] = useState(String(currentCommission));
-  const [commissionType, setCommissionType] = useState<"recurring" | "one_time">(currentCommissionType ?? "one_time");
+  const [commission, setCommission] = useState(currentStaffRecurringPct != null ? String(currentStaffRecurringPct) : "");
   const [code, setCode] = useState(currentReferralCode);
   const [codeAvailable, setCodeAvailable] = useState<boolean | null>(null);
   const [codeChecking, setCodeChecking] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const [isStaff, setIsStaff] = useState(currentIsStaff);
-  const [oneTimePct, setOneTimePct] = useState(currentOneTimePct != null ? String(currentOneTimePct) : "");
-  const [staffRecurringPct, setStaffRecurringPct] = useState(currentStaffRecurringPct != null ? String(currentStaffRecurringPct) : "");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -76,9 +61,9 @@ export default function AgentActions({
   }
 
   async function saveCommission() {
-    const rate = parseFloat(commission);
-    if (isNaN(rate) || rate < 0 || rate > 100) { toast.error("Rate must be 0–100"); return; }
-    if (await call({ action: "commission", commission_rate: rate, commission_type: commissionType })) {
+    const rate = commission.trim() ? parseFloat(commission) : null;
+    if (rate != null && (isNaN(rate) || rate < 0 || rate > 100)) { toast.error("Rate must be 0–100"); return; }
+    if (await call({ action: "commission", staff_recurring_pct: rate })) {
       toast.success("Commission updated"); setEditingCommission(false); router.refresh();
     }
   }
@@ -98,17 +83,6 @@ export default function AgentActions({
     }
   }
 
-  async function saveStaff() {
-    if (await call({
-      action: "staff",
-      is_staff: isStaff,
-      one_time_pct_override: oneTimePct ? parseFloat(oneTimePct) : null,
-      staff_recurring_pct: staffRecurringPct ? parseFloat(staffRecurringPct) : null,
-    })) {
-      toast.success("Staff settings saved"); setEditingStaff(false); router.refresh();
-    }
-  }
-
   const cleanedCode = code.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   return (
@@ -123,15 +97,6 @@ export default function AgentActions({
             <span className="text-muted-foreground text-xs">%</span>
           </div>
           <div className="flex gap-1">
-            {(["recurring", "one_time"] as const).map(t => (
-              <Button key={t} type="button" size="sm" variant={commissionType === t ? "default" : "outline"}
-                className="h-6 text-[10px] px-1.5"
-                onClick={() => setCommissionType(t)}>
-                {t === "recurring" ? "Recurring" : "One-Time"}
-              </Button>
-            ))}
-          </div>
-          <div className="flex gap-1">
             <Button size="sm" className="h-6 text-xs px-2" onClick={saveCommission} disabled={loading}>
               {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
             </Button>
@@ -140,7 +105,7 @@ export default function AgentActions({
         </div>
       ) : (
         <button onClick={() => setEditingCommission(true)} className="text-xs text-primary hover:underline transition-colors text-left">
-          Edit %
+          Edit recurring %
         </button>
       )}
 
@@ -184,43 +149,6 @@ export default function AgentActions({
         <button onClick={() => updateStatus("active")} disabled={loading}
           className="text-xs text-green-600 dark:text-green-400 hover:underline transition-colors disabled:opacity-50 text-left">
           Activate
-        </button>
-      )}
-
-      {/* Staff settings */}
-      {editingStaff ? (
-        <div className="flex flex-col gap-1.5 bg-indigo-500/10 border border-indigo-500/30 rounded-lg p-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-3 h-3 text-indigo-500" />
-            <span className="text-xs font-semibold text-indigo-500">Staff Settings</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch checked={isStaff} onCheckedChange={setIsStaff} className="scale-90" />
-            <Label className="text-xs font-normal cursor-pointer" onClick={() => setIsStaff(v => !v)}>Is Staff (gets recurring commission)</Label>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-[10px] text-muted-foreground font-normal">One-time % override (blank = platform default 10%)</Label>
-            <Input type="number" min="0" max="100" step="0.5" value={oneTimePct} onChange={e => setOneTimePct(e.target.value)}
-              placeholder="e.g. 10" className="w-20 h-7 text-xs px-1.5" />
-          </div>
-          {isStaff && (
-            <div className="flex flex-col gap-1">
-              <Label className="text-[10px] text-muted-foreground font-normal">Recurring % override (blank = platform default 10%)</Label>
-              <Input type="number" min="0" max="100" step="0.5" value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)}
-                placeholder="e.g. 10" className="w-20 h-7 text-xs px-1.5" />
-            </div>
-          )}
-          <div className="flex gap-1">
-            <Button size="sm" className="h-6 text-xs px-2" onClick={saveStaff} disabled={loading}>
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
-            </Button>
-            <Button size="sm" variant="ghost" className="h-6 text-xs px-1" onClick={() => setEditingStaff(false)}>Cancel</Button>
-          </div>
-        </div>
-      ) : (
-        <button onClick={() => setEditingStaff(true)}
-          className={`flex items-center gap-1 text-xs transition-colors ${currentIsStaff ? "text-indigo-500 hover:underline" : "text-muted-foreground hover:text-foreground"}`}>
-          <Shield className="w-3 h-3" /> {currentIsStaff ? "Staff ✓" : "Staff settings"}
         </button>
       )}
 

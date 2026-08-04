@@ -47,7 +47,6 @@ export default async function AgentsPage() {
                   <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden xl:table-cell">Company</th>
                   <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden xl:table-cell">Referral Code</th>
                   <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Commission</th>
-                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Type</th>
                   <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden xl:table-cell">Sites</th>
                   <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Status</th>
                   <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Joined</th>
@@ -71,20 +70,7 @@ export default async function AgentsPage() {
                     <td className="px-4 py-3 hidden xl:table-cell">
                       <span className="font-mono text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded">{agent.referral_code}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs">
-                      <div className="flex flex-col gap-0.5">
-                        <span>{agent.one_time_pct_override ?? 10}% one-time</span>
-                        {agent.is_staff && <span className="text-indigo-500">{agent.staff_recurring_pct ?? 10}% recurring</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-xs hidden lg:table-cell">
-                      <div className="flex flex-col gap-0.5">
-                        <Badge variant={agent.commission_type === "one_time" ? "warning" : "info"} className="w-fit">
-                          {agent.commission_type === "one_time" ? "One-Time" : "Recurring"}
-                        </Badge>
-                        {agent.is_staff && <Badge variant="info" className="w-fit">Staff</Badge>}
-                      </div>
-                    </td>
+                    <td className="px-4 py-3 text-xs">{agent.staff_recurring_pct ?? 10}% recurring</td>
                     <td className="px-4 py-3 text-xs hidden xl:table-cell">{agent.total_sites}</td>
                     <td className="px-4 py-3">
                       <Badge variant={agent.status === "active" ? "success" : agent.status === "suspended" ? "destructive" : "secondary"}>
@@ -96,11 +82,7 @@ export default async function AgentsPage() {
                       <AgentActions
                         agentId={agent.id}
                         currentStatus={agent.status}
-                        currentCommission={agent.commission_rate}
-                        currentCommissionType={agent.commission_type ?? "one_time"}
                         currentReferralCode={agent.referral_code}
-                        currentIsStaff={agent.is_staff ?? false}
-                        currentOneTimePct={agent.one_time_pct_override ?? null}
                         currentStaffRecurringPct={agent.staff_recurring_pct ?? null}
                       />
                     </td>

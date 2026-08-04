@@ -12,9 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 
 interface PlatformSettings {
-  default_commission_rate?: number;
-  default_commission_type?: "recurring" | "one_time";
-  default_agent_one_time_pct?: number | null;
+  staff_commission_enabled?: boolean;
   default_staff_recurring_pct?: number | null;
   agent_signup_enabled: boolean;
   agent_auto_approve: boolean;
@@ -84,7 +82,7 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const s = settings;
 
   // Commission
-  const [agentOneTimePct, setAgentOneTimePct] = useState(String(s?.default_agent_one_time_pct ?? 10));
+  const [staffCommissionEnabled, setStaffCommissionEnabled] = useState(s?.staff_commission_enabled ?? false);
   const [staffRecurringPct, setStaffRecurringPct] = useState(String(s?.default_staff_recurring_pct ?? 10));
   // Agent signup
   const [agentSignup, setAgentSignup] = useState(s?.agent_signup_enabled !== false);
@@ -128,10 +126,8 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    const oneTime = parseFloat(agentOneTimePct);
     const recurring = parseFloat(staffRecurringPct);
     const rate = parseFloat(bdtRate);
-    if (isNaN(oneTime) || oneTime < 0 || oneTime > 100) { toast.error("One-time % must be 0–100"); return; }
     if (isNaN(recurring) || recurring < 0 || recurring > 100) { toast.error("Recurring % must be 0–100"); return; }
     if (isNaN(rate) || rate <= 0) { toast.error("BDT rate must be a positive number"); return; }
     setSaving(true);
@@ -139,7 +135,7 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        default_agent_one_time_pct: oneTime,
+        staff_commission_enabled: staffCommissionEnabled,
         default_staff_recurring_pct: recurring,
         agent_signup_enabled: agentSignup,
         agent_auto_approve: autoApprove,
@@ -224,24 +220,15 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
           <CardTitle className="text-sm flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Commission Defaults</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">Platform-wide defaults. Individual agents can override with per-agent rates.</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Agent one-time % <span className="text-muted-foreground font-normal">(first payment only)</span></Label>
-              <div className="flex items-center gap-2">
-                <Input type="number" min={0} max={100} step={0.5} value={agentOneTimePct} onChange={e => setAgentOneTimePct(e.target.value)} className="w-24" />
-                <span className="text-muted-foreground text-sm">%</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Applies to all agents (staff + external)</p>
+          <Toggle value={staffCommissionEnabled} onChange={setStaffCommissionEnabled}
+            label="Staff Commission" desc="If off, no commission entries are created for any staff member, regardless of their rate below. Off by default." />
+          <div className="space-y-1.5">
+            <Label className="text-xs">Staff recurring % <span className="text-muted-foreground font-normal">(each renewal)</span></Label>
+            <div className="flex items-center gap-2">
+              <Input type="number" min={0} max={100} step={0.5} value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)} className="w-24" disabled={!staffCommissionEnabled} />
+              <span className="text-muted-foreground text-sm">%</span>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Staff recurring % <span className="text-muted-foreground font-normal">(each renewal)</span></Label>
-              <div className="flex items-center gap-2">
-                <Input type="number" min={0} max={100} step={0.5} value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)} className="w-24" />
-                <span className="text-muted-foreground text-sm">%</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Only for agents with is_staff = true</p>
-            </div>
+            <p className="text-xs text-muted-foreground">Platform default — individual staff can override with a per-agent rate.</p>
           </div>
         </CardContent>
       </Card>
