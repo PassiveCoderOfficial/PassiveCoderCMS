@@ -8,10 +8,11 @@ export async function POST(req: Request) {
 
   const body = await req.json() as {
     agentId: string;
-    action: "status" | "commission" | "referral_code" | "remove";
+    action: "status" | "commission" | "referral_code" | "remove" | "manager";
     status?: string;
     referral_code?: string;
     staff_recurring_pct?: number | null;
+    is_manager?: boolean;
   };
 
   const { agentId, action } = body;
@@ -46,6 +47,14 @@ export async function POST(req: Request) {
     const { data: existing } = await supabase.from("pc_staff").select("id").eq("referral_code", code).maybeSingle();
     if (existing && existing.id !== agentId) return NextResponse.json({ error: "Referral code already in use" }, { status: 409 });
     const { error } = await supabase.from("pc_staff").update({ referral_code: code, updated_at: new Date().toISOString() }).eq("id", agentId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (action === "manager") {
+    const { error } = await supabase.from("pc_staff").update({
+      is_manager: !!body.is_manager,
+      updated_at: new Date().toISOString(),
+    }).eq("id", agentId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

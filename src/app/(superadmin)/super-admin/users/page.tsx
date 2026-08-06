@@ -1,5 +1,6 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { computeVerificationStatus } from "@/lib/verification";
+import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/super-admin";
 import { Users, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
 import GrantSuperAdminButton from "./grant-button";
@@ -15,6 +16,10 @@ export default async function UsersPage() {
   const supabase = await createAdminClient();
   const authClient = await createClient();
   const { data: { user: currentUser } } = await authClient.auth.getUser();
+  // Managers get this page too (see (superadmin)/layout.tsx gate) but Super
+  // Admin accounts must be fully invisible to them — not just non-editable —
+  // per "SA accounts only visible/accessible to the SA role itself".
+  const viewerIsSA = currentUser ? await checkIsSuperAdmin(currentUser.id) : false;
 
   const [{ data: superAdmins }, { data: recentUsers }, { data: profiles }] = await Promise.all([
     supabase.from("super_admins").select("user_id,granted_at"),
@@ -24,7 +29,7 @@ export default async function UsersPage() {
 
   const superAdminIds = new Set((superAdmins ?? []).map(s => s.user_id));
   const profileById = new Map((profiles ?? []).map(p => [p.id, p]));
-  const users = recentUsers?.users ?? [];
+  const users = (recentUsers?.users ?? []).filter(u => viewerIsSA || !superAdminIds.has(u.id));
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
@@ -76,7 +81,7 @@ export default async function UsersPage() {
                     {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : "Never"}
                   </td>
                   <td className="px-5 py-3">
-                    {isSA ? (
+                    {isSA && viewerIsSA ? (
                       <Badge variant="info" className="gap-1"><ShieldCheck className="w-3 h-3" /> Super Admin</Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">User</span>
@@ -98,7 +103,9 @@ export default async function UsersPage() {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
+                      {viewerIsSA && (
+                        <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
+                      )}
                       <ActivateToggleButton userId={user.id} isActive={isActive} isSelf={user.id === currentUser?.id} />
                       <VerifyButton userId={user.id} verified={verification?.verified ?? false} />
                     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2, Check, X, Link as LinkIcon, Trash2 } from "lucide-react";
+import { Loader2, Check, X, Link as LinkIcon, Trash2, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -12,11 +12,13 @@ export default function AgentActions({
   currentStatus,
   currentReferralCode,
   currentStaffRecurringPct,
+  currentIsManager,
 }: {
   agentId: string;
   currentStatus: string;
   currentReferralCode: string;
   currentStaffRecurringPct: number | null;
+  currentIsManager: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -80,6 +82,13 @@ export default function AgentActions({
   async function removeAgent() {
     if (await call({ action: "remove" })) {
       toast.success("Staff removed"); router.refresh();
+    }
+  }
+
+  async function toggleManager() {
+    if (await call({ action: "manager", is_manager: !currentIsManager })) {
+      toast.success(currentIsManager ? "Manager access revoked" : "Promoted to manager");
+      router.refresh();
     }
   }
 
@@ -151,6 +160,14 @@ export default function AgentActions({
           Activate
         </button>
       )}
+
+      {/* Manager toggle */}
+      <button onClick={toggleManager} disabled={loading}
+        className={`flex items-center gap-1 text-xs transition-colors disabled:opacity-50 text-left ${
+          currentIsManager ? "text-indigo-500 hover:underline" : "text-muted-foreground hover:text-foreground"
+        }`}>
+        <ShieldCheck className="w-3 h-3" /> {currentIsManager ? "Manager ✓ (click to revoke)" : "Make manager"}
+      </button>
 
       {/* Remove staff */}
       {confirmRemove ? (

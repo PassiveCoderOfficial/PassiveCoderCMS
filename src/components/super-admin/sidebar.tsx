@@ -127,13 +127,21 @@ function NavItemRow({ item, onClose }: { item: NavItem; onClose?: () => void }) 
   );
 }
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
+// Manager-only nav — their own staff data, merged into the SA panel instead
+// of a separate portal, per "one dashboard combining SA + staff elements".
+const MANAGER_NAV: NavItem[] = [
+  { label: "My Sites",     href: "/staff/sites",       icon: Globe },
+  { label: "Commissions",  href: "/staff/commissions", icon: CreditCard },
+  { label: "My Profile",   href: "/staff/profile",     icon: Users },
+];
+
+function SidebarContent({ onClose, isSA }: { onClose?: () => void; isSA: boolean }) {
   return (
     <>
       <div className="h-14 flex items-center justify-between gap-2.5 px-4 border-b border-gray-800">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-5 h-5 text-indigo-400" />
-          <span className="font-bold text-sm text-white">Super Admin</span>
+          <span className="font-bold text-sm text-white">{isSA ? "Super Admin" : "Manager"}</span>
         </div>
         {onClose && (
           <button onClick={onClose} className="lg:hidden p-1 text-gray-500 hover:text-white">
@@ -146,6 +154,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         {NAV.map(item => (
           <NavItemRow key={item.href} item={item} onClose={onClose} />
         ))}
+        {!isSA && (
+          <>
+            <div className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
+              My Staff Account
+            </div>
+            {MANAGER_NAV.map(item => (
+              <NavItemRow key={item.href} item={item} onClose={onClose} />
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="p-3 border-t border-gray-800 space-y-1">
@@ -171,7 +189,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   );
 }
 
-export default function SuperAdminSidebar() {
+export default function SuperAdminSidebar({ isSA = true }: { isSA?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -195,11 +213,11 @@ export default function SuperAdminSidebar() {
         "fixed inset-y-0 left-0 z-50 flex flex-col w-56 border-r border-gray-800 bg-gray-900 transition-transform duration-200 lg:hidden",
         open ? "translate-x-0" : "-translate-x-full",
       )}>
-        <SidebarContent onClose={() => setOpen(false)} />
+        <SidebarContent onClose={() => setOpen(false)} isSA={isSA} />
       </aside>
 
       <aside className="hidden lg:flex w-56 flex-col border-r border-gray-800 bg-gray-900 flex-shrink-0">
-        <SidebarContent />
+        <SidebarContent isSA={isSA} />
       </aside>
     </>
   );

@@ -1,5 +1,6 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { computeVerificationStatus } from "@/lib/verification";
+import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/super-admin";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -20,6 +21,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const admin = await createAdminClient();
   const authClient = await createClient();
   const { data: { user: currentUser } } = await authClient.auth.getUser();
+  const viewerIsSA = currentUser ? await checkIsSuperAdmin(currentUser.id) : false;
 
   const [{ data: authUser }, { data: profile }, { data: superAdmin }, { data: memberships }] = await Promise.all([
     admin.auth.admin.getUserById(id),
@@ -32,6 +34,9 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   if (!user) notFound();
 
   const isSA = !!superAdmin;
+  // SA accounts are fully inaccessible to managers — not just non-editable —
+  // even via a direct/bookmarked URL.
+  if (isSA && !viewerIsSA) notFound();
   const isActive = profile?.is_active ?? true;
   const verification = profile ? computeVerificationStatus(profile) : null;
 
@@ -60,7 +65,9 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
       {/* Actions */}
       <div className="flex gap-3 flex-wrap">
-        <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
+        {viewerIsSA && (
+          <GrantSuperAdminButton userId={user.id} isSuperAdmin={isSA} isSelf={user.id === currentUser?.id} />
+        )}
         <ActivateToggleButton userId={user.id} isActive={isActive} isSelf={user.id === currentUser?.id} />
         <VerifyButton userId={user.id} verified={verification?.verified ?? false} />
         <ResetPasswordButton userId={user.id} email={user.email ?? ""} />

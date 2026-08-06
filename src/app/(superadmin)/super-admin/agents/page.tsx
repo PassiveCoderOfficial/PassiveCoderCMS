@@ -58,7 +58,10 @@ export default async function AgentsPage() {
                   <tr key={agent.id} className="border-b last:border-0 hover:bg-accent/50 transition-colors align-top">
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-medium">{agent.full_name}</p>
+                        <p className="font-medium flex items-center gap-1.5">
+                          {agent.full_name}
+                          {agent.is_manager && <Badge variant="info" className="text-[9px] px-1.5 py-0">Manager</Badge>}
+                        </p>
                         <Link href={`/super-admin/agents/${agent.id}`}
                           className="flex items-center gap-1 text-[10px] text-primary hover:underline mt-0.5">
                           <ExternalLink className="w-2.5 h-2.5" /> View Dashboard
@@ -84,6 +87,7 @@ export default async function AgentsPage() {
                         currentStatus={agent.status}
                         currentReferralCode={agent.referral_code}
                         currentStaffRecurringPct={agent.staff_recurring_pct ?? null}
+                        currentIsManager={agent.is_manager ?? false}
                       />
                     </td>
                   </tr>
