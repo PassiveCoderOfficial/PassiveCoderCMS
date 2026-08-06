@@ -62,7 +62,13 @@ export async function resolveEnabledModules(tenantId: string): Promise<Record<Mo
   return result;
 }
 
-/** Owner/admin of the tenant, or holder of a content_module_grants row. */
+/** Owner/admin of the tenant, holder of a content_module_grants row, or a
+ *  staff/agent account assigned to this tenant (assigned_agent_id/
+ *  referred_by_agent_id/staff_agent_id) — staff viewing a site they're
+ *  assigned to get full module access same as an owner/admin would,
+ *  consistent with how the rest of the dashboard treats staff-viewing
+ *  (they're not a tenant_members row, so without this check they fell
+ *  through to "no grant" and got denied even on their own assigned site). */
 async function hasSchedulerAccess(tenantId: string): Promise<boolean> {
   const authClient = await createClient();
   const { data: { user } } = await authClient.auth.getUser();
@@ -80,6 +86,21 @@ async function hasSchedulerAccess(tenantId: string): Promise<boolean> {
     .eq("user_id", user.id)
     .maybeSingle();
   if (member && ["owner", "admin"].includes(member.role as string)) return true;
+
+  const { data: staff } = await admin
+    .from("pc_staff")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (staff) {
+    const { data: tenant } = await admin
+      .from("tenants")
+      .select("id")
+      .eq("id", tenantId)
+      .or(`assigned_staff_id.eq.${staff.id},referred_by_staff_id.eq.${staff.id},staff_id.eq.${staff.id}`)
+      .maybeSingle();
+    if (tenant) return true;
+  }
 
   const { data: grant } = await admin
     .from("content_module_grants")
