@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bell, Search, Sun, Moon, Globe, ChevronDown, Star, ExternalLink } from "lucide-react";
+import { Bell, Search, Sun, Moon, Globe, ChevronDown, Star, ExternalLink, ArrowDownAZ } from "lucide-react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,24 @@ interface Site {
   is_primary: boolean;
   owner_email?: string;
   custom_domain?: string;
+  status?: string;
+  plan?: string;
+  created_at?: string;
+  is_own?: boolean;
+  has_owner?: boolean;
 }
+
+const AZ_THRESHOLD = 15;
+
+type FilterChip = "own" | "no_tenant" | "active" | "trial" | "suspended";
+
+const FILTER_CHIPS: { key: FilterChip; label: string }[] = [
+  { key: "own", label: "Own" },
+  { key: "no_tenant", label: "No Tenant" },
+  { key: "active", label: "Active" },
+  { key: "trial", label: "Trial" },
+  { key: "suspended", label: "Suspended" },
+];
 
 interface TopbarProps {
   user?: CMSUser;
@@ -41,20 +58,77 @@ interface TopbarProps {
 function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: boolean }) {
   const [list] = useState(sites);
   const [query, setQuery] = useState("");
+  const [activeChips, setActiveChips] = useState<Set<FilterChip>>(new Set());
+  const [planFilter, setPlanFilter] = useState<string>("");
+  const [sortMode, setSortMode] = useState<"latest" | "oldest" | "az">("latest");
 
   const active = list.find(s => s.is_primary) ?? list[0];
 
+  const plans = useMemo(
+    () => [...new Set(list.map(s => s.plan).filter(Boolean))] as string[],
+    [list],
+  );
+
+  function toggleChip(chip: FilterChip) {
+    setActiveChips(prev => {
+      const next = new Set(prev);
+      if (next.has(chip)) next.delete(chip); else next.add(chip);
+      return next;
+    });
+  }
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(s =>
-      s.name.toLowerCase().includes(q) ||
-      s.slug.toLowerCase().includes(q) ||
-      `${s.slug}.${ROOT}`.toLowerCase().includes(q) ||
-      s.custom_domain?.toLowerCase().includes(q) ||
-      s.owner_email?.toLowerCase().includes(q)
-    );
-  }, [list, query]);
+    let result = list;
+
+    if (q) {
+      result = result.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.slug.toLowerCase().includes(q) ||
+        `${s.slug}.${ROOT}`.toLowerCase().includes(q) ||
+        s.custom_domain?.toLowerCase().includes(q) ||
+        s.owner_email?.toLowerCase().includes(q)
+      );
+    }
+
+    if (activeChips.size) {
+      result = result.filter(s => {
+        return [...activeChips].some(chip => {
+          if (chip === "own") return s.is_own;
+          if (chip === "no_tenant") return s.has_owner === false;
+          if (chip === "active") return s.status === "active";
+          if (chip === "trial") return s.status === "trial";
+          if (chip === "suspended") return s.status === "suspended";
+          return false;
+        });
+      });
+    }
+
+    if (planFilter) {
+      result = result.filter(s => s.plan === planFilter);
+    }
+
+    // Past AZ_THRESHOLD results with no active filter/search, default to
+    // alphabetical so a long unfiltered list is still scannable — recency
+    // stops being useful once there's dozens of sites. Still overridable via
+    // the sort toggle in either direction, and only applies to the untouched
+    // default view (a search or filter narrowing the list keeps whatever
+    // sort was explicitly chosen).
+    const isDefaultView = !query && !activeChips.size && !planFilter;
+    const effectiveSort = sortMode === "latest" && isDefaultView && result.length > AZ_THRESHOLD
+      ? "az"
+      : sortMode;
+
+    if (effectiveSort === "az") {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    } else if (effectiveSort === "oldest") {
+      result = [...result].sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
+    } else {
+      result = [...result].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+    }
+
+    return result;
+  }, [list, query, activeChips, planFilter, sortMode]);
 
   function exitImpersonation() {
     // SA's own site is the first in the list (ordered by created_at ASC)
@@ -99,10 +173,58 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
             </div>
           </div>
         )}
+
+        {/* Filter chips + sort — SA/manager only, regular tenants rarely have enough sites to need this */}
+        {isSuperAdmin && list.length > 6 && (
+          <div className="px-2 pb-1.5 space-y-1.5">
+            <div className="flex flex-wrap gap-1">
+              {FILTER_CHIPS.map(chip => (
+                <button
+                  key={chip.key}
+                  onClick={() => toggleChip(chip.key)}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                    activeChips.has(chip.key)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+              {plans.length > 1 && (
+                <select
+                  value={planFilter}
+                  onChange={e => setPlanFilter(e.target.value)}
+                  className="px-1.5 py-0.5 rounded-full text-[10px] font-medium border bg-background text-muted-foreground outline-none"
+                >
+                  <option value="">All Plans</option>
+                  {plans.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-muted-foreground">Sort:</span>
+              {(["latest", "oldest", "az"] as const).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setSortMode(mode)}
+                  className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                    sortMode === mode ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {mode === "az" && <ArrowDownAZ className="h-2.5 w-2.5" />}
+                  {mode === "latest" ? "Latest" : mode === "oldest" ? "Oldest" : "A–Z"}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <DropdownMenuSeparator className="my-0" />
         <div className="max-h-80 overflow-y-auto py-1">
           {filtered.length === 0 && (
-            <p className="px-3 py-4 text-xs text-center text-muted-foreground">No sites match &quot;{query}&quot;</p>
+            <p className="px-3 py-4 text-xs text-center text-muted-foreground">
+              {query ? `No sites match "${query}"` : "No sites match the selected filters"}
+            </p>
           )}
           {filtered.map(site => (
           <div key={site.id} className="flex items-center gap-1 px-1 py-0.5">

@@ -211,16 +211,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   // Fetch sites for switcher
-  let userSites: { id: string; name: string; slug: string; is_primary: boolean; owner_email?: string; custom_domain?: string }[] = [];
+  let userSites: {
+    id: string; name: string; slug: string; is_primary: boolean;
+    owner_email?: string; custom_domain?: string;
+    status?: string; plan?: string; created_at?: string; is_own?: boolean; has_owner?: boolean;
+  }[] = [];
 
   if (sa) {
     // SA sees all tenants — pull owner_id + custom_domain so the mega menu can
     // filter by owner email / domain, not just site name. Newest first, not
     // creation order — that's what "latest sites" means to an SA scanning
-    // for recent signups.
+    // for recent signups. status/plan/created_at power the switcher's filter
+    // chips (Active/Trial/Suspended, by plan, Latest/Oldest).
     const { data: allTenants } = await adminClient
       .from("tenants")
-      .select("id, name, slug, owner_id, custom_domain")
+      .select("id, name, slug, owner_id, custom_domain, status, plan, created_at")
       .order("created_at", { ascending: false });
 
     // "Current site" must reflect the subdomain actually being viewed, not
@@ -273,6 +278,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       is_primary: t.id === activeTenantId,
       owner_email: t.owner_id ? ownerEmailById.get(t.owner_id) : undefined,
       custom_domain: t.custom_domain ?? undefined,
+      status: t.status ?? undefined,
+      plan: t.plan ?? undefined,
+      created_at: t.created_at ?? undefined,
+      is_own: t.owner_id === user.id,
+      has_owner: !!t.owner_id,
     }));
   } else {
     userSites = (memberships ?? []).map(m => {
