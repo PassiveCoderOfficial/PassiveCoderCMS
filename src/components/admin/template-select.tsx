@@ -11,7 +11,7 @@ export interface TemplateSelectValue {
 
 /**
  * Compact template picker for site-creation forms outside the full onboarding
- * wizard (SA "New Site", agent "New Site"). Same catalog + blank option as
+ * wizard (SA "New Site", staff "New Site"). Same catalog + blank option as
  * onboarding Step5, just without the wizard chrome.
  */
 export function TemplateSelect({ value, onChange, dark }: {

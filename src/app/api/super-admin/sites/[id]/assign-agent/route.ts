@@ -15,7 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const { error } = await supabase
     .from("tenants")
-    .update({ assigned_agent_id: agent_id ?? null })
+    .update({ assigned_staff_id: agent_id ?? null })
     .eq("id", siteId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

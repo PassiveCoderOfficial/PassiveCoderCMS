@@ -110,8 +110,8 @@ function NavLinkItem({ item, pathname, onClose, dark = false, brand = false }: {
   );
 }
 
-function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
-  isSuperAdmin: boolean; isAgent: boolean; enabledModules?: Record<ModuleKey, boolean>; onClose?: () => void;
+function SidebarContent({ isSuperAdmin, isStaff, enabledModules, onClose }: {
+  isSuperAdmin: boolean; isStaff: boolean; enabledModules?: Record<ModuleKey, boolean>; onClose?: () => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -206,9 +206,9 @@ function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
               Super Admin Panel
             </Link>
           )}
-          {isAgent && !isSuperAdmin && (
+          {isStaff && !isSuperAdmin && (
             <a
-              href={`${typeof window !== "undefined" && window.location.hostname.includes("localhost") ? "http" : "https"}://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com"}/agent`}
+              href={`${typeof window !== "undefined" && window.location.hostname.includes("localhost") ? "http" : "https"}://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com"}/staff`}
               onClick={onClose}
               className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-yellow-500 hover:bg-accent hover:text-yellow-400 transition-colors"
             >
@@ -244,8 +244,8 @@ function SidebarContent({ isSuperAdmin, isAgent, enabledModules, onClose }: {
 // initial state per route.
 const BUILDER_ROUTE = /^\/dashboard\/pages\/[^/]+$/;
 
-export function AdminSidebar({ isSuperAdmin = false, isAgent = false, enabledModules }: {
-  isSuperAdmin?: boolean; isAgent?: boolean; enabledModules?: Record<ModuleKey, boolean>;
+export function AdminSidebar({ isSuperAdmin = false, isStaff = false, enabledModules }: {
+  isSuperAdmin?: boolean; isStaff?: boolean; enabledModules?: Record<ModuleKey, boolean>;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -287,7 +287,7 @@ export function AdminSidebar({ isSuperAdmin = false, isAgent = false, enabledMod
         "fixed inset-y-0 left-0 z-50 flex flex-col w-60 border-r bg-sidebar transition-transform duration-200 lg:hidden",
         open ? "translate-x-0" : "-translate-x-full",
       )}>
-        <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} enabledModules={enabledModules} onClose={() => setOpen(false)} />
+        <SidebarContent isSuperAdmin={isSuperAdmin} isStaff={isStaff} enabledModules={enabledModules} onClose={() => setOpen(false)} />
       </aside>
 
       {/* Desktop sidebar — collapsible; defaults collapsed on the page builder route */}
@@ -301,7 +301,7 @@ export function AdminSidebar({ isSuperAdmin = false, isAgent = false, enabledMod
               — without h-full flex flex-col here the nav list can't scroll
               and anything past the viewport becomes unreachable. */}
           <div className="w-60 h-full flex flex-col">
-            <SidebarContent isSuperAdmin={isSuperAdmin} isAgent={isAgent} enabledModules={enabledModules} />
+            <SidebarContent isSuperAdmin={isSuperAdmin} isStaff={isStaff} enabledModules={enabledModules} />
           </div>
         </aside>
         <button

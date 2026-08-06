@@ -62,8 +62,8 @@ export async function POST(req: Request) {
   }
   if (typeof body.usd_to_bdt_rate === "number" && body.usd_to_bdt_rate > 0) update.usd_to_bdt_rate = body.usd_to_bdt_rate;
   if (typeof body.staff_commission_enabled === "boolean") update.staff_commission_enabled = body.staff_commission_enabled;
-  if (typeof body.agent_signup_enabled === "boolean") update.agent_signup_enabled = body.agent_signup_enabled;
-  if (typeof body.agent_auto_approve === "boolean") update.agent_auto_approve = body.agent_auto_approve;
+  if (typeof body.staff_signup_enabled === "boolean") update.staff_signup_enabled = body.staff_signup_enabled;
+  if (typeof body.staff_auto_approve === "boolean") update.staff_auto_approve = body.staff_auto_approve;
 
   const { error: dbErr } = await supabase!.from("platform_settings").update(update).eq("id", 1);
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });

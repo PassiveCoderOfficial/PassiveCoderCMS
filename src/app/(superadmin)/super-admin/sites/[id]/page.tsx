@@ -20,7 +20,7 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
     supabase.from("tenants").select("*").eq("id", id).single(),
     supabase.from("subscriptions").select("*").eq("tenant_id", id).order("created_at", { ascending: false }).limit(1).single(),
     supabase.from("tenant_members").select("user_id, role, profiles(full_name, email)").eq("tenant_id", id).limit(20),
-    supabase.from("agents").select("id, full_name, email, referral_code").eq("status", "active").order("full_name"),
+    supabase.from("pc_staff").select("id, full_name, email, referral_code").eq("status", "active").order("full_name"),
   ]);
 
   if (!site) notFound();
@@ -167,15 +167,15 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
         </Card>
       )}
 
-      {/* Assigned Agent */}
+      {/* Assigned Staff */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Assigned Agent</CardTitle>
+          <CardTitle className="text-sm flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Assigned Staff</CardTitle>
         </CardHeader>
         <CardContent>
           <AssignAgent
             siteId={site.id}
-            currentAgentId={site.assigned_agent_id ?? null}
+            currentAgentId={site.assigned_staff_id ?? null}
             agents={agents ?? []}
           />
         </CardContent>

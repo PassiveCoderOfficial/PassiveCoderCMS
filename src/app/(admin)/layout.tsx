@@ -4,9 +4,9 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
 import { AdminTopbar } from "@/components/admin/topbar/topbar";
 import { SABanner } from "@/components/admin/sa-banner";
-import { AgentBanner } from "@/components/admin/agent-banner";
+import { StaffBanner } from "@/components/admin/staff-banner";
 import { SetupWizard } from "@/components/admin/setup-wizard";
-import { SA_VIEWING_COOKIE, AGENT_VIEWING_COOKIE } from "@/lib/tenant/current";
+import { SA_VIEWING_COOKIE, STAFF_VIEWING_COOKIE } from "@/lib/tenant/current";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
 import type { CMSUser } from "@/types/cms";
@@ -87,7 +87,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // SA with no tenant goes to super-admin panel, not login
   if (sa && !hasTenantAccess) redirect("/super-admin");
 
-  if (!sa && profile.role !== "agent" && !hasTenantAccess) {
+  if (!sa && profile.role !== "pc_staff" && !hasTenantAccess) {
     redirect("/login?error=unauthorized");
   }
 
@@ -96,32 +96,32 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // being visited (x-tenant-id from middleware) isn't one of this user's
   // memberships, bounce them to their own primary site's dashboard instead.
   //
-  // Exception: an agent can both own a site (tenant_members row, hasTenantAccess
+  // Exception: a staff member can both own a site (tenant_members row, hasTenantAccess
   // true) and be assigned/referred to other sites (no membership row, checked
-  // separately below via agentViewingTenantId). Without this carve-out, an
-  // agent visiting an assigned site's subdomain was bounced straight back to
-  // their own owned site before the agent-viewing logic ever ran.
+  // separately below via staffViewingTenantId). Without this carve-out, a
+  // staff member visiting an assigned site's subdomain was bounced straight back to
+  // their own owned site before the staff-viewing logic ever ran.
   if (!sa && hasTenantAccess) {
     const reqHeaders = await headers();
     const subdomainTenantId = reqHeaders.get("x-tenant-id");
     if (subdomainTenantId) {
       const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
       if (!memberTenantIds.has(subdomainTenantId)) {
-        let agentHasAccess = false;
-        if (profile.role === "agent") {
-          const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
-          if (agentRow) {
+        let staffHasAccess = false;
+        if (profile.role === "pc_staff") {
+          const { data: staffRow } = await adminClient.from("pc_staff").select("id").eq("user_id", user.id).maybeSingle();
+          if (staffRow) {
             const { data: assignedTenant } = await adminClient
               .from("tenants")
               .select("id")
               .eq("id", subdomainTenantId)
-              .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id}`)
+              .or(`assigned_staff_id.eq.${staffRow.id},referred_by_staff_id.eq.${staffRow.id}`)
               .maybeSingle();
-            agentHasAccess = !!assignedTenant;
+            staffHasAccess = !!assignedTenant;
           }
         }
 
-        if (!agentHasAccess) {
+        if (!staffHasAccess) {
           const ownTenant = (memberships ?? []).find(m => m.is_primary) ?? (memberships ?? [])[0];
           const ownSlug = ownTenant
             ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
@@ -137,8 +137,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
   }
 
-  // Enforce suspended subscriptions for regular tenants (not SA, not agents)
-  if (!sa && profile.role !== "agent" && hasTenantAccess) {
+  // Enforce suspended subscriptions for regular tenants (not SA, not staff)
+  if (!sa && profile.role !== "pc_staff" && hasTenantAccess) {
     const reqHeaders = await headers();
     const pathname = reqHeaders.get("x-invoke-path") ?? reqHeaders.get("x-pathname") ?? "";
     if (!pathname.startsWith("/dashboard/subscription")) {
@@ -159,7 +159,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
   }
 
-  // Check if SA is impersonating a tenant, or an agent is viewing an
+  // Check if SA is impersonating a tenant, or staff is viewing an
   // assigned/referred site's dashboard under their own session.
   const cookieStore = await cookies();
   const viewingTenantId = sa ? cookieStore.get(SA_VIEWING_COOKIE)?.value : undefined;
@@ -169,17 +169,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // subdomain actually being browsed. The hostname (x-tenant-id, set by
   // middleware from the real subdomain) must win whenever present; the
   // cookie is only a fallback for root-domain /dashboard access.
-  let agentViewingTenantId: string | undefined;
-  if (!sa && profile.role === "agent") {
+  let staffViewingTenantId: string | undefined;
+  if (!sa && profile.role === "pc_staff") {
     const subdomainTenantId = (await headers()).get("x-tenant-id");
-    const candidateId = subdomainTenantId ?? cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
-    // Only treat this as "agent viewing an assigned site" when it's NOT one of
-    // their own memberships — an agent who also owns a site already has full
+    const candidateId = subdomainTenantId ?? cookieStore.get(STAFF_VIEWING_COOKIE)?.value;
+    // Only treat this as "staff viewing an assigned site" when it's NOT one of
+    // their own memberships — staff who also own a site already have full
     // access to it via hasTenantAccess/memberships, and forcing it through the
     // assigned-only lookup below (which doesn't check owner_id) would 404 it.
     const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
     if (candidateId && !memberTenantIds.has(candidateId)) {
-      agentViewingTenantId = candidateId;
+      staffViewingTenantId = candidateId;
     }
   }
 
@@ -193,21 +193,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     viewingTenantName = tenant?.name ?? null;
   }
 
-  let agentViewingTenantName: string | null = null;
-  if (agentViewingTenantId) {
-    const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
+  let staffViewingTenantName: string | null = null;
+  if (staffViewingTenantId) {
+    const { data: staffRow } = await adminClient.from("pc_staff").select("id").eq("user_id", user.id).maybeSingle();
     const { data: tenant } = await adminClient
       .from("tenants")
       .select("name")
-      .eq("id", agentViewingTenantId)
-      .or(`assigned_agent_id.eq.${agentRow?.id ?? "null"},referred_by_agent_id.eq.${agentRow?.id ?? "null"}`)
+      .eq("id", staffViewingTenantId)
+      .or(`assigned_staff_id.eq.${staffRow?.id ?? "null"},referred_by_staff_id.eq.${staffRow?.id ?? "null"}`)
       .maybeSingle();
-    agentViewingTenantName = tenant?.name ?? null;
-    if (!agentViewingTenantName) redirect("/agent");
-  } else if (!sa && profile.role === "agent") {
-    // Agent with no viewing cookie and no tenant membership has nothing to
+    staffViewingTenantName = tenant?.name ?? null;
+    if (!staffViewingTenantName) redirect("/staff");
+  } else if (!sa && profile.role === "pc_staff") {
+    // Staff with no viewing cookie and no tenant membership has nothing to
     // show in /dashboard — send them to their own portal instead.
-    if (!hasTenantAccess) redirect("/agent");
+    if (!hasTenantAccess) redirect("/staff");
   }
 
   // Fetch sites for switcher
@@ -281,16 +281,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
   }
 
-  // Agents can own a site (tenant_members row, already in userSites above)
+  // Staff can own a site (tenant_members row, already in userSites above)
   // AND be assigned/referred to others (no membership row) — the switcher
   // must show all of them regardless of which one is currently being viewed,
   // not just the owned ones or just the currently-viewed assigned one.
-  if (!sa && profile.role === "agent") {
-    const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
-    if (agentRow) {
+  if (!sa && profile.role === "pc_staff") {
+    const { data: staffRow } = await adminClient.from("pc_staff").select("id").eq("user_id", user.id).maybeSingle();
+    if (staffRow) {
       const [{ data: assigned }, { data: referred }] = await Promise.all([
-        adminClient.from("tenants").select("id, name, slug").eq("assigned_agent_id", agentRow.id),
-        adminClient.from("tenants").select("id, name, slug").eq("referred_by_agent_id", agentRow.id),
+        adminClient.from("tenants").select("id, name, slug").eq("assigned_staff_id", staffRow.id),
+        adminClient.from("tenants").select("id, name, slug").eq("referred_by_staff_id", staffRow.id),
       ]);
       const ownedIds = new Set(userSites.map(s => s.id));
       const extraSites = new Map<string, { id: string; name: string; slug: string }>();
@@ -299,7 +299,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       }
       // Owned sites first, then assigned/referred — current subdomain (or the
       // viewed tenant, for root-domain access) marked primary, everything else not.
-      const currentId = agentViewingTenantId ?? (userSites.find(s => s.is_primary)?.id);
+      const currentId = staffViewingTenantId ?? (userSites.find(s => s.is_primary)?.id);
       userSites = [
         ...userSites.map(s => ({ ...s, is_primary: s.id === currentId })),
         ...[...extraSites.values()].map(t => ({ id: t.id, name: t.name, slug: t.slug, is_primary: t.id === currentId })),
@@ -318,13 +318,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   };
 
   // SA bypasses module gating entirely — only resolve for regular tenant
-  // members and agents viewing a specific site. Must be the tenant whose
+  // members and staff viewing a specific site. Must be the tenant whose
   // SUBDOMAIN is actually being visited (already validated as one of this
   // user's memberships above), not just their primary site — a member of
   // multiple tenants viewing a non-primary one would otherwise see that
   // tenant's dashboard gated by the wrong tenant's plan.
   const currentSubdomainTenantId = (await headers()).get("x-tenant-id");
-  const dashboardTenantId = agentViewingTenantId
+  const dashboardTenantId = staffViewingTenantId
     ?? currentSubdomainTenantId
     ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
     ?? (memberships ?? [])[0]?.tenant_id;
@@ -333,11 +333,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     : undefined;
 
   // First-login setup wizard (logo, favicon, site details) — only for the
-  // actual tenant owner/member on their own site, never for SA or an agent
+  // actual tenant owner/member on their own site, never for SA or staff
   // viewing someone else's site (they didn't onboard this tenant).
   let showSetupWizard = false;
   let wizardDefaults = { site_name: "", site_description: "", logo_url: "", favicon_url: "" };
-  if (!sa && !agentViewingTenantId && dashboardTenantId) {
+  if (!sa && !staffViewingTenantId && dashboardTenantId) {
     const [{ data: tenantRow }, { data: siteSettings }] = await Promise.all([
       adminClient.from("tenants").select("setup_wizard_completed_at").eq("id", dashboardTenantId).maybeSingle(),
       adminClient.from("site_settings").select("site_name, site_description, logo_url, favicon_url").eq("tenant_id", dashboardTenantId).maybeSingle(),
@@ -376,11 +376,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {viewingTenantId && viewingTenantName && (
         <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
       )}
-      {agentViewingTenantId && agentViewingTenantName && (
-        <AgentBanner tenantName={agentViewingTenantName} />
+      {staffViewingTenantId && staffViewingTenantName && (
+        <StaffBanner tenantName={staffViewingTenantName} />
       )}
       <div className="flex flex-1 overflow-hidden">
-        <AdminSidebar isSuperAdmin={!!sa} isAgent={profile.role === "agent"} enabledModules={enabledModules} />
+        <AdminSidebar isSuperAdmin={!!sa} isStaff={profile.role === "pc_staff"} enabledModules={enabledModules} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
           <main className="flex-1 overflow-auto pl-0 lg:pl-0">

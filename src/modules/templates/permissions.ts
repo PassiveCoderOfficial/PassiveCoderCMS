@@ -1,7 +1,7 @@
 /**
  * Who may author templates.
  *
- * Super admins, managers, and staff (any active agents row) can all author
+ * Super admins, managers, and staff (any active pc_staff row) can all author
  * templates — is_staff no longer gates this (that flag was removed when the
  * commission model became recurring-only for every staff member). Regular
  * tenant owners/editors cannot create templates.
@@ -30,14 +30,14 @@ export async function requireTemplateAuthor(): Promise<TemplateAuthor | null> {
   }
 
   const admin = await createAdminClient();
-  const { data: agent } = await admin
-    .from("agents")
+  const { data: staff } = await admin
+    .from("pc_staff")
     .select("id")
     .eq("user_id", user.id)
     .eq("status", "active")
     .maybeSingle();
 
-  return agent ? { user, isSuperAdmin: false } : null;
+  return staff ? { user, isSuperAdmin: false } : null;
 }
 
 // Re-exported for the server routes that already import it from here; the

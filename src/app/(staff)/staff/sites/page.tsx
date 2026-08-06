@@ -1,4 +1,4 @@
-import { requireAgent } from "@/lib/agent";
+import { requireStaff } from "@/lib/staff";
 import { createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ExternalLink, Globe, Plus, Zap, Users } from "lucide-react";
@@ -18,8 +18,8 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{status}</span>;
 }
 
-export default async function AgentSitesPage() {
-  const agent = await requireAgent();
+export default async function StaffSitesPage() {
+  const agent = await requireStaff();
   if (!agent) redirect("/login");
 
   const supabase = await createAdminClient();
@@ -27,11 +27,11 @@ export default async function AgentSitesPage() {
   const [{ data: referred }, { data: assigned }] = await Promise.all([
     supabase.from("tenants")
       .select("id,name,slug,status,plan,created_at,onboarding_completed")
-      .eq("referred_by_agent_id", agent.id)
+      .eq("referred_by_staff_id", agent.id)
       .order("created_at", { ascending: false }),
     supabase.from("tenants")
       .select("id,name,slug,status,plan,created_at,onboarding_completed")
-      .eq("assigned_agent_id", agent.id)
+      .eq("assigned_staff_id", agent.id)
       .order("created_at", { ascending: false }),
   ]);
 
@@ -56,7 +56,7 @@ export default async function AgentSitesPage() {
           {sites.map(site => (
             <tr key={site.id} className="border-b last:border-0 hover:bg-muted/20">
               <td className="px-5 py-3 font-medium">
-                <a href={`/api/agent/sites/${site.id}/view`} className="hover:text-primary hover:underline">
+                <a href={`/api/staff/sites/${site.id}/view`} className="hover:text-primary hover:underline">
                   {site.name}
                 </a>
               </td>
@@ -84,7 +84,7 @@ export default async function AgentSitesPage() {
           <h1 className="text-2xl font-bold">My Sites</h1>
           <p className="text-muted-foreground text-sm mt-1">Sites assigned to you or referred through your link.</p>
         </div>
-        <Link href="/agent/sites/new"
+        <Link href="/staff/sites/new"
           className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors">
           <Plus className="w-4 h-4" /> New Site
         </Link>

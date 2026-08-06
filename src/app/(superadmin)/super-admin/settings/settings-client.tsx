@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 interface PlatformSettings {
   staff_commission_enabled?: boolean;
   default_staff_recurring_pct?: number | null;
-  agent_signup_enabled: boolean;
-  agent_auto_approve: boolean;
+  staff_signup_enabled: boolean;
+  staff_auto_approve: boolean;
   bkash_number?: string | null;
   nagad_number?: string | null;
   bank_details?: string | null;
@@ -84,9 +84,9 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   // Commission
   const [staffCommissionEnabled, setStaffCommissionEnabled] = useState(s?.staff_commission_enabled ?? false);
   const [staffRecurringPct, setStaffRecurringPct] = useState(String(s?.default_staff_recurring_pct ?? 10));
-  // Agent signup
-  const [agentSignup, setAgentSignup] = useState(s?.agent_signup_enabled !== false);
-  const [autoApprove, setAutoApprove] = useState(s?.agent_auto_approve !== false);
+  // Staff signup
+  const [agentSignup, setAgentSignup] = useState(s?.staff_signup_enabled !== false);
+  const [autoApprove, setAutoApprove] = useState(s?.staff_auto_approve !== false);
   // Manual payment
   const [bkash, setBkash] = useState(s?.bkash_number ?? "");
   const [nagad, setNagad] = useState(s?.nagad_number ?? "");
@@ -137,8 +137,8 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
       body: JSON.stringify({
         staff_commission_enabled: staffCommissionEnabled,
         default_staff_recurring_pct: recurring,
-        agent_signup_enabled: agentSignup,
-        agent_auto_approve: autoApprove,
+        staff_signup_enabled: agentSignup,
+        staff_auto_approve: autoApprove,
         bkash_number: bkash,
         nagad_number: nagad,
         bank_details: bankDetails,
@@ -228,21 +228,21 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
               <Input type="number" min={0} max={100} step={0.5} value={staffRecurringPct} onChange={e => setStaffRecurringPct(e.target.value)} className="w-24" disabled={!staffCommissionEnabled} />
               <span className="text-muted-foreground text-sm">%</span>
             </div>
-            <p className="text-xs text-muted-foreground">Platform default — individual staff can override with a per-agent rate.</p>
+            <p className="text-xs text-muted-foreground">Platform default — individual staff can override with a per-staff rate.</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Agent signup settings */}
+      {/* Staff signup settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2"><UserCheck className="w-4 h-4 text-blue-400" /> Agent Signup</CardTitle>
+          <CardTitle className="text-sm flex items-center gap-2"><UserCheck className="w-4 h-4 text-blue-400" /> Staff Signup</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Toggle value={agentSignup} onChange={setAgentSignup} label="Allow self-signup (/become-agent)"
-            desc="If off, the become-agent form returns an error. Only SA can create agents." />
-          <Toggle value={autoApprove} onChange={setAutoApprove} label="Auto-approve new agents"
-            desc="If on, agents get 'active' status immediately. If off, they get 'pending' and must be activated by SA." />
+            desc="If off, the become-agent form returns an error. Only SA can create staff." />
+          <Toggle value={autoApprove} onChange={setAutoApprove} label="Auto-approve new staff"
+            desc="If on, staff get 'active' status immediately. If off, they get 'pending' and must be activated by SA." />
         </CardContent>
       </Card>
 

@@ -1,4 +1,4 @@
-// Auth cookies must be shared across ALL subdomains (agent portal, staff portal,
+// Auth cookies must be shared across ALL subdomains (staff portal,
 // and every tenant's {slug}.rootdomain dashboard) so a logged-in user isn't
 // forced to re-login when switching between them.
 //

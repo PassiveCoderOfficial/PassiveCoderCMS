@@ -8,7 +8,7 @@ export async function GET() {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data } = await supabase.from("staff")
+  const { data } = await supabase.from("tenant_team")
     .select("*").eq("tenant_id", tenantId).order("created_at");
   return NextResponse.json(data ?? []);
 }
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   if (!body.name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
-  const { data, error } = await supabase.from("staff")
+  const { data, error } = await supabase.from("tenant_team")
     .insert({
       tenant_id: tenantId,
       name: body.name.trim(),
@@ -47,7 +47,7 @@ export async function PATCH(req: NextRequest) {
   }
   if ("phone" in fields) patch.phone = normalizePhone(fields.phone) ?? fields.phone ?? null;
 
-  const { data, error } = await supabase.from("staff")
+  const { data, error } = await supabase.from("tenant_team")
     .update(patch).eq("id", id).eq("tenant_id", tenantId).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json(data);
@@ -62,7 +62,7 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const { error } = await supabase.from("staff")
+  const { error } = await supabase.from("tenant_team")
     .delete().eq("id", id).eq("tenant_id", tenantId);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });

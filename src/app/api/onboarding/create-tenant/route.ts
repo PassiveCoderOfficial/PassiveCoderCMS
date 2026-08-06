@@ -34,17 +34,17 @@ export async function POST(req: Request) {
     // Slug owned by this user (previous incomplete attempt) → reuse
     tenant = { id: existing.id, slug: existing.slug };
   } else {
-    // Resolve referral code to agent id
-    let referredByAgentId: string | null = null;
+    // Resolve referral code to staff id
+    let referredByStaffId: string | null = null;
     if (referralCode) {
-      const { data: agentRow } = await supabase.from("agents").select("id").eq("referral_code", referralCode).eq("status", "active").maybeSingle();
-      referredByAgentId = agentRow?.id ?? null;
+      const { data: staffRow } = await supabase.from("pc_staff").select("id").eq("referral_code", referralCode).eq("status", "active").maybeSingle();
+      referredByStaffId = staffRow?.id ?? null;
     }
 
     const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
     const { data: created, error } = await supabase
       .from("tenants")
-      .insert({ slug, name: siteName, owner_id: userId, status: "onboarded", trial_ends_at: trialEndsAt, referred_by_agent_id: referredByAgentId })
+      .insert({ slug, name: siteName, owner_id: userId, status: "onboarded", trial_ends_at: trialEndsAt, referred_by_staff_id: referredByStaffId })
       .select("id,slug")
       .single();
 

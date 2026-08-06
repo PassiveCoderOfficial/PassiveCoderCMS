@@ -33,9 +33,9 @@ export default function AssignAgent({
     setSaving(false);
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      toast.error(d.error ?? "Failed to assign agent");
+      toast.error(d.error ?? "Failed to assign staff");
     } else {
-      toast.success(agentId ? "Agent assigned" : "Agent removed");
+      toast.success(agentId ? "Staff assigned" : "Staff removed");
     }
   }
 

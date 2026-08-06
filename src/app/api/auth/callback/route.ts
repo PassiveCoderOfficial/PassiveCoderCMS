@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/agent";
+  const next = searchParams.get("next") ?? "/staff";
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`);
@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
   await admin.from("profiles").update({ is_active: true })
     .eq("id", user.id).eq("is_active", false);
 
-  // Auto-activate agent if pending and platform_settings.agent_auto_approve = true
+  // Auto-activate staff if pending and platform_settings.staff_auto_approve = true
   const { data: agent } = await admin
-    .from("agents")
+    .from("pc_staff")
     .select("id, status")
     .eq("user_id", user.id)
     .maybeSingle();
@@ -52,14 +52,14 @@ export async function GET(request: NextRequest) {
   if (agent?.status === "pending") {
     const { data: settings } = await admin
       .from("platform_settings")
-      .select("agent_auto_approve")
+      .select("staff_auto_approve")
       .eq("id", 1)
       .single();
 
-    if (settings?.agent_auto_approve !== false) {
-      await admin.from("agents").update({ status: "active" }).eq("id", agent.id);
-      // Set profile role to agent
-      await admin.from("profiles").update({ role: "agent" }).eq("id", user.id);
+    if (settings?.staff_auto_approve !== false) {
+      await admin.from("pc_staff").update({ status: "active" }).eq("id", agent.id);
+      // Set profile role to pc_staff
+      await admin.from("profiles").update({ role: "pc_staff" }).eq("id", user.id);
     }
   }
 

@@ -36,8 +36,8 @@ interface Settings {
   hiw_headline: string;
   hiw_subheadline: string;
   testimonials_headline: string;
-  agent_headline: string;
-  agent_subheadline: string;
+  staff_headline: string;
+  staff_subheadline: string;
   testimonials: Testimonial[];
   faq: FaqItem[];
 }
@@ -53,7 +53,7 @@ const DEFAULT: Settings = {
   features_headline: "", features_subheadline: "",
   hiw_headline: "", hiw_subheadline: "",
   testimonials_headline: "",
-  agent_headline: "", agent_subheadline: "",
+  staff_headline: "", staff_subheadline: "",
   testimonials: [], faq: [],
 };
 
@@ -236,11 +236,11 @@ export default function HomepageEditorClient({ settings: initial }: { settings: 
             <p className="text-xs text-muted-foreground">CTA buttons use the Hero CTA settings from the Hero & Stats tab.</p>
           </SectionCard>
 
-          <SectionCard title="Agent / Partner CTA Section">
-            <Field label="Section Headline" value={s.agent_headline} onChange={v => set("agent_headline", v)}
+          <SectionCard title="Staff / Partner CTA Section">
+            <Field label="Section Headline" value={s.staff_headline} onChange={v => set("staff_headline", v)}
               placeholder="Are you a web developer, designer, or digital agency?" />
-            <Field label="Section Subheadline" value={s.agent_subheadline} onChange={v => set("agent_subheadline", v)} textarea
-              placeholder="Become a Passive Coder Agent. Refer clients, earn 20% recurring commission..." />
+            <Field label="Section Subheadline" value={s.staff_subheadline} onChange={v => set("staff_subheadline", v)} textarea
+              placeholder="Become a Passive Coder staff member. Refer clients, earn 20% recurring commission..." />
           </SectionCard>
 
           <SectionCard title="Testimonials Section">

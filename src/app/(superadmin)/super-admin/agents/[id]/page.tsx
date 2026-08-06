@@ -63,8 +63,8 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
   const supabase = await createAdminClient();
 
   const [{ data: agent }, { data: commissions }] = await Promise.all([
-    supabase.from("agents").select("*").eq("id", id).single(),
-    supabase.from("agent_commissions").select("*, tenants(name,slug)").eq("agent_id", id).order("created_at", { ascending: false }),
+    supabase.from("pc_staff").select("*").eq("id", id).single(),
+    supabase.from("pc_staff_commissions").select("*, tenants(name,slug)").eq("staff_id", id).order("created_at", { ascending: false }),
   ]);
 
   if (!agent) notFound();
@@ -72,9 +72,9 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
   // All sites: assigned or referred
   const [{ data: assigned }, { data: referred }] = await Promise.all([
     supabase.from("tenants").select("id,name,slug,status,plan,created_at,onboarding_completed")
-      .eq("assigned_agent_id", id).order("created_at", { ascending: false }),
+      .eq("assigned_staff_id", id).order("created_at", { ascending: false }),
     supabase.from("tenants").select("id,name,slug,status,plan,created_at,onboarding_completed")
-      .eq("referred_by_agent_id", id).order("created_at", { ascending: false }),
+      .eq("referred_by_staff_id", id).order("created_at", { ascending: false }),
   ]);
 
   const assignedIds = new Set((assigned ?? []).map(s => s.id));
@@ -112,7 +112,7 @@ export default async function SAAgentDetailPage({ params }: { params: Promise<{ 
         </Button>
       </div>
 
-      {/* Agent info */}
+      {/* Staff info */}
       <Card>
         <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
