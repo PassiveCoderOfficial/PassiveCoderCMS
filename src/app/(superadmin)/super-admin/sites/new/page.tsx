@@ -72,7 +72,7 @@ export default function NewSitePage() {
       body: JSON.stringify({
         name: name.trim(), slug, plan, owner_user_id: userId,
         template_id: template.templateId, template_mode: template.templateMode,
-        assigned_agent_id: agentId ?? undefined,
+        assigned_staff_id: agentId ?? undefined,
       }),
     });
 
@@ -99,7 +99,7 @@ export default function NewSitePage() {
       {agentId && (
         <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-300">
           <Zap className="w-4 h-4 shrink-0 text-yellow-500" />
-          Will be assigned to agent <strong>{agentName ?? agentId}</strong>
+          Will be assigned to staff <strong>{agentName ?? agentId}</strong>
         </div>
       )}
 

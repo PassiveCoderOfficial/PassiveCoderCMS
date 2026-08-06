@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   if (!code || code.length < 3) return NextResponse.json({ available: false, reason: "Min 3 characters" });
 
   const supabase = await createAdminClient();
-  const { data } = await supabase.from("agents").select("id").eq("referral_code", code).maybeSingle();
+  const { data } = await supabase.from("pc_staff").select("id").eq("referral_code", code).maybeSingle();
 
   const available = !data || data.id === excludeId;
   return NextResponse.json({ available, code });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { runBackup, type BackupType } from "@/lib/backup/runner";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { getAgent } from "@/lib/agent";
+import { getStaff } from "@/lib/staff";
 
 export async function POST(req: Request) {
   const { tenantId, type } = await req.json();
@@ -36,13 +36,13 @@ export async function POST(req: Request) {
     // Agent viewing an assigned/referred site under their own session — not
     // a tenant_member, so check assignment directly instead.
     if (!allowed) {
-      const agent = await getAgent();
+      const agent = await getStaff();
       if (agent) {
         const { data: tenant } = await admin
           .from("tenants")
           .select("id")
           .eq("id", tenantId)
-          .or(`assigned_agent_id.eq.${agent.id},referred_by_agent_id.eq.${agent.id}`)
+          .or(`assigned_staff_id.eq.${agent.id},referred_by_staff_id.eq.${agent.id}`)
           .maybeSingle();
         allowed = !!tenant;
       }

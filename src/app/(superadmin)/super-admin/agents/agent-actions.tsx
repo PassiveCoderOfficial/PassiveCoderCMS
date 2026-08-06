@@ -79,7 +79,7 @@ export default function AgentActions({
 
   async function removeAgent() {
     if (await call({ action: "remove" })) {
-      toast.success("Agent removed"); router.refresh();
+      toast.success("Staff removed"); router.refresh();
     }
   }
 
@@ -152,7 +152,7 @@ export default function AgentActions({
         </button>
       )}
 
-      {/* Remove agent */}
+      {/* Remove staff */}
       {confirmRemove ? (
         <div className="flex items-center gap-1">
           <span className="text-[10px] text-destructive">Sure?</span>

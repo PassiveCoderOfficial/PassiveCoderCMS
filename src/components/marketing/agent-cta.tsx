@@ -29,7 +29,7 @@ const PERKS = [
   },
   {
     icon: Star,
-    title: "Priority Support for Agents",
+    title: "Priority Support for Partners",
     desc: "Your client issues jump the queue. We treat your clients like our own so you always look good in front of them.",
   },
 ];
@@ -59,7 +59,7 @@ export default function AgentCtaSection() {
             Are you a web developer, designer,<br className="hidden sm:block" /> or digital agency?
           </h2>
           <p className="mt-4 text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-            Become a Passive Coder Agent. Refer clients, earn 20% recurring commission on every subscription, and manage all your client sites from a single dashboard.
+            Become a Passive Coder team member. Refer clients, earn 20% recurring commission on every subscription, and manage all your client sites from a single dashboard.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function AgentCtaSection() {
                 href="/become-agent"
                 className="group inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-4 rounded-xl transition-all hover:scale-105 shadow-xl shadow-indigo-900/50 text-base"
               >
-                Become an Agent — Free
+                Join the Team — Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
@@ -126,7 +126,7 @@ export default function AgentCtaSection() {
                   <Zap className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm">Agent Dashboard</p>
+                  <p className="font-bold text-white text-sm">Staff Dashboard</p>
                   <p className="text-xs text-gray-500">Your referral & client portal</p>
                 </div>
               </div>

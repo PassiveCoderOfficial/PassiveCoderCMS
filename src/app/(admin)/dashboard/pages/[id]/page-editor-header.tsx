@@ -159,7 +159,7 @@ export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug:
           <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
             {tenantSlug ? (
               // Relative /slug resolves against whatever subdomain the tab happens to
-              // be on — wrong when an agent has multiple tenant tabs open. Build the
+              // be on — wrong when a staff member has multiple tenant tabs open. Build the
               // preview URL against the page's own tenant explicitly.
               <a href={`${proto}://${tenantSlug}.${ROOT}/${page.slug}`} target="_blank" rel="noopener noreferrer">
                 <Eye className="h-3 w-3" /> View

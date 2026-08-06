@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
 
   let q = supabase.from("jobs")
-    .select("*, staff(id, name, phone)")
+    .select("*, staff:tenant_team(id, name, phone)")
     .eq("tenant_id", tenantId)
     .order("scheduled_date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       price: body.price != null && body.price !== "" ? Number(body.price) : null,
       notes: body.notes?.trim() || null,
     })
-    .select("*, staff(id, name, phone)")
+    .select("*, staff:tenant_team(id, name, phone)")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -96,7 +96,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data, error } = await supabase.from("jobs")
     .update(patch).eq("id", id).eq("tenant_id", tenantId)
-    .select("*, staff(id, name, phone)")
+    .select("*, staff:tenant_team(id, name, phone)")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 

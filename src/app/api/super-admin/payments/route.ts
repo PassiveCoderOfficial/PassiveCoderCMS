@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     await admin.from("tenants").update({ status: "active", plan: sub.plan_id }).eq("id", sub.tenant_id);
   }
 
-  // Commissions (best-effort) — staff agent gets recurring on every payment.
+  // Commissions (best-effort) — assigned staff gets recurring on every payment.
   // isFirstPayment=false so only staff recurring fires (no referral one-time here).
   createCommissions({
     supabase: admin,

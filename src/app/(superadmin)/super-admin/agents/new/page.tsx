@@ -125,7 +125,7 @@ export default function NewAgentPage() {
           <Link href="/super-admin/agents"><ArrowLeft className="w-4 h-4" /></Link>
         </Button>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Zap className="w-6 h-6 text-yellow-500" /> Add New Agent
+          <Zap className="w-6 h-6 text-yellow-500" /> Add New Staff
         </h1>
       </div>
 
@@ -154,7 +154,7 @@ export default function NewAgentPage() {
           <Card>
             <CardContent className="pt-6 space-y-3">
               <h2 className="font-semibold text-sm">Find Existing User</h2>
-              <p className="text-xs text-muted-foreground">Search for an existing registered user to promote to agent.</p>
+              <p className="text-xs text-muted-foreground">Search for an existing registered user to promote to staff.</p>
 
               {selectedUser ? (
                 <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg px-3 py-2.5">
@@ -203,10 +203,10 @@ export default function NewAgentPage() {
           </Card>
         )}
 
-        {/* Agent info */}
+        {/* Staff info */}
         <Card>
           <CardContent className="pt-6 space-y-4">
-            <h2 className="font-semibold text-sm">Agent Information</h2>
+            <h2 className="font-semibold text-sm">Staff Information</h2>
 
             <div className="grid grid-cols-2 gap-4">
               <Field label="Full Name" value={fullName} onChange={setFullName} placeholder="John Smith" required
@@ -219,7 +219,7 @@ export default function NewAgentPage() {
 
             {mode === "new" && (
               <Field label="Password" value={password} onChange={setPassword} type="password"
-                placeholder="Min 8 characters" required helper="Agent will use this to log in" />
+                placeholder="Min 8 characters" required helper="Staff member will use this to log in" />
             )}
 
             <div className="grid grid-cols-2 gap-4">
@@ -230,7 +230,7 @@ export default function NewAgentPage() {
             <div className="space-y-1.5">
               <Label>Bio</Label>
               <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3}
-                placeholder="Short description of the agent or agency..." />
+                placeholder="Short description of the staff member or agency..." />
             </div>
           </CardContent>
         </Card>
@@ -273,7 +273,7 @@ export default function NewAgentPage() {
             disabled={saving || !fullName.trim() || !email.trim() || (mode === "new" && !password)}
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-            {mode === "new" ? "Create Agent Account" : "Link as Agent"}
+            {mode === "new" ? "Create Staff Account" : "Link as Staff"}
           </Button>
           <Button variant="outline" asChild>
             <Link href="/super-admin/agents">Cancel</Link>

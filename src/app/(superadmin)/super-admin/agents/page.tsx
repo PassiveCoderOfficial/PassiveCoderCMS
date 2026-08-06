@@ -6,12 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export const metadata = { title: "Agents — Super Admin" };
+export const metadata = { title: "Staff — Super Admin" };
 
 export default async function AgentsPage() {
   const supabase = await createAdminClient();
   const { data: agents } = await supabase
-    .from("agents")
+    .from("pc_staff")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -19,11 +19,11 @@ export default async function AgentsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Zap className="w-6 h-6 text-yellow-500" /> Agents & Developers
+          <Zap className="w-6 h-6 text-yellow-500" /> Staff
         </h1>
         <Button asChild>
           <Link href="/super-admin/agents/new">
-            <Plus className="w-4 h-4" /> Add Agent
+            <Plus className="w-4 h-4" /> Add Staff
           </Link>
         </Button>
       </div>
@@ -31,13 +31,13 @@ export default async function AgentsPage() {
       <Card className="overflow-hidden">
         <CardHeader className="border-b py-4">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Users className="w-4 h-4 text-yellow-500" /> All Agents
+            <Users className="w-4 h-4 text-yellow-500" /> All Staff
             <span className="text-xs text-muted-foreground font-normal">({agents?.length ?? 0})</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {!agents?.length ? (
-            <div className="p-10 text-center text-muted-foreground text-sm">No agents registered yet.</div>
+            <div className="p-10 text-center text-muted-foreground text-sm">No staff registered yet.</div>
           ) : (
             <div className="overflow-x-auto"><table className="w-full text-sm min-w-[640px]">
               <thead>

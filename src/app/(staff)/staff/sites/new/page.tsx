@@ -7,7 +7,7 @@ import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { TemplateSelect, type TemplateSelectValue } from "@/components/admin/template-select";
 import { createSiteSlug as slugify } from "@/lib/utils";
 
-export default function AgentNewSitePage() {
+export default function StaffNewSitePage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -43,7 +43,7 @@ export default function AgentNewSitePage() {
     setSaving(true);
     setError("");
 
-    const res = await fetch("/api/agent/sites", {
+    const res = await fetch("/api/staff/sites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -60,13 +60,13 @@ export default function AgentNewSitePage() {
       return;
     }
 
-    router.push("/agent/sites");
+    router.push("/staff/sites");
   }
 
   return (
     <div className="p-6 max-w-xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/agent/sites" className="text-muted-foreground hover:text-foreground transition-colors">
+        <Link href="/staff/sites" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold">New Site</h1>
@@ -154,7 +154,7 @@ export default function AgentNewSitePage() {
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             Create Site
           </button>
-          <Link href="/agent/sites" className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground border hover:border-foreground/20 transition-colors">
+          <Link href="/staff/sites" className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground border hover:border-foreground/20 transition-colors">
             Cancel
           </Link>
         </div>

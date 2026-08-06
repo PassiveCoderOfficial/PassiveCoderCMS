@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { AGENT_VIEWING_COOKIE } from "@/lib/tenant/current";
 
+// Backward-compat: /api/agent/sites/exit-view moved to /api/staff/sites/exit-view.
 export async function GET(req: Request) {
-  const res = NextResponse.redirect(new URL("/agent/sites", req.url));
-  res.cookies.set(AGENT_VIEWING_COOKIE, "", { path: "/", maxAge: 0 });
-  return res;
+  return NextResponse.redirect(new URL("/api/staff/sites/exit-view", req.url));
 }

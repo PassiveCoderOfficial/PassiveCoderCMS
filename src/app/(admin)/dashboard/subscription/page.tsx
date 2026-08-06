@@ -40,7 +40,7 @@ interface Plan {
   is_popular: boolean;
 }
 
-interface Agent {
+interface Staff {
   id: string;
   referral_code: string;
   commission_rate: number;
@@ -60,7 +60,7 @@ const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; labe
 export default function SubscriptionPage() {
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [agent, setAgent] = useState<Staff | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({});
@@ -86,7 +86,7 @@ export default function SubscriptionPage() {
 
       const [{ data: memberships }, { data: agentRow }, { data: plansData }, { data: saRow }, { data: cfg }] = await Promise.all([
         supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id),
-        supabase.from("agents").select("id,referral_code,commission_rate,status").eq("user_id", user.id).maybeSingle(),
+        supabase.from("pc_staff").select("id,referral_code,commission_rate,status").eq("user_id", user.id).maybeSingle(),
         supabase.from("plans").select("*").order("sort_order"),
         supabase.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
         supabase.from("platform_settings").select("bkash_number,nagad_number,bank_details,manual_payment_instructions,whatsapp_number").eq("id", 1).maybeSingle(),
@@ -135,7 +135,7 @@ export default function SubscriptionPage() {
         </Link>
       </div>
 
-      {/* Agent / Super Admin badge */}
+      {/* Staff / Super Admin badge */}
       {(agent || isSuperAdmin) && (
         <div className={cn("rounded-xl border p-4 flex items-start gap-3", agent ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800" : "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700")}>
           <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", agent ? "bg-indigo-600" : "bg-gray-700")}>
@@ -150,7 +150,7 @@ export default function SubscriptionPage() {
             )}
             {agent && (
               <>
-                <p className="font-bold text-sm">Agent Account</p>
+                <p className="font-bold text-sm">Staff Account</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Your referral code: <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{agent.referral_code}</span>
                 </p>
@@ -259,7 +259,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
               <>
                 <p className="font-medium">{amountStr}{cycleSuffix}</p>
                 {discountPct > 0 && (
-                  <p className="text-xs text-green-600 dark:text-green-400">−{discountPct}% agent discount</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">−{discountPct}% staff discount</p>
                 )}
               </>
             ) : (
@@ -526,7 +526,7 @@ function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { p
         <p className="text-sm text-muted-foreground">No active subscription yet. Choose a plan to activate your site.</p>
         {discountPct > 0 && (
           <p className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center justify-center gap-1">
-            <BadgePercent className="w-4 h-4" /> As an agent, you get {discountPct}% off any plan
+            <BadgePercent className="w-4 h-4" /> As staff, you get {discountPct}% off any plan
           </p>
         )}
       </div>

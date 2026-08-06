@@ -19,13 +19,13 @@ const isLocal = ROOT.includes("localhost");
 const proto = isLocal ? "http" : "https";
 
 const NAV = [
-  { label: "Overview", href: "/agent", icon: LayoutDashboard, exact: true },
-  { label: "My Sites", href: "/agent/sites", icon: Globe },
-  { label: "Commissions", href: "/agent/commissions", icon: DollarSign },
-  { label: "Profile", href: "/agent/profile", icon: Settings },
+  { label: "Overview", href: "/staff", icon: LayoutDashboard, exact: true },
+  { label: "My Sites", href: "/staff/sites", icon: Globe },
+  { label: "Commissions", href: "/staff/commissions", icon: DollarSign },
+  { label: "Profile", href: "/staff/profile", icon: Settings },
 ];
 
-interface Agent {
+interface Staff {
   full_name: string;
   referral_code: string;
   commission_rate: number;
@@ -37,7 +37,7 @@ interface Site {
   slug: string;
 }
 
-export default function AgentSidebar({ agent, sites }: { agent: Agent; sites: Site[] }) {
+export default function StaffSidebar({ agent, sites }: { agent: Staff; sites: Site[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function AgentSidebar({ agent, sites }: { agent: Agent; sites: Si
         ) : sites.length === 1 ? (
           <div className="flex items-center gap-1 px-1">
             <a
-              href={`/api/agent/sites/${sites[0].id}/view`}
+              href={`/api/staff/sites/${sites[0].id}/view`}
               className="flex flex-1 items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors truncate"
             >
               <Globe className="w-3.5 h-3.5 shrink-0" />
@@ -122,7 +122,7 @@ export default function AgentSidebar({ agent, sites }: { agent: Agent; sites: Si
               {sites.map(site => (
                 <div key={site.id} className="flex items-center gap-1 px-1 py-0.5">
                   <a
-                    href={`/api/agent/sites/${site.id}/view`}
+                    href={`/api/staff/sites/${site.id}/view`}
                     className="flex-1 flex flex-col px-2 py-1.5 rounded-md hover:bg-accent transition-colors min-w-0"
                     onClick={() => setOpen(false)}
                   >

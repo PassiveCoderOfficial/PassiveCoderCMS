@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { getAgent } from "@/lib/agent";
+import { getStaff } from "@/lib/staff";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -26,13 +26,13 @@ export async function GET(req: Request) {
   let allowed = !!member || !!sa;
 
   if (!allowed) {
-    const agent = await getAgent();
+    const agent = await getStaff();
     if (agent) {
       const { data: tenant } = await admin
         .from("tenants")
         .select("id")
         .eq("id", tenantId)
-        .or(`assigned_agent_id.eq.${agent.id},referred_by_agent_id.eq.${agent.id}`)
+        .or(`assigned_staff_id.eq.${agent.id},referred_by_staff_id.eq.${agent.id}`)
         .maybeSingle();
       allowed = !!tenant;
     }

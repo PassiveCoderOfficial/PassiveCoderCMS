@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     if (!["active", "suspended", "pending"].includes(body.status ?? "")) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
-    const { error } = await supabase.from("agents").update({ status: body.status, updated_at: new Date().toISOString() }).eq("id", agentId);
+    const { error } = await supabase.from("pc_staff").update({ status: body.status, updated_at: new Date().toISOString() }).eq("id", agentId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     if (staff_recurring_pct != null && (staff_recurring_pct < 0 || staff_recurring_pct > 100)) {
       return NextResponse.json({ error: "Invalid commission rate" }, { status: 400 });
     }
-    const { error } = await supabase.from("agents").update({
+    const { error } = await supabase.from("pc_staff").update({
       staff_recurring_pct: staff_recurring_pct ?? null,
       updated_at: new Date().toISOString(),
     }).eq("id", agentId);
@@ -43,19 +43,19 @@ export async function POST(req: Request) {
     const code = body.referral_code?.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
     if (!code || code.length < 3) return NextResponse.json({ error: "Code must be 3+ alphanumeric chars" }, { status: 400 });
     // Check uniqueness
-    const { data: existing } = await supabase.from("agents").select("id").eq("referral_code", code).maybeSingle();
+    const { data: existing } = await supabase.from("pc_staff").select("id").eq("referral_code", code).maybeSingle();
     if (existing && existing.id !== agentId) return NextResponse.json({ error: "Referral code already in use" }, { status: 409 });
-    const { error } = await supabase.from("agents").update({ referral_code: code, updated_at: new Date().toISOString() }).eq("id", agentId);
+    const { error } = await supabase.from("pc_staff").update({ referral_code: code, updated_at: new Date().toISOString() }).eq("id", agentId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   if (action === "remove") {
     // Get user_id first to reset profile role
-    const { data: agent } = await supabase.from("agents").select("user_id").eq("id", agentId).single();
+    const { data: agent } = await supabase.from("pc_staff").select("user_id").eq("id", agentId).single();
     if (agent?.user_id) {
       await supabase.from("profiles").update({ role: "subscriber" }).eq("id", agent.user_id);
     }
-    const { error } = await supabase.from("agents").delete().eq("id", agentId);
+    const { error } = await supabase.from("pc_staff").delete().eq("id", agentId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

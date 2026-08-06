@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-interface Agent {
+interface Staff {
   id: string;
   full_name: string;
   email: string;
@@ -20,8 +20,8 @@ interface Agent {
   status: string;
 }
 
-export default function AgentProfilePage() {
-  const [agent, setAgent] = useState<Agent | null>(null);
+export default function StaffProfilePage() {
+  const [agent, setAgent] = useState<Staff | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -29,18 +29,18 @@ export default function AgentProfilePage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("agents").select("*").eq("user_id", user.id).single();
-      if (data) setAgent(data as Agent);
+      const { data } = await supabase.from("pc_staff").select("*").eq("user_id", user.id).single();
+      if (data) setAgent(data as Staff);
     })();
   }, []);
 
-  const update = (k: keyof Agent, v: string) => setAgent(a => a ? { ...a, [k]: v } : a);
+  const update = (k: keyof Staff, v: string) => setAgent(a => a ? { ...a, [k]: v } : a);
 
   async function save() {
     if (!agent) return;
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from("agents").update({
+    const { error } = await supabase.from("pc_staff").update({
       full_name: agent.full_name,
       company: agent.company,
       website: agent.website,

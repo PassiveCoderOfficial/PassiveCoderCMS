@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 
 export const SA_VIEWING_COOKIE = "sa_viewing_tenant";
-export const AGENT_VIEWING_COOKIE = "agent_viewing_tenant";
+export const STAFF_VIEWING_COOKIE = "staff_viewing_tenant";
 
 export async function getCurrentTenantId(): Promise<string> {
   const supabase = await createClient();
@@ -58,44 +58,45 @@ export async function getCurrentTenantId(): Promise<string> {
     redirect("/super-admin");
   }
 
-  // Agent viewing a tenant's dashboard under their own session (no credential
+  // Staff viewing a tenant's dashboard under their own session (no credential
   // swap). The cookie is shared across every *.passivecoder.com subdomain, so
-  // if the agent has two sites open in different tabs the cookie reflects
-  // whichever was clicked last — not necessarily the subdomain actually being
-  // browsed. The hostname (x-tenant-id, set by middleware from the real
-  // subdomain) is the source of truth whenever present; the cookie is only a
-  // fallback for root-domain /dashboard access with no subdomain context.
-  const { data: agentRow } = await adminClient.from("agents").select("id").eq("user_id", user.id).maybeSingle();
-  if (agentRow) {
+  // if the staff member has two sites open in different tabs the cookie
+  // reflects whichever was clicked last — not necessarily the subdomain
+  // actually being browsed. The hostname (x-tenant-id, set by middleware
+  // from the real subdomain) is the source of truth whenever present; the
+  // cookie is only a fallback for root-domain /dashboard access with no
+  // subdomain context.
+  const { data: staffRow } = await adminClient.from("pc_staff").select("id").eq("user_id", user.id).maybeSingle();
+  if (staffRow) {
     const reqHeaders = await headers();
     const subdomainTenantId = reqHeaders.get("x-tenant-id");
     if (subdomainTenantId) {
-      // An agent can both own a site directly (owner_id, e.g. built it for
-      // themselves) and be assigned/referred to other sites — check both,
-      // not just the assignment columns, or visiting their own owned site's
-      // subdomain incorrectly bounced them to /agent.
+      // A staff member can both own a site directly (owner_id, e.g. built it
+      // for themselves) and be assigned/referred to other sites — check
+      // both, not just the assignment columns, or visiting their own owned
+      // site's subdomain incorrectly bounced them to /staff.
       const { data: tenant } = await adminClient
         .from("tenants")
         .select("id")
         .eq("id", subdomainTenantId)
-        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id},owner_id.eq.${user.id}`)
+        .or(`assigned_staff_id.eq.${staffRow.id},referred_by_staff_id.eq.${staffRow.id},owner_id.eq.${user.id}`)
         .maybeSingle();
       if (tenant) return subdomainTenantId;
-      redirect("/agent");
+      redirect("/staff");
     }
 
     const cookieStore = await cookies();
-    const viewingTenantId = cookieStore.get(AGENT_VIEWING_COOKIE)?.value;
+    const viewingTenantId = cookieStore.get(STAFF_VIEWING_COOKIE)?.value;
     if (viewingTenantId) {
       const { data: tenant } = await adminClient
         .from("tenants")
         .select("id")
         .eq("id", viewingTenantId)
-        .or(`assigned_agent_id.eq.${agentRow.id},referred_by_agent_id.eq.${agentRow.id},owner_id.eq.${user.id}`)
+        .or(`assigned_staff_id.eq.${staffRow.id},referred_by_staff_id.eq.${staffRow.id},owner_id.eq.${user.id}`)
         .maybeSingle();
       if (tenant) return viewingTenantId;
     }
-    redirect("/agent");
+    redirect("/staff");
   }
 
   // Regular user — subdomain context takes priority
@@ -160,13 +161,13 @@ export async function getCurrentTenantId(): Promise<string> {
     .maybeSingle();
 
   if (!any?.tenant_id) {
-    // Agent users have no tenant membership — send them to the agent portal
+    // Staff users have no tenant membership — send them to the staff portal
     const { data: profile } = await adminClient
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
-    if (profile?.role === "agent") redirect("/agent");
+    if (profile?.role === "pc_staff") redirect("/staff");
     redirect("/login?error=no_tenant");
   }
 

@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
-import { requireAgent } from "@/lib/agent";
+import { requireStaff } from "@/lib/staff";
 import { createAdminClient } from "@/lib/supabase/server";
-import AgentSidebar from "@/components/agent/sidebar";
+import StaffSidebar from "@/components/staff/sidebar";
 import { Mail } from "lucide-react";
 
-export default async function AgentLayout({ children }: { children: React.ReactNode }) {
-  const agent = await requireAgent();
+export default async function StaffLayout({ children }: { children: React.ReactNode }) {
+  const agent = await requireStaff();
   if (!agent) redirect("/login");
-  if (agent.status === "suspended") redirect("/login?error=agent_suspended");
+  if (agent.status === "suspended") redirect("/login?error=staff_suspended");
 
   if (agent.status === "pending") {
     return (
@@ -28,23 +28,23 @@ export default async function AgentLayout({ children }: { children: React.ReactN
     );
   }
 
-  // Fetch all sites this agent is assigned to or referred
+  // Fetch all sites this staff member is assigned to or referred
   const supabase = await createAdminClient();
   const [{ data: assigned }, { data: referred }] = await Promise.all([
-    supabase.from("tenants").select("id,name,slug").eq("assigned_agent_id", agent.id).order("created_at", { ascending: true }),
-    supabase.from("tenants").select("id,name,slug").eq("referred_by_agent_id", agent.id).order("created_at", { ascending: true }),
+    supabase.from("tenants").select("id,name,slug").eq("assigned_staff_id", agent.id).order("created_at", { ascending: true }),
+    supabase.from("tenants").select("id,name,slug").eq("referred_by_staff_id", agent.id).order("created_at", { ascending: true }),
   ]);
 
   // Merge, deduplicate by id
   const seen = new Set<string>();
-  const agentSites: { id: string; name: string; slug: string }[] = [];
+  const staffSites: { id: string; name: string; slug: string }[] = [];
   for (const s of [...(assigned ?? []), ...(referred ?? [])]) {
-    if (!seen.has(s.id)) { seen.add(s.id); agentSites.push(s); }
+    if (!seen.has(s.id)) { seen.add(s.id); staffSites.push(s); }
   }
 
   return (
     <div className="flex h-screen bg-background">
-      <AgentSidebar agent={agent} sites={agentSites} />
+      <StaffSidebar agent={agent} sites={staffSites} />
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>

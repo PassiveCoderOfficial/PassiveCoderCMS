@@ -12,9 +12,9 @@ interface CreateCommissionOpts {
 }
 
 /**
- * Auto-create agent_commission entries for a payment. Recurring-only model —
- * a staff member assigned to a tenant (tenants.staff_agent_id) earns a % of
- * every payment that tenant makes, as long as platform_settings.
+ * Auto-create pc_staff_commissions entries for a payment. Recurring-only
+ * model — a staff member assigned to a tenant (tenants.staff_id) earns a %
+ * of every payment that tenant makes, as long as platform_settings.
  * staff_commission_enabled is on (off by default). isFirstPayment is kept in
  * the signature for call-site compatibility but no longer changes behavior
  * here — the old one-time-on-first-payment referral tier was removed.
@@ -28,30 +28,30 @@ export async function createCommissions({
   const [{ data: tenant }, { data: settings }] = await Promise.all([
     supabase
       .from("tenants")
-      .select("staff_agent_id, staff_commission_override")
+      .select("staff_id, staff_commission_override")
       .eq("id", tenantId)
       .maybeSingle(),
     supabase.from("platform_settings").select("staff_commission_enabled, default_staff_recurring_pct").eq("id", 1).maybeSingle(),
   ]);
 
-  if (!tenant || !tenant.staff_agent_id) return;
+  if (!tenant || !tenant.staff_id) return;
   if (!settings?.staff_commission_enabled) return;
 
   const defaultStaffRecurring = settings?.default_staff_recurring_pct ?? 10;
   const paymentAmount = paymentAmountCents / 100;
 
   const { data: staff } = await supabase
-    .from("agents")
+    .from("pc_staff")
     .select("id, staff_recurring_pct, status")
-    .eq("id", tenant.staff_agent_id)
+    .eq("id", tenant.staff_id)
     .maybeSingle();
   if (!staff || staff.status !== "active") return;
 
   const pct = tenant.staff_commission_override ?? staff.staff_recurring_pct ?? defaultStaffRecurring;
   const amount = Math.round((paymentAmount * pct) / 100 * 100) / 100;
 
-  await supabase.from("agent_commissions").insert({
-    agent_id: staff.id,
+  await supabase.from("pc_staff_commissions").insert({
+    staff_id: staff.id,
     tenant_id: tenantId,
     amount,
     commission_type: "recurring",

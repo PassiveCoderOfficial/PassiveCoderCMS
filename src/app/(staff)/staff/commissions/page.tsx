@@ -1,17 +1,17 @@
-import { requireAgent } from "@/lib/agent";
+import { requireStaff } from "@/lib/staff";
 import { createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { DollarSign } from "lucide-react";
 
-export default async function AgentCommissionsPage() {
-  const agent = await requireAgent();
+export default async function StaffCommissionsPage() {
+  const agent = await requireStaff();
   if (!agent) redirect("/login");
 
   const supabase = await createAdminClient();
   const { data: commissions } = await supabase
-    .from("agent_commissions")
+    .from("pc_staff_commissions")
     .select("*, tenants(name,slug)")
-    .eq("agent_id", agent.id)
+    .eq("staff_id", agent.id)
     .order("created_at", { ascending: false });
 
   const paid = (commissions ?? []).filter(c => c.status === "paid").reduce((s, c) => s + Number(c.amount), 0);

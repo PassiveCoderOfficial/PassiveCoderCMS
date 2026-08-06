@@ -1,18 +1,18 @@
-import { requireAgent } from "@/lib/agent";
+import { requireStaff } from "@/lib/staff";
 import { createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Globe, DollarSign, TrendingUp, Percent } from "lucide-react";
 import { CopyButton } from "./copy-button";
 
-export default async function AgentDashboardPage() {
-  const agent = await requireAgent();
+export default async function StaffDashboardPage() {
+  const agent = await requireStaff();
   if (!agent) redirect("/login");
 
   const supabase = await createAdminClient();
 
   const [{ data: sites }, { data: commissions }] = await Promise.all([
-    supabase.from("tenants").select("id,name,slug,status,created_at").eq("referred_by_agent_id", agent.id).order("created_at", { ascending: false }),
-    supabase.from("agent_commissions").select("amount,status").eq("agent_id", agent.id),
+    supabase.from("tenants").select("id,name,slug,status,created_at").eq("referred_by_staff_id", agent.id).order("created_at", { ascending: false }),
+    supabase.from("pc_staff_commissions").select("amount,status").eq("staff_id", agent.id),
   ]);
 
   const totalEarned = (commissions ?? []).filter(c => c.status === "paid").reduce((s, c) => s + Number(c.amount), 0);

@@ -35,7 +35,7 @@ const NAV: NavItem[] = [
     ],
   },
   { label: "Users & Roles",   href: "/super-admin/users",        icon: Users,           add: "/super-admin/users/new" },
-  { label: "Agents",          href: "/super-admin/agents",       icon: Zap,             add: "/super-admin/agents/new" },
+  { label: "Staff",           href: "/super-admin/agents",       icon: Zap,             add: "/super-admin/agents/new" },
   { label: "Homepage Editor", href: "/super-admin/homepage",     icon: Edit3 },
   { label: "Root Pages",      href: "/super-admin/root-pages",   icon: FileText,        add: "/super-admin/root-pages/new" },
   {
