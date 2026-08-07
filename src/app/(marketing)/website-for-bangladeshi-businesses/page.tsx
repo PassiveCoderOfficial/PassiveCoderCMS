@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Hind_Siliguri } from "next/font/google";
 
 const bangla = Hind_Siliguri({
@@ -19,6 +20,7 @@ const WA_TEXT = encodeURIComponent(
   "আসসালামু আলাইকুম, আমি ফেসবুক বিজ্ঞাপনে দেখেছি — ওয়েবসাইট প্যাকেজ সম্পর্কে জানতে চাই।"
 );
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${WA_TEXT}`;
+const WA_DISPLAY = "+880 1678-669699";
 
 const trades = [
   { emoji: "🏗️", label: "কন্সট্রাকশন" },
@@ -90,17 +92,9 @@ export default function BangladeshiExpatLandingPage() {
             জায়গায়। এজেন্সির মতো দাম না দিয়ে।
           </p>
           <div className="mt-8 flex flex-col items-center gap-3">
-            <a
-              href={WA_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg shadow-emerald-200 hover:shadow-xl transition-all duration-200"
-            >
-              <WaIcon />
-              WhatsApp-এ কথা বলুন
-            </a>
+            <CtaButtons />
             <span className="text-xs sm:text-sm text-slate-500">
-              ফ্রি কনসালটেশন — কোনো বাধ্যবাধকতা নেই
+              পেমেন্টের আগেই ড্যাশবোর্ড টেস্ট করুন — কোনো বাধ্যবাধকতা নেই
             </span>
           </div>
         </div>
@@ -164,15 +158,9 @@ export default function BangladeshiExpatLandingPage() {
             ))}
           </div>
 
-          <a
-            href={WA_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg transition-all duration-200"
-          >
-            <WaIcon />
-            অফারটি নিতে WhatsApp করুন
-          </a>
+          <div className="flex justify-center">
+            <CtaButtons dark />
+          </div>
         </div>
       </section>
 
@@ -198,17 +186,12 @@ export default function BangladeshiExpatLandingPage() {
             আজই আপনার ব্যবসার জন্য প্রফেশনাল ওয়েবসাইট শুরু করুন
           </h2>
           <p className="text-slate-600 mb-7 text-sm sm:text-base">
-            মেসেজ দিন, আমরা ৫ মিনিটের মধ্যে রিপ্লাই দেব ইনশাআল্লাহ।
+            মেসেজ দিন, আমরা ৫ মিনিটের মধ্যে রিপ্লাই দেব ইনশাআল্লাহ। অথবা পেমেন্টের
+            আগেই ড্যাশবোর্ড টেস্ট করে দেখুন।
           </p>
-          <a
-            href={WA_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg transition-all duration-200"
-          >
-            <WaIcon />
-            এখনই WhatsApp করুন
-          </a>
+          <div className="flex justify-center">
+            <CtaButtons />
+          </div>
         </div>
       </section>
 
@@ -216,18 +199,64 @@ export default function BangladeshiExpatLandingPage() {
         Passive Coder — passivecoder.com
       </footer>
 
-      {/* ── Sticky mobile WhatsApp bar ───────────────────────────────── */}
+      {/* ── Sticky mobile CTA bar ────────────────────────────────────── */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-50 flex shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+        <Link
+          href="/onboarding"
+          className="flex-1 bg-slate-900 text-white font-bold text-center py-3.5 flex items-center justify-center gap-1.5 text-sm"
+        >
+          ফ্রি ড্যাশবোর্ড টেস্ট
+        </Link>
+        <a
+          href={WA_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 bg-[#25D366] text-white font-bold text-center py-3.5 flex items-center justify-center gap-1.5 text-sm"
+        >
+          <WaIcon />
+          WhatsApp
+        </a>
+      </div>
+      <div className="sm:hidden h-14" />
+    </div>
+  );
+}
+
+function CtaButtons({ dark = false }: { dark?: boolean }) {
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-3">
+      <Link
+        href="/onboarding"
+        className={
+          dark
+            ? "inline-flex items-center gap-2.5 bg-white text-slate-900 font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+            : "inline-flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        }
+      >
+        <DashboardIcon />
+        ফ্রি ড্যাশবোর্ড টেস্ট করুন
+      </Link>
       <a
         href={WA_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-[#25D366] text-white font-bold text-center py-3.5 flex items-center justify-center gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]"
+        className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg shadow-emerald-200/40 hover:shadow-xl transition-all duration-200"
       >
         <WaIcon />
-        WhatsApp-এ কথা বলুন
+        WhatsApp ({WA_DISPLAY})
       </a>
-      <div className="sm:hidden h-14" />
     </div>
+  );
+}
+
+function DashboardIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0">
+      <rect x="3" y="3" width="7" height="9" rx="1.5" fill="currentColor" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" fill="currentColor" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" fill="currentColor" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" fill="currentColor" />
+    </svg>
   );
 }
 
