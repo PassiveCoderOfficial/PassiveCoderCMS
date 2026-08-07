@@ -58,7 +58,7 @@ const faqs = [
   },
   {
     q: "ইয়ারলি প্যাকেজে আসলে কত সাশ্রয় হয়?",
-    a: "Pro প্ল্যান মাসিক $80, অর্থাৎ ১২ মাসে $960। ইয়ারলি নিলে দিতে হবে মাত্র $480 — সরাসরি ৬ মাসের পেমেন্ট বেঁচে যায়।",
+    a: "Pro প্ল্যান মাসিক ৳৫,০০০, অর্থাৎ ১২ মাসে ৳৬০,০০০। ইয়ারলি নিলে দিতে হবে মাত্র ৳৩০,০০০ — সরাসরি ৬ মাসের পেমেন্ট বেঁচে যায়।",
   },
   {
     q: "সাইট তৈরি হতে কতদিন লাগে?",
@@ -147,12 +147,12 @@ export default function BangladeshiExpatLandingPage() {
             পুরো বছরের ওয়েবসাইট + CRM + বুকিং সিস্টেম
           </h2>
           <div className="flex items-end justify-center gap-4 mb-2">
-            <span className="text-slate-400 line-through text-xl sm:text-2xl">$960</span>
-            <span className="text-4xl sm:text-6xl font-extrabold text-emerald-400">$480</span>
+            <span className="text-slate-400 line-through text-xl sm:text-2xl">৳৬০,০০০</span>
+            <span className="text-4xl sm:text-6xl font-extrabold text-emerald-400">৳৩০,০০০</span>
             <span className="text-slate-400 text-sm sm:text-base mb-1 sm:mb-2">/বছর</span>
           </div>
           <p className="text-emerald-400 font-semibold mb-8">
-            ৬ মাসের পেমেন্ট বেঁচে যাচ্ছে — মাসিক হিসেবে নিলে যেখানে $960 লাগত
+            ৬ মাসের পেমেন্ট বেঁচে যাচ্ছে — মাসিক হিসেবে নিলে যেখানে ৳৬০,০০০ লাগত
           </p>
 
           <div className="grid sm:grid-cols-2 gap-3 text-left max-w-2xl mx-auto mb-10">
