@@ -34,13 +34,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // generateMetadata above) — the support WhatsApp button must only show on
   // the root domain, never on a tenant's site, or tenants lose their own
   // visitor leads to our support number.
-  const reqHeaders = await headers();
-  const tenantId = reqHeaders.get("x-tenant-id");
-  // The Bangladeshi-expat ad landing page has its own sticky WhatsApp bar
-  // (different number, pre-filled Bangla message) — the generic support
-  // button would duplicate/clash with it.
-  const pathname = reqHeaders.get("x-pathname") ?? "";
-  const hasOwnWhatsApp = pathname.startsWith("/website-for-bangladeshi-businesses");
+  const tenantId = (await headers()).get("x-tenant-id");
 
   // Tenant "/" is rendered here, not by (site)/layout.tsx, so it misses that
   // layout's theme handling. Pin the tenant's colour scheme (falling back to
@@ -76,7 +70,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
       )}
       {children}
-      {!tenantId && !hasOwnWhatsApp && <WhatsAppButton />}
+      {!tenantId && <WhatsAppButton />}
     </>
   );
 }

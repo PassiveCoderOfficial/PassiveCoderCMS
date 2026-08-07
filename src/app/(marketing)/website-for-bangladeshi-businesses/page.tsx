@@ -75,7 +75,7 @@ const trustPoints = [
   { icon: "📘", title: "ফেসবুক বিজনেস পেজ", desc: "পাবলিক পেজ, রিভিউ ও হিস্ট্রি সবই দেখা যায়" },
   { icon: "✅", title: "CEO-র ভেরিফায়েড প্রোফাইল", desc: "ফেসবুক ও লিংকডইনে ভেরিফায়েড, রিয়েল আইডেন্টিটি" },
   { icon: "🎥", title: "১২,০০০+ সাবস্ক্রাইবার", desc: "২০০+ পাবলিক ভিডিও — কাজ, প্রসেস সব স্বচ্ছ" },
-  { icon: "🔒", title: "কোনো অ্যাডভান্স নয়", desc: "কাজ বুঝে পেমেন্ট — ব্লক করে পালানোর সুযোগ নেই" },
+  { icon: "🔒", title: "পেমেন্টের আগেই ড্যাশবোর্ড চেক করার সুযোগ", desc: "কাজ বুঝে পেমেন্ট — ব্লক করে পালানোর সুযোগ নেই" },
 ];
 
 const faqs = [
@@ -100,8 +100,8 @@ const faqs = [
     a: "অবশ্যই। পেমেন্টের আগেই আমাদের ড্যাশবোর্ড ফ্রি টেস্ট করতে পারবেন, আমাদের আগের ২০+ লাইভ প্রজেক্ট দেখতে পারবেন, ইউটিউবে ২০০+ ভিডিও দেখতে পারবেন — বিশ্বাস তৈরি না হলে আমরা কাজ শুরুই করি না।",
   },
   {
-    q: "পেমেন্ট কীভাবে করব?",
-    a: "WhatsApp-এ যোগাযোগ করলে আমরা আপনাকে সবচেয়ে সহজ ও নিরাপদ পেমেন্ট মেথড বলে দেব — প্রবাসী হিসেবে যেটা আপনার জন্য সুবিধাজনক।",
+    q: "পেমেন্ট কিভাবে করব?",
+    a: "বাংলাদেশ থেকে bKash, Nagad বা ব্যাংক ট্রান্সফারে পেমেন্ট করতে পারবেন। আর আপনি যদি প্রবাসে থাকেন, কার্ড, Google Pay বা Apple Pay দিয়েও পেমেন্ট করা যায় (DodoPay দিয়ে সিকিউর প্রসেস করা) — ড্যাশবোর্ডের ভিতরেই একটা সাবস্ক্রিপশন অপশন আছে, সেখান থেকে অটোমেটিক পেমেন্ট সেটআপ করে নিতে পারবেন।",
   },
 ];
 
@@ -161,18 +161,27 @@ export default function BangladeshiExpatLandingPage() {
   return (
     <div className={`${bangla.variable} font-[family-name:var(--font-bangla)] bg-white text-slate-900`}>
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-gray-950/95 backdrop-blur border-b border-gray-800">
-        <div className="max-w-5xl mx-auto px-5 h-16 flex items-center">
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-gray-950 via-orange-950/60 to-gray-950 backdrop-blur border-b border-orange-900/30">
+        <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={LOGO} alt="Passive Coder" className="h-8 w-auto brightness-0 invert" />
           </Link>
+          <a
+            href={WA_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+          >
+            <WaIcon />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </a>
         </div>
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gray-950 text-white">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(251,146,60,0.12),_transparent_60%)]" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-orange-950 via-gray-950 to-gray-950 text-white">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(251,146,60,0.22),_transparent_65%)]" />
         <div className="mx-auto max-w-5xl px-5 pt-14 pb-16 sm:pt-20 sm:pb-24 text-center">
           <span className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-400 text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full border border-orange-500/20 mb-6">
             প্রবাসী কন্ট্রাক্টর ও সার্ভিস ব্যবসার জন্য
@@ -471,17 +480,18 @@ export default function BangladeshiExpatLandingPage() {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-b from-orange-50 to-white border-t border-orange-100">
+      <section className="relative overflow-hidden bg-gradient-to-b from-orange-950 via-gray-950 to-gray-950 text-white">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(251,146,60,0.22),_transparent_65%)]" />
         <div className="mx-auto max-w-2xl px-5 py-14 sm:py-16 text-center">
           <h2 className="text-xl sm:text-2xl font-bold mb-3">
             আজই আপনার ব্যবসার জন্য প্রফেশনাল ওয়েবসাইট শুরু করুন
           </h2>
-          <p className="text-slate-600 mb-7 text-sm sm:text-base">
+          <p className="text-gray-300 mb-7 text-sm sm:text-base">
             WhatsApp-এ মেসেজ দিন, আমরা দ্রুত রিপ্লাই দেব ইনশাআল্লাহ। অথবা পেমেন্টের
             আগেই ড্যাশবোর্ড টেস্ট করে দেখুন — বিশ্বাস তৈরি না হলে আমরা কাজই শুরু করি না।
           </p>
           <div className="flex justify-center">
-            <CtaButtons />
+            <CtaButtons dark />
           </div>
         </div>
       </section>

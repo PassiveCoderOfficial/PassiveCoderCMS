@@ -1,10 +1,21 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 const WA_NUMBER = "8801678669699";
 const WA_TEXT = encodeURIComponent("Need Support?");
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${WA_TEXT}`;
 
+// Routes with their own dedicated WhatsApp CTA (different number/message) —
+// the generic support button would duplicate/clash. Checked client-side via
+// usePathname so it can't be defeated by header/caching quirks the way the
+// old x-pathname server-header check could.
+const SUPPRESS_ON = ["/website-for-bangladeshi-businesses"];
+
 export function WhatsAppButton() {
+  const pathname = usePathname();
+  if (SUPPRESS_ON.some((p) => pathname?.startsWith(p))) return null;
+
   return (
     <a
       href={WA_URL}
