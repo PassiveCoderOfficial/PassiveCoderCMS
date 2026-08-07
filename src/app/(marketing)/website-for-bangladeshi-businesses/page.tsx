@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Hind_Siliguri } from "next/font/google";
+import { LightboxImage } from "./image-lightbox";
 
 const bangla = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -330,29 +331,32 @@ export default function BangladeshiExpatLandingPage() {
           <p className="text-center text-slate-500 mb-10">
             এগুলো সবই লাইভ সাইট, বাস্তব ক্লায়েন্টদের জন্য তৈরি
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {portfolio.map((domain) => (
-              <a
+              <div
                 key={domain}
-                href={`https://${domain}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="group rounded-xl overflow-hidden border border-slate-200 bg-white hover:border-orange-300 hover:shadow-lg transition-all"
               >
-                <div className="relative aspect-video bg-slate-100 overflow-hidden">
-                  {/* Static screenshots live in /public/portfolio/<domain>.png */}
-                  <Image
-                    src={`/portfolio/${domain}.png`}
-                    alt={domain}
-                    fill
-                    sizes="(max-width: 640px) 50vw, 25vw"
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-slate-700 truncate">
+                <LightboxImage src={`/portfolio/${domain}.png`} alt={domain}>
+                  <div className="relative aspect-video bg-slate-100 overflow-hidden">
+                    <Image
+                      src={`/portfolio/${domain}.png`}
+                      alt={domain}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </LightboxImage>
+                <a
+                  href={`https://${domain}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block px-3 py-2 text-center text-xs sm:text-sm font-semibold text-slate-700 hover:text-orange-600 truncate"
+                >
                   {domain}
-                </div>
-              </a>
+                </a>
+              </div>
             ))}
           </div>
         </div>
@@ -367,18 +371,20 @@ export default function BangladeshiExpatLandingPage() {
           এগুলো আমাদের নিজের প্রোডাক্টের আসল স্ক্রিনশট — কোনো মকআপ না। ফ্রি
           ড্যাশবোর্ড টেস্ট করেও নিজে হাতে-কলমে দেখতে পারবেন।
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {dashboardTour.map((d) => (
             <div key={d.img} className="rounded-2xl overflow-hidden border border-slate-200 bg-white hover:shadow-lg transition-shadow">
-              <div className="relative aspect-[16/10] bg-slate-100">
-                <Image
-                  src={`/dashboard-shots/${d.img}`}
-                  alt={d.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover object-top"
-                />
-              </div>
+              <LightboxImage src={`/dashboard-shots/${d.img}`} alt={d.title}>
+                <div className="relative aspect-[16/10] bg-slate-100">
+                  <Image
+                    src={`/dashboard-shots/${d.img}`}
+                    alt={d.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    className="object-cover object-top"
+                  />
+                </div>
+              </LightboxImage>
               <div className="p-4">
                 <h3 className="text-sm font-bold text-slate-800 mb-1">{d.title}</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">{d.desc}</p>
@@ -558,12 +564,14 @@ export default function BangladeshiExpatLandingPage() {
           {faqs.map((f) => (
             <div key={f.q} className="rounded-2xl border border-slate-200 p-5 sm:p-6">
               <h3 className="font-bold text-base sm:text-lg mb-2">{f.q}</h3>
-              <div className={f.img ? "grid sm:grid-cols-[1fr_auto] gap-4 items-start" : ""}>
+              <div className={f.img ? "flex flex-col sm:grid sm:grid-cols-2 gap-4 items-start" : ""}>
                 <p className="text-sm sm:text-base text-slate-600 leading-relaxed">{f.a}</p>
                 {f.img && (
-                  <div className="relative w-full sm:w-56 aspect-[16/10] rounded-lg overflow-hidden border border-slate-200 shrink-0">
-                    <Image src={f.img.src} alt={f.img.alt} fill sizes="224px" className="object-cover object-top" />
-                  </div>
+                  <LightboxImage src={f.img.src} alt={f.img.alt}>
+                    <div className="relative w-full aspect-[16/10] rounded-lg overflow-hidden border border-slate-200">
+                      <Image src={f.img.src} alt={f.img.alt} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover object-top" />
+                    </div>
+                  </LightboxImage>
                 )}
               </div>
             </div>
@@ -588,8 +596,13 @@ export default function BangladeshiExpatLandingPage() {
         </div>
       </section>
 
-      <footer className="text-center text-xs text-slate-400 py-6">
-        Passive Coder — passivecoder.com
+      <footer className="flex items-center justify-center gap-1.5 text-xs text-slate-400 py-6">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-11.15c-.63-.6-1.5-.95-2.5-.95-2.07 0-3.5 1.5-3.5 4s1.43 4 3.5 4c1.05 0 1.94-.38 2.57-1.03l1.05 1.05C15.86 16.7 14.53 17.3 13 17.3c-3 0-5.3-2.24-5.3-5.3s2.3-5.3 5.3-5.3c1.47 0 2.78.58 3.6 1.53l-1.1 1.02z" />
+        </svg>
+        <Link href="/" className="hover:text-orange-500 transition-colors font-medium">
+          Passive Coder
+        </Link>
       </footer>
 
       {/* ── Sticky mobile CTA bar ────────────────────────────────────── */}
