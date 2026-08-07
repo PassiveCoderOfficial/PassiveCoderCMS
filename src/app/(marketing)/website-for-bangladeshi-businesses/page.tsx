@@ -102,6 +102,7 @@ const faqs = [
   {
     q: "পেমেন্ট কিভাবে করব?",
     a: "বাংলাদেশ থেকে bKash, Nagad বা ব্যাংক ট্রান্সফারে পেমেন্ট করতে পারবেন। আর আপনি যদি প্রবাসে থাকেন, কার্ড, Google Pay বা Apple Pay দিয়েও পেমেন্ট করা যায় (DodoPay দিয়ে সিকিউর প্রসেস করা) — ড্যাশবোর্ডের ভিতরেই একটা সাবস্ক্রিপশন অপশন আছে, সেখান থেকে অটোমেটিক পেমেন্ট সেটআপ করে নিতে পারবেন।",
+    img: { src: "/dashboard-shots/subscription.png", alt: "ড্যাশবোর্ডের সাবস্ক্রিপশন ও পেমেন্ট পেজ" },
   },
 ];
 
@@ -128,6 +129,51 @@ const portfolio = [
   "skrarif.com",
   "sunsoonsg.com",
   "uniquerenovationmy.com",
+];
+
+// Real screenshots of our own dashboard — captured via
+// scripts/capture-dashboard-shots.cjs — live under /public/dashboard-shots.
+const dashboardTour = [
+  {
+    img: "dashboard-home.png",
+    title: "সাইনআপের পরই আপনার নিজের ড্যাশবোর্ড",
+    desc: "পেজ, অর্ডার, ইউজার — সব একনজরে",
+  },
+  {
+    img: "onboarding-wizard.png",
+    title: "৩-স্টেপ সেটআপ উইজার্ড",
+    desc: "লোগো, ফ্যাভিকন, সাইট ডিটেইলস — এক মিনিটেই শেষ",
+  },
+  {
+    img: "page-block-editor.png",
+    title: "ড্র্যাগ-ড্রপ পেজ বিল্ডার",
+    desc: "রেডিমেড সেকশন বসিয়ে নিজের মতো সাজান, কোড লাগে না",
+  },
+  {
+    img: "scheduler-calendar.png",
+    title: "কন্টেন্ট শিডিউলার — ক্যালেন্ডার ভিউ",
+    desc: "সোশ্যাল মিডিয়া পোস্ট প্ল্যান করুন মাসের জন্য",
+  },
+  {
+    img: "crm.png",
+    title: "বিল্ট-ইন CRM",
+    desc: "লিড ও কাস্টমার এক জায়গায় ট্র্যাক করুন",
+  },
+  {
+    img: "invoices.png",
+    title: "ইনভয়েসিং",
+    desc: "প্রফেশনাল ইনভয়েস বানান কয়েক ক্লিকে",
+  },
+  {
+    img: "bookings.png",
+    title: "বুকিং সিস্টেম",
+    desc: "কাস্টমার সরাসরি অ্যাপয়েন্টমেন্ট নিতে পারবে",
+  },
+  {
+    img: "subscription.png",
+    title: "সাবস্ক্রিপশন ও পেমেন্ট",
+    desc: "USD বা BDT — যেভাবে সুবিধা, সেভাবে পেমেন্ট",
+  },
 ];
 
 const chapters = [
@@ -161,7 +207,7 @@ export default function BangladeshiExpatLandingPage() {
   return (
     <div className={`${bangla.variable} font-[family-name:var(--font-bangla)] bg-white text-slate-900`}>
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-gray-950 via-orange-950/60 to-gray-950 backdrop-blur border-b border-orange-900/30">
+      <header className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur border-b border-orange-900/20">
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -309,6 +355,45 @@ export default function BangladeshiExpatLandingPage() {
               </a>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Dashboard tour ───────────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-5 py-14 sm:py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
+          পেমেন্টের আগেই দেখে নিন — ভেতরে আসলে কী পাচ্ছেন
+        </h2>
+        <p className="text-center text-slate-500 max-w-2xl mx-auto mb-10">
+          এগুলো আমাদের নিজের প্রোডাক্টের আসল স্ক্রিনশট — কোনো মকআপ না। ফ্রি
+          ড্যাশবোর্ড টেস্ট করেও নিজে হাতে-কলমে দেখতে পারবেন।
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {dashboardTour.map((d) => (
+            <div key={d.img} className="rounded-2xl overflow-hidden border border-slate-200 bg-white hover:shadow-lg transition-shadow">
+              <div className="relative aspect-[16/10] bg-slate-100">
+                <Image
+                  src={`/dashboard-shots/${d.img}`}
+                  alt={d.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover object-top"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-bold text-slate-800 mb-1">{d.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">{d.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-10">
+          <Link
+            href="/onboarding"
+            className="inline-flex items-center gap-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <DashboardIcon />
+            নিজে হাতে-কলমে টেস্ট করুন
+          </Link>
         </div>
       </section>
 
@@ -473,7 +558,14 @@ export default function BangladeshiExpatLandingPage() {
           {faqs.map((f) => (
             <div key={f.q} className="rounded-2xl border border-slate-200 p-5 sm:p-6">
               <h3 className="font-bold text-base sm:text-lg mb-2">{f.q}</h3>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed">{f.a}</p>
+              <div className={f.img ? "grid sm:grid-cols-[1fr_auto] gap-4 items-start" : ""}>
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">{f.a}</p>
+                {f.img && (
+                  <div className="relative w-full sm:w-56 aspect-[16/10] rounded-lg overflow-hidden border border-slate-200 shrink-0">
+                    <Image src={f.img.src} alt={f.img.alt} fill sizes="224px" className="object-cover object-top" />
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -541,10 +633,13 @@ function CtaButtons({ dark = false }: { dark?: boolean }) {
         href={WA_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg shadow-emerald-900/20 hover:shadow-xl transition-all duration-200"
+        className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-emerald-900/20 hover:shadow-xl transition-all duration-200"
       >
         <WaIcon />
-        WhatsApp ({WA_DISPLAY})
+        <span className="flex flex-col items-start leading-tight">
+          <span className="text-base sm:text-lg">WhatsApp</span>
+          <span className="text-xs sm:text-sm font-normal opacity-90">{WA_DISPLAY}</span>
+        </span>
       </a>
     </div>
   );
