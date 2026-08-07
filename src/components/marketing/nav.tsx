@@ -37,7 +37,7 @@ export default function MarketingNav({ dark = false }: { dark?: boolean }) {
             href="/website-for-bangladeshi-businesses"
             className={`text-sm font-semibold px-4 py-2.5 rounded-xl border transition-colors ${d ? "border-gray-700 text-gray-200 hover:bg-gray-800" : "border-gray-200 text-gray-700 hover:bg-gray-50"}`}
           >
-            🇧🇩 For BD Expats
+            For BD Expats
           </Link>
           <Link href="/onboarding" className="bg-gradient-to-r from-orange-500 to-rose-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:from-orange-600 hover:to-rose-600 transition-all shadow-md shadow-orange-200">
             Get Started — Pay Later
@@ -61,7 +61,7 @@ export default function MarketingNav({ dark = false }: { dark?: boolean }) {
               className={`text-sm font-semibold px-4 py-2.5 rounded-xl border text-center ${d ? "border-gray-700 text-gray-200" : "border-gray-200 text-gray-700"}`}
               onClick={() => setOpen(false)}
             >
-              🇧🇩 For BD Expats
+              For BD Expats
             </Link>
             <Link href="/onboarding" className="bg-gradient-to-r from-orange-500 to-rose-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl text-center" onClick={() => setOpen(false)}>Get Started — Pay Later</Link>
           </div>
