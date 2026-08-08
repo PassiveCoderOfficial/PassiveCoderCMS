@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { FooterBlockProps } from "@/types/cms";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
+import { BrandLogo } from "@/components/site/brand-logo";
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   facebook: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
@@ -43,9 +44,48 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer style={{ backgroundColor: bg, color: fg }} className="w-full">
+    <footer style={{ backgroundColor: bg, color: fg }} className="w-full relative overflow-hidden">
+      {/* Soft radial warmth in the corner — subtle texture, not a hard block color */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full opacity-[0.12] blur-3xl"
+        style={{ background: accent }}
+      />
+
+      {/* Newsletter / CTA strip — separated visually from the link grid so the
+          footer reads as "one more conversion moment", not just a link dump. */}
+      {showNewsletter && (
+        <div className="relative border-b" style={{ borderColor: borderCol }}>
+          <div className="max-w-7xl mx-auto px-6 py-9 flex flex-col md:flex-row items-center justify-between gap-5">
+            <div>
+              <p className="text-lg font-semibold" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>
+                {newsletterLabel ?? "Get Updates"}
+              </p>
+              <p className="text-sm mt-0.5" style={{ color: mutedFg }}>Tips, offers and service updates — no spam.</p>
+            </div>
+            <form className="flex gap-2 w-full md:w-auto" onSubmit={(e) => { e.preventDefault(); setEmail(""); }}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={newsletterPlaceholder ?? "Enter your email"}
+                className="flex-1 md:w-64 text-sm px-4 py-2.5 rounded-full outline-none min-w-0"
+                style={{ backgroundColor: isDark ? "#ffffff15" : "#ffffff", color: isDark ? fg : "#3A2E28", border: `1px solid ${borderCol}` }}
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full shrink-0 transition-transform hover:-translate-y-0.5"
+                style={{ backgroundColor: accent, color: "#ffffff" }}
+              >
+                Subscribe <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Main footer body */}
-      <div className="max-w-7xl mx-auto px-6 py-14">
+      <div className="relative max-w-7xl mx-auto px-6 py-14">
         <div
           className="grid grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:repeat(var(--fcols),minmax(0,1fr))] gap-x-8 gap-y-10"
           style={{ ["--fcols" as string]: String(columns.length + 1) }}
@@ -56,57 +96,31 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               {logo ? (
                 <Image src={logo} alt={logoText ?? "Logo"} width={140} height={48} className="h-10 w-auto object-contain" />
               ) : (
-                <span className="text-xl font-bold" style={{ color: accent }}>{logoText ?? "Brand"}</span>
+                <BrandLogo size={32} color={accent} textColor={fg} text={logoText ?? "Brand"} />
               )}
             </Link>
             {tagline && (
-              <p className="text-sm leading-relaxed mb-2" style={{ color: mutedFg }}>{tagline}</p>
+              <p className="text-sm leading-relaxed mb-2 max-w-xs" style={{ color: mutedFg }}>{tagline}</p>
             )}
             {logoCaption && (
               <p className="text-xs mb-5" style={{ color: mutedFg }}>{logoCaption}</p>
             )}
             {/* Socials */}
             {socials.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap mt-4">
                 {socials.map((s, i) => (
                   <a
                     key={i}
                     href={s.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center w-8 h-8 rounded-full transition-opacity hover:opacity-80"
-                    style={{ backgroundColor: accent + "20", color: accent }}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-full transition-all hover:-translate-y-0.5"
+                    style={{ backgroundColor: accent + "1a", color: accent }}
                   >
                     {SOCIAL_ICONS[s.platform] ?? <span className="text-xs">{s.platform[0].toUpperCase()}</span>}
                   </a>
                 ))}
               </div>
-            )}
-            {/* Newsletter inline */}
-            {showNewsletter && (
-              <form
-                className="mt-5"
-                onSubmit={(e) => { e.preventDefault(); setEmail(""); }}
-              >
-                <p className="text-sm font-semibold mb-2" style={{ color: fg }}>{newsletterLabel ?? "Get Updates"}</p>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={newsletterPlaceholder ?? "Enter your email"}
-                    className="flex-1 text-sm px-3 py-2 rounded-lg outline-none min-w-0"
-                    style={{ backgroundColor: isDark ? "#ffffff15" : "#00000008", color: fg, border: `1px solid ${borderCol}` }}
-                  />
-                  <button
-                    type="submit"
-                    className="px-3 py-2 text-sm font-semibold rounded-lg shrink-0"
-                    style={{ backgroundColor: accent, color: "#ffffff" }}
-                  >
-                    →
-                  </button>
-                </div>
-              </form>
             )}
           </div>
 
@@ -116,12 +130,12 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: accent }}>
                 {col.heading}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.id}>
                     <Link
                       href={link.url}
-                      className="text-sm transition-opacity hover:opacity-80"
+                      className="text-sm transition-colors hover:opacity-100"
                       style={{ color: mutedFg }}
                     >
                       {link.label}
@@ -135,8 +149,8 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
       </div>
 
       {/* Bottom bar */}
-      <div style={{ borderTop: `1px solid ${borderCol}` }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="relative" style={{ borderTop: `1px solid ${borderCol}` }}>
+        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs" style={{ color: mutedFg }}>
             {copyrightText
               ? copyrightText.replace("{year}", String(year))

@@ -37,9 +37,10 @@ function TestimonialsQuoteCards({ data }: { data: TestimonialsBlockProps["data"]
       {data.title && <h2 className="text-3xl font-bold text-center mb-12">{data.title}</h2>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {data.items.map((item) => (
-          <div key={item.id} className="bg-card border border-border rounded-xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
+          <div key={item.id} className="relative bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            <span aria-hidden className="absolute top-4 right-5 text-5xl font-serif leading-none text-primary/10 select-none" style={{ fontFamily: "var(--heading-font, serif)" }}>&rdquo;</span>
             <Stars rating={item.rating} />
-            <blockquote className="text-sm leading-relaxed flex-1 text-foreground/80 mb-5">
+            <blockquote className="text-sm leading-relaxed flex-1 text-foreground/80 mb-5 relative">
               &ldquo;{item.content}&rdquo;
             </blockquote>
             <div className="flex items-center gap-3">
