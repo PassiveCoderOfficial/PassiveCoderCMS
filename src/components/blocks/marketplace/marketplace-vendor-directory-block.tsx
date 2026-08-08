@@ -20,7 +20,7 @@ function CategoryIcon({ name, className = "w-3.5 h-3.5" }: { name: string | null
  *  service is chosen. */
 export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceVendorDirectoryBlockProps }) {
   const { data } = block;
-  const accent = data.accentColor || "#4f46e5";
+  const accent = data.accentColor || "#E8613C";
   const showCards = data.showCards !== false;
 
   const [vendors, setVendors] = useState<Vendor[]>([]);

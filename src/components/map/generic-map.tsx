@@ -22,8 +22,8 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Brand accent (amber check-badge color from BrandLogo) — dot inside the pin.
-const ACCENT_DOT = "#F59E0B";
+// Brand accent (honey heart-badge color from BrandLogo) — dot inside the pin.
+const ACCENT_DOT = "#F2A65A";
 
 export function pinIcon(color: string) {
   if (typeof window === "undefined" || !window.google) return undefined;
@@ -160,7 +160,7 @@ export function GenericMap({
         )}
         {pins.map((p) => (
           <Marker key={p.id} position={{ lat: p.lat, lng: p.lng }}
-            icon={pinIcon(p.color ?? "#2563EB")}
+            icon={pinIcon(p.color ?? "#E8613C")}
             label={p.label ? { text: p.label, color: "#fff", fontSize: "9px", fontWeight: "700" } : undefined}
             onClick={() => setActive(p)} />
         ))}

@@ -9764,29 +9764,29 @@ const MARKETPLACE_PRO: TemplateIdentity = {
   tags: ["marketplace", "home services", "booking", "multi-vendor", "singapore"],
 
   palette: {
-    primary: "#2563EB",       // electric blue
+    primary: "#E8613C",       // warm terracotta/coral
     primaryFg: "#ffffff",
-    secondary: "#0B1F3A",     // deep navy
-    accent: "#F59E0B",        // warm amber
-    background: "#FBFCFE",     // warm white
-    foreground: "#0B1F3A",    // navy ink
-    muted: "#EEF3FA",         // cool light
-    mutedFg: "#5B6B84",
+    secondary: "#2F4A3E",     // deep sage green
+    accent: "#F2A65A",        // warm honey
+    background: "#FFFBF5",    // soft cream
+    foreground: "#3A2E28",    // warm dark ink (not pure black/navy)
+    muted: "#FBF0E4",         // warm sand
+    mutedFg: "#8A776C",
     card: "#ffffff",
-    border: "#E2E9F3",
-    ring: "#2563EB",
-    borderRadius: "0.9rem",
+    border: "#F0E1D1",
+    ring: "#E8613C",
+    borderRadius: "1.25rem",  // rounder, friendlier shapes
   },
   typography: {
-    headingFont: "Plus Jakarta Sans",
+    headingFont: "Fraunces",
     bodyFont: "Inter",
-    headingWeight: "800",
-    letterSpacing: "-0.025em",
+    headingWeight: "600",
+    letterSpacing: "-0.01em",
   },
   customCss: `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
-    .template-marketplace-pro h1,.template-marketplace-pro h2,.template-marketplace-pro h3 { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.025em; }
-    .template-marketplace-pro .stat-value { color: #2563EB; }
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+    .template-marketplace-pro h1,.template-marketplace-pro h2,.template-marketplace-pro h3 { font-family: 'Fraunces', serif; letter-spacing: -0.01em; }
+    .template-marketplace-pro .stat-value { color: #E8613C; }
     .template-marketplace-pro .service-card { transition: transform .24s var(--ease-out,ease), box-shadow .24s var(--ease-out,ease); }
     .template-marketplace-pro .service-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
   `,

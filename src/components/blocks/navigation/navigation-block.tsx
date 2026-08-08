@@ -6,11 +6,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, ShoppingCart } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart/cart-context";
 import { BrandLogo } from "@/components/site/brand-logo";
 
 /* ── Dropdown / mega-menu (token-driven surfaces) ───────────────────────── */
+function GroupIcon({ name }: { name?: string }) {
+  const Icon = name ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name] : null;
+  if (!Icon) return null;
+  return (
+    <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10 text-primary shrink-0">
+      <Icon className="w-4 h-4" />
+    </span>
+  );
+}
+
 function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
   items: NavItem[];
   onMouseEnter?: () => void;
@@ -23,13 +34,13 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
     const groups = items.filter((i) => (i.children?.length ?? 0) > 0);
     return (
       <div
-        className="fixed left-1/2 -translate-x-1/2 top-[4.5rem] z-[9999] px-2 w-full max-w-[1120px] animate-in fade-in slide-in-from-top-2 duration-200"
+        className="fixed left-1/2 -translate-x-1/2 top-[4.75rem] z-[9999] px-2 w-full max-w-[1120px] animate-in fade-in slide-in-from-top-2 duration-200"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        <div className="bg-popover text-popover-foreground shadow-[var(--shadow-xl)] rounded-2xl border border-border overflow-hidden">
+        <div className="bg-popover text-popover-foreground shadow-[var(--shadow-xl)] rounded-[1.75rem] border border-border overflow-hidden">
           {standalone.length > 0 && (
-            <div className="flex flex-wrap gap-x-6 gap-y-1 px-6 py-3 bg-muted/60 border-b border-border">
+            <div className="flex flex-wrap gap-x-6 gap-y-1 px-7 py-3.5 bg-muted/70 border-b border-border">
               {standalone.map((s) => (
                 <Link key={s.id} href={s.url} className="text-sm font-semibold text-primary hover:opacity-70">
                   {s.label} →
@@ -37,13 +48,14 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
               ))}
             </div>
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6 p-6 max-h-[70vh] overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-7 p-7 max-h-[70vh] overflow-y-auto">
             {groups.map((group) => (
               <div key={group.id} className="min-w-0">
-                <Link href={group.url} className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5 pb-1.5 border-b border-border hover:text-foreground">
-                  {group.label}
+                <Link href={group.url} className="flex items-center gap-2.5 mb-3 group/head">
+                  <GroupIcon name={group.icon} />
+                  <span className="text-sm font-semibold text-foreground group-hover/head:text-primary transition-colors truncate">{group.label}</span>
                 </Link>
-                <ul className="space-y-1.5">
+                <ul className="space-y-1.5 pl-[calc(2rem+0.625rem)]">
                   {(group.children ?? []).map((child) => (
                     <li key={child.id}>
                       <Link href={child.url} target={child.target}
@@ -63,13 +75,13 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
 
   return (
     <div className="absolute left-0 top-full pt-2.5 z-[9999] animate-in fade-in slide-in-from-top-1 duration-150" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <ul className="min-w-[220px] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground shadow-[var(--shadow-lg)] rounded-xl border border-border p-1.5">
+      <ul className="min-w-[220px] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground shadow-[var(--shadow-lg)] rounded-2xl border border-border p-1.5">
         {items.map((child) => (
           <li key={child.id}>
             <Link
               href={child.url}
               target={child.target}
-              className="block px-3.5 py-2.5 text-sm rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="block px-3.5 py-2.5 text-sm rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               {child.label}
             </Link>
@@ -178,18 +190,17 @@ export function NavigationBlock({ block, identityLogo }: {
 
   // Colors: token mode uses brand CSS vars where the platform's per-tenant
   // template injection is live, falling back to explicit brand hexes here
-  // (activeColor/backgroundColor still override both). This keeps the
-  // component correct today even where the CSS-var pipeline isn't wired up
-  // for a given tenant, per [[project_template_injection_bug]].
-  const BRAND_PRIMARY = "#2563EB";
+  // (activeColor/backgroundColor still override both). Warm & Approachable
+  // brand: coral primary, deep sage secondary, honey accent.
+  const BRAND_PRIMARY = "#E8613C";
   const barBg = !solid
     ? "transparent"
     : tokenMode
-      ? (glass ? "rgba(255,255,255,0.85)" : "#ffffff")
-      : (backgroundColor ?? "#0B1F3A");
+      ? (glass ? "rgba(255,251,245,0.88)" : "#FFFBF5")
+      : (backgroundColor ?? "#2F4A3E");
   const fg = !solid
     ? "#ffffff"
-    : tokenMode ? "#0B1F3A" : (textColor ?? "#ffffff");
+    : tokenMode ? "#3A2E28" : (textColor ?? "#ffffff");
   const accent = activeColor ?? (tokenMode ? BRAND_PRIMARY : fg);
 
   const ctaV = ctaVariant ?? "gradient";
@@ -198,8 +209,8 @@ export function NavigationBlock({ block, identityLogo }: {
     ctaV === "outline"
       ? { background: "transparent", color: solid ? accent : "#fff", border: `1.5px solid ${solid ? BRAND_PRIMARY : "rgba(255,255,255,0.6)"}` }
       : ctaV === "solid"
-        ? { background: BRAND_PRIMARY, color: "#fff", boxShadow: "0 8px 20px -6px rgba(37,99,235,0.45)" }
-        : { backgroundImage: "linear-gradient(135deg, #2563EB 0%, #F59E0B 100%)", color: "#fff", boxShadow: "0 8px 20px -6px rgba(37,99,235,0.45)" };
+        ? { background: BRAND_PRIMARY, color: "#fff", boxShadow: "0 8px 20px -6px rgba(232,97,60,0.4)" }
+        : { backgroundImage: "linear-gradient(135deg, #E8613C 0%, #F2A65A 100%)", color: "#fff", boxShadow: "0 8px 20px -6px rgba(232,97,60,0.4)" };
 
   // Overlay mode (scrollAware): the bar is FIXED across the top so it floats
   // over the hero instead of consuming layout height above it (which caused an
@@ -304,7 +315,7 @@ export function NavigationBlock({ block, identityLogo }: {
       {mobileOpen && (
         <>
           <div className="md:hidden fixed inset-0 top-[4.5rem] bg-black/40 z-40 animate-in fade-in" onClick={() => setMobileOpen(false)} />
-          <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "#ffffff", color: "#0B1F3A" }}>
+          <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "#ffffff", color: "#3A2E28" }}>
             <ul className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
               {items.map((item) => {
                 const hasChildren = (item.children?.length ?? 0) > 0;
@@ -344,7 +355,7 @@ export function NavigationBlock({ block, identityLogo }: {
               })}
               <li className="pt-3 space-y-2">
                 {showCta && ctaLabel && ctaUrl && (
-                  <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold text-white" style={{ backgroundImage: "linear-gradient(135deg, #2563EB 0%, #F59E0B 100%)", boxShadow: "0 8px 20px -6px rgba(37,99,235,0.45)" }} onClick={() => setMobileOpen(false)}>
+                  <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold text-white" style={{ backgroundImage: "linear-gradient(135deg, #E8613C 0%, #F2A65A 100%)", boxShadow: "0 8px 20px -6px rgba(232,97,60,0.4)" }} onClick={() => setMobileOpen(false)}>
                     {ctaLabel}
                   </Link>
                 )}

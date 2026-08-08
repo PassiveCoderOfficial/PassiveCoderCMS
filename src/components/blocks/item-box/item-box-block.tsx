@@ -81,9 +81,9 @@ const colMap: Record<2 | 3 | 4, string> = {
 
 const cardClassMap: Record<ItemBoxBlockProps["data"]["cardStyle"], string> = {
   flat: "bg-transparent",
-  elevated: "bg-card shadow-lg rounded-xl p-6",
-  bordered: "border border-border rounded-xl p-6",
-  gradient: "bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6",
+  elevated: "bg-card shadow-lg rounded-2xl p-6",
+  bordered: "border border-border rounded-2xl p-6",
+  gradient: "bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6",
 };
 
 export function ItemBoxByData({ data }: { data: ItemBoxBlockProps["data"] }) {

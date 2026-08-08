@@ -820,7 +820,7 @@ export const blockRegistry: BlockDefinition[] = [
       data: {
         title: "Book an Appointment",
         subtitle: "Pick a day and time that works for you.",
-        accentColor: "#4f46e5",
+        accentColor: "#E8613C",
         daysToShow: 14,
         showPhone: true,
         showMessage: true,
@@ -841,7 +841,7 @@ export const blockRegistry: BlockDefinition[] = [
       data: {
         title: "Book a Service",
         subtitle: "Choose a service and we'll match you with a trusted provider.",
-        accentColor: "#4f46e5",
+        accentColor: "#E8613C",
         submitLabel: "Request Booking",
       },
     }),
@@ -859,7 +859,7 @@ export const blockRegistry: BlockDefinition[] = [
       data: {
         title: "Post a Job Request",
         subtitle: "Tell us what you need — mark it urgent and nearby providers get notified right away.",
-        accentColor: "#4f46e5",
+        accentColor: "#E8613C",
         submitLabel: "Post Request",
       },
     }),
@@ -877,7 +877,7 @@ export const blockRegistry: BlockDefinition[] = [
       data: {
         title: "Our Providers",
         subtitle: "Vetted, approved providers ready to help.",
-        accentColor: "#4f46e5",
+        accentColor: "#E8613C",
       },
     }),
   },

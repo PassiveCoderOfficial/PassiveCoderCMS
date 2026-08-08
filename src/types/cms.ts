@@ -205,6 +205,8 @@ export type NavItem = {
   url: string;
   target?: "_blank" | "_self";
   children?: NavItem[];
+  /** Lucide icon name — shown next to the label in mega-menu group headers. */
+  icon?: string;
 };
 
 export type TextBlockProps = BlockBase & {

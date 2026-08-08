@@ -32,9 +32,9 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   // Default to brand tokens (deep secondary bg + primary accent) rather than
   // the old hardcoded green/gold, so footers match the active template. An
   // explicit backgroundColor/accentColor in block data still wins.
-  const bg = backgroundColor ?? (isDark ? "#0B1F3A" : "#F4F6FA");
-  const fg = textColor ?? (isDark ? "rgba(255,255,255,0.82)" : "#0B1F3A");
-  const accent = accentColor ?? "#2563EB";
+  const bg = backgroundColor ?? (isDark ? "#2F4A3E" : "#FBF0E4");
+  const fg = textColor ?? (isDark ? "rgba(255,255,255,0.85)" : "#3A2E28");
+  const accent = accentColor ?? "#E8613C";
   // When a custom text color is set (e.g. white footer on a red bg), derive
   // the muted/secondary tone from it instead of the theme grey — otherwise
   // taglines/links/copyright render grey and vanish on a colored footer.

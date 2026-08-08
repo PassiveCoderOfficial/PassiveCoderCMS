@@ -1,22 +1,24 @@
 import React from "react";
 
 /**
- * Coded SVG logo — a simple geometric mark (house roofline + a service
- * "check" tick, reading as "verified home services") paired with a bold
- * wordmark. Built as a component (not an image file) so it's crisp at any
- * size, themeable via props, and needs no asset pipeline. Used in the nav
- * and can back the favicon/OG image generation later.
+ * Coded SVG logo for the "Warm & Approachable" brand — a soft rounded-square
+ * badge with a simple home glyph and a small heart accent (reads as "cared
+ * for home services", warmer than a corporate checkmark) paired with a
+ * serif-leaning wordmark. Built as a component (not an image file) so it's
+ * crisp at any size, themeable via props, and needs no asset pipeline.
  */
 export function BrandLogo({
   size = 34,
-  color = "#2563EB",
-  textColor = "#0B1F3A",
+  color = "#E8613C",
+  accentColor = "#F2A65A",
+  textColor = "#3A2E28",
   showText = true,
   text = "My Service SG",
   className,
 }: {
   size?: number;
   color?: string;
+  accentColor?: string;
   textColor?: string;
   showText?: boolean;
   text?: string;
@@ -25,17 +27,24 @@ export function BrandLogo({
   return (
     <span className={className} style={{ display: "inline-flex", alignItems: "center", gap: size * 0.28 }}>
       <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="40" height="40" rx="10" fill={color} />
-        {/* Roofline (home) */}
-        <path d="M20 8L31 17.5V19.5L20 11L9 19.5V17.5L20 8Z" fill="white" />
-        {/* House body */}
-        <path d="M12 18V29C12 29.5523 12.4477 30 13 30H27C27.5523 30 28 29.5523 28 29V18L20 12L12 18Z" fill="white" fillOpacity="0.92" />
-        {/* Service check-tick, offset like a badge */}
-        <circle cx="27" cy="27" r="7" fill="#F59E0B" stroke={color} strokeWidth="1.5" />
-        <path d="M24 27L26.2 29.2L30.2 24.8" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Soft rounded-square badge — friendlier than a sharp rect */}
+        <rect width="40" height="40" rx="14" fill={color} />
+        {/* Home glyph, simplified & rounded */}
+        <path d="M20 9.5L30 17.5V28.5C30 29.3284 29.3284 30 28.5 30H11.5C10.6716 30 10 29.3284 10 28.5V17.5L20 9.5Z" fill="white" fillOpacity="0.95" />
+        {/* Doorway cutout for warmth/depth */}
+        <rect x="17" y="22" width="6" height="8" rx="2" fill={color} />
+        {/* Small heart accent, offset like a badge — "care" not "verification" */}
+        <g transform="translate(24.5, 22.5)">
+          <path
+            d="M5 9C5 9 0 5.7 0 2.6C0 0.9 1.3 0 2.6 0C3.6 0 4.5 0.6 5 1.5C5.5 0.6 6.4 0 7.4 0C8.7 0 10 0.9 10 2.6C10 5.7 5 9 5 9Z"
+            fill={accentColor}
+            stroke={color}
+            strokeWidth="1.2"
+          />
+        </g>
       </svg>
       {showText && (
-        <span style={{ fontWeight: 800, fontSize: size * 0.5, letterSpacing: "-0.02em", color: textColor, whiteSpace: "nowrap" }}>
+        <span style={{ fontWeight: 600, fontSize: size * 0.5, letterSpacing: "-0.01em", color: textColor, whiteSpace: "nowrap", fontFamily: "var(--heading-font, inherit)" }}>
           {text}
         </span>
       )}
