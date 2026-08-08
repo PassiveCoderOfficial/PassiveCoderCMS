@@ -12,7 +12,7 @@ function Stars({ rating }: { rating?: number }) {
   return (
     <div className="flex gap-0.5 mb-3">
       {[...Array(5)].map((_, i) => (
-        <Star key={i} className={cn("h-4 w-4", i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300 fill-gray-200")} />
+        <Star key={i} className={cn("h-4 w-4", i < rating ? "text-accent fill-accent" : "text-muted fill-muted")} />
       ))}
     </div>
   );
@@ -23,7 +23,7 @@ function Avatar({ item }: { item: Item }) {
     return <img src={item.avatar} alt={item.name} className="w-10 h-10 rounded-full object-cover shrink-0" />;
   }
   return (
-    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
       {item.name.charAt(0)}
     </div>
   );
@@ -34,11 +34,22 @@ function Avatar({ item }: { item: Item }) {
 function TestimonialsQuoteCards({ data }: { data: TestimonialsBlockProps["data"] }) {
   return (
     <div className="max-w-7xl mx-auto">
-      {data.title && <h2 className="text-3xl font-bold text-center mb-12">{data.title}</h2>}
+      {data.title && (
+        <div className="text-center mb-12">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-2">What people say</p>
+          <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--heading-font, inherit)" }}>{data.title}</h2>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data.items.map((item) => (
-          <div key={item.id} className="relative bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-            <span aria-hidden className="absolute top-4 right-5 text-5xl font-serif leading-none text-primary/10 select-none" style={{ fontFamily: "var(--heading-font, serif)" }}>&rdquo;</span>
+        {data.items.map((item, i) => (
+          <div
+            key={item.id}
+            className={cn(
+              "relative rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200",
+              i === 0 ? "bg-primary/[0.06] border border-primary/15" : "bg-card border border-border",
+            )}
+          >
+            <span aria-hidden className="absolute top-4 right-5 text-5xl leading-none text-primary/10 select-none" style={{ fontFamily: "var(--heading-font, serif)" }}>&rdquo;</span>
             <Stars rating={item.rating} />
             <blockquote className="text-sm leading-relaxed flex-1 text-foreground/80 mb-5 relative">
               &ldquo;{item.content}&rdquo;
@@ -276,7 +287,7 @@ function TestimonialsLegacy({ data }: { data: TestimonialsBlockProps["data"] }) 
         {items.map((item) => (
           <div key={item.id} className="bg-white border rounded-xl p-6 shadow-sm flex flex-col">
             <Stars rating={item.rating} />
-            <blockquote className="text-sm text-gray-700 flex-1 leading-relaxed">&ldquo;{item.content}&rdquo;</blockquote>
+            <blockquote className="text-sm text-foreground/80 flex-1 leading-relaxed">&ldquo;{item.content}&rdquo;</blockquote>
             <div className="mt-4 flex items-center gap-3">
               <Avatar item={item} />
               <div>

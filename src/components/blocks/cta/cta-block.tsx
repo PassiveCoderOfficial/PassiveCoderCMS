@@ -16,7 +16,7 @@ function CTAButtons({ data, dark }: { data: CTABlockProps["data"]; dark?: boolea
           className={cn(
             "inline-flex items-center px-7 py-3.5 font-semibold rounded-lg transition-all text-sm",
             dark
-              ? "bg-white text-gray-900 hover:bg-gray-100"
+              ? "bg-white text-foreground hover:bg-muted"
               : "bg-primary text-primary-foreground hover:opacity-90",
           )}
         >
@@ -47,14 +47,17 @@ function CTAGradientBanner({ data, blockId }: { data: CTABlockProps["data"]; blo
   const isSplit = data.layout === "left" || data.layout === "split";
   return (
     <div className={cn(
-      "max-w-5xl mx-auto rounded-2xl px-8 py-14 text-white shadow-xl",
+      "relative max-w-5xl mx-auto rounded-[1.75rem] px-8 py-14 sm:py-16 text-white shadow-xl overflow-hidden",
       isSplit ? "flex flex-col md:flex-row items-center justify-between gap-8" : "text-center",
     )} style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%))" }}>
-      <div className={isSplit ? "max-w-xl" : undefined}>
-        <h2 className="text-3xl md:text-4xl font-bold mb-3"><InlineText blockId={blockId} field="title" value={data.title} /></h2>
-        {data.description && <p className={cn("text-white/80 text-lg", isSplit ? "mb-0" : "mb-8 max-w-2xl mx-auto")}><InlineText blockId={blockId} field="description" value={data.description} /></p>}
+      {/* Decorative warm glow circles — echoes the footer's accent glow */}
+      <div aria-hidden className="pointer-events-none absolute -top-16 -left-10 w-64 h-64 rounded-full bg-white/10 blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-20 -right-16 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
+      <div className={cn("relative", isSplit ? "max-w-xl" : undefined)}>
+        <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "var(--heading-font, inherit)" }}><InlineText blockId={blockId} field="title" value={data.title} /></h2>
+        {data.description && <p className={cn("text-white/85 text-lg", isSplit ? "mb-0" : "mb-8 max-w-2xl mx-auto")}><InlineText blockId={blockId} field="description" value={data.description} /></p>}
       </div>
-      <div className={cn("flex gap-4 flex-wrap", isSplit ? "shrink-0" : "justify-center")}>
+      <div className={cn("relative flex gap-4 flex-wrap", isSplit ? "shrink-0" : "justify-center")}>
         <CTAButtons data={data} dark />
       </div>
     </div>
@@ -154,7 +157,7 @@ function CTALegacy({ block }: { block: CTABlockProps }) {
       {(data.primaryButton || data.secondaryButton) && (
         <div className={cn("flex gap-3 flex-wrap", layout !== "split" && "justify-center mt-4")}>
           {data.primaryButton && (
-            <Link href={data.primaryButton.url} className="inline-flex items-center px-6 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+            <Link href={data.primaryButton.url} className="inline-flex items-center px-6 py-3 bg-white text-foreground font-semibold rounded-lg hover:bg-muted transition-colors">
               {data.primaryButton.label}
             </Link>
           )}

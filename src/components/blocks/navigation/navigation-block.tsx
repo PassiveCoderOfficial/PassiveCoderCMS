@@ -197,7 +197,7 @@ export function NavigationBlock({ block, identityLogo }: {
     ? "transparent"
     : tokenMode
       ? (glass ? "rgba(255,251,245,0.88)" : "#FFFBF5")
-      : (backgroundColor ?? "#2F4A3E");
+      : (backgroundColor ?? "#3A2E28");
   const fg = !solid
     ? "#ffffff"
     : tokenMode ? "#3A2E28" : (textColor ?? "#ffffff");

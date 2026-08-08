@@ -9766,12 +9766,12 @@ const MARKETPLACE_PRO: TemplateIdentity = {
   palette: {
     primary: "#E8613C",       // warm terracotta/coral
     primaryFg: "#ffffff",
-    secondary: "#2F4A3E",     // deep sage green
+    secondary: "#B8391F",     // deep rust — darker shade of primary, no green
     accent: "#F2A65A",        // warm honey
     background: "#FFFBF5",    // soft cream
     foreground: "#3A2E28",    // warm dark ink (not pure black/navy)
     muted: "#FBF0E4",         // warm sand
-    mutedFg: "#8A776C",
+    mutedFg: "#8A776C",       // warm taupe, not cold grey
     card: "#ffffff",
     border: "#F0E1D1",
     ring: "#E8613C",

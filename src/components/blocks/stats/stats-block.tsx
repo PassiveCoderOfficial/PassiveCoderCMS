@@ -53,22 +53,29 @@ function useStatDisplay(item: StatItem, animate: boolean): string {
 type StatItem = StatsBlockProps["data"]["items"][number];
 
 // ─── Variant: colored-row ─────────────────────────────────────────────────────
-// Primary tinted background, row layout — cleaning
+// Bold gradient banner with floating cream stat tiles — real visual weight,
+// not a thin grey-divided grid. Warm palette: brand-gradient bg, cream cards.
 function StatsColoredRow({ data }: { data: StatsBlockProps["data"] }) {
   const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
   return (
     <div className="max-w-6xl mx-auto">
-      <div className={cn("grid grid-cols-2 gap-px bg-primary/20 rounded-xl overflow-hidden", colClass)}>
-        {data.items.map((item) => {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const display = useStatDisplay(item, data.animate);
-          return (
-            <div key={item.id} className="stat-value-wrap bg-card flex flex-col items-center text-center p-8">
-              <p className="stat-value text-4xl md:text-5xl font-extrabold text-primary tracking-tight">{display}</p>
-              <p className="text-sm mt-1.5 text-muted-foreground font-medium">{item.label}</p>
-            </div>
-          );
-        })}
+      <div
+        className="rounded-[1.75rem] p-6 sm:p-10 shadow-xl"
+        style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))" }}
+      >
+        <div className={cn("grid grid-cols-2 gap-4", colClass)}>
+          {data.items.map((item) => {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const display = useStatDisplay(item, data.animate);
+            return (
+              <div key={item.id} className="stat-value-wrap bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center text-center p-6 sm:p-7 shadow-sm">
+                {item.icon && <DynIcon name={item.icon} className="w-6 h-6 mb-2 text-primary" />}
+                <p className="stat-value text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight" style={{ fontFamily: "var(--heading-font, inherit)" }}>{display}</p>
+                <p className="text-sm mt-1.5 text-foreground/70 font-medium">{item.label}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
