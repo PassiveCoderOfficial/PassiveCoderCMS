@@ -65,6 +65,7 @@ const proFeatures = [
   "ইনভয়েসিং ও একাউন্টিং টুলস",
   "প্রাইসিং টেবিল ও প্যাকেজ শোকেস",
   "ই-কমার্স ফিচার",
+  "সারা বছর ফ্রি আপডেট ও মেইনটেন্যান্স সাপোর্ট — আমাদের টিম থেকে",
   "VIP প্রায়োরিটি সাপোর্ট",
 ];
 
@@ -331,32 +332,28 @@ export default function BangladeshiExpatLandingPage() {
           <p className="text-center text-slate-500 mb-10">
             এগুলো সবই লাইভ সাইট, বাস্তব ক্লায়েন্টদের জন্য তৈরি
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {portfolio.map((domain) => (
-              <div
+              <a
                 key={domain}
+                href={`https://${domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group rounded-xl overflow-hidden border border-slate-200 bg-white hover:border-orange-300 hover:shadow-lg transition-all"
               >
-                <LightboxImage src={`/portfolio/${domain}.png`} alt={domain}>
-                  <div className="relative aspect-video bg-slate-100 overflow-hidden">
-                    <Image
-                      src={`/portfolio/${domain}.png`}
-                      alt={domain}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                </LightboxImage>
-                <a
-                  href={`https://${domain}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-3 py-2 text-center text-xs sm:text-sm font-semibold text-slate-700 hover:text-orange-600 truncate"
-                >
+                <div className="relative aspect-video bg-slate-100 overflow-hidden">
+                  <Image
+                    src={`/portfolio/${domain}.png`}
+                    alt={domain}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-slate-700 group-hover:text-orange-600 truncate">
                   {domain}
-                </a>
-              </div>
+                </div>
+              </a>
             ))}
           </div>
         </div>
