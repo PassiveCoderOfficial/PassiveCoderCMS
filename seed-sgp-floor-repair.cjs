@@ -24,6 +24,7 @@ const SLOGAN = "We Repair, You Relax";
 const PHONE = "+6580568266";
 const PHONE_DISPLAY = "+65 8056 8266";
 const EMAIL = "info@sgpfloorrepair.com";
+const ADDRESS = "117 Defu Lane 10, Singapore 539229";
 const WA = `https://wa.me/${PHONE.replace(/\+/g, "")}`;
 
 // Coded SVG logo — stacked wood-plank icon + two-tone wordmark ("SGP" gold / "Floor Repair" navy)
@@ -44,7 +45,8 @@ const IMG = {
   livingRoom: "https://images.unsplash.com/photo-1649083048770-82e8ffd80431?w=1200&q=80",
   woodFloorClose: "https://images.unsplash.com/photo-1688274165311-15de2165d686?w=1200&q=80",
   decking: "https://images.unsplash.com/photo-1574120583586-de8847ae992c?w=1200&q=80",
-  capping: "https://images.unsplash.com/photo-1717944517255-5672be735f5b?w=1200&q=80",
+  capping: "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/sgp-floor-repair/capping-floor.jpg",
+  siliconRedo: "https://images.pexels.com/photos/6124242/pexels-photo-6124242.jpeg?auto=compress&w=1200&h=800&dpr=1",
   avatar1: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=200&q=80",
   avatar2: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80",
   avatar3: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80",
@@ -96,6 +98,12 @@ const SERVICES = [
     short: "Complete floor colour change with silicon finishing and removal of your existing flooring.",
     img: IMG.fullRedo,
   },
+  {
+    slug: "full-house-silicone-redo", icon: "🧴", title: "Full House Silicone Redo",
+    short: "Damaged or water-damaged silicone removed, area cleaned properly, and fresh silicone reapplied throughout your home.",
+    img: IMG.siliconRedo,
+    detail: "Silicone seals break down over time or get damaged by water — leaving gaps, mould or leaks around your flooring and wet areas.\n\nWe take out the existing damaged silicone, clean the area properly, then redo the silicone for a clean, watertight finish across your whole house.",
+  },
 ];
 
 // ─── NAV / HEADER / FOOTER ──────────────────────────────────────────────────
@@ -143,6 +151,7 @@ function globalFooter() {
         { id: uid("fc"), heading: "Contact", links: [
           { id: uid("fl"), label: PHONE_DISPLAY, url: `tel:${PHONE}` },
           { id: uid("fl"), label: "WhatsApp Us", url: WA },
+          { id: uid("fl"), label: ADDRESS, url: `https://maps.google.com/?q=${encodeURIComponent(ADDRESS)}` },
         ]},
       ],
       bottomLinks: [],
@@ -184,8 +193,8 @@ function contactBlock(order, title = "Get a Free Quote", subtitle = "Reach out f
   return {
     ...BASE, id: uid("contact"), type: "contact", order,
     data: {
-      title, subtitle, layout: "split", showMap: false, showContactInfo: true,
-      phone: PHONE, email: EMAIL, address: "", recipientEmail: EMAIL,
+      title, subtitle, layout: "split", showMap: true, showContactInfo: true,
+      phone: PHONE, email: EMAIL, address: ADDRESS, recipientEmail: EMAIL,
       fields: [
         { id: "f-name", label: "Full Name", type: "text", required: true },
         { id: "f-phone", label: "Phone / WhatsApp", type: "tel", required: true },
@@ -395,7 +404,7 @@ function buildContactPage() {
   return [
     heroBlock(0, {
       badge: "📞 Get In Touch", title: "Contact Us",
-      subtitle: SLOGAN, description: "Call, WhatsApp, or send us a message — we respond fast.",
+      subtitle: SLOGAN, description: `Call, WhatsApp, or send us a message — we respond fast.\n${ADDRESS}`,
       img: IMG.heroVinyl,
       primary: { label: "Call Now", url: `tel:${PHONE}`, variant: "primary" },
       secondary: { label: "WhatsApp", url: WA, variant: "outline" },
