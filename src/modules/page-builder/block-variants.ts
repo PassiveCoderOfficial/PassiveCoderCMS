@@ -119,12 +119,24 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
 
   faq: [
     { key: "accordion-bordered", label: "Bordered Accordion", description: "Expandable rows in outlined cards.", thumb: "accordion" },
+    { key: "minimal-lines", label: "Minimal Lines", description: "Hairline rules and a plus toggle — the quietest treatment.", thumb: "accordion" },
+    { key: "dark-accordion", label: "Dark Accordion", description: "Lifted surfaces instead of borders, tuned for dark palettes.", thumb: "accordion", dark: true },
+    { key: "split-heading", label: "Split Heading", description: "Title pinned left, questions scroll on the right.", thumb: "two-col" },
     { key: "two-column-grid", label: "Two Column", description: "All answers visible across two columns — no clicking.", thumb: "two-col" },
+    { key: "boxed-two-column", label: "Boxed Two Column", description: "Accent-edged boxes, everything open. Dense and scannable.", thumb: "two-col" },
+    { key: "cards-grid", label: "Cards Grid", description: "Each question in its own card across three columns.", thumb: "cards-grid" },
+    { key: "numbered-list", label: "Numbered List", description: "Numbered like a reference document — methodical, thorough.", thumb: "numbered-list" },
   ],
 
   team: [
     { key: "avatar-cards", label: "Avatar Cards", description: "Photo cards with name, role and bio.", thumb: "avatar-cards" },
+    { key: "bordered-grid", label: "Bordered Grid", description: "Hairline-divided grid — architectural and restrained.", thumb: "avatar-cards" },
+    { key: "dark-cards", label: "Dark Cards", description: "Lifted cards with an accent rule, for dark palettes.", thumb: "avatar-cards", dark: true },
+    { key: "photo-tiles", label: "Photo Tiles", description: "Full-bleed square photos with the name overlaid.", thumb: "grid-tight" },
     { key: "minimal-list", label: "Minimal List", description: "Compact rows — good for larger teams.", thumb: "avatar-list" },
+    { key: "compact-grid", label: "Compact Grid", description: "Small avatars in a dense grid, for big teams.", thumb: "avatar-list" },
+    { key: "bio-rows", label: "Bio Rows", description: "Alternating wide rows with room for a real bio.", thumb: "list-rows" },
+    { key: "centered-feature", label: "Centered Feature", description: "One person per row, centered — founder-led brands.", thumb: "centered" },
   ],
 
   gallery: [

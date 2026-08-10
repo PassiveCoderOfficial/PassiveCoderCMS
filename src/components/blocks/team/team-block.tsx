@@ -120,9 +120,178 @@ function TeamMinimalList({ data }: { data: TeamBlockProps["data"] }) {
   );
 }
 
+/** Avatar image with an initials fallback, shared by the newer variants. */
+function Avatar({ member, className, rounded = "full" }: {
+  member: TeamBlockProps["data"]["members"][number];
+  className?: string;
+  rounded?: "full" | "xl" | "none";
+}) {
+  const roundedCls = { full: "rounded-full", xl: "rounded-2xl", none: "" }[rounded];
+  if (member.avatar) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={member.avatar} alt={member.name} className={cn("object-cover", roundedCls, className)} loading="lazy" />;
+  }
+  return (
+    <div className={cn("flex items-center justify-center bg-primary/10 text-primary font-semibold", roundedCls, className)}>
+      {initialsOf(member.name)}
+    </div>
+  );
+}
+
+function TeamHead({ title, subtitle, align = "center" }: { title?: string; subtitle?: string; align?: "center" | "left" }) {
+  if (!title && !subtitle) return null;
+  return (
+    <div className={cn("mb-10", align === "center" ? "text-center" : "text-left")}>
+      {title && <h2 className="text-3xl font-bold mb-3">{title}</h2>}
+      {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+// ─── Variant: photo-tiles ─────────────────────────────────────────────────────
+// Full-bleed square photos with the name overlaid on a gradient scrim. Strong
+// and visual — suits studios, agencies and salons where the people are the sell.
+function TeamPhotoTiles({ data }: { data: TeamBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-7xl mx-auto">
+      <TeamHead title={data.title} subtitle={data.subtitle} />
+      <div className={cn("grid grid-cols-1 gap-3", colClass)}>
+        {data.members.map((m) => (
+          <div key={m.id} className="group relative aspect-square overflow-hidden rounded-xl">
+            <Avatar member={m} rounded="none" className="w-full h-full text-3xl transition-transform duration-500 group-hover:scale-105" />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+              <p className="font-semibold text-white leading-tight">{m.name}</p>
+              {m.role && <p className="text-xs text-white/75 mt-0.5">{m.role}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: bio-rows ────────────────────────────────────────────────────────
+// Alternating wide rows with a large portrait and room for a real bio. Best
+// for small teams where each person's story matters.
+function TeamBioRows({ data }: { data: TeamBlockProps["data"] }) {
+  return (
+    <div className="max-w-5xl mx-auto">
+      <TeamHead title={data.title} subtitle={data.subtitle} />
+      <div className="space-y-10">
+        {data.members.map((m, i) => (
+          <div key={m.id} className={cn("flex flex-col gap-6 sm:flex-row sm:items-center", i % 2 === 1 && "sm:flex-row-reverse")}>
+            <Avatar member={m} rounded="xl" className="w-full sm:w-56 h-56 shrink-0 text-4xl" />
+            <div className="flex-1">
+              <h3 className="text-xl font-bold">{m.name}</h3>
+              {m.role && <p className="text-primary font-medium text-sm mt-0.5">{m.role}</p>}
+              {data.showBio && m.bio && <p className="text-muted-foreground leading-relaxed mt-3">{m.bio}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: compact-grid ────────────────────────────────────────────────────
+// Small avatars in a dense grid — designed for large teams where a full card
+// per person would run for pages.
+function TeamCompactGrid({ data }: { data: TeamBlockProps["data"] }) {
+  return (
+    <div className="max-w-6xl mx-auto">
+      <TeamHead title={data.title} subtitle={data.subtitle} />
+      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+        {data.members.map((m) => (
+          <div key={m.id} className="flex items-center gap-3">
+            <Avatar member={m} className="w-11 h-11 shrink-0 text-xs" />
+            <div className="min-w-0">
+              <p className="font-medium text-sm truncate">{m.name}</p>
+              {m.role && <p className="text-xs text-muted-foreground truncate">{m.role}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: dark-cards ──────────────────────────────────────────────────────
+// Card grid tuned for dark palettes — lifted surfaces with an accent rule.
+function TeamDarkCards({ data }: { data: TeamBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-7xl mx-auto">
+      <TeamHead title={data.title} subtitle={data.subtitle} />
+      <div className={cn("grid grid-cols-1 gap-4", colClass)}>
+        {data.members.map((m) => (
+          <div key={m.id} className="bg-foreground/5 border-t-2 border-primary rounded-b-xl p-5 text-center">
+            <Avatar member={m} className="w-20 h-20 mx-auto mb-3 text-xl" />
+            <p className="font-semibold">{m.name}</p>
+            {m.role && <p className="text-xs text-primary mt-0.5 uppercase tracking-wider">{m.role}</p>}
+            {data.showBio && m.bio && <p className="text-xs text-muted-foreground leading-relaxed mt-2.5">{m.bio}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: centered-feature ────────────────────────────────────────────────
+// One person per row, centered, generous whitespace. For founder-led brands
+// and very small teams that want each person to land.
+function TeamCenteredFeature({ data }: { data: TeamBlockProps["data"] }) {
+  return (
+    <div className="max-w-3xl mx-auto">
+      <TeamHead title={data.title} subtitle={data.subtitle} />
+      <div className="space-y-12">
+        {data.members.map((m) => (
+          <div key={m.id} className="text-center">
+            <Avatar member={m} className="w-28 h-28 mx-auto mb-4 text-2xl ring-4 ring-primary/10" />
+            <h3 className="text-xl font-bold">{m.name}</h3>
+            {m.role && <p className="text-primary text-sm font-medium mt-1">{m.role}</p>}
+            {data.showBio && m.bio && (
+              <p className="text-muted-foreground leading-relaxed mt-3 max-w-xl mx-auto">{m.bio}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: bordered-grid ───────────────────────────────────────────────────
+// Grid divided by hairlines instead of cards — architectural and restrained,
+// suits professional services.
+function TeamBorderedGrid({ data }: { data: TeamBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <TeamHead title={data.title} subtitle={data.subtitle} />
+      <div className={cn("grid grid-cols-1 gap-px bg-border border border-border rounded-xl overflow-hidden", colClass)}>
+        {data.members.map((m) => (
+          <div key={m.id} className="bg-card p-6 text-center">
+            <Avatar member={m} className="w-16 h-16 mx-auto mb-3 text-lg" />
+            <p className="font-semibold text-sm">{m.name}</p>
+            {m.role && <p className="text-xs text-muted-foreground mt-0.5">{m.role}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TeamBlock({ block }: { block: TeamBlockProps }) {
-  if (block.templateVariant === "avatar-cards") return <TeamAvatarCardsPro data={block.data} />;
-  if (block.templateVariant === "minimal-list") return <TeamMinimalList data={block.data} />;
+  switch (block.templateVariant) {
+    case "avatar-cards": return <TeamAvatarCardsPro data={block.data} />;
+    case "minimal-list": return <TeamMinimalList data={block.data} />;
+    case "photo-tiles": return <TeamPhotoTiles data={block.data} />;
+    case "bio-rows": return <TeamBioRows data={block.data} />;
+    case "compact-grid": return <TeamCompactGrid data={block.data} />;
+    case "dark-cards": return <TeamDarkCards data={block.data} />;
+    case "centered-feature": return <TeamCenteredFeature data={block.data} />;
+    case "bordered-grid": return <TeamBorderedGrid data={block.data} />;
+  }
   const { data } = block;
   const { title, subtitle, layout, columns, members, showBio, showSocial } = data;
 
