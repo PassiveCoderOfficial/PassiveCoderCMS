@@ -5,9 +5,23 @@ import { PageEditorHeader } from "./page-editor-header";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
 import type { Page } from "@/types/cms";
+import type { Metadata } from "next";
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+// Browser tab read as just the tenant name regardless of which page was open
+// — every editor tab looked identical, so "which page is this?" meant reading
+// the URL. SEO's own title (when set) is what the tab should show too, same
+// as the public site — falling back to the page's own title otherwise.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: page } = await supabase.from("pages").select("title, seo").eq("id", id).maybeSingle();
+  if (!page) return {};
+  const seo = page.seo as Page["seo"];
+  return { title: seo?.title ?? page.title };
 }
 
 export default async function PageEditorPage({ params }: Props) {

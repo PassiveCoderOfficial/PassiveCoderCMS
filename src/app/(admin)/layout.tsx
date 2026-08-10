@@ -10,6 +10,24 @@ import { SA_VIEWING_COOKIE, STAFF_VIEWING_COOKIE } from "@/lib/tenant/current";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
 import type { CMSUser } from "@/types/cms";
+import type { Metadata } from "next";
+
+// Every dashboard page's tab read as just the tenant name, with no way to
+// tell pages apart across tabs. A `template` here means any child route's
+// plain-string `title` (see dashboard/pages/[id]/page.tsx) becomes
+// "<child title> | <site name>" — the same pattern the live site already
+// uses in (site)/layout.tsx.
+export async function generateMetadata(): Promise<Metadata> {
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+  let siteName = "Passive Coder";
+  if (tenantId) {
+    const admin = await createAdminClient();
+    const { data } = await admin.from("site_settings").select("site_name").eq("tenant_id", tenantId).maybeSingle();
+    siteName = data?.site_name ?? siteName;
+  }
+  return { title: { default: siteName, template: `%s | ${siteName}` } };
+}
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
