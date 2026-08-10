@@ -9,6 +9,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getTemplateIdentity } from "@/modules/themes/template-registry";
+import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-registry";
 import type { Block, NavItem } from "@/types/cms";
 
@@ -18,12 +19,22 @@ import type { Block, NavItem } from "@/types/cms";
  * layered on top (see `(site)/layout.tsx`). Without this merge a snapshot
  * would capture the stock template colours and silently drop whatever the
  * tenant actually customised.
+ *
+ * `templateId` (site_identity.template_id, the DB templates row) is checked
+ * first; `activeTemplateSlug` + the registry is a fallback for any tenant not
+ * yet repointed. Once every tenant carries template_id and the registry is
+ * deleted, the fallback branch becomes dead and can go with it.
  */
-export function resolveTenantPalette(
+export async function resolveTenantPalette(
+  templateId: string | null | undefined,
   activeTemplateSlug: string | null | undefined,
   colorOverrides: Partial<TemplatePalette> | null | undefined,
-): { palette: TemplatePalette | null; typography: TemplateTypography | null; customCss: string | null } {
-  const identity = activeTemplateSlug ? getTemplateIdentity(activeTemplateSlug) : null;
+): Promise<{ palette: TemplatePalette | null; typography: TemplateTypography | null; customCss: string | null }> {
+  const identity = templateId
+    ? await resolveDbTemplateIdentity(templateId)
+    : activeTemplateSlug
+      ? getTemplateIdentity(activeTemplateSlug)
+      : null;
   if (!identity) {
     return { palette: null, typography: null, customCss: null };
   }
@@ -54,7 +65,7 @@ export async function snapshotTenantIntoTemplate(
   const [{ data: identity }, { data: navMenu }] = await Promise.all([
     supabase
       .from("site_identity")
-      .select("active_template_slug, color_overrides, logo_url, favicon_url, global_header, global_footer")
+      .select("active_template_slug, template_id, color_overrides, logo_url, favicon_url, global_header, global_footer")
       .eq("tenant_id", sourceTenantId)
       .maybeSingle(),
     supabase
@@ -65,7 +76,8 @@ export async function snapshotTenantIntoTemplate(
       .maybeSingle(),
   ]);
 
-  const { palette, typography, customCss } = resolveTenantPalette(
+  const { palette, typography, customCss } = await resolveTenantPalette(
+    identity?.template_id as string | null,
     identity?.active_template_slug as string | null,
     identity?.color_overrides as Partial<TemplatePalette> | null,
   );

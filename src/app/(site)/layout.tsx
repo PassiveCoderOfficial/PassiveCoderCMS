@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { getTemplateIdentity } from "@/modules/themes/template-registry";
+import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { CartProvider } from "@/lib/cart/cart-context";
@@ -63,7 +64,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity")
-            .select("active_template_slug, logo_url, logo_dark_url, site_name, tagline, global_header, global_footer, color_overrides")
+            .select("active_template_slug, template_id, logo_url, logo_dark_url, site_name, tagline, global_header, global_footer, color_overrides")
             .eq("tenant_id", tenantId)
             .single()
         )
@@ -73,6 +74,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const settings = settingsResult?.data;
   const identity = identityResult?.data as {
     active_template_slug?: string;
+    template_id?: string | null;
     logo_url?: string;
     logo_dark_url?: string;
     site_name?: string;
@@ -82,8 +84,18 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     color_overrides?: Partial<import("@/modules/themes/template-registry").TemplatePalette> | null;
   } | null;
 
+  // Tenants are being migrated off active_template_slug (resolved against the
+  // hardcoded TEMPLATE_REGISTRY) onto template_id, a real row in the DB
+  // templates table (migration 062 + the legacy-* rows seeded from the
+  // registry during that cutover). template_id is preferred; the registry
+  // lookup stays as a fallback only until every live tenant is repointed and
+  // verified, at which point it and TEMPLATE_REGISTRY itself get deleted.
   const activeTemplateSlug = identity?.active_template_slug ?? null;
-  const templateIdentity = activeTemplateSlug ? getTemplateIdentity(activeTemplateSlug) : null;
+  const templateIdentity = identity?.template_id
+    ? await resolveDbTemplateIdentity(identity.template_id)
+    : activeTemplateSlug
+      ? getTemplateIdentity(activeTemplateSlug)
+      : null;
 
   // Is the visitor an admin of THIS tenant (owner/admin/editor member, or a
   // super admin)? Drives both the maintenance-mode bypass below and the
