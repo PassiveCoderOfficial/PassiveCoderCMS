@@ -592,7 +592,7 @@ export default function ProductsPage() {
             onClear={() => setSelectedIds(new Set())}
           />
         )}
-        <div className="rounded-xl border overflow-hidden overflow-x-auto">
+        <div className="rounded-xl border overflow-hidden overflow-x-auto bg-card">
           <table className="w-full text-sm min-w-[740px]">
             <thead>
               <tr className="border-b bg-muted/40">

@@ -76,7 +76,7 @@ export async function BlogBlock({ block }: { block: BlogBlockProps }) {
       ) : (
         <div className={cn("grid grid-cols-1 gap-6", colMap)}>
           {posts.map((post) => (
-            <article key={post.id} className="group flex flex-col rounded-xl border overflow-hidden hover:shadow-md transition-shadow">
+            <article key={post.id} className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-md transition-shadow">
               {post.featured_image ? (
                 <div className="relative aspect-video overflow-hidden">
                   <Image src={post.featured_image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />

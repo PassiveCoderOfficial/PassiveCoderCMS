@@ -85,7 +85,7 @@ export default function CategoriesClient({
           <h2 className="text-sm font-semibold uppercase tracking-wider text-amber-400">
             Pending requests ({pending.length})
           </h2>
-          <div className="divide-y rounded-xl border border-amber-500/30">
+          <div className="divide-y rounded-xl border border-amber-500/30 bg-card">
             {pending.map((c) => (
               <div key={c.id} className="flex items-center gap-3 p-3">
                 <div className="min-w-0 flex-1">
@@ -128,7 +128,7 @@ export default function CategoriesClient({
           </button>
         </form>
 
-        <div className="divide-y rounded-xl border">
+        <div className="divide-y rounded-xl border bg-card">
           {active.map((c, i) => (
             <div key={c.id} className="flex items-center gap-3 p-3">
               <span className="w-6 shrink-0 text-center text-xs text-muted-foreground">{i + 1}</span>
@@ -158,14 +158,14 @@ export default function CategoriesClient({
                 <button
                   onClick={() => editName.trim() && void patch(c.id, { name: editName.trim() }, "Category renamed")}
                   disabled={busy === c.id}
-                  className="shrink-0 rounded-lg border px-2 py-1.5 text-xs disabled:opacity-50"
+                  className="shrink-0 rounded-lg border px-2 py-1.5 text-xs disabled:opacity-50 bg-card"
                 >
                   {busy === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
                 </button>
               ) : (
                 <button
                   onClick={() => { setEditingId(c.id); setEditName(c.name); }}
-                  className="shrink-0 rounded-lg border px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  className="shrink-0 rounded-lg border px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground bg-card"
                 >
                   <Pencil className="h-3 w-3" />
                 </button>

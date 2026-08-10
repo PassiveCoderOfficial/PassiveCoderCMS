@@ -197,7 +197,7 @@ export default function SchedulerClient({
                   {dayLabel(dayItems[0].scheduled_at ?? dayItems[0].published_at ?? "", tz)}
                 </h2>
               )}
-              <div className="rounded-lg border divide-y">
+              <div className="rounded-lg border divide-y bg-card">
                 {dayItems.map((item) => {
                   const brand = brandById.get(item.brand_id);
                   const targets = item.content_targets ?? [];

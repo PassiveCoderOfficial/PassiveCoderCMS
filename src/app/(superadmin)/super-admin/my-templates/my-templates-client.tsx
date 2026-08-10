@@ -175,7 +175,7 @@ export default function MyTemplatesClient({
                     href={`/templates/${t.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                    className="inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-card"
                   >
                     <ExternalLink className="h-3 w-3" /> Preview
                   </a>
@@ -195,7 +195,7 @@ export default function MyTemplatesClient({
                     <button
                       onClick={() => void setStatus(t.id, "draft")}
                       disabled={busyId === t.id}
-                      className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
+                      className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-50 bg-card"
                     >
                       {busyId === t.id ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
                       Unpublish
@@ -205,7 +205,7 @@ export default function MyTemplatesClient({
                     <button
                       onClick={() => void setStatus(t.id, "archived")}
                       disabled={busyId === t.id}
-                      className="inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-destructive disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-destructive disabled:opacity-50 bg-card"
                       title="Archive (recoverable — nothing is deleted)"
                     >
                       <Archive className="h-3 w-3" />

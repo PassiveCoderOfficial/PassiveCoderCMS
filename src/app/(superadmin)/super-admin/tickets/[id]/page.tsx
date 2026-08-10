@@ -137,7 +137,7 @@ export default function TicketDetailPage() {
                 {ticket.attachments.map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                    <img src={url} alt="" className="w-16 h-16 object-cover rounded-lg border hover:border-indigo-500 transition-colors" />
+                    <img src={url} alt="" className="w-16 h-16 object-cover rounded-lg border hover:border-indigo-500 transition-colors bg-card" />
                   </a>
                 ))}
               </div>

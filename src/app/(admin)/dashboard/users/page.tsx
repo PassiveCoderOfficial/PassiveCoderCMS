@@ -150,7 +150,7 @@ export default function UsersPage() {
         {([["admin", "Full dashboard access. Can manage team, settings, and all content."],
            ["editor", "Can edit all content sections. Cannot manage team or settings."],
            ["author", "Can create and edit posts only."]] as [Role, string][]).map(([role, desc]) => (
-          <div key={role} className="rounded-lg border p-3 space-y-1">
+          <div key={role} className="rounded-lg border p-3 space-y-1 bg-card">
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${ROLE_COLORS[role]}`}>{role}</span>
             <p className="text-xs text-muted-foreground mt-1">{desc}</p>
           </div>
@@ -158,7 +158,7 @@ export default function UsersPage() {
       </div>
 
       {/* Members list */}
-      <div className="rounded-xl border overflow-hidden">
+      <div className="rounded-xl border overflow-hidden bg-card">
         <div className="bg-muted/50 px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Current Members ({members.length})
         </div>

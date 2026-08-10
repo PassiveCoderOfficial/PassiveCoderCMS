@@ -49,7 +49,7 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
             value={ref}
             onChange={(e) => setRef(e.target.value)}
             placeholder={placeholder ?? "Enter passport or reference number"}
-            className="flex-1 px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-current"
+            className="flex-1 px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-current"
             style={{ color: accent }}
           />
           <button type="submit" disabled={loading}

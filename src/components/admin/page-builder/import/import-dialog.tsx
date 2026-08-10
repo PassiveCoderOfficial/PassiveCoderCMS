@@ -190,7 +190,7 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
             pages.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">This site has no other pages yet.</p>
             ) : (
-              <div className="divide-y rounded-xl border">
+              <div className="divide-y rounded-xl border bg-card">
                 {pages.map((p) => (
                   <button
                     key={p.id}
@@ -214,7 +214,7 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
                 <button
                   key={t.id}
                   onClick={() => { setActiveTemplate(t); void loadTemplatePages(t); }}
-                  className="overflow-hidden rounded-xl border text-left transition-colors hover:border-primary"
+                  className="overflow-hidden rounded-xl border text-left transition-colors hover:border-primary bg-card"
                 >
                   <div className="aspect-[16/9] bg-muted">
                     {t.screenshotUrl ? (
@@ -237,7 +237,7 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
           )}
 
           {!loading && step === "template-pages" && (
-            <div className="divide-y rounded-xl border">
+            <div className="divide-y rounded-xl border bg-card">
               {templatePages.map((p) => (
                 <button
                   key={p.id}
@@ -261,7 +261,7 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
               </p>
 
               {pendingSource.kind === "template-page" && (
-                <label className="flex items-start gap-2 rounded-lg border p-3 cursor-pointer">
+                <label className="flex items-start gap-2 rounded-lg border p-3 cursor-pointer bg-card">
                   <input
                     type="checkbox"
                     checked={withColors}

@@ -177,7 +177,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
           {view === "map" && <div id="donor-map-controls" className="flex items-center" />}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border overflow-hidden">
+          <div className="flex rounded-lg border bg-card overflow-hidden">
             <button onClick={() => setView("map")}
               className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "map" ? "bg-red-600 text-white" : "bg-card hover:bg-muted/50"}`}>
               <MapIcon className="w-4 h-4" /> Map + List

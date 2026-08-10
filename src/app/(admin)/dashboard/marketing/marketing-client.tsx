@@ -82,7 +82,7 @@ function Composer({ campaign, stages, onClose, onSaved }: {
               f.channel === "email" ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400"
             }`}><Mail className="w-4 h-4" /> Email</button>
           <button type="button" disabled title="WhatsApp broadcast needs the Meta Cloud API — coming soon"
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-800 text-sm text-gray-600 cursor-not-allowed">
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-800 text-sm text-gray-600 cursor-not-allowed bg-card">
             <MessageCircle className="w-4 h-4" /> WhatsApp <span className="text-[10px] uppercase">soon</span>
           </button>
         </div>

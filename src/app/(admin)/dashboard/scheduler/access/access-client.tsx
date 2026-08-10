@@ -74,7 +74,7 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
         </p>
       </div>
 
-      <div className="rounded-lg border p-3 space-y-3">
+      <div className="rounded-lg border p-3 space-y-3 bg-card">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-0 flex-1">
             <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -130,7 +130,7 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
 
       <div>
         <h2 className="mb-2 text-sm font-semibold">People with access</h2>
-        <div className="divide-y rounded-lg border">
+        <div className="divide-y rounded-lg border bg-card">
           {rows.length === 0 && (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
               Nobody yet.

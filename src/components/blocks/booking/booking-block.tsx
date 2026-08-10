@@ -105,7 +105,7 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
           const active = v === selectedDate;
           return (
             <button key={v} type="button" onClick={() => setSelectedDate(v)}
-              className="flex flex-col items-center px-4 py-2.5 rounded-xl border text-sm shrink-0 transition-colors"
+              className="flex flex-col items-center px-4 py-2.5 rounded-xl border bg-card text-sm shrink-0 transition-colors"
               style={active
                 ? { backgroundColor: accent, borderColor: accent, color: "#fff" }
                 : { borderColor: "var(--border, #e5e7eb)" }}>
@@ -130,7 +130,7 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
               const active = selectedSlot === s.start;
               return (
                 <button key={s.start} type="button" onClick={() => setSelectedSlot(s.start)}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-sm transition-colors"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border bg-card text-sm transition-colors"
                   style={active
                     ? { backgroundColor: accent, borderColor: accent, color: "#fff" }
                     : { borderColor: "var(--border, #e5e7eb)" }}>

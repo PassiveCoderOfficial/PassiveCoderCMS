@@ -114,18 +114,22 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     );
   }
 
-  const siteTheme = settings?.site_theme ?? "system";
+  // A published site renders in the palette its template defines, not in
+  // whatever the visitor's phone is set to. Following prefers-color-scheme
+  // repainted --background/--foreground underneath a palette that was designed
+  // around fixed colours, which is what made text disappear into card
+  // surfaces on dark-mode devices. Tenants who genuinely want a dark site set
+  // site_theme = "dark" explicitly; everyone else gets light, deterministically.
+  const siteTheme = settings?.site_theme === "dark" ? "dark" : "light";
 
   // Also pin `color-scheme`: without it the browser renders native form
   // controls (select popups, date pickers, autofill, scrollbars) using the
   // visitor's OS dark mode even when the site itself is locked to light —
   // which is what made input text unreadable on dark-mode devices.
   const themeScript =
-    siteTheme === "light"
-      ? `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';`
-      : siteTheme === "dark"
+    siteTheme === "dark"
       ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';`
-      : `(function(){var d=document.documentElement;var dark=window.matchMedia('(prefers-color-scheme: dark)').matches;d.classList.add(dark?'dark':'light');d.classList.remove(dark?'light':'dark');d.style.colorScheme=dark?'dark':'light';})();`;
+      : `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';`;
 
   const mergedPalette = templateIdentity
     ? { ...templateIdentity.palette, ...(identity?.color_overrides ?? {}) }

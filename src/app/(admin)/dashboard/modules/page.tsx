@@ -60,7 +60,7 @@ export default function ModulesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {modules.map((m) => (
-            <div key={m.key} className="rounded-xl border p-4 space-y-3">
+            <div key={m.key} className="rounded-xl border p-4 space-y-3 bg-card">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-semibold text-sm">{MODULE_LABELS[m.key]}</p>

@@ -446,7 +446,7 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
 
   return (
     <div className="space-y-3">
-      <div className="inline-flex rounded-lg border p-0.5 text-xs">
+      <div className="inline-flex rounded-lg border p-0.5 text-xs bg-card">
         {(["monthly", "yearly"] as const).map(c => (
           <button
             key={c}

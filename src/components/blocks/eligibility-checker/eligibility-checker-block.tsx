@@ -136,9 +136,9 @@ export function EligibilityCheckerBlock({ block }: { block: EligibilityCheckerBl
           <form onSubmit={submit} className="space-y-4">
             <p className="text-sm font-semibold text-muted-foreground">Almost done — where should we send your result?</p>
             <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name"
-              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-current" style={{ color: accent }} />
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-current" style={{ color: accent }} />
             <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone / WhatsApp"
-              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-current" style={{ color: accent }} />
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-current" style={{ color: accent }} />
             <button type="submit" disabled={loading}
               className="w-full py-3 rounded-xl font-semibold text-white disabled:opacity-60 transition-opacity"
               style={{ background: accent }}>

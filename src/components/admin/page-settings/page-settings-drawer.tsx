@@ -176,14 +176,14 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
 
           {tab === "layout" && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
                 <div>
                   <p className="text-sm font-medium">Show Header</p>
                   <p className="text-xs text-muted-foreground">Display site navigation</p>
                 </div>
                 <Switch checked={showHeader} onCheckedChange={setShowHeader} />
               </div>
-              <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
                 <div>
                   <p className="text-sm font-medium">Show Footer</p>
                   <p className="text-xs text-muted-foreground">Display site footer</p>

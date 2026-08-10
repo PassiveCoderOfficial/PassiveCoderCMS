@@ -429,7 +429,7 @@ export default function BulkUploadPage() {
             <button
               type="button"
               onClick={addBlankRow}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border rounded-lg px-3 py-1.5"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border rounded-lg px-3 py-1.5 bg-card"
             >
               <Plus className="h-3.5 w-3.5" /> Add Row
             </button>
@@ -497,7 +497,7 @@ export default function BulkUploadPage() {
           </div>
 
           {/* Table header */}
-          <div className="rounded-xl border overflow-hidden">
+          <div className="rounded-xl border overflow-hidden bg-card">
             <div className="grid grid-cols-[56px_1fr_110px_110px_1fr_160px_32px] gap-0 bg-muted/40 border-b text-xs font-medium text-muted-foreground px-3 py-2.5">
               <span>Image</span>
               <span className="px-2">Product Name</span>

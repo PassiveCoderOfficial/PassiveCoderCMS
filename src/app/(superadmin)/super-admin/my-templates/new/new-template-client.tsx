@@ -169,7 +169,7 @@ export default function NewTemplateClient({
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {saving ? "Creating…" : sourceTenant ? "Create & Snapshot Site" : "Create Template"}
           </button>
-          <Link href="/super-admin/my-templates" className="rounded-lg border px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/super-admin/my-templates" className="rounded-lg border px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-card">
             Cancel
           </Link>
         </div>

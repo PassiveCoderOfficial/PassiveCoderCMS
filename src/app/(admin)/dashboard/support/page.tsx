@@ -160,7 +160,7 @@ export default function SupportPage() {
             </Label>
             <div className="flex flex-wrap gap-2">
               {attachments.map((url, i) => (
-                <div key={i} className="relative group w-20 h-20 rounded-lg overflow-hidden border">
+                <div key={i} className="relative group w-20 h-20 rounded-lg overflow-hidden border bg-card">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}

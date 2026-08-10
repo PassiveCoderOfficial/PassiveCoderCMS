@@ -72,7 +72,7 @@ export function ColorsClient({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4 rounded-lg border p-4">
+      <div className="space-y-4 rounded-lg border p-4 bg-card">
         {TOKEN_LABELS.map(({ key, label }) => (
           <div key={key} className="flex items-center justify-between gap-4">
             <div>

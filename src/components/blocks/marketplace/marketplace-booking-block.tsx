@@ -292,7 +292,7 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
                 <label className="text-sm font-medium flex items-center gap-1.5 mb-2 text-muted-foreground">
                   <MapPin className="w-4 h-4" /> Pin your location <span className="text-xs">(optional, helps match nearby providers)</span>
                 </label>
-                <div className="rounded-xl overflow-hidden border border-border">
+                <div className="rounded-xl overflow-hidden border border-border bg-card">
                   <MapPicker value={pin} onChange={setPin} defaultCenter={MAP_DEFAULT_CENTER} defaultZoom={11} height={200} autoGps />
                 </div>
               </div>

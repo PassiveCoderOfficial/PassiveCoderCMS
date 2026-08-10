@@ -472,7 +472,7 @@ export function MediaManager({ initialMedia }: Props) {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex rounded-lg border overflow-hidden">
+        <div className="flex rounded-lg border overflow-hidden bg-card">
           {(["all", "image", "video", "document"] as const).map((f) => (
             <button
               key={f}
@@ -488,7 +488,7 @@ export function MediaManager({ initialMedia }: Props) {
         </div>
 
         {/* View toggle */}
-        <div className="flex rounded-lg border overflow-hidden">
+        <div className="flex rounded-lg border overflow-hidden bg-card">
           <button
             onClick={() => setView("grid")}
             className={cn("p-1.5 transition-colors", view === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
@@ -549,7 +549,7 @@ export function MediaManager({ initialMedia }: Props) {
 
       {/* List view */}
       {view === "list" && filtered.length > 0 && (
-        <div className="border rounded-lg overflow-hidden divide-y">
+        <div className="border rounded-lg overflow-hidden divide-y bg-card">
           {filtered.map((item) => (
             <div
               key={item.id}

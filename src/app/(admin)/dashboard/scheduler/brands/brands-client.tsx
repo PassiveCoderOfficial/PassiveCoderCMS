@@ -64,7 +64,7 @@ export default function BrandsClient({
           {brands.map((b) => {
             const own = channels.filter((c) => c.brand_id === b.id);
             return (
-              <div key={b.id} className="rounded-lg border p-3">
+              <div key={b.id} className="rounded-lg border p-3 bg-card">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-3 rounded-full" style={{ background: b.color }} />

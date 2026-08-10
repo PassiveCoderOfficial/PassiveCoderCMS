@@ -153,10 +153,10 @@ export default function DonorsDashboardClient() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 text-sm text-gray-400">
           <button disabled={page === 0} onClick={() => { const p = page - 1; setPage(p); load(q, p); }}
-            className="p-2 border border-gray-700 rounded-lg disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
+            className="p-2 border border-gray-700 rounded-lg disabled:opacity-30 bg-card"><ChevronLeft className="w-4 h-4" /></button>
           <span>{page + 1} / {totalPages} · {total} entries</span>
           <button disabled={page >= totalPages - 1} onClick={() => { const p = page + 1; setPage(p); load(q, p); }}
-            className="p-2 border border-gray-700 rounded-lg disabled:opacity-30"><ChevronRight className="w-4 h-4" /></button>
+            className="p-2 border border-gray-700 rounded-lg disabled:opacity-30 bg-card"><ChevronRight className="w-4 h-4" /></button>
         </div>
       )}
     </div>

@@ -57,7 +57,7 @@ export default async function ThemesPage() {
         const active = templates.find(t => t.slug === activeTemplateSlug);
         if (!active) return null;
         return (
-          <div className="relative rounded-2xl overflow-hidden border-2 border-primary shadow-lg">
+          <div className="relative rounded-2xl overflow-hidden border-2 border-primary shadow-lg bg-card">
             <div className="absolute inset-0">
               {active.previewImage ? (
                 // eslint-disable-next-line @next/next/no-img-element

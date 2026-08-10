@@ -120,7 +120,7 @@ export default function TemplateDetailClient({
               href={`/templates/${template.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm text-muted-foreground hover:text-foreground bg-card"
             >
               <ExternalLink className="h-3.5 w-3.5" /> Preview
             </a>
@@ -136,7 +136,7 @@ export default function TemplateDetailClient({
               <button
                 onClick={() => void setStatus("draft")}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50 bg-card"
               >
                 Unpublish
               </button>
@@ -185,7 +185,7 @@ export default function TemplateDetailClient({
               </p>
             </div>
           ) : (
-            <div className="divide-y rounded-xl border">
+            <div className="divide-y rounded-xl border bg-card">
               {pages.map((p) => (
                 <div key={p.id} className="flex items-center gap-3 p-3">
                   <div className="min-w-0 flex-1">
@@ -194,7 +194,7 @@ export default function TemplateDetailClient({
                   </div>
                   <Link
                     href={`/dashboard/pages/${p.id}`}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary bg-card"
                   >
                     <FileEdit className="h-3 w-3" /> Edit
                   </Link>
@@ -207,7 +207,7 @@ export default function TemplateDetailClient({
         {/* Details */}
         <section className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Details</h2>
-          <div className="space-y-4 rounded-xl border p-4">
+          <div className="space-y-4 rounded-xl border p-4 bg-card">
             <div>
               <label className="mb-1.5 block text-xs font-medium">Name</label>
               <input
@@ -253,7 +253,7 @@ export default function TemplateDetailClient({
           </div>
 
           {template.palette && (
-            <div className="rounded-xl border p-4">
+            <div className="rounded-xl border p-4 bg-card">
               <p className="mb-2 text-xs font-medium">Colour scheme</p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(template.palette)

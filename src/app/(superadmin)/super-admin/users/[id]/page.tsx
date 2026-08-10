@@ -130,7 +130,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                 if (!tenant) return null;
                 const siteUrl = tenant.custom_domain ? `${PROTO}://${tenant.custom_domain}` : `${PROTO}://${tenant.slug}.${ROOT}`;
                 return (
-                  <div key={tenant.id ?? i} className="flex items-center justify-between text-sm border rounded-lg px-3 py-2">
+                  <div key={tenant.id ?? i} className="flex items-center justify-between text-sm border rounded-lg px-3 py-2 bg-card">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div>
                         <Link href={`/super-admin/sites/${tenant.id}`} className="hover:text-indigo-400 hover:underline">

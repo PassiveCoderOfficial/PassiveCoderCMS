@@ -210,7 +210,7 @@ function IconGridOutlinedCards({ block }: { block: IconGridBlockProps }) {
       <IconGridHead title={title} subtitle={subtitle} />
       <div className={cn("grid grid-cols-2 gap-3", colClassFor(columns))}>
         {items.map((item) => (
-          <MaybeLink key={item.id} url={item.url} className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:border-primary/50">
+          <MaybeLink key={item.id} url={item.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50">
             <DynIcon name={item.icon} className="h-5 w-5 shrink-0 text-primary mt-0.5" />
             <div className="min-w-0">
               <p className="font-semibold text-sm leading-tight">{item.label}</p>

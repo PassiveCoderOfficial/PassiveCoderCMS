@@ -88,7 +88,7 @@ export default function EcommerceSettingsPage() {
               value={settings.tax_rate as number}
               onChange={(e) => update("tax_rate", parseFloat(e.target.value) || 0)}
               placeholder="0"
-              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-card"
             />
           </div>
         </CardContent>
