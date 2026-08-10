@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,6 +29,32 @@ interface InlineTextProps {
 export function InlineText({ blockId, field, value, as = "span", className, style }: InlineTextProps) {
   const ctx = useContext(InlineEditContext);
   const Tag = as as React.ElementType;
+  const ref = useRef<HTMLElement>(null);
+  // Tracks whether the element's own DOM content is still in sync with the
+  // `value` prop, so a re-render never has to choose between "overwrite
+  // whatever the user is mid-typing" and "never pick up an external update".
+  const lastSyncedValue = useRef(value);
+
+  // contentEditable owns its own DOM once mounted — every keystroke edits the
+  // live node directly, with nothing telling React about it until onBlur
+  // commits `value`. `dangerouslySetInnerHTML` doesn't know that: it re-runs
+  // on *every* render this component receives, including ones caused by
+  // something unrelated (a sibling block edit, autosave, selection change),
+  // and each time stamps the DOM back to the last-committed `value` — which
+  // is not what's currently on screen while the user is typing. That silently
+  // discarded keystrokes the moment any other state in the builder changed.
+  // Setting textContent imperatively, only when `value` actually changes
+  // (i.e. an external update, not a re-render echoing back what's already
+  // there), keeps the element uncontrolled the rest of the time.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || value === lastSyncedValue.current) return;
+    // Never stomp on an active edit — the user's keystrokes are the source of
+    // truth until they blur, at which point `value` catches up on its own.
+    if (document.activeElement === el) return;
+    el.textContent = value ?? "";
+    lastSyncedValue.current = value;
+  }, [value]);
 
   if (!ctx) {
     if (!value) return null;
@@ -37,6 +63,7 @@ export function InlineText({ blockId, field, value, as = "span", className, styl
 
   return (
     <Tag
+      ref={ref}
       className={cn(
         className,
         "cursor-text outline-none rounded-sm transition-shadow",
@@ -65,17 +92,12 @@ export function InlineText({ blockId, field, value, as = "span", className, styl
       }}
       onBlur={(e: React.FocusEvent<HTMLElement>) => {
         const next = e.currentTarget.textContent ?? "";
+        lastSyncedValue.current = next;
         if (next !== (value ?? "")) ctx.updateField(blockId, field, next);
       }}
-      dangerouslySetInnerHTML={{ __html: escapeHtml(value ?? "") }}
-    />
+      suppressHydrationWarning
+    >
+      {value ?? ""}
+    </Tag>
   );
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
