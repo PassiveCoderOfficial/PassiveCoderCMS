@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   Plus, Trash2, Loader2, ChevronRight, ChevronDown, GripVertical,
-  Save, Link2, Sparkles, MapPin, AlertTriangle,
+  Save, Link2, Sparkles, MapPin, AlertTriangle, Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CHILD_SOURCE_LABELS } from "@/modules/navigation/dynamic-children";
@@ -18,6 +18,14 @@ export type NavMenuRow = {
   location: string;
   items: NavItem[];
   updated_at: string;
+};
+
+/** A header/footer nav block still holding its own inline items rather than
+ *  pointing at a managed menu — see navigation/page.tsx for how this is
+ *  detected. Offered as a one-click import rather than silently invisible. */
+export type ImportableNav = {
+  location: "header" | "footer";
+  items: NavItem[];
 };
 
 const LOCATIONS: { value: string; label: string; hint: string }[] = [
@@ -34,13 +42,36 @@ function newItem(): NavItem {
   return { id: `nav-${Math.random().toString(36).slice(2, 9)}`, label: "New link", url: "/", children: [] };
 }
 
-export default function NavigationClient({ initialMenus }: { initialMenus: NavMenuRow[] }) {
+export default function NavigationClient({ initialMenus, importable }: { initialMenus: NavMenuRow[]; importable: ImportableNav[] }) {
   const [menus, setMenus] = useState<NavMenuRow[]>(initialMenus);
+  const [pendingImport, setPendingImport] = useState<ImportableNav[]>(importable);
   const [activeId, setActiveId] = useState<string | null>(initialMenus[0]?.id ?? null);
   const [targets, setTargets] = useState<LinkTarget[]>([]);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [importingLocation, setImportingLocation] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+
+  async function importInline(location: "header" | "footer") {
+    setImportingLocation(location);
+    try {
+      const res = await fetch("/api/navigation/import-inline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location }),
+      });
+      const data = await res.json() as { error?: string; menu?: NavMenuRow };
+      if (!res.ok || !data.menu) throw new Error(data.error ?? "Import failed");
+      setMenus((prev) => [...prev, data.menu!]);
+      setPendingImport((prev) => prev.filter((p) => p.location !== location));
+      setActiveId(data.menu.id);
+      toast.success(`Imported your ${location} menu — it's now the live source for your ${location}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setImportingLocation(null);
+    }
+  }
 
   const active = menus.find((m) => m.id === activeId) ?? null;
 
@@ -153,10 +184,39 @@ export default function NavigationClient({ initialMenus }: { initialMenus: NavMe
         </div>
       </div>
 
+      {pendingImport.length > 0 && (
+        <div className="space-y-2">
+          {pendingImport.map((p) => (
+            <div key={p.location} className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+              <Download className="h-4 w-4 shrink-0 text-primary" />
+              <div className="flex-1 min-w-[240px]">
+                <p className="text-sm font-semibold">
+                  Your {p.location} already has a menu — it's just not managed here yet
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {p.items.length} link{p.items.length === 1 ? "" : "s"}, built in the {p.location === "header" ? "Header" : "Footer"} Builder.
+                  Import it to edit sub-menus, reorder items, or reuse it in another location.
+                </p>
+              </div>
+              <button
+                onClick={() => void importInline(p.location)}
+                disabled={importingLocation === p.location}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                {importingLocation === p.location ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Import this menu
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {menus.length === 0 ? (
         <div className="rounded-xl border border-dashed py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            No menus yet. Create one and assign it to your header to get started.
+            {pendingImport.length > 0
+              ? "Import the menu above, or create a new one from scratch."
+              : "No menus yet. Create one and assign it to your header to get started."}
           </p>
         </div>
       ) : (
