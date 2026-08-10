@@ -8,7 +8,7 @@
  * the call site doesn't need to branch on where the identity came from.
  */
 import { createAdminClient } from "@/lib/supabase/server";
-import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-registry";
+import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
 
 export type ResolvedIdentity = {
   slug: string;

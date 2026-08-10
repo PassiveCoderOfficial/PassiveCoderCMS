@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import type { TemplatePalette } from "@/modules/themes/template-registry";
+import type { TemplatePalette } from "@/modules/themes/template-types";
 
 const TOKEN_LABELS: { key: keyof TemplatePalette; label: string }[] = [
   { key: "primary", label: "Primary" },

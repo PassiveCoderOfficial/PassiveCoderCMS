@@ -5,13 +5,13 @@
  * palette/typography — authored visually in the normal page builder by an
  * SA or Staff Admin, then applied to a tenant as a one-time copy.
  *
- * This is the replacement for the hand-coded `TemplateIdentity` objects in
- * `template-registry.ts`. It deliberately reuses that file's `TemplatePalette`
- * and `TemplateTypography` types so the CSS-var pipeline
- * (`buildTemplateCSSVars`) works against both without a translation layer
- * while the two systems coexist through Phase 3.
+ * This was the replacement for the hand-coded `TemplateIdentity` objects that
+ * used to live in `template-registry.ts` (deleted once every tenant and admin
+ * surface was migrated off it — see git history for the old file). Reuses
+ * `TemplatePalette`/`TemplateTypography` from `template-types.ts` so the
+ * CSS-var pipeline (`buildTemplateCSSVars`) works against both.
  */
-import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-registry";
+import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
 import type { Block, NavItem } from "@/types/cms";
 
 export type TemplateStatus = "draft" | "published" | "archived";

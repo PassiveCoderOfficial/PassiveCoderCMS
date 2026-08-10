@@ -12,119 +12,38 @@
  * Switching templates = completely different site appearance AND content structure.
  */
 
-export type TemplateBlockVariants = {
-  hero: string;
-  services: string;
-  testimonials: string;
-  features: string;
-  stats: string;
-  cta: string;
-  pricing: string;
-  faq: string;
-  navigation: string;
-  team: string;
-};
-
-export type TemplateTypography = {
-  headingFont: string;
-  bodyFont: string;
-  headingWeight: string;
-  letterSpacing: string;
-};
-
-export type TemplatePalette = {
-  primary: string;
-  primaryFg: string;
-  secondary: string;
-  accent: string;
-  background: string;
-  foreground: string;
-  muted: string;
-  mutedFg: string;
-  card: string;
-  border: string;
-  ring: string;
-  borderRadius: string;
-};
-
-export type TemplateImage = {
-  url: string;
-  alt: string;
-};
-
-export type TemplateImages = {
-  hero: TemplateImage;
-  heroSecondary?: TemplateImage;
-  about?: TemplateImage;
-  services: TemplateImage[];
-  gallery: TemplateImage[];
-  team: TemplateImage[];
-  cta?: TemplateImage;
-};
-
-export type TemplateServiceDef = {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  iconType: "emoji" | "lucide";
-  imageUrl?: string;
-  price?: string;
-  link?: string;
-};
-
-export type TemplateTestimonialDef = {
-  id: string;
-  name: string;
-  role: string;
-  company?: string;
-  content: string;
-  rating: number;
-  avatar?: string;
-};
-
-export type TemplateStatDef = {
-  id: string;
-  value: string;
-  label: string;
-  prefix?: string;
-  suffix?: string;
-  icon?: string;
-};
-
-export type TemplatePricingDef = {
-  id: string;
-  name: string;
-  price: string;
-  period?: string;
-  description?: string;
-  features: string[];
-  highlighted?: boolean;
-  badge?: string;
-  ctaLabel: string;
-  ctaUrl: string;
-};
-
-export type TemplateFAQDef = {
-  id: string;
-  question: string;
-  answer: string;
-};
-
-export type TemplateTeamMemberDef = {
-  id: string;
-  name: string;
-  role: string;
-  bio?: string;
-  avatar?: string;
-  social?: { platform: string; url: string }[];
-};
-
-export type TemplateNavItem = {
-  id: string;
-  label: string;
-  url: string;
-};
+// Palette/typography/content types moved to template-types.ts so the rest of
+// the app can depend on them without pulling in the 54 hand-authored
+// templates below. Re-exported here so every existing `from
+// "@/modules/themes/template-registry"` import of these types keeps working
+// unchanged until each is repointed at the new module directly.
+export type {
+  TemplateBlockVariants,
+  TemplateTypography,
+  TemplatePalette,
+  TemplateImage,
+  TemplateImages,
+  TemplateServiceDef,
+  TemplateTestimonialDef,
+  TemplateStatDef,
+  TemplatePricingDef,
+  TemplateFAQDef,
+  TemplateTeamMemberDef,
+  TemplateNavItem,
+} from "./template-types";
+import type {
+  TemplatePalette,
+  TemplateTypography,
+  TemplateBlockVariants,
+  TemplateImages,
+  TemplateNavItem,
+  TemplateServiceDef,
+  TemplateStatDef,
+  TemplateTestimonialDef,
+  TemplatePricingDef,
+  TemplateFAQDef,
+  TemplateTeamMemberDef,
+} from "./template-types";
 
 export type TemplateIdentity = {
   slug: string;

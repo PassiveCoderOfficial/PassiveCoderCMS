@@ -12,7 +12,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Block, NavItem } from "@/types/cms";
-import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-registry";
+import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
 
 export type ApplyMode = "theme" | "full";
 
