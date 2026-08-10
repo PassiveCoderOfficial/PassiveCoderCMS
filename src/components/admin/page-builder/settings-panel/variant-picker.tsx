@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useBuilderStore } from "@/lib/store/builder";
-import { getVariantsForBlock, hasVariants } from "@/modules/page-builder/block-variants";
+import { getVariantsForBlock, hasVariants, VARIANT_DATA_FIELD } from "@/modules/page-builder/block-variants";
 import { VariantThumbnail } from "./variant-thumbnail";
 import { cn } from "@/lib/utils";
 import { Check, Moon } from "lucide-react";
@@ -23,7 +23,22 @@ export function VariantPicker({ block }: { block: Block }) {
 
   if (!hasVariants(block.type)) return null;
   const variants = getVariantsForBlock(block.type);
-  const current = block.templateVariant ?? "";
+  const dataField = VARIANT_DATA_FIELD[block.type];
+  const blockData = block.data as Record<string, unknown> | undefined;
+  const current = dataField
+    ? String(blockData?.[dataField] ?? "")
+    : block.templateVariant ?? "";
+
+  const select = (key: string) => {
+    if (!dataField) {
+      updateBlock(block.id, { templateVariant: key } as Partial<Block>);
+      return;
+    }
+    // `updateBlock` does a shallow Object.assign, so the whole data object has
+    // to be rebuilt — passing { data: { layout } } alone would drop the
+    // block's content.
+    updateBlock(block.id, { data: { ...blockData, [dataField]: key } } as Partial<Block>);
+  };
 
   return (
     <div className="space-y-2">
@@ -45,7 +60,7 @@ export function VariantPicker({ block }: { block: Block }) {
               // store would write an explicit `undefined` key into the saved
               // JSON, whereas "" reads as "no variant" to every block's
               // dispatch and serialises cleanly.
-              onClick={() => updateBlock(block.id, { templateVariant: v.key } as Partial<Block>)}
+              onClick={() => select(v.key)}
               title={v.description}
               className={cn(
                 "group relative rounded-lg border p-1 text-left transition-all",

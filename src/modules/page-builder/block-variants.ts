@@ -33,7 +33,8 @@ export type VariantThumbKind =
   | "bento";
 
 export type BlockVariant = {
-  /** Value written to `block.templateVariant`. */
+  /** Value written to `block.templateVariant`, or to `block.data[dataField]`
+   *  when the block's list sets one. */
   key: string;
   label: string;
   /** One line on what makes this layout different. */
@@ -176,12 +177,81 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "pill-row", label: "Pill Row", description: "Wrapping pills — compact, reads as tags.", thumb: "inline-icons" },
     { key: "minimal-inline", label: "Minimal Inline", description: "Icons and labels inline, no tile background.", thumb: "inline-icons" },
   ],
+
+  // --- Blocks below drive their layout from a `data` field, not
+  // `templateVariant` — see VARIANT_DATA_FIELD. Keys must match the field's
+  // union exactly.
+
+  timeline: [
+    { key: "vertical", label: "Vertical", description: "One column, dots down the left — reads as a history.", thumb: "steps-timeline" },
+    { key: "alternating", label: "Alternating", description: "Entries zig-zag either side of a centre line.", thumb: "steps-timeline" },
+    { key: "horizontal", label: "Horizontal", description: "Left-to-right track — good for a short process.", thumb: "numbered-list" },
+  ],
+
+  newsletter: [
+    { key: "inline", label: "Inline", description: "Field and button on one row — fits inside a footer.", thumb: "banner" },
+    { key: "stacked", label: "Stacked", description: "Centred, field above button — a full-width band.", thumb: "centered" },
+    { key: "card", label: "Card", description: "Boxed on its own surface, lifted off the page.", thumb: "cards-grid" },
+  ],
+
+  countdown: [
+    { key: "boxes", label: "Boxes", description: "Each unit in its own tile — the standard timer.", thumb: "tiles" },
+    { key: "minimal", label: "Minimal", description: "Plain numbers with small labels, no boxes.", thumb: "inline-icons" },
+  ],
+
+  contact: [
+    { key: "left", label: "Left", description: "Form left, contact details right.", thumb: "two-col" },
+    { key: "centered", label: "Centered", description: "Single narrow column, form centred on the page.", thumb: "centered" },
+    { key: "split", label: "Split", description: "Form on one half against a filled panel on the other.", thumb: "split-image" },
+  ],
+
+  blog: [
+    { key: "grid", label: "Grid", description: "Even card grid — the standard post listing.", thumb: "cards-grid" },
+    { key: "list", label: "List", description: "Full-width rows, thumbnail beside the excerpt.", thumb: "list-rows" },
+  ],
+
+  navigation: [
+    { key: "default", label: "Default", description: "Logo left, links right — the familiar bar.", thumb: "banner" },
+    { key: "centered", label: "Centered", description: "Logo centred, links spread either side.", thumb: "centered" },
+  ],
+
+  footer: [
+    { key: "dark", label: "Dark", description: "Dark ground with light text — the usual anchor.", thumb: "cards-dark", dark: true },
+    { key: "light", label: "Light", description: "Keeps the page's light ground, separated by a rule.", thumb: "list-rows" },
+  ],
+};
+
+/**
+ * Blocks whose layouts live in their own `data` field rather than
+ * `templateVariant`.
+ *
+ * Several blocks (timeline, newsletter, countdown, nav, footer…) already
+ * render multiple layouts, driven by a `layout` or `style` field that was only
+ * reachable through a dropdown buried in that block's settings — or, for some,
+ * through no UI at all. Rather than reimplementing those layouts a second time
+ * behind `templateVariant`, the picker writes to the field the block already
+ * reads. One layout mechanism per block, and the pickers stay identical.
+ *
+ * These lists therefore have no Default entry: the field is required, so one
+ * of its values is always active.
+ */
+export const VARIANT_DATA_FIELD: Partial<Record<BlockType, string>> = {
+  timeline: "layout",
+  newsletter: "layout",
+  countdown: "layout",
+  contact: "layout",
+  blog: "layout",
+  navigation: "style",
+  footer: "style",
 };
 
 /** Variants available for a block type, always including its default layout. */
 export function getVariantsForBlock(type: BlockType): BlockVariant[] {
   const variants = BLOCK_VARIANTS[type];
   if (!variants?.length) return [];
+  // Data-field blocks have no "unset" state to return to — every value is a
+  // real layout — so the Default tile would be a dead option.
+  if (VARIANT_DATA_FIELD[type]) return variants;
   return [DEFAULT_VARIANT, ...variants];
 }
 
