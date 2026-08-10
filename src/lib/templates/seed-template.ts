@@ -7,6 +7,7 @@
  */
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getTemplateIdentity, getDefaultTemplateIdentity, type TemplateIdentity } from "@/modules/themes/template-registry";
+import { resolveNavItems } from "@/modules/navigation/resolve-links";
 import type { Block } from "@/types/cms";
 
 function uid(prefix: string) {
@@ -54,6 +55,11 @@ const BASE_BLOCK = {
   background: { type: "none" as const },
 };
 
+/** Page slugs a full template apply creates. Used to turn the registry's
+ *  same-page fragments into real links before they're baked into the header
+ *  and footer blocks. Kept in sync with buildAllPages() below. */
+const SEEDED_PAGE_SLUGS = ["home", "about", "services", "gallery", "pricing", "reviews", "faq", "contact"];
+
 /** Build the persistent global header (navigation block) from a template. */
 function buildGlobalHeader(t: TemplateIdentity): Block[] {
   const style = navStyle(t);
@@ -73,7 +79,7 @@ function buildGlobalHeader(t: TemplateIdentity): Block[] {
       templateVariant: t.variants.navigation,
       data: {
         logoText: t.siteName,
-        items: t.navItems,
+        items: resolveNavItems(t.navItems, SEEDED_PAGE_SLUGS),
         sticky: true,
         style,
         ...chrome,
@@ -102,7 +108,7 @@ function buildGlobalFooter(t: TemplateIdentity): Block[] {
           {
             id: uid("fcol"),
             heading: "Quick Links",
-            links: t.navItems.slice(0, 5).map((n) => ({
+            links: resolveNavItems(t.navItems, SEEDED_PAGE_SLUGS).slice(0, 5).map((n) => ({
               id: uid("flink"),
               label: n.label,
               url: n.url,
@@ -167,21 +173,20 @@ export async function seedTemplate(
   );
 
   // ── 2. Nav menu ──────────────────────────────────────────────────────────────
-  await supabase.from("nav_menus").upsert(
-    {
-      tenant_id: tenantId,
-      name: "Main Navigation",
-      location: "header",
-      items: template.navItems.map((l) => ({
-        id: l.id,
-        label: l.label,
-        url: l.url,
-        type: "anchor",
-        children: [],
-      })),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "tenant_id,location" },
+  // Theme mode leaves existing pages alone, so nav can only point at whatever
+  // the tenant already has. Full mode re-resolves this further down, once the
+  // template's own pages exist and their slugs are known.
+  const { data: existingPages } = await supabase
+    .from("pages")
+    .select("slug")
+    .eq("tenant_id", tenantId)
+    .is("deleted_at", null);
+
+  await upsertHeaderMenu(
+    supabase,
+    tenantId,
+    template.navItems,
+    (existingPages ?? []).map((p) => p.slug as string),
   );
 
   // ── 3. Log the import ────────────────────────────────────────────────────────
@@ -308,8 +313,47 @@ export async function seedTemplate(
     : buildAllPages(template, tenantId, now);
   await supabase.from("pages").insert(pageRows);
 
-  // ── 9. Log ───────────────────────────────────────────────────────────────────
+  // ── 9. Re-point navigation at the pages that now exist ──────────────────────
+  // The registry's navItems are same-page fragments ("#services", "#about")
+  // left over from when templates were single-page designs. Now that the apply
+  // has created real pages, rewrite those fragments into real links so the nav
+  // actually navigates instead of silently doing nothing.
+  await upsertHeaderMenu(
+    supabase,
+    tenantId,
+    template.navItems,
+    pageRows.map((p) => p.slug),
+  );
+
+  // ── 10. Log ──────────────────────────────────────────────────────────────────
   await logImport(supabase, tenantId, templateSlug, mode);
+}
+
+/** Writes the tenant's header menu, resolving any same-page fragments against
+ *  the pages that actually exist. */
+async function upsertHeaderMenu(
+  supabase: SupabaseClient,
+  tenantId: string,
+  navItems: TemplateIdentity["navItems"],
+  availableSlugs: string[],
+) {
+  const items = resolveNavItems(
+    navItems.map((l) => ({ id: l.id, label: l.label, url: l.url, children: [] })),
+    availableSlugs,
+  );
+
+  await supabase.from("nav_menus").upsert(
+    {
+      tenant_id: tenantId,
+      template_id: null,
+      name: "Main Navigation",
+      slug: "main-navigation",
+      location: "header",
+      items,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "tenant_id,location" },
+  );
 }
 
 /** Pure, DB-free: the exact blocks seedTemplate writes as a template's home
