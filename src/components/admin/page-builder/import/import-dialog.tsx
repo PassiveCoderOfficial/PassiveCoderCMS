@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2, FileText, LayoutTemplate, Layers, Replace, ArrowDownToLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBuilderStore } from "@/lib/store/builder";
+import { createClient } from "@/lib/supabase/client";
 import type { Block } from "@/types/cms";
+import type { TemplatePalette } from "@/modules/themes/template-types";
 
 type SourceKind = "root" | "pages" | "templates" | "template-scope" | "template-pages" | "confirm";
 
@@ -102,8 +104,21 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: pendingSource.kind, sourceId: pendingSource.id, withColors }),
       });
-      const data = await res.json() as { blocks?: Block[]; error?: string };
+      const data = await res.json() as { blocks?: Block[]; palette?: TemplatePalette | null; error?: string };
       if (!res.ok || !data.blocks) throw new Error(data.error ?? "Import failed");
+
+      // "Bring the template's colours too" — the API already computes this
+      // palette when withColors is set, but nothing applied it: it's the same
+      // site-wide color_overrides field the Colors & Design page writes, so
+      // this follows the same tenant lookup + upsert it uses.
+      if (withColors && data.palette && tenantId) {
+        const supabase = createClient();
+        const { error: colorError } = await supabase.from("site_identity").upsert(
+          { tenant_id: tenantId, color_overrides: data.palette, updated_at: new Date().toISOString() },
+          { onConflict: "tenant_id" },
+        );
+        if (colorError) toast.error("Blocks imported, but applying the colours failed — you can set them in Colors & Design.");
+      }
 
       if (placement === "replace") {
         setBlocks(data.blocks);
