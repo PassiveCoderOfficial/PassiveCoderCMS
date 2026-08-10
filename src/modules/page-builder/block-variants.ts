@@ -141,12 +141,24 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
 
   gallery: [
     { key: "grid-clean", label: "Clean Grid", description: "Tight uniform grid, no gaps or captions.", thumb: "grid-tight" },
+    { key: "dark-grid", label: "Dark Grid", description: "Tight grid on a dark panel — images carry the colour.", thumb: "grid-tight", dark: true },
     { key: "masonry-captioned", label: "Masonry", description: "Mixed-height masonry with visible captions.", thumb: "masonry" },
+    { key: "hero-mosaic", label: "Hero Mosaic", description: "One large lead image with a supporting grid.", thumb: "bento" },
+    { key: "captioned-cards", label: "Captioned Cards", description: "Each image in a card with its caption always visible.", thumb: "cards-grid" },
+    { key: "full-bleed-rows", label: "Full Bleed Rows", description: "Wide cinematic bands, one per row.", thumb: "list-rows" },
+    { key: "filmstrip", label: "Filmstrip", description: "Horizontal scrolling strip — compact and secondary.", thumb: "grid-tight" },
+    { key: "polaroid-scatter", label: "Polaroid Scatter", description: "Tilted framed shots — informal and warm.", thumb: "masonry" },
   ],
 
   steps: [
     { key: "numbered-cards", label: "Numbered Cards", description: "Each step as a numbered card.", thumb: "steps-cards" },
     { key: "timeline-connected", label: "Connected Timeline", description: "Steps joined by a connecting line.", thumb: "steps-timeline" },
+    { key: "vertical-line", label: "Vertical Line", description: "Left rail with markers — good for longer processes.", thumb: "steps-timeline" },
+    { key: "big-numbers", label: "Big Numbers", description: "Oversized ghosted numerals behind each step.", thumb: "numbered-list" },
+    { key: "icon-row", label: "Icon Row", description: "Icon-led rather than number-led.", thumb: "inline-icons" },
+    { key: "arrow-flow", label: "Arrow Flow", description: "Chevrons between steps make the sequence explicit.", thumb: "steps-cards" },
+    { key: "dark-cards", label: "Dark Cards", description: "Numbered cards on lifted surfaces, for dark palettes.", thumb: "steps-cards", dark: true },
+    { key: "split-media", label: "Split Media", description: "Alternating rows pairing each step with its image.", thumb: "list-rows" },
   ],
 
   icon_grid: [

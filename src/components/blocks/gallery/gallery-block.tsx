@@ -216,9 +216,218 @@ function GalleryLegacy({ block }: { block: GalleryBlockProps }) {
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
+function GalleryHead({ title }: { title?: string }) {
+  if (!title) return null;
+  return <h2 className="text-3xl font-bold text-center mb-8">{title}</h2>;
+}
+
+// ─── Variant: hero-mosaic ─────────────────────────────────────────────────────
+// One large lead image with a supporting grid — gives a gallery a focal point
+// instead of treating every shot as equal.
+function GalleryHeroMosaic({ block }: { block: GalleryBlockProps }) {
+  const { title, images, lightbox } = block.data;
+  const { lightboxIndex, setLightboxIndex } = useLightbox(images);
+  if (!images.length) return <EmptyState title={title} />;
+
+  const [lead, ...rest] = images;
+  return (
+    <div className="max-w-7xl mx-auto">
+      <GalleryHead title={title} />
+      <div className="grid gap-2 md:grid-cols-2">
+        <div
+          className="relative aspect-[4/3] md:aspect-auto md:row-span-2 overflow-hidden rounded-xl cursor-pointer"
+          onClick={() => lightbox && setLightboxIndex(0)}
+        >
+          <Image src={lead.url} alt={lead.alt ?? ""} fill unoptimized className="object-cover" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {rest.slice(0, 4).map((image, i) => (
+            <div
+              key={image.id}
+              className="relative aspect-square overflow-hidden rounded-xl cursor-pointer"
+              onClick={() => lightbox && setLightboxIndex(i + 1)}
+            >
+              <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {lightbox && <LightboxModal images={images} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} />}
+    </div>
+  );
+}
+
+// ─── Variant: filmstrip ───────────────────────────────────────────────────────
+// Horizontal scrolling strip — compact, and works well when a gallery is a
+// secondary element rather than the main event.
+function GalleryFilmstrip({ block }: { block: GalleryBlockProps }) {
+  const { title, images, lightbox } = block.data;
+  const { lightboxIndex, setLightboxIndex } = useLightbox(images);
+  if (!images.length) return <EmptyState title={title} />;
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <GalleryHead title={title} />
+      <div className="flex gap-3 overflow-x-auto pb-3 snap-x">
+        {images.map((image, i) => (
+          <div
+            key={image.id}
+            className="relative h-56 w-72 shrink-0 snap-start overflow-hidden rounded-xl cursor-pointer"
+            onClick={() => lightbox && setLightboxIndex(i)}
+          >
+            <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover" />
+          </div>
+        ))}
+      </div>
+      {lightbox && <LightboxModal images={images} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} />}
+    </div>
+  );
+}
+
+// ─── Variant: captioned-cards ─────────────────────────────────────────────────
+// Each image in a card with its caption always visible — for project galleries
+// where the context matters as much as the photo.
+function GalleryCaptionedCards({ block }: { block: GalleryBlockProps }) {
+  const { title, columns, images, lightbox } = block.data;
+  const { lightboxIndex, setLightboxIndex } = useLightbox(images);
+  if (!images.length) return <EmptyState title={title} />;
+
+  const colMap = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4", 5: "sm:grid-cols-3 lg:grid-cols-5", 6: "sm:grid-cols-3 lg:grid-cols-6" }[columns] ?? "sm:grid-cols-3";
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <GalleryHead title={title} />
+      <div className={cn("grid grid-cols-1 gap-4", colMap)}>
+        {images.map((image, i) => (
+          <div key={image.id} className="overflow-hidden rounded-xl border bg-card">
+            <div
+              className="relative aspect-[4/3] cursor-pointer overflow-hidden"
+              onClick={() => lightbox && setLightboxIndex(i)}
+            >
+              <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover transition-transform duration-500 hover:scale-105" />
+            </div>
+            {(image.caption || image.alt) && (
+              <p className="px-3.5 py-3 text-sm text-muted-foreground leading-snug">{image.caption ?? image.alt}</p>
+            )}
+          </div>
+        ))}
+      </div>
+      {lightbox && <LightboxModal images={images} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} />}
+    </div>
+  );
+}
+
+// ─── Variant: full-bleed-rows ─────────────────────────────────────────────────
+// Wide cinematic bands, one per row. Slow, deliberate — architecture,
+// interiors, photography portfolios.
+function GalleryFullBleedRows({ block }: { block: GalleryBlockProps }) {
+  const { title, images, lightbox } = block.data;
+  const { lightboxIndex, setLightboxIndex } = useLightbox(images);
+  if (!images.length) return <EmptyState title={title} />;
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      <GalleryHead title={title} />
+      <div className="space-y-4">
+        {images.map((image, i) => (
+          <div
+            key={image.id}
+            className="relative aspect-[21/9] overflow-hidden rounded-xl cursor-pointer group"
+            onClick={() => lightbox && setLightboxIndex(i)}
+          >
+            <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+            {image.caption && (
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5">
+                <p className="text-white text-sm font-medium">{image.caption}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {lightbox && <LightboxModal images={images} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} />}
+    </div>
+  );
+}
+
+// ─── Variant: polaroid-scatter ────────────────────────────────────────────────
+// Slightly rotated framed shots — informal and warm. Cafés, events, community
+// businesses where polish would feel wrong.
+function GalleryPolaroidScatter({ block }: { block: GalleryBlockProps }) {
+  const { title, images, lightbox } = block.data;
+  const { lightboxIndex, setLightboxIndex } = useLightbox(images);
+  if (!images.length) return <EmptyState title={title} />;
+
+  // Fixed rotation cycle rather than random, so the layout is stable across
+  // renders and doesn't shuffle on every hydration.
+  const tilts = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0", "-rotate-1"];
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      <GalleryHead title={title} />
+      <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+        {images.map((image, i) => (
+          <div
+            key={image.id}
+            className={cn(
+              "bg-card p-2.5 pb-8 shadow-lg cursor-pointer transition-transform hover:rotate-0 hover:scale-105",
+              tilts[i % tilts.length],
+            )}
+            onClick={() => lightbox && setLightboxIndex(i)}
+          >
+            <div className="relative aspect-square overflow-hidden">
+              <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover" />
+            </div>
+            {image.caption && (
+              <p className="mt-2 text-center text-xs text-muted-foreground truncate">{image.caption}</p>
+            )}
+          </div>
+        ))}
+      </div>
+      {lightbox && <LightboxModal images={images} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} />}
+    </div>
+  );
+}
+
+// ─── Variant: dark-grid ───────────────────────────────────────────────────────
+// Tight grid on a dark panel, letting the images carry all the colour.
+function GalleryDarkGrid({ block }: { block: GalleryBlockProps }) {
+  const { title, columns, images, lightbox } = block.data;
+  const { lightboxIndex, setLightboxIndex } = useLightbox(images);
+  if (!images.length) return <EmptyState title={title} />;
+
+  const colMap = { 2: "grid-cols-2", 3: "grid-cols-2 sm:grid-cols-3", 4: "grid-cols-2 sm:grid-cols-4", 5: "grid-cols-2 sm:grid-cols-5", 6: "grid-cols-3 sm:grid-cols-6" }[columns] ?? "grid-cols-2 sm:grid-cols-3";
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <GalleryHead title={title} />
+      <div className="rounded-2xl bg-foreground/5 p-3">
+        <div className={cn("grid gap-1.5", colMap)}>
+          {images.map((image, i) => (
+            <div
+              key={image.id}
+              className="relative aspect-square overflow-hidden rounded-lg cursor-pointer"
+              onClick={() => lightbox && setLightboxIndex(i)}
+            >
+              <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {lightbox && <LightboxModal images={images} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} />}
+    </div>
+  );
+}
+
 export function GalleryBlock({ block }: { block: GalleryBlockProps }) {
-  const variant = block.templateVariant;
-  if (variant === "masonry-captioned") return <GalleryMasonryCaptioned block={block} />;
-  if (variant === "grid-clean") return <GalleryGridClean block={block} />;
+  switch (block.templateVariant) {
+    case "masonry-captioned": return <GalleryMasonryCaptioned block={block} />;
+    case "grid-clean": return <GalleryGridClean block={block} />;
+    case "hero-mosaic": return <GalleryHeroMosaic block={block} />;
+    case "filmstrip": return <GalleryFilmstrip block={block} />;
+    case "captioned-cards": return <GalleryCaptionedCards block={block} />;
+    case "full-bleed-rows": return <GalleryFullBleedRows block={block} />;
+    case "polaroid-scatter": return <GalleryPolaroidScatter block={block} />;
+    case "dark-grid": return <GalleryDarkGrid block={block} />;
+  }
   return <GalleryLegacy block={block} />;
 }

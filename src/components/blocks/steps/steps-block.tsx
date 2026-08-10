@@ -84,9 +84,187 @@ function StepsNumberedCards({ block }: { block: StepsBlockProps }) {
   );
 }
 
+function StepsHead({ title, subtitle, align = "center" }: { title?: string; subtitle?: string; align?: "center" | "left" }) {
+  if (!title && !subtitle) return null;
+  return (
+    <div className={cn("mb-12", align === "center" ? "text-center" : "text-left")}>
+      {title && <h2 className="text-3xl font-bold mb-3">{title}</h2>}
+      {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+/** Steps are ordered by definition, so the displayed number falls back to
+ *  position when the author hasn't set one explicitly. */
+function stepNumber(item: { number?: string }, i: number) {
+  return item.number ?? String(i + 1);
+}
+
+// ─── Variant: vertical-line ───────────────────────────────────────────────────
+// Left rail with markers running down it — natural for processes with more
+// than four steps, where a horizontal row would cramp.
+function StepsVerticalLine({ block }: { block: StepsBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-3xl mx-auto">
+      <StepsHead title={title} subtitle={subtitle} align="left" />
+      <div className="relative pl-10">
+        <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border" />
+        <div className="space-y-9">
+          {items.map((item, i) => (
+            <div key={item.id} className="relative">
+              <span className="absolute -left-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                {stepNumber(item, i)}
+              </span>
+              <h3 className="font-semibold text-lg leading-tight">{item.title}</h3>
+              {item.description && <p className="text-muted-foreground leading-relaxed mt-1.5">{item.description}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: big-numbers ─────────────────────────────────────────────────────
+// Oversized ghosted numerals behind each step — editorial and confident.
+function StepsBigNumbers({ block }: { block: StepsBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StepsHead title={title} subtitle={subtitle} />
+      <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, i) => (
+          <div key={item.id} className="relative pt-6">
+            <span className="absolute top-0 left-0 text-6xl font-black text-primary/10 leading-none select-none">
+              {stepNumber(item, i)}
+            </span>
+            <div className="relative">
+              <h3 className="font-bold text-lg mb-2">{item.title}</h3>
+              {item.description && <p className="text-muted-foreground leading-relaxed">{item.description}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: icon-row ────────────────────────────────────────────────────────
+// Icon-led rather than number-led — for processes where the *what* matters
+// more than the order.
+function StepsIconRow({ block }: { block: StepsBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StepsHead title={title} subtitle={subtitle} />
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        {items.map((item) => (
+          <div key={item.id} className="text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <DynIcon name={item.icon} className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold mb-1.5">{item.title}</h3>
+            {item.description && <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: dark-cards ──────────────────────────────────────────────────────
+// Numbered cards on lifted surfaces, tuned for dark palettes.
+function StepsDarkCards({ block }: { block: StepsBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StepsHead title={title} subtitle={subtitle} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, i) => (
+          <div key={item.id} className="rounded-xl bg-foreground/5 border-l-2 border-primary p-6">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary">
+              Step {stepNumber(item, i)}
+            </span>
+            <h3 className="font-semibold text-lg mt-2 mb-1.5">{item.title}</h3>
+            {item.description && <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: arrow-flow ──────────────────────────────────────────────────────
+// Chevrons between steps make the sequence unmistakable — good for booking
+// and onboarding flows.
+function StepsArrowFlow({ block }: { block: StepsBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StepsHead title={title} subtitle={subtitle} />
+      <div className="flex flex-col items-stretch gap-3 lg:flex-row lg:items-center">
+        {items.map((item, i) => (
+          <React.Fragment key={item.id}>
+            <div className="flex-1 rounded-xl border bg-card p-5 text-center">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold mb-2.5">
+                {stepNumber(item, i)}
+              </span>
+              <h3 className="font-semibold text-sm mb-1">{item.title}</h3>
+              {item.description && <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>}
+            </div>
+            {i < items.length - 1 && (
+              <span className="hidden lg:block shrink-0 text-2xl text-primary/40 leading-none">›</span>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: split-media ─────────────────────────────────────────────────────
+// Alternating rows pairing each step with its image. For processes worth
+// showing, not just telling — renovations, treatments, builds.
+function StepsSplitMedia({ block }: { block: StepsBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-5xl mx-auto">
+      <StepsHead title={title} subtitle={subtitle} />
+      <div className="space-y-12">
+        {items.map((item, i) => (
+          <div key={item.id} className={cn("flex flex-col gap-6 sm:flex-row sm:items-center", i % 2 === 1 && "sm:flex-row-reverse")}>
+            {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={item.imageUrl} alt={item.title} className="w-full sm:w-2/5 h-52 object-cover rounded-xl" loading="lazy" />
+            ) : (
+              <div className="w-full sm:w-2/5 h-52 rounded-xl bg-primary/5 flex items-center justify-center">
+                <span className="text-5xl font-black text-primary/20">{stepNumber(item, i)}</span>
+              </div>
+            )}
+            <div className="flex-1">
+              <span className="text-xs font-bold uppercase tracking-widest text-primary">Step {stepNumber(item, i)}</span>
+              <h3 className="text-xl font-bold mt-1.5 mb-2">{item.title}</h3>
+              {item.description && <p className="text-muted-foreground leading-relaxed">{item.description}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function StepsBlock({ block }: { block: StepsBlockProps }) {
-  if (block.templateVariant === "timeline-connected") return <StepsTimelineConnected block={block} />;
-  if (block.templateVariant === "numbered-cards") return <StepsNumberedCards block={block} />;
+  switch (block.templateVariant) {
+    case "timeline-connected": return <StepsTimelineConnected block={block} />;
+    case "numbered-cards": return <StepsNumberedCards block={block} />;
+    case "vertical-line": return <StepsVerticalLine block={block} />;
+    case "big-numbers": return <StepsBigNumbers block={block} />;
+    case "icon-row": return <StepsIconRow block={block} />;
+    case "dark-cards": return <StepsDarkCards block={block} />;
+    case "arrow-flow": return <StepsArrowFlow block={block} />;
+    case "split-media": return <StepsSplitMedia block={block} />;
+  }
   const { data } = block;
   const { title, subtitle, layout, items, style } = data;
 
