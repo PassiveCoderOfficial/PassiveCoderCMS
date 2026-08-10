@@ -88,6 +88,12 @@ export async function resolvePreviewTemplate(
     const footer = (dbTemplate.global_footer as Block[] | null) ?? [];
     const body = (target?.blocks as Block[] | null) ?? [];
 
+    // Header, body and footer are authored separately, so each numbers its
+    // blocks from 0. The renderer sorts by `order`, which would interleave
+    // them — a one-block footer (order 0) sorting up next to the hero. Flatten
+    // to one sequence so concatenation order is what actually renders.
+    const composed = [...header, ...body, ...footer].map((b, i) => ({ ...b, order: i }));
+
     return {
       slug: dbTemplate.slug,
       name: dbTemplate.name,
@@ -96,7 +102,7 @@ export async function resolvePreviewTemplate(
       palette: (dbTemplate.palette as TemplatePalette | null) ?? FALLBACK_PALETTE,
       typography: (dbTemplate.typography as TemplateTypography | null) ?? FALLBACK_TYPOGRAPHY,
       customCss: (dbTemplate.custom_css as string | null) ?? null,
-      blocks: [...header, ...body, ...footer],
+      blocks: composed,
       source: "db",
       pages: allPages.map((p) => ({ slug: p.slug as string, title: p.title as string })),
     };
