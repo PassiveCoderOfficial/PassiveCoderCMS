@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Puzzle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MODULE_LABELS, MODULE_DESCRIPTIONS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
@@ -14,6 +15,7 @@ interface ModuleRow {
 export default function ModulesPage() {
   const [modules, setModules] = useState<ModuleRow[] | null>(null);
   const [saving, setSaving] = useState<ModuleKey | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/dashboard/modules")
@@ -32,6 +34,11 @@ export default function ModulesPage() {
         body: JSON.stringify({ key, enabled }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Failed to update");
+      // The sidebar's module list is computed in the server layout, so without
+      // this the nav keeps showing the old set until a full page reload —
+      // toggling appeared to do nothing.
+      router.refresh();
+      toast.success(`${MODULE_LABELS[key]} ${enabled ? "enabled" : "disabled"}`);
     } catch (err) {
       setModules((prev) => (prev ?? []).map((m) => (m.key === key ? { ...m, enabled: !enabled } : m)));
       toast.error(err instanceof Error ? err.message : "Failed to update module");

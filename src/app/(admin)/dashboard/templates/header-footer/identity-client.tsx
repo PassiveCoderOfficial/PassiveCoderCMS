@@ -550,7 +550,7 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
   const [saved, setSaved] = useState(false);
   const [creatingMenu, setCreatingMenu] = useState(false);
   const [newMenuName, setNewMenuName] = useState("");
-  const [activeTab, setActiveTab] = useState<"identity" | "nav" | "footer" | "prefooter" | "menus">("nav");
+  const [activeTab, setActiveTab] = useState<"identity" | "nav" | "footer" | "prefooter" | "menus">("footer");
 
   const set = (k: keyof SiteIdentity, v: unknown) => { setIdentity(p => ({ ...p, [k]: v })); setSaved(false); };
 
@@ -569,12 +569,15 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
     setNewMenuName(""); setCreatingMenu(false);
   }
 
+  // "Global Nav" and "Nav Menus (Legacy)" used to live here. Both edited
+  // navigation in different storage, which is how the same site ended up with
+  // two menus that disagreed. Navigation now has its own screen backed by
+  // nav_menus — see /dashboard/navigation. The editors below are unreachable
+  // and kept only until the next cleanup pass.
   const TABS = [
-    { key: "nav" as const, label: "Global Nav", icon: <Navigation className="w-4 h-4" /> },
     { key: "footer" as const, label: "Global Footer", icon: <Footprints className="w-4 h-4" /> },
     { key: "prefooter" as const, label: "Pre-Footer (CTA + Contact)", icon: <Phone className="w-4 h-4" /> },
     { key: "identity" as const, label: "Site Identity", icon: <Layers className="w-4 h-4" /> },
-    { key: "menus" as const, label: "Nav Menus (Legacy)", icon: <Plus className="w-4 h-4" /> },
   ];
 
   return (
