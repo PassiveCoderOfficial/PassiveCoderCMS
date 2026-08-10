@@ -36,12 +36,18 @@ const categoryLabels: Record<string, string> = {
 export function BlocksPanel({
   initialTab = "sections",
   allowedBlockTypes,
+  blockDisplayOverrides,
 }: {
   initialTab?: "sections" | "blocks" | "layers" | "config";
   /** Restricts the palette to these block types. Used by the header builder,
    *  where offering a pricing table or a blog roll would only invite mistakes.
    *  Unset means every block is available, as on a normal page. */
   allowedBlockTypes?: readonly BlockType[];
+  /** Overrides a block's label/description/icon for this panel instance only
+   *  — the registry's own copy (e.g. "Menu Bar") is written for the general
+   *  page builder and doesn't always read as a header/footer element in a
+   *  restricted context. Leaves every other consumer of the registry alone. */
+  blockDisplayOverrides?: Partial<Record<BlockType, Partial<Pick<BlockDefinition, "label" | "description" | "icon">>>>;
 }) {
   const { addBlock: addBlockRaw, setMobileSheet, selectedBlockId, tenantId } = useBuilderStore();
   // On mobile the panels live in a bottom sheet — adding a block should close
@@ -133,7 +139,11 @@ export function BlocksPanel({
 
   const q = search.toLowerCase();
 
-  const filteredBlocks = blockRegistry.filter((b) => {
+  const displayBlocks = blockDisplayOverrides
+    ? blockRegistry.map((b) => (blockDisplayOverrides[b.type] ? { ...b, ...blockDisplayOverrides[b.type] } : b))
+    : blockRegistry;
+
+  const filteredBlocks = displayBlocks.filter((b) => {
     const matchSearch = !q || b.label.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
     const matchCat = activeCategory === "all" || b.category === activeCategory;
     const matchModule = !b.moduleKey || !enabledModuleKeys || enabledModuleKeys.has(b.moduleKey);

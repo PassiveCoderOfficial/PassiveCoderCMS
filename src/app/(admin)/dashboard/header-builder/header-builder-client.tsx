@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useBuilderStore } from "@/lib/store/builder";
 import { BuilderCanvas } from "@/components/admin/page-builder/canvas/builder-canvas";
 import { BlocksPanel } from "@/components/admin/page-builder/blocks-panel/blocks-panel";
-import { HEADER_BLOCK_TYPES, FOOTER_BLOCK_TYPES } from "@/modules/page-builder/header-blocks";
+import { HEADER_BLOCK_TYPES, FOOTER_BLOCK_TYPES, HEADER_BLOCK_DISPLAY, FOOTER_BLOCK_DISPLAY } from "@/modules/page-builder/header-blocks";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Loader2, Undo2, Redo2, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -134,14 +134,17 @@ export default function HeaderBuilderClient({
             <BlocksPanel
               initialTab="blocks"
               allowedBlockTypes={target === "header" ? HEADER_BLOCK_TYPES : FOOTER_BLOCK_TYPES}
+              blockDisplayOverrides={target === "header" ? HEADER_BLOCK_DISPLAY : FOOTER_BLOCK_DISPLAY}
             />
           </div>
         )}
 
         <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900">
-          {/* A header is a strip, not a page — pad the canvas so it doesn't
-              look like an empty page when it holds one nav block. */}
-          <div className="min-h-full py-6">
+          {/* A header is a strip, not a page. min-h-full previously forced this
+              wrapper to fill the viewport height, which left a large dead grey
+              area below the actual header content — sized to content instead,
+              with just enough top padding to keep it from touching the edge. */}
+          <div className="py-6">
             <div className="mx-auto max-w-[1400px] bg-card shadow-sm">
               <BuilderCanvas />
             </div>

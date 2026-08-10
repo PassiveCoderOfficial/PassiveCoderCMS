@@ -34,7 +34,14 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
     const groups = items.filter((i) => (i.children?.length ?? 0) > 0);
     return (
       <div
-        className="fixed left-1/2 -translate-x-1/2 top-[4.75rem] z-[9999] px-2 w-full max-w-[1120px] animate-in fade-in slide-in-from-top-2 duration-200"
+        // Anchored to the <nav> element (the nearest `relative` ancestor),
+        // not the viewport — this used to be `fixed` with a hardcoded
+        // `top: 4.75rem`, which assumed the nav always sits flush against the
+        // top of the actual browser viewport. True on the published site, but
+        // false anywhere the nav renders mid-page — the header builder canvas,
+        // template previews — where the menu detached from its trigger
+        // entirely and floated over unrelated UI.
+        className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-[9999] px-2 w-full max-w-[1120px] animate-in fade-in slide-in-from-top-2 duration-200"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -221,7 +228,7 @@ export function NavigationBlock({ block, identityLogo }: {
   return (
     <nav
       className={cn(
-        "w-full z-50 transition-all duration-300",
+        "relative w-full z-50 transition-all duration-300",
         overlayHero ? "fixed top-0 left-0 right-0" : sticky && "sticky top-0",
         solid && !floating && "border-b border-border/60",
         solid && glass && "backdrop-blur-xl",
