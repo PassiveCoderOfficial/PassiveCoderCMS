@@ -219,6 +219,19 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "dark", label: "Dark", description: "Dark ground with light text — the usual anchor.", thumb: "cards-dark", dark: true },
     { key: "light", label: "Light", description: "Keeps the page's light ground, separated by a rule.", thumb: "list-rows" },
   ],
+
+  item_box: [
+    { key: "grid", label: "Grid", description: "Even card grid — the standard layout.", thumb: "cards-grid" },
+    { key: "list", label: "List", description: "Full-width stacked rows.", thumb: "list-rows" },
+  ],
+
+  ecommerce_products: [
+    { key: "grid", label: "Grid", description: "Even product card grid — the standard listing.", thumb: "cards-grid" },
+    { key: "list", label: "List", description: "Full-width rows, image beside details.", thumb: "list-rows" },
+    { key: "featured", label: "Featured", description: "One large lead product above the rest.", thumb: "split-image" },
+    { key: "minimal", label: "Minimal", description: "Image and price only, no extra chrome.", thumb: "grid-tight" },
+    { key: "wide-cards", label: "Wide Cards", description: "Wider cards with more room for description.", thumb: "cards-grid" },
+  ],
 };
 
 /**
@@ -243,6 +256,8 @@ export const VARIANT_DATA_FIELD: Partial<Record<BlockType, string>> = {
   blog: "layout",
   navigation: "style",
   footer: "style",
+  item_box: "layout",
+  ecommerce_products: "layout",
 };
 
 /** Variants available for a block type, always including its default layout. */
