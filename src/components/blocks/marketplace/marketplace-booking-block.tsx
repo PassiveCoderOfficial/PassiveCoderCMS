@@ -102,6 +102,7 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendToWhatsApp, setSendToWhatsApp] = useState(true);
 
   useEffect(() => {
     fetch("/api/marketplace/public")
@@ -159,6 +160,19 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
         setError(d.error ?? "Something went wrong — please try again.");
         if (res.status === 409) loadSlots(vendorId, selectedDate);
       } else {
+        if (sendToWhatsApp) {
+          const serviceName = categories.find((c) => c.id === categoryId)?.service_subcategories.find((s) => s.id === subcategoryId)?.name;
+          const lines = [
+            "New booking request from tanmoyservices.com:",
+            serviceName ? `Service: ${serviceName}` : null,
+            selectedDate && selectedSlot ? `Preferred time: ${selectedDate} at ${selectedSlot}` : null,
+            `Name: ${form.customer_name}`,
+            `Phone: ${form.customer_phone}`,
+            form.address ? `Address: ${form.address}` : null,
+          ].filter(Boolean);
+          const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
+          window.open(waUrl, "_blank", "noopener,noreferrer");
+        }
         setDone(true);
       }
     } catch {
@@ -168,33 +182,13 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
   }
 
   if (done) {
-    const serviceName = categories.find((c) => c.id === categoryId)?.service_subcategories.find((s) => s.id === subcategoryId)?.name;
-    const lines = [
-      "New booking request from tanmoyservices.com:",
-      serviceName ? `Service: ${serviceName}` : null,
-      selectedDate && selectedSlot ? `Preferred time: ${selectedDate} at ${selectedSlot}` : null,
-      `Name: ${form.customer_name}`,
-      `Phone: ${form.customer_phone}`,
-      form.address ? `Address: ${form.address}` : null,
-    ].filter(Boolean);
-    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
-
     return (
       <section className="py-20 px-4 text-center max-w-lg mx-auto">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
           <CheckCircle className="w-9 h-9" style={{ color: accent }} />
         </div>
         <h2 className="text-2xl font-bold mb-2">Request received!</h2>
-        <p className="text-muted-foreground mb-6">Tap below to send your booking details on WhatsApp for the fastest confirmation.</p>
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-sm hover:shadow-md transition-shadow"
-          style={{ backgroundColor: "#25D366" }}
-        >
-          Confirm on WhatsApp
-        </a>
+        <p className="text-muted-foreground">We&apos;ll confirm your booking shortly.</p>
       </section>
     );
   }
@@ -300,7 +294,7 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
                 value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))} />
               <div>
                 <label className="text-sm font-medium flex items-center gap-1.5 mb-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4" /> Pin your location <span className="text-xs">(optional, helps match nearby providers)</span>
+                  <MapPin className="w-4 h-4" /> Pin your location <span className="text-xs">(optional, helps us find you faster)</span>
                 </label>
                 <div className="rounded-xl overflow-hidden border border-border bg-card">
                   <MapPicker value={pin} onChange={setPin} defaultCenter={MAP_DEFAULT_CENTER} defaultZoom={11} height={200} autoGps />
@@ -310,10 +304,21 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
 
             {error && <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>}
 
+            <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={sendToWhatsApp}
+                onChange={(e) => setSendToWhatsApp(e.target.checked)}
+                className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                style={{ accentColor: accent }}
+              />
+              Also send details to WhatsApp!
+            </label>
+
             <button type="submit" disabled={submitting}
               className="w-full py-3 rounded-xl text-white font-semibold disabled:opacity-50 shadow-sm hover:shadow-md transition-shadow"
               style={{ backgroundColor: accent }}>
-              {submitting ? "Submitting…" : (data.submitLabel || "Request Booking")}
+              {submitting ? "Submitting…" : (data.submitLabel || "Book Now!")}
             </button>
           </form>
         </div>
