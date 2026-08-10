@@ -158,7 +158,14 @@ export type NavigationBlockProps = BlockBase & {
     logo?: string;
     logoText?: string;
     logoUrl?: string;
+    /** Inline items. Used when menuLocation is unset, and as the fallback if
+     *  the referenced menu is missing — a nav bar with no links is worse than
+     *  a slightly stale one. */
     items: NavItem[];
+    /** Render the tenant's menu assigned to this location instead of `items`.
+     *  Keeping the menu in nav_menus and referencing it here is what stops the
+     *  header and footer holding diverging copies of the same links. */
+    menuLocation?: "header" | "footer" | "footer_secondary" | "mobile" | "sidebar" | "legal";
     sticky: boolean;
     transparent: boolean;
     style: "default" | "centered" | "split" | "minimal";
@@ -199,6 +206,21 @@ export type NavigationBlockProps = BlockBase & {
   };
 };
 
+/**
+ * Where a menu item's children come from.
+ * - "manual": children are exactly the NavItems the author added.
+ * - everything else: children are generated at render time from live data, so
+ *   adding a service or product category shows up in the nav without anyone
+ *   remembering to edit the menu.
+ */
+export type NavChildSource =
+  | "manual"
+  | "services"
+  | "service_groups"
+  | "product_categories"
+  | "pages"
+  | "blog_categories";
+
 export type NavItem = {
   id: string;
   label: string;
@@ -207,6 +229,11 @@ export type NavItem = {
   children?: NavItem[];
   /** Lucide icon name — shown next to the label in mega-menu group headers. */
   icon?: string;
+  /** Defaults to "manual" when unset, so existing menus are unaffected. */
+  childSource?: NavChildSource;
+  /** Cap on generated children, so a tenant with 200 products doesn't render
+   *  a 200-item dropdown. Ignored for "manual". */
+  childLimit?: number;
 };
 
 export type TextBlockProps = BlockBase & {

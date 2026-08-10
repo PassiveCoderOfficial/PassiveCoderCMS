@@ -4,6 +4,7 @@
   BookOpen,
   Image,
   Palette,
+  Navigation,
   Puzzle,
   BarChart3,
   Settings,
@@ -161,6 +162,7 @@ export const navSections: NavSection[] = [
         children: [
           { label: "Browse Templates", href: "/dashboard/themes", icon: Palette },
           { label: "Colors & Design", href: "/dashboard/templates/colors", icon: SlidersHorizontal },
+          { label: "Navigation", href: "/dashboard/navigation", icon: Navigation },
           { label: "Header & Footer", href: "/dashboard/templates/header-footer", icon: Layers },
         ],
       },

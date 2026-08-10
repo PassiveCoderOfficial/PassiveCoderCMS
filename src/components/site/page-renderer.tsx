@@ -47,6 +47,7 @@ import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
+import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 
 interface PageBlockProps {
   block: Block;
@@ -151,6 +152,8 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
   // Fetch identity logo once for nav block fallback (only if page has a nav block)
   let identityLogo: string | null = null;
   let identityLogoDark: string | null = null;
+  let resolved = visible;
+
   const hasNav = visible.some((b) => b.type === "navigation");
   if (hasNav) {
     const reqHeaders = await headers();
@@ -164,14 +167,63 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
         .single();
       identityLogo = data?.logo_url ?? null;
       identityLogoDark = data?.logo_dark_url ?? null;
+
+      resolved = await resolveNavBlocks(admin, tenantId, visible);
     }
   }
 
   return (
     <>
-      {await Promise.all(visible.map((block) => (
+      {await Promise.all(resolved.map((block) => (
         <ServerBlock key={block.id} block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />
       )))}
     </>
+  );
+}
+
+/**
+ * Fills navigation blocks from the tenant's saved menus.
+ *
+ * A nav block that names a `menuLocation` renders whatever menu is assigned
+ * there, so the header and footer read the same source instead of each holding
+ * their own copy that quietly drifts. Blocks without one keep their inline
+ * items, and a missing menu falls back to those items too — a nav bar with
+ * slightly stale links beats one with no links at all.
+ *
+ * Dynamic sub-menus (all services, product categories) are expanded here as
+ * well, which is why this runs server-side per request rather than at save time.
+ */
+async function resolveNavBlocks(
+  admin: Awaited<ReturnType<typeof createAdminClient>>,
+  tenantId: string,
+  blocks: Block[],
+): Promise<Block[]> {
+  const navBlocks = blocks.filter(
+    (b): b is import("@/types/cms").NavigationBlockProps => b.type === "navigation",
+  );
+  if (navBlocks.length === 0) return blocks;
+
+  const { data: menus } = await admin
+    .from("nav_menus")
+    .select("location, items")
+    .eq("tenant_id", tenantId);
+
+  const byLocation = new Map<string, import("@/types/cms").NavItem[]>();
+  for (const m of menus ?? []) {
+    byLocation.set(m.location as string, (m.items ?? []) as import("@/types/cms").NavItem[]);
+  }
+
+  return Promise.all(
+    blocks.map(async (block) => {
+      if (block.type !== "navigation") return block;
+      const nav = block as import("@/types/cms").NavigationBlockProps;
+
+      const source = nav.data.menuLocation
+        ? byLocation.get(nav.data.menuLocation) ?? nav.data.items
+        : nav.data.items;
+
+      const items = await expandDynamicChildren(admin, tenantId, source ?? []);
+      return { ...nav, data: { ...nav.data, items } } as Block;
+    }),
   );
 }
