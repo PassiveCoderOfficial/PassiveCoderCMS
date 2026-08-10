@@ -38,6 +38,7 @@ import { DonorGroupCardsSettings, DonorListSettings, DonorMapSettings } from "./
 import { BlockLayoutSettings } from "./block-layout-settings";
 import { ContainerSettings } from "./container-settings";
 import { SettingsBreadcrumb } from "./settings-breadcrumb";
+import { VariantPicker } from "./variant-picker";
 import { Layers } from "lucide-react";
 import type { Block } from "@/types/cms";
 
@@ -76,6 +77,9 @@ export function SettingsPanel() {
             <BlockContentSettings block={block} />
           </TabsContent>
           <TabsContent value="layout" className="p-3 mt-0 space-y-5">
+            {/* Layout variant first — it's the biggest visual lever, and the
+                per-block settings below often only apply to some variants. */}
+            <VariantPicker block={block} />
             <BlockStyleSettings block={block} />
             <BlockLayoutSettings block={block} />
           </TabsContent>
