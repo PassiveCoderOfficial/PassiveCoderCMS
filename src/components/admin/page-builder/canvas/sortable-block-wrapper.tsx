@@ -38,11 +38,26 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
   };
 
   // Selecting a block from the Layers tab (or anywhere off-screen) should
-  // bring it into view — dnd-kit's own ref stays put on drag, so this only
-  // fires from a genuine selection change, not every render.
+  // bring it into view. Clicking a block directly in the canvas also selects
+  // it, though — and it's already visible then, so re-centering it on every
+  // click made the page appear to jump to wherever was clicked, which is
+  // disorienting rather than helpful. Only scroll when the block isn't
+  // already substantially in view.
   const elRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => {
-    if (isSelected) elRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!isSelected) return;
+    const el = elRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    // "Substantially in view" = most of the block's height already visible,
+    // not just a sliver — a tall block with only its top edge on screen still
+    // deserves a scroll so its settings context is legible.
+    const visibleTop = Math.max(rect.top, 0);
+    const visibleBottom = Math.min(rect.bottom, viewportHeight);
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+    const enoughVisible = visibleHeight >= Math.min(rect.height, viewportHeight) * 0.6;
+    if (!enoughVisible) el.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [isSelected]);
 
   const clearLongPress = () => {

@@ -64,13 +64,19 @@ export function ColorPicker({
             className,
           )}
         >
-          {/* Checkerboard so transparency reads clearly */}
+          {/* Checkerboard only shows through actually-transparent colors — it
+              used to render unconditionally, so even a fully opaque swatch
+              had grey checker squares painted over it (the gradient's own
+              #ccc stops aren't affected by the color's alpha, only the
+              gradient's "transparent" stops are). */}
           <span
             className="h-4 w-4 rounded border shrink-0 bg-[length:8px_8px] bg-[position:0_0,4px_4px]"
             style={{
               backgroundColor: swatchBg,
               backgroundImage:
-                "linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc)",
+                alpha < 1
+                  ? "linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc)"
+                  : "none",
             }}
           />
           <span className="truncate flex-1 text-left font-mono">{value || "—"}</span>
