@@ -14,7 +14,7 @@ import { ImportDialog } from "../import/import-dialog";
 import { PresetThumbnail } from "./preset-thumbnail";
 import { deepClone, generateId } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import type { Block, ContainerBlockProps, NavigationBlockProps } from "@/types/cms";
+import type { Block, BlockType, ContainerBlockProps, NavigationBlockProps } from "@/types/cms";
 import type { ModuleKey } from "@/components/admin/sidebar/nav-items";
 
 interface SavedPreset {
@@ -33,7 +33,16 @@ const categoryLabels: Record<string, string> = {
   interactive: "Interactive",
 };
 
-export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "sections" | "blocks" | "layers" | "config" }) {
+export function BlocksPanel({
+  initialTab = "sections",
+  allowedBlockTypes,
+}: {
+  initialTab?: "sections" | "blocks" | "layers" | "config";
+  /** Restricts the palette to these block types. Used by the header builder,
+   *  where offering a pricing table or a blog roll would only invite mistakes.
+   *  Unset means every block is available, as on a normal page. */
+  allowedBlockTypes?: readonly BlockType[];
+}) {
   const { addBlock: addBlockRaw, setMobileSheet, selectedBlockId, tenantId } = useBuilderStore();
   // On mobile the panels live in a bottom sheet — adding a block should close
   // the sheet so the user immediately sees it land on the canvas. Harmless on
@@ -128,7 +137,8 @@ export function BlocksPanel({ initialTab = "sections" }: { initialTab?: "section
     const matchSearch = !q || b.label.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
     const matchCat = activeCategory === "all" || b.category === activeCategory;
     const matchModule = !b.moduleKey || !enabledModuleKeys || enabledModuleKeys.has(b.moduleKey);
-    return matchSearch && matchCat && matchModule;
+    const matchAllowed = !allowedBlockTypes || allowedBlockTypes.includes(b.type);
+    return matchSearch && matchCat && matchModule && matchAllowed;
   });
 
   const filteredPresetGroups = presetsByCategory
