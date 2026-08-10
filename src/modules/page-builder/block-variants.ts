@@ -113,7 +113,12 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
 
   features: [
     { key: "icon-list-cards", label: "Icon List Cards", description: "Icon, heading and copy per feature in a card grid.", thumb: "cards-grid" },
+    { key: "highlight-cards", label: "Highlight Cards", description: "Coloured top edge, lifts on hover — more energetic.", thumb: "cards-grid" },
+    { key: "centered-icons", label: "Centered Icons", description: "Centered icon, heading and copy. The safe default.", thumb: "cards-grid" },
     { key: "bento-grid", label: "Bento Grid", description: "Mixed-size tiles — visually dynamic, modern.", thumb: "bento" },
+    { key: "numbered-columns", label: "Numbered Columns", description: "Numbered columns with a rule above each, no icons.", thumb: "numbered-list" },
+    { key: "split-list", label: "Split List", description: "Heading pinned left, features listed right.", thumb: "two-col" },
+    { key: "alternating-media", label: "Alternating Media", description: "Wide alternating rows pairing each feature with an image.", thumb: "list-rows" },
     { key: "dark", label: "Dark Checklist", description: "Two-column checklist on a dark surface.", thumb: "list-rows", dark: true },
   ],
 
@@ -163,6 +168,12 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
 
   icon_grid: [
     { key: "colored-tiles", label: "Coloured Tiles", description: "Filled tiles using brand colours.", thumb: "tiles" },
+    { key: "circle-icons", label: "Circle Icons", description: "Circular icon badges above centered labels.", thumb: "tiles" },
+    { key: "outlined-cards", label: "Outlined Cards", description: "Hairline cards with the icon inline beside the label.", thumb: "cards-grid" },
+    { key: "bordered-matrix", label: "Bordered Matrix", description: "Cells divided by hairlines — dense and technical.", thumb: "grid-tight" },
+    { key: "dark-tiles", label: "Dark Tiles", description: "Lifted tiles with an accent icon, for dark palettes.", thumb: "tiles", dark: true },
+    { key: "numbered-features", label: "Numbered", description: "Numbered instead of iconed — reads as ordered reasons.", thumb: "numbered-list" },
+    { key: "pill-row", label: "Pill Row", description: "Wrapping pills — compact, reads as tags.", thumb: "inline-icons" },
     { key: "minimal-inline", label: "Minimal Inline", description: "Icons and labels inline, no tile background.", thumb: "inline-icons" },
   ],
 };

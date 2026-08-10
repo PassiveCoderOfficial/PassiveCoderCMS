@@ -183,9 +183,170 @@ function IconGridLegacy({ block }: { block: IconGridBlockProps }) {
   );
 }
 
+function IconGridHead({ title, subtitle }: { title?: string; subtitle?: string }) {
+  if (!title && !subtitle) return null;
+  return (
+    <div className="text-center mb-10">
+      {title && <h2 className="text-3xl font-bold mb-3">{title}</h2>}
+      {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+/** Wraps an item in a link only when it has a url, so non-linked items don't
+ *  render as clickable. */
+function MaybeLink({ url, className, children }: { url?: string; className?: string; children: React.ReactNode }) {
+  if (!url) return <div className={className}>{children}</div>;
+  return <a href={url} className={className}>{children}</a>;
+}
+
+// ─── Variant: outlined-cards ──────────────────────────────────────────────────
+// Hairline-bordered cards with the icon inline beside the label — calm and
+// structured, suits professional and B2B contexts.
+function IconGridOutlinedCards({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, columns, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <IconGridHead title={title} subtitle={subtitle} />
+      <div className={cn("grid grid-cols-2 gap-3", colClassFor(columns))}>
+        {items.map((item) => (
+          <MaybeLink key={item.id} url={item.url} className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:border-primary/50">
+            <DynIcon name={item.icon} className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+            <div className="min-w-0">
+              <p className="font-semibold text-sm leading-tight">{item.label}</p>
+              {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
+            </div>
+          </MaybeLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: circle-icons ────────────────────────────────────────────────────
+// Circular icon badges above centered labels — friendly and approachable.
+function IconGridCircleIcons({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, columns, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <IconGridHead title={title} subtitle={subtitle} />
+      <div className={cn("grid grid-cols-2 gap-8", colClassFor(columns))}>
+        {items.map((item) => (
+          <MaybeLink key={item.id} url={item.url} className="flex flex-col items-center text-center group">
+            <span
+              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full transition-transform group-hover:scale-105"
+              style={{ backgroundColor: item.color ? `${item.color}1a` : undefined }}
+            >
+              <DynIcon name={item.icon} className={cn("h-7 w-7", !item.color && "text-primary")} />
+            </span>
+            <p className="font-semibold text-sm">{item.label}</p>
+            {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
+          </MaybeLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: dark-tiles ──────────────────────────────────────────────────────
+// Lifted tiles on dark surfaces with an accent icon.
+function IconGridDarkTiles({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, columns, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <IconGridHead title={title} subtitle={subtitle} />
+      <div className={cn("grid grid-cols-2 gap-2.5", colClassFor(columns))}>
+        {items.map((item) => (
+          <MaybeLink key={item.id} url={item.url} className="rounded-xl bg-foreground/5 p-5 text-center transition-colors hover:bg-foreground/10">
+            <DynIcon name={item.icon} className="h-6 w-6 mx-auto mb-2.5 text-primary" />
+            <p className="font-medium text-sm">{item.label}</p>
+            {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
+          </MaybeLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: bordered-matrix ─────────────────────────────────────────────────
+// Cells divided by hairlines into a single continuous grid — dense, technical,
+// good for capability or coverage lists.
+function IconGridBorderedMatrix({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, columns, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <IconGridHead title={title} subtitle={subtitle} />
+      <div className={cn("grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border", colClassFor(columns))}>
+        {items.map((item) => (
+          <MaybeLink key={item.id} url={item.url} className="bg-card p-5 text-center transition-colors hover:bg-muted/50">
+            <DynIcon name={item.icon} className="h-5 w-5 mx-auto mb-2 text-primary" />
+            <p className="text-xs font-medium leading-tight">{item.label}</p>
+          </MaybeLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: pill-row ────────────────────────────────────────────────────────
+// Icons and labels as wrapping pills — compact, reads as tags rather than a
+// grid. Good for long lists of small capabilities.
+function IconGridPillRow({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, items } = block.data;
+  return (
+    <div className="max-w-4xl mx-auto">
+      <IconGridHead title={title} subtitle={subtitle} />
+      <div className="flex flex-wrap justify-center gap-2">
+        {items.map((item) => (
+          <MaybeLink
+            key={item.id}
+            url={item.url}
+            className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm transition-colors hover:border-primary/50"
+          >
+            <DynIcon name={item.icon} className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium">{item.label}</span>
+          </MaybeLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: numbered-features ───────────────────────────────────────────────
+// Numbered rather than iconed — turns a capability grid into an ordered list
+// of reasons or benefits.
+function IconGridNumberedFeatures({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, columns, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      <IconGridHead title={title} subtitle={subtitle} />
+      <div className={cn("grid grid-cols-1 gap-6", colClassFor(columns))}>
+        {items.map((item, i) => (
+          <MaybeLink key={item.id} url={item.url} className="flex gap-3">
+            <span className="shrink-0 text-lg font-bold text-primary/40 tabular-nums leading-none pt-0.5">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div>
+              <p className="font-semibold text-sm leading-tight">{item.label}</p>
+              {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
+            </div>
+          </MaybeLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function IconGridBlock({ block }: { block: IconGridBlockProps }) {
-  const variant = block.templateVariant;
-  if (variant === "colored-tiles") return <IconGridColoredTiles block={block} />;
-  if (variant === "minimal-inline") return <IconGridMinimalInline block={block} />;
+  switch (block.templateVariant) {
+    case "colored-tiles": return <IconGridColoredTiles block={block} />;
+    case "minimal-inline": return <IconGridMinimalInline block={block} />;
+    case "outlined-cards": return <IconGridOutlinedCards block={block} />;
+    case "circle-icons": return <IconGridCircleIcons block={block} />;
+    case "dark-tiles": return <IconGridDarkTiles block={block} />;
+    case "bordered-matrix": return <IconGridBorderedMatrix block={block} />;
+    case "pill-row": return <IconGridPillRow block={block} />;
+    case "numbered-features": return <IconGridNumberedFeatures block={block} />;
+  }
   return <IconGridLegacy block={block} />;
 }

@@ -147,10 +147,148 @@ function FeaturesBentoGrid({ data }: { data: FeaturesBlockProps["data"] }) {
   );
 }
 
+function FeaturesHead({ title, subtitle, align = "center" }: { title?: string; subtitle?: string; align?: "center" | "left" }) {
+  if (!title && !subtitle) return null;
+  return (
+    <div className={cn("mb-12", align === "center" ? "text-center" : "text-left max-w-2xl")}>
+      {title && <h2 className="text-3xl font-bold mb-3">{title}</h2>}
+      {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+// ─── Variant: alternating-media ───────────────────────────────────────────────
+// Full-width alternating rows pairing each feature with its image. The most
+// spacious option — for a handful of features that each deserve real estate.
+function FeaturesAlternatingMedia({ data }: { data: FeaturesBlockProps["data"] }) {
+  return (
+    <div className="max-w-5xl mx-auto">
+      <FeaturesHead title={data.title} subtitle={data.subtitle} />
+      <div className="space-y-14">
+        {data.items.map((item, i) => (
+          <div key={item.id} className={cn("flex flex-col gap-8 sm:flex-row sm:items-center", i % 2 === 1 && "sm:flex-row-reverse")}>
+            {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={item.imageUrl} alt={item.title} className="w-full sm:w-1/2 h-60 object-cover rounded-2xl" loading="lazy" />
+            ) : (
+              <div className="w-full sm:w-1/2 h-60 rounded-2xl bg-primary/5 flex items-center justify-center">
+                <DynIcon name={item.icon} className="h-12 w-12 text-primary/40" />
+              </div>
+            )}
+            <div className="flex-1">
+              <h3 className="text-xl font-bold mb-2.5">{item.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: numbered-columns ────────────────────────────────────────────────
+// Numbered columns with a rule above each — structured and confident, without
+// relying on icons.
+function FeaturesNumberedColumns({ data }: { data: FeaturesBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <FeaturesHead title={data.title} subtitle={data.subtitle} align="left" />
+      <div className={cn("grid grid-cols-1 gap-8", colClass)}>
+        {data.items.map((item, i) => (
+          <div key={item.id} className="border-t-2 border-primary pt-4">
+            <span className="text-xs font-bold text-primary tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+            <h3 className="font-semibold text-lg mt-2 mb-1.5">{item.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: centered-icons ──────────────────────────────────────────────────
+// Centered icon, heading, copy — the most neutral, universally safe layout.
+function FeaturesCenteredIcons({ data }: { data: FeaturesBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <FeaturesHead title={data.title} subtitle={data.subtitle} />
+      <div className={cn("grid grid-cols-1 gap-10", colClass)}>
+        {data.items.map((item) => (
+          <div key={item.id} className="text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <DynIcon name={item.icon} className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold mb-2">{item.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: split-list ──────────────────────────────────────────────────────
+// Heading pinned left, features listed right — editorial, and keeps a long
+// list from overwhelming the section.
+function FeaturesSplitList({ data }: { data: FeaturesBlockProps["data"] }) {
+  return (
+    <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+      <div className="lg:sticky lg:top-24 lg:self-start">
+        {data.title && <h2 className="text-3xl font-bold mb-3">{data.title}</h2>}
+        {data.subtitle && <p className="text-muted-foreground leading-relaxed">{data.subtitle}</p>}
+      </div>
+      <div className="divide-y divide-border">
+        {data.items.map((item) => (
+          <div key={item.id} className="flex gap-4 py-5 first:pt-0">
+            <DynIcon name={item.icon} className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+            <div>
+              <h3 className="font-semibold mb-1">{item.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: highlight-cards ─────────────────────────────────────────────────
+// Cards with a coloured top edge that lifts on hover — more energetic than the
+// plain card grid.
+function FeaturesHighlightCards({ data }: { data: FeaturesBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <FeaturesHead title={data.title} subtitle={data.subtitle} />
+      <div className={cn("grid grid-cols-1 gap-5", colClass)}>
+        {data.items.map((item) => (
+          <div
+            key={item.id}
+            className="rounded-xl border-t-4 border-primary bg-card p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg"
+          >
+            <DynIcon name={item.icon} className="h-6 w-6 text-primary mb-3" />
+            <h3 className="font-semibold mb-1.5">{item.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
-  if (block.templateVariant === "dark") return <FeaturesDark data={block.data} />;
-  if (block.templateVariant === "icon-list-cards") return <FeaturesIconListCards data={block.data} />;
-  if (block.templateVariant === "bento-grid") return <FeaturesBentoGrid data={block.data} />;
+  switch (block.templateVariant) {
+    case "dark": return <FeaturesDark data={block.data} />;
+    case "icon-list-cards": return <FeaturesIconListCards data={block.data} />;
+    case "bento-grid": return <FeaturesBentoGrid data={block.data} />;
+    case "alternating-media": return <FeaturesAlternatingMedia data={block.data} />;
+    case "numbered-columns": return <FeaturesNumberedColumns data={block.data} />;
+    case "centered-icons": return <FeaturesCenteredIcons data={block.data} />;
+    case "split-list": return <FeaturesSplitList data={block.data} />;
+    case "highlight-cards": return <FeaturesHighlightCards data={block.data} />;
+  }
   const { data } = block;
   const { title, subtitle, layout, columns, items, style } = data;
 
