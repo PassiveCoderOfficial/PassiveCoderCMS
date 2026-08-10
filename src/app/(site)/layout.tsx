@@ -14,6 +14,12 @@ import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
 import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
+import { FloatingWhatsApp } from "@/components/site/floating-whatsapp";
+
+// Single-vendor tenant with a dedicated floating WhatsApp CTA (per explicit
+// client request). Not a general platform feature yet — gated to this one
+// tenant id. If more tenants want this, move to a site_settings toggle.
+const WHATSAPP_TENANT_ID = "72dd48ef-497c-4e22-9894-4d43a9a4556b";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -234,6 +240,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {/* One IntersectionObserver drives all [data-reveal] scroll animations */}
       <ScrollReveal />
+
+      {tenantId === WHATSAPP_TENANT_ID && <FloatingWhatsApp />}
 
       {isAdminViewer && <AdminEditWidget />}
 

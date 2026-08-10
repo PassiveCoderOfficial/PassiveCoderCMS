@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { MarketplaceBookingBlockProps } from "@/types/cms";
 import * as LucideIcons from "lucide-react";
-import { Wrench, Loader2, CheckCircle, Store, Calendar, Clock, MapPin, Shapes, Check } from "lucide-react";
+import { Wrench, Loader2, CheckCircle, Calendar, Clock, MapPin, Shapes, Check } from "lucide-react";
 import { MapPicker } from "@/components/donors/donor-map";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
@@ -11,9 +11,14 @@ import { Suspense } from "react";
 
 const MAP_DEFAULT_CENTER = { lat: 1.3521, lng: 103.8198 };
 
+// Single-vendor mode: Tanmoy Enterprise is the only provider, so the
+// "choose a provider" step is skipped entirely and every booking auto-
+// assigns to this vendor id. Also used to build the wa.me handoff link.
+const SOLE_VENDOR_ID = "5c051b4b-87fe-4856-872f-4965f93ca787";
+const WHATSAPP_NUMBER = "6581703401"; // +65 8170 3401, no symbols for wa.me
+
 interface Subcategory { id: string; name: string; sort_order: number; }
 interface Category { id: string; name: string; slug: string; icon: string | null; service_subcategories: Subcategory[]; }
-interface VendorOption { subcategory_id: string; price: number | null; vendors: { id: string; name: string; status: string } }
 interface Slot { start: string; end: string }
 
 /** Same dynamic Lucide lookup pattern as ServiceIcon in
@@ -73,11 +78,13 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
   const preselectCategory = searchParams.get("category");
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [vendorServices, setVendorServices] = useState<VendorOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryId, setCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
-  const [vendorId, setVendorId] = useState("");
+  // Single vendor — always Tanmoy, no picker step. Kept as state (not a
+  // const) so the rest of the submit/slot-loading logic didn't need
+  // reshaping around a literal.
+  const [vendorId] = useState(SOLE_VENDOR_ID);
 
   const days = useMemo(() => {
     const out: Date[] = [];
@@ -102,7 +109,6 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
       .then((d) => {
         const cats: Category[] = d.categories ?? [];
         setCategories(cats);
-        setVendorServices(d.vendorServices ?? []);
         if (preselectCategory) {
           const match = cats.find((c) => c.id === preselectCategory || c.slug === preselectCategory);
           if (match) setCategoryId(match.id);
@@ -111,8 +117,6 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const vendorOptions = vendorServices.filter((v) => v.subcategory_id === subcategoryId);
 
   const loadSlots = useCallback(async (vId: string, date: string) => {
     if (!vId) { setSlots([]); return; }
@@ -164,18 +168,38 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
   }
 
   if (done) {
+    const serviceName = categories.find((c) => c.id === categoryId)?.service_subcategories.find((s) => s.id === subcategoryId)?.name;
+    const lines = [
+      "New booking request from tanmoyservices.com:",
+      serviceName ? `Service: ${serviceName}` : null,
+      selectedDate && selectedSlot ? `Preferred time: ${selectedDate} at ${selectedSlot}` : null,
+      `Name: ${form.customer_name}`,
+      `Phone: ${form.customer_phone}`,
+      form.address ? `Address: ${form.address}` : null,
+    ].filter(Boolean);
+    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
+
     return (
       <section className="py-20 px-4 text-center max-w-lg mx-auto">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
           <CheckCircle className="w-9 h-9" style={{ color: accent }} />
         </div>
         <h2 className="text-2xl font-bold mb-2">Request received!</h2>
-        <p className="text-muted-foreground">We&apos;ll confirm your booking shortly.</p>
+        <p className="text-muted-foreground mb-6">Tap below to send your booking details on WhatsApp for the fastest confirmation.</p>
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-sm hover:shadow-md transition-shadow"
+          style={{ backgroundColor: "#25D366" }}
+        >
+          Confirm on WhatsApp
+        </a>
       </section>
     );
   }
 
-  const stepIndex = vendorId ? 2 : subcategoryId ? 1 : 0;
+  const stepIndex = subcategoryId ? 1 : 0;
 
   return (
     <section className="py-16 sm:py-20 px-4 max-w-2xl mx-auto">
@@ -186,7 +210,7 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
         <div className="flex justify-center py-14"><Loader2 className="w-6 h-6 animate-spin" style={{ color: accent }} /></div>
       ) : (
         <div className="bg-card border border-border rounded-2xl p-5 sm:p-8 shadow-sm">
-          <StepDots steps={["Service", "Provider", "Details"]} active={stepIndex} />
+          <StepDots steps={["Service", "Details"]} active={stepIndex} />
 
           <form onSubmit={submit} className="space-y-5">
             <div>
@@ -196,7 +220,7 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
                   const active = c.id === categoryId;
                   return (
                     <button key={c.id} type="button"
-                      onClick={() => { setCategoryId(c.id); setSubcategoryId(""); setVendorId(""); }}
+                      onClick={() => { setCategoryId(c.id); setSubcategoryId(""); }}
                       className={cn(chipCls, active ? "shadow-sm" : "border-border bg-background hover:border-primary/40 hover:bg-primary/5")}
                       style={active ? { borderColor: accent, backgroundColor: accent, color: "#fff" } : undefined}>
                       <CategoryIcon name={c.icon} />
@@ -211,7 +235,7 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
               <div className="animate-in fade-in slide-in-from-top-1 duration-200">
                 <label className="text-sm font-semibold mb-2 block">Which service?</label>
                 <select required className={inputCls}
-                  value={subcategoryId} onChange={(e) => { setSubcategoryId(e.target.value); setVendorId(""); }}>
+                  value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)}>
                   <option value="">Select a service</option>
                   {categories.find((c) => c.id === categoryId)?.service_subcategories.map((s) => (
                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -221,20 +245,6 @@ function MarketplaceBookingBlockInner({ block }: { block: MarketplaceBookingBloc
             )}
 
             {subcategoryId && (
-              <div className="animate-in fade-in slide-in-from-top-1 duration-200">
-                <label className="text-sm font-semibold flex items-center gap-1.5 mb-2"><Store className="w-4 h-4" style={{ color: accent }} /> Provider</label>
-                <select className={inputCls} value={vendorId} onChange={(e) => setVendorId(e.target.value)}>
-                  <option value="">Choose a provider to see live availability</option>
-                  {vendorOptions.map((v) => (
-                    <option key={v.vendors.id} value={v.vendors.id}>
-                      {v.vendors.name}{v.price != null ? ` — $${Number(v.price).toFixed(2)}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {vendorId && (
               <div className="animate-in fade-in slide-in-from-top-1 duration-200 space-y-3 border-t border-border pt-5">
                 <div>
                   <label className="text-sm font-semibold flex items-center gap-1.5 mb-2"><Calendar className="w-4 h-4" style={{ color: accent }} /> Pick a day</label>
