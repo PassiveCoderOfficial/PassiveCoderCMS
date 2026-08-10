@@ -285,7 +285,7 @@ function TestimonialsLegacy({ data }: { data: TestimonialsBlockProps["data"] }) 
       )}
       <div className={cn("grid grid-cols-1 gap-6", layout !== "carousel" && "md:grid-cols-3")}>
         {items.map((item) => (
-          <div key={item.id} className="bg-white border rounded-xl p-6 shadow-sm flex flex-col">
+          <div key={item.id} className="bg-card border rounded-xl p-6 shadow-sm flex flex-col">
             <Stars rating={item.rating} />
             <blockquote className="text-sm text-foreground/80 flex-1 leading-relaxed">&ldquo;{item.content}&rdquo;</blockquote>
             <div className="mt-4 flex items-center gap-3">

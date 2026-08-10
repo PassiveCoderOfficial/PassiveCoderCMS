@@ -39,7 +39,7 @@ const FILTER_LABELS: Record<keyof Filters, (v: string) => string> = {
   q: (v) => `Name: "${v}"`,
 };
 
-const selectCls = "border border-gray-300 rounded-lg px-2.5 py-2 text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/30 min-w-0";
+const selectCls = "border border-border rounded-lg px-2.5 py-2 text-sm bg-card text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-red-500/30 min-w-0";
 
 function DaysChip({ donor }: { donor: DonorRow }) {
   const meta = AVAILABILITY_META[donor.availability];
@@ -179,11 +179,11 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border overflow-hidden">
             <button onClick={() => setView("map")}
-              className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "map" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
+              className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "map" ? "bg-red-600 text-white" : "bg-card hover:bg-muted/50"}`}>
               <MapIcon className="w-4 h-4" /> Map + List
             </button>
             <button onClick={() => setView("list-only")}
-              className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "list-only" ? "bg-red-600 text-white" : "bg-white hover:bg-gray-50"}`}>
+              className={`px-4 py-2 text-sm font-medium flex items-center gap-1.5 ${view === "list-only" ? "bg-red-600 text-white" : "bg-card hover:bg-muted/50"}`}>
               <List className="w-4 h-4" /> List only
             </button>
           </div>
@@ -260,7 +260,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
             {hasAnyFilter && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {activeChips.map((k) => (
-                  <span key={k} className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full pl-2.5 pr-1 py-1 text-xs">
+                  <span key={k} className="inline-flex items-center gap-1 bg-muted text-foreground/80 rounded-full pl-2.5 pr-1 py-1 text-xs">
                     {FILTER_LABELS[k](filters[k])}
                     <button onClick={() => clearOne(k)} className="p-0.5 hover:bg-gray-200 rounded-full" aria-label={`Remove ${k} filter`}>
                       <X className="w-3 h-3" />
@@ -284,7 +284,7 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
                   </span>
                 )}
                 <button onClick={resetAll}
-                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 px-2 py-1">
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1">
                   <RotateCcw className="w-3 h-3" /> Reset all
                 </button>
               </div>
@@ -293,9 +293,9 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         )}
       </div>
 
-      <div className="border rounded-2xl overflow-hidden bg-white">
+      <div className="border rounded-2xl overflow-hidden bg-card">
         {/* Column header */}
-        <div className="hidden sm:flex items-center gap-3 sm:gap-4 px-4 py-2.5 bg-gray-50 border-b text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+        <div className="hidden sm:flex items-center gap-3 sm:gap-4 px-4 py-2.5 bg-muted/50 border-b text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           <span className="w-11 shrink-0" />
           <span className="w-10 shrink-0 text-center">Group</span>
           <span className="min-w-0 flex-1">Name &amp; location</span>
@@ -342,11 +342,11 @@ export function DonorListBlock({ block }: { block: DonorListBlockProps }) {
         <div className="flex items-center justify-center gap-3 mt-5 text-sm">
           <button disabled={page === 0}
             onClick={() => { const p = page - 1; setPage(p); load(filters, p, radius, bounds); }}
-            className="p-2 border rounded-lg disabled:opacity-30 hover:bg-gray-50"><ChevronLeft className="w-4 h-4" /></button>
+            className="p-2 border rounded-lg disabled:opacity-30 hover:bg-muted/50"><ChevronLeft className="w-4 h-4" /></button>
           <span className="text-muted-foreground">{page + 1} / {totalPages}</span>
           <button disabled={page >= totalPages - 1}
             onClick={() => { const p = page + 1; setPage(p); load(filters, p, radius, bounds); }}
-            className="p-2 border rounded-lg disabled:opacity-30 hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
+            className="p-2 border rounded-lg disabled:opacity-30 hover:bg-muted/50"><ChevronRight className="w-4 h-4" /></button>
         </div>
       )}
 

@@ -165,14 +165,14 @@ function IconGridLegacy({ block }: { block: IconGridBlockProps }) {
           return item.url ? (
             <a key={item.id} href={item.url} className={cn(
               "flex flex-col items-center py-5 px-3 rounded-xl transition-colors hover:bg-muted/50",
-              style === "card" && "bg-white border shadow-sm hover:shadow-md",
+              style === "card" && "bg-card border shadow-sm hover:shadow-md",
             )}>
               {content}
             </a>
           ) : (
             <div key={item.id} className={cn(
               "flex flex-col items-center py-5 px-3 rounded-xl",
-              style === "card" && "bg-white border shadow-sm",
+              style === "card" && "bg-card border shadow-sm",
             )}>
               {content}
             </div>

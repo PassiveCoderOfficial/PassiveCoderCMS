@@ -51,7 +51,7 @@ export function TimelineBlock({ block }: { block: TimelineBlockProps }) {
                 <div className="flex-1">
                   <div className={cn(
                     "p-5 rounded-xl",
-                    style === "card" ? "bg-white border shadow-sm" : style === "colored" ? "bg-primary/5 border border-primary/20" : "",
+                    style === "card" ? "bg-card border shadow-sm" : style === "colored" ? "bg-primary/5 border border-primary/20" : "",
                     i % 2 === 0 ? "text-right" : "text-left",
                   )}>
                     {item.date && <p className="text-xs text-muted-foreground mb-1">{item.date}</p>}
@@ -78,7 +78,7 @@ export function TimelineBlock({ block }: { block: TimelineBlockProps }) {
                 </div>
                 <div className={cn(
                   "ml-4",
-                  style === "card" ? "bg-white border rounded-xl p-5 shadow-sm" : style === "colored" ? "bg-primary/5 border border-primary/20 rounded-xl p-5" : "",
+                  style === "card" ? "bg-card border rounded-xl p-5 shadow-sm" : style === "colored" ? "bg-primary/5 border border-primary/20 rounded-xl p-5" : "",
                 )}>
                   {item.date && <p className="text-xs text-muted-foreground mb-1">{item.date}</p>}
                   <h3 className="font-semibold text-lg">{item.title}</h3>

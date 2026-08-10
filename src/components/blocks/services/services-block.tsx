@@ -327,10 +327,10 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
   const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-4" }[columns] ?? "md:grid-cols-3";
   const cardClass = {
     flat: "bg-transparent",
-    elevated: "bg-white shadow-lg rounded-xl p-6",
+    elevated: "bg-card shadow-lg rounded-xl p-6",
     bordered: "border rounded-xl p-6",
     gradient: "bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6",
-  }[cardStyle] ?? "bg-white rounded-xl p-6 shadow";
+  }[cardStyle] ?? "bg-card rounded-xl p-6 shadow";
 
   return (
     <div className="max-w-7xl mx-auto">

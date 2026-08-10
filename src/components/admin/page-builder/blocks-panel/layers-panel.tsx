@@ -165,7 +165,7 @@ function LayerRow({
                 title={`${hidden ? "Show" : "Hide"} on ${d.label}`}
                 className={cn(
                   "flex h-5 w-5 items-center justify-center rounded shrink-0 transition-colors",
-                  hidden ? "bg-transparent text-current opacity-30" : "bg-white text-black",
+                  hidden ? "bg-transparent text-current opacity-30" : "bg-foreground text-background",
                 )}
               >
                 <d.icon className="h-3 w-3" />

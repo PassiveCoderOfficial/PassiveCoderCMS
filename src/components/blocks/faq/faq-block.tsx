@@ -122,7 +122,7 @@ export function FAQBlock({ block }: { block: FAQBlockProps }) {
       {layout === "grid" ? (
         <div className="grid sm:grid-cols-2 gap-6">
           {items.map(item => (
-            <div key={item.id} className="bg-white border rounded-xl p-5">
+            <div key={item.id} className="bg-card border rounded-xl p-5">
               <h3 className="font-semibold mb-2">{item.question}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.answer}</p>
             </div>

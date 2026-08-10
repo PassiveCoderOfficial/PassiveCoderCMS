@@ -54,7 +54,7 @@ export async function AccountingFeedBlock({ block }: { block: AccountingFeedBloc
       ) : layout === "cards" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {transactions.map((tx) => (
-            <div key={tx.id} className="bg-white border rounded-xl p-4 shadow-sm">
+            <div key={tx.id} className="bg-card border rounded-xl p-4 shadow-sm">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">

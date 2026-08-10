@@ -67,16 +67,16 @@ export function EligibilityCheckerBlock({ block }: { block: EligibilityCheckerBl
 
   const eligible = score() >= 4;
 
-  const card = "bg-white rounded-2xl border border-black/5 shadow-lg p-6 sm:p-8";
-  const optBtn = "w-full text-left px-4 py-3 rounded-xl border border-gray-200 hover:border-current font-medium text-gray-700 transition-colors";
+  const card = "bg-card rounded-2xl border border-black/5 shadow-lg p-6 sm:p-8";
+  const optBtn = "w-full text-left px-4 py-3 rounded-xl border border-border hover:border-current font-medium text-foreground/80 transition-colors";
 
   const Options = ({ label, opts, k }: { label: string; opts: string[]; k: string }) => (
     <div>
-      <p className="text-sm font-semibold text-gray-500 mb-3">{label}</p>
+      <p className="text-sm font-semibold text-muted-foreground mb-3">{label}</p>
       <div className="grid gap-2">
         {opts.map((o) => (
           <button key={o} type="button" onClick={() => set(k, o)} className={optBtn} style={{ color: accent }}>
-            <span className="text-gray-800">{o}</span>
+            <span className="text-foreground">{o}</span>
           </button>
         ))}
       </div>
@@ -87,8 +87,8 @@ export function EligibilityCheckerBlock({ block }: { block: EligibilityCheckerBl
     <div className="max-w-2xl mx-auto px-4">
       {(title || subtitle) && (
         <div className="text-center mb-8">
-          {title && <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{title}</h2>}
-          {subtitle && <p className="text-lg text-gray-500 mt-3">{subtitle}</p>}
+          {title && <h2 className="text-3xl md:text-4xl font-bold text-foreground">{title}</h2>}
+          {subtitle && <p className="text-lg text-muted-foreground mt-3">{subtitle}</p>}
         </div>
       )}
 
@@ -108,18 +108,18 @@ export function EligibilityCheckerBlock({ block }: { block: EligibilityCheckerBl
             <h3 className="text-2xl font-bold" style={{ color: accent }}>
               {eligible ? "Great news — you look eligible!" : "Let's review your profile"}
             </h3>
-            <p className="text-gray-600 mt-3">
+            <p className="text-muted-foreground mt-3">
               {successMessage ?? "Thank you! Our visa experts will contact you within 24 hours with your personalized options."}
             </p>
             <button onClick={reset} className="mt-6 text-sm font-semibold underline" style={{ color: accent }}>Check again</button>
           </div>
         ) : step === 0 ? (
           <div>
-            <p className="text-sm font-semibold text-gray-500 mb-3">Where do you want to go?</p>
+            <p className="text-sm font-semibold text-muted-foreground mb-3">Where do you want to go?</p>
             <div className="grid gap-2">
               {dests.map((d) => (
                 <button key={d.id} type="button" onClick={() => set("destination", d.value)} className={optBtn} style={{ color: accent }}>
-                  <span className="text-gray-800">{d.label}</span>
+                  <span className="text-foreground">{d.label}</span>
                 </button>
               ))}
             </div>
@@ -134,11 +134,11 @@ export function EligibilityCheckerBlock({ block }: { block: EligibilityCheckerBl
           <Options label="English proficiency" opts={ENGLISH} k="english" />
         ) : (
           <form onSubmit={submit} className="space-y-4">
-            <p className="text-sm font-semibold text-gray-500">Almost done — where should we send your result?</p>
+            <p className="text-sm font-semibold text-muted-foreground">Almost done — where should we send your result?</p>
             <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-current" style={{ color: accent }} />
+              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-current" style={{ color: accent }} />
             <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone / WhatsApp"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-current" style={{ color: accent }} />
+              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-current" style={{ color: accent }} />
             <button type="submit" disabled={loading}
               className="w-full py-3 rounded-xl font-semibold text-white disabled:opacity-60 transition-opacity"
               style={{ background: accent }}>
@@ -148,7 +148,7 @@ export function EligibilityCheckerBlock({ block }: { block: EligibilityCheckerBl
         )}
 
         {!done && step > 0 && (
-          <button onClick={() => setStep((s) => (s - 1) as Step)} className="mt-5 text-sm text-gray-400 hover:text-gray-600">← Back</button>
+          <button onClick={() => setStep((s) => (s - 1) as Step)} className="mt-5 text-sm text-muted-foreground/70 hover:text-muted-foreground">← Back</button>
         )}
       </div>
     </div>

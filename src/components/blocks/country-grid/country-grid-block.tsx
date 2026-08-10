@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 function CountryCard({ item, accent }: { item: CountryGridItem; accent: string }) {
   const inner = (
-    <div className="group h-full bg-white rounded-2xl border border-black/5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden flex flex-col">
+    <div className="group h-full bg-card rounded-2xl border border-black/5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden flex flex-col">
       {item.image && (
         <div className="relative h-36 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -15,18 +15,18 @@ function CountryCard({ item, accent }: { item: CountryGridItem; accent: string }
             <span className="absolute top-3 left-3 text-2xl drop-shadow">{item.flagEmoji}</span>
           )}
           {item.processingTime && (
-            <span className="absolute bottom-3 right-3 text-[11px] font-semibold px-2 py-1 rounded-full bg-white/90 text-gray-800">
+            <span className="absolute bottom-3 right-3 text-[11px] font-semibold px-2 py-1 rounded-full bg-card/90 text-foreground">
               ⏱ {item.processingTime}
             </span>
           )}
         </div>
       )}
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-semibold text-base text-gray-900 flex items-center gap-2">
+        <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
           {!item.image && item.flagEmoji && <span className="text-xl">{item.flagEmoji}</span>}
           {item.country}
         </h3>
-        {item.summary && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.summary}</p>}
+        {item.summary && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.summary}</p>}
         {item.visaTypes && item.visaTypes.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {item.visaTypes.slice(0, 3).map((v, i) => (
@@ -93,8 +93,8 @@ export function CountryGridBlock({ block }: { block: CountryGridBlockProps }) {
     <div className="max-w-7xl mx-auto px-4">
       {(title || subtitle) && (
         <div className="text-center mb-10">
-          {title && <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{title}</h2>}
-          {subtitle && <p className="text-lg text-gray-500 mt-3 max-w-2xl mx-auto">{subtitle}</p>}
+          {title && <h2 className="text-3xl md:text-4xl font-bold text-foreground">{title}</h2>}
+          {subtitle && <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">{subtitle}</p>}
         </div>
       )}
       {body}

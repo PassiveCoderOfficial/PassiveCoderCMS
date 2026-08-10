@@ -38,18 +38,18 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
     <div className="max-w-2xl mx-auto px-4">
       {(title || subtitle) && (
         <div className="text-center mb-8">
-          {title && <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{title}</h2>}
-          {subtitle && <p className="text-lg text-gray-500 mt-3">{subtitle}</p>}
+          {title && <h2 className="text-3xl md:text-4xl font-bold text-foreground">{title}</h2>}
+          {subtitle && <p className="text-lg text-muted-foreground mt-3">{subtitle}</p>}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-black/5 shadow-lg p-6 sm:p-8">
+      <div className="bg-card rounded-2xl border border-black/5 shadow-lg p-6 sm:p-8">
         <form onSubmit={check} className="flex flex-col sm:flex-row gap-3">
           <input
             value={ref}
             onChange={(e) => setRef(e.target.value)}
             placeholder={placeholder ?? "Enter passport or reference number"}
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-current"
+            className="flex-1 px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-current"
             style={{ color: accent }}
           />
           <button type="submit" disabled={loading}
@@ -58,7 +58,7 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
             {loading ? "Checking…" : (submitLabel ?? "Track Status")}
           </button>
         </form>
-        {helpText && <p className="text-xs text-gray-400 mt-3">{helpText}</p>}
+        {helpText && <p className="text-xs text-muted-foreground/70 mt-3">{helpText}</p>}
 
         {result && (
           <div className="mt-6 pt-6 border-t border-gray-100">
@@ -66,8 +66,8 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-xs text-gray-400">Reference</p>
-                    <p className="font-semibold text-gray-800">{result.reference}</p>
+                    <p className="text-xs text-muted-foreground/70">Reference</p>
+                    <p className="font-semibold text-foreground">{result.reference}</p>
                   </div>
                   <span className="text-sm font-semibold px-3 py-1 rounded-full text-white" style={{ background: accent }}>{result.stage}</span>
                 </div>
@@ -79,7 +79,7 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
                           style={{ background: s.done ? accent : "#cbd5e1" }}>
                           {s.done ? "✓" : i + 1}
                         </span>
-                        <span className={s.done ? "text-gray-800 font-medium" : "text-gray-400"}>{s.label}</span>
+                        <span className={s.done ? "text-foreground font-medium" : "text-muted-foreground/70"}>{s.label}</span>
                       </li>
                     ))}
                   </ol>
@@ -88,7 +88,7 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
             ) : (
               <div className="text-center py-2">
                 <div className="text-4xl mb-3">🔎</div>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   {result.message ?? "No application found for that reference. Please double-check, or contact our team on WhatsApp for help."}
                 </p>
                 <a href="https://wa.me/8801711145428" target="_blank" rel="noopener noreferrer"

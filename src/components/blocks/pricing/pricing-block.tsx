@@ -100,7 +100,7 @@ function PricingHighlightedCards({ data }: { data: VariantData }) {
             {plan.ctaLabel && (
               <a href={plan.ctaUrl ?? "#"} className={cn(
                 "block text-center py-3 rounded-lg font-semibold text-sm transition-colors",
-                plan.highlighted ? "bg-white text-primary hover:bg-white/90" : "bg-primary text-primary-foreground hover:opacity-90",
+                plan.highlighted ? "bg-card text-primary hover:bg-card/90" : "bg-primary text-primary-foreground hover:opacity-90",
               )}>{plan.ctaLabel}</a>
             )}
           </div>
@@ -330,7 +330,7 @@ function PricingLegacy({ data }: { data: VariantData }) {
         {data.plans.map(plan => (
           <div key={plan.id} className={cn(
             "relative flex flex-col rounded-2xl border p-8",
-            plan.highlighted ? "border-primary bg-primary text-primary-foreground shadow-xl lg:scale-105" : "border-border bg-white shadow-sm",
+            plan.highlighted ? "border-primary bg-primary text-primary-foreground shadow-xl lg:scale-105" : "border-border bg-card shadow-sm",
           )}>
             {plan.badge && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -349,7 +349,7 @@ function PricingLegacy({ data }: { data: VariantData }) {
             {plan.ctaLabel && (
               <a href={plan.ctaUrl ?? "#"} className={cn(
                 "block text-center py-3 rounded-lg font-semibold text-sm transition-colors",
-                plan.highlighted ? "bg-white text-primary hover:bg-white/90" : "bg-primary text-primary-foreground hover:bg-primary/90",
+                plan.highlighted ? "bg-card text-primary hover:bg-card/90" : "bg-primary text-primary-foreground hover:bg-primary/90",
               )}>{plan.ctaLabel}</a>
             )}
           </div>

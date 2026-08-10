@@ -201,7 +201,7 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
           {items.map(item => (
             <div key={item.id} className={cn(
               "flex items-start gap-4 p-4 rounded-xl",
-              style === "card" && "border bg-white shadow-sm",
+              style === "card" && "border bg-card shadow-sm",
               style === "gradient" && "bg-gradient-to-r from-primary/10 to-transparent border border-primary/20",
             )}>
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -231,7 +231,7 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
           <div key={item.id} className={cn(
             "flex flex-col",
             layout === "centered" && "items-center text-center",
-            style === "card" && "bg-white border rounded-xl p-6 shadow-sm",
+            style === "card" && "bg-card border rounded-xl p-6 shadow-sm",
             style === "gradient" && "bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/10",
           )}>
             <div className={cn(

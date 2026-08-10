@@ -122,7 +122,7 @@ export function StepsBlock({ block }: { block: StepsBlockProps }) {
           {items.map((item, i) => (
             <div key={item.id} className={cn(
               "flex items-start gap-5",
-              style === "card" && "bg-white border rounded-xl p-5 shadow-sm",
+              style === "card" && "bg-card border rounded-xl p-5 shadow-sm",
             )}>
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0",

@@ -42,7 +42,7 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
 
   if (submitted) {
     return (
-      <div className={cn("max-w-xl mx-auto text-center", data.layout === "card" && "bg-white border rounded-2xl p-10 shadow-sm")}>
+      <div className={cn("max-w-xl mx-auto text-center", data.layout === "card" && "bg-card border rounded-2xl p-10 shadow-sm")}>
         <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
         <p className="font-semibold text-lg">{data.successMessage || "You're subscribed!"}</p>
       </div>
@@ -52,7 +52,7 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
   return (
     <div className={cn(
       "max-w-xl mx-auto",
-      data.layout === "card" && "bg-white border rounded-2xl p-10 shadow-sm",
+      data.layout === "card" && "bg-card border rounded-2xl p-10 shadow-sm",
       data.layout === "stacked" ? "text-center" : "",
     )}>
       {data.title && <h2 className={cn("text-2xl font-bold mb-2", data.layout !== "inline" && "text-center")}>{data.title}</h2>}

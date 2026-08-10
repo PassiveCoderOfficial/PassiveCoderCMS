@@ -62,7 +62,7 @@ export function CountdownBlock({ block }: { block: CountdownBlockProps }) {
         <React.Fragment key={i}>
           <div className={cn(
             "flex flex-col items-center justify-center",
-            data.layout === "boxes" && "bg-white border rounded-xl shadow-sm w-24 h-24",
+            data.layout === "boxes" && "bg-card border rounded-xl shadow-sm w-24 h-24",
           )}>
             <span className="text-4xl font-bold tabular-nums">{pad(u.value)}</span>
             <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">{u.label}</span>

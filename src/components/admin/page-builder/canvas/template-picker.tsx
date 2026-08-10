@@ -97,7 +97,7 @@ export function TemplatePicker() {
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all border ${
               activeCategory === cat
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-muted-foreground border-border hover:border-blue-400"
+                : "bg-card text-muted-foreground border-border hover:border-blue-400"
             }`}
           >
             {cat}
@@ -113,7 +113,7 @@ export function TemplatePicker() {
             <button
               key={t.id}
               onClick={() => applyTemplate(t.id)}
-              className="group flex flex-col rounded-xl border-2 border-border bg-white text-left transition-all hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+              className="group flex flex-col rounded-xl border-2 border-border bg-card text-left transition-all hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
             >
               {/* Preview image */}
               {hasImage ? (

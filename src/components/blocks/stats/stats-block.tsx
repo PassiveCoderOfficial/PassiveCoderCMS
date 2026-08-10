@@ -68,7 +68,7 @@ function StatsColoredRow({ data }: { data: StatsBlockProps["data"] }) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             const display = useStatDisplay(item, data.animate);
             return (
-              <div key={item.id} className="stat-value-wrap bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center text-center p-6 sm:p-7 shadow-sm">
+              <div key={item.id} className="stat-value-wrap bg-card/95 backdrop-blur-sm rounded-2xl flex flex-col items-center text-center p-6 sm:p-7 shadow-sm">
                 {item.icon && <DynIcon name={item.icon} className="w-6 h-6 mb-2 text-primary" />}
                 <p className="stat-value text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight" style={{ fontFamily: "var(--heading-font, inherit)" }}>{display}</p>
                 <p className="text-sm mt-1.5 text-foreground/70 font-medium">{item.label}</p>
@@ -249,11 +249,11 @@ function StatsLegacy({ data }: { data: StatsBlockProps["data"] }) {
           return (
             <div key={item.id} className={cn(
               "flex flex-col items-center text-center p-6",
-              style === "cards" && "bg-white border rounded-xl shadow-sm",
+              style === "cards" && "bg-card border rounded-xl shadow-sm",
               style === "colored" && "bg-primary text-primary-foreground rounded-xl",
             )}>
               {item.icon && (
-                <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-3", style === "colored" ? "bg-white/20" : "bg-primary/10")}>
+                <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-3", style === "colored" ? "bg-card/20" : "bg-primary/10")}>
                   <DynIcon name={item.icon} className={cn("w-6 h-6", style === "colored" ? "text-primary-foreground" : "text-primary")} />
                 </div>
               )}

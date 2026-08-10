@@ -145,7 +145,7 @@ export function TeamBlock({ block }: { block: TeamBlockProps }) {
           <div key={m.id} className={cn(
             "flex flex-col items-center text-center",
             layout === "list" && "flex-row text-left items-start gap-4",
-            layout === "cards" && "bg-white border rounded-xl p-6 shadow-sm",
+            layout === "cards" && "bg-card border rounded-xl p-6 shadow-sm",
           )}>
             <div className={cn(
               "rounded-full overflow-hidden bg-primary/10 shrink-0",
