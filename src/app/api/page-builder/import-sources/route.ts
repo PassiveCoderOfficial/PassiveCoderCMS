@@ -8,7 +8,6 @@
  */
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
 import type { SiteTemplate } from "@/modules/templates/types";
 
 export async function GET(req: Request) {
@@ -62,20 +61,7 @@ export async function GET(req: Request) {
       source: "db" as const,
     }));
 
-    // Registry templates are importable too — their pages are generated on
-    // demand rather than stored, handled by the import route itself.
-    const registry = TEMPLATE_REGISTRY.map((t) => ({
-      id: t.slug,
-      slug: t.slug,
-      name: t.name,
-      description: t.description,
-      category: t.category,
-      screenshotUrl: t.previewImage,
-      palette: t.palette,
-      source: "registry" as const,
-    }));
-
-    return NextResponse.json({ templates: [...db, ...registry] });
+    return NextResponse.json({ templates: db });
   }
 
   if (kind === "template-pages") {
@@ -83,23 +69,15 @@ export async function GET(req: Request) {
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
     const { data: tpl } = await admin.from("templates").select("id").eq("id", id).maybeSingle();
-    if (tpl) {
-      const { data } = await admin
-        .from("pages")
-        .select("id, title, slug, order_index")
-        .eq("template_id", id)
-        .is("deleted_at", null)
-        .order("order_index", { ascending: true });
-      return NextResponse.json({ pages: data ?? [], source: "db" });
-    }
+    if (!tpl) return NextResponse.json({ error: "Template not found" }, { status: 404 });
 
-    // Registry template: one generated home page, no stored rows.
-    const identity = TEMPLATE_REGISTRY.find((t) => t.slug === id);
-    if (!identity) return NextResponse.json({ error: "Template not found" }, { status: 404 });
-    return NextResponse.json({
-      pages: [{ id: identity.slug, title: "Home", slug: "home", order_index: 0 }],
-      source: "registry",
-    });
+    const { data } = await admin
+      .from("pages")
+      .select("id, title, slug, order_index")
+      .eq("template_id", id)
+      .is("deleted_at", null)
+      .order("order_index", { ascending: true });
+    return NextResponse.json({ pages: data ?? [], source: "db" });
   }
 
   return NextResponse.json({ error: "Unknown kind" }, { status: 400 });

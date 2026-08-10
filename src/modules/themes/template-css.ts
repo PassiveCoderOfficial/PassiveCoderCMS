@@ -15,7 +15,7 @@
  * and tenants on older templates still render exactly as before.
  */
 
-import type { TemplatePalette, TemplateTypography } from "./template-registry";
+import type { TemplatePalette, TemplateTypography } from "./template-types";
 
 function hexToHSLParts(hex: string): { h: number; s: number; l: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());

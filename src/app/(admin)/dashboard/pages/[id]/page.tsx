@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { BuilderInterface } from "@/components/admin/page-builder/builder-interface";
 import { PageEditorHeader } from "./page-editor-header";
-import { getTemplateIdentity } from "@/modules/themes/template-registry";
+import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
 import type { Page } from "@/types/cms";
 
@@ -33,10 +33,12 @@ export default async function PageEditorPage({ params }: Props) {
   if (page.tenant_id) {
     const admin = await createAdminClient();
     const [{ data: identity }, { data: tenant }] = await Promise.all([
-      admin.from("site_identity").select("active_template_slug").eq("tenant_id", page.tenant_id).maybeSingle(),
+      admin.from("site_identity").select("template_id").eq("tenant_id", page.tenant_id).maybeSingle(),
       admin.from("tenants").select("slug").eq("id", page.tenant_id).maybeSingle(),
     ]);
-    const templateIdentity = identity?.active_template_slug ? getTemplateIdentity(identity.active_template_slug) : null;
+    const templateIdentity = identity?.template_id
+      ? await resolveDbTemplateIdentity(identity.template_id)
+      : null;
     if (templateIdentity) {
       templateCSSVars = buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography);
       templateCustomCss = templateIdentity.customCss ?? null;

@@ -1,7 +1,6 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
-import { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
-import { dbTemplateToBrowserItem, registryToBrowserItem } from "@/modules/templates/to-browser-item";
+import { dbTemplateToBrowserItem } from "@/modules/templates/to-browser-item";
 import type { SiteTemplate } from "@/modules/templates/types";
 import { TemplateBrowser } from "./template-browser";
 import { CheckCircle } from "lucide-react";
@@ -23,9 +22,9 @@ export default async function ThemesPage() {
     activeTemplateSlug = (data as { active_template_slug?: string } | null)?.active_template_slug ?? null;
   }
 
-  // Engine-authored templates sit alongside the hardcoded registry ones —
-  // published only, so drafts stay invisible to tenants. Listed first since
-  // they're the newer, actively-maintained set.
+  // Published templates only, so drafts stay invisible to tenants. Every
+  // template lives here now — the originals were migrated out of the old
+  // hardcoded registry into real rows.
   const { data: dbTemplates } = await admin
     .from("templates")
     .select("*")
@@ -33,10 +32,7 @@ export default async function ThemesPage() {
     .eq("status", "published")
     .order("updated_at", { ascending: false });
 
-  const templates = [
-    ...((dbTemplates ?? []) as SiteTemplate[]).map(dbTemplateToBrowserItem),
-    ...TEMPLATE_REGISTRY.map(registryToBrowserItem),
-  ];
+  const templates = ((dbTemplates ?? []) as SiteTemplate[]).map(dbTemplateToBrowserItem);
 
   return (
     <div className="p-6 space-y-8">

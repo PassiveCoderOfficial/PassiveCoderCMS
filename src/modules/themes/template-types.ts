@@ -1,12 +1,11 @@
 /**
- * Palette/typography/content types shared by both template systems: the
- * hardcoded TEMPLATE_REGISTRY (being phased out) and the DB-backed
- * `templates` table (the replacement, see src/modules/templates/types.ts).
+ * Palette/typography/content shapes used across the template system — the
+ * DB-backed `templates` table (see src/modules/templates/types.ts), the
+ * CSS-var pipeline, the colors editor and the template browser.
  *
- * Split out of template-registry.ts so consumers that only need these shapes
- * — the colors editor, block-import, apply flow, browser-item mapping — don't
- * pull in (or depend on) the 54 hand-authored templates themselves. Once the
- * registry file is deleted, this is the sole source for these types.
+ * Originally defined inside template-registry.ts alongside 54 hand-authored
+ * template objects; split out during that registry's removal so consumers
+ * that only need the shapes don't depend on the data.
  */
 
 export type TemplateBlockVariants = {

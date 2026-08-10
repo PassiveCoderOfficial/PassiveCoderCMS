@@ -7,8 +7,6 @@
  */
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { getTemplateIdentity } from "@/modules/themes/template-registry";
-import { buildHomePageBlocks } from "@/lib/templates/seed-template";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
 function freshIds(block: Block): Block {
@@ -40,15 +38,6 @@ export async function POST(req: Request) {
   const admin = await createAdminClient();
 
   if (body.kind === "page" || body.kind === "template-page") {
-    // A registry template's "page" is generated, not stored.
-    const identity = getTemplateIdentity(body.sourceId);
-    if (body.kind === "template-page" && identity) {
-      return NextResponse.json({
-        blocks: buildHomePageBlocks(identity).map(freshIds),
-        palette: body.withColors ? identity.palette : null,
-      });
-    }
-
     const { data: page } = await admin
       .from("pages")
       .select("blocks, tenant_id, template_id")
@@ -82,14 +71,6 @@ export async function POST(req: Request) {
 
   if (body.kind === "template-all") {
     const templateId = body.templateId ?? body.sourceId;
-
-    const identity = getTemplateIdentity(templateId);
-    if (identity) {
-      return NextResponse.json({
-        pages: [{ title: "Home", slug: "home", blocks: buildHomePageBlocks(identity).map(freshIds) }],
-        palette: body.withColors ? identity.palette : null,
-      });
-    }
 
     const [{ data: tpl }, { data: pages }] = await Promise.all([
       admin.from("templates").select("palette").eq("id", templateId).maybeSingle(),

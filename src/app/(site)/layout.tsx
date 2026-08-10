@@ -1,7 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { getTemplateIdentity } from "@/modules/themes/template-registry";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
 import { PageRenderer } from "@/components/site/page-renderer";
@@ -87,21 +86,16 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     tagline?: string;
     global_header?: Block[] | null;
     global_footer?: Block[] | null;
-    color_overrides?: Partial<import("@/modules/themes/template-registry").TemplatePalette> | null;
+    color_overrides?: Partial<import("@/modules/themes/template-types").TemplatePalette> | null;
   } | null;
 
-  // Tenants are being migrated off active_template_slug (resolved against the
-  // hardcoded TEMPLATE_REGISTRY) onto template_id, a real row in the DB
-  // templates table (migration 062 + the legacy-* rows seeded from the
-  // registry during that cutover). template_id is preferred; the registry
-  // lookup stays as a fallback only until every live tenant is repointed and
-  // verified, at which point it and TEMPLATE_REGISTRY itself get deleted.
-  const activeTemplateSlug = identity?.active_template_slug ?? null;
+  // A tenant's visual identity comes from the templates table via
+  // template_id. This used to resolve `active_template_slug` against a
+  // hardcoded registry of 54 TypeScript objects; that column is still written
+  // for history/debugging but nothing reads it any more.
   const templateIdentity = identity?.template_id
     ? await resolveDbTemplateIdentity(identity.template_id)
-    : activeTemplateSlug
-      ? getTemplateIdentity(activeTemplateSlug)
-      : null;
+    : null;
 
   // Is the visitor an admin of THIS tenant (owner/admin/editor member, or a
   // super admin)? Drives both the maintenance-mode bypass below and the

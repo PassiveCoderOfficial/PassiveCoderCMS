@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { seedTemplate } from "@/lib/templates/seed-template";
-import { applyDbTemplate, isDbTemplate } from "@/modules/templates/apply";
+import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
+
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -39,18 +39,12 @@ export async function POST(req: Request) {
     }
   }
 
-  // Templates authored through the engine live in the DB; the original 54
-  // live in the hardcoded registry. Route to whichever owns this slug so
-  // both work through one endpoint while the registry is phased out.
-  const dbTemplateId = await isDbTemplate(admin, templateSlug);
-
-  if (dbTemplateId) {
-    const result = await applyDbTemplate(admin, tenantId, dbTemplateId, mode ?? "theme", {
-      archiveExistingPages: archiveExistingPages ?? false,
-    });
-    return NextResponse.json({ ok: true, source: "db", ...result });
-  }
-
-  await seedTemplate(admin, tenantId, templateSlug, mode ?? "theme");
-  return NextResponse.json({ ok: true, source: "registry" });
+  const { source, ...result } = await applyTemplateBySlug(
+    admin,
+    tenantId,
+    templateSlug,
+    mode ?? "theme",
+    { archiveExistingPages: archiveExistingPages ?? false },
+  );
+  return NextResponse.json({ ok: true, source, ...result });
 }

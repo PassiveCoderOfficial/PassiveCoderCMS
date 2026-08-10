@@ -8,9 +8,8 @@
  * later edits to the template never flow back to it.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getTemplateIdentity } from "@/modules/themes/template-registry";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
-import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-registry";
+import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
 import type { Block, NavItem } from "@/types/cms";
 
 /**
@@ -20,21 +19,14 @@ import type { Block, NavItem } from "@/types/cms";
  * would capture the stock template colours and silently drop whatever the
  * tenant actually customised.
  *
- * `templateId` (site_identity.template_id, the DB templates row) is checked
- * first; `activeTemplateSlug` + the registry is a fallback for any tenant not
- * yet repointed. Once every tenant carries template_id and the registry is
- * deleted, the fallback branch becomes dead and can go with it.
+ * A tenant with no template (`template_id` unset) has no palette to capture —
+ * the snapshot simply carries none, rather than inventing one.
  */
 export async function resolveTenantPalette(
   templateId: string | null | undefined,
-  activeTemplateSlug: string | null | undefined,
   colorOverrides: Partial<TemplatePalette> | null | undefined,
 ): Promise<{ palette: TemplatePalette | null; typography: TemplateTypography | null; customCss: string | null }> {
-  const identity = templateId
-    ? await resolveDbTemplateIdentity(templateId)
-    : activeTemplateSlug
-      ? getTemplateIdentity(activeTemplateSlug)
-      : null;
+  const identity = templateId ? await resolveDbTemplateIdentity(templateId) : null;
   if (!identity) {
     return { palette: null, typography: null, customCss: null };
   }
@@ -78,7 +70,6 @@ export async function snapshotTenantIntoTemplate(
 
   const { palette, typography, customCss } = await resolveTenantPalette(
     identity?.template_id as string | null,
-    identity?.active_template_slug as string | null,
     identity?.color_overrides as Partial<TemplatePalette> | null,
   );
 

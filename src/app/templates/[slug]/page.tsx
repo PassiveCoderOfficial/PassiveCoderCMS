@@ -1,20 +1,24 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Layout, Zap } from "lucide-react";
-import { TEMPLATE_REGISTRY } from "@/modules/themes/template-registry";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
-import { buildHomePageBlocks } from "@/lib/templates/seed-template";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { createAdminClient } from "@/lib/supabase/server";
 import { resolvePreviewTemplate } from "@/modules/templates/preview";
 
-// Engine-authored templates live in the DB and change at runtime, so this
-// route can't be fully static any more. Registry slugs are still
-// pre-rendered; DB ones render on demand.
+// Templates live in the DB and change at runtime, so this route can't be
+// fully static. Published slugs are pre-rendered at build time; anything
+// created or published later renders on demand.
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  return TEMPLATE_REGISTRY.map(t => ({ slug: t.slug }));
+  const admin = await createAdminClient();
+  const { data } = await admin
+    .from("templates")
+    .select("slug")
+    .not("owner_id", "is", null)
+    .eq("status", "published");
+  return (data ?? []).map((t) => ({ slug: t.slug as string }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

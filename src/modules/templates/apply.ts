@@ -1,10 +1,10 @@
 /**
  * Apply a DB-backed template to a tenant.
  *
- * This is the counterpart to `snapshot.ts` and the DB-driven replacement for
- * `lib/templates/seed-template.ts` (which builds pages from the hardcoded
- * TEMPLATE_REGISTRY). Both coexist until the registry is retired: callers
- * pick based on whether the slug resolves to a DB template or a registry one.
+ * This is the counterpart to `snapshot.ts`, and replaced
+ * `lib/templates/seed-template.ts`, which built sites from the hardcoded
+ * TEMPLATE_REGISTRY. Callers with a slug rather than an id go through
+ * `apply-by-slug.ts`.
  *
  * Copy-on-apply, always: the tenant gets its own copies of the template's
  * pages. Later edits to the template never reach tenants that already applied
@@ -68,18 +68,22 @@ export async function applyDbTemplate(
   const tpl = template as TemplateRow;
 
   // ── 1. Visual identity ──────────────────────────────────────────────────
-  // `active_template_slug` still drives the live CSS-var pipeline, which
-  // resolves through the registry. A DB template has no registry entry, so
-  // its palette is written to `color_overrides` — the same field a tenant's
-  // manual colour tweaks live in, and which (site)/layout.tsx already layers
-  // on top of the active template's palette.
+  // template_id is what (site)/layout.tsx resolves the palette from, so
+  // pointing it at this template is the whole of "apply the theme".
+  //
+  // This used to copy the template's palette into `color_overrides` instead,
+  // because the live CSS-var pipeline only understood registry slugs. That
+  // field holds the tenant's *own* manual colour tweaks, so writing to it
+  // both clobbered their customisations and made later edits to the template
+  // unable to take effect. Overrides are left alone now and continue to layer
+  // on top of the template palette, which is what they were always for.
   const identityPatch: Record<string, unknown> = {
     tenant_id: tenantId,
+    template_id: tpl.id,
     active_template_slug: tpl.slug,
     updated_at: new Date().toISOString(),
   };
   if (tpl.palette) {
-    identityPatch.color_overrides = tpl.palette;
     identityPatch.primary_color = tpl.palette.primary;
     identityPatch.secondary_color = tpl.palette.secondary;
   }

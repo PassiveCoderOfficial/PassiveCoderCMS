@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getStaff } from "@/lib/staff";
-import { seedTemplate } from "@/lib/templates/seed-template";
+import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
 
 export async function POST(req: Request) {
   const authClient = await createClient();
@@ -67,12 +67,13 @@ export async function POST(req: Request) {
   await supabase.from("pc_staff").update({ total_sites: agent.total_sites + 1 }).eq("id", agent.id);
 
   // Apply template (best-effort — never fail site creation because seeding errored)
-  await seedTemplate(
+  await applyTemplateBySlug(
     supabase,
     site.id,
     template_id ?? "blank",
     (template_mode as "theme" | "full") ?? "full",
-  ).catch(err => console.error(`[seed-template] tenant=${site.id} slug=${template_id ?? "blank"}`, err));
+    { siteName: name },
+  ).catch(err => console.error(`[apply-template] tenant=${site.id} slug=${template_id ?? "blank"}`, err));
 
   return NextResponse.json({ id: site.id });
 }

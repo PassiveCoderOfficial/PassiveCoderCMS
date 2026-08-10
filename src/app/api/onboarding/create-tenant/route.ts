@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { seedTemplate } from "@/lib/templates/seed-template";
+import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
 import { enmProvision } from "@/lib/enm";
 
 export async function POST(req: Request) {
@@ -103,12 +103,13 @@ export async function POST(req: Request) {
   // Apply template (seeding is best-effort — don't fail tenant creation if it errors).
   // Always called: "blank" or an unknown slug seeds a minimal starter site, so a
   // tenant is never left fully empty.
-  await seedTemplate(
+  await applyTemplateBySlug(
     supabase,
     tenant.id,
     templateId ?? "blank",
     (templateMode as "theme" | "full") ?? "full",
-  ).catch(err => console.error(`[seed-template] tenant=${tenant.id} slug=${templateId ?? "blank"}`, err));
+    { siteName },
+  ).catch(err => console.error(`[apply-template] tenant=${tenant.id} slug=${templateId ?? "blank"}`, err));
 
   // Provision ENM free account (best-effort)
   const { data: profile } = await supabase.from("profiles").select("email, full_name").eq("id", userId).maybeSingle();

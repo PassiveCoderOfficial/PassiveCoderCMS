@@ -1,9 +1,8 @@
 /**
  * Site templates — list + create.
  *
- * Deliberately mounted at /api/site-templates, not /api/templates: the
- * latter already serves the legacy catalog (TEMPLATE_REGISTRY-backed) and
- * both must coexist until Phase 3 retires the old path.
+ * Mounted at /api/site-templates rather than /api/templates, which was
+ * already taken by the apply endpoint when the template engine was built.
  */
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";

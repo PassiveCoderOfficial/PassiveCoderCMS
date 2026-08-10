@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireSuperAdmin } from "@/lib/super-admin";
-import { seedTemplate } from "@/lib/templates/seed-template";
+import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
 
 export async function GET() {
   const user = await requireSuperAdmin();
@@ -57,12 +57,13 @@ export async function POST(req: Request) {
   }
 
   // Apply template (best-effort — never fail site creation because seeding errored)
-  await seedTemplate(
+  await applyTemplateBySlug(
     supabase,
     data.id,
     template_id ?? "blank",
     (template_mode as "theme" | "full") ?? "full",
-  ).catch(err => console.error(`[seed-template] tenant=${data.id} slug=${template_id ?? "blank"}`, err));
+    { siteName: name },
+  ).catch(err => console.error(`[apply-template] tenant=${data.id} slug=${template_id ?? "blank"}`, err));
 
   return NextResponse.json(data);
 }
