@@ -242,10 +242,8 @@ function StatsLegacy({ data }: { data: StatsBlockProps["data"] }) {
       )}
       <div className={cn("grid grid-cols-2 gap-6", layout === "row" ? "sm:grid-cols-4" : colClass)}>
         {items.map(item => {
-          const num = parseInt(item.value.replace(/\D/g, "")) || 0;
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const count = useCountUp(num, animate);
-          const display = animate && num > 0 ? `${item.prefix ?? ""}${count.toLocaleString()}${item.suffix ?? ""}` : item.value;
+          const display = useStatDisplay(item, animate);
           return (
             <div key={item.id} className={cn(
               "flex flex-col items-center text-center p-6",
