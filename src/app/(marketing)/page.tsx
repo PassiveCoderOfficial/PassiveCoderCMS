@@ -15,6 +15,7 @@ import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
+import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
 import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
 import type { Block } from "@/types/cms";
@@ -82,6 +83,31 @@ export default async function MarketingHomePage() {
           <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>
+      );
+    }
+
+    // A multi-vendor marketplace has a real storefront to show even with no
+    // hand-built home page — products, categories and sellers all live in the
+    // database. Shoppers must never land on a "set up your site" placeholder.
+    const { count: sellerCount } = await supabase
+      .from("vendors")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "approved")
+      .contains("capabilities", ["ecommerce"]);
+
+    if ((sellerCount ?? 0) > 0) {
+      const { data: identity } = await supabase
+        .from("site_identity")
+        .select("site_name")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      return (
+        <MarketplaceHome
+          tenantId={tenantId}
+          siteName={identity?.site_name ?? "our marketplace"}
+          standalone
+        />
       );
     }
 

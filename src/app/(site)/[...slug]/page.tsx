@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
 import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
 import { isSaaS } from "@/lib/flags";
 import type { Block, Page } from "@/types/cms";
@@ -96,6 +97,33 @@ export default async function SitePage({ params }: Props) {
   if (!page && !isRoot) notFound();
 
   if (!page) {
+    // A marketplace tenant with no hand-built home page still has a real
+    // storefront to show — products, categories and sellers all live in the
+    // database already. Rendering it beats bouncing shoppers to the dashboard
+    // or showing them an empty CMS shell.
+    if (tenantId) {
+      const admin = await createAdminClient();
+      const { count: sellerCount } = await admin
+        .from("vendors")
+        .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
+        .eq("status", "approved")
+        .contains("capabilities", ["ecommerce"]);
+      if ((sellerCount ?? 0) > 0) {
+        const { data: identity } = await admin
+          .from("site_identity")
+          .select("site_name")
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
+        return (
+          <MarketplaceHome
+            tenantId={tenantId}
+            siteName={identity?.site_name ?? "our marketplace"}
+          />
+        );
+      }
+    }
+
     // No home page published — send visitor to dashboard to set one up.
     // Never show a placeholder welcome screen to public visitors.
     const { redirect } = await import("next/navigation");

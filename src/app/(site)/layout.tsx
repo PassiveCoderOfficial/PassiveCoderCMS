@@ -14,6 +14,8 @@ import { PushConsent } from "@/components/donors/push-consent";
 import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { FloatingWhatsApp } from "@/components/site/floating-whatsapp";
+import { MarketplaceHeader, type HeaderCategory as MarketplaceCategory } from "@/components/marketplace-ecom/marketplace-header";
+import { MarketplaceFooter } from "@/components/marketplace-ecom/marketplace-footer";
 
 // Single-vendor tenant with a dedicated floating WhatsApp CTA (per explicit
 // client request). Not a general platform feature yet — gated to this one
@@ -164,6 +166,32 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const globalHeader: Block[] = toBlockArray(identity?.global_header);
   const globalFooter: Block[] = toBlockArray(identity?.global_footer);
 
+  // Multi-vendor marketplace tenants get a dedicated header/footer instead of
+  // page-builder blocks: the header carries live cart count, search and the
+  // category menu, none of which a static block can express. Keyed off the
+  // ecommerce marketplace actually being in use (approved sellers exist)
+  // rather than a hardcoded slug, so any future marketplace tenant picks it
+  // up automatically.
+  let marketplaceChrome: { categories: MarketplaceCategory[] } | null = null;
+  if (tenantId) {
+    const admin = await createAdminClient();
+    const { count: sellerCount } = await admin
+      .from("vendors")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "approved")
+      .contains("capabilities", ["ecommerce"]);
+    if ((sellerCount ?? 0) > 0) {
+      const { data: cats } = await admin
+        .from("categories")
+        .select("id, name, slug, image_url")
+        .eq("tenant_id", tenantId)
+        .eq("type", "product")
+        .order("order_index");
+      marketplaceChrome = { categories: cats ?? [] };
+    }
+  }
+
   return (
     <CartProvider>
       {/* The root layout mounts <ThemeProvider defaultTheme="system">, which
@@ -217,6 +245,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           <LocationConsent />
           <PushConsent />
         </>
+      ) : marketplaceChrome ? (
+        <MarketplaceHeader
+          logoUrl={identity?.logo_url ?? null}
+          siteName={identity?.site_name ?? settings?.site_name ?? "Marketplace"}
+          categories={marketplaceChrome.categories}
+        />
       ) : globalHeader.length > 0 ? (
         <PageRenderer blocks={globalHeader} />
       ) : null}
@@ -225,9 +259,15 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {children}
 
       {/* Persistent global footer */}
-      {globalFooter.length > 0 && (
+      {marketplaceChrome ? (
+        <MarketplaceFooter
+          logoUrl={identity?.logo_dark_url ?? identity?.logo_url ?? null}
+          siteName={identity?.site_name ?? settings?.site_name ?? "Marketplace"}
+          categories={marketplaceChrome.categories}
+        />
+      ) : globalFooter.length > 0 ? (
         <PageRenderer blocks={globalFooter} />
-      )}
+      ) : null}
 
       {/* Floating cart drawer — always mounted, toggled by cart icon */}
       <CartDrawer />

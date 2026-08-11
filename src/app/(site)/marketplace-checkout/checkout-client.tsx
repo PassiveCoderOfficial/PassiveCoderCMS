@@ -29,7 +29,8 @@ const AREAS = [
 ];
 
 const tk = (n: number) => `৳${Number(n).toLocaleString()}`;
-const inputCls = "w-full border rounded-lg px-3 py-2 text-sm bg-background";
+const inputCls =
+  "w-full border border-[#EAECF0] rounded-xl px-3.5 py-2.5 text-sm bg-white text-[#1A1330] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/25 focus:border-[#FF5A1F] transition-all";
 
 export default function MarketplaceCheckoutClient() {
   const router = useRouter();
@@ -94,8 +95,8 @@ export default function MarketplaceCheckoutClient() {
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <ShoppingCart className="h-16 w-16 text-muted-foreground opacity-30 mx-auto mb-6" />
         <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-        <Link href="/marketplace"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold mt-4">
+        <Link href="/shop"
+          className="inline-flex items-center gap-2 bg-[#FF5A1F] hover:bg-[#E64A0F] text-white px-6 py-3 rounded-full font-semibold mt-4 transition-colors">
           <ArrowLeft className="h-4 w-4" /> Start shopping
         </Link>
       </div>
@@ -104,12 +105,12 @@ export default function MarketplaceCheckoutClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Checkout</h1>
+      <h1 className="text-3xl font-bold text-[#1A1330] mb-6">Checkout</h1>
 
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3 space-y-5">
-          <section className="border rounded-xl p-4 space-y-3">
-            <h2 className="font-semibold">Delivery details</h2>
+          <section className="border border-[#EAECF0] rounded-2xl p-5 space-y-3">
+            <h2 className="font-semibold text-[#1A1330]">Delivery details</h2>
             <div className="grid sm:grid-cols-2 gap-2">
               <input className={inputCls} placeholder="Full name *"
                 value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
@@ -128,10 +129,10 @@ export default function MarketplaceCheckoutClient() {
               value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
           </section>
 
-          <section className="border rounded-xl p-4 space-y-2">
-            <h2 className="font-semibold">Payment</h2>
+          <section className="border border-[#EAECF0] rounded-2xl p-5 space-y-2">
+            <h2 className="font-semibold text-[#1A1330]">Payment</h2>
             <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer ${
-              method === "cod" ? "border-primary bg-primary/5" : ""
+              method === "cod" ? "border-[#FF5A1F] bg-[#FFF6F2]" : "border-[#EAECF0] hover:border-[#D0D5DD]"
             }`}>
               <input type="radio" checked={method === "cod"} onChange={() => setMethod("cod")} />
               <Banknote className="w-5 h-5 text-muted-foreground" />
@@ -141,7 +142,7 @@ export default function MarketplaceCheckoutClient() {
               </div>
             </label>
             <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer ${
-              method === "bkash" ? "border-primary bg-primary/5" : ""
+              method === "bkash" ? "border-[#FF5A1F] bg-[#FFF6F2]" : "border-[#EAECF0] hover:border-[#D0D5DD]"
             }`}>
               <input type="radio" checked={method === "bkash"} onChange={() => setMethod("bkash")} />
               <Smartphone className="w-5 h-5 text-muted-foreground" />
@@ -154,8 +155,8 @@ export default function MarketplaceCheckoutClient() {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="border rounded-xl p-4 space-y-4 lg:sticky lg:top-4">
-            <h2 className="font-semibold">Your order</h2>
+          <div className="border border-[#EAECF0] rounded-2xl p-5 space-y-4 lg:sticky lg:top-24">
+            <h2 className="font-semibold text-[#1A1330]">Your order</h2>
 
             {loading && !quote ? (
               <div className="flex justify-center py-8">
@@ -164,7 +165,7 @@ export default function MarketplaceCheckoutClient() {
             ) : quote ? (
               <>
                 {quote.groups.length > 1 && (
-                  <p className="text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2">
+                  <p className="text-xs text-[#1A1330] bg-[#FFF6F2] border border-[#FFE4D6] rounded-xl px-3 py-2.5">
                     Your order is split across {quote.groups.length} sellers. Each parcel is
                     shipped and charged separately.
                   </p>
@@ -172,7 +173,7 @@ export default function MarketplaceCheckoutClient() {
 
                 <div className="space-y-3">
                   {quote.groups.map((g) => (
-                    <div key={g.vendor_id} className="border rounded-lg p-3 space-y-2">
+                    <div key={g.vendor_id} className="border border-[#EAECF0] rounded-xl p-3.5 space-y-2 bg-[#FCFCFD]">
                       <p className="text-sm font-medium flex items-center gap-1.5">
                         <Store className="w-3.5 h-3.5 text-muted-foreground" /> {g.vendor_name}
                       </p>
@@ -212,7 +213,7 @@ export default function MarketplaceCheckoutClient() {
                 <button
                   onClick={placeOrder}
                   disabled={placing || loading}
-                  className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-semibold hover:opacity-90 disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                  className="w-full bg-[#FF5A1F] hover:bg-[#E64A0F] text-white rounded-xl py-3.5 font-semibold disabled:opacity-50 transition-colors inline-flex items-center justify-center gap-2"
                 >
                   {placing && <Loader2 className="w-4 h-4 animate-spin" />}
                   {method === "cod" ? `Place order · ${tk(quote.grand_total)}` : `Pay ${tk(quote.grand_total)}`}
