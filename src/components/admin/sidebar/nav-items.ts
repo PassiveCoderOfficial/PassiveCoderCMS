@@ -37,6 +37,8 @@
   ToggleLeft,
   Droplet,
   Store,
+  BadgeCheck,
+  Wallet,
   AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
@@ -197,6 +199,17 @@ export const navSections: NavSection[] = [
         ],
       },
       { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag, moduleKey: "ecommerce" },
+      {
+        label: "Sellers",
+        href: "/dashboard/ecommerce/sellers",
+        icon: Store,
+        moduleKey: "ecommerce",
+        children: [
+          { label: "All Sellers", href: "/dashboard/ecommerce/sellers", icon: Store },
+          { label: "Listing Review", href: "/dashboard/ecommerce/sellers/review", icon: BadgeCheck },
+          { label: "Payouts", href: "/dashboard/ecommerce/sellers/payouts", icon: Wallet },
+        ],
+      },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard, moduleKey: "ecommerce" },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck, moduleKey: "ecommerce" },
     ],

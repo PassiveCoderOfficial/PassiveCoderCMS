@@ -83,6 +83,23 @@ export function LoginForm() {
         window.location.href = "/staff";
         return;
       }
+
+      // Marketplace sellers have no tenant membership either — the dashboard
+      // would bounce them straight back here as unauthorized, so send them to
+      // the Seller Centre instead. Only checked when the user isn't heading
+      // somewhere specific already.
+      if (redirectTo === "/dashboard") {
+        const { data: vendor } = await supabase
+          .from("vendors")
+          .select("id")
+          .eq("user_id", data.user.id)
+          .contains("capabilities", ["ecommerce"])
+          .maybeSingle();
+        if (vendor) {
+          window.location.href = "/vendor";
+          return;
+        }
+      }
     }
 
     // Hard navigation — middleware picks up browser-set session cookies on next request.
