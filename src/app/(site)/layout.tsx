@@ -14,8 +14,9 @@ import { PushConsent } from "@/components/donors/push-consent";
 import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { FloatingWhatsApp } from "@/components/site/floating-whatsapp";
-import { MarketplaceHeader, type HeaderCategory as MarketplaceCategory } from "@/components/marketplace-ecom/marketplace-header";
+import { MarketplaceHeader } from "@/components/marketplace-ecom/marketplace-header";
 import { MarketplaceFooter } from "@/components/marketplace-ecom/marketplace-footer";
+import { getMarketplaceChrome } from "@/lib/marketplace-ecom/chrome";
 
 // Single-vendor tenant with a dedicated floating WhatsApp CTA (per explicit
 // client request). Not a general platform feature yet — gated to this one
@@ -172,25 +173,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // ecommerce marketplace actually being in use (approved sellers exist)
   // rather than a hardcoded slug, so any future marketplace tenant picks it
   // up automatically.
-  let marketplaceChrome: { categories: MarketplaceCategory[] } | null = null;
-  if (tenantId) {
-    const admin = await createAdminClient();
-    const { count: sellerCount } = await admin
-      .from("vendors")
-      .select("id", { count: "exact", head: true })
-      .eq("tenant_id", tenantId)
-      .eq("status", "approved")
-      .contains("capabilities", ["ecommerce"]);
-    if ((sellerCount ?? 0) > 0) {
-      const { data: cats } = await admin
-        .from("categories")
-        .select("id, name, slug, image_url")
-        .eq("tenant_id", tenantId)
-        .eq("type", "product")
-        .order("order_index");
-      marketplaceChrome = { categories: cats ?? [] };
-    }
-  }
+  const marketplaceChrome = await getMarketplaceChrome(tenantId);
 
   return (
     <CartProvider>
@@ -247,9 +230,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         </>
       ) : marketplaceChrome ? (
         <MarketplaceHeader
-          logoUrl={identity?.logo_url ?? null}
-          siteName={identity?.site_name ?? settings?.site_name ?? "Marketplace"}
+          logoUrl={marketplaceChrome.logoUrl}
+          siteName={marketplaceChrome.siteName}
           categories={marketplaceChrome.categories}
+          supportPhone={marketplaceChrome.contact?.phone}
         />
       ) : globalHeader.length > 0 ? (
         <PageRenderer blocks={globalHeader} />
@@ -261,9 +245,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {/* Persistent global footer */}
       {marketplaceChrome ? (
         <MarketplaceFooter
-          logoUrl={identity?.logo_dark_url ?? identity?.logo_url ?? null}
-          siteName={identity?.site_name ?? settings?.site_name ?? "Marketplace"}
+          logoUrl={marketplaceChrome.logoDarkUrl}
+          siteName={marketplaceChrome.siteName}
           categories={marketplaceChrome.categories}
+          contact={marketplaceChrome.contact}
         />
       ) : globalFooter.length > 0 ? (
         <PageRenderer blocks={globalFooter} />

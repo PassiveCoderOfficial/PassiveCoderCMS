@@ -44,31 +44,31 @@ export default async function EarningsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Earnings</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="text-2xl font-bold text-[#1A1330]">Earnings</h1>
+        <p className="text-sm text-[#667085] mt-1">
           Every rupee in and out of your seller account.
         </p>
       </div>
 
-      <div className="border border-gray-800 rounded-xl p-5 bg-gray-900/40">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
+      <div className="border border-[#EAECF0] rounded-xl p-5 bg-white">
+        <div className="flex items-center gap-2 text-[#667085] text-sm">
           <Wallet className="w-4 h-4" /> Current balance
         </div>
-        <p className="text-3xl font-bold text-white mt-2">{tk(balance)}</p>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-3xl font-bold text-[#1A1330] mt-2">{tk(balance)}</p>
+        <p className="text-xs text-[#98A2B3] mt-2">
           Payouts are sent to your bKash after each order clears its return-hold window.
         </p>
       </div>
 
       {(payouts ?? []).length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Payouts</h2>
-          <div className="border border-gray-800 rounded-xl divide-y divide-gray-800">
+          <h2 className="text-sm font-semibold text-[#475467] uppercase tracking-wide">Payouts</h2>
+          <div className="border border-[#EAECF0] rounded-xl divide-y divide-[#EAECF0]">
             {(payouts ?? []).map((p) => (
               <div key={p.id} className="px-4 py-3 flex items-center gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm text-white">{tk(p.net)}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-[#1A1330]">{tk(p.net)}</p>
+                  <p className="text-xs text-[#98A2B3]">
                     {p.period_start} → {p.period_end}
                     {p.reference ? ` · ${p.reference}` : ""}
                   </p>
@@ -76,8 +76,8 @@ export default async function EarningsPage() {
                 <span
                   className={`ml-auto text-xs px-2 py-0.5 rounded-full border capitalize ${
                     p.status === "paid"
-                      ? "bg-green-900/50 text-green-300 border-green-700/50"
-                      : "bg-amber-900/50 text-amber-300 border-amber-700/50"
+                      ? "bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]"
+                      : "bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]"
                   }`}
                 >
                   {p.status}
@@ -89,16 +89,16 @@ export default async function EarningsPage() {
       )}
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Statement</h2>
+        <h2 className="text-sm font-semibold text-[#475467] uppercase tracking-wide">Statement</h2>
         {rows.length === 0 ? (
-          <div className="border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">
+          <div className="border border-[#EAECF0] rounded-xl p-8 text-center text-[#98A2B3] text-sm">
             Nothing yet. Entries appear once your first order is delivered.
           </div>
         ) : (
-          <div className="border border-gray-800 rounded-xl overflow-hidden">
+          <div className="border border-[#EAECF0] rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-900/60 text-gray-400">
+                <thead className="bg-[#F9FAFB] text-[#667085]">
                   <tr>
                     <th className="text-left font-medium px-4 py-2.5">Date</th>
                     <th className="text-left font-medium px-4 py-2.5">Detail</th>
@@ -106,22 +106,22 @@ export default async function EarningsPage() {
                     <th className="text-right font-medium px-4 py-2.5">Balance</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800">
+                <tbody className="divide-y divide-[#EAECF0]">
                   {rows.map((e) => {
                     const credit = Number(e.amount) >= 0;
                     return (
-                      <tr key={e.seq} className="text-gray-300">
-                        <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
+                      <tr key={e.seq} className="text-[#475467]">
+                        <td className="px-4 py-2.5 text-[#98A2B3] whitespace-nowrap">
                           {new Date(e.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-2.5">
                           <span className="text-gray-200">{TYPE_LABEL[e.type] ?? e.type}</span>
-                          {e.note && <span className="block text-xs text-gray-500">{e.note}</span>}
+                          {e.note && <span className="block text-xs text-[#98A2B3]">{e.note}</span>}
                         </td>
-                        <td className={`px-4 py-2.5 text-right whitespace-nowrap ${credit ? "text-green-400" : "text-gray-400"}`}>
+                        <td className={`px-4 py-2.5 text-right whitespace-nowrap ${credit ? "text-green-400" : "text-[#667085]"}`}>
                           {credit ? "+" : "−"}{tk(e.amount)}
                         </td>
-                        <td className="px-4 py-2.5 text-right text-white whitespace-nowrap">
+                        <td className="px-4 py-2.5 text-right text-[#1A1330] whitespace-nowrap">
                           {tk(e.balance_after)}
                         </td>
                       </tr>

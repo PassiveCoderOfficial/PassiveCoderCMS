@@ -22,13 +22,13 @@ interface Product {
 interface Category { id: string; name: string }
 
 const APPROVAL_META = {
-  pending: { label: "In review", cls: "bg-amber-900/50 text-amber-300 border-amber-700/50", icon: Clock },
-  approved: { label: "Live", cls: "bg-green-900/50 text-green-300 border-green-700/50", icon: CheckCircle2 },
-  rejected: { label: "Rejected", cls: "bg-red-900/50 text-red-300 border-red-700/50", icon: AlertTriangle },
+  pending: { label: "In review", cls: "bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]", icon: Clock },
+  approved: { label: "Live", cls: "bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]", icon: CheckCircle2 },
+  rejected: { label: "Rejected", cls: "bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]", icon: AlertTriangle },
 } as const;
 
 const inputCls =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40";
+  "w-full bg-[#F9FAFB] border border-[#EAECF0] rounded-lg px-3 py-2 text-sm text-[#1A1330] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/25";
 const tk = (n: number) => `৳${Number(n).toLocaleString()}`;
 
 function ProductForm({
@@ -82,13 +82,13 @@ function ProductForm({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
+      <div className="absolute inset-0 bg-[#1A1330]/40" onClick={onClose} />
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white border border-[#EAECF0] rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="text-lg font-semibold text-[#1A1330]">
             {initial ? "Edit product" : "Add product"}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
+          <button onClick={onClose} className="text-[#98A2B3] hover:text-[#475467]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -122,14 +122,14 @@ function ProductForm({
         <textarea className={inputCls} rows={3} placeholder="Full description"
           value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-[#B42318]">{error}</p>}
         <div className="flex justify-end gap-2">
           <button onClick={onClose}
-            className="border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm">
+            className="border border-[#EAECF0] hover:bg-[#F9FAFB] text-[#475467] px-3 py-2 rounded-lg text-sm">
             Cancel
           </button>
           <button onClick={save} disabled={saving}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
+            className="inline-flex items-center gap-2 bg-[#FF5A1F] hover:bg-[#E64A0F] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             {initial ? "Save changes" : "Submit for review"}
           </button>
@@ -164,14 +164,14 @@ export default function VendorProductsClient({ categories }: { categories: Categ
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">My products</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-[#1A1330]">My products</h1>
+          <p className="text-sm text-[#667085] mt-1">
             Listings you sell on the marketplace.
           </p>
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          className="inline-flex items-center gap-2 bg-[#FF5A1F] hover:bg-[#E64A0F] text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           <Plus className="w-4 h-4" /> Add product
         </button>
@@ -179,13 +179,13 @@ export default function VendorProductsClient({ categories }: { categories: Categ
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#D0D5DD]" />
         </div>
       ) : products.length === 0 ? (
-        <div className="border border-gray-800 rounded-xl p-10 text-center">
+        <div className="border border-[#EAECF0] rounded-xl p-10 text-center">
           <Package className="w-8 h-8 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400">No products yet.</p>
-          <p className="text-sm text-gray-600 mt-1">Add your first listing to start selling.</p>
+          <p className="text-[#667085]">No products yet.</p>
+          <p className="text-sm text-[#D0D5DD] mt-1">Add your first listing to start selling.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -194,44 +194,44 @@ export default function VendorProductsClient({ categories }: { categories: Categ
             const img = Array.isArray(p.images) ? p.images[0] : undefined;
             const low = p.track_inventory && p.stock_quantity <= 5;
             return (
-              <div key={p.id} className="border border-gray-800 rounded-xl p-3 bg-gray-900/40 flex gap-3 items-center">
-                <div className="w-14 h-14 shrink-0 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center">
+              <div key={p.id} className="border border-[#EAECF0] rounded-xl p-3 bg-white flex gap-3 items-center">
+                <div className="w-14 h-14 shrink-0 rounded-lg bg-[#F9FAFB] overflow-hidden flex items-center justify-center">
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <ImageOff className="w-5 h-5 text-gray-600" />
+                    <ImageOff className="w-5 h-5 text-[#D0D5DD]" />
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-white truncate">{p.name}</h3>
+                    <h3 className="font-medium text-[#1A1330] truncate">{p.name}</h3>
                     <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full border ${meta.cls}`}>
                       {meta.label}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 mt-0.5">
+                  <p className="text-sm text-[#667085] mt-0.5">
                     {tk(p.price)}
-                    <span className={low ? "text-amber-400 ml-2" : "text-gray-500 ml-2"}>
+                    <span className={low ? "text-[#B54708] ml-2" : "text-[#98A2B3] ml-2"}>
                       · {p.stock_quantity} in stock
                     </span>
                   </p>
                   {p.rejection_reason && (
-                    <p className="text-xs text-red-400 mt-1">Rejected: {p.rejection_reason}</p>
+                    <p className="text-xs text-[#B42318] mt-1">Rejected: {p.rejection_reason}</p>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => { setEditing(p); setShowForm(true); }}
-                    className="text-xs border border-gray-700 hover:bg-gray-800 text-gray-300 px-2.5 py-1.5 rounded-lg"
+                    className="text-xs border border-[#EAECF0] hover:bg-[#F9FAFB] text-[#475467] px-2.5 py-1.5 rounded-lg"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => remove(p.id)}
-                    className="text-gray-600 hover:text-red-400 p-1.5"
+                    className="text-[#D0D5DD] hover:text-[#B42318] p-1.5"
                     aria-label={`Delete ${p.name}`}
                   >
                     <Trash2 className="w-4 h-4" />

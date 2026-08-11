@@ -91,12 +91,16 @@ export function LoginForm() {
       if (redirectTo === "/dashboard") {
         const { data: vendor } = await supabase
           .from("vendors")
-          .select("id")
+          .select("id, status")
           .eq("user_id", data.user.id)
           .contains("capabilities", ["ecommerce"])
           .maybeSingle();
         if (vendor) {
-          window.location.href = "/vendor";
+          // /vendor is the public "sell with us" pitch — an approved seller
+          // wants their Seller Centre, and anyone still awaiting review wants
+          // the status page rather than being sold to again.
+          window.location.href =
+            vendor.status === "approved" ? "/vendor/dashboard" : "/vendor-pending";
           return;
         }
       }

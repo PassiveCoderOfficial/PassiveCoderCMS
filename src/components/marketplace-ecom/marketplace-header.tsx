@@ -27,10 +27,12 @@ export function MarketplaceHeader({
   logoUrl,
   siteName,
   categories,
+  supportPhone,
 }: {
   logoUrl: string | null;
   siteName: string;
   categories: HeaderCategory[];
+  supportPhone?: string | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -74,9 +76,14 @@ export function MarketplaceHeader({
             <Link href="/vendor" className="hover:text-white transition-colors flex items-center gap-1.5">
               <Store className="w-3.5 h-3.5" /> Sell on {siteName}
             </Link>
-            <a href="tel:+8801678669699" className="hover:text-white transition-colors flex items-center gap-1.5">
-              <Headset className="w-3.5 h-3.5" /> Help
-            </a>
+            {supportPhone && (
+              <a
+                href={`tel:${supportPhone.replace(/\s/g, "")}`}
+                className="hover:text-white transition-colors flex items-center gap-1.5"
+              >
+                <Headset className="w-3.5 h-3.5" /> {supportPhone}
+              </a>
+            )}
           </span>
         </div>
       </div>

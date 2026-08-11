@@ -54,3 +54,36 @@ export async function currentVendor(): Promise<VendorContext | null> {
     capabilities: data.capabilities ?? [],
   };
 }
+
+export type VendorApplicationStatus = "none" | "pending" | "suspended" | "approved";
+
+/**
+ * Where the signed-in user stands as a seller, regardless of approval.
+ *
+ * `currentVendor` deliberately only resolves approved sellers, which leaves
+ * callers unable to tell "never applied" apart from "waiting for review" —
+ * they'd send a curious visitor and a real pending seller to the same
+ * "account not active" dead end.
+ */
+export async function vendorApplicationStatus(): Promise<VendorApplicationStatus> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return "none";
+
+  const admin = await createAdminClient();
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+
+  let query = admin
+    .from("vendors")
+    .select("status")
+    .eq("user_id", user.id)
+    .contains("capabilities", ["ecommerce"]);
+  if (tenantId) query = query.eq("tenant_id", tenantId);
+
+  const { data } = await query.limit(1).maybeSingle();
+  if (!data) return "none";
+  return (data.status as VendorApplicationStatus) ?? "none";
+}

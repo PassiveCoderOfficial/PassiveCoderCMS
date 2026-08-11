@@ -9,14 +9,22 @@ const TRUST = [
   { icon: ShieldCheck, title: "Verified sellers", body: "Every shop is checked first" },
 ];
 
+export interface SiteContact {
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+}
+
 export function MarketplaceFooter({
   logoUrl,
   siteName,
   categories,
+  contact,
 }: {
   logoUrl: string | null;
   siteName: string;
   categories: HeaderCategory[];
+  contact: SiteContact | null;
 }) {
   return (
     <footer className="mt-16">
@@ -72,33 +80,59 @@ export function MarketplaceFooter({
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/vendor" className="hover:text-white transition-colors flex items-center gap-1.5">
-                  <Store className="w-3.5 h-3.5" /> Seller Centre
+                  <Store className="w-3.5 h-3.5" /> Become a seller
                 </Link>
               </li>
-              <li><Link href="/vendor" className="hover:text-white transition-colors">Become a seller</Link></li>
-              <li><Link href="/vendor/orders" className="hover:text-white transition-colors">Manage orders</Link></li>
+              <li>
+                <Link href="/vendor/dashboard" className="hover:text-white transition-colors">
+                  Seller Centre
+                </Link>
+              </li>
+              <li>
+                <Link href="/vendor#how-it-works" className="hover:text-white transition-colors">
+                  How selling works
+                </Link>
+              </li>
             </ul>
+            <Link
+              href="/vendor/signup"
+              className="inline-flex items-center gap-1.5 mt-4 bg-[#FF5A1F] hover:bg-[#E64A0F] text-white text-sm font-semibold px-4 py-2.5 rounded-full transition-colors"
+            >
+              <Store className="w-4 h-4" /> Start selling
+            </Link>
           </div>
 
           <div>
             <p className="font-semibold text-white text-sm mb-3">Contact</p>
             <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 shrink-0" />
-                <a href="tel:+8801678669699" className="hover:text-white transition-colors">
-                  +880 1678 669699
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 shrink-0" />
-                <a href="mailto:walibdpro@gmail.com" className="hover:text-white transition-colors">
-                  walibdpro@gmail.com
-                </a>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                <span>Dhaka, Bangladesh</span>
-              </li>
+              {contact?.phone && (
+                <li className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 shrink-0" />
+                  <a
+                    href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {contact.phone}
+                  </a>
+                </li>
+              )}
+              {contact?.email && (
+                <li className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 shrink-0" />
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="hover:text-white transition-colors break-all"
+                  >
+                    {contact.email}
+                  </a>
+                </li>
+              )}
+              {contact?.address && (
+                <li className="flex items-start gap-2">
+                  <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>{contact.address}</span>
+                </li>
+              )}
             </ul>
           </div>
         </div>

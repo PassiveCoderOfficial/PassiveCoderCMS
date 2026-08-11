@@ -37,7 +37,7 @@ export async function MarketplaceHome({
   const productCols =
     "id, name, slug, price, compare_price, images, stock_quantity, track_inventory, featured, created_at, vendors!inner(id, name, slug, status)";
 
-  const [{ data: categories }, { data: featuredRows }, { data: newRows }, { data: sellers }, { data: identity }] =
+  const [{ data: categories }, { data: featuredRows }, { data: newRows }, { data: sellers }, { data: identity }, { data: contact }] =
     await Promise.all([
       admin
         .from("categories")
@@ -75,6 +75,14 @@ export async function MarketplaceHome({
         .from("site_identity")
         .select("logo_url, logo_dark_url")
         .eq("tenant_id", tenantId)
+        .maybeSingle(),
+      admin
+        .from("contact_details")
+        .select("phone, email, address")
+        .eq("tenant_id", tenantId)
+        .order("is_primary", { ascending: false })
+        .order("sort_order")
+        .limit(1)
         .maybeSingle(),
     ]);
 
@@ -327,12 +335,14 @@ export async function MarketplaceHome({
         logoUrl={identity?.logo_url ?? null}
         siteName={siteName}
         categories={cats}
+        supportPhone={contact?.phone}
       />
       {body}
       <MarketplaceFooter
         logoUrl={identity?.logo_dark_url ?? identity?.logo_url ?? null}
         siteName={siteName}
         categories={cats}
+        contact={contact ?? null}
       />
       <CartDrawer />
     </CartProvider>

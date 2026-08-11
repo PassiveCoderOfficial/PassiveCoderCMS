@@ -18,15 +18,30 @@ async function fetchSiteCurrency(): Promise<CurrencyConfig> {
     let q = supabase.from("site_settings").select("currency, currency_symbol, currency_position");
     if (tenantId) q = q.eq("tenant_id", tenantId);
     const { data } = await q.maybeSingle();
+
+    // Only cache a real answer. Caching the USD fallback after a failed or
+    // empty read pinned the whole page to dollars for the rest of the
+    // session, and every later component reusing the cache inherited it.
+    if (!data?.currency) {
+      _promise = null;
+      return DEFAULT_CURRENCY;
+    }
+
     const result: CurrencyConfig = {
-      currency: data?.currency ?? DEFAULT_CURRENCY.currency,
-      currency_symbol: data?.currency_symbol ?? DEFAULT_CURRENCY.currency_symbol,
-      currency_position: (data?.currency_position as "before" | "after") ?? DEFAULT_CURRENCY.currency_position,
+      currency: data.currency,
+      currency_symbol: data.currency_symbol ?? DEFAULT_CURRENCY.currency_symbol,
+      currency_position: (data.currency_position as "before" | "after") ?? DEFAULT_CURRENCY.currency_position,
     };
     _cache = result;
     return result;
   })();
   return _promise;
+}
+
+/** Server-rendered pages can seed the cache so the first paint is already in
+ *  the tenant's currency instead of flashing the USD fallback. */
+export function primeSiteCurrency(config: CurrencyConfig) {
+  _cache = config;
 }
 
 /** Site-wide base currency (read by ecommerce + accounting). */

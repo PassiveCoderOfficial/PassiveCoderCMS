@@ -39,13 +39,13 @@ const NEXT_STEP: Record<string, { to: SubOrder["status"]; label: string } | null
 };
 
 const STATUS_CLS: Record<SubOrder["status"], string> = {
-  pending: "bg-amber-900/50 text-amber-300 border-amber-700/50",
-  accepted: "bg-blue-900/50 text-blue-300 border-blue-700/50",
-  packed: "bg-indigo-900/50 text-indigo-300 border-indigo-700/50",
-  shipped: "bg-purple-900/50 text-purple-300 border-purple-700/50",
-  delivered: "bg-green-900/50 text-green-300 border-green-700/50",
-  cancelled: "bg-red-900/50 text-red-300 border-red-700/50",
-  returned: "bg-orange-900/50 text-orange-300 border-orange-700/50",
+  pending: "bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]",
+  accepted: "bg-[#EFF8FF] text-[#175CD3] border-[#B2DDFF]",
+  packed: "bg-[#EEF4FF] text-[#3538CD] border-[#C7D7FE]",
+  shipped: "bg-[#F4F3FF] text-[#5925DC] border-[#D9D6FE]",
+  delivered: "bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]",
+  cancelled: "bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]",
+  returned: "bg-[#FFF6ED] text-[#B93815] border-[#F9DBAF]",
 };
 
 const COURIERS = ["Pathao", "Steadfast", "RedX", "Sundarban", "Self delivery"];
@@ -95,8 +95,8 @@ export default function VendorOrdersClient() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-white">Orders</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="text-2xl font-bold text-[#1A1330]">Orders</h1>
+        <p className="text-sm text-[#667085] mt-1">
           Each order here is your part of a customer&apos;s basket. You pack and ship it directly.
         </p>
       </div>
@@ -108,8 +108,8 @@ export default function VendorOrdersClient() {
             onClick={() => setTab(t)}
             className={`px-3 py-1.5 rounded-lg text-sm border capitalize transition-colors ${
               tab === t
-                ? "bg-emerald-600 border-emerald-500 text-white"
-                : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                ? "bg-[#FF5A1F] border-[#FF5A1F] text-white"
+                : "border-[#EAECF0] text-[#667085] hover:bg-[#F9FAFB]"
             }`}
           >
             {t}
@@ -118,17 +118,17 @@ export default function VendorOrdersClient() {
       </div>
 
       {error && (
-        <p className="text-sm text-red-400 border border-red-900/50 bg-red-950/30 rounded-lg px-3 py-2">
+        <p className="text-sm text-[#B42318] border border-[#FECDCA] bg-[#FEF3F2] rounded-lg px-3 py-2">
           {error}
         </p>
       )}
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#D0D5DD]" />
         </div>
       ) : orders.length === 0 ? (
-        <div className="border border-gray-800 rounded-xl p-10 text-center text-gray-500">
+        <div className="border border-[#EAECF0] rounded-xl p-10 text-center text-[#98A2B3]">
           No {tab === "all" ? "" : tab} orders.
         </div>
       ) : (
@@ -139,18 +139,18 @@ export default function VendorOrdersClient() {
             const isCod = o.orders?.payment_method === "cod";
             const needsCourier = o.status === "packed";
             return (
-              <div key={o.id} className="border border-gray-800 rounded-xl bg-gray-900/40 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-800 flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-sm text-white">{o.sub_order_number}</span>
+              <div key={o.id} className="border border-[#EAECF0] rounded-2xl bg-white overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#EAECF0] flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-sm text-[#1A1330]">{o.sub_order_number}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full border capitalize ${STATUS_CLS[o.status]}`}>
                     {o.status}
                   </span>
                   {isCod && (
-                    <span className="text-xs px-2 py-0.5 rounded-full border bg-gray-800 border-gray-700 text-gray-300 flex items-center gap-1">
+                    <span className="text-xs px-2 py-0.5 rounded-full border bg-[#F9FAFB] border-[#EAECF0] text-[#475467] flex items-center gap-1">
                       <Banknote className="w-3 h-3" /> COD {tk(o.cod_amount)}
                     </span>
                   )}
-                  <span className="ml-auto text-xs text-gray-500">
+                  <span className="ml-auto text-xs text-[#98A2B3]">
                     {new Date(o.created_at).toLocaleDateString()}
                   </span>
                 </div>
@@ -160,21 +160,21 @@ export default function VendorOrdersClient() {
                     <ul className="space-y-1.5">
                       {(o.items ?? []).map((it, i) => (
                         <li key={i} className="flex items-center gap-2 text-sm">
-                          <Package className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                          <Package className="w-3.5 h-3.5 text-[#D0D5DD] shrink-0" />
                           <span className="text-gray-200 truncate">{it.name}</span>
-                          <span className="text-gray-500">× {it.quantity}</span>
-                          <span className="ml-auto text-gray-400">{tk(it.price * it.quantity)}</span>
+                          <span className="text-[#98A2B3]">× {it.quantity}</span>
+                          <span className="ml-auto text-[#667085]">{tk(it.price * it.quantity)}</span>
                         </li>
                       ))}
                     </ul>
 
                     {addr && (
-                      <div className="text-sm text-gray-400 space-y-1 border-t border-gray-800 pt-3">
+                      <div className="text-sm text-[#667085] space-y-1 border-t border-[#EAECF0] pt-3">
                         <p className="text-gray-200">{addr.name}</p>
                         {addr.phone && (
                           <p className="flex items-center gap-1.5">
                             <Phone className="w-3.5 h-3.5" />
-                            <a href={`tel:${addr.phone}`} className="hover:text-white">{addr.phone}</a>
+                            <a href={`tel:${addr.phone}`} className="hover:text-[#1A1330]">{addr.phone}</a>
                           </p>
                         )}
                         <p className="flex items-start gap-1.5">
@@ -185,22 +185,22 @@ export default function VendorOrdersClient() {
                             {addr.city ? `, ${addr.city}` : ""}
                           </span>
                         </p>
-                        {addr.note && <p className="text-gray-500 italic">Note: {addr.note}</p>}
+                        {addr.note && <p className="text-[#98A2B3] italic">Note: {addr.note}</p>}
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between text-gray-400">
+                    <div className="flex justify-between text-[#667085]">
                       <span>Items</span><span>{tk(o.subtotal)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-400">
+                    <div className="flex justify-between text-[#667085]">
                       <span>Delivery</span><span>{tk(o.shipping_cost)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-500">
+                    <div className="flex justify-between text-[#98A2B3]">
                       <span>Commission</span><span>−{tk(o.commission_amount)}</span>
                     </div>
-                    <div className="flex justify-between font-semibold text-white border-t border-gray-800 pt-2">
+                    <div className="flex justify-between font-semibold text-[#1A1330] border-t border-[#EAECF0] pt-2">
                       <span>You earn</span><span>{tk(o.vendor_earning)}</span>
                     </div>
 
@@ -214,7 +214,7 @@ export default function VendorOrdersClient() {
                               [o.id]: { courier: e.target.value, tracking: p[o.id]?.tracking ?? o.tracking_number ?? "" },
                             }))
                           }
-                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-sm text-white"
+                          className="w-full bg-[#F9FAFB] border border-[#EAECF0] rounded-lg px-2 py-1.5 text-sm text-[#1A1330]"
                         >
                           <option value="">Select courier</option>
                           {COURIERS.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -228,13 +228,13 @@ export default function VendorOrdersClient() {
                             }))
                           }
                           placeholder="Tracking / consignment no."
-                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-sm text-white placeholder-gray-500"
+                          className="w-full bg-[#F9FAFB] border border-[#EAECF0] rounded-lg px-2 py-1.5 text-sm text-[#1A1330] placeholder-[#98A2B3]"
                         />
                       </div>
                     )}
 
                     {o.courier && o.status !== "packed" && (
-                      <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                      <p className="text-xs text-[#98A2B3] flex items-center gap-1.5">
                         <Truck className="w-3.5 h-3.5" /> {o.courier}
                         {o.tracking_number ? ` · ${o.tracking_number}` : ""}
                       </p>
@@ -244,7 +244,7 @@ export default function VendorOrdersClient() {
                       <button
                         onClick={() => advance(o, step.to)}
                         disabled={busy === o.id}
-                        className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 mt-1"
+                        className="w-full inline-flex items-center justify-center gap-2 bg-[#FF5A1F] hover:bg-[#E64A0F] text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 mt-1"
                       >
                         {busy === o.id && <Loader2 className="w-4 h-4 animate-spin" />}
                         {step.label}
@@ -254,7 +254,7 @@ export default function VendorOrdersClient() {
                       <button
                         onClick={() => advance(o, "cancelled")}
                         disabled={busy === o.id}
-                        className="w-full text-xs text-gray-500 hover:text-red-400 disabled:opacity-50"
+                        className="w-full text-xs text-[#98A2B3] hover:text-[#B42318] disabled:opacity-50"
                       >
                         Cannot fulfil — cancel
                       </button>
