@@ -273,6 +273,14 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
   const [copyright, setCopyright] = useState((fd.copyrightText as string) ?? "");
   const [bg, setBg] = useState((fd.backgroundColor as string) ?? "#0f2418");
   const [accent, setAccent] = useState((fd.accentColor as string) ?? "#c9a84c");
+  // Footer style. "dark"/"light" let the footer derive its gradient and text
+  // colours from the active theme's tokens; "custom" keeps the explicit
+  // background/accent pickers below. This used to always save style:"dark"
+  // with a hardcoded green background, so no tenant could get a themed footer.
+  const initialStyle = (fd.style as string) === "light" ? "light" : "dark";
+  const [footerStyle, setFooterStyle] = useState<"dark" | "light" | "custom">(
+    fd.backgroundColor ? "custom" : initialStyle,
+  );
   const [newsletter, setNewsletter] = useState((fd.showNewsletter as boolean) ?? false);
   const [columns, setColumns] = useState<FooterColumn[]>((fd.columns as FooterColumn[]) ?? []);
   const [socials, setSocials] = useState<FooterSocial[]>((fd.socials as FooterSocial[]) ?? []);
@@ -289,12 +297,22 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
       padding: { top: 0, right: 0, bottom: 0, left: 0 },
       margin: { top: 0, right: 0, bottom: 0, left: 0 },
       background: { type: "none" },
-      data: { logoText, tagline, copyrightText: copyright, copyrightYear: true, backgroundColor: bg, accentColor: accent, textColor: "#e5e7eb", style: "dark", columns, socials, bottomLinks, showNewsletter: newsletter },
+      // Only the "custom" style pins explicit colours. dark/light leave them
+      // undefined so the footer falls back to the theme-derived gradient and
+      // token text colours.
+      data: {
+        logoText, tagline, copyrightText: copyright, copyrightYear: true,
+        style: footerStyle === "custom" ? "dark" : footerStyle,
+        ...(footerStyle === "custom"
+          ? { backgroundColor: bg, accentColor: accent, textColor: "#e5e7eb" }
+          : { backgroundColor: undefined, accentColor: undefined, textColor: undefined }),
+        columns, socials, bottomLinks, showNewsletter: newsletter,
+      },
     };
     await api("POST", { _type: "global_layout", global_footer: block });
     setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2500);
-  }, [initialBlock, logoText, tagline, copyright, bg, accent, columns, socials, bottomLinks, newsletter]);
+  }, [initialBlock, logoText, tagline, copyright, bg, accent, footerStyle, columns, socials, bottomLinks, newsletter]);
 
   const addColumn = () => setColumns(prev => [...prev, { id: uid(), heading: "Column", links: [] }]);
   const updateColHeading = (id: string, heading: string) => setColumns(prev => prev.map(c => c.id === id ? { ...c, heading } : c));
@@ -334,20 +352,50 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
             <label className="block text-xs text-gray-400 mb-1">Copyright Text <span className="text-gray-600">(use {"{year}"} for auto year)</span></label>
             <input value={copyright} onChange={e => setCopyright(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="© {year} Your Company. All rights reserved." />
           </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Background</label>
+          <div className="col-span-2">
+            <label className="block text-xs text-gray-400 mb-1">Footer Style</label>
             <div className="flex gap-2">
-              <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
-              <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+              {([
+                { key: "dark" as const, label: "Dark" },
+                { key: "light" as const, label: "Light" },
+                { key: "custom" as const, label: "Custom colors" },
+              ]).map(opt => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setFooterStyle(opt.key)}
+                  className={`px-3 py-1.5 rounded text-xs border transition-colors ${
+                    footerStyle === opt.key
+                      ? "bg-indigo-600 border-indigo-500 text-white"
+                      : "bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
+            <p className="text-[11px] text-gray-500 mt-1">
+              Dark and Light build a gradient from this site&apos;s theme colors. Custom pins your own.
+            </p>
           </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Accent / Heading Color</label>
-            <div className="flex gap-2">
-              <input type="color" value={accent} onChange={e => setAccent(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
-              <input value={accent} onChange={e => setAccent(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
-            </div>
-          </div>
+          {footerStyle === "custom" && (
+            <>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Background</label>
+                <div className="flex gap-2">
+                  <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
+                  <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Accent / Heading Color</label>
+                <div className="flex gap-2">
+                  <input type="color" value={accent} onChange={e => setAccent(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
+                  <input value={accent} onChange={e => setAccent(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+                </div>
+              </div>
+            </>
+          )}
           <div className="col-span-2 flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
               <input type="checkbox" checked={newsletter} onChange={e => setNewsletter(e.target.checked)} className="rounded" />
