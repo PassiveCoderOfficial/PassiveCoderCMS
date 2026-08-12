@@ -191,8 +191,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           white cards, worst on form fields). When a tenant pins its theme we
           re-declare the palette so .dark can't win, and pin color-scheme so
           native controls follow too. */}
+      {/* `precedence` is required for React to hoist these into <head>. Without
+          it, a <style> rendered here (inside the CartProvider client boundary)
+          is dropped from the SSR output entirely — which is why tenant palettes
+          silently fell back to the default shadcn slate. The precedence names
+          also fix ordering: theme base, then template vars, then custom CSS. */}
       {siteTheme === "light" && (
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `
           :root, html.dark, html.light { color-scheme: light; }
           html.dark {
             --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
@@ -208,23 +213,23 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         ` }} />
       )}
       {siteTheme === "dark" && (
-        <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
+        <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
       )}
       {/* Theme flash prevention */}
       {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       {templateCSSVars && (
-        <style dangerouslySetInnerHTML={{ __html: templateCSSVars }} />
+        <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />
       )}
       {templateBodyScript && (
         // eslint-disable-next-line @next/next/no-sync-scripts
         <script dangerouslySetInnerHTML={{ __html: templateBodyScript }} />
       )}
       {templateCustomCss && (
-        <style dangerouslySetInnerHTML={{ __html: templateCustomCss }} />
+        <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />
       )}
       {settings?.custom_css && (
-        <style dangerouslySetInnerHTML={{ __html: settings.custom_css }} />
+        <style precedence="pc-custom" dangerouslySetInnerHTML={{ __html: settings.custom_css }} />
       )}
 
       {/* Persistent global header — dedicated donor-site header for the blood

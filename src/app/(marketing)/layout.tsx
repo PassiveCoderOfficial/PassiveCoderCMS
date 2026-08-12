@@ -51,7 +51,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   return (
     <>
       {scheme === "light" && (
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `
           :root, html.dark, html.light { color-scheme: light; }
           html.dark {
             --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
@@ -67,7 +67,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         ` }} />
       )}
       {scheme === "dark" && (
-        <style dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
+        <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
       )}
       {children}
       {!tenantId && <WhatsAppButton />}

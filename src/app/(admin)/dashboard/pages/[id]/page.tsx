@@ -76,8 +76,8 @@ export default async function PageEditorPage({ params }: Props) {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      {templateCSSVars && <style dangerouslySetInnerHTML={{ __html: templateCSSVars }} />}
-      {templateCustomCss && <style dangerouslySetInnerHTML={{ __html: templateCustomCss }} />}
+      {templateCSSVars && <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />}
+      {templateCustomCss && <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />}
       <PageEditorHeader page={page as Page} tenantSlug={tenantSlug} />
       <div className="flex-1 overflow-hidden">
         <BuilderInterface page={page as Page} />

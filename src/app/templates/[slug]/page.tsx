@@ -55,8 +55,8 @@ export default async function TemplatePreviewPage({
 
   return (
     <div className={`min-h-screen template-${template.slug}`}>
-      <style dangerouslySetInnerHTML={{ __html: cssVars }} />
-      {template.customCss && <style dangerouslySetInnerHTML={{ __html: template.customCss }} />}
+      <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: cssVars }} />
+      {template.customCss && <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: template.customCss }} />}
 
       {/* ── Fixed top bar ──────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
