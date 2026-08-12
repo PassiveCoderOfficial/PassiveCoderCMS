@@ -401,6 +401,35 @@ function ItemTree({ items, targets, onChange }: {
 
               {isOpen && (
                 <div className="space-y-2.5 border-t p-3">
+                  <div className="rounded border bg-muted/40 p-2.5">
+                    <label className="flex cursor-pointer items-center gap-2 text-[11px] font-medium">
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={item.megaMenu ?? (item.children ?? []).some((c) => (c.children?.length ?? 0) > 0)}
+                        onChange={(e) => update(item.id, { megaMenu: e.target.checked })}
+                      />
+                      Show as mega menu
+                    </label>
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      A full-width panel across the nav bar instead of a narrow dropdown.
+                    </p>
+                    {(item.megaMenu ?? (item.children ?? []).some((c) => (c.children?.length ?? 0) > 0)) && (
+                      <div className="mt-2">
+                        <label className="mb-1 block text-[11px] font-medium">Columns</label>
+                        <select
+                          className="w-full rounded border bg-background px-2 py-1.5 text-xs"
+                          value={String(item.megaColumns ?? 5)}
+                          onChange={(e) => update(item.id, { megaColumns: Number(e.target.value) as 2 | 3 | 4 | 5 })}
+                        >
+                          {[2, 3, 4, 5].map((n) => (
+                            <option key={n} value={n}>{n} columns</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="mb-1 block text-[11px] font-medium">Sub-menu contents</label>
                     <select

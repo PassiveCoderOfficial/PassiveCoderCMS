@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,9 +17,22 @@ function NavLinkItem({ item, pathname, onClose, dark = false, brand = false }: {
   const isExternal = item.href === "/";
   const hasChildren = (item.children?.length ?? 0) > 0;
 
-  // A child route is "within" this item if pathname matches the parent base
-  const withinParent = pathname.startsWith(item.href) && item.href !== "/";
+  // A child route is "within" this item if pathname matches the parent base —
+  // or any child's own href. Several groups (Templates especially) have
+  // children on unrelated top-level paths (/dashboard/navigation,
+  // /dashboard/header-builder…), so a prefix check alone collapsed the group
+  // as soon as you opened one of its own sub-pages.
+  const onChildRoute = (item.children ?? []).some(
+    (c) => c.href !== "/" && (pathname === c.href || pathname.startsWith(c.href + "/")),
+  );
+  const withinParent = (pathname.startsWith(item.href) && item.href !== "/") || onChildRoute;
   const [expanded, setExpanded] = useState(withinParent);
+
+  // Keep the group open when navigating between its sub-pages — useState only
+  // seeds on mount, so client-side nav left it stuck closed.
+  useEffect(() => {
+    if (withinParent) setExpanded(true);
+  }, [withinParent]);
 
   const isActive =
     item.href === "/dashboard"

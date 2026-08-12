@@ -22,12 +22,24 @@ function GroupIcon({ name }: { name?: string }) {
   );
 }
 
-function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
+const MEGA_COL_CLASS: Record<number, string> = {
+  2: "sm:grid-cols-2 lg:grid-cols-2",
+  3: "sm:grid-cols-3 lg:grid-cols-3",
+  4: "sm:grid-cols-3 lg:grid-cols-4",
+  5: "sm:grid-cols-3 lg:grid-cols-5",
+};
+
+function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns }: {
   items: NavItem[];
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  /** Explicit megaMenu toggle from the menu manager. Falls back to inferring
+   *  it from nested children so menus built before the toggle existed keep
+   *  rendering the same way. */
+  forceMega?: boolean;
+  columns?: number;
 }) {
-  const isMega = items.some((i) => (i.children?.length ?? 0) > 0);
+  const isMega = forceMega ?? items.some((i) => (i.children?.length ?? 0) > 0);
 
   if (isMega) {
     const standalone = items.filter((i) => (i.children?.length ?? 0) === 0);
@@ -55,7 +67,7 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave }: {
               ))}
             </div>
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-7 p-7 max-h-[70vh] overflow-y-auto">
+          <div className={cn("grid grid-cols-2 gap-x-8 gap-y-7 p-7 max-h-[70vh] overflow-y-auto", MEGA_COL_CLASS[columns ?? 5] ?? MEGA_COL_CLASS[5])}>
             {groups.map((group) => (
               <div key={group.id} className="min-w-0">
                 <Link href={group.url} className="flex items-center gap-2.5 mb-3 group/head">
@@ -145,8 +157,14 @@ function NavItemDesktop({ item, currentColor, solid }: {
     );
   }
 
+  // A mega-menu spans the whole nav, so it must anchor to the nav bar (the
+  // next `relative` ancestor up) rather than this <li>. Leaving the item
+  // `relative` collapsed the panel to the width of the menu label — a thin
+  // sliver of white. Simple dropdowns do want to hang off their own item.
+  const isMegaTrigger = item.megaMenu ?? (item.children ?? []).some((c) => (c.children?.length ?? 0) > 0);
+
   return (
-    <li ref={ref} className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
+    <li ref={ref} className={isMegaTrigger ? undefined : "relative"} onMouseEnter={openNow} onMouseLeave={closeSoon}>
       <Link
         href={item.url}
         onClick={() => setOpen(false)}
@@ -156,7 +174,15 @@ function NavItemDesktop({ item, currentColor, solid }: {
         {item.label}
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
       </Link>
-      {open && <DropdownMenu items={item.children!} onMouseEnter={openNow} onMouseLeave={closeSoon} />}
+      {open && (
+        <DropdownMenu
+          items={item.children!}
+          onMouseEnter={openNow}
+          onMouseLeave={closeSoon}
+          forceMega={item.megaMenu}
+          columns={item.megaColumns}
+        />
+      )}
     </li>
   );
 }

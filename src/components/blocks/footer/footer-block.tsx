@@ -37,17 +37,28 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   const fg = textColor ?? (isDark ? "rgba(255,255,255,0.85)" : "hsl(var(--foreground))");
   const accent = accentColor ?? "hsl(var(--primary))";
 
-  // Light/dark used to only flip the text colour against a flat fill, which
-  // read as unfinished. Both modes now get a gradient derived from the active
-  // theme's own tokens — dark blends secondary into the deeper foreground ink
-  // with a hint of primary, light blends the muted surface into the card with a
-  // wash of primary. Works for every template because it's all token-based; an
-  // explicit backgroundColor on the block still overrides it entirely.
-  const bgGradient = backgroundColor
-    ? undefined
-    : isDark
-      ? "linear-gradient(160deg, hsl(var(--secondary)) 0%, hsl(var(--foreground)) 55%, hsl(var(--primary) / 0.35) 100%)"
-      : "linear-gradient(160deg, hsl(var(--muted)) 0%, hsl(var(--card)) 55%, hsl(var(--primary) / 0.10) 100%)";
+  // The Header/Footer Builder writes its Background control to the block-level
+  // `background` prop (type color/gradient/image), NOT to data.backgroundColor.
+  // Honour that first — otherwise a gradient picked in the builder silently
+  // does nothing because the theme default below paints over it.
+  const blockBg = block.background;
+  const builderGradient = blockBg?.type === "gradient" ? blockBg.gradient : undefined;
+  const builderColor = blockBg?.type === "color" ? blockBg.color : undefined;
+
+  // With no explicit background set, light/dark derive a gradient from the
+  // active theme's own tokens rather than flipping text against a flat fill.
+  // Dark blends secondary into the deeper foreground ink with a hint of
+  // primary; light blends the muted surface into the card with a wash of it.
+  // Token-based, so it works for every template.
+  // Kept within the brand hues — an earlier version blended through
+  // --foreground (near-black ink), which read as a muddy black gradient on
+  // every template rather than a branded one.
+  const themeGradient = isDark
+    ? "linear-gradient(160deg, hsl(var(--secondary)) 0%, hsl(var(--primary) / 0.85) 100%)"
+    : "linear-gradient(160deg, hsl(var(--muted)) 0%, hsl(var(--card)) 55%, hsl(var(--primary) / 0.10) 100%)";
+
+  const bgGradient = builderGradient ?? (backgroundColor || builderColor ? undefined : themeGradient);
+  const bgColor = backgroundColor ?? builderColor ?? bg;
   // When a custom text color is set (e.g. white footer on a red bg), derive
   // the muted/secondary tone from it instead of the theme grey — otherwise
   // taglines/links/copyright render grey and vanish on a colored footer.
@@ -56,7 +67,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer style={{ backgroundColor: bg, backgroundImage: bgGradient, color: fg }} className="w-full relative overflow-hidden">
+    <footer style={{ backgroundColor: bgColor, backgroundImage: bgGradient, color: fg }} className="w-full relative overflow-hidden">
       {/* Soft radial warmth in the corner — subtle texture, not a hard block color */}
       <div
         aria-hidden

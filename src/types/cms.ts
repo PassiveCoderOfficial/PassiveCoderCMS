@@ -229,6 +229,12 @@ export type NavItem = {
   children?: NavItem[];
   /** Lucide icon name — shown next to the label in mega-menu group headers. */
   icon?: string;
+  /** Render this item's dropdown as a full-width multi-column mega menu.
+   *  When unset the renderer falls back to inferring it (any grandchildren =
+   *  mega), which keeps existing menus behaving exactly as before. */
+  megaMenu?: boolean;
+  /** Column count for the mega-menu grid on desktop. Defaults to 5. */
+  megaColumns?: 2 | 3 | 4 | 5;
   /** Defaults to "manual" when unset, so existing menus are unaffected. */
   childSource?: NavChildSource;
   /** Cap on generated children, so a tenant with 200 products doesn't render
