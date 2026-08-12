@@ -191,24 +191,28 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           white cards, worst on form fields). When a tenant pins its theme we
           re-declare the palette so .dark can't win, and pin color-scheme so
           native controls follow too. */}
-      {/* `precedence` is required for React to hoist these into <head>. Without
-          it, a <style> rendered here (inside the CartProvider client boundary)
-          is dropped from the SSR output entirely — which is why tenant palettes
-          silently fell back to the default shadcn slate. The precedence names
-          also fix ordering: theme base, then template vars, then custom CSS. */}
+      {/* `precedence` makes React hoist these into <head> deterministically and
+          keeps them ordered: theme lock, then template vars, then custom CSS.
+
+          The lock only neutralises the dark-mode *overrides* — it must not
+          re-declare colour values. It used to hardcode the default shadcn
+          slate palette here, which loaded after the template vars and so
+          overwrote every tenant's brand colours for any visitor whose OS was
+          in dark mode (that's why themed CTAs rendered near-black). Unsetting
+          the vars lets each tenant's own :root palette show through instead. */}
       {siteTheme === "light" && (
         <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `
           :root, html.dark, html.light { color-scheme: light; }
           html.dark {
-            --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
-            --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
-            --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%;
-            --primary: 222.2 47.4% 11.2%; --primary-foreground: 210 40% 98%;
-            --secondary: 210 40% 96.1%; --secondary-foreground: 222.2 47.4% 11.2%;
-            --muted: 210 40% 96.1%; --muted-foreground: 215.4 16.3% 46.9%;
-            --accent: 210 40% 96.1%; --accent-foreground: 222.2 47.4% 11.2%;
-            --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%;
-            --ring: 222.2 84% 4.9%;
+            --background: revert; --foreground: revert;
+            --card: revert; --card-foreground: revert;
+            --popover: revert; --popover-foreground: revert;
+            --primary: revert; --primary-foreground: revert;
+            --secondary: revert; --secondary-foreground: revert;
+            --muted: revert; --muted-foreground: revert;
+            --accent: revert; --accent-foreground: revert;
+            --border: revert; --input: revert;
+            --ring: revert;
           }
         ` }} />
       )}
