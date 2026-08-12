@@ -154,12 +154,32 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';`
       : `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';`;
 
+  // Roughly half the tenants have never had a template applied. Those used to
+  // inherit whatever colour the block components hardcoded; now that blocks are
+  // token-driven they'd fall through to the base shadcn slate, which renders
+  // CTAs as a near-black gradient. Give palette-less sites a neutral branded
+  // default (and still honour any color_overrides they've set) so a site
+  // without a template still looks like a site, not an unstyled shell.
+  const FALLBACK_PALETTE = {
+    primary: "#2563EB", primaryFg: "#ffffff",
+    secondary: "#0F172A", accent: "#38BDF8",
+    background: "#FFFFFF", foreground: "#0F172A",
+    muted: "#F1F5F9", mutedFg: "#64748B",
+    card: "#FFFFFF", border: "#E2E8F0", ring: "#2563EB",
+    borderRadius: "0.75rem",
+  };
+  const FALLBACK_TYPOGRAPHY = {
+    headingFont: "Inter", bodyFont: "Inter",
+    headingWeight: "700", letterSpacing: "-0.02em",
+  };
+
   const mergedPalette = templateIdentity
     ? { ...templateIdentity.palette, ...(identity?.color_overrides ?? {}) }
-    : null;
-  const templateCSSVars = templateIdentity && mergedPalette
-    ? buildTemplateCSSVars(mergedPalette, templateIdentity.typography)
-    : null;
+    : { ...FALLBACK_PALETTE, ...(identity?.color_overrides ?? {}) };
+  const templateCSSVars = buildTemplateCSSVars(
+    mergedPalette,
+    templateIdentity?.typography ?? FALLBACK_TYPOGRAPHY,
+  );
   const templateBodyScript = templateIdentity
     ? buildTemplateBodyScript(templateIdentity.slug)
     : null;
