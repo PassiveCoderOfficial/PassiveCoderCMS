@@ -33,13 +33,13 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   // Default to brand tokens (deep secondary bg + primary accent) rather than
   // the old hardcoded green/gold, so footers match the active template. An
   // explicit backgroundColor/accentColor in block data still wins.
-  const bg = backgroundColor ?? (isDark ? "#3A2E28" : "#FBF0E4");
-  const fg = textColor ?? (isDark ? "rgba(255,255,255,0.85)" : "#3A2E28");
-  const accent = accentColor ?? "#E8613C";
+  const bg = backgroundColor ?? (isDark ? "hsl(var(--secondary))" : "hsl(var(--muted))");
+  const fg = textColor ?? (isDark ? "rgba(255,255,255,0.85)" : "hsl(var(--foreground))");
+  const accent = accentColor ?? "hsl(var(--primary))";
   // When a custom text color is set (e.g. white footer on a red bg), derive
   // the muted/secondary tone from it instead of the theme grey — otherwise
   // taglines/links/copyright render grey and vanish on a colored footer.
-  const mutedFg = textColor ? `${textColor}cc` : (isDark ? "#D9C7BC" : "#8A776C");
+  const mutedFg = textColor ? `${textColor}cc` : (isDark ? "rgba(255,255,255,0.65)" : "hsl(var(--muted-foreground))");
   const borderCol = textColor ? `${textColor}22` : (isDark ? "#ffffff10" : "#00000010");
   const year = new Date().getFullYear();
 
@@ -70,7 +70,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={newsletterPlaceholder ?? "Enter your email"}
                 className="flex-1 md:w-64 text-sm px-4 py-2.5 rounded-full outline-none min-w-0"
-                style={{ backgroundColor: isDark ? "#ffffff15" : "#ffffff", color: isDark ? fg : "#3A2E28", border: `1px solid ${borderCol}` }}
+                style={{ backgroundColor: isDark ? "#ffffff15" : "hsl(var(--card))", color: isDark ? fg : "hsl(var(--foreground))", border: `1px solid ${borderCol}` }}
               />
               <button
                 type="submit"
@@ -115,7 +115,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center w-9 h-9 rounded-full transition-all hover:-translate-y-0.5"
-                    style={{ backgroundColor: accent + "1a", color: accent }}
+                    style={{ backgroundColor: accentColor ? `${accentColor}1a` : "hsl(var(--primary) / 0.12)", color: accent }}
                   >
                     {SOCIAL_ICONS[s.platform] ?? <span className="text-xs">{s.platform[0].toUpperCase()}</span>}
                   </a>

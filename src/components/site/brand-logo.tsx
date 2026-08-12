@@ -9,9 +9,12 @@ import React from "react";
  */
 export function BrandLogo({
   size = 34,
-  color = "#E8613C",
-  accentColor = "#F2A65A",
-  textColor = "#3A2E28",
+  // Neutral defaults — SVG fills need literal colors, and this component is
+  // shared across tenants. Callers (e.g. the nav) pass the tenant's own
+  // brand colors in; these only apply if nothing is supplied.
+  color = "#2563EB",
+  accentColor = "#F59E0B",
+  textColor = "#111827",
   showText = true,
   text = "My Service SG",
   className,

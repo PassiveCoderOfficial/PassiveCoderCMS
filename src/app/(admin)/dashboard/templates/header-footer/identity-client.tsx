@@ -556,8 +556,14 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
 
   async function saveIdentity() {
     setSaving(true);
-    await api("POST", { _type: "identity", ...identity });
-    setSaving(false); setSaved(true);
+    const res = await api("POST", { _type: "identity", ...identity });
+    setSaving(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      alert(d.error ?? "Couldn't save site identity — please try again.");
+      return;
+    }
+    setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 

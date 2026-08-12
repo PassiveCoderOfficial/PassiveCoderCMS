@@ -25,12 +25,13 @@ export async function POST(req: Request) {
 
   if (body._type === "identity") {
     const { _type, ...fields } = body;
-    const { data: existing } = await supabase.from("site_identity").select("id").eq("tenant_id", tenantId).single();
-    if (existing) {
-      await supabase.from("site_identity").update({ ...fields, updated_at: new Date().toISOString() }).eq("tenant_id", tenantId);
-    } else {
-      await supabase.from("site_identity").insert({ ...fields, tenant_id: tenantId });
-    }
+    const { data: existing } = await supabase.from("site_identity").select("id").eq("tenant_id", tenantId).maybeSingle();
+    // Surface write failures — these used to be swallowed, so a failed
+    // logo/favicon save looked successful in the UI while nothing persisted.
+    const { error } = existing
+      ? await supabase.from("site_identity").update({ ...fields, updated_at: new Date().toISOString() }).eq("tenant_id", tenantId)
+      : await supabase.from("site_identity").insert({ ...fields, tenant_id: tenantId });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
 

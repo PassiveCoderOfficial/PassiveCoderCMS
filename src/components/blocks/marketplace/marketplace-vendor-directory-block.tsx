@@ -20,7 +20,12 @@ function CategoryIcon({ name, className = "w-3.5 h-3.5" }: { name: string | null
  *  service is chosen. */
 export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceVendorDirectoryBlockProps }) {
   const { data } = block;
-  const accent = data.accentColor || "#E8613C";
+  // Token-driven by default so each tenant's palette applies; an explicit
+  // accentColor on the block still wins. Map pins need a literal color
+  // (baked into an SVG data-URI), so they fall back to a neutral hex.
+  const accent = data.accentColor || "hsl(var(--primary))";
+  const accentSoft = data.accentColor ? `${data.accentColor}1a` : "hsl(var(--primary) / 0.12)";
+  const pinColor = data.accentColor || "#2563EB";
   const showCards = data.showCards !== false;
 
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -61,7 +66,7 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
                     id: v.id,
                     lat: v.lat,
                     lng: v.lng,
-                    color: accent,
+                    color: pinColor,
                     render: () => (
                       <div>
                         <strong>{v.name}</strong>
@@ -78,7 +83,7 @@ export function MarketplaceVendorDirectoryBlock({ block }: { block: MarketplaceV
             <div key={v.id} className="group bg-card border border-border rounded-2xl p-5 space-y-3.5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${accent}1a` }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: accentSoft }}>
                     <Store className="w-4.5 h-4.5" style={{ color: accent }} />
                   </div>
                   <h3 className="font-semibold text-sm truncate">{v.name}</h3>

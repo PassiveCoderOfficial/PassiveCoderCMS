@@ -46,11 +46,11 @@ function HeroButtons({ data, centered, onDark }: { data: HeroBlockProps["data"];
               ? outlineCls
               : primaryButton.variant === "secondary"
               ? secondaryCls
-              : "text-white shadow-[0_8px_24px_-6px_rgba(232,97,60,0.35)]",
+              : "text-white shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.35)]",
           )}
           style={primaryButton.bgColor
             ? { backgroundColor: primaryButton.bgColor, color: primaryButton.textColor }
-            : (!primaryButton.variant || primaryButton.variant === "primary") ? { backgroundImage: "linear-gradient(135deg, #E8613C 0%, #F2A65A 100%)" } : undefined}
+            : (!primaryButton.variant || primaryButton.variant === "primary") ? { backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))" } : undefined}
         >
           {primaryButton.label}
         </Link>

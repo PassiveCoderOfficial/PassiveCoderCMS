@@ -29,12 +29,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
 
+  // Favicon/site name can be set from two different screens which write two
+  // different tables: Templates > Header/Footer writes site_identity, while
+  // Settings writes site_settings. Read both and prefer identity, otherwise a
+  // favicon uploaded on the Settings screen silently never appears and the
+  // platform default shows instead.
   const [{ data: settings }, identityResult] = await Promise.all([
     tenantId
       ? createAdminClient().then(admin =>
-          admin.from("site_settings").select("site_name, meta_description, site_description").eq("tenant_id", tenantId).maybeSingle()
+          admin.from("site_settings").select("site_name, meta_description, site_description, favicon_url").eq("tenant_id", tenantId).maybeSingle()
         )
-      : supabase.from("site_settings").select("site_name, meta_description, site_description").maybeSingle(),
+      : supabase.from("site_settings").select("site_name, meta_description, site_description, favicon_url").maybeSingle(),
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity").select("site_name, favicon_url").eq("tenant_id", tenantId).single()
@@ -44,7 +49,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const identity = identityResult?.data ?? null;
 
   const siteName = (identity as { site_name?: string } | null)?.site_name ?? settings?.site_name ?? "CMS Site";
-  const faviconUrl = (identity as { favicon_url?: string } | null)?.favicon_url ?? null;
+  const faviconUrl =
+    (identity as { favicon_url?: string } | null)?.favicon_url ??
+    (settings as { favicon_url?: string } | null)?.favicon_url ??
+    null;
 
   return {
     title: { default: siteName, template: `%s | ${siteName}` },

@@ -195,29 +195,30 @@ export function NavigationBlock({ block, identityLogo }: {
   const solid = !overlayHero || scrolled;
   const logoH = logoHeight ?? 34;
 
-  // Colors: token mode uses brand CSS vars where the platform's per-tenant
-  // template injection is live, falling back to explicit brand hexes here
-  // (activeColor/backgroundColor still override both). Warm & Approachable
-  // brand: coral primary, deep sage secondary, honey accent.
-  const BRAND_PRIMARY = "#E8613C";
+  // Colors are token-driven so each tenant's own template palette /
+  // color_overrides drive the nav — never hardcode a brand hex here, it
+  // would leak one client's brand onto every other tenant's site.
+  // activeColor/backgroundColor block props still override the tokens.
+  const BRAND_PRIMARY = "hsl(var(--primary))";
   const barBg = !solid
     ? "transparent"
     : tokenMode
-      ? (glass ? "rgba(255,251,245,0.88)" : "#FFFBF5")
-      : (backgroundColor ?? "#3A2E28");
+      ? (glass ? "hsl(var(--background) / 0.88)" : "hsl(var(--background))")
+      : (backgroundColor ?? "hsl(var(--secondary))");
   const fg = !solid
     ? "#ffffff"
-    : tokenMode ? "#3A2E28" : (textColor ?? "#ffffff");
+    : tokenMode ? "hsl(var(--foreground))" : (textColor ?? "#ffffff");
   const accent = activeColor ?? (tokenMode ? BRAND_PRIMARY : fg);
 
   const ctaV = ctaVariant ?? "gradient";
   const ctaClasses = "inline-flex items-center px-5 py-2.5 text-[0.9rem] font-semibold rounded-full transition-all hover:-translate-y-0.5";
+  const ctaShadow = "0 8px 20px -6px hsl(var(--primary) / 0.45)";
   const ctaStyleObj: React.CSSProperties =
     ctaV === "outline"
       ? { background: "transparent", color: solid ? accent : "#fff", border: `1.5px solid ${solid ? BRAND_PRIMARY : "rgba(255,255,255,0.6)"}` }
       : ctaV === "solid"
-        ? { background: BRAND_PRIMARY, color: "#fff", boxShadow: "0 8px 20px -6px rgba(232,97,60,0.4)" }
-        : { backgroundImage: "linear-gradient(135deg, #E8613C 0%, #F2A65A 100%)", color: "#fff", boxShadow: "0 8px 20px -6px rgba(232,97,60,0.4)" };
+        ? { background: BRAND_PRIMARY, color: "hsl(var(--primary-foreground))", boxShadow: ctaShadow }
+        : { backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))", color: "hsl(var(--primary-foreground))", boxShadow: ctaShadow };
 
   // Overlay mode (scrollAware): the bar is FIXED across the top so it floats
   // over the hero instead of consuming layout height above it (which caused an
@@ -253,7 +254,15 @@ export function NavigationBlock({ block, identityLogo }: {
             {logo ? (
               <Image src={logo} alt={logoText ?? "Logo"} width={logoH * 3.4} height={logoH} style={{ height: logoH }} className="w-auto object-contain" />
             ) : data.useBrandMark ? (
-              <BrandLogo size={logoH} textColor={fg} color={BRAND_PRIMARY} text={logoText ?? "Brand"} />
+              <BrandLogo
+                size={logoH}
+                text={logoText ?? "Brand"}
+                textColor={fg}
+                // SVG fills need a literal color — hsl(var(--x)) doesn't
+                // resolve reliably as an SVG attribute. Use the block's
+                // explicit activeColor when set, else BrandLogo's default.
+                {...(activeColor ? { color: activeColor } : {})}
+              />
             ) : (
               <span className="text-[1.15rem] font-extrabold tracking-tight" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>
                 {logoText ?? "Brand"}
@@ -322,7 +331,7 @@ export function NavigationBlock({ block, identityLogo }: {
       {mobileOpen && (
         <>
           <div className="md:hidden fixed inset-0 top-[4.5rem] bg-black/40 z-40 animate-in fade-in" onClick={() => setMobileOpen(false)} />
-          <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "#ffffff", color: "#3A2E28" }}>
+          <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))" }}>
             <ul className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
               {items.map((item) => {
                 const hasChildren = (item.children?.length ?? 0) > 0;
@@ -362,7 +371,7 @@ export function NavigationBlock({ block, identityLogo }: {
               })}
               <li className="pt-3 space-y-2">
                 {showCta && ctaLabel && ctaUrl && (
-                  <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold text-white" style={{ backgroundImage: "linear-gradient(135deg, #E8613C 0%, #F2A65A 100%)", boxShadow: "0 8px 20px -6px rgba(232,97,60,0.4)" }} onClick={() => setMobileOpen(false)}>
+                  <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold" style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))", color: "hsl(var(--primary-foreground))", boxShadow: "0 8px 20px -6px hsl(var(--primary) / 0.45)" }} onClick={() => setMobileOpen(false)}>
                     {ctaLabel}
                   </Link>
                 )}

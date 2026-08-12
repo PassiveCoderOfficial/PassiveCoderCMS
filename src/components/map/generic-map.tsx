@@ -23,7 +23,10 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
 }
 
 // Brand accent (honey heart-badge color from BrandLogo) — dot inside the pin.
-const ACCENT_DOT = "#F2A65A";
+// Literal colors — baked into an SVG data-URI marker, so CSS vars can't be
+// used here. Neutral platform defaults; callers pass tenant colors via
+// MapPin.color.
+const ACCENT_DOT = "#F59E0B";
 
 export function pinIcon(color: string) {
   if (typeof window === "undefined" || !window.google) return undefined;
@@ -160,7 +163,7 @@ export function GenericMap({
         )}
         {pins.map((p) => (
           <Marker key={p.id} position={{ lat: p.lat, lng: p.lng }}
-            icon={pinIcon(p.color ?? "#E8613C")}
+            icon={pinIcon(p.color ?? "#2563EB")}
             label={p.label ? { text: p.label, color: "#fff", fontSize: "9px", fontWeight: "700" } : undefined}
             onClick={() => setActive(p)} />
         ))}
