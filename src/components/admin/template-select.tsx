@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle, Layout, Sparkles } from "lucide-react";
-import { TEMPLATES, TEMPLATE_CATEGORIES } from "@/lib/templates/templates-data";
+import { useEffect, useState } from "react";
+import { CheckCircle, Layout, Sparkles, Loader2 } from "lucide-react";
+import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 
 export interface TemplateSelectValue {
   templateId: string;
@@ -11,8 +11,11 @@ export interface TemplateSelectValue {
 
 /**
  * Compact template picker for site-creation forms outside the full onboarding
- * wizard (SA "New Site", staff "New Site"). Same catalog + blank option as
- * onboarding Step5, just without the wizard chrome.
+ * wizard (SA "New Site", staff "New Site"). Same published templates + blank
+ * option as onboarding Step5, just without the wizard chrome.
+ *
+ * Loads from /api/templates rather than a bundled list so a site can only ever
+ * be created from a template that actually exists.
  */
 export function TemplateSelect({ value, onChange, dark }: {
   value: TemplateSelectValue;
@@ -20,7 +23,17 @@ export function TemplateSelect({ value, onChange, dark }: {
   dark?: boolean;
 }) {
   const [category, setCategory] = useState("All");
-  const filtered = category === "All" ? TEMPLATES : TEMPLATES.filter(t => t.category === category);
+  const [templates, setTemplates] = useState<Template[] | null>(null);
+
+  useEffect(() => {
+    fetch("/api/templates")
+      .then((r) => r.json())
+      .then((d: Template[]) => setTemplates(Array.isArray(d) ? d : []))
+      .catch(() => setTemplates([]));
+  }, []);
+
+  const all = templates ?? [];
+  const filtered = category === "All" ? all : all.filter(t => t.category === category);
 
   const cardBase = dark
     ? "border-gray-700 hover:border-gray-600"
@@ -46,6 +59,12 @@ export function TemplateSelect({ value, onChange, dark }: {
           </button>
         ))}
       </div>
+
+      {templates === null && (
+        <div className={`flex items-center gap-2 py-6 text-xs ${labelMuted}`}>
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading templates…
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
         {category === "All" && (
@@ -77,13 +96,20 @@ export function TemplateSelect({ value, onChange, dark }: {
                 selected ? cardSelected : cardBase
               }`}
             >
-              <div className="h-20 relative overflow-hidden bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/images/templates/${t.slug}.jpg`}
-                  alt={`${t.name} preview`}
-                  className="w-full h-full object-cover object-top"
-                />
+              <div
+                className="h-20 relative overflow-hidden bg-muted"
+                style={t.heroImage ? undefined : { background: `linear-gradient(135deg, ${t.thumbFrom}, ${t.thumbTo})` }}
+              >
+                {/* Falls back to the palette gradient — most templates have no
+                    screenshot yet, and a broken <img> looked like a bug. */}
+                {t.heroImage && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={t.heroImage}
+                    alt={`${t.name} preview`}
+                    className="w-full h-full object-cover object-top"
+                  />
+                )}
                 {selected && (
                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                     <CheckCircle className="w-7 h-7 text-primary drop-shadow-lg" />

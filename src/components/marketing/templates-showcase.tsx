@@ -4,70 +4,13 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, Zap, ChevronRight, Sparkles, Star } from "lucide-react";
-import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
+import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 
-const TEMPLATE_SERVICES: Record<string, string[]> = {
-  "build-right":     ["Renovation", "New Build", "Fit-Out"],
-  "colour-craft":    ["Interior Paint", "Exterior", "Colour Consult"],
-  "glass-line":      ["Glass Partitions", "Shopfronts", "Aluminium"],
-  "curtain-studio":  ["Curtains", "Blinds", "Home Measuring"],
-  "pest-shield":     ["Pest Control", "Termite Treatment", "Eco-Safe"],
-  "fresh-wash":      ["Dry Cleaning", "Laundry", "Home Pickup"],
-  "uniform-pro":     ["Uniforms", "Workwear", "Bulk Orders"],
-  "cool-breeze":     ["AC Installation", "Servicing", "24/7 Repair"],
-  "sparky-pro":      ["Electrical", "Plumbing", "Emergency Call"],
-  "trade-supply":    ["Wholesale", "Bulk Supply", "Import/Export"],
-  "shield-guard":    ["Guard Services", "CCTV", "Patrol"],
-  "shine-auto":      ["Car Wash", "Detailing", "Ceramic Coat"],
-  "feast-events":    ["Catering", "Corporate Events", "Weddings"],
-  "medplus-clinic":  ["GP Consult", "Specialist", "Walk-In"],
-  "drive-academy":   ["Driving Lessons", "Theory Test", "License"],
-  // Batch 2
-  "handyfix-pro":          ["General Repairs", "Furniture Assembly", "Odd Jobs"],
-  "buildguard":            ["Preventive Maintenance", "Facility Management", "Emergency Repairs"],
-  "apex-construct":        ["New Builds", "Renovations", "Project Management"],
-  "sparkle-home":          ["Regular Cleans", "Deep Clean", "End-of-Lease"],
-  "cleancore-commercial":  ["Office Cleaning", "Industrial Clean", "Strip & Seal"],
-  "fibrefresh":            ["Carpet Steam Clean", "Upholstery Clean", "Rug Restoration"],
-  "flowmaster-plumbing":   ["Emergency Plumbing", "Drain Clearing", "Pipe Repairs"],
-  "heatwave-hvac":         ["Boiler Installation", "Gas Servicing", "Central Heating"],
-  "totalbuilds-services":  ["Plumbing", "Electrical", "HVAC"],
-  "torque-auto":           ["Log Book Service", "Brake & Tyres", "Engine Diagnostics"],
-  "gripzone-tyres":        ["Tyre Fitting", "Wheel Alignment", "Puncture Repair"],
-  "panelcraft":            ["Smash Repairs", "Paint Correction", "Insurance Claims"],
-  "threadline":            ["Women's Fashion", "Men's Wear", "New Arrivals"],
-  "stride-active":         ["Gym Wear", "Running Gear", "Sports Equipment"],
-  "worksafe-gear":         ["Hi-Vis Clothing", "Safety Boots", "PPE Supplies"],
-  "wanderway":             ["Holiday Packages", "Flight Booking", "Hotel & Tours"],
-  "trailblaze-tours":      ["Guided Tours", "Adventure Trips", "Group Travel"],
-  "visabridge":            ["Skilled Visas", "Student Visas", "Family Migration"],
-  "tablefare":             ["Dine-In", "Private Bookings", "Takeaway"],
-  "beancraft-cafe":        ["Specialty Coffee", "All-Day Brunch", "Catering"],
-  "streetbite":            ["Online Ordering", "Food Truck", "Catering Events"],
-  "lumiere-salon":         ["Hair Styling", "Nail Art", "Beauty Treatments"],
-  "fade-barbershop":       ["Haircuts", "Beard Grooming", "Hot Towel Shave"],
-  "smilestudio-dental":    ["General Dentistry", "Teeth Whitening", "Orthodontics"],
-  "ironforge-gym":         ["Gym Membership", "Group Classes", "Personal Training"],
-  "peak-pt":               ["1-on-1 Training", "Online Coaching", "Nutrition Plans"],
-  "swiftdrop-courier":     ["Same-Day Delivery", "Express Parcels", "Business Accounts"],
-  "vaultstore":            ["Self Storage", "Home Removals", "Packing Services"],
-  "pressmark-print":       ["Business Cards", "Banners & Signage", "Custom Branding"],
-  "brightminds-tutor":     ["Maths Tutoring", "English & Writing", "Exam Prep"],
-  "skillforge-training":   ["Trade Certificates", "Safety Courses", "Online Learning"],
-  "lexbridge-law":         ["Family Law", "Commercial Law", "Property Conveyancing"],
-  "cleartax-accounting":   ["Tax Returns", "Bookkeeping", "Business Advisory"],
-  "lenscroft-studio":      ["Portrait Sessions", "Wedding Photography", "Commercial Shoots"],
-  "forever-events":        ["Full Planning", "Day Coordination", "Vendor Management"],
-  "prime-property":        ["Buyer's Agent", "Property Sales", "Market Appraisal"],
-  "propertyvault-mgmt":    ["Tenant Sourcing", "Rent Collection", "Maintenance Coordination"],
-  "netsupport-it":         ["Helpdesk Support", "Network Setup", "Cyber Security"],
-  "growthlab-agency":      ["SEO & Content", "Paid Ads", "Social Media"],
-};
 
 function TemplateThumbnail({ template }: { template: Template }) {
-  const src = template.slug in TEMPLATE_SERVICES
-    ? `/images/templates/${template.slug}.jpg`
-    : template.heroImage;
+  // The template's own screenshot_url. Previously a slug lookup against a
+  // hardcoded map, which only matched the fabricated catalog entries.
+  const src = template.heroImage;
 
   return (
     <div className="w-full aspect-[4/3] rounded-t-xl overflow-hidden relative bg-gray-100">
@@ -182,16 +125,20 @@ function TemplateCard({ template }: { template: Template }) {
 const ITEMS_PER_PAGE = 12;
 
 /**
- * @param extraTemplates engine-authored templates from the DB, listed ahead
- *   of the static catalog. Defaults to none so existing callers that render
- *   the marketing catalog alone keep working unchanged.
+ * @param extraTemplates the published templates to show, mapped from the
+ *   `templates` table by dbTemplateToCatalogItem. Named "extra" from when
+ *   these supplemented a static catalog; they are now the whole list.
  */
 export default function TemplatesShowcase({ extraTemplates = [] }: { extraTemplates?: Template[] } = {}) {
   const [category, setCategory] = useState<string>("All");
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
 
-  const allTemplates = useMemo(() => [...extraTemplates, ...TEMPLATES], [extraTemplates]);
+  // Every card here is a real published template from the DB. This used to
+  // concatenate a 55-entry hardcoded marketing list, 49 of which described
+  // templates that did not exist — their preview 404'd and picking one at
+  // signup quietly produced a blank site.
+  const allTemplates = extraTemplates;
 
   const filtered = useMemo(() => {
     return allTemplates.filter(t => {

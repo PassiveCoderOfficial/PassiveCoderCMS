@@ -14,6 +14,7 @@ import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
+import { fetchPublishedTemplates } from "@/lib/templates/published-templates";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
 import { LocationConsent } from "@/components/donors/location-consent";
@@ -162,7 +163,7 @@ export default async function MarketingHomePage() {
   }
 
   // ── Root domain: marketing homepage ───────────────────────────────────────
-  const [{ data: settings }, { data: plans }, { data: rootPage }] = await Promise.all([
+  const [{ data: settings }, { data: plans }, { data: rootPage }, showcaseTemplates] = await Promise.all([
     supabase.from("homepage_settings").select("*").single(),
     supabase.from("plans").select("*").order("sort_order"),
     supabase
@@ -172,6 +173,7 @@ export default async function MarketingHomePage() {
       .eq("status", "published")
       .is("tenant_id", null)
       .maybeSingle(),
+    fetchPublishedTemplates(),
   ]);
 
   if (rootPage?.blocks && Array.isArray(rootPage.blocks) && rootPage.blocks.length > 0) {
@@ -195,7 +197,7 @@ export default async function MarketingHomePage() {
       <main>
         <HeroSection settings={settings} />
         <FeaturesSection />
-        <TemplatesShowcase />
+        <TemplatesShowcase extraTemplates={showcaseTemplates} />
         <HowItWorksSection />
         <ClientsSection />
         <PricingSection plans={plans ?? []} />

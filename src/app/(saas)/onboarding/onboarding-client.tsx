@@ -15,7 +15,7 @@ import {
   Clock, MessageSquare, Zap, Layout, Eye, EyeOff, User, LogOut,
 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
+import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
 
@@ -649,10 +649,11 @@ function TemplateMiniCard({ template, selected, mode, onSelect, onModeChange }: 
   );
 }
 
-function Step5({ onNext, initialSlug, initialMode }: {
+function Step5({ onNext, initialSlug, initialMode, templates }: {
   onNext: (templateSlug: string, mode: "theme" | "full") => void;
   initialSlug?: string;
   initialMode?: "theme" | "full";
+  templates: Template[];
 }) {
   const params = useSearchParams();
   const urlSlug = params.get("template") ?? initialSlug ?? "";
@@ -660,16 +661,18 @@ function Step5({ onNext, initialSlug, initialMode }: {
 
   const [category, setCategory] = useState<string>("All");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string>(urlSlug || TEMPLATES[0].slug);
+  // Falls back to "blank" rather than templates[0] — with no published
+  // templates there is nothing to preselect, and blank is always valid.
+  const [selected, setSelected] = useState<string>(urlSlug || templates[0]?.slug || "blank");
   const [mode, setMode] = useState<"theme" | "full">(urlMode);
 
-  const filtered = TEMPLATES.filter(t => {
+  const filtered = templates.filter(t => {
     const matchCat = category === "All" || t.category === category;
     const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
     return matchCat && matchSearch;
   });
 
-  const selectedTemplate = TEMPLATES.find(t => t.slug === selected);
+  const selectedTemplate = templates.find(t => t.slug === selected);
 
   return (
     <div className="space-y-4">
@@ -892,7 +895,7 @@ function Step6({
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function OnboardingClient() {
+export default function OnboardingClient({ templates }: { templates: Template[] }) {
   const params = useSearchParams();
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
@@ -992,6 +995,7 @@ export default function OnboardingClient() {
             <Step5
               initialSlug={templateId}
               initialMode={templateMode}
+              templates={templates}
               onNext={(slug, m) => { setTemplateId(slug); setTemplateMode(m); setStep(6); }}
             />
           )}

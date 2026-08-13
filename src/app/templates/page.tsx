@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import TemplatesShowcase from "@/components/marketing/templates-showcase";
-import { createAdminClient } from "@/lib/supabase/server";
-import { dbTemplateToCatalogItem } from "@/modules/templates/to-browser-item";
-import type { SiteTemplate } from "@/modules/templates/types";
-import type { Template } from "@/lib/templates/templates-data";
+import { fetchPublishedTemplates } from "@/lib/templates/published-templates";
 
 export const metadata: Metadata = {
   title: "Website Templates — Passive Coder",
@@ -13,17 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TemplatesPage() {
-  // Engine-authored templates appear alongside the static catalog once
-  // published — same grid, same card, so customers see one unified list.
-  const admin = await createAdminClient();
-  const { data: dbTemplates } = await admin
-    .from("templates")
-    .select("*")
-    .not("owner_id", "is", null)
-    .eq("status", "published")
-    .order("updated_at", { ascending: false });
-
-  const extraTemplates = ((dbTemplates ?? []) as SiteTemplate[]).map(dbTemplateToCatalogItem) as Template[];
+  const extraTemplates = await fetchPublishedTemplates();
 
   return (
     <div className="min-h-screen bg-white">
