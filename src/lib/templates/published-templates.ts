@@ -21,5 +21,22 @@ export async function fetchPublishedTemplates(): Promise<Template[]> {
     .eq("status", "published")
     .order("updated_at", { ascending: false });
 
-  return ((data ?? []) as SiteTemplate[]).map(dbTemplateToCatalogItem) as Template[];
+  const templates = (data ?? []) as SiteTemplate[];
+  if (templates.length === 0) return [];
+
+  // Page counts drive the "Np" badge on each card. Fetched in one query and
+  // tallied here rather than a count per template.
+  const { data: pages } = await admin
+    .from("pages")
+    .select("template_id")
+    .in("template_id", templates.map((t) => t.id))
+    .is("deleted_at", null);
+
+  const counts = new Map<string, number>();
+  for (const p of pages ?? []) {
+    const id = p.template_id as string;
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+
+  return templates.map((t) => dbTemplateToCatalogItem(t, counts.get(t.id) ?? 0)) as Template[];
 }

@@ -57,7 +57,7 @@ export function dbTemplateToBrowserItem(t: SiteTemplate): BrowserTemplateItem {
  * Adapts a DB template into the marketing catalog's `Template` shape, used by
  * the public /templates grid and the homepage showcase section.
  */
-export function dbTemplateToCatalogItem(t: SiteTemplate): {
+export function dbTemplateToCatalogItem(t: SiteTemplate, pageCount = 0): {
   id: string; slug: string; name: string; category: string; description: string;
   tags: string[]; gradient: string; thumbFrom: string; thumbTo: string;
   accentColorHex: string; heroImage: string; pages: number; hasDemo: boolean;
@@ -78,12 +78,13 @@ export function dbTemplateToCatalogItem(t: SiteTemplate): {
     accentColorHex: palette.accent,
     // Falls back to the palette-gradient thumbnail when no screenshot exists.
     heroImage: t.screenshot_url ?? "",
-    // Page count isn't stored on the row — the grid only uses it for a small
-    // "Np" badge, and the real number lives in the pages table.
-    pages: 0,
-    hasDemo: true,
+    // Counted from the pages table by the caller — it isn't on the row, and
+    // showing "0p" on every card looked like the template was empty.
+    pages: pageCount,
+    hasDemo: pageCount > 0,
     featured: t.featured ?? false,
-    badge: "New",
+    // No badge by default: "New" on every card, forever, means nothing.
+    badge: undefined,
     heroHeadline: t.name,
     heroSubline: t.description ?? "",
     primaryColor: palette.primary,
