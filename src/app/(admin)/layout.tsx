@@ -269,7 +269,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     const { data: rootTenant } = await adminClient
       .from("tenants")
       .select("id")
-      .eq("owner_id", user.id)
       .eq("slug", rootSlug)
       .maybeSingle();
     let saOwnedId = rootTenant?.id;
@@ -303,9 +302,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       has_owner: !!t.owner_id,
     }));
   } else {
+    // is_primary here means "the site currently being viewed", which is what
+    // the switcher highlights — not the membership's own primary flag. A
+    // member of several tenants browsing a non-primary one would otherwise
+    // see the switcher naming a different site than the dashboard is showing.
+    const viewingTenantId = (await headers()).get("x-tenant-id")
+      ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
+      ?? (memberships ?? [])[0]?.tenant_id;
     userSites = (memberships ?? []).map(m => {
       const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string } | null;
-      return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: m.is_primary ?? false } : null;
+      return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: t.id === viewingTenantId } : null;
     }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
   }
 
