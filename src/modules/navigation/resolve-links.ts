@@ -32,6 +32,14 @@ const FRAGMENT_ALIASES: Record<string, string> = {
   quote: "contact",
   enquiry: "contact",
   "get-quote": "contact",
+  // Industry-specific labels the migrated templates actually shipped with.
+  destinations: "gallery",
+  treatments: "services",
+  reservations: "contact",
+  "our-story": "about",
+  story: "about",
+  features: "about",
+  faqs: "faq",
 };
 
 /**

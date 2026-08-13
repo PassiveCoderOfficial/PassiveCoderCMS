@@ -13,6 +13,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Block, NavItem } from "@/types/cms";
 import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
+import { resolveNavItems } from "@/modules/navigation/resolve-links";
 
 export type ApplyMode = "theme" | "full";
 
@@ -95,13 +96,24 @@ export async function applyDbTemplate(
   await supabase.from("site_identity").upsert(identityPatch, { onConflict: "tenant_id" });
 
   // ── 2. Navigation ───────────────────────────────────────────────────────
+  // Templates authored as one-page designs carry "#services"-style fragment
+  // links. Applied to a tenant that gets real pages, those go nowhere from
+  // any page but home — resolve them against the slugs this template actually
+  // ships before the menu is written.
   if (tpl.nav_items?.length) {
+    const { data: navPages } = await supabase
+      .from("pages")
+      .select("slug")
+      .eq("template_id", templateId)
+      .is("deleted_at", null);
+    const templateSlugs = (navPages ?? []).map((p) => p.slug as string);
+
     await supabase.from("nav_menus").upsert(
       {
         tenant_id: tenantId,
         name: "Main Navigation",
         location: "header",
-        items: tpl.nav_items,
+        items: resolveNavItems(tpl.nav_items, templateSlugs),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "tenant_id,location" },
@@ -159,6 +171,18 @@ export async function applyDbTemplate(
     .select("id");
   pagesArchived += collisions?.length ?? 0;
 
+  // Same fragment problem as the menu above, but for nav blocks embedded in
+  // the pages themselves — which is where every migrated template keeps its
+  // navigation.
+  const pageSlugs = pages.map((p) => p.slug as string);
+  const resolveBlockNav = (blocks: Block[]): Block[] =>
+    blocks.map((b) => {
+      if (b.type !== "navigation") return b;
+      const data = b.data as { items?: NavItem[] };
+      if (!Array.isArray(data.items)) return b;
+      return { ...b, data: { ...data, items: resolveNavItems(data.items, pageSlugs) } } as Block;
+    });
+
   const now = new Date().toISOString();
   const rows = pages.map((p, i) => ({
     tenant_id: tenantId,
@@ -167,7 +191,7 @@ export async function applyDbTemplate(
     slug: p.slug,
     type: p.type ?? "page",
     status: "published",
-    blocks: p.blocks ?? [],
+    blocks: resolveBlockNav((p.blocks as Block[] | null) ?? []),
     seo: p.seo ?? {},
     settings: p.settings ?? {},
     featured_image: p.featured_image ?? null,
