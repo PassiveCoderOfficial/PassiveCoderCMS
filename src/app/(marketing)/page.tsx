@@ -165,7 +165,7 @@ export default async function MarketingHomePage() {
   // ── Root domain: marketing homepage ───────────────────────────────────────
   const [{ data: settings }, { data: plans }, { data: rootPage }, showcaseTemplates] = await Promise.all([
     supabase.from("homepage_settings").select("*").single(),
-    supabase.from("plans").select("*").order("sort_order"),
+    supabase.from("plans").select("*").eq("is_active", true).order("sort_order"),
     supabase
       .from("pages")
       .select("*")

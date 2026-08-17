@@ -55,7 +55,6 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
   const suffix = cycle === "monthly" ? "/month" : "/year";
 
   const visiblePlans = plans.filter(p => p.id !== "custom");
-  const customPlan   = plans.find(p => p.id === "custom");
 
   return (
     <section id="pricing" className="py-24 bg-white">
@@ -261,23 +260,22 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
           </div>
         </div>
 
-        {/* Custom plan — slim strip */}
-        {customPlan && (
-          <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <p className="font-bold text-gray-900">Need something custom?</p>
-              <p className="text-sm text-gray-500 mt-0.5">
-                Multiple sites, white-label, dedicated infrastructure, custom integrations, or an SLA — let&apos;s build a plan around your needs.
-              </p>
-            </div>
-            <Link
-              href="/contact?dept=sales"
-              className="shrink-0 flex items-center gap-2 border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
-            >
-              Contact Sales <ArrowRight className="w-4 h-4" />
-            </Link>
+        {/* Enterprise/custom needs beyond the standard tiers — static
+            marketing copy, not tied to a purchasable plan row. */}
+        <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="font-bold text-gray-900">Need something custom?</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Multiple sites, white-label, dedicated infrastructure, custom integrations, or an SLA — let&apos;s build a plan around your needs.
+            </p>
           </div>
-        )}
+          <Link
+            href="/contact?dept=sales"
+            className="shrink-0 flex items-center gap-2 border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
+          >
+            Contact Sales <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
 
         <p className="text-center text-xs text-gray-500 mt-6">
           All plans include SSL, daily backups, page builder, and uptime monitoring. Prices in USD.

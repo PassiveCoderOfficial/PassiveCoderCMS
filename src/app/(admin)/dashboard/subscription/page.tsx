@@ -87,7 +87,7 @@ export default function SubscriptionPage() {
       const [{ data: memberships }, { data: agentRow }, { data: plansData }, { data: saRow }, { data: cfg }] = await Promise.all([
         supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id),
         supabase.from("pc_staff").select("id,referral_code,commission_rate,status").eq("user_id", user.id).maybeSingle(),
-        supabase.from("plans").select("*").order("sort_order"),
+        supabase.from("plans").select("*").eq("is_active", true).order("sort_order"),
         supabase.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
         supabase.from("platform_settings").select("bkash_number,nagad_number,bank_details,manual_payment_instructions,whatsapp_number").eq("id", 1).maybeSingle(),
       ]);
@@ -438,7 +438,6 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
 }) {
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   const paid = plans.filter(p => (p.price_yearly ?? 0) > 0);
-  const custom = plans.find(p => p.id === "custom");
   const cycleSuffix = cycle === "monthly" ? "/mo" : "/yr";
 
   const usdFor = (p: Plan) => (cycle === "monthly" ? (p.price_monthly ?? 0) : p.price_yearly) / 100;
@@ -505,14 +504,6 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
         })}
       </div>
 
-      {custom && (
-        <div className="rounded-lg border border-dashed p-3 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Need something bigger? <strong className="text-foreground">Custom</strong> plan available.</span>
-          <Button size="sm" variant="ghost" asChild>
-            <a href="/dashboard/support?new=1&dept=custom_dev">Contact Support</a>
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

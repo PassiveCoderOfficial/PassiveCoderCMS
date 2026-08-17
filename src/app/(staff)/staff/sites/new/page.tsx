@@ -122,7 +122,7 @@ export default function StaffNewSitePage() {
                 className="w-full bg-muted border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
                 <option value="basic">Basic</option>
                 <option value="pro">Pro</option>
-                <option value="custom">Custom</option>
+                <option value="biz">Biz</option>
               </select>
             </div>
 
