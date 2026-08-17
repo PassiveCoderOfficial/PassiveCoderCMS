@@ -11,8 +11,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Monitor, Tablet, Smartphone, Eye, Edit3, Undo2, Redo2,
-  Save, PanelLeft, Loader2
+  Save, PanelLeft, Loader2, Sparkles
 } from "lucide-react";
+import { AiCoderDialog } from "./aicoder-dialog";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -132,6 +133,7 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
   } = useBuilderStore();
   const { saving, isDirty, lastSavedAt, handleSave } = controls;
   const [showBlocks, setShowBlocks] = useState(true);
+  const [aiCoderOpen, setAiCoderOpen] = useState(false);
 
   const breakpoints = [
     { value: "desktop", icon: Monitor, label: "Desktop" },
@@ -211,6 +213,9 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
           </Tooltip>
 
           <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setAiCoderOpen(true)} className="h-8 gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> AiCoder
+            </Button>
             <span className="text-xs text-muted-foreground hidden sm:inline">
               {saving ? "Saving…" : isDirty ? "Unsaved changes" : lastSavedAt ? "All changes saved" : ""}
             </span>
@@ -249,6 +254,8 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
           </div>
         </div>
       </div>
+
+      <AiCoderDialog open={aiCoderOpen} onClose={() => setAiCoderOpen(false)} />
     </TooltipProvider>
   );
 }
