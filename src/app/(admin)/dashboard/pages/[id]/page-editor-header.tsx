@@ -3,12 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Settings, Eye, Copy } from "lucide-react";
+import { ChevronLeft, Settings, Eye, Copy, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageSettingsDrawer } from "@/components/admin/page-settings/page-settings-drawer";
+import { PageHistoryDrawer } from "@/components/admin/page-history-drawer";
 import { createClient } from "@/lib/supabase/client";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { duplicatePage } from "../content-status";
@@ -25,6 +26,7 @@ export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug:
   const [status, setStatus] = useState(page.status);
   const [saving, setSaving] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const isMobile = useIsMobile();
 
@@ -171,6 +173,10 @@ export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug:
             )}
           </Button>
 
+          <Button variant="outline" size="icon" className="h-7 w-7" title="Page History" onClick={() => setHistoryOpen(true)}>
+            <History className="h-3.5 w-3.5" />
+          </Button>
+
           <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setSettingsOpen(true)}>
             <Settings className="h-3.5 w-3.5" />
           </Button>
@@ -178,6 +184,7 @@ export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug:
       </div>
 
       <PageSettingsDrawer page={page} open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <PageHistoryDrawer pageId={page.id} open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </>
   );
 }
