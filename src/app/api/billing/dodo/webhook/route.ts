@@ -28,6 +28,23 @@ export async function POST(req: Request) {
   if (event.type === "payment.succeeded") {
     const payment = event.data;
     const tenantId = payment.metadata?.tenant_id as string | undefined;
+
+    // AiCoder generation top-up — separate from plan-subscription payments,
+    // credits tenants.ai_generations_purchased instead of touching
+    // subscriptions. Checked first since it has no plan_id.
+    if (payment.metadata?.type === "ai_topup" && tenantId) {
+      const generations = parseInt(payment.metadata.generations as string, 10) || 0;
+      if (generations > 0) {
+        const { data: tenant } = await admin.from("tenants").select("ai_generations_purchased").eq("id", tenantId).maybeSingle();
+        if (tenant) {
+          await admin.from("tenants")
+            .update({ ai_generations_purchased: tenant.ai_generations_purchased + generations })
+            .eq("id", tenantId);
+        }
+      }
+      return NextResponse.json({ ok: true });
+    }
+
     const planId   = payment.metadata?.plan_id   as string | undefined;
     const cycle    = payment.metadata?.billing_cycle as string | undefined;
     if (!tenantId || !planId) return NextResponse.json({ ok: true });

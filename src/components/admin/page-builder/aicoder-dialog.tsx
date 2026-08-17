@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, Plus, X, RefreshCw } from "lucide-react";
+import { Sparkles, Loader2, Plus, X, RefreshCw, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,13 @@ interface QuotaStatus {
   resetAt: string;
 }
 
+interface TopupPackage {
+  id: string;
+  name: string;
+  generations: number;
+  price_usd_cents: number;
+}
+
 export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { addBlock, selectedBlockId } = useBuilderStore();
   const [blockType, setBlockType] = useState<BlockType>("hero");
@@ -36,6 +43,9 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [preview, setPreview] = useState<Block | null>(null);
   const [error, setError] = useState("");
   const [quota, setQuota] = useState<QuotaStatus | null>(null);
+  const [packages, setPackages] = useState<TopupPackage[] | null>(null);
+  const [showBuy, setShowBuy] = useState(false);
+  const [buyingId, setBuyingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -43,7 +53,28 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
       .then(r => r.json())
       .then(d => setQuota(d.error ? null : d))
       .catch(() => setQuota(null));
+    fetch("/api/aicoder/packages")
+      .then(r => r.json())
+      .then(d => setPackages(d.packages ?? []))
+      .catch(() => setPackages([]));
   }, [open]);
+
+  async function buyPackage(packageId: string) {
+    setBuyingId(packageId);
+    try {
+      const res = await fetch("/api/aicoder/topup/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Couldn't start checkout");
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't start checkout");
+      setBuyingId(null);
+    }
+  }
 
   async function generate() {
     if (!instruction.trim()) { toast.error("Describe what you want this section to say"); return; }
@@ -99,14 +130,44 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
           </p>
 
           {quota && (
-            <div className="rounded-lg border px-3 py-2 text-xs flex items-center justify-between">
-              <span className="text-muted-foreground">
-                {quota.monthlyIncluded > 0
-                  ? `${Math.max(0, quota.monthlyIncluded - quota.usedThisMonth)} of ${quota.monthlyIncluded} generations left this month`
-                  : "No monthly generations on this plan"}
-              </span>
-              {quota.purchasedRemaining > 0 && (
-                <span className="text-primary font-medium">+{quota.purchasedRemaining} purchased</span>
+            <div className="rounded-lg border px-3 py-2 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">
+                  {quota.monthlyIncluded > 0
+                    ? `${Math.max(0, quota.monthlyIncluded - quota.usedThisMonth)} of ${quota.monthlyIncluded} generations left this month`
+                    : "No monthly generations on this plan"}
+                </span>
+                {quota.purchasedRemaining > 0 && (
+                  <span className="text-primary font-medium">+{quota.purchasedRemaining} purchased</span>
+                )}
+              </div>
+              <button
+                onClick={() => setShowBuy(v => !v)}
+                className="flex items-center gap-1 text-primary hover:underline"
+              >
+                <ShoppingCart className="w-3 h-3" /> {showBuy ? "Hide" : "Buy more generations"}
+              </button>
+              {showBuy && (
+                <div className="space-y-1.5 pt-1">
+                  {packages === null && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+                  {packages?.length === 0 && (
+                    <p className="text-muted-foreground">No top-up packages available right now.</p>
+                  )}
+                  {packages?.map(pkg => (
+                    <div key={pkg.id} className="flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-1.5">
+                      <span>{pkg.generations.toLocaleString()} generations — ${(pkg.price_usd_cents / 100).toFixed(2)}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-[11px] px-2"
+                        onClick={() => buyPackage(pkg.id)}
+                        disabled={buyingId === pkg.id}
+                      >
+                        {buyingId === pkg.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Buy"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
