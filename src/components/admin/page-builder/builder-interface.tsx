@@ -22,6 +22,10 @@ import type { Page } from "@/types/cms";
 
 interface BuilderInterfaceProps {
   page: Page;
+  /** Server-resolved ai_coder module state for this page's tenant — hides
+   *  the AiCoder button when the module isn't enabled. The API route also
+   *  enforces this independently, so this is UX polish, not the real gate. */
+  aiCoderEnabled?: boolean;
 }
 
 /** Shared save/undo/shortcut logic — returned to whichever shell renders. */
@@ -32,7 +36,7 @@ export interface BuilderControls {
   handleSave: (auto?: boolean) => Promise<void>;
 }
 
-export function BuilderInterface({ page }: BuilderInterfaceProps) {
+export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterfaceProps) {
   const {
     blocks, isDirty,
     setBlocks, setPageId, setTenantId, setDirty,
@@ -121,12 +125,12 @@ export function BuilderInterface({ page }: BuilderInterfaceProps) {
   if (isMobile) {
     return <MobileBuilderShell page={page} controls={controls} />;
   }
-  return <DesktopBuilderShell controls={controls} />;
+  return <DesktopBuilderShell controls={controls} aiCoderEnabled={aiCoderEnabled} />;
 }
 
 // ─── Desktop shell (unchanged layout) ───────────────────────────────────────
 
-function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
+function DesktopBuilderShell({ controls, aiCoderEnabled }: { controls: BuilderControls; aiCoderEnabled: boolean }) {
   const {
     mode, breakpoint, setMode, setBreakpoint,
     undo, redo, canUndo, canRedo,
@@ -213,9 +217,11 @@ function DesktopBuilderShell({ controls }: { controls: BuilderControls }) {
           </Tooltip>
 
           <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setAiCoderOpen(true)} className="h-8 gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> AiCoder
-            </Button>
+            {aiCoderEnabled && (
+              <Button size="sm" variant="outline" onClick={() => setAiCoderOpen(true)} className="h-8 gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> AiCoder
+              </Button>
+            )}
             <span className="text-xs text-muted-foreground hidden sm:inline">
               {saving ? "Saving…" : isDirty ? "Unsaved changes" : lastSavedAt ? "All changes saved" : ""}
             </span>

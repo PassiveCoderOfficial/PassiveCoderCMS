@@ -4,6 +4,7 @@ import { BuilderInterface } from "@/components/admin/page-builder/builder-interf
 import { PageEditorHeader } from "./page-editor-header";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
+import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import type { Page } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -44,7 +45,9 @@ export default async function PageEditorPage({ params }: Props) {
   let templateCSSVars: string | null = null;
   let templateCustomCss: string | null = null;
   let tenantSlug: string | null = null;
+  let aiCoderEnabled = false;
   if (page.tenant_id) {
+    aiCoderEnabled = (await resolveEnabledModules(page.tenant_id)).ai_coder ?? false;
     const admin = await createAdminClient();
     const [{ data: identity }, { data: tenant }] = await Promise.all([
       admin.from("site_identity").select("template_id").eq("tenant_id", page.tenant_id).maybeSingle(),
@@ -80,7 +83,7 @@ export default async function PageEditorPage({ params }: Props) {
       {templateCustomCss && <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />}
       <PageEditorHeader page={page as Page} tenantSlug={tenantSlug} />
       <div className="flex-1 overflow-hidden">
-        <BuilderInterface page={page as Page} />
+        <BuilderInterface page={page as Page} aiCoderEnabled={aiCoderEnabled} />
       </div>
     </div>
   );
