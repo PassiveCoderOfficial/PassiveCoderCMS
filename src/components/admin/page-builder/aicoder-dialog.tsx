@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, Loader2, Plus, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,13 @@ const SUPPORTED: { type: BlockType; label: string }[] = [
   { type: "features", label: "Features" },
 ];
 
+interface QuotaStatus {
+  monthlyIncluded: number;
+  usedThisMonth: number;
+  purchasedRemaining: number;
+  resetAt: string;
+}
+
 export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { addBlock, selectedBlockId } = useBuilderStore();
   const [blockType, setBlockType] = useState<BlockType>("hero");
@@ -28,6 +35,15 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<Block | null>(null);
   const [error, setError] = useState("");
+  const [quota, setQuota] = useState<QuotaStatus | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/aicoder/quota")
+      .then(r => r.json())
+      .then(d => setQuota(d.error ? null : d))
+      .catch(() => setQuota(null));
+  }, [open]);
 
   async function generate() {
     if (!instruction.trim()) { toast.error("Describe what you want this section to say"); return; }
@@ -43,6 +59,9 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "AiCoder couldn't generate this section");
       setPreview(data.block as Block);
+      // Refetch rather than decrement locally — the server is the source of
+      // truth for which pool (quota vs purchased) actually got consumed.
+      fetch("/api/aicoder/quota").then(r => r.json()).then(d => setQuota(d.error ? null : d)).catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -78,6 +97,19 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
           <p className="text-xs text-muted-foreground">
             AiCoder writes the content for one section at a time — you review it before it's added to your page.
           </p>
+
+          {quota && (
+            <div className="rounded-lg border px-3 py-2 text-xs flex items-center justify-between">
+              <span className="text-muted-foreground">
+                {quota.monthlyIncluded > 0
+                  ? `${Math.max(0, quota.monthlyIncluded - quota.usedThisMonth)} of ${quota.monthlyIncluded} generations left this month`
+                  : "No monthly generations on this plan"}
+              </span>
+              {quota.purchasedRemaining > 0 && (
+                <span className="text-primary font-medium">+{quota.purchasedRemaining} purchased</span>
+              )}
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label className="text-xs">Section type</Label>

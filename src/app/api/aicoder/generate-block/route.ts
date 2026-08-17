@@ -5,6 +5,7 @@ import { isSupportedBlockType } from "@/lib/aicoder/schemas";
 import { generateBlockContent, AiCoderError } from "@/lib/aicoder/generate";
 import { mergeContentIntoBlock } from "@/lib/aicoder/merge";
 import { requireModule } from "@/lib/modules/resolve-modules";
+import { reserveGeneration, refundGeneration, AiCoderQuotaError } from "@/lib/aicoder/quota";
 
 /**
  * Preview-only: generates a block via AiCoder and returns it WITHOUT writing
@@ -34,6 +35,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing instruction" }, { status: 400 });
   }
 
+  // Reserve quota BEFORE calling the model — a denied request costs nothing.
+  let quotaSource: "quota" | "purchased";
+  try {
+    quotaSource = await reserveGeneration(tenantId, blockType, user.id);
+  } catch (err) {
+    if (err instanceof AiCoderQuotaError) {
+      return NextResponse.json({ error: err.message, code: "quota_exhausted" }, { status: 402 });
+    }
+    return NextResponse.json({ error: "Failed to check AiCoder usage" }, { status: 500 });
+  }
+
   const admin = await createAdminClient();
   const { data: settings } = await admin
     .from("site_settings")
@@ -47,6 +59,10 @@ export async function POST(req: Request) {
     const block = mergeContentIntoBlock(blockType, content);
     return NextResponse.json({ block });
   } catch (err) {
+    // Generation failed after quota was already reserved — refund it so a
+    // model/upstream failure doesn't silently cost the tenant a generation
+    // they never actually got.
+    await refundGeneration(tenantId, quotaSource).catch(() => {});
     if (err instanceof AiCoderError) {
       const status = err.code === "no_api_key" ? 503 : err.code === "invalid_output" ? 502 : 502;
       return NextResponse.json({ error: err.message, code: err.code }, { status });
