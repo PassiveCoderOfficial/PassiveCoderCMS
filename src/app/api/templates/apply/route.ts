@@ -31,12 +31,22 @@ export async function POST(req: Request) {
     );
   }
 
-  const { source, ...result } = await applyTemplateBySlug(
-    admin,
-    tenantId,
-    templateSlug,
-    mode ?? "theme",
-    { archiveExistingPages: archiveExistingPages ?? false },
-  );
-  return NextResponse.json({ ok: true, source, ...result });
+  // applyTemplateBySlug throws on a missing template or a failed write.
+  // Without this the throw became an empty 500, which the browser surfaced as
+  // "Unexpected end of JSON input" — an error about the response body rather
+  // than about what actually went wrong.
+  try {
+    const { source, ...result } = await applyTemplateBySlug(
+      admin,
+      tenantId,
+      templateSlug,
+      mode ?? "theme",
+      { archiveExistingPages: archiveExistingPages ?? false },
+    );
+    return NextResponse.json({ ok: true, source, ...result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to apply template";
+    console.error("[templates/apply]", { tenantId, templateSlug, mode, message, err });
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

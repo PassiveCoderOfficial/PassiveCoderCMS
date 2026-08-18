@@ -21,17 +21,22 @@ export async function POST(req: Request) {
   const { data: existing } = await supabase.from("tenants").select("id").eq("slug", slug).maybeSingle();
   if (existing) return NextResponse.json({ error: "Subdomain already taken" }, { status: 409 });
 
-  // Resolve owner
-  let ownerUserId: string | null = null;
-  if (is_my_site) {
-    ownerUserId = user.id;
-  } else if (owner_email?.trim()) {
+  // Resolve owner.
+  //
+  // Falls back to the staff member who built it. An owner email that matches
+  // no profile yet (the client hasn't signed up) used to leave owner_id null
+  // and no tenant_members row at all, so the site belonged to nobody: every
+  // permission check that asks "is this yours?" said no, and the staff
+  // dashboard could open it but not change its theme or navigation.
+  // Ownership transfers to the client when their account is assigned.
+  let ownerUserId: string | null = user.id;
+  if (!is_my_site && owner_email?.trim()) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("id")
       .eq("email", owner_email.trim())
       .maybeSingle();
-    ownerUserId = profile?.id ?? null;
+    if (profile?.id) ownerUserId = profile.id;
   }
 
   const { data: site, error } = await supabase

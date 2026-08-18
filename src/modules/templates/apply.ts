@@ -141,6 +141,9 @@ export async function applyDbTemplate(
   // Archiving is soft and reversible by design — a template apply must never
   // be the thing that destroys a customer's existing content.
   let pagesArchived = 0;
+  // Ids of rows this apply archived, so they can be put back if the insert
+  // below fails — otherwise a failure leaves the site with nothing live.
+  const archivedByThisApply: string[] = [];
   if (options.archiveExistingPages) {
     const { data: archived } = await supabase
       .from("pages")
@@ -150,6 +153,7 @@ export async function applyDbTemplate(
       .neq("status", "archived")
       .select("id");
     pagesArchived = archived?.length ?? 0;
+    archivedByThisApply.push(...(archived ?? []).map((r) => r.id as string));
   }
 
   const { data: templatePages } = await supabase
@@ -175,6 +179,7 @@ export async function applyDbTemplate(
     .neq("status", "archived")
     .select("id");
   pagesArchived += collisions?.length ?? 0;
+  archivedByThisApply.push(...(collisions ?? []).map((r) => r.id as string));
 
   // Same fragment problem as the menu above, but for nav blocks embedded in
   // the pages themselves — which is where every migrated template keeps its
@@ -207,7 +212,18 @@ export async function applyDbTemplate(
   }));
 
   const { error } = await supabase.from("pages").insert(rows);
-  if (error) throw new Error(`Failed to copy template pages: ${error.message}`);
+  if (error) {
+    // The archive above already ran. Leaving it as-is would strand the site
+    // with every page archived and nothing live, which is what happened to
+    // freebirdsg — so put the tenant's own pages back before reporting.
+    if (archivedByThisApply.length) {
+      await supabase
+        .from("pages")
+        .update({ status: "published", updated_at: new Date().toISOString() })
+        .in("id", archivedByThisApply);
+    }
+    throw new Error(`Failed to copy template pages: ${error.message}`);
+  }
 
   return { pagesCreated: rows.length, pagesArchived };
 }

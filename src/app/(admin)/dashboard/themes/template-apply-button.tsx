@@ -39,8 +39,22 @@ export function TemplateApplyButton({ templateSlug, templateName, isActive, tena
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tenantId, templateSlug, mode, archiveExistingPages: mode === "full" && archiveExistingPages }),
       });
-      const data = await res.json() as { error?: string; pagesCreated?: number; pagesArchived?: number };
-      if (!res.ok) throw new Error(data.error ?? "Apply failed");
+      // Parsed defensively: a crashed or timed-out request can come back with
+      // no body at all, and calling res.json() on that throws "Unexpected end
+      // of JSON input" — which then gets shown to the user instead of the real
+      // failure.
+      const raw = await res.text();
+      let data: { error?: string; pagesCreated?: number; pagesArchived?: number } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(
+          res.ok
+            ? "The server sent back something unreadable. Your site may not have changed — reload and check."
+            : `Apply failed (${res.status}). ${raw.slice(0, 200) || "The server didn't say why."}`,
+        );
+      }
+      if (!res.ok) throw new Error(data.error ?? `Apply failed (${res.status})`);
       const detail = data.pagesCreated
         ? ` ${data.pagesCreated} page${data.pagesCreated === 1 ? "" : "s"} added${data.pagesArchived ? `, ${data.pagesArchived} archived` : ""}.`
         : "";
