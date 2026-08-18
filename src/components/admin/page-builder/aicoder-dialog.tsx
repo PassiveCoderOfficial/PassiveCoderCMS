@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   Sparkles, Loader2, Plus, X, RefreshCw, ShoppingCart, FileText,
-  LayoutGrid, Trash2, AlertTriangle, Palette, Check,
+  LayoutGrid, Trash2, AlertTriangle, Palette, Check, Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,9 +83,25 @@ interface ThemeSuggestion {
   rationale: string;
 }
 
-type Mode = "section" | "page";
+interface SitePagePlan {
+  title: string;
+  slug: string;
+  brief: string;
+  isHome: boolean;
+}
 
-export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+interface BuiltSitePage {
+  title: string;
+  slug: string;
+  pageId?: string;
+  blockCount: number;
+  failedSections: number;
+  error?: string;
+}
+
+type Mode = "section" | "page" | "site";
+
+export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClose: () => void; pageId?: string }) {
   const { addBlock, setBlocks, selectedBlockId } = useBuilderStore();
   const [mode, setMode] = useState<Mode>("section");
 
@@ -110,6 +126,12 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [built, setBuilt] = useState<BuiltSection[] | null>(null);
   const [theme, setTheme] = useState<ThemeSuggestion | null>(null);
   const [themeApplied, setThemeApplied] = useState(false);
+  const [applySeo, setApplySeo] = useState(true);
+
+  // Site mode
+  const [sitePages, setSitePages] = useState<SitePagePlan[] | null>(null);
+  const [siteEstimate, setSiteEstimate] = useState<{ estimate: number; available: number; affordable: boolean } | null>(null);
+  const [builtSite, setBuiltSite] = useState<BuiltSitePage[] | null>(null);
 
   function refreshQuota() {
     fetch("/api/aicoder/quota")
@@ -241,7 +263,7 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
     setPlan({ ...plan, sections });
   }
 
-  function applyBuiltPage(replace: boolean) {
+  async function applyBuiltPage(replace: boolean) {
     if (!built) return;
     const blocks = built.filter(s => s.block).map(s => s.block as Block);
     if (blocks.length === 0) return;
@@ -253,7 +275,90 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
       blocks.forEach(b => addBlock(b));
       toast.success(`${blocks.length} AiCoder sections added — remember to Save`);
     }
+
+    // SEO is a direct row write, unlike blocks which wait for the user's Save.
+    // Applied here (not at plan time) so a discarded plan never touches the
+    // page, and failure is surfaced without blocking the block apply that
+    // already succeeded.
+    if (applySeo && pageId && plan) {
+      try {
+        const res = await fetch("/api/aicoder/apply-seo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pageId, title: plan.pageTitle, description: plan.metaDescription }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          toast.warning(data.error ?? "Sections applied, but the SEO fields couldn't be saved");
+        }
+      } catch {
+        toast.warning("Sections applied, but the SEO fields couldn't be saved");
+      }
+    }
+
     onClose();
+  }
+
+  // ── Site mode ──────────────────────────────────────────────────────────
+  async function planFullSite() {
+    if (!brief.trim()) { toast.error("Paste or write a brief for the website"); return; }
+    setLoading(true);
+    setError("");
+    setSitePages(null);
+    setBuiltSite(null);
+    setTheme(null);
+    setThemeApplied(false);
+    try {
+      const res = await fetch("/api/aicoder/plan-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "AiCoder couldn't plan this site");
+      setFacts(data.facts);
+      setSitePages(data.plan.pages as SitePagePlan[]);
+      setSiteEstimate({ estimate: data.estimate, available: data.available, affordable: data.affordable });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function buildFullSite() {
+    if (!sitePages || !facts) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/aicoder/build-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facts, pages: sitePages }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "AiCoder couldn't build this site");
+      setBuiltSite(data.pages as BuiltSitePage[]);
+      refreshQuota();
+      const created = (data.pages as BuiltSitePage[]).filter(p => p.pageId).length;
+      toast.success(`${created} page${created > 1 ? "s" : ""} created as drafts`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function removeSitePage(index: number) {
+    if (!sitePages) return;
+    setSitePages(sitePages.filter((_, i) => i !== index));
+  }
+
+  function updateSitePageBrief(index: number, value: string) {
+    if (!sitePages) return;
+    const next = [...sitePages];
+    next[index] = { ...next[index], brief: value };
+    setSitePages(next);
   }
 
   async function loadTheme() {
@@ -331,6 +436,15 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
             )}
           >
             <FileText className="w-3.5 h-3.5" /> Full Page
+          </button>
+          <button
+            onClick={() => { setMode("site"); setError(""); }}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              mode === "site" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+            )}
+          >
+            <Globe className="w-3.5 h-3.5" /> Full Site
           </button>
         </div>
 
@@ -571,6 +685,22 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
 
                   {builtOk > 0 && (
                     <div className="space-y-2 pt-1">
+                      {pageId && plan && (
+                        <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={applySeo}
+                            onChange={e => setApplySeo(e.target.checked)}
+                            className="mt-0.5"
+                          />
+                          <span>
+                            Also save the SEO title and description
+                            <span className="block text-[11px] opacity-80">
+                              Saved immediately, unlike sections which wait for your Save.
+                            </span>
+                          </span>
+                        </label>
+                      )}
                       <Button size="sm" className="w-full gap-1.5" onClick={() => applyBuiltPage(true)}>
                         <Plus className="w-3.5 h-3.5" /> Replace page with these {builtOk} sections
                       </Button>
@@ -585,46 +715,168 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
 
                   {/* Theme is site-wide, so it's offered separately and never
                       applied as a side effect of generating a page. */}
-                  <div className="rounded-lg border p-3 space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
-                      <Palette className="w-3.5 h-3.5" /> Site colours
-                    </p>
-                    {!theme ? (
-                      <>
-                        <p className="text-xs text-muted-foreground">
-                          AiCoder can suggest a palette from your brief&apos;s design direction.
-                        </p>
-                        <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={loadTheme} disabled={loading}>
-                          Suggest a palette
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex gap-1.5">
-                          {[theme.primaryColor, theme.secondaryColor, theme.accentColor, theme.backgroundColor, theme.textColor].map((c, i) => (
-                            <div key={i} className="h-7 flex-1 rounded border" style={{ backgroundColor: c }} title={c} />
-                          ))}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          {theme.headingFont} / {theme.bodyFont} — {theme.rationale}
-                        </p>
-                        {themeApplied ? (
-                          <p className="text-xs text-green-600 flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5" /> Applied to the whole site
-                          </p>
-                        ) : (
-                          <>
-                            <Button size="sm" className="w-full h-7 text-xs" onClick={applyTheme} disabled={loading}>
-                              Apply to whole site
-                            </Button>
-                            <p className="text-[11px] text-amber-600">
-                              This restyles every page. Your current theme is kept and can be switched back.
-                            </p>
-                          </>
-                        )}
-                      </>
-                    )}
+                  <ThemePanel
+                    theme={theme}
+                    themeApplied={themeApplied}
+                    loading={loading}
+                    onSuggest={loadTheme}
+                    onApply={applyTheme}
+                  />
+                </>
+              )}
+            </>
+          )}
+
+          {/* ── SITE MODE ────────────────────────────────────────────── */}
+          {mode === "site" && (
+            <>
+              {!sitePages && (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Paste a full business brief. AiCoder works out which pages the site needs, then
+                    writes each one and creates them as drafts.
+                  </p>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Website brief</Label>
+                    <Textarea
+                      value={brief}
+                      onChange={(e) => setBrief(e.target.value)}
+                      rows={12}
+                      placeholder={"e.g.\n\nBUSINESS: Free Bird SG, electrical services in Singapore.\n\nSERVICES: Electrical, plumbing, handyman, CCTV, data cabling...\n\nGOAL: Get quotation enquiries from homeowners and businesses.\n\nDO NOT claim licensed, certified, 24/7 or years of experience."}
+                      className="text-sm font-mono"
+                    />
                   </div>
+                  <Button onClick={planFullSite} disabled={loading} className="w-full gap-1.5">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    Plan the site
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    Planning is free — you only spend generations when you build.
+                  </p>
+                </>
+              )}
+
+              {sitePages && !builtSite && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {sitePages.length} pages
+                    </p>
+                    <button onClick={() => setSitePages(null)} className="text-xs text-muted-foreground hover:underline">
+                      Start over
+                    </button>
+                  </div>
+
+                  {siteEstimate && (
+                    <div className={cn(
+                      "rounded-lg border px-3 py-2 text-xs flex gap-2",
+                      siteEstimate.affordable
+                        ? "text-muted-foreground"
+                        : "border-amber-500/40 bg-amber-500/5 text-amber-600",
+                    )}>
+                      {!siteEstimate.affordable && <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />}
+                      <span>
+                        Roughly {siteEstimate.estimate} generations needed, {siteEstimate.available} available.
+                        {!siteEstimate.affordable && " Remove pages or buy a top-up — the run stops when the quota is gone."}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    {sitePages.map((page, i) => (
+                      <div key={i} className="rounded-lg border p-2.5 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium flex items-center gap-1.5">
+                            {page.title}
+                            {page.isHome && (
+                              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">home</span>
+                            )}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              /{page.isHome ? "" : page.slug}
+                            </span>
+                            {!page.isHome && (
+                              <button
+                                onClick={() => removeSitePage(i)}
+                                className="p-0.5 text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <Textarea
+                          value={page.brief}
+                          onChange={e => updateSitePageBrief(i, e.target.value)}
+                          rows={3}
+                          className="text-xs"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button onClick={buildFullSite} disabled={loading || sitePages.length === 0} className="w-full gap-1.5">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    Build all {sitePages.length} pages
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    {loading
+                      ? "Planning and writing each page in turn — this takes several minutes."
+                      : "Pages are created as drafts. Nothing goes live until you publish it."}
+                  </p>
+                </>
+              )}
+
+              {builtSite && (
+                <>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {builtSite.filter(p => p.pageId).length} of {builtSite.length} pages created
+                  </p>
+
+                  <div className="space-y-2">
+                    {builtSite.map((page, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "rounded-lg border p-2.5 space-y-1",
+                          page.error ? "border-destructive/40 bg-destructive/5" : "bg-muted/30",
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium">{page.title}</span>
+                          {page.pageId && (
+                            <a
+                              href={`/dashboard/pages/${page.pageId}`}
+                              className="text-[11px] text-primary hover:underline"
+                            >
+                              Open
+                            </a>
+                          )}
+                        </div>
+                        {page.error
+                          ? <p className="text-xs text-destructive">{page.error}</p>
+                          : (
+                            <p className="text-[11px] text-muted-foreground">
+                              {page.blockCount} sections
+                              {page.failedSections > 0 && ` — ${page.failedSections} failed`}
+                            </p>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    All pages are drafts. Review each one, then publish when you&apos;re happy.
+                  </p>
+
+                  <ThemePanel
+                    theme={theme}
+                    themeApplied={themeApplied}
+                    loading={loading}
+                    onSuggest={loadTheme}
+                    onApply={applyTheme}
+                  />
                 </>
               )}
             </>
@@ -632,6 +884,62 @@ export function AiCoderDialog({ open, onClose }: { open: boolean; onClose: () =>
         </div>
       </div>
     </>
+  );
+}
+
+/** Site-wide palette suggestion. Shared by page and site mode — the apply is
+ *  identical in both, and it is deliberately never automatic: ThemeSettings
+ *  restyles every page on the site, including ones this run never touched. */
+function ThemePanel({
+  theme, themeApplied, loading, onSuggest, onApply,
+}: {
+  theme: ThemeSuggestion | null;
+  themeApplied: boolean;
+  loading: boolean;
+  onSuggest: () => void;
+  onApply: () => void;
+}) {
+  return (
+    <div className="rounded-lg border p-3 space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+        <Palette className="w-3.5 h-3.5" /> Site colours
+      </p>
+      {!theme ? (
+        <>
+          <p className="text-xs text-muted-foreground">
+            AiCoder can suggest a palette from your brief&apos;s design direction.
+          </p>
+          <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={onSuggest} disabled={loading}>
+            Suggest a palette
+          </Button>
+        </>
+      ) : (
+        <>
+          <div className="flex gap-1.5">
+            {[theme.primaryColor, theme.secondaryColor, theme.accentColor, theme.backgroundColor, theme.textColor].map((c, i) => (
+              <div key={i} className="h-7 flex-1 rounded border" style={{ backgroundColor: c }} title={c} />
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            {theme.headingFont} / {theme.bodyFont} — {theme.rationale}
+          </p>
+          {themeApplied ? (
+            <p className="text-xs text-green-600 flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5" /> Applied to the whole site
+            </p>
+          ) : (
+            <>
+              <Button size="sm" className="w-full h-7 text-xs" onClick={onApply} disabled={loading}>
+                Apply to whole site
+              </Button>
+              <p className="text-[11px] text-amber-600">
+                This restyles every page. Your current theme is kept and can be switched back.
+              </p>
+            </>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 

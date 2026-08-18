@@ -125,12 +125,12 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
   if (isMobile) {
     return <MobileBuilderShell page={page} controls={controls} />;
   }
-  return <DesktopBuilderShell controls={controls} aiCoderEnabled={aiCoderEnabled} />;
+  return <DesktopBuilderShell controls={controls} aiCoderEnabled={aiCoderEnabled} pageId={page.id} />;
 }
 
 // ─── Desktop shell (unchanged layout) ───────────────────────────────────────
 
-function DesktopBuilderShell({ controls, aiCoderEnabled }: { controls: BuilderControls; aiCoderEnabled: boolean }) {
+function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: BuilderControls; aiCoderEnabled: boolean; pageId: string }) {
   const {
     mode, breakpoint, setMode, setBreakpoint,
     undo, redo, canUndo, canRedo,
@@ -261,7 +261,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled }: { controls: BuilderCo
         </div>
       </div>
 
-      <AiCoderDialog open={aiCoderOpen} onClose={() => setAiCoderOpen(false)} />
+      <AiCoderDialog open={aiCoderOpen} onClose={() => setAiCoderOpen(false)} pageId={pageId} />
     </TooltipProvider>
   );
 }
