@@ -1,13 +1,15 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import { headers } from "next/headers";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { DEFAULT_PALETTE } from "@/modules/themes/default-palette";
 import type { TemplatePalette } from "@/modules/themes/template-types";
 import { ColorsClient } from "./colors-client";
 
 export default async function ColorsDesignPage() {
-  const reqHeaders = await headers();
-  const tenantId = reqHeaders.get("x-tenant-id");
+  // Resolved the same way every other dashboard page does — the x-tenant-id
+  // header is only set on a tenant subdomain, so reading it directly left this
+  // editor blank whenever the dashboard was reached from the root domain.
+  const tenantId = await getCurrentTenantId();
 
   let templateId: string | null = null;
   let colorOverrides: Partial<TemplatePalette> | null = null;
@@ -36,7 +38,7 @@ export default async function ColorsDesignPage() {
           Site-wide color tokens, layered over your active template. Changes apply everywhere on your live site.
         </p>
       </div>
-      <ColorsClient basePalette={basePalette} overrides={colorOverrides ?? {}} />
+      <ColorsClient basePalette={basePalette} overrides={colorOverrides ?? {}} tenantId={tenantId} />
     </div>
   );
 }

@@ -21,9 +21,16 @@ const TOKEN_LABELS: { key: keyof TemplatePalette; label: string }[] = [
 export function ColorsClient({
   basePalette,
   overrides,
+  tenantId,
 }: {
   basePalette: TemplatePalette;
   overrides: Partial<TemplatePalette>;
+  /** The site being edited, resolved server-side. Previously looked up in the
+   *  browser as "my membership flagged is_primary", which is not necessarily
+   *  the site you have open — editing one site's colours could save them onto
+   *  a different one, or fail with "No site found" for a user whose
+   *  memberships carry no primary flag. */
+  tenantId: string;
 }) {
   const router = useRouter();
   const [values, setValues] = useState<Partial<TemplatePalette>>(overrides);
@@ -38,10 +45,7 @@ export function ColorsClient({
   const save = async () => {
     setSaving(true);
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSaving(false); return; }
-    const { data: m } = await supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).eq("is_primary", true).maybeSingle();
-    const tid = m?.tenant_id;
+    const tid = tenantId;
     if (!tid) { toast.error("No site found"); setSaving(false); return; }
 
     const { error } = await supabase.from("site_identity").upsert(
@@ -57,10 +61,7 @@ export function ColorsClient({
   const resetAll = async () => {
     setSaving(true);
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSaving(false); return; }
-    const { data: m } = await supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).eq("is_primary", true).maybeSingle();
-    const tid = m?.tenant_id;
+    const tid = tenantId;
     if (!tid) { setSaving(false); return; }
     const { error } = await supabase.from("site_identity").update({ color_overrides: null, updated_at: new Date().toISOString() }).eq("tenant_id", tid);
     setSaving(false);

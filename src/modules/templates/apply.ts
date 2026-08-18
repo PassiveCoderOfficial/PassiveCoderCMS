@@ -93,7 +93,12 @@ export async function applyDbTemplate(
   if (tpl.global_header) identityPatch.global_header = tpl.global_header;
   if (tpl.global_footer) identityPatch.global_footer = tpl.global_footer;
 
-  await supabase.from("site_identity").upsert(identityPatch, { onConflict: "tenant_id" });
+  const { error: identityError } = await supabase
+    .from("site_identity")
+    .upsert(identityPatch, { onConflict: "tenant_id" });
+  // Previously ignored — a failed write here left the tenant on its old theme
+  // while the UI reported success.
+  if (identityError) throw new Error(`Failed to apply theme: ${identityError.message}`);
 
   // ── 2. Navigation ───────────────────────────────────────────────────────
   // Templates authored as one-page designs carry "#services"-style fragment

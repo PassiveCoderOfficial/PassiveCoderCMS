@@ -1,14 +1,18 @@
-import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { headers } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getCurrentTenantId } from "@/lib/tenant/current";
 import { dbTemplateToBrowserItem } from "@/modules/templates/to-browser-item";
 import type { SiteTemplate } from "@/modules/templates/types";
 import { TemplateBrowser } from "./template-browser";
 import { CheckCircle } from "lucide-react";
 
 export default async function ThemesPage() {
-  const supabase = await createClient();
-  const reqHeaders = await headers();
-  const tenantId = reqHeaders.get("x-tenant-id");
+  // Was read straight from the x-tenant-id header, which middleware only sets
+  // on a tenant subdomain. On the root domain — including a super admin
+  // viewing a tenant through the switcher, where the tenant is carried in a
+  // cookie — that left the apply button with an empty tenant id. Resolving it
+  // the same way every other dashboard page does keeps the button working
+  // wherever the dashboard is reached from.
+  const tenantId = await getCurrentTenantId();
 
   const admin = await createAdminClient();
 
@@ -102,7 +106,7 @@ export default async function ThemesPage() {
       <TemplateBrowser
         templates={templates}
         activeTemplateSlug={activeTemplateSlug}
-        tenantId={tenantId ?? ""}
+        tenantId={tenantId}
       />
     </div>
   );

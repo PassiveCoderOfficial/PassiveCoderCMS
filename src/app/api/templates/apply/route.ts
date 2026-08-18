@@ -26,16 +26,38 @@ export async function POST(req: Request) {
     .maybeSingle();
 
   if (!sa) {
-    // Regular user — verify they are an owner/admin of this tenant
-    const { data: membership } = await supabase
+    // Regular user — verify they are an owner/admin of this tenant.
+    // Read through the admin client: tenant_members' RLS only exposes the
+    // caller's own rows, and .single() errors (rather than returning null)
+    // when the row isn't visible, so an RLS miss looked identical to "not a
+    // member" and produced a bare 403 with no way to tell which.
+    const { data: membership } = await admin
       .from("tenant_members")
       .select("role")
       .eq("tenant_id", tenantId)
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!membership || !["owner", "admin"].includes(membership.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!membership) {
+      // Owner without a tenant_members row — site creation doesn't always
+      // write one, so ownership alone has to be enough to theme your own site.
+      const { data: owned } = await admin
+        .from("tenants")
+        .select("id")
+        .eq("id", tenantId)
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      if (!owned) {
+        return NextResponse.json(
+          { error: "You don't have permission to change this site's theme." },
+          { status: 403 },
+        );
+      }
+    } else if (!["owner", "admin"].includes(membership.role)) {
+      return NextResponse.json(
+        { error: `Your role on this site (${membership.role}) can't change the theme — an owner or admin must do it.` },
+        { status: 403 },
+      );
     }
   }
 
