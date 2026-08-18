@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { syncBookingToENM, type PcBookingStatus } from "@/lib/enm/booking-sync";
 
 
 export async function GET() {
@@ -73,6 +74,41 @@ export async function PATCH(req: Request) {
     await supabase.from("booking_appointments")
       .update({ ...fields, updated_at: new Date().toISOString() })
       .eq("id", id).eq("tenant_id", tenantId);
+
+    // Push the lifecycle change to ENM after the response — a completed job
+    // there starts the review-request sequence.
+    if (fields.status) {
+      after(async () => {
+        const { data: appt } = await supabase
+          .from("booking_appointments")
+          .select("id, date, start_time, end_time, customer_name, customer_email, customer_phone, message, status")
+          .eq("id", id).eq("tenant_id", tenantId).single();
+        if (!appt) return;
+
+        const { data: integration } = await supabase
+          .from("tenant_enm_integration")
+          .select("enm_api_key, sync_bookings")
+          .eq("tenant_id", tenantId).single();
+        if (!integration?.sync_bookings || !integration.enm_api_key) return;
+
+        await syncBookingToENM(integration.enm_api_key, {
+          appointmentId: appt.id,
+          tenantId,
+          status: appt.status as PcBookingStatus,
+          scheduledAt: `${appt.date}T${appt.start_time}`,
+          endsAt: appt.end_time ? `${appt.date}T${appt.end_time}` : undefined,
+          customerName: appt.customer_name,
+          customerEmail: appt.customer_email,
+          customerPhone: appt.customer_phone ?? undefined,
+          message: appt.message ?? undefined,
+        });
+
+        await supabase
+          .from("tenant_enm_integration")
+          .update({ last_sync_at: new Date().toISOString() })
+          .eq("tenant_id", tenantId);
+      });
+    }
   }
 
   return NextResponse.json({ ok: true });
