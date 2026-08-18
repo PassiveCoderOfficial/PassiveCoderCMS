@@ -6,6 +6,11 @@ import { renderConstraints, renderContext, type BusinessFacts } from "./brief";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL = "z-ai/glm-4.6";
 
+/** Extra token budget for GLM-4.6's reasoning pass, which is billed against
+ *  max_tokens before the answer starts. Callers size their maxTokens for the
+ *  JSON they expect; this covers the thinking that precedes it. */
+const REASONING_HEADROOM = 3000;
+
 export class AiCoderError extends Error {
   constructor(message: string, public code: "no_api_key" | "upstream_error" | "invalid_output") {
     super(message);
@@ -25,6 +30,7 @@ export async function callModel<T extends z.ZodTypeAny>(
   systemPrompt: string,
   userPrompt: string,
   maxTokens = 1200,
+  attempt = 1,
 ): Promise<z.infer<T>> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -56,7 +62,12 @@ export async function callModel<T extends z.ZodTypeAny>(
         ],
         response_format: { type: "json_object" },
         temperature: 0.7,
-        max_tokens: maxTokens,
+        // GLM-4.6 is a reasoning model: its chain of thought is billed against
+        // this same budget before any answer tokens are emitted. Sized for
+        // reasoning + output, not output alone — too tight and the model
+        // spends the whole allowance thinking and returns empty content with
+        // finish_reason "length".
+        max_tokens: maxTokens + REASONING_HEADROOM,
       }),
     });
   } catch (err) {
@@ -68,9 +79,52 @@ export async function callModel<T extends z.ZodTypeAny>(
     throw new AiCoderError(`OpenRouter request failed (${res.status}): ${body.slice(0, 300)}`, "upstream_error");
   }
 
-  const payload = await res.json().catch(() => null) as { choices?: { message?: { content?: string } }[] } | null;
-  const raw = payload?.choices?.[0]?.message?.content;
-  if (!raw) throw new AiCoderError("OpenRouter returned no content", "upstream_error");
+  const payload = await res.json().catch(() => null) as {
+    choices?: { message?: { content?: string; reasoning?: string }; finish_reason?: string }[];
+    error?: { message?: string };
+  } | null;
+
+  // OpenRouter can return HTTP 200 with an error object in the body (upstream
+  // provider failures arrive this way), so a 200 alone is not success.
+  if (payload?.error?.message) {
+    throw new AiCoderError(`OpenRouter error: ${payload.error.message}`, "upstream_error");
+  }
+
+  const choice = payload?.choices?.[0];
+  const raw = choice?.message?.content;
+
+  if (!raw) {
+    // Logged server-side because the user-facing message deliberately stays
+    // short; without this the next occurrence is as opaque as the first was.
+    console.error("[aicoder] empty completion", {
+      finish_reason: choice?.finish_reason,
+      had_reasoning: !!choice?.message?.reasoning,
+      reasoning_len: choice?.message?.reasoning?.length ?? 0,
+      max_tokens: maxTokens + REASONING_HEADROOM,
+    });
+
+    // Distinguish the two ways this happens, because the fixes are different:
+    // a truncated reasoning run needs more budget, anything else is a genuine
+    // upstream fault. The old message said only "no content", which told
+    // whoever hit it nothing actionable.
+    // One retry with a much larger budget. A reasoning model that thought
+    // itself out of room on an average prompt usually succeeds on a second
+    // pass, and the caller has already paid a generation for this attempt —
+    // failing without retrying spends it for nothing.
+    if (choice?.finish_reason === "length" && attempt === 1) {
+      return callModel(schema, systemPrompt, userPrompt, maxTokens * 2, 2);
+    }
+    if (choice?.finish_reason === "length") {
+      throw new AiCoderError(
+        "The model ran out of room before it finished writing. Try a shorter, more specific instruction.",
+        "upstream_error",
+      );
+    }
+    throw new AiCoderError(
+      `OpenRouter returned no content${choice?.finish_reason ? ` (finish_reason: ${choice.finish_reason})` : ""}.`,
+      "upstream_error",
+    );
+  }
 
   let parsed: unknown;
   try {
