@@ -4,15 +4,23 @@ import { apiTenantId } from "@/lib/tenant/api";
 import { requireModule } from "@/lib/modules/resolve-modules";
 import { AiCoderError } from "@/lib/aicoder/generate";
 import { businessFactsSchema } from "@/lib/aicoder/brief";
-import { buildSiteFromPlan } from "@/lib/aicoder/build-site";
+import { buildSitePage, rewireNavigation } from "@/lib/aicoder/build-site";
 import type { SitePlan } from "@/lib/aicoder/plan";
 
-// A site run is a page plan plus ~9 block generations per page, sequentially —
-// comfortably the longest-running route in the app.
-export const maxDuration = 800;
+// The platform caps serverless functions at 300s, and a whole site (a page
+// plan plus ~9 sequential block generations, times five or six pages) does not
+// fit in that. So this route builds ONE page per call and the client drives the
+// loop — which also means the user watches pages appear one by one instead of
+// staring at a spinner for six minutes, and a failure costs one page rather
+// than the entire run.
+export const maxDuration = 300;
 
 /**
- * Step 2 of full-site generation: build every planned page and create it.
+ * Step 2 of full-site generation: build ONE planned page and create it.
+ *
+ * Call once per page, passing `pageIndex`. The response reports whether more
+ * pages remain, and the final call (when `isLast` is set) rewires navigation
+ * across everything that was created.
  *
  * Unlike page generation, this DOES write to the database — a site run creates
  * several pages, which has no builder-store equivalent to stage them in. They
@@ -32,9 +40,13 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { facts: rawFacts, pages: rawPages } = body as {
+  const { facts: rawFacts, pages: rawPages, pageIndex, created: rawCreated } = body as {
     facts?: unknown;
     pages?: { title?: string; slug?: string; brief?: string; isHome?: boolean }[];
+    pageIndex?: number;
+    /** Pages created by earlier calls in this run, echoed back so the final
+     *  call can wire navigation across the whole set. */
+    created?: { title?: string; slug?: string; pageId?: string; isHome?: boolean }[];
   };
 
   // Facts round-trip through the client, so re-validate — they carry the
@@ -73,18 +85,51 @@ export async function POST(req: Request) {
     else if (p.isHome) seenHome = true;
   }
 
-  try {
-    const result = await buildSiteFromPlan({ pages }, factsResult.data, tenantId, user.id);
+  const index = typeof pageIndex === "number" ? pageIndex : 0;
+  if (index < 0 || index >= pages.length) {
+    return NextResponse.json({ error: "pageIndex out of range" }, { status: 400 });
+  }
 
-    const created = result.pages.filter(p => p.pageId).length;
-    if (created === 0) {
-      return NextResponse.json(
-        { error: result.pages.find(p => p.error)?.error ?? "AiCoder couldn't create any pages." },
-        { status: 502 },
-      );
+  try {
+    const result = await buildSitePage({ pages }, index, factsResult.data, tenantId, user.id);
+    const isLast = index === pages.length - 1;
+
+    // Navigation can only be wired once every page exists, so the final call
+    // patches the whole set — including this call's own page, which is why the
+    // client echoes back what earlier calls created.
+    if ((isLast || result.quotaExhausted)) {
+      const all = [
+        ...(rawCreated ?? [])
+          .filter(p => p.pageId && p.title)
+          .map(p => ({
+            title: p.title as string,
+            slug: p.slug ?? "",
+            pageId: p.pageId as string,
+            blockCount: 0,
+            failedSections: 0,
+            isHome: !!p.isHome,
+          })),
+        ...(result.page.pageId
+          ? [{ ...result.page, isHome: pages[index].isHome }]
+          : []),
+      ];
+
+      if (all.length > 1) {
+        const navTargets = all.map(p => ({
+          label: p.title,
+          url: p.isHome ? "/" : `/${p.slug}`,
+        }));
+        await rewireNavigation(all, navTargets).catch(() => {});
+      }
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      page: result.page,
+      generationsUsed: result.generationsUsed,
+      quotaExhausted: result.quotaExhausted,
+      nextIndex: result.quotaExhausted || isLast ? null : index + 1,
+      isHome: pages[index].isHome,
+    });
   } catch (err) {
     if (err instanceof AiCoderError) {
       const status = err.code === "no_api_key" ? 503 : 502;

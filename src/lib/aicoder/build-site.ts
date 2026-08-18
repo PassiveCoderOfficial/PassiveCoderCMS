@@ -31,105 +31,97 @@ export interface BuildSiteResult {
   generationsUsed: number;
 }
 
-export async function buildSiteFromPlan(
+/**
+ * Builds ONE page of a planned site and creates it.
+ *
+ * Single-page rather than whole-site because the platform caps a serverless
+ * call at 300s and a full site does not fit; the caller loops. `quotaExhausted`
+ * tells that caller to stop rather than burn planning calls on pages that can
+ * never be built.
+ */
+export async function buildSitePage(
   sitePlan: SitePlan,
+  pageIndex: number,
   facts: BusinessFacts,
   tenantId: string,
   userId: string | null,
-): Promise<BuildSiteResult> {
+): Promise<{ page: BuiltSitePage; generationsUsed: number; quotaExhausted: boolean }> {
   const admin = await createAdminClient();
-  const results: BuiltSitePage[] = [];
-  let generationsUsed = 0;
-
   const slugs = await resolveSlugs(tenantId, sitePlan);
+  const page = sitePlan.pages[pageIndex];
+  const slug = slugs[pageIndex];
 
-  // Built up as pages are created, then written back into every nav/footer
-  // block at the end — the first page's navigation cannot link to pages that
-  // do not exist yet, so link targets are patched once the full set is known.
-  const navTargets: { label: string; url: string }[] = [];
+  try {
+    const plan = await planPage(facts, page.brief, page.isHome ? "home" : "interior");
+    const built = await buildPageFromPlan(plan.sections, facts, tenantId, userId);
 
-  for (let i = 0; i < sitePlan.pages.length; i++) {
-    const page = sitePlan.pages[i];
-    const slug = slugs[i];
-
-    try {
-      const plan = await planPage(facts, page.brief, page.isHome ? "home" : "interior");
-      const built = await buildPageFromPlan(plan.sections, facts, tenantId, userId);
-      generationsUsed += built.generationsUsed;
-
-      if (built.blocks.length === 0) {
-        results.push({
+    if (built.blocks.length === 0) {
+      return {
+        page: {
           title: page.title,
           slug,
           blockCount: 0,
           failedSections: built.failedCount,
           error: built.sections.find(s => s.error)?.error ?? "No sections could be generated",
-        });
-        continue;
-      }
+        },
+        generationsUsed: built.generationsUsed,
+        quotaExhausted: false,
+      };
+    }
 
-      const { data: created, error } = await admin
-        .from("pages")
-        .insert({
-          tenant_id: tenantId,
-          title: page.title,
-          slug,
-          type: "page",
-          status: "draft",
-          blocks: built.blocks,
-          seo: { title: plan.pageTitle, description: plan.metaDescription },
-          settings: { show_header: true, show_footer: true },
-          order_index: i,
-          created_by: userId,
-        })
-        .select("id")
-        .single();
+    const { data: created, error } = await admin
+      .from("pages")
+      .insert({
+        tenant_id: tenantId,
+        title: page.title,
+        slug,
+        type: "page",
+        status: "draft",
+        blocks: built.blocks,
+        seo: { title: plan.pageTitle, description: plan.metaDescription },
+        settings: { show_header: true, show_footer: true },
+        order_index: pageIndex,
+        created_by: userId,
+      })
+      .select("id")
+      .single();
 
-      if (error) {
-        results.push({
+    if (error) {
+      return {
+        page: {
           title: page.title, slug, blockCount: 0,
           failedSections: built.failedCount,
           error: `Couldn't create the page: ${error.message}`,
-        });
-        continue;
-      }
+        },
+        generationsUsed: built.generationsUsed,
+        quotaExhausted: false,
+      };
+    }
 
-      navTargets.push({ label: page.title, url: page.isHome ? "/" : `/${slug}` });
-      results.push({
+    return {
+      page: {
         title: page.title,
         slug,
         pageId: created.id,
         blockCount: built.blocks.length,
         failedSections: built.failedCount,
-      });
-    } catch (err) {
-      // Quota exhaustion ends the run — every later page would fail the same
-      // way, and burning the remaining budget on planning calls that can never
-      // be built would waste it.
-      if (err instanceof AiCoderQuotaError) {
-        for (let j = i; j < sitePlan.pages.length; j++) {
-          results.push({
-            title: sitePlan.pages[j].title,
-            slug: slugs[j],
-            blockCount: 0,
-            failedSections: 0,
-            error: err.message,
-          });
-        }
-        break;
-      }
-      results.push({
+      },
+      generationsUsed: built.generationsUsed,
+      quotaExhausted: false,
+    };
+  } catch (err) {
+    const quotaExhausted = err instanceof AiCoderQuotaError;
+    return {
+      page: {
         title: page.title, slug, blockCount: 0, failedSections: 0,
-        error: err instanceof AiCoderError ? err.message : "This page couldn't be generated",
-      });
-    }
+        error: quotaExhausted
+          ? (err as AiCoderQuotaError).message
+          : err instanceof AiCoderError ? err.message : "This page couldn't be generated",
+      },
+      generationsUsed: 0,
+      quotaExhausted,
+    };
   }
-
-  if (navTargets.length > 1) {
-    await rewireNavigation(results, navTargets);
-  }
-
-  return { pages: results, generationsUsed };
 }
 
 /**
@@ -178,7 +170,7 @@ async function resolveSlugs(tenantId: string, sitePlan: SitePlan): Promise<strin
  * final page set or its collision-resolved slugs. Patching afterwards is what
  * makes a generated site navigable rather than a set of pages with broken menus.
  */
-async function rewireNavigation(
+export async function rewireNavigation(
   pages: BuiltSitePage[],
   navTargets: { label: string; url: string }[],
 ): Promise<void> {

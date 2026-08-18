@@ -97,6 +97,7 @@ interface BuiltSitePage {
   blockCount: number;
   failedSections: number;
   error?: string;
+  isHome?: boolean;
 }
 
 type Mode = "section" | "page" | "site";
@@ -132,6 +133,7 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
   const [sitePages, setSitePages] = useState<SitePagePlan[] | null>(null);
   const [siteEstimate, setSiteEstimate] = useState<{ estimate: number; available: number; affordable: boolean } | null>(null);
   const [builtSite, setBuiltSite] = useState<BuiltSitePage[] | null>(null);
+  const [siteProgress, setSiteProgress] = useState<{ current: number; total: number } | null>(null);
 
   function refreshQuota() {
     fetch("/api/aicoder/quota")
@@ -326,25 +328,63 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
     }
   }
 
+  /** Builds the site one page per request. The server caps out at 300s, which a
+   *  whole site exceeds — so the loop lives here, which also lets each page
+   *  appear as it finishes rather than after a six-minute silence. */
   async function buildFullSite() {
     if (!sitePages || !facts) return;
     setLoading(true);
     setError("");
+    setBuiltSite([]);
+
+    const done: BuiltSitePage[] = [];
+    let index: number | null = 0;
+
     try {
-      const res = await fetch("/api/aicoder/build-site", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ facts, pages: sitePages }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "AiCoder couldn't build this site");
-      setBuiltSite(data.pages as BuiltSitePage[]);
-      refreshQuota();
-      const created = (data.pages as BuiltSitePage[]).filter(p => p.pageId).length;
-      toast.success(`${created} page${created > 1 ? "s" : ""} created as drafts`);
+      while (index !== null) {
+        setSiteProgress({ current: index + 1, total: sitePages.length });
+
+        const res: Response = await fetch("/api/aicoder/build-site", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            facts,
+            pages: sitePages,
+            pageIndex: index,
+            created: done
+              .filter(p => p.pageId)
+              .map(p => ({ title: p.title, slug: p.slug, pageId: p.pageId, isHome: p.isHome })),
+          }),
+        });
+        const data: {
+          page: BuiltSitePage;
+          isHome?: boolean;
+          quotaExhausted?: boolean;
+          nextIndex: number | null;
+          error?: string;
+        } = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "AiCoder couldn't build this site");
+
+        done.push({ ...data.page, isHome: data.isHome });
+        setBuiltSite([...done]);
+        refreshQuota();
+
+        if (data.quotaExhausted) {
+          toast.warning("Ran out of generations — the remaining pages weren't built.");
+          break;
+        }
+        index = data.nextIndex;
+      }
+
+      const created = done.filter(p => p.pageId).length;
+      if (created > 0) toast.success(`${created} page${created > 1 ? "s" : ""} created as drafts`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      // Whatever finished before the failure still exists as real draft pages,
+      // so keep them on screen rather than discarding the list.
+      if (done.length) setBuiltSite([...done]);
     } finally {
+      setSiteProgress(null);
       setLoading(false);
     }
   }
@@ -831,7 +871,9 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
               {builtSite && (
                 <>
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {builtSite.filter(p => p.pageId).length} of {builtSite.length} pages created
+                    {siteProgress
+                      ? `Building page ${siteProgress.current} of ${siteProgress.total}…`
+                      : `${builtSite.filter(p => p.pageId).length} of ${builtSite.length} pages created`}
                   </p>
 
                   <div className="space-y-2">
@@ -866,17 +908,21 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
                     ))}
                   </div>
 
-                  <p className="text-[11px] text-muted-foreground text-center">
-                    All pages are drafts. Review each one, then publish when you&apos;re happy.
-                  </p>
+                  {!siteProgress && (
+                    <>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        All pages are drafts. Review each one, then publish when you&apos;re happy.
+                      </p>
 
-                  <ThemePanel
-                    theme={theme}
-                    themeApplied={themeApplied}
-                    loading={loading}
-                    onSuggest={loadTheme}
-                    onApply={applyTheme}
-                  />
+                      <ThemePanel
+                        theme={theme}
+                        themeApplied={themeApplied}
+                        loading={loading}
+                        onSuggest={loadTheme}
+                        onApply={applyTheme}
+                      />
+                    </>
+                  )}
                 </>
               )}
             </>
