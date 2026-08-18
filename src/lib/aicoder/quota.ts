@@ -106,6 +106,32 @@ export async function refundGeneration(tenantId: string, source: "quota" | "purc
   await admin.from("tenants").update({ [column]: next }).eq("id", tenantId);
 }
 
+/**
+ * Confirms a tenant could afford `count` generations before a batch run starts.
+ *
+ * Full-page generation costs a dozen-plus generations, and reserving them one
+ * at a time means a tenant with 4 left gets 4 sections and a hard stop halfway
+ * through a page — worse than being told up front. This is an advisory check,
+ * not a reservation: the per-generation reserve still happens inside the loop
+ * and remains the actual race-safe gate. A concurrent run can still exhaust the
+ * pool between this check and the loop; that surfaces as a partial page with a
+ * clear per-section error, which the caller already handles.
+ */
+export async function assertBatchAffordable(tenantId: string, count: number): Promise<void> {
+  const status = await getQuotaStatus(tenantId);
+  if (!status) throw new AiCoderQuotaError("Tenant not found");
+
+  const available = Math.max(0, status.monthlyIncluded - status.usedThisMonth) + status.purchasedRemaining;
+  if (available >= count) return;
+
+  throw new AiCoderQuotaError(
+    `This page needs ${count} generations but only ${available} are left. ` +
+    (status.monthlyIncluded === 0
+      ? "AiCoder generations aren't included in this site's plan — purchase a top-up package to continue."
+      : "Purchase a top-up package to continue, or wait for next month's reset."),
+  );
+}
+
 export interface QuotaStatus {
   monthlyIncluded: number;
   usedThisMonth: number;
