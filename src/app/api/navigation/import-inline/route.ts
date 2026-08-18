@@ -14,6 +14,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
+import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 import type { Block, NavigationBlockProps } from "@/types/cms";
 
 export async function POST(req: Request) {
@@ -25,13 +26,12 @@ export async function POST(req: Request) {
   if (!tenantId) return NextResponse.json({ error: "No site selected" }, { status: 400 });
 
   const admin = await createAdminClient();
-  const { data: sa } = await admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-  if (!sa) {
-    const { data: membership } = await supabase
-      .from("tenant_members").select("role").eq("tenant_id", tenantId).eq("user_id", user.id).maybeSingle();
-    if (!membership || !["owner", "admin", "editor"].includes(membership.role as string)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  const access = await checkTenantEditAccess(admin, tenantId, user.id);
+  if (!access.allowed) {
+    return NextResponse.json(
+      { error: "You don't have permission to edit this site's navigation." },
+      { status: 403 },
+    );
   }
 
   const { location } = await req.json() as { location?: "header" | "footer" };

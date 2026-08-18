@@ -8,6 +8,7 @@
  */
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 import type { SiteTemplate } from "@/modules/templates/types";
 
 export async function GET(req: Request) {
@@ -25,11 +26,12 @@ export async function GET(req: Request) {
 
     // Membership check — importing reads another page's content, so it must
     // be gated the same way editing that page would be.
-    const { data: sa } = await admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-    if (!sa) {
-      const { data: membership } = await supabase
-        .from("tenant_members").select("role").eq("tenant_id", tenantId).eq("user_id", user.id).maybeSingle();
-      if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const access = await checkTenantEditAccess(admin, tenantId, user.id);
+    if (!access.allowed) {
+      return NextResponse.json(
+        { error: "You don't have permission to read that site's pages." },
+        { status: 403 },
+      );
     }
 
     const { data } = await admin

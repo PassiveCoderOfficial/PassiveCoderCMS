@@ -7,6 +7,7 @@
  */
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
 function freshIds(block: Block): Block {
@@ -49,11 +50,12 @@ export async function POST(req: Request) {
     // readable by anyone who can reach the import UI (they're published
     // design assets, not customer data).
     if (page.tenant_id) {
-      const { data: sa } = await admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-      if (!sa) {
-        const { data: membership } = await supabase
-          .from("tenant_members").select("role").eq("tenant_id", page.tenant_id).eq("user_id", user.id).maybeSingle();
-        if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      const access = await checkTenantEditAccess(admin, page.tenant_id as string, user.id);
+      if (!access.allowed) {
+        return NextResponse.json(
+          { error: "You don't have permission to read that site's pages." },
+          { status: 403 },
+        );
       }
     }
 

@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
+import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 import type { NavItem } from "@/types/cms";
 
 const VALID_LOCATIONS = ["none", "header", "footer", "footer_secondary", "mobile", "sidebar", "legal"];
@@ -22,12 +23,8 @@ async function requireTenantAccess() {
   if (!tenantId) return null;
 
   const admin = await createAdminClient();
-  const { data: sa } = await admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-  if (sa) return { tenantId, admin };
-
-  const { data: membership } = await supabase
-    .from("tenant_members").select("role").eq("tenant_id", tenantId).eq("user_id", user.id).maybeSingle();
-  if (!membership || !["owner", "admin", "editor"].includes(membership.role as string)) return null;
+  const access = await checkTenantEditAccess(admin, tenantId, user.id);
+  if (!access.allowed) return null;
 
   return { tenantId, admin };
 }
