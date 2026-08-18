@@ -29,8 +29,18 @@ const ASPECT_CLASS: Record<string, string> = {
   "1:1": "aspect-square",
 };
 
+/**
+ * Layout variants. The block previously rendered one way only, so the variant
+ * picker had nothing to offer for it.
+ *
+ *  (default)  — the player at its natural width
+ *  framed     — matted on a tinted panel, for a video sitting between text
+ *  cinematic  — full-bleed, dark surround, for a section-length feature
+ *  card       — lifted on a card with the caption inside it
+ */
 export function VideoBlock({ block }: { block: VideoBlockProps }) {
   const { data } = block;
+  const variant = block.templateVariant;
 
   if (!data.url) {
     return (
@@ -42,10 +52,28 @@ export function VideoBlock({ block }: { block: VideoBlockProps }) {
 
   const containerStyle = data.maxWidth ? { maxWidth: data.maxWidth } : {};
 
+  const outerClass = cn(
+    "mx-auto",
+    variant === "framed" && "bg-muted rounded-2xl p-4 sm:p-6",
+    variant === "card" && "bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-[var(--shadow-lg)]",
+    variant === "cinematic" && "w-full max-w-none bg-black rounded-none px-0 py-8 sm:py-12",
+  );
+
+  const playerClass = cn(
+    "w-full overflow-hidden",
+    variant === "cinematic" ? "rounded-none" : "rounded-xl",
+    ASPECT_CLASS[data.aspectRatio] ?? "aspect-video",
+  );
+
   return (
-    <div className="mx-auto" style={containerStyle}>
+    <div
+      className={outerClass}
+      // Cinematic is deliberately full-bleed, so a maxWidth set for the
+      // default layout would fight it.
+      style={variant === "cinematic" ? undefined : containerStyle}
+    >
       {data.videoType === "mp4" ? (
-        <div className={cn("w-full rounded-xl overflow-hidden", ASPECT_CLASS[data.aspectRatio] ?? "aspect-video")}>
+        <div className={playerClass}>
           <video
             src={data.url}
             poster={data.poster}
@@ -58,7 +86,7 @@ export function VideoBlock({ block }: { block: VideoBlockProps }) {
           />
         </div>
       ) : (
-        <div className={cn("w-full rounded-xl overflow-hidden", ASPECT_CLASS[data.aspectRatio] ?? "aspect-video")}>
+        <div className={playerClass}>
           <iframe
             src={getVideoSrc(data.url, data.videoType, data.autoplay, data.muted, data.loop)}
             className="w-full h-full border-0"
@@ -68,7 +96,14 @@ export function VideoBlock({ block }: { block: VideoBlockProps }) {
           />
         </div>
       )}
-      {data.caption && <p className="text-sm text-muted-foreground text-center mt-3">{data.caption}</p>}
+      {data.caption && (
+        <p className={cn(
+          "text-sm text-center mt-3",
+          variant === "cinematic" ? "text-white/70 px-4" : "text-muted-foreground",
+        )}>
+          {data.caption}
+        </p>
+      )}
     </div>
   );
 }

@@ -220,6 +220,18 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "light", label: "Light", description: "Keeps the page's light ground, separated by a rule.", thumb: "list-rows" },
   ],
 
+  video: [
+    { key: "framed", label: "Framed", description: "Matted on a tinted panel — sits calmly between paragraphs.", thumb: "cards-grid" },
+    { key: "card", label: "Card", description: "Lifted on a card, caption inside it.", thumb: "cards-grid" },
+    { key: "cinematic", label: "Cinematic", description: "Full-bleed against a dark surround, for a feature video.", thumb: "fullscreen", dark: true },
+  ],
+
+  slider: [
+    { key: "left-copy", label: "Left Copy", description: "Text left over a directional scrim, image still visible right.", thumb: "gradient-left" },
+    { key: "split", label: "Split", description: "Image one half, copy on a solid panel the other.", thumb: "split-image" },
+    { key: "minimal", label: "Minimal", description: "Image forward, a small caption bar along the bottom.", thumb: "grid-tight" },
+  ],
+
   item_box: [
     { key: "grid", label: "Grid", description: "Even card grid — the standard layout.", thumb: "cards-grid" },
     { key: "list", label: "List", description: "Full-width stacked rows.", thumb: "list-rows" },
