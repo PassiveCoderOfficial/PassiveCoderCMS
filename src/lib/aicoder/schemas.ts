@@ -37,9 +37,39 @@ const textContentSchema = z.object({
   paragraphs: z.array(z.string().min(1).max(600)).min(1).max(4),
 });
 
+/**
+ * Icons the model may choose from.
+ *
+ * Blocks resolve icons by exact lucide export name (`LucideIcons[item.icon]`),
+ * so a hallucinated name renders nothing at all. Constraining the model to a
+ * fixed list keeps every choice a real component while still letting it pick a
+ * *meaningful* one — cycling the registry's three defaults instead, as this
+ * previously did, visibly repeats every fourth card on a six-service grid.
+ *
+ * Deliberately weighted toward trade and local-service work, which is what
+ * these sites mostly are.
+ */
+export const ALLOWED_ICONS = [
+  "Zap", "Wrench", "Hammer", "Paintbrush", "Plug", "Lightbulb", "Cable",
+  "Camera", "Video", "Wifi", "Router", "HardHat", "Ruler", "Drill",
+  "Droplet", "Waves", "ShowerHead", "Flame", "Thermometer", "Fan", "Snowflake",
+  "Home", "Building2", "DoorOpen", "Blinds", "LayoutGrid", "Boxes", "Warehouse",
+  "Truck", "Car", "Package", "Shield", "ShieldCheck", "Lock", "Key",
+  "Sparkles", "Star", "Heart", "ThumbsUp", "Award", "BadgeCheck", "Trophy",
+  "Clock", "CalendarCheck", "Phone", "MessageCircle", "Mail", "MapPin",
+  "Users", "UserCheck", "Briefcase", "FileText", "ClipboardCheck", "Settings",
+  "Leaf", "Trees", "Sun", "Scissors", "Brush", "Trash2", "Recycle",
+  "Utensils", "Coffee", "ShoppingBag", "CreditCard", "Wallet", "TrendingUp",
+  "Stethoscope", "Pill", "Activity", "Dumbbell", "GraduationCap", "BookOpen",
+  "Monitor", "Smartphone", "Laptop", "Server", "Database", "Cloud", "Code",
+] as const;
+
+const iconSchema = z.enum(ALLOWED_ICONS);
+
 const serviceItemContentSchema = z.object({
   title: z.string().min(1).max(60),
   description: z.string().min(1).max(200),
+  icon: iconSchema.optional(),
 });
 const servicesContentSchema = z.object({
   title: z.string().max(80).optional(),
@@ -77,6 +107,7 @@ const faqContentSchema = z.object({
 const featureItemContentSchema = z.object({
   title: z.string().min(1).max(60),
   description: z.string().min(1).max(200),
+  icon: iconSchema.optional(),
 });
 const featuresContentSchema = z.object({
   title: z.string().max(80).optional(),
@@ -100,6 +131,7 @@ const statsContentSchema = z.object({
 
 const iconGridItemContentSchema = z.object({
   label: z.string().min(1).max(40),
+  icon: iconSchema.optional(),
 });
 const iconGridContentSchema = z.object({
   title: z.string().max(80).optional(),

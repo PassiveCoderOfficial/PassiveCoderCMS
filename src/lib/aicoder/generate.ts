@@ -169,6 +169,7 @@ export async function generateBlockContent(
     "Output MUST be valid JSON matching the provided schema exactly. No markdown, no commentary, no extra fields.",
     "Keep copy concise, concrete, and specific to the business described. Avoid generic filler like 'we are the best'.",
     "The site owner may write in imperfect English — infer their intent and produce clean, professional English output regardless.",
+    "When the schema offers an `icon` field, pick the one that best matches that specific item, and do not repeat an icon within the section — a grid where every third card shares an icon looks unfinished.",
     facts ? renderConstraints(facts) : "",
   ].filter(Boolean).join(" ");
 

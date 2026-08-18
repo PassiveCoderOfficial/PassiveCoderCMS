@@ -87,7 +87,11 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
       if (c.subtitle) b.data.subtitle = c.subtitle;
       b.data.items = c.items.map((item, i) => ({
         id: generateId(),
-        icon: b.data.items[i % b.data.items.length]?.icon ?? "Star",
+        // The model's pick when it made one — it is constrained to real lucide
+        // names by the schema. Falling back to cycling the registry defaults
+        // visibly repeats icons once a grid has more items than the three
+        // defaults, which is most real service lists.
+        icon: item.icon ?? b.data.items[i % b.data.items.length]?.icon ?? "Star",
         iconType: "lucide" as const,
         title: item.title,
         description: item.description,
@@ -135,7 +139,7 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
       if (c.subtitle) b.data.subtitle = c.subtitle;
       b.data.items = c.items.map((item, i) => ({
         id: generateId(),
-        icon: b.data.items[i % b.data.items.length]?.icon ?? "Star",
+        icon: item.icon ?? b.data.items[i % b.data.items.length]?.icon ?? "Star",
         title: item.title,
         description: item.description,
       }));
@@ -157,11 +161,9 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
       const c = content as IconGridContent;
       const b = block as Extract<Block, { type: "icon_grid" }>;
       if (c.title) b.data.title = c.title;
-      // Icons stay ours — cycling the registry defaults keeps every item on a
-      // real lucide name instead of trusting the model to know the icon set.
       b.data.items = c.items.map((item, i) => ({
         id: generateId(),
-        icon: b.data.items[i % b.data.items.length]?.icon ?? "Star",
+        icon: item.icon ?? b.data.items[i % b.data.items.length]?.icon ?? "Star",
         label: item.label,
       }));
       return b;
