@@ -5,6 +5,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useBuilderStore } from "@/lib/store/builder";
 import { SortableBlockWrapper } from "./sortable-block-wrapper";
+import { InsertSectionButton } from "./insert-section-button";
 import { cn } from "@/lib/utils";
 import type { ContainerBlockProps } from "@/types/cms";
 
@@ -44,13 +45,19 @@ function ColumnDropZone({
       style={{ flexBasis: `${column.widthPct}%` }}
     >
       {column.blocks.length === 0 && isEditing && (
-        <div className="flex items-center justify-center h-16 text-xs text-muted-foreground select-none">
-          Drop a block here
+        <div className="flex flex-col items-center justify-center gap-1 h-16 text-xs text-muted-foreground select-none">
+          <span>Drop a block here</span>
+          {/* Dragging is not the only way in — an empty column offers the
+              same picker the page-level "+" does, scoped to this column. */}
+          <InsertSectionButton path={path} compact />
         </div>
       )}
       <SortableContext items={column.blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
         {column.blocks.map((block) => (
-          <SortableBlockWrapper key={block.id} block={block} isEditing={isEditing} path={path} />
+          <React.Fragment key={block.id}>
+            <SortableBlockWrapper block={block} isEditing={isEditing} path={path} />
+            {isEditing && <InsertSectionButton path={path} afterId={block.id} compact />}
+          </React.Fragment>
         ))}
       </SortableContext>
     </div>

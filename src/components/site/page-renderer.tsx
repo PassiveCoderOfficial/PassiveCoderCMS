@@ -46,6 +46,7 @@ import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-car
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
+import { ContainerBlock } from "@/components/blocks/container/container-block";
 import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 
@@ -53,9 +54,12 @@ interface PageBlockProps {
   block: Block;
   identityLogo?: string | null;
   identityLogoDark?: string | null;
+  /** Rendered inside a container column. The column already sets the width,
+   *  so the usual centered max-width wrapper would constrain it twice. */
+  nested?: boolean;
 }
 
-async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockProps) {
+async function ServerBlock({ block, identityLogo, identityLogoDark, nested }: PageBlockProps) {
   const bgStyle = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding?.top,
@@ -112,6 +116,34 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
     case "donor_map":        content = <DonorMapBlock block={block} />; break;
     case "donor_requests":   content = <DonorRequestsBlock block={block} />; break;
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
+    // Containers hold their own blocks, so each column's children are
+    // rendered here and handed to the layout shell. Awaited because several
+    // block types fetch their own data. One level only — the builder doesn't
+    // allow a container inside a container, and recursing without that limit
+    // would let a malformed document loop forever.
+    case "container": {
+      const container = block as import("@/types/cms").ContainerBlockProps;
+      const columnContent = await Promise.all(
+        (container.data.columns ?? []).map(async (col) =>
+          Promise.all(
+            (col.blocks ?? [])
+              .filter((child) => child.visible !== false && child.type !== "container")
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map(async (child) => (
+                <ServerBlock
+                  key={child.id}
+                  block={child}
+                  identityLogo={identityLogo}
+                  identityLogoDark={identityLogoDark}
+                  nested
+                />
+              )),
+          ),
+        ),
+      );
+      content = <ContainerBlock block={container} columnContent={columnContent} />;
+      break;
+    }
     default:                 content = null;
   }
 
@@ -119,7 +151,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark }: PageBlockP
 
   return (
     <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", hideOnClasses(block.hideOn))}>
-      <div className={getContainerClass(block.width)}>{content}</div>
+      <div className={nested ? "w-full" : getContainerClass(block.width)}>{content}</div>
     </div>
   );
 }
