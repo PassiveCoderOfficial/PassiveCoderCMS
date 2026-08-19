@@ -52,6 +52,18 @@ function targetArray(state: BuilderState, path?: ContainerPath): Block[] | undef
 /** One level deep: the array (root, or a container column) that actually
  *  holds the block with this id. Used to auto-locate a block for callers
  *  (existing settings panels) that don't know about container nesting. */
+/** Recursively regenerates a block's id and those of any blocks nested in its
+ *  container columns, so a copy never shares an id with its source. */
+export function withFreshIds(block: Block): Block {
+  block.id = generateId();
+  if (block.type === "container") {
+    for (const col of (block as ContainerBlockProps).data.columns) {
+      col.blocks = col.blocks.map(withFreshIds);
+    }
+  }
+  return block;
+}
+
 function findArrayContaining(blocks: Block[], id: string): Block[] | undefined {
   if (blocks.some((b) => b.id === id)) return blocks;
   for (const b of blocks) {
@@ -238,8 +250,10 @@ export const useBuilderStore = create<BuilderStore>()(
         if (!arr) return;
         const idx = arr.findIndex((b) => b.id === id);
         if (idx === -1) return;
-        const clone = deepClone(arr[idx]);
-        clone.id = generateId();
+        // Every id has to be regenerated, not just the top one: duplicating a
+        // container otherwise leaves its nested blocks sharing ids with the
+        // original, so React reuses keys and editing one copy edits both.
+        const clone = withFreshIds(deepClone(arr[idx]));
         arr.splice(idx + 1, 0, clone);
         reorderBlocks(arr);
         state.selectedBlockId = clone.id;

@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { generateId } from "@/lib/utils";
+import { Plus, Trash2, Scale } from "lucide-react";
+import { COLUMN_LAYOUTS } from "@/modules/page-builder/column-layouts";
+import { generateId, cn } from "@/lib/utils";
 import type { ContainerBlockProps } from "@/types/cms";
 
 export function ContainerSettings({ block }: { block: ContainerBlockProps }) {
@@ -39,6 +40,33 @@ export function ContainerSettings({ block }: { block: ContainerBlockProps }) {
     const cols = block.data.columns.map((c, idx) => (idx === i ? { ...c, widthPct } : c));
     update("columns", cols);
   };
+
+  /** Re-splits evenly without touching the blocks already in each column. */
+  const balance = () => update("columns", rebalanced(block.data.columns));
+
+  /**
+   * Switches to a named split, keeping content. Columns beyond the new count
+   * would otherwise take their blocks with them, so their contents are moved
+   * into the last surviving column rather than silently deleted.
+   */
+  const applyLayout = (widths: number[]) => {
+    const current = block.data.columns;
+    const cols = widths.map((widthPct, i) => ({
+      id: current[i]?.id ?? generateId(),
+      widthPct,
+      blocks: current[i]?.blocks ?? [],
+    }));
+    if (current.length > widths.length) {
+      const orphaned = current.slice(widths.length).flatMap((c) => c.blocks);
+      cols[cols.length - 1] = {
+        ...cols[cols.length - 1],
+        blocks: [...cols[cols.length - 1].blocks, ...orphaned],
+      };
+    }
+    update("columns", cols);
+  };
+
+  const total = block.data.columns.reduce((n, c) => n + (Number(c.widthPct) || 0), 0);
 
   return (
     <div className="space-y-3">
@@ -85,11 +113,43 @@ export function ContainerSettings({ block }: { block: ContainerBlockProps }) {
       </div>
 
       <div className="border-t pt-3">
+        <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1.5">Split</p>
+        <div className="grid grid-cols-4 gap-1 mb-3">
+          {COLUMN_LAYOUTS.map((l) => {
+            const active =
+              l.widths.length === block.data.columns.length &&
+              l.widths.every((w, i) => w === block.data.columns[i]?.widthPct);
+            return (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => applyLayout(l.widths)}
+                title={`${l.label} — ${l.description}`}
+                className={cn(
+                  "rounded border p-1 transition-colors",
+                  active ? "border-primary bg-primary/10" : "hover:border-primary/50",
+                )}
+              >
+                <span className="flex gap-px h-4">
+                  {l.widths.map((w, i) => (
+                    <span key={i} className="rounded-[1px] bg-muted-foreground/30" style={{ flexBasis: `${w}%` }} />
+                  ))}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Columns</p>
-          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={addColumn}>
-            <Plus className="h-3 w-3 mr-1" /> Add
-          </Button>
+          <div className="flex gap-1">
+            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={balance}>
+              <Scale className="h-3 w-3 mr-1" /> Even
+            </Button>
+            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={addColumn}>
+              <Plus className="h-3 w-3 mr-1" /> Add
+            </Button>
+          </div>
         </div>
         {block.data.columns.map((col, i) => (
           <div key={col.id} className="flex items-center gap-2 mb-1.5">
@@ -115,6 +175,14 @@ export function ContainerSettings({ block }: { block: ContainerBlockProps }) {
             </Button>
           </div>
         ))}
+        {/* Widths are typed by hand, so they can drift off 100 and leave a
+            gap or overflow the row — say so rather than letting it look like
+            a rendering bug. */}
+        {total !== 100 && (
+          <p className="mt-1 text-[10px] text-amber-600 dark:text-amber-400">
+            Columns total {total}% — use Even, or adjust so they add up to 100%.
+          </p>
+        )}
       </div>
     </div>
   );

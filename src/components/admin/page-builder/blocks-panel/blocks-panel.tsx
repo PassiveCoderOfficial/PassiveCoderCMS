@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { blockRegistry, type BlockDefinition } from "@/modules/page-builder/block-registry";
 import { presetsByCategory, presetCategoryLabels, type SectionPreset, type PresetCategory } from "@/modules/page-builder/section-presets";
-import { useBuilderStore } from "@/lib/store/builder";
+import { useBuilderStore, withFreshIds } from "@/lib/store/builder";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Plus, Trash2, Loader2, Download } from "lucide-react";
@@ -125,17 +125,9 @@ export function BlocksPanel({
 
   // Saved presets are reused across pages/insertions — regenerate every block
   // id (and nested column-block ids) on each add so duplicates never collide
-  // in the store or share React keys.
-  function freshIds(block: Block): Block {
-    const clone = deepClone(block);
-    clone.id = generateId();
-    if (clone.type === "container") {
-      for (const col of (clone as ContainerBlockProps).data.columns) {
-        col.blocks = col.blocks.map(freshIds);
-      }
-    }
-    return clone;
-  }
+  // in the store or share React keys. Shares the store's helper so the two
+  // cannot drift on what "nested" means.
+  const freshIds = (block: Block): Block => withFreshIds(deepClone(block));
 
   const q = search.toLowerCase();
 

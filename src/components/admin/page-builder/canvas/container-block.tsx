@@ -53,7 +53,11 @@ function ColumnDropZone({
         </div>
       )}
       <SortableContext items={column.blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-        {column.blocks.map((block) => (
+        {/* A container nested in a column is skipped by the site renderer, so
+            showing it here would promise a layout that never publishes. It
+            can only arrive from imported or saved content, since the picker
+            withholds containers inside a column. */}
+        {column.blocks.filter((b) => b.type !== "container").map((block) => (
           <React.Fragment key={block.id}>
             <SortableBlockWrapper block={block} isEditing={isEditing} path={path} />
             {isEditing && <InsertSectionButton path={path} afterId={block.id} compact />}
