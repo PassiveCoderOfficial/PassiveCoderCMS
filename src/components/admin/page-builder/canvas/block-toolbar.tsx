@@ -47,8 +47,21 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
           // Mobile: sits INSIDE the block's top edge (top-1) so it can never
           // slide behind the fixed top bar for the first block — always
           // reachable. Desktop: floats just above the block on hover.
+          // On desktop the bar floats 32px ABOVE the block. That gap sits
+          // outside the block's own hover area, so reaching for a button used
+          // to cross dead space, drop :hover, and make the bar vanish
+          // mid-reach — every action was unclickable unless the block happened
+          // to be selected (pinned keeps it opaque, which is why this was easy
+          // to miss). `before:` paints an invisible bridge across the gap so
+          // the pointer never leaves the hover region on its way up.
           "absolute top-1 lg:top-auto lg:-top-8 left-1 right-1 lg:left-0 lg:right-auto z-20 flex items-center gap-0.5 rounded-lg lg:rounded-t px-1 py-1 lg:py-0.5 transition-opacity shadow-lg lg:shadow-none overflow-x-auto",
-          pinned ? "bg-orange-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
+          "lg:before:absolute lg:before:inset-x-0 lg:before:top-full lg:before:h-2 lg:before:content-['']",
+          // opacity-0 alone still leaves the bar in the hit-testing tree, so a
+          // stray click could land on an invisible control; pair it with
+          // pointer-events so only a visible toolbar is interactive.
+          pinned
+            ? "bg-orange-600 opacity-100"
+            : "bg-gray-900 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto",
         )}
         onClick={(e) => e.stopPropagation()}
         data-testid="block-toolbar"
