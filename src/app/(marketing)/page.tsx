@@ -19,6 +19,8 @@ import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
 import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
+import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
+import { buildTemplateCSSVars } from "@/modules/themes/template-css";
 import type { Block } from "@/types/cms";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +49,23 @@ export default async function MarketingHomePage() {
       supabase.from("site_settings").select("auto_translate_enabled").eq("tenant_id", tenantId).maybeSingle(),
     ]);
 
+    // The (site) layout injects the tenant's template palette on every other
+    // page, but the catch-all can't match "/" so the homepage renders here —
+    // and was the one page on the whole site with no brand colours. Same
+    // resolve + build the layout uses, so "/" and "/services" theme alike.
+    const { data: siteIdentity } = await supabase
+      .from("site_identity")
+      .select("template_id")
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    const templateIdentity = siteIdentity?.template_id
+      ? await resolveDbTemplateIdentity(siteIdentity.template_id)
+      : null;
+    const templateCSSVars = templateIdentity
+      ? buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography)
+      : null;
+    const templateCustomCss = templateIdentity?.customCss ?? null;
+
     const rawBlocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
 
     // Global header/footer/pre-footer. The (site) layout injects these on other pages;
@@ -74,6 +93,12 @@ export default async function MarketingHomePage() {
     if (rawBlocks.length > 0) {
       return (
         <div className="min-h-screen">
+          {templateCSSVars && (
+            <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />
+          )}
+          {templateCustomCss && (
+            <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />
+          )}
           {isBloodSite ? (
             <>
               <DonorSiteHeader showTranslate={!!siteSettings?.auto_translate_enabled} />
