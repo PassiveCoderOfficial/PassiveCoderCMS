@@ -44,18 +44,24 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          // Mobile: sits INSIDE the block's top edge (top-1) so it can never
-          // slide behind the fixed top bar for the first block — always
-          // reachable. Desktop: floats just above the block on hover.
-          // On desktop the bar floats 32px ABOVE the block. That gap sits
-          // outside the block's own hover area, so reaching for a button used
-          // to cross dead space, drop :hover, and make the bar vanish
-          // mid-reach — every action was unclickable unless the block happened
-          // to be selected (pinned keeps it opaque, which is why this was easy
-          // to miss). `before:` paints an invisible bridge across the gap so
-          // the pointer never leaves the hover region on its way up.
-          "absolute top-1 lg:top-auto lg:-top-8 left-1 right-1 lg:left-0 lg:right-auto z-20 flex items-center gap-0.5 rounded-lg lg:rounded-t px-1 py-1 lg:py-0.5 transition-opacity shadow-lg lg:shadow-none overflow-x-auto",
-          "lg:before:absolute lg:before:inset-x-0 lg:before:top-full lg:before:h-2 lg:before:content-['']",
+          // Always anchored INSIDE the block's top edge, on every breakpoint.
+          // This used to float 32px ABOVE the block on desktop (`-top-8`),
+          // which broke in two independent ways:
+          //  1. That 32px gap sits outside the block's own :hover region, so
+          //     moving the pointer up to click a button crossed dead space,
+          //     dropped hover, and the bar reset to opacity-0 mid-reach.
+          //     Only stayed usable when the block was already selected
+          //     (`pinned` forces opacity-100), which is exactly the state
+          //     manual testing usually passes through first.
+          //  2. For the FIRST block on the page, "32px above" has nowhere to
+          //     go — the canvas scroll container clips it, and hit-testing at
+          //     those coordinates landed on the dashboard's own fixed header
+          //     instead of the toolbar, so even a successful hover couldn't
+          //     produce a click.
+          // Sitting inside the block removes both classes of failure instead
+          // of patching around them — there is no gap to lose hover over and
+          // no space outside the block to run out of.
+          "absolute top-1 left-1 right-1 z-20 flex items-center gap-0.5 rounded-lg px-1 py-1 transition-opacity shadow-lg overflow-x-auto",
           // opacity-0 alone still leaves the bar in the hit-testing tree, so a
           // stray click could land on an invisible control; pair it with
           // pointer-events so only a visible toolbar is interactive.
