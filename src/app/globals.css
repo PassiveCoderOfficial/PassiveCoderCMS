@@ -157,40 +157,32 @@ html {
 .prose img { border-radius: 0.5rem; margin: 1rem 0; }
 .prose hr { border-color: hsl(var(--border)); margin: 1.5rem 0; }
 
-/* Page-builder canvas: always render site content in the light palette.
+/* Page-builder canvas: don't let the ADMIN's dark mode repaint site content.
  *
- * The dashboard chrome honours the user's dark-mode choice, but the canvas
- * shows the published SITE, which never carries a `dark` class — its colours
- * come from the tenant's own theme. Without this, blocks that use
- * bg-background / text-foreground picked up `.dark`'s values and the editor
- * showed different colours than the live page.
+ * next-themes toggles `.dark` on <html> for the dashboard chrome, and that
+ * overrides --background/--foreground/etc. Blocks using bg-background follow
+ * those vars, so with a dark dashboard the canvas rendered a different palette
+ * than the published page.
  *
- * Re-declares the light value of every var `.dark` overrides, so the override
- * is complete rather than partial; a missed var would leave a dark surface
- * behind light text. Specificity beats `.dark` because this sits deeper in
- * the tree, and only content inside the canvas is affected.
+ * This must only NEUTRALISE the dark-mode overrides — it must not declare
+ * colour values. The editor injects the tenant's template palette at :root
+ * (buildTemplateCSSVars), and a wrapper that hardcodes the default shadcn
+ * palette is more specific than :root, so it would silently replace every
+ * tenant's brand colours with generic light ones. `revert` drops the .dark
+ * override and lets the template's own :root values show through — the same
+ * approach the published site layout uses for light-locked tenants.
  */
-.cms-canvas-light {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-  --sidebar: 0 0% 98%;
+html.dark .cms-canvas-light {
+  --background: revert; --foreground: revert;
+  --card: revert; --card-foreground: revert;
+  --popover: revert; --popover-foreground: revert;
+  --primary: revert; --primary-foreground: revert;
+  --secondary: revert; --secondary-foreground: revert;
+  --muted: revert; --muted-foreground: revert;
+  --accent: revert; --accent-foreground: revert;
+  --destructive: revert; --destructive-foreground: revert;
+  --border: revert; --input: revert;
+  --ring: revert; --sidebar: revert;
 
   color-scheme: light;
 }

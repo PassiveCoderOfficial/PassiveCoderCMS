@@ -258,7 +258,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
                   <BuilderCanvas />
                 </div>
               ) : (
-                <div className="mx-auto shadow-2xl bg-white overflow-hidden w-fit">
+                <div className="mx-auto shadow-2xl overflow-hidden w-fit">
                   <PreviewFrame width={breakpoint === "tablet" ? 768 : 375}>
                     <BuilderCanvas />
                   </PreviewFrame>

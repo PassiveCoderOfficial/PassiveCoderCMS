@@ -43,7 +43,12 @@ export function PreviewFrame({ width, children }: { width: number; children: Rea
       // canvas while the live page rendered light, so the editor showed
       // different colours than the site it was editing.
       doc.documentElement.className = "";
-      doc.body.className = "cms-canvas-light bg-white min-h-full";
+      // No `dark` class is copied onto this document (above), so the tenant's
+      // template palette at :root applies cleanly and no neutralising wrapper
+      // is needed. Background comes from that palette rather than a hardcoded
+      // white, which would fight dark templates.
+      doc.body.className = "min-h-full";
+      doc.body.style.background = "hsl(var(--background))";
 
       setMountNode(doc.body);
     };
