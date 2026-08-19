@@ -2,7 +2,7 @@ import type { Block } from "@/types/cms";
 import type { BusinessFacts } from "./brief";
 import type { PageSection } from "./plan";
 import { generateBlockContent, AiCoderError } from "./generate";
-import { mergeContentIntoBlock } from "./merge";
+import { mergeContentIntoBlock, resolveBlockImages } from "./merge";
 import { reserveGeneration, refundGeneration, AiCoderQuotaError } from "./quota";
 
 /**
@@ -30,6 +30,9 @@ export interface BuildPageResult {
   sections: BuiltSection[];
   generationsUsed: number;
   failedCount: number;
+  /** True when at least one image is a neutral placeholder rather than a photo
+   *  matching the section's subject — surfaced so the owner knows to swap it. */
+  usedPlaceholderImages: boolean;
 }
 
 export async function buildPageFromPlan(
@@ -40,6 +43,9 @@ export async function buildPageFromPlan(
 ): Promise<BuildPageResult> {
   const results: BuiltSection[] = [];
   let generationsUsed = 0;
+  // Tracks whether any image came back as a neutral stand-in rather than a
+  // real subject match, so the UI can tell the owner which photos to replace.
+  let anyPlaceholders = false;
 
   // Sequential rather than parallel: the quota reservation is a conditional
   // UPDATE against a known current value, so concurrent reservations for the
@@ -77,6 +83,8 @@ export async function buildPageFromPlan(
         facts,
       );
       const block = mergeContentIntoBlock(section.blockType, content, section.variantKey);
+      const { usedPlaceholders } = await resolveBlockImages(block, content);
+      if (usedPlaceholders) anyPlaceholders = true;
       results.push({
         index: i,
         blockType: section.blockType,
@@ -107,5 +115,6 @@ export async function buildPageFromPlan(
     sections: results,
     generationsUsed,
     failedCount: results.filter(r => r.error).length,
+    usedPlaceholderImages: anyPlaceholders,
   };
 }

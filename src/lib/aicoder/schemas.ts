@@ -21,6 +21,12 @@ export const SUPPORTED_BLOCK_TYPES = [
 ] as const;
 export type SupportedBlockType = typeof SUPPORTED_BLOCK_TYPES[number];
 
+/** A stock-photo search phrase written by the model, e.g. "electrician wiring
+ *  a residential distribution board". Resolved to a real image URL after
+ *  generation (see images.ts) — the model never emits a URL itself, which
+ *  would otherwise be a hallucinated link straight onto the customer's page. */
+const imageQuerySchema = z.string().min(3).max(100);
+
 const heroContentSchema = z.object({
   title: z.string().min(1).max(120),
   subtitle: z.string().max(160).optional(),
@@ -28,6 +34,7 @@ const heroContentSchema = z.object({
   primaryButtonLabel: z.string().max(40).optional(),
   secondaryButtonLabel: z.string().max(40).optional(),
   badge: z.string().max(60).optional(),
+  imageQuery: imageQuerySchema.optional(),
 });
 
 const textContentSchema = z.object({
@@ -154,6 +161,9 @@ const stepsContentSchema = z.object({
 const galleryContentSchema = z.object({
   title: z.string().max(80).optional(),
   captions: z.array(z.string().min(1).max(80)).min(3).max(12),
+  /** One search phrase per caption, in the same order. Resolved to real photos
+   *  after generation; when absent or short, the caption itself is used. */
+  imageQueries: z.array(imageQuerySchema).max(12).optional(),
 });
 
 const teamMemberContentSchema = z.object({

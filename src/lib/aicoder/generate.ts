@@ -170,6 +170,7 @@ export async function generateBlockContent(
     "Keep copy concise, concrete, and specific to the business described. Avoid generic filler like 'we are the best'.",
     "The site owner may write in imperfect English — infer their intent and produce clean, professional English output regardless.",
     "When the schema offers an `icon` field, pick the one that best matches that specific item, and do not repeat an icon within the section — a grid where every third card shares an icon looks unfinished.",
+    "When the schema offers an `imageQuery` field, write a short stock-photo search phrase describing the photograph that belongs there — the subject and setting, e.g. 'electrician wiring a residential distribution board'. Describe the scene, never a brand, logo, person by name, or text-in-image.",
     facts ? renderConstraints(facts) : "",
   ].filter(Boolean).join(" ");
 

@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { isSupportedBlockType } from "@/lib/aicoder/schemas";
 import { generateBlockContent, AiCoderError } from "@/lib/aicoder/generate";
-import { mergeContentIntoBlock } from "@/lib/aicoder/merge";
+import { mergeContentIntoBlock, resolveBlockImages } from "@/lib/aicoder/merge";
 import { requireModule } from "@/lib/modules/resolve-modules";
 import { reserveGeneration, refundGeneration, AiCoderQuotaError } from "@/lib/aicoder/quota";
 
@@ -57,7 +57,8 @@ export async function POST(req: Request) {
   try {
     const content = await generateBlockContent(blockType, businessContext, instruction);
     const block = mergeContentIntoBlock(blockType, content);
-    return NextResponse.json({ block });
+    const { usedPlaceholders } = await resolveBlockImages(block, content);
+    return NextResponse.json({ block, usedPlaceholders });
   } catch (err) {
     // Generation failed after quota was already reserved — refund it so a
     // model/upstream failure doesn't silently cost the tenant a generation

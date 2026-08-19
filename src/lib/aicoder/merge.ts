@@ -9,6 +9,7 @@ import type {
   TeamContent, PricingContent, ContactContent, NavigationContent,
   FooterContent, TimelineContent,
 } from "./schemas";
+import { findStockImage, findStockImages } from "./images";
 
 /**
  * Merges AI-generated CONTENT into a real block-registry default. Every
@@ -184,8 +185,10 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
       const c = content as GalleryContent;
       const b = block as Extract<Block, { type: "gallery" }>;
       if (c.title) b.data.title = c.title;
-      // Empty `url` renders the builder's own placeholder tile. AiCoder has no
-      // image source in v1, so it writes the captions and leaves the owner a
+      // Slots are created empty here and filled by resolveBlockImages, which
+      // runs separately so a slow image provider can't block the copy. An
+      // empty `url` renders the builder's own placeholder tile, which is the
+      // correct fallback when image lookup is unavailable or fails. Leaves the owner a
       // correctly-sized set of slots to drop real photos into.
       b.data.images = c.captions.map(caption => ({
         id: generateId(),
@@ -323,4 +326,66 @@ function escapeHtml(s: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/**
+ * Resolves the model's image search phrases into real photo URLs, in place.
+ *
+ * Separate from mergeContentIntoBlock, and deliberately so: merging is pure and
+ * synchronous, while this reaches out to a third-party API. Keeping them apart
+ * means a slow or failing image provider can never corrupt or block the copy
+ * the tenant already paid a generation for — on any failure the block simply
+ * keeps its empty image slots, exactly as before this existed.
+ *
+ * Returns whether every image it fetched was subject-relevant, so the UI can
+ * tell the user when they are looking at neutral placeholders that need
+ * replacing rather than photos of their actual trade.
+ */
+export async function resolveBlockImages(
+  block: Block,
+  content: unknown,
+): Promise<{ usedPlaceholders: boolean }> {
+  let usedPlaceholders = false;
+
+  try {
+    if (block.type === "hero") {
+      const query = (content as { imageQuery?: string }).imageQuery;
+      if (query) {
+        const image = await findStockImage(query, "landscape");
+        if (image) {
+          const b = block as Extract<Block, { type: "hero" }>;
+          b.data.imageUrl = image.url;
+          b.data.imageAlt = image.alt;
+          if (!image.relevant) usedPlaceholders = true;
+        }
+      }
+    } else if (block.type === "gallery") {
+      const c = content as { captions?: string[]; imageQueries?: string[] };
+      const captions = c.captions ?? [];
+      if (captions.length) {
+        // Fall back to the caption when the model didn't supply a matching
+        // query — a caption like "Rewiring a shophouse unit" is already a
+        // serviceable search phrase.
+        const images = await findStockImages(
+          captions.map((caption, i) => ({
+            query: c.imageQueries?.[i] ?? caption,
+            orientation: "landscape" as const,
+          })),
+        );
+        const b = block as Extract<Block, { type: "gallery" }>;
+        b.data.images = captions.map((caption, i) => ({
+          id: generateId(),
+          url: images[i]?.url ?? "",
+          alt: images[i]?.alt ?? caption,
+          caption,
+        }));
+        if (images.some(img => img && !img.relevant)) usedPlaceholders = true;
+      }
+    }
+  } catch {
+    // Imagery is decorative. Losing it costs nothing that was paid for; losing
+    // the block would.
+  }
+
+  return { usedPlaceholders };
 }

@@ -128,6 +128,7 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
   const [theme, setTheme] = useState<ThemeSuggestion | null>(null);
   const [themeApplied, setThemeApplied] = useState(false);
   const [applySeo, setApplySeo] = useState(true);
+  const [usedPlaceholderImages, setUsedPlaceholderImages] = useState(false);
 
   // Site mode
   const [sitePages, setSitePages] = useState<SitePagePlan[] | null>(null);
@@ -246,6 +247,7 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
       if (data.failedCount > 0) {
         toast.warning(`${data.failedCount} section${data.failedCount > 1 ? "s" : ""} couldn't be generated`);
       }
+      setUsedPlaceholderImages(!!data.usedPlaceholderImages);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -722,6 +724,16 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
                       </div>
                     ))}
                   </div>
+
+                  {usedPlaceholderImages && (
+                    <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-600 flex gap-2">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        Photos are neutral stand-ins, not pictures of your actual work — replace them
+                        before publishing.
+                      </span>
+                    </div>
+                  )}
 
                   {builtOk > 0 && (
                     <div className="space-y-2 pt-1">
