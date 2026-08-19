@@ -41,7 +41,7 @@ export default function HeaderBuilderClient({
     // No pageId — this isn't a page. Settings panels that need tenant context
     // (products, bookings) still work because the tenant is set.
     setTenantId(tenantId);
-    setBlocks(initialBlocks);
+    setBlocks(initialBlocks, true);
     setDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target]);

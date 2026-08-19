@@ -14,7 +14,7 @@ export interface ContainerPath {
 
 interface BuilderStore extends BuilderState {
   // Actions
-  setBlocks: (blocks: Block[]) => void;
+  setBlocks: (blocks: Block[], isInitialLoad?: boolean) => void;
   addBlock: (block: Block, afterId?: string, path?: ContainerPath) => void;
   updateBlock: (id: string, data: Partial<Block>, path?: ContainerPath) => void;
   removeBlock: (id: string, path?: ContainerPath) => void;
@@ -124,8 +124,28 @@ export const useBuilderStore = create<BuilderStore>()(
   immer((set, get) => ({
     ...initialState,
 
-    setBlocks: (blocks) =>
+    /**
+     * Replaces the whole block list.
+     *
+     * Two different callers with opposite needs:
+     *  - Loading a page into the editor (`isInitialLoad`): this IS the baseline,
+     *    so history is seeded with it and the page is not dirty. Without the
+     *    seed, `history` stayed empty and the FIRST edit was permanently
+     *    un-undoable — `pushHistory` left historyIndex at 0 while `undo`
+     *    guards on `historyIndex > 0`, so there was nothing to step back to.
+     *  - Replacing content wholesale (templates, import, AiCoder): a real edit,
+     *    which pushes the previous blocks onto history so it can be undone.
+     */
+    setBlocks: (blocks, isInitialLoad) =>
       set((state) => {
+        if (isInitialLoad) {
+          state.blocks = blocks;
+          state.history = [];
+          state.historyIndex = -1;
+          state.isDirty = false;
+          return;
+        }
+        pushHistory(state);
         state.blocks = blocks;
         state.isDirty = true;
       }),
@@ -267,26 +287,35 @@ export const useBuilderStore = create<BuilderStore>()(
         state.mobileSheet = sheet;
       }),
 
+    /**
+     * History holds PRE-EDIT snapshots; the live `blocks` is the newest state
+     * and is deliberately not in the array. Stepping back therefore has to
+     * record the current blocks first, or there would be nothing for redo to
+     * return to — that missing append is why redo previously did nothing.
+     */
     undo: () =>
       set((state) => {
-        if (state.historyIndex > 0) {
-          state.historyIndex--;
-          state.blocks = deepClone(state.history[state.historyIndex]);
-          state.isDirty = true;
+        if (state.historyIndex < 0) return;
+        if (state.historyIndex === state.history.length - 1) {
+          state.history.push(deepClone(state.blocks));
         }
+        state.blocks = deepClone(state.history[state.historyIndex]);
+        state.historyIndex--;
+        state.isDirty = true;
       }),
 
+    /** Steps forward into the snapshot one past the cursor — the last entry is
+     *  the state undo captured on its way out, so the tail is off by one. */
     redo: () =>
       set((state) => {
-        if (state.historyIndex < state.history.length - 1) {
-          state.historyIndex++;
-          state.blocks = deepClone(state.history[state.historyIndex]);
-          state.isDirty = true;
-        }
+        if (state.historyIndex >= state.history.length - 2) return;
+        state.historyIndex++;
+        state.blocks = deepClone(state.history[state.historyIndex + 1]);
+        state.isDirty = true;
       }),
 
-    canUndo: () => get().historyIndex > 0,
-    canRedo: () => get().historyIndex < get().history.length - 1,
+    canUndo: () => get().historyIndex >= 0,
+    canRedo: () => get().historyIndex < get().history.length - 2,
 
     getBlock: (id) => findBlockDeep(get().blocks, id),
     getBlockPath: (id) => getBlockPathDeep(get().blocks, id),
@@ -295,16 +324,29 @@ export const useBuilderStore = create<BuilderStore>()(
   })),
 );
 
+/**
+ * Records the CURRENT blocks as an undo point, before the caller mutates them.
+ *
+ * History stores PRE-EDIT snapshots only; the live `blocks` is always the
+ * newest state and is not kept here. `undo` appends the live state on its way
+ * out so redo has a destination — see the comment there.
+ *
+ * Previously this left `historyIndex` one short whenever the array was
+ * trimmed, and `undo` guarded on `historyIndex > 0`, which together made the
+ * very first edit after loading a page impossible to undo.
+ */
 function pushHistory(state: BuilderState) {
-  // Trim redo history
+  // An edit made after undoing discards the redo tail — the future it led to
+  // no longer exists.
   if (state.historyIndex < state.history.length - 1) {
     state.history = state.history.slice(0, state.historyIndex + 1);
   }
   state.history.push(deepClone(state.blocks));
+  state.historyIndex = state.history.length - 1;
   if (state.history.length > MAX_HISTORY) {
+    // Dropping the oldest entry shifts every index down by one.
     state.history.shift();
-  } else {
-    state.historyIndex++;
+    state.historyIndex--;
   }
 }
 

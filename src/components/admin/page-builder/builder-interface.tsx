@@ -50,8 +50,9 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
     // Scope tenant-aware settings panels to the page's own tenant, which is not
     // the viewer's tenant when a super admin edits another tenant's page.
     setTenantId(page.tenant_id ?? undefined);
-    setBlocks(page.blocks ?? []);
-    setDirty(false);
+    // isInitialLoad: seeds undo history with the pristine page and leaves it
+    // clean, so the user's first edit is undoable.
+    setBlocks(page.blocks ?? [], true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page.id]);
 
