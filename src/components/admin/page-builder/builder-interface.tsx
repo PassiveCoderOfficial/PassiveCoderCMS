@@ -171,6 +171,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => setMode(value as "edit" | "preview")}
+                    data-testid={`toolbar-mode-${value}`}
                     className={cn("flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors", mode === value ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -188,6 +189,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => setBreakpoint(value)}
+                    data-testid={`toolbar-breakpoint-${value}`}
                     className={cn("px-2.5 py-1.5 transition-colors", breakpoint === value ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -202,7 +204,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={!canUndo()}>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={!canUndo()} data-testid="toolbar-undo" aria-label="Undo">
                 <Undo2 className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -210,7 +212,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={!canRedo()}>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={!canRedo()} data-testid="toolbar-redo" aria-label="Redo">
                 <Redo2 className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -219,14 +221,14 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
 
           <div className="ml-auto flex items-center gap-2">
             {aiCoderEnabled && (
-              <Button size="sm" variant="outline" onClick={() => setAiCoderOpen(true)} className="h-8 gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setAiCoderOpen(true)} className="h-8 gap-1.5" data-testid="toolbar-aicoder">
                 <Sparkles className="h-3.5 w-3.5 text-primary" /> AiCoder
               </Button>
             )}
             <span className="text-xs text-muted-foreground hidden sm:inline">
               {saving ? "Saving…" : isDirty ? "Unsaved changes" : lastSavedAt ? "All changes saved" : ""}
             </span>
-            <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-8 gap-1.5">
+            <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-8 gap-1.5" data-testid="toolbar-save">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               {saving ? "Saving..." : "Save"}
             </Button>

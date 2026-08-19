@@ -85,6 +85,13 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
       <div
         ref={(node) => { setNodeRef(node); elRef.current = node; }}
         style={style}
+        // Stable handles for tests and automation. "relative group" is a
+        // styling class that also matches unrelated panel markup, so counting
+        // it produced wrong block counts; data-block-id is unambiguous.
+        data-testid="canvas-block"
+        data-block-id={block.id}
+        data-block-type={block.type}
+        data-selected={isSelected || undefined}
         className={cn(
           "relative group",
           isEditing && "outline-2 outline-transparent outline-offset-[-2px]",

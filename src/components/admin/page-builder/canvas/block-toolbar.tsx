@@ -51,6 +51,8 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
           pinned ? "bg-orange-600 opacity-100" : "bg-gray-900 opacity-0 group-hover:opacity-100",
         )}
         onClick={(e) => e.stopPropagation()}
+        data-testid="block-toolbar"
+        data-block-type={block.type}
       >
         <span className="hidden lg:inline text-[10px] text-gray-400 mr-1 select-none px-1 truncate max-w-[100px] shrink-0">
           {block.type.replace(/_/g, " ")}
@@ -68,6 +70,12 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
                     action.isDragHandle && "cursor-grab active:cursor-grabbing touch-none",
                   )}
                   onClick={action.onClick}
+                  // Derived from the action's own label so the hook stays the
+                  // single source of truth — the toolbar has no other stable
+                  // handle (no text, icon-only), which made it unaddressable
+                  // from tests and browser automation.
+                  data-testid={`block-action-${action.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                  aria-label={action.label}
                   {...(action.isDragHandle ? { ...dragListeners, ...dragAttributes } : {})}
                 >
                   <action.icon className="h-4 w-4 lg:h-3 lg:w-3" />
@@ -84,6 +92,8 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => toggleDevice(d.key)}
+                      data-testid={`block-visibility-${d.key}`}
+                      aria-label={`${hidden ? "Show" : "Hide"} on ${d.label}`}
                       className={cn(
                         "flex h-6 w-6 items-center justify-center rounded transition-colors shrink-0",
                         hidden ? "text-white/40 hover:bg-white/20" : "bg-white text-black hover:bg-white/90",
