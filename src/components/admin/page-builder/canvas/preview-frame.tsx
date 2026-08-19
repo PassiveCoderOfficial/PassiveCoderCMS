@@ -35,10 +35,15 @@ export function PreviewFrame({ width, children }: { width: number; children: Rea
         doc.head.appendChild(node.cloneNode(true));
       });
 
-      // Follow the dashboard's dark/light mode so canvas theming doesn't
-      // invert unexpectedly (next-themes toggles a `dark` class on <html>).
-      doc.documentElement.className = document.documentElement.className;
-      doc.body.className = "bg-white min-h-full";
+      // Deliberately do NOT copy the dashboard's `dark` class onto the preview
+      // document. next-themes toggles that class on <html> for the ADMIN UI,
+      // but the published site never carries it — its palette comes from the
+      // tenant's own theme. Mirroring it here made blocks that use
+      // bg-background / text-foreground render against the dark palette in the
+      // canvas while the live page rendered light, so the editor showed
+      // different colours than the site it was editing.
+      doc.documentElement.className = "";
+      doc.body.className = "cms-canvas-light bg-white min-h-full";
 
       setMountNode(doc.body);
     };

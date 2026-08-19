@@ -248,7 +248,15 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
                 </div>
               )}
               {breakpoint === "desktop" ? (
-                <BuilderCanvas />
+                // The canvas shows the SITE, which never renders in the admin's
+                // dark mode — its palette comes from the tenant's theme. This
+                // wrapper re-declares the light values of the same CSS vars
+                // `.dark` overrides, so blocks using bg-background /
+                // text-foreground look here exactly as they do published, even
+                // while the dashboard around them stays dark.
+                <div className="cms-canvas-light">
+                  <BuilderCanvas />
+                </div>
               ) : (
                 <div className="mx-auto shadow-2xl bg-white overflow-hidden w-fit">
                   <PreviewFrame width={breakpoint === "tablet" ? 768 : 375}>

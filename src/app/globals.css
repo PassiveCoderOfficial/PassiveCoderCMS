@@ -156,3 +156,41 @@ html {
 .prose code { background: hsl(var(--muted)); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; }
 .prose img { border-radius: 0.5rem; margin: 1rem 0; }
 .prose hr { border-color: hsl(var(--border)); margin: 1.5rem 0; }
+
+/* Page-builder canvas: always render site content in the light palette.
+ *
+ * The dashboard chrome honours the user's dark-mode choice, but the canvas
+ * shows the published SITE, which never carries a `dark` class — its colours
+ * come from the tenant's own theme. Without this, blocks that use
+ * bg-background / text-foreground picked up `.dark`'s values and the editor
+ * showed different colours than the live page.
+ *
+ * Re-declares the light value of every var `.dark` overrides, so the override
+ * is complete rather than partial; a missed var would leave a dark surface
+ * behind light text. Specificity beats `.dark` because this sits deeper in
+ * the tree, and only content inside the canvas is affected.
+ */
+.cms-canvas-light {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --sidebar: 0 0% 98%;
+
+  color-scheme: light;
+}
