@@ -1,12 +1,13 @@
 {
   "name": "cms",
-  "version": "1.0.117",
+  "version": "1.0.118",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:parity": "node scripts/check-editor-parity.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
