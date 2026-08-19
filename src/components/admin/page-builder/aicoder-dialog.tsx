@@ -129,6 +129,7 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
   const [themeApplied, setThemeApplied] = useState(false);
   const [applySeo, setApplySeo] = useState(true);
   const [usedPlaceholderImages, setUsedPlaceholderImages] = useState(false);
+  const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
 
   // Site mode
   const [sitePages, setSitePages] = useState<SitePagePlan[] | null>(null);
@@ -265,6 +266,42 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
     const sections = [...plan.sections];
     sections[index] = { ...sections[index], brief: value };
     setPlan({ ...plan, sections });
+  }
+
+  /** Rewrites one section in place, keeping the rest of the built page. */
+  async function regenerateSection(index: number) {
+    if (!built) return;
+    const section = built.find(s => s.index === index);
+    if (!section) return;
+
+    setRegeneratingIndex(index);
+    try {
+      const res = await fetch("/api/aicoder/regenerate-section", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blockType: section.blockType,
+          brief: section.brief,
+          variantKey: plan?.sections[index]?.variantKey,
+          facts,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Couldn't regenerate this section");
+
+      setBuilt(built.map(s =>
+        s.index === index
+          ? { ...s, block: data.block as Block, error: undefined }
+          : s,
+      ));
+      if (data.usedPlaceholders) setUsedPlaceholderImages(true);
+      refreshQuota();
+      toast.success("Section rewritten");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't regenerate this section");
+    } finally {
+      setRegeneratingIndex(null);
+    }
   }
 
   async function applyBuiltPage(replace: boolean) {
@@ -715,9 +752,19 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
                           section.error ? "border-destructive/40 bg-destructive/5" : "bg-muted/30",
                         )}
                       >
-                        <p className="text-xs font-medium">
-                          {section.index + 1}. {BLOCK_LABEL[section.blockType] ?? section.blockType}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-medium">
+                            {section.index + 1}. {BLOCK_LABEL[section.blockType] ?? section.blockType}
+                          </p>
+                          <button
+                            onClick={() => regenerateSection(section.index)}
+                            disabled={regeneratingIndex !== null || loading}
+                            title="Rewrite just this section"
+                            className="p-0.5 text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                          >
+                            <RefreshCw className={cn("w-3.5 h-3.5", regeneratingIndex === section.index && "animate-spin")} />
+                          </button>
+                        </div>
                         {section.error
                           ? <p className="text-xs text-destructive">{section.error}</p>
                           : section.block && <BlockContentPreview block={section.block} />}
