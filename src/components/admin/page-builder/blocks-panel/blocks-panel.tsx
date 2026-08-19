@@ -217,6 +217,7 @@ export function BlocksPanel({
             <button
               key={t.value}
               onClick={() => setTab(t.value)}
+              data-testid={`panel-tab-${t.value}`}
               className={cn(
                 "flex-1 py-1.5 text-[11px] font-medium transition-colors border-b-2",
                 tab === t.value
@@ -386,6 +387,8 @@ function PresetRow({ preset, onAdd }: { preset: SectionPreset; onAdd: () => void
   return (
     <button
       onClick={onAdd}
+      data-testid={`add-preset-${preset.id}`}
+      aria-label={`Add section: ${preset.label}`}
       className="w-full flex flex-col rounded-lg border hover:border-primary hover:bg-primary/5 transition-all text-left group overflow-hidden"
     >
       <div className="p-1.5 pb-0">
@@ -433,6 +436,10 @@ function BlockGrid({ blocks, onAdd }: { blocks: BlockDefinition[]; onAdd: (b: Bl
             <TooltipTrigger asChild>
               <button
                 onClick={() => onAdd(block)}
+                // Keyed by block type, not the display label — labels are
+                // user-facing copy and get reworded, the type does not.
+                data-testid={`add-block-${block.type}`}
+                aria-label={`Add ${block.label} block`}
                 className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-dashed hover:border-primary hover:bg-primary/5 transition-all text-center group"
               >
                 <span className="text-xl leading-none">{block.icon}</span>
