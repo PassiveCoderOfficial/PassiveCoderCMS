@@ -42,3 +42,7 @@ next-env.d.ts
 
 .vercel
 .env*
+scripts/freebird/_*.mjs
+!scripts/freebird/_lib.mjs
+!scripts/freebird/_content.mjs
+scripts/freebird/shots*.mjs

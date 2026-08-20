@@ -118,12 +118,10 @@ function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) 
             <div className="p-5">
               <h3 className="font-semibold text-base mb-1 text-primary">{item.title}</h3>
               <p className="text-muted-foreground text-xs leading-relaxed mb-3 whitespace-pre-line">{item.description}</p>
-              {item.linkLabel && (
-                <p className="text-xs font-medium text-foreground/60 tracking-wider">{item.linkLabel}</p>
-              )}
+
               {item.link && (
                 <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2">
-                  Book Now <ArrowRight className="h-3 w-3" />
+                  {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
             </div>
@@ -221,14 +219,12 @@ function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
             )}
             <div className="flex items-start justify-between gap-2 mb-2">
               <h3 className="font-semibold text-base">{item.title}</h3>
-              {item.linkLabel && (
-                <span className="text-sm font-bold text-primary shrink-0">{item.linkLabel}</span>
-              )}
+
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
             {item.link && (
               <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary mt-3 hover:underline font-medium">
-                Reserve <ArrowRight className="h-3 w-3" />
+                {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
               </Link>
             )}
           </div>
@@ -262,12 +258,10 @@ function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }
             <div className="p-5">
               <h3 className="font-black text-lg uppercase tracking-tight mb-1">{item.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-3 whitespace-pre-line">{item.description}</p>
-              {item.linkLabel && (
-                <p className="text-xs font-bold text-primary uppercase tracking-widest">{item.linkLabel}</p>
-              )}
+
               {item.link && (
                 <Link href={item.link} className="inline-flex items-center gap-1 text-xs font-semibold text-primary mt-2">
-                  Join Program <ArrowRight className="h-3 w-3" />
+                  {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
             </div>
@@ -360,8 +354,18 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
       ) : (
         <div className={cn("grid grid-cols-1 gap-6", colMap)}>
           {items.map((item) => (
-            <div key={item.id} className={cn(cardClass, "flex flex-col")}>
-              <div className="text-primary mb-4"><ServiceIcon item={item} /></div>
+            <div key={item.id} className={cn(cardClass, "flex flex-col", item.imageUrl && "overflow-hidden p-0 group")}>
+              {/* A photo, when supplied, carries a service far better than a
+                  generic glyph — fall back to the icon only when there is
+                  none, so icon-only tenants are unaffected. */}
+              {item.imageUrl ? (
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image src={item.imageUrl} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+              ) : (
+                <div className="text-primary mb-4"><ServiceIcon item={item} /></div>
+              )}
+              <div className={cn("flex flex-col flex-1", item.imageUrl && "p-6")}>
               <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
               <p className="text-muted-foreground text-sm flex-1 whitespace-pre-line">{item.description}</p>
               {item.link && (
@@ -369,6 +373,7 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
+              </div>
             </div>
           ))}
         </div>

@@ -26,7 +26,12 @@ export async function generateMetadata(): Promise<Metadata> {
     const { data } = await admin.from("site_settings").select("site_name").eq("tenant_id", tenantId).maybeSingle();
     siteName = data?.site_name ?? siteName;
   }
-  return { title: { default: siteName, template: `%s | ${siteName}` } };
+  return {
+    title: { default: siteName, template: `%s | ${siteName}` },
+    // Dashboard is PassiveCoder's own tool UI, not a tenant's public site —
+    // always the platform icon here, regardless of which tenant is open.
+    icons: { icon: "/branding/passivecoder-icon.png", shortcut: "/branding/passivecoder-icon.png", apple: "/branding/passivecoder-icon.png" },
+  };
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

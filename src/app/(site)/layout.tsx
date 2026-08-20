@@ -32,8 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // Favicon/site name can be set from two different screens which write two
   // different tables: Templates > Header/Footer writes site_identity, while
   // Settings writes site_settings. Read both and prefer identity, otherwise a
-  // favicon uploaded on the Settings screen silently never appears and the
-  // platform default shows instead.
+  // favicon uploaded on the Settings screen silently never appears.
   const [{ data: settings }, identityResult] = await Promise.all([
     tenantId
       ? createAdminClient().then(admin =>
@@ -49,17 +48,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const identity = identityResult?.data ?? null;
 
   const siteName = (identity as { site_name?: string } | null)?.site_name ?? settings?.site_name ?? "CMS Site";
+  // Fall back to the platform icon only when the tenant genuinely has none —
+  // never to another tenant's, and never to the removed app/favicon.ico
+  // file-convention icon that used to silently win over this value.
   const faviconUrl =
     (identity as { favicon_url?: string } | null)?.favicon_url ??
     (settings as { favicon_url?: string } | null)?.favicon_url ??
-    null;
+    "/branding/passivecoder-icon.png";
 
   return {
     title: { default: siteName, template: `%s | ${siteName}` },
     description: settings?.meta_description ?? settings?.site_description,
-    ...(faviconUrl && {
-      icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
-    }),
+    icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
   };
 }
 

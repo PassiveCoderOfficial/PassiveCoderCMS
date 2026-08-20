@@ -3,6 +3,12 @@ import { requireStaff } from "@/lib/staff";
 import { createAdminClient } from "@/lib/supabase/server";
 import StaffSidebar from "@/components/staff/sidebar";
 import { Mail } from "lucide-react";
+import type { Metadata } from "next";
+
+// Staff console is PassiveCoder's own tool UI, not a tenant's site.
+export const metadata: Metadata = {
+  icons: { icon: "/branding/passivecoder-icon.png", shortcut: "/branding/passivecoder-icon.png", apple: "/branding/passivecoder-icon.png" },
+};
 
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
   const agent = await requireStaff();

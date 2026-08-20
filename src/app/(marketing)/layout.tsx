@@ -15,10 +15,10 @@ export async function generateMetadata(): Promise<Metadata> {
       .select("site_name, favicon_url")
       .eq("tenant_id", tenantId)
       .single();
-    const fav = identity?.favicon_url ?? null;
+    const fav = identity?.favicon_url ?? "/branding/passivecoder-icon.png";
     return {
       title: { default: identity?.site_name ?? "Home", template: `%s | ${identity?.site_name ?? ""}` },
-      ...(fav && { icons: { icon: fav, shortcut: fav, apple: fav } }),
+      icons: { icon: fav, shortcut: fav, apple: fav },
     };
   }
 
@@ -26,6 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: data?.meta_title ?? "Passive Coder — Website Builder for Local Businesses",
     description: data?.meta_description ?? "Professional websites for local service businesses.",
+    icons: { icon: "/branding/passivecoder-icon.png", shortcut: "/branding/passivecoder-icon.png", apple: "/branding/passivecoder-icon.png" },
   };
 }
 
