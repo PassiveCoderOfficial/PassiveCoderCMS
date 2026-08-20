@@ -17,7 +17,11 @@ const JOBS = [
     // top and the thumbnail strip / nav bar at the bottom so only the
     // collage itself remains. Ratios, not pixels, so it survives a
     // differently-sized re-export.
-    cropRatio: { top: 0.16, bottom: 0.28, left: 0.0, right: 0.0 },
+    // Measured on the 720x1600 original: the collage occupies y 280-1140,
+    // i.e. everything above is the Android status bar + close button and
+    // everything below is the thumbnail strip and nav bar.
+    cropRatio: { top: 0.172, bottom: 0.278, left: 0.0, right: 0.0 },
+    contain: true,
   },
   {
     file: 'waterproofing.jpg',
@@ -62,10 +66,15 @@ for (const job of JOBS) {
     img = img.extract({ top: y, left: x, width: w, height: h });
   }
 
-  // Service cards render at 4:3; cover-fit avoids letterboxing.
+  // Service cards render at 4:3. A normal photo is cover-cropped to fill the
+  // frame, but the plumbing collage is a tall grid — cover-cropping it would
+  // cut whole rows of the client's work off. Contain it on a dark backdrop
+  // instead so every tile survives.
   const buf = await img
-    .resize(1200, 900, { fit: 'cover', position: 'centre' })
-    .jpeg({ quality: 82, mozjpeg: true })
+    .resize(1200, 900, job.contain
+      ? { fit: 'contain', background: { r: 15, g: 23, b: 42 } }
+      : { fit: 'cover', position: 'centre' })
+    .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();
 
   const outName = job.file.replace(/\.[^.]+$/, '') + '.jpg';

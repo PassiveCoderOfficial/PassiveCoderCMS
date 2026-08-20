@@ -15,7 +15,7 @@ export const IMG = {
   ctaDark: U('1470071459604-3b5ec3a7fe05', 1920, 900),
 
   svcElectrical: U('1621905251189-08b45d6a269e', 900, 650),
-  svcPlumbing: U('1523413651479-597eb2da0ad6', 900, 650),
+  svcPlumbing: 'https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/freebirdsg/plumbing.jpg',
   svcHandyman: U('1581244277943-fe4a9c777189', 900, 650),
   svcPainting: U('1562259949-e8e7689d7828', 900, 650),
   svcCctv: U('1558002038-1055907df827', 900, 650),
@@ -24,7 +24,7 @@ export const IMG = {
   svcCeiling: U('1607400201889-565b1ee75f8e', 900, 650),
   svcVinyl: U('1613545325278-f24b0cae1224', 900, 650),
   svcTile: U('1584622650111-993a426fbf0a', 900, 650),
-  svcWaterproof: U('1620626011761-996317b8d101', 900, 650),
+  svcWaterproof: 'https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/freebirdsg/waterproofing.jpg',
   svcConstruction: U('1541888946425-d81bb19240f5', 900, 650),
   svcRack: U('1553413077-190dd305871c', 900, 650),
 
