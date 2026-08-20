@@ -105,7 +105,7 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
         </a>
       )}
       {data.phone && (
-        <a href={`tel:${data.phone}`} className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
+        <a href={`tel:${data.phone.replace(/[^+\d]/g, "")}`} className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
             <Phone className="w-4 h-4 text-primary" />
           </div>
