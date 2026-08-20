@@ -25,9 +25,9 @@ export async function rest(pathname, init = {}) {
 }
 
 // ─── Brand ────────────────────────────────────────────────────────────────
-export const PHONE = '+65 6850 5052';
-export const PHONE_TEL = '+6568505052';
-export const WHATSAPP_URL = 'https://wa.me/6568505052';
+export const PHONE = '+65 8713 6540';
+export const PHONE_TEL = '+6587136540';
+export const WHATSAPP_URL = 'https://wa.me/6587136540';
 export const EMAIL = 'TODO_EMAIL';
 export const BRAND = 'Free Bird SG';
 
