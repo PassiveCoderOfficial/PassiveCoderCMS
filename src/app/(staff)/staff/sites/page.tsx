@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ExternalLink, Globe, Plus, Zap, Users } from "lucide-react";
 import Link from "next/link";
+import { TransferCell } from "./transfer-cell";
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
 const isLocal = ROOT.includes("localhost");
@@ -47,7 +48,7 @@ export default async function StaffSitesPage() {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b bg-muted/30">
-            {["Site Name", "Plan", "Status", "Onboarded", "Created", "Visit"].map(h => (
+            {["Site Name", "Plan", "Status", "Onboarded", "Created", "Visit", "Handover"].map(h => (
               <th key={h} className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">{h}</th>
             ))}
           </tr>
@@ -69,6 +70,9 @@ export default async function StaffSitesPage() {
                   className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
                   <ExternalLink className="w-3 h-3" /> Visit
                 </a>
+              </td>
+              <td className="px-5 py-3 align-top">
+                <TransferCell tenantId={site.id} siteName={site.name} />
               </td>
             </tr>
           ))}

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { UserPlus, Trash2, Shield, Edit2, Check, X, Loader2 } from "lucide-react";
+import { TransferSiteDialog } from "@/components/admin/transfer-site-dialog";
 
 type Role = "admin" | "editor" | "author";
 interface Member {
@@ -108,6 +109,13 @@ export default function UsersPage() {
         <h1 className="text-2xl font-bold">Team Members</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage staff access to your site dashboard.</p>
       </div>
+
+      {/* Ownership handover. Separate from the invite box below because it does
+          something categorically different — invite grants access, this changes
+          who the site belongs to. */}
+      {tenantId && (
+        <TransferSiteDialog tenantId={tenantId} onDone={() => loadMembers(tenantId)} />
+      )}
 
       {/* Invite */}
       <div className="rounded-xl border bg-card p-5 space-y-4">

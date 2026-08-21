@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import AssignAgent from "./assign-agent";
 import AssignOwner from "./assign-owner";
+import { TransferSiteDialog } from "@/components/admin/transfer-site-dialog";
 import DeleteSiteButton from "./delete-site-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -188,10 +189,12 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Assign an existing user as owner by email. This grants them dashboard access
-            to this site (via tenant_members) and updates the site&apos;s owner record —
-            the site will then show up in their site switcher.
+            Hand this site over to the client. Use Transfer when the client is taking
+            ownership — it can create their account with a password so they can sign in
+            straight away. Assign Owner below is the older path and only works for an
+            email that already has an account.
           </p>
+          <TransferSiteDialog tenantId={site.id} siteName={site.name} />
           <AssignOwner siteId={site.id} />
           {members?.length ? (
             <div className="space-y-2">

@@ -47,6 +47,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     user = session.user;
   }
 
+  // Accounts created during a site handover can be flagged to pick their own
+  // password before doing anything else — otherwise whoever typed the initial
+  // password keeps working access to the client's site indefinitely. The flag
+  // is cleared by the update-password page once a new one is set.
+  if (user.user_metadata?.must_change_password) {
+    redirect("/login/update-password?first=1");
+  }
+
   const adminClient = await createAdminClient();
 
   const { data: rawProfile, error: profileError } = await adminClient

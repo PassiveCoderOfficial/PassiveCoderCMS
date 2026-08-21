@@ -19,7 +19,14 @@ export default function UpdatePasswordPage() {
   const [showPw, setShowPw] = useState(false);
   const [ready, setReady] = useState(false);
 
+  // `?first=1` marks a forced change on first login after a site handover,
+  // rather than arrival from a password-reset email. Same form, but the copy
+  // has to differ — telling someone with a perfectly valid session that their
+  // "reset link expired" is both wrong and alarming.
+  const [firstLogin, setFirstLogin] = useState(false);
+
   useEffect(() => {
+    setFirstLogin(new URLSearchParams(window.location.search).get("first") === "1");
     // Supabase embeds the session token in the URL hash after email link click
     const supabase = createClient();
     supabase.auth.getSession().then(({ data }) => {
@@ -35,7 +42,13 @@ export default function UpdatePasswordPage() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
+    // Clearing the flag in the same call that sets the password keeps the two
+    // atomic — the admin layout redirects here while it is set, so leaving it
+    // behind after a successful change would trap the user in a loop.
+    const { error } = await supabase.auth.updateUser({
+      password,
+      data: { must_change_password: false },
+    });
     setLoading(false);
     if (error) { setError(error.message); return; }
     setDone(true);
@@ -46,8 +59,14 @@ export default function UpdatePasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Set new password</h1>
-          <p className="text-muted-foreground text-sm mt-1">Choose a strong password for your account.</p>
+          <h1 className="text-2xl font-bold">
+            {firstLogin ? "Choose your password" : "Set new password"}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {firstLogin
+              ? "Your site is ready. Pick a password only you know before you continue."
+              : "Choose a strong password for your account."}
+          </p>
         </div>
         <Card>
           <CardContent className="pt-6">
