@@ -35,6 +35,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "Not Found" };
 
   const seo = page.seo as Page["seo"];
+  // Anything left unset here falls through to the tenant defaults in
+  // (site)/layout.tsx. `images` is deliberately omitted rather than sent as
+  // an empty array when the page has no og_image of its own: an empty array
+  // overrides the layout's tenant logo with nothing, which is what left
+  // shared links with no preview image at all.
   return {
     title: seo?.title ?? page.title,
     description: seo?.description,
@@ -42,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: seo?.og_title ?? seo?.title ?? page.title,
       description: seo?.og_description ?? seo?.description,
-      images: seo?.og_image ? [seo.og_image] : [],
+      ...(seo?.og_image ? { images: [seo.og_image] } : {}),
     },
     robots: seo?.no_index ? { index: false } : undefined,
     alternates: seo?.canonical ? { canonical: seo.canonical } : undefined,

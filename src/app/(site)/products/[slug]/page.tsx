@@ -15,14 +15,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tenantId = reqHeaders.get("x-tenant-id");
 
   const supabase = await createClient();
-  let q = supabase.from("products").select("name, short_description").eq("slug", slug).eq("status", "active");
+  let q = supabase.from("products").select("name, short_description, images").eq("slug", slug).eq("status", "active");
   if (tenantId) q = q.eq("tenant_id", tenantId);
   const { data } = await q.maybeSingle();
 
   if (!data) return { title: "Product Not Found" };
+
+  // Product links are the ones customers actually paste into chat, so the
+  // preview should be the product — its own name, blurb and first photo —
+  // rather than inheriting the site-wide title and logo from the layout.
+  const image = Array.isArray(data.images) ? (data.images as string[])[0] : undefined;
+  const description = data.short_description ?? undefined;
+
   return {
     title: data.name,
-    description: data.short_description ?? undefined,
+    description,
+    openGraph: {
+      title: data.name,
+      description,
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
+    ...(image ? { twitter: { card: "summary_large_image" as const, title: data.name, description, images: [image] } } : {}),
   };
 }
 
