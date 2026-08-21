@@ -39,14 +39,15 @@ export default function UsersPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: membership } = await supabase
-        .from("tenant_members")
-        .select("tenant_id")
-        .eq("user_id", user.id)
-        .single();
-      if (!membership) return;
-      setTenantId(membership.tenant_id);
-      loadMembers(membership.tenant_id);
+      // Server-resolved (subdomain-aware) rather than a tenant_members lookup:
+      // a super admin has no membership row, so .single() returned HTTP 406 and
+      // the Users page rendered empty — no members listed, nobody invitable —
+      // on the very screen used to manage site access.
+      const res = await fetch("/api/tenant/current");
+      const { tenantId: currentTenantId } = await res.json().catch(() => ({ tenantId: null }));
+      if (!currentTenantId) return;
+      setTenantId(currentTenantId);
+      loadMembers(currentTenantId);
     })();
   }, []);
 

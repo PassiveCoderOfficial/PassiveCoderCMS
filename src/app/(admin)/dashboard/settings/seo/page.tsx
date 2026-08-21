@@ -16,12 +16,17 @@ export default function SeoSettingsPage() {
 
   useEffect(() => {
     (async () => {
+      // Resolve the tenant server-side rather than from tenant_members: this
+      // page is scoped to the site being browsed (the subdomain), which is not
+      // the same thing as "a tenant this user is a member of". A super admin
+      // has no membership row at all, so .single() returned HTTP 406 and the
+      // page silently rendered empty; a user in two tenants would have got 406
+      // for multiple rows, or an arbitrary one.
+      const res = await fetch("/api/tenant/current");
+      const { tenantId } = await res.json().catch(() => ({ tenantId: null }));
+      if (!tenantId) return;
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: membership } = await supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).single();
-      if (!membership) return;
-      const { data } = await supabase.from("site_settings").select("*").eq("tenant_id", membership.tenant_id).single();
+      const { data } = await supabase.from("site_settings").select("*").eq("tenant_id", tenantId).maybeSingle();
       if (data) setSettings(data);
     })();
   }, []);

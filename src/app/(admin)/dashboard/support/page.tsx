@@ -58,17 +58,22 @@ export default function SupportPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const [{ data: membership }, { data: depts }] = await Promise.all([
-        supabase.from("tenant_members").select("tenant_id").eq("user_id", user.id).single(),
+      // Tenant comes from the server (subdomain-aware) rather than from a
+      // tenant_members lookup: a super admin has no membership row, so
+      // .single() returned HTTP 406 and support rendered permanently empty
+      // with no ticket list and no way to raise one.
+      const [tenantRes, { data: depts }] = await Promise.all([
+        fetch("/api/tenant/current").then(r => r.json()).catch(() => ({ tenantId: null })),
         supabase.from("support_departments").select("id,name,slug").eq("is_active", true).order("sort_order"),
       ]);
       setDepartments(depts ?? []);
-      if (!membership) { setLoading(false); return; }
-      setTenantId(membership.tenant_id);
+      const currentTenantId = tenantRes?.tenantId as string | null;
+      if (!currentTenantId) { setLoading(false); return; }
+      setTenantId(currentTenantId);
       const { data } = await supabase
         .from("support_tickets")
         .select("id,subject,body,status,priority,department,attachments,created_at,updated_at")
-        .eq("tenant_id", membership.tenant_id)
+        .eq("tenant_id", currentTenantId)
         .order("created_at", { ascending: false });
       setTickets(data ?? []);
       setLoading(false);
