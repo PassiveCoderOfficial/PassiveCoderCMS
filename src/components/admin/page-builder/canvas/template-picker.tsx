@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { pageTemplates } from "@/modules/page-builder/page-templates";
 import { useBuilderStore } from "@/lib/store/builder";
@@ -61,12 +61,83 @@ const TEMPLATE_META: TemplatePreviewMap = {
 const ALL_CATEGORIES = ["All", ...Array.from(new Set(Object.values(TEMPLATE_META).map((m) => m.category))).sort()];
 
 /**
+ * Maps a DB site-template category (free text, ~18 values across the
+ * template catalog — "Renovation & Construction", "HVAC & Plumbing", …) onto
+ * this picker's own category vocabulary (12 values covering page-content
+ * shape, not industry — "Services", "Food & Drink", …).
+ *
+ * The two vocabularies exist for different reasons and don't share strings —
+ * matching by exact equality would silently match nothing for almost every
+ * tenant. This is deliberately a lookup table, not a heuristic (fuzzy
+ * matching "Renovation & Construction" against "Services" is exactly the kind
+ * of thing that quietly breaks when either catalog grows), so a new DB
+ * category needs one line added here or it falls through to "All" rather
+ * than mis-filtering.
+ */
+const SITE_CATEGORY_TO_PAGE_CATEGORY: Record<string, string> = {
+  "Renovation & Construction": "Services",
+  "HVAC & Plumbing": "Services",
+  "Cleaning": "Services",
+  "Automotive": "Services",
+  "General Business": "General",
+  "Legal & Finance": "General",
+  "Tech & Agency": "General",
+  "Restaurant & Cafe": "Food & Drink",
+  "Health & Beauty": "Beauty",
+  "Fitness & Sports": "Beauty",
+  "Real Estate": "Real Estate",
+  "Interior Design": "Real Estate",
+  "Photography": "Creative",
+  "Fashion & Retail": "Retail",
+  "Retail & Shop": "Retail",
+  "Events": "Events",
+  "Travel & Tourism": "Events",
+  "Education": "General",
+  "Marketplace": "Sales",
+};
+
+/** Resolves the tenant's site category to a page-template category once,
+ *  client-side — no store plumbing needed for a value used in exactly one
+ *  place. Returns null while loading or when there's no mapped category, so
+ *  callers fall back to "All" rather than filtering on a guess. */
+function useDefaultPageCategory(tenantId: string | undefined): string | null {
+  const [category, setCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    let cancelled = false;
+    fetch(`/api/tenant/template-category?tenantId=${tenantId}`)
+      .then((r) => r.json())
+      .then((data: { category: string | null }) => {
+        if (cancelled) return;
+        const mapped = data.category ? SITE_CATEGORY_TO_PAGE_CATEGORY[data.category] : null;
+        setCategory(mapped ?? null);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [tenantId]);
+
+  return category;
+}
+
+/**
  * Shown when the page is empty. Lets non-technical users start from a
  * complete, pre-written page instead of a blank canvas.
  */
 export function TemplatePicker() {
-  const { setBlocks, selectBlock } = useBuilderStore();
+  const { setBlocks, selectBlock, tenantId } = useBuilderStore();
+  const defaultCategory = useDefaultPageCategory(tenantId);
   const [activeCategory, setActiveCategory] = useState("All");
+  // Tracks whether the default has been applied yet, so it can be applied
+  // exactly once (the fetch resolves after mount) without fighting a user who
+  // has already picked a different category by the time it arrives.
+  const [defaultApplied, setDefaultApplied] = useState(false);
+
+  React.useEffect(() => {
+    if (defaultApplied || !defaultCategory) return;
+    setActiveCategory(defaultCategory);
+    setDefaultApplied(true);
+  }, [defaultCategory, defaultApplied]);
 
   const applyTemplate = (id: string) => {
     const template = pageTemplates.find((t) => t.id === id);
@@ -84,9 +155,15 @@ export function TemplatePicker() {
   return (
     <div className="flex flex-col items-center min-h-[600px] p-6 py-10">
       <h3 className="font-bold text-2xl mb-1">Choose a Starting Template</h3>
-      <p className="text-muted-foreground text-sm max-w-md text-center mb-6">
+      <p className="text-muted-foreground text-sm max-w-md text-center mb-1">
         Each template is a complete industry website — real images, real copy, real structure. Just customise the details.
       </p>
+      {defaultApplied && activeCategory === defaultCategory && (
+        <p className="text-xs text-primary mb-5">
+          Showing templates matching your site — pick &quot;All&quot; below to browse every category.
+        </p>
+      )}
+      {!(defaultApplied && activeCategory === defaultCategory) && <div className="mb-6" />}
 
       {/* Category filter */}
       <div className="flex flex-wrap gap-2 mb-8 justify-center">
