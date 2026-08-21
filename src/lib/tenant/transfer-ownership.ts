@@ -65,6 +65,14 @@ export async function transferTenantOwnership(
     return { ok: false, error: "A valid email address is required", status: 400 };
   }
 
+  // Verify the site exists BEFORE touching accounts. Creating a user for a
+  // tenant that turns out not to exist would leave an orphan account behind,
+  // and reporting "no account for that email" when the real problem is a bad
+  // site id sends the caller chasing the wrong thing.
+  const { data: tenantExists } = await admin
+    .from("tenants").select("id").eq("id", tenantId).maybeSingle();
+  if (!tenantExists) return { ok: false, error: "Site not found", status: 404 };
+
   const found = await findUserByEmail(admin, normalized);
   if (found && "error" in found) {
     return { ok: false, error: found.error, status: 500 };
@@ -114,13 +122,23 @@ export async function transferTenantOwnership(
     );
   }
 
-  // Guard against handing a site to whoever already owns it — harmless in
-  // effect, but it would demote them to admin on the way through and leave the
-  // site with no owner at all.
   const { data: tenant } = await admin
     .from("tenants").select("owner_id").eq("id", tenantId).maybeSingle();
-  if (!tenant) return { ok: false, error: "Site not found", status: 404 };
-  if (tenant.owner_id === targetUserId) {
+
+  // Guard against handing a site to whoever already owns it. Both sources are
+  // checked, not just tenants.owner_id: the two can drift (older flows wrote
+  // one without the other), and a target who is owner via tenant_members but
+  // not owner_id would otherwise be demoted to admin by the step below and
+  // then re-promoted — churning roles, and briefly leaving the site ownerless
+  // for anything reading mid-transfer.
+  const { data: existingOwnerRow } = await admin
+    .from("tenant_members")
+    .select("user_id")
+    .eq("tenant_id", tenantId)
+    .eq("role", "owner")
+    .maybeSingle();
+
+  if (tenant?.owner_id === targetUserId || existingOwnerRow?.user_id === targetUserId) {
     return { ok: false, error: "That user already owns this site", status: 400 };
   }
 
