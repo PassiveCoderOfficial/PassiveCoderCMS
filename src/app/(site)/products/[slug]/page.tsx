@@ -25,17 +25,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // preview should be the product — its own name, blurb and first photo —
   // rather than inheriting the site-wide title and logo from the layout.
   const image = Array.isArray(data.images) ? (data.images as string[])[0] : undefined;
-  const description = data.short_description ?? undefined;
+  const description =
+    typeof data.short_description === "string" && data.short_description.trim().length > 0
+      ? data.short_description.trim()
+      : undefined;
+
+  // Omitted rather than set to undefined — Next treats an explicit undefined
+  // as a value and it would wipe the tenant defaults from (site)/layout.tsx.
+  const og: NonNullable<Metadata["openGraph"]> = { title: data.name };
+  if (description) og.description = description;
+  if (image) og.images = [{ url: image }];
 
   return {
     title: data.name,
-    description,
-    openGraph: {
-      title: data.name,
-      description,
-      ...(image ? { images: [{ url: image }] } : {}),
-    },
-    ...(image ? { twitter: { card: "summary_large_image" as const, title: data.name, description, images: [image] } } : {}),
+    ...(description ? { description } : {}),
+    openGraph: og,
+    ...(image
+      ? { twitter: { card: "summary_large_image" as const, title: data.name, ...(description ? { description } : {}), images: [image] } }
+      : {}),
   };
 }
 

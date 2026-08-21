@@ -35,22 +35,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "Not Found" };
 
   const seo = page.seo as Page["seo"];
-  // Anything left unset here falls through to the tenant defaults in
-  // (site)/layout.tsx. `images` is deliberately omitted rather than sent as
-  // an empty array when the page has no og_image of its own: an empty array
-  // overrides the layout's tenant logo with nothing, which is what left
-  // shared links with no preview image at all.
+  const ne = (v: string | null | undefined) =>
+    typeof v === "string" && v.trim().length > 0 ? v.trim() : undefined;
+
+  const pageDescription = ne(seo?.description);
+  const ogDescription = ne(seo?.og_description) ?? pageDescription;
+  const ogTitle = ne(seo?.og_title) ?? ne(seo?.title) ?? page.title;
+  const ogImage = ne(seo?.og_image);
+
+  // Keys are omitted, never set to undefined. Next merges page metadata over
+  // the layout's per key, and an explicit `description: undefined` counts as
+  // a value — it replaced the tenant description from (site)/layout.tsx with
+  // nothing, which is why tenant sites fell back to the platform's. Same for
+  // openGraph: sending the object with an undefined description wipes the
+  // layout's, so it's only included when there's something to say.
+  const og: NonNullable<Metadata["openGraph"]> = { title: ogTitle };
+  if (ogDescription) og.description = ogDescription;
+  if (ogImage) og.images = [ogImage];
+
   return {
-    title: seo?.title ?? page.title,
-    description: seo?.description,
-    keywords: seo?.keywords,
-    openGraph: {
-      title: seo?.og_title ?? seo?.title ?? page.title,
-      description: seo?.og_description ?? seo?.description,
-      ...(seo?.og_image ? { images: [seo.og_image] } : {}),
-    },
-    robots: seo?.no_index ? { index: false } : undefined,
-    alternates: seo?.canonical ? { canonical: seo.canonical } : undefined,
+    title: ne(seo?.title) ?? page.title,
+    ...(pageDescription ? { description: pageDescription } : {}),
+    ...(seo?.keywords ? { keywords: seo.keywords } : {}),
+    openGraph: og,
+    ...(seo?.no_index ? { robots: { index: false } } : {}),
+    ...(seo?.canonical ? { alternates: { canonical: seo.canonical } } : {}),
   };
 }
 
