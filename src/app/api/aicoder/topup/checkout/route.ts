@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
+import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 
 /**
  * Initiates a Dodo checkout for an AiCoder generation top-up package.
@@ -23,13 +24,14 @@ export async function POST(req: Request) {
 
   const admin = await createAdminClient();
 
-  const { data: membership } = await admin
-    .from("tenant_members")
-    .select("user_id")
-    .eq("tenant_id", tenantId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // Membership alone is the wrong test: super admins have no tenant_members
+  // row, and a site owner recorded only in tenants.owner_id (which several
+  // creation flows still produce) has none either. Both were getting a 403 on
+  // their own site's top-up purchase. checkTenantEditAccess covers member,
+  // owner, staff-assignment and super-admin in one place — the same check the
+  // rest of the app uses.
+  const access = await checkTenantEditAccess(admin, tenantId, user.id, ["owner", "admin"]);
+  if (!access.allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { data: pkg } = await admin
     .from("ai_generation_packages")
