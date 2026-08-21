@@ -53,12 +53,33 @@ export default function UsersPage() {
 
   async function loadMembers(tid: string) {
     setLoading(true);
-    const { data } = await supabase
+    // Two queries, not one embedded select: tenant_members.user_id references
+    // auth.users, not profiles, so PostgREST has no FK path to walk for
+    // `profiles(...)` — that embed returned HTTP 400 ("could not find a
+    // relationship") on every load, which the earlier .single() 406 upstream
+    // had been masking. Fetching profiles separately by id and merging
+    // client-side is the standard workaround for embedding across two tables
+    // that both reference a third rather than each other.
+    const { data: rows } = await supabase
       .from("tenant_members")
-      .select("user_id, role, joined_at, profiles(email, full_name, avatar_url)")
+      .select("user_id, role, joined_at")
       .eq("tenant_id", tid)
       .order("joined_at");
-    setMembers((data as unknown as Member[]) ?? []);
+
+    const userIds = (rows ?? []).map(r => r.user_id);
+    const { data: profileRows } = userIds.length
+      ? await supabase.from("profiles").select("id, email, full_name, avatar_url").in("id", userIds)
+      : { data: [] as { id: string; email: string; full_name: string | null; avatar_url: string | null }[] };
+    const byId = new Map((profileRows ?? []).map(p => [p.id, p]));
+
+    setMembers((rows ?? []).map(r => ({
+      user_id: r.user_id,
+      role: r.role as Role,
+      joined_at: r.joined_at,
+      profiles: byId.get(r.user_id)
+        ? { email: byId.get(r.user_id)!.email, full_name: byId.get(r.user_id)!.full_name, avatar_url: byId.get(r.user_id)!.avatar_url }
+        : null,
+    })));
     setLoading(false);
   }
 
