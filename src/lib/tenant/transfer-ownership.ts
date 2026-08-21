@@ -17,7 +17,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  */
 
 export type TransferResult =
-  | { ok: true; userId: string; created: boolean }
+  | { ok: true; userId: string; created: boolean; passwordSet: boolean }
   | { ok: false; error: string; status: number };
 
 export interface TransferInput {
@@ -28,6 +28,13 @@ export interface TransferInput {
   fullName?: string;
   /** Force a password change at first login. Off by default — see the route. */
   requirePasswordChange?: boolean;
+  /** Overwrite the password of an account that ALREADY exists.
+   *
+   *  Off by default and deliberately explicit: silently resetting a stranger's
+   *  password because their address was typed into a transfer form would be an
+   *  account takeover. Requires the caller to have confirmed the address really
+   *  is their client's. */
+  resetExistingPassword?: boolean;
   /** What happens to the person who currently owns the site. Demoting to admin
    *  keeps staff able to finish support work; removing cuts access entirely. */
   previousOwner?: "demote" | "remove";
@@ -57,6 +64,7 @@ export async function transferTenantOwnership(
   const {
     tenantId, email, password, fullName,
     requirePasswordChange = false,
+    resetExistingPassword = false,
     previousOwner = "demote",
   } = input;
 
@@ -78,11 +86,55 @@ export async function transferTenantOwnership(
     return { ok: false, error: found.error, status: 500 };
   }
 
+  // Resolve the ownership guard BEFORE touching any account. Checking it later
+  // meant a password could be changed and then the call still return "already
+  // owns this site" — a partial success reported as a plain error, with the
+  // caller having no way to know the reset had actually gone through.
+  const { data: tenantRow } = await admin
+    .from("tenants").select("owner_id").eq("id", tenantId).maybeSingle();
+  const { data: existingOwnerRow } = await admin
+    .from("tenant_members")
+    .select("user_id")
+    .eq("tenant_id", tenantId)
+    .eq("role", "owner")
+    .maybeSingle();
+
   let targetUserId: string;
   let created = false;
+  // Reported back so the UI can say whether credentials were actually set,
+  // rather than leaving the caller to assume.
+  let passwordSet = false;
 
   if (found) {
     targetUserId = found.id;
+
+    // Both ownership sources are checked, not just tenants.owner_id: the two
+    // can drift (older flows wrote one without the other), and a target who is
+    // owner via tenant_members only would otherwise be demoted then
+    // re-promoted — churning roles and briefly leaving the site ownerless.
+    if (tenantRow?.owner_id === targetUserId || existingOwnerRow?.user_id === targetUserId) {
+      return { ok: false, error: "That user already owns this site", status: 400 };
+    }
+
+    // The account already existed, so the password fields were previously
+    // ignored in silence while the transfer still reported success — leaving
+    // whoever ran it believing they had set credentials that were never set.
+    // Now it either does what was asked, or says why it didn't.
+    if (password && resetExistingPassword) {
+      if (password.length < 8) {
+        return { ok: false, error: "Password must be at least 8 characters", status: 400 };
+      }
+      const { error: pwErr } = await admin.auth.admin.updateUserById(targetUserId, {
+        password,
+        ...(requirePasswordChange
+          ? { user_metadata: { must_change_password: true } }
+          : {}),
+      });
+      if (pwErr) {
+        return { ok: false, error: `Could not set the password: ${pwErr.message}`, status: 500 };
+      }
+      passwordSet = true;
+    }
   } else {
     if (!password) {
       return {
@@ -113,6 +165,7 @@ export async function transferTenantOwnership(
     }
     targetUserId = newUser.user.id;
     created = true;
+    passwordSet = true;
 
     // A profiles row normally comes from a signup trigger; upsert defensively
     // so the new owner still resolves in member lists if that never fired.
@@ -120,26 +173,6 @@ export async function transferTenantOwnership(
       { id: targetUserId, email: normalized, ...(fullName ? { full_name: fullName } : {}) },
       { onConflict: "id" },
     );
-  }
-
-  const { data: tenant } = await admin
-    .from("tenants").select("owner_id").eq("id", tenantId).maybeSingle();
-
-  // Guard against handing a site to whoever already owns it. Both sources are
-  // checked, not just tenants.owner_id: the two can drift (older flows wrote
-  // one without the other), and a target who is owner via tenant_members but
-  // not owner_id would otherwise be demoted to admin by the step below and
-  // then re-promoted — churning roles, and briefly leaving the site ownerless
-  // for anything reading mid-transfer.
-  const { data: existingOwnerRow } = await admin
-    .from("tenant_members")
-    .select("user_id")
-    .eq("tenant_id", tenantId)
-    .eq("role", "owner")
-    .maybeSingle();
-
-  if (tenant?.owner_id === targetUserId || existingOwnerRow?.user_id === targetUserId) {
-    return { ok: false, error: "That user already owns this site", status: 400 };
   }
 
   // Order matters: demote the incumbent BEFORE promoting, so the tenant is
@@ -163,5 +196,5 @@ export async function transferTenantOwnership(
     .from("tenants").update({ owner_id: targetUserId }).eq("id", tenantId);
   if (ownerErr) return { ok: false, error: ownerErr.message, status: 500 };
 
-  return { ok: true, userId: targetUserId, created };
+  return { ok: true, userId: targetUserId, created, passwordSet: passwordSet || created };
 }

@@ -33,6 +33,11 @@ export function TransferSiteDialog({
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [createAccount, setCreateAccount] = useState(false);
+  // null = not checked yet. Drives whether the form offers "create account" or
+  // "reset the existing password", so the two are never silently confused.
+  const [emailExists, setEmailExists] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [resetExisting, setResetExisting] = useState(false);
   const [requireChange, setRequireChange] = useState(false);
   const [removeOld, setRemoveOld] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -40,11 +45,40 @@ export function TransferSiteDialog({
   function reset() {
     setEmail(""); setFullName(""); setPassword("");
     setCreateAccount(false); setRequireChange(false); setRemoveOld(false);
+    setEmailExists(null); setResetExisting(false);
+  }
+
+  /** Looks up whether the address already has an account, so the form can say
+   *  so before submitting. Previously the password fields were silently
+   *  ignored for an existing email while the transfer still reported success —
+   *  leaving the operator believing credentials were set that never were. */
+  async function checkEmail() {
+    const value = email.trim();
+    if (!value.includes("@")) { setEmailExists(null); return; }
+    setChecking(true);
+    try {
+      const res = await fetch("/api/tenant/transfer-ownership/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, email: value }),
+      });
+      if (!res.ok) { setEmailExists(null); return; }
+      const data = await res.json();
+      setEmailExists(!!data.exists);
+      // Creating is only meaningful when nothing exists yet; resetting only
+      // when something does. Preselect the one that applies.
+      setCreateAccount(!data.exists);
+      setResetExisting(false);
+    } catch {
+      setEmailExists(null);
+    } finally {
+      setChecking(false);
+    }
   }
 
   async function submit() {
     if (!email.trim()) { toast.error("Enter the client's email"); return; }
-    if (createAccount && password.length < 8) {
+    if ((createAccount || resetExisting) && password.length < 8) {
       toast.error("Password must be at least 8 characters");
       return;
     }
@@ -56,7 +90,10 @@ export function TransferSiteDialog({
         body: JSON.stringify({
           tenantId,
           email: email.trim(),
-          ...(createAccount ? { password, fullName: fullName.trim() || undefined } : {}),
+          ...(createAccount || resetExisting
+            ? { password, fullName: createAccount ? fullName.trim() || undefined : undefined }
+            : {}),
+          resetExistingPassword: resetExisting,
           requirePasswordChange: requireChange,
           previousOwner: removeOld ? "remove" : "demote",
         }),
@@ -64,10 +101,14 @@ export function TransferSiteDialog({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Transfer failed");
 
+      // Say plainly whether credentials were set, so nobody walks away
+      // assuming a password was applied when it was not.
       toast.success(
         data.created
           ? `Account created and ${siteName ?? "site"} transferred — the client can sign in now`
-          : `${siteName ?? "Site"} transferred to ${email.trim()}`,
+          : data.passwordSet
+            ? `${siteName ?? "Site"} transferred and password updated — the client can sign in now`
+            : `${siteName ?? "Site"} transferred to ${email.trim()} — they sign in with their existing password`,
       );
       reset();
       setOpen(false);
@@ -104,33 +145,75 @@ export function TransferSiteDialog({
         <Input
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={e => { setEmail(e.target.value); setEmailExists(null); }}
+          onBlur={checkEmail}
           placeholder="client@theirbusiness.com"
           className="h-9 text-sm"
         />
+        {checking && (
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <Loader2 className="w-3 h-3 animate-spin" /> Checking…
+          </p>
+        )}
+        {!checking && emailExists === true && (
+          <p className="text-[11px] text-amber-600">
+            This email already has an account. Ownership will move to it — its existing
+            password still works unless you set a new one below.
+          </p>
+        )}
+        {!checking && emailExists === false && (
+          <p className="text-[11px] text-muted-foreground">
+            No account yet — one will be created with the password you set below.
+          </p>
+        )}
       </div>
 
-      <label className="flex items-start gap-2 text-xs cursor-pointer">
-        <input
-          type="checkbox"
-          checked={createAccount}
-          onChange={e => setCreateAccount(e.target.checked)}
-          className="mt-0.5"
-        />
-        <span>
-          Create the account now
-          <span className="block text-[11px] text-muted-foreground">
-            Tick this if they have never signed in before. Leave it off to transfer to an existing account.
+      {/* Existing account: offer an explicit password reset. Without this the
+          password fields were ignored in silence, which is how a handover was
+          reported as successful while the client could not sign in. */}
+      {emailExists === true && (
+        <label className="flex items-start gap-2 text-xs cursor-pointer">
+          <input
+            type="checkbox"
+            checked={resetExisting}
+            onChange={e => setResetExisting(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Set a new password for this account
+            <span className="block text-[11px] text-muted-foreground">
+              Overwrites their current password. Only do this if you are certain the
+              address belongs to your client.
+            </span>
           </span>
-        </span>
-      </label>
+        </label>
+      )}
 
-      {createAccount && (
+      {emailExists !== true && (
+        <label className="flex items-start gap-2 text-xs cursor-pointer">
+          <input
+            type="checkbox"
+            checked={createAccount}
+            onChange={e => setCreateAccount(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Create the account now
+            <span className="block text-[11px] text-muted-foreground">
+              Tick this if they have never signed in before. Leave it off to transfer to an existing account.
+            </span>
+          </span>
+        </label>
+      )}
+
+      {(createAccount || resetExisting) && (
         <div className="space-y-3 rounded-md bg-muted/40 p-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Full name (optional)</Label>
-            <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-8 text-sm" />
-          </div>
+          {createAccount && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Full name (optional)</Label>
+              <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-8 text-sm" />
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-xs">Password</Label>
             <Input
@@ -141,8 +224,10 @@ export function TransferSiteDialog({
               className="h-8 text-sm font-mono"
             />
             <p className="text-[11px] text-muted-foreground">
-              Shown as plain text so you can pass it to the client. The account is active
-              immediately — no confirmation email.
+              Shown as plain text so you can pass it to the client.{" "}
+              {createAccount
+                ? "The account is active immediately — no confirmation email."
+                : "This replaces their current password straight away."}
             </p>
           </div>
           <label className="flex items-start gap-2 text-xs cursor-pointer">

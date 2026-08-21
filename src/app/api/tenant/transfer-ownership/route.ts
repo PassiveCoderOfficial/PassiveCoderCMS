@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { isSuperAdmin } from "@/lib/super-admin";
 import { transferTenantOwnership } from "@/lib/tenant/transfer-ownership";
+import { canTransferTenant } from "@/lib/tenant/can-transfer";
 
 /**
  * Transfers a site to its client, optionally creating their account.
@@ -24,9 +24,13 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { tenantId, email, password, fullName, requirePasswordChange, previousOwner } = body as {
+  const {
+    tenantId, email, password, fullName,
+    requirePasswordChange, resetExistingPassword, previousOwner,
+  } = body as {
     tenantId?: string; email?: string; password?: string; fullName?: string;
-    requirePasswordChange?: boolean; previousOwner?: "demote" | "remove";
+    requirePasswordChange?: boolean; resetExistingPassword?: boolean;
+    previousOwner?: "demote" | "remove";
   };
 
   if (!tenantId || !email) {
@@ -34,7 +38,7 @@ export async function POST(req: Request) {
   }
 
   const admin = await createAdminClient();
-  const authorized = await canTransfer(admin, user.id, tenantId);
+  const authorized = await canTransferTenant(admin, user.id, tenantId);
   if (!authorized) {
     return NextResponse.json({ error: "You don't have permission to transfer this site" }, { status: 403 });
   }
@@ -50,6 +54,7 @@ export async function POST(req: Request) {
     password,
     fullName,
     requirePasswordChange,
+    resetExistingPassword,
     previousOwner,
   });
 
@@ -79,35 +84,10 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true, created: result.created, userId: result.userId });
-}
-
-async function canTransfer(
-  admin: Awaited<ReturnType<typeof createAdminClient>>,
-  userId: string,
-  tenantId: string,
-): Promise<boolean> {
-  if (await isSuperAdmin(userId)) return true;
-
-  const { data: membership } = await admin
-    .from("tenant_members")
-    .select("role")
-    .eq("tenant_id", tenantId)
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (membership && ["owner", "admin"].includes(membership.role as string)) return true;
-
-  // Staff may only hand over the sites they actually built.
-  const { data: staffRow } = await admin
-    .from("pc_staff").select("id").eq("user_id", userId).maybeSingle();
-  if (!staffRow) return false;
-
-  const { data: tenant } = await admin
-    .from("tenants")
-    .select("id")
-    .eq("id", tenantId)
-    .or(`assigned_staff_id.eq.${staffRow.id},referred_by_staff_id.eq.${staffRow.id}`)
-    .maybeSingle();
-
-  return !!tenant;
+  return NextResponse.json({
+    ok: true,
+    created: result.created,
+    passwordSet: result.passwordSet,
+    userId: result.userId,
+  });
 }
