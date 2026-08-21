@@ -186,6 +186,7 @@ export function BlocksPanel({
           <button
             key={t.value}
             onClick={() => setTab(t.value === "config" ? "config" : "sections")}
+            data-testid={`panel-primary-tab-${t.value}`}
             className={cn(
               "flex-1 py-2 text-xs font-semibold transition-colors border-b-2",
               primaryTab === t.value
