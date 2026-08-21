@@ -7,6 +7,10 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
   // Passing the whole NextRequest strips all request headers downstream.
   const headers = requestHeaders ?? new Headers(request.headers);
   let supabaseResponse = NextResponse.next({ request: { headers } });
+  // The host this specific request actually arrived on — a tenant's custom
+  // domain must get a host-only cookie, never one scoped to the platform's
+  // root domain, which the browser silently refuses on any other host.
+  const host = request.nextUrl.hostname;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +24,7 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request: { headers } });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, withCookieDomain(options)),
+            supabaseResponse.cookies.set(name, value, withCookieDomain(host, options)),
           );
         },
       },

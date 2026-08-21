@@ -28,7 +28,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   // host served this route (e.g. the root/staff-portal domain) — or the
   // dashboard layout below never sees a resolvable tenant.
   const res = NextResponse.redirect(`${proto}://${tenant.slug}.${ROOT}/dashboard`);
-  res.cookies.set(STAFF_VIEWING_COOKIE, tenantId, withCookieDomain({
+  // The redirect target is always a {slug}.ROOT subdomain by construction
+  // above, never a custom domain, so the root domain is the real host here —
+  // unlike the other callers of withCookieDomain, which must use whatever host
+  // the current request actually arrived on.
+  res.cookies.set(STAFF_VIEWING_COOKIE, tenantId, withCookieDomain(ROOT, {
     httpOnly: true,
     sameSite: "lax" as const,
     path: "/",

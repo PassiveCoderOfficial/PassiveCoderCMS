@@ -1,10 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { withCookieDomain } from "./cookie-domain";
 
 export async function createClient() {
   const cookieStore = await cookies();
+  // The incoming request's own host — a tenant's custom domain must get a
+  // host-only cookie. x-forwarded-host first: Vercel's edge network puts the
+  // original client-facing host there, while `host` can be an internal one.
+  const hdrs = await headers();
+  const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? undefined;
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,7 +22,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, withCookieDomain(options)),
+              cookieStore.set(name, value, withCookieDomain(host, options)),
             );
           } catch {}
         },
