@@ -15,6 +15,36 @@ import type { Block, NavItem } from "@/types/cms";
 import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
 import { resolveNavItems } from "@/modules/navigation/resolve-links";
 
+/**
+ * Templates are authored with a real, specific brand name baked into their
+ * copy — headings, nav logo text, footer blurb ("Torque Garage", "ShieldGuard
+ * Security", etc) — because that's what makes them read as a real site while
+ * being designed, not a fill-in-the-blanks shell. Applying a template to a
+ * tenant must not leave the template's own name sitting in the tenant's live
+ * copy, so every exact occurrence of the template's name is swapped for the
+ * tenant's real site name at apply-time, recursively across whatever JSON
+ * shape the block/nav data happens to be.
+ *
+ * Deliberately an exact string match — never a fuzzy/partial one — so this
+ * can never mangle unrelated text that happens to share a word with the
+ * template name.
+ */
+function rebrand<T>(value: T, templateName: string, siteName: string): T {
+  if (!templateName || templateName === siteName) return value;
+  if (typeof value === "string") {
+    return value.split(templateName).join(siteName) as unknown as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => rebrand(v, templateName, siteName)) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = rebrand(v, templateName, siteName);
+    return out as T;
+  }
+  return value;
+}
+
 export type ApplyMode = "theme" | "full";
 
 export type ApplyOptions = {
@@ -68,6 +98,16 @@ export async function applyDbTemplate(
   if (!template) throw new Error("Template not found");
   const tpl = template as TemplateRow;
 
+  const { data: tenantRow } = await supabase
+    .from("tenants")
+    .select("name")
+    .eq("id", tenantId)
+    .maybeSingle();
+  const siteName = tenantRow?.name?.trim();
+  // Falls back to the template's own name (a no-op rebrand) when the tenant
+  // has no name yet — happens mid-onboarding, before the business name step.
+  const rb = <T,>(v: T): T => rebrand(v, tpl.name, siteName || tpl.name);
+
   // ── 1. Visual identity ──────────────────────────────────────────────────
   // template_id is what (site)/layout.tsx resolves the palette from, so
   // pointing it at this template is the whole of "apply the theme".
@@ -90,8 +130,8 @@ export async function applyDbTemplate(
   }
   if (tpl.logo_url) identityPatch.logo_url = tpl.logo_url;
   if (tpl.favicon_url) identityPatch.favicon_url = tpl.favicon_url;
-  if (tpl.global_header) identityPatch.global_header = tpl.global_header;
-  if (tpl.global_footer) identityPatch.global_footer = tpl.global_footer;
+  if (tpl.global_header) identityPatch.global_header = rb(tpl.global_header);
+  if (tpl.global_footer) identityPatch.global_footer = rb(tpl.global_footer);
 
   const { error: identityError } = await supabase
     .from("site_identity")
@@ -118,7 +158,7 @@ export async function applyDbTemplate(
         tenant_id: tenantId,
         name: "Main Navigation",
         location: "header",
-        items: resolveNavItems(tpl.nav_items, templateSlugs),
+        items: rb(resolveNavItems(tpl.nav_items, templateSlugs)),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "tenant_id,location" },
@@ -197,15 +237,15 @@ export async function applyDbTemplate(
   const rows = pages.map((p, i) => ({
     tenant_id: tenantId,
     template_id: null,
-    title: p.title,
+    title: rb(p.title),
     slug: p.slug,
     type: p.type ?? "page",
     status: "published",
-    blocks: resolveBlockNav((p.blocks as Block[] | null) ?? []),
-    seo: p.seo ?? {},
+    blocks: rb(resolveBlockNav((p.blocks as Block[] | null) ?? [])),
+    seo: rb(p.seo ?? {}),
     settings: p.settings ?? {},
     featured_image: p.featured_image ?? null,
-    excerpt: p.excerpt ?? null,
+    excerpt: rb(p.excerpt ?? null),
     order_index: p.order_index ?? i,
     created_at: now,
     updated_at: now,
