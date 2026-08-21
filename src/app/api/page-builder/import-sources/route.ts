@@ -34,11 +34,19 @@ export async function GET(req: Request) {
       );
     }
 
+    // Archived pages are excluded — importing is "pull content from a page I
+    // have", and an archived page is dead content the tenant chose to retire.
+    // Without this filter, every slug with an old archived copy (common after
+    // any template/rebuild pass) showed twice with no way to tell which was
+    // live, and a user could easily import stale content by picking the wrong
+    // one. Draft is kept: unlike archived, a draft is legitimately in-progress
+    // work someone may want to reuse.
     const { data } = await admin
       .from("pages")
       .select("id, title, slug, status, updated_at")
       .eq("tenant_id", tenantId)
       .is("deleted_at", null)
+      .neq("status", "archived")
       .order("order_index", { ascending: true });
 
     return NextResponse.json({ pages: data ?? [] });
