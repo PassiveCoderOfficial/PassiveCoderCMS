@@ -4,6 +4,8 @@ import { resolveAgentCaller } from "@/lib/ai-agent/resolve-caller";
 import { runAgentTurn, finishReadOnlyTurn, type AgentHistoryMessage } from "@/lib/ai-agent/orchestrate";
 import { describePendingAction } from "@/lib/ai-agent/tools";
 import { AiCoderError } from "@/lib/aicoder/generate";
+import { AiCoderQuotaError } from "@/lib/aicoder/quota";
+import { reserveChatTurn } from "@/lib/ai-agent/chat-quota";
 
 export async function POST(req: Request) {
   const caller = await resolveAgentCaller(req);
@@ -21,6 +23,17 @@ export async function POST(req: Request) {
   }
   const scope: "general" | "editor" = context?.scope === "editor" ? "editor" : "general";
   const pageId = context?.pageId;
+
+  // Meter BEFORE any model call — a denied turn must never cost tokens, and
+  // must not leave a half-written conversation behind either.
+  try {
+    await reserveChatTurn(caller.tenantId);
+  } catch (err) {
+    if (err instanceof AiCoderQuotaError) {
+      return NextResponse.json({ error: err.message }, { status: 429 });
+    }
+    throw err;
+  }
 
   const admin = await createAdminClient();
 
