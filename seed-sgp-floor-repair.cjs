@@ -140,7 +140,11 @@ function globalFooter() {
       style: "dark", backgroundColor: DARK, accentColor: SECONDARY, textColor: "#cdd7e0",
       copyrightText: `© {year} ${SITE_NAME}. All rights reserved.`,
       copyrightYear: true, showNewsletter: false,
-      socials: [{ platform: "whatsapp", url: WA }],
+      socials: [
+        { platform: "facebook", url: "#" },
+        { platform: "whatsapp", url: WA },
+        { platform: "instagram", url: "#" },
+      ],
       columns: [
         { id: uid("fc"), heading: "Services", links: SERVICES.map((s) => ({ id: uid("fl"), label: s.title, url: `/services/${s.slug}` })) },
         { id: uid("fc"), heading: "Company", links: [
@@ -302,6 +306,94 @@ function faqBlock(order) {
   };
 }
 
+function benefitsBlock(order) {
+  return {
+    ...BASE, id: uid("feat"), type: "features", order,
+    background: { type: "color", color: LIGHT },
+    templateVariant: "icon-list-cards",
+    data: {
+      title: "Benefits of Professional Floor Restoration", subtitle: "Our services help you:",
+      layout: "list", columns: 2, style: "checklist",
+      items: [
+        { id: uid("f"), icon: "Sparkles", title: "Restore the natural shine", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Remove dullness", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Improve the appearance of your property", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Repair damaged flooring", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Extend the life of your floors", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Avoid expensive floor replacement", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Increase property value", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Create a clean and welcoming environment", description: "" },
+      ],
+    },
+  };
+}
+
+function whyRepairBlock(order) {
+  return {
+    ...BASE, id: uid("feat"), type: "features", order,
+    background: { type: "color", color: "#ffffff" },
+    templateVariant: "alternating-images",
+    data: {
+      title: "Why Repair Instead of Replace?", subtitle: "",
+      layout: "alternating", columns: 2, style: "minimal",
+      items: [{
+        id: uid("f"), title: "Save Time, Save Money",
+        description: "Replacing floors can be expensive, messy, and time-consuming. Professional floor repair offers a cost-effective solution that restores your existing flooring while saving you time and money.\n\nIf your flooring is still structurally sound, repair is often the smarter choice.",
+        imageUrl: IMG.workerTool, icon: "",
+      }],
+    },
+  };
+}
+
+function whyChooseUsGridBlock(order) {
+  return {
+    ...BASE, id: uid("ig"), type: "icon_grid", order,
+    background: { type: "color", color: LIGHT },
+    templateVariant: "outlined-cards",
+    data: {
+      title: "Why Choose Us?", subtitle: "", columns: 4, iconSize: "md",
+      items: [
+        { id: uid("i"), icon: "Wrench", label: "Experienced Floor Specialists", description: "Our team has years of experience repairing different types of flooring." },
+        { id: uid("i"), icon: "HardHat", label: "Professional Equipment", description: "We use proper tools and techniques for consistent, high-quality repairs." },
+        { id: uid("i"), icon: "BadgeCheck", label: "Honest Pricing", description: "No hidden charges. You'll receive a clear quote before work starts." },
+        { id: uid("i"), icon: "ShieldCheck", label: "Quality Workmanship", description: "Every job is completed with care and attention to detail." },
+      ],
+    },
+  };
+}
+
+function perfectForBlock(order) {
+  return {
+    ...BASE, id: uid("ig"), type: "icon_grid", order,
+    background: { type: "color", color: "#ffffff" },
+    templateVariant: "pill-row",
+    data: {
+      title: "Perfect For", subtitle: "", columns: 4, iconSize: "sm",
+      items: [
+        "HDB Flats", "Condominiums", "Landed Homes", "Apartments",
+        "Offices", "Hotels", "Restaurants", "Shopping Malls",
+        "Retail Stores", "Schools", "Commercial Buildings",
+      ].map((label) => ({ id: uid("i"), icon: "Star", label })),
+    },
+  };
+}
+
+function trustBlock(order) {
+  return {
+    ...BASE, id: uid("ig"), type: "icon_grid", order,
+    background: { type: "color", color: LIGHT },
+    templateVariant: "numbered-features",
+    data: {
+      title: "Why Customers Trust Us", subtitle: "", columns: 2, iconSize: "sm",
+      items: [
+        "Experienced and Skilled Team", "Proper Tools & Techniques", "Transparent and Honest Pricing",
+        "Fast Response Across Singapore", "Reliable and Friendly Service", "High-Quality Workmanship",
+        "Residential & Commercial Expertise", "Commitment to Customer Satisfaction",
+      ].map((label) => ({ id: uid("i"), icon: "Star", label })),
+    },
+  };
+}
+
 // ─── PAGE BUILDERS ──────────────────────────────────────────────────────────
 function buildHome() {
   let o = 0;
@@ -315,11 +407,16 @@ function buildHome() {
     }),
     servicesGrid(o++, SERVICES, { bg: "#ffffff" }),
     whyChooseUsBlock(o++),
+    benefitsBlock(o++),
+    whyRepairBlock(o++),
     galleryBlock(o++, [
       IMG.vinylPlank, IMG.carpet, IMG.cementScreed, IMG.staircase,
       IMG.waterDamage, IMG.fullRedo, IMG.livingRoom, IMG.woodFloorClose,
     ], "Recent Projects"),
     stepsBlock(o++),
+    whyChooseUsGridBlock(o++),
+    perfectForBlock(o++),
+    trustBlock(o++),
     testimonialsBlock(o++),
     faqBlock(o++),
     ctaBlock(o++, "Got a Damaged Floor?", "Call or WhatsApp us today for a free quote."),
