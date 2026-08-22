@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { toast } from "sonner";
+import { useAgentContext } from "@/components/agent/agent-context";
 import type { Page } from "@/types/cms";
 
 interface BuilderInterfaceProps {
@@ -44,6 +45,13 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
   } = useBuilderStore();
   const [saving, setSaving] = useState(false);
   const isMobile = useIsMobile();
+  const { setEditorContext, clearEditorContext } = useAgentContext();
+
+  useEffect(() => {
+    setEditorContext({ pageId: page.id });
+    return () => clearEditorContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page.id]);
 
   useEffect(() => {
     setPageId(page.id);

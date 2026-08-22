@@ -1,5 +1,5 @@
 import { supabase } from "../supabase";
-import type { Page } from "../types";
+import type { Block, Page } from "../types";
 
 export type PageListItem = Pick<Page, "id" | "title" | "slug" | "type" | "status" | "order_index" | "updated_at">;
 
@@ -30,5 +30,19 @@ export async function updatePageMeta(
   patch: Partial<Pick<Page, "title" | "status" | "excerpt" | "seo">>
 ): Promise<void> {
   const { error } = await supabase.from("pages").update(patch).eq("id", pageId);
+  if (error) throw error;
+}
+
+/**
+ * Overwrites a page's blocks jsonb column. tenant_id filter is defense in
+ * depth (matches listPages/getPage convention) — RLS already scopes writes
+ * to tenants the caller belongs to.
+ */
+export async function updatePageBlocks(pageId: string, tenantId: string, blocks: Block[]): Promise<void> {
+  const { error } = await supabase
+    .from("pages")
+    .update({ blocks, updated_at: new Date().toISOString() })
+    .eq("id", pageId)
+    .eq("tenant_id", tenantId);
   if (error) throw error;
 }

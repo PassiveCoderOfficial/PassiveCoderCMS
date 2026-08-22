@@ -54,8 +54,9 @@ export interface Page {
   updated_at: string;
 }
 
-/** Minimal block shape — this app never renders/edits block content in v1,
- * only page metadata, so this exists for type-completeness of `Page.blocks`. */
+/** Minimal block shape — mirrors the real (much larger) Block union in
+ * cms/src/types/cms.ts, kept intentionally generic since the mobile block
+ * editor introspects `data` at runtime rather than modeling every type. */
 export interface Block {
   id: string;
   type: string;

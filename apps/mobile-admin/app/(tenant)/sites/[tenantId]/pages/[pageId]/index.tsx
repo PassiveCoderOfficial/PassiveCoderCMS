@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { getPage, updatePageMeta } from "../../../../../lib/queries/pages";
-import type { Page } from "../../../../../lib/types";
-import { Button, ErrorText, Field, Select, TextField } from "../../../../../components/form";
-import { Card, LoadingSpinner, Screen } from "../../../../../components/ui";
+import { router, useLocalSearchParams } from "expo-router";
+import { getPage, updatePageMeta } from "../../../../../../lib/queries/pages";
+import type { Page } from "../../../../../../lib/types";
+import { Button, ErrorText, Field, Select, TextField } from "../../../../../../components/form";
+import { Card, LoadingSpinner, Screen } from "../../../../../../components/ui";
 
 const STATUS_OPTIONS = [
   { label: "Draft", value: "draft" },
@@ -13,7 +13,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function PageDetailScreen() {
-  const { pageId } = useLocalSearchParams<{ pageId: string; tenantId: string }>();
+  const { pageId, tenantId } = useLocalSearchParams<{ pageId: string; tenantId: string }>();
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -92,6 +92,14 @@ export default function PageDetailScreen() {
         </Field>
         <ErrorText>{error}</ErrorText>
         <Button title="Save" onPress={save} loading={saving} />
+      </Card>
+
+      <Card style={{ gap: 10 }}>
+        <Button
+          title={`Edit blocks (${page.blocks?.length ?? 0})`}
+          variant="outline"
+          onPress={() => router.push(`/(tenant)/sites/${tenantId}/pages/${pageId}/blocks`)}
+        />
       </Card>
     </Screen>
   );

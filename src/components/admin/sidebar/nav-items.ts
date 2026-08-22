@@ -63,7 +63,7 @@ export type NavItem = {
 export const MODULE_KEYS = [
   "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
   "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
-  "visa_tour", "blood_donation", "marketplace", "content_scheduler", "ai_coder",
+  "visa_tour", "blood_donation", "marketplace", "content_scheduler", "ai_coder", "ai_agent",
 ] as const;
 export type ModuleKey = typeof MODULE_KEYS[number];
 
@@ -88,6 +88,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   marketplace: "Marketplace",
   content_scheduler: "Content Scheduler",
   ai_coder: "AiCoder",
+  ai_agent: "AI Agent",
 };
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
@@ -111,6 +112,7 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
   marketplace: "Multi-vendor marketplace — vendors, service catalog, and bookings",
   content_scheduler: "Plan and schedule social content across brands and platforms",
   ai_coder: "AI-assisted page content — generate section copy in the page builder",
+  ai_agent: "Floating AI assistant for site management, leads, and page content",
 };
 
 export type NavSection = {

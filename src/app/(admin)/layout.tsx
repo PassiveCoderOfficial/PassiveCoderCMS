@@ -9,6 +9,8 @@ import { SetupWizard } from "@/components/admin/setup-wizard";
 import { SA_VIEWING_COOKIE, STAFF_VIEWING_COOKIE } from "@/lib/tenant/current";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
+import { AgentContextProvider } from "@/components/agent/agent-context";
+import { AgentLauncher } from "@/components/agent/agent-launcher";
 import type { CMSUser } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -410,31 +412,38 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
   }
 
+  // SA bypasses gating everywhere else in this layout, so the launcher does
+  // too. Regular tenants/staff need the ai_agent module explicitly enabled.
+  const agentEnabled = sa || !!enabledModules?.ai_agent;
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background flex-col">
-      {showSetupWizard && (
-        <SetupWizard
-          initialSiteName={wizardDefaults.site_name}
-          initialSiteDescription={wizardDefaults.site_description}
-          initialLogoUrl={wizardDefaults.logo_url}
-          initialFaviconUrl={wizardDefaults.favicon_url}
-        />
-      )}
-      {viewingTenantId && viewingTenantName && (
-        <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
-      )}
-      {staffViewingTenantId && staffViewingTenantName && (
-        <StaffBanner tenantName={staffViewingTenantName} />
-      )}
-      <div className="flex flex-1 overflow-hidden">
-        <AdminSidebar isSuperAdmin={!!sa} isStaff={profile.role === "pc_staff"} enabledModules={enabledModules} />
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
-          <main className="flex-1 overflow-auto pl-0 lg:pl-0">
-            {children}
-          </main>
+    <AgentContextProvider>
+      <div className="flex h-screen overflow-hidden bg-background flex-col">
+        {showSetupWizard && (
+          <SetupWizard
+            initialSiteName={wizardDefaults.site_name}
+            initialSiteDescription={wizardDefaults.site_description}
+            initialLogoUrl={wizardDefaults.logo_url}
+            initialFaviconUrl={wizardDefaults.favicon_url}
+          />
+        )}
+        {viewingTenantId && viewingTenantName && (
+          <SABanner tenantName={viewingTenantName} tenantId={viewingTenantId} />
+        )}
+        {staffViewingTenantId && staffViewingTenantName && (
+          <StaffBanner tenantName={staffViewingTenantName} />
+        )}
+        <div className="flex flex-1 overflow-hidden">
+          <AdminSidebar isSuperAdmin={!!sa} isStaff={profile.role === "pc_staff"} enabledModules={enabledModules} />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
+            <main className="flex-1 overflow-auto pl-0 lg:pl-0">
+              {children}
+            </main>
+          </div>
         </div>
+        {agentEnabled && <AgentLauncher />}
       </div>
-    </div>
+    </AgentContextProvider>
   );
 }
