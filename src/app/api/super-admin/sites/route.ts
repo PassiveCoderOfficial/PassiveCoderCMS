@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireSuperAdmin } from "@/lib/super-admin";
+import { verifyBearerSuperAdminUser } from "@/lib/auth/verify-bearer";
 import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
 
-export async function GET() {
-  const user = await requireSuperAdmin();
+export async function GET(req: Request) {
+  const user = (await requireSuperAdmin()) ?? (await verifyBearerSuperAdminUser(req));
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const supabase = await createAdminClient();
@@ -19,7 +20,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await requireSuperAdmin();
+  const user = (await requireSuperAdmin()) ?? (await verifyBearerSuperAdminUser(req));
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { name, slug, plan, owner_user_id, template_id, template_mode, assigned_staff_id } = await req.json();

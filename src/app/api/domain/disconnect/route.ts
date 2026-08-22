@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { removeDomainFromVercel } from "@/lib/domain/vercel";
+import { callerCanManageTenant } from "@/lib/auth/verify-bearer";
 
 /**
  * Disconnect a tenant's custom domain: detach from Vercel and clear DB state.
@@ -12,6 +13,10 @@ export async function POST(req: Request) {
   const { tenantId } = await req.json() as { tenantId: string };
   if (!tenantId) {
     return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+  }
+
+  if (!(await callerCanManageTenant(req, tenantId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {

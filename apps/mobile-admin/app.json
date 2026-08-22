@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Passive Coder Admin",
+    "slug": "pc-admin",
+    "owner": "passivecoder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "pcadmin",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#4f46e5"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.passivecoder.admin"
+    },
+    "android": {
+      "package": "com.passivecoder.admin",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4f46e5"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      // Supabase URL/anon key are read from EXPO_PUBLIC_* env vars at runtime
+      // (see .env.example) — not stored here. The Next.js backend base URL
+      // for Bearer-authed API routes (domain connect/disconnect, etc.) is
+      // also an env var (EXPO_PUBLIC_API_BASE), not app config, so it can
+      // differ between dev/staging/prod builds without editing this file.
+      "eas": {
+        "projectId": "TODO: fill in after `eas init` is run by a human with network access"
+      }
+    }
+  }
+}

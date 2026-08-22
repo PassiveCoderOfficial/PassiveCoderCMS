@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { addDomainToVercel } from "@/lib/domain/vercel";
 import { getNameserverInstructions, getARecordInstructions } from "@/lib/domain/dns";
+import { callerCanManageTenant } from "@/lib/auth/verify-bearer";
 
 export async function POST(req: Request) {
   const { tenantId, domain, type } = await req.json() as {
@@ -12,6 +13,10 @@ export async function POST(req: Request) {
 
   if (!tenantId || !domain || !type) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  if (!(await callerCanManageTenant(req, tenantId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
