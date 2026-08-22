@@ -1,5 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { isSuperAdmin } from "@/lib/super-admin";
+import { isSuperAdmin, isManager } from "@/lib/super-admin";
 
 /**
  * Native/mobile clients can't use httpOnly session cookies (@supabase/ssr).
@@ -27,6 +27,17 @@ export async function verifyBearerSuperAdminUser(req: Request): Promise<{ userId
   if (!caller) return null;
   const ok = await isSuperAdmin(caller.userId);
   return ok ? caller : null;
+}
+
+/** Bearer equivalent of requireManagerOrSuperAdmin() — true super admins pass,
+ *  and so do pc_staff managers (is_manager=true), matching the web SA panel's
+ *  entry gate exactly. Regular (non-manager) staff do NOT pass this. */
+export async function verifyBearerManagerOrSuperAdminUser(req: Request): Promise<{ userId: string; isSA: boolean } | null> {
+  const caller = await verifyBearerUser(req);
+  if (!caller) return null;
+  if (await isSuperAdmin(caller.userId)) return { userId: caller.userId, isSA: true };
+  if (await isManager(caller.userId)) return { userId: caller.userId, isSA: false };
+  return null;
 }
 
 /**

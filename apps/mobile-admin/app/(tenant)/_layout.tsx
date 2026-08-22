@@ -33,6 +33,9 @@ export default function TenantTabsLayout() {
         name="sites"
         options={{
           title: "Sites",
+          // sites/_layout.tsx is its own Stack with its own header — showing
+          // the Tabs header too would stack two headers on screen.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="globe" size={size} color={color} />,
         }}
       />

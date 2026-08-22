@@ -39,13 +39,21 @@ function useDeeplinkNotifications() {
 }
 
 function Gate({ children }: { children: React.ReactNode }) {
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { loading: roleLoading } = useRole();
   const ready = !authLoading && !roleLoading;
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
+
+  // index.tsx only runs its redirect logic while mounted — logging out from
+  // deep inside (admin)/(tenant) doesn't re-mount it, so nothing sends the
+  // user back to /login on its own. Force it here, at the root, whenever
+  // auth resolves to signed-out after the initial load.
+  useEffect(() => {
+    if (ready && !user) router.replace("/login");
+  }, [ready, user]);
 
   if (!ready) return <LoadingSpinner />;
   return <>{children}</>;

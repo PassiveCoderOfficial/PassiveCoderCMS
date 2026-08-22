@@ -18,6 +18,9 @@ export default function AdminTabsLayout() {
         name="tenants"
         options={{
           title: "Tenants",
+          // tenants/_layout.tsx is its own Stack with its own header —
+          // showing the Tabs header too would stack two headers on screen.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="business" size={size} color={color} />,
         }}
       />
