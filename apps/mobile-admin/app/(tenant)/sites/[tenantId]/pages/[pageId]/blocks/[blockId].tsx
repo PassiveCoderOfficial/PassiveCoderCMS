@@ -1,11 +1,21 @@
 import { useMemo, useState } from "react";
-import { Alert, Text } from "react-native";
+import { Text, View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { usePageEdit } from "../../../../../../../lib/pageEditContext";
+import { getBlockCatalogEntry } from "../../../../../../../lib/blockCatalog";
 import type { Block } from "../../../../../../../lib/types";
 import { BlockFieldEditor } from "../../../../../../../components/BlockFieldEditor";
-import { Button, ErrorText, Field, Select } from "../../../../../../../components/form";
-import { Card, LoadingSpinner, Screen } from "../../../../../../../components/ui";
+import { Button, Field, Select, Switch } from "../../../../../../../components/form";
+import {
+  Card,
+  EmptyState,
+  Screen,
+  SectionHeader,
+  Skeleton,
+} from "../../../../../../../components/ui";
+import { radius, spacing, type } from "../../../../../../../lib/theme";
+import { useTheme } from "../../../../../../../lib/themeContext";
+import { useToast } from "../../../../../../../lib/toast";
 
 // Confirmed against src/types/cms.ts's BlockWidth type: "full" | "wide" |
 // "normal" | "narrow" — "full" is baseBlock()'s default.
@@ -19,6 +29,8 @@ const WIDTH_OPTIONS = [
 export default function BlockDetailScreen() {
   const { blockId } = useLocalSearchParams<{ blockId: string; tenantId: string; pageId: string }>();
   const { page, loading, error, setBlocks } = usePageEdit();
+  const { palette } = useTheme();
+  const toast = useToast();
 
   const blockIndex = useMemo(
     () => page?.blocks?.findIndex((b) => b.id === blockId) ?? -1,
@@ -43,32 +55,54 @@ export default function BlockDetailScreen() {
     router.back();
   }
 
-  if (loading) return <LoadingSpinner />;
-  if (!page || !local) {
+  if (loading) {
     return (
       <Screen>
-        <ErrorText>{error ?? "Block not found"}</ErrorText>
+        <Skeleton height={150} radius={radius.lg} />
+        <Skeleton height={240} radius={radius.lg} />
       </Screen>
     );
   }
 
+  if (!page || !local) {
+    return (
+      <Screen>
+        <EmptyState title="Couldn't load this block" subtitle={error ?? "Block not found"} icon="⚠️" />
+      </Screen>
+    );
+  }
+
+  const entry = getBlockCatalogEntry(local.type);
+
   return (
     <Screen>
-      <Card style={{ gap: 14 }}>
-        <Field label="Block type">
-          <Text style={{ fontSize: 14, fontWeight: "700" }}>{local.type}</Text>
+      {/* -------------------------------------------------- Block settings */}
+      <SectionHeader title="Block settings" />
+      <Card style={{ gap: spacing.lg }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
+          <Text style={{ fontSize: 24 }}>{entry?.icon ?? "🧱"}</Text>
+          <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+            <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
+              {entry?.label ?? local.type}
+            </Text>
+            <Text style={[type.caption, { color: palette.textMuted }]} numberOfLines={1}>
+              {local.type}
+            </Text>
+          </View>
+        </View>
+
+        <Field label="Visible" hint="Hidden blocks stay on the page but aren't rendered on the live site.">
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
+            <Switch
+              value={local.visible}
+              onValueChange={(v) => setLocal({ ...local, visible: v })}
+            />
+            <Text style={[type.body, { color: palette.textMuted }]}>
+              {local.visible ? "Visible" : "Hidden"}
+            </Text>
+          </View>
         </Field>
-        <Field label="Visible">
-          <Select
-            value={local.visible ? "true" : "false"}
-            placeholder="Visible"
-            options={[
-              { label: "Visible", value: "true" },
-              { label: "Hidden", value: "false" },
-            ]}
-            onChange={(v) => setLocal({ ...local, visible: v === "true" })}
-          />
-        </Field>
+
         <Field label="Width">
           <Select
             value={local.width}
@@ -81,7 +115,9 @@ export default function BlockDetailScreen() {
            exposed here yet — advanced/rarely touched, per task scope. */}
       </Card>
 
-      <Card style={{ gap: 14 }}>
+      {/* --------------------------------------------------------- Content */}
+      <SectionHeader title="Content" />
+      <Card style={{ gap: spacing.lg }}>
         <BlockFieldEditor
           data={local.data}
           onChange={(data) => setLocal({ ...local, data })}
@@ -92,7 +128,7 @@ export default function BlockDetailScreen() {
         title="Save"
         onPress={() => {
           saveAndBack();
-          Alert.alert("Updated", "Block updated locally — remember to Save changes on the Blocks screen.");
+          toast.toast("Block updated — Save changes on the Blocks screen to publish.");
         }}
       />
     </Screen>

@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { colors } from "../../../../../../lib/theme";
+import { useTheme } from "../../../../../../lib/themeContext";
 import { PageEditProvider } from "../../../../../../lib/pageEditContext";
 
 // Wraps the meta editor (index) and the block editor screens (blocks,
@@ -9,14 +9,16 @@ import { PageEditProvider } from "../../../../../../lib/pageEditContext";
 // detail screen doesn't need to refetch the whole page.
 export default function PageEditStackLayout() {
   const { pageId } = useLocalSearchParams<{ pageId: string }>();
+  const { palette } = useTheme();
 
   return (
     <PageEditProvider pageId={pageId}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.primary600 },
-          headerTintColor: colors.white,
+          headerStyle: { backgroundColor: palette.primary600 },
+          headerTintColor: palette.white,
           headerTitleStyle: { fontWeight: "800" },
+          contentStyle: { backgroundColor: palette.bg },
         }}
       >
         <Stack.Screen name="index" options={{ title: "Page" }} />

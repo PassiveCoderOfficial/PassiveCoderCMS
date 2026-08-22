@@ -1,22 +1,13 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
-import { colors, radius } from "../lib/theme";
+import { radius, shadow, spacing, type } from "../lib/theme";
+import { useTheme } from "../lib/themeContext";
+import { tapFeedback } from "../lib/haptics";
+import { initials, leadDisplayName, relativeTime } from "../lib/format";
+import { Avatar } from "./ui";
 import { StageBadge } from "./StageBadge";
 import type { LeadListItem as LeadListItemType, CrmStage } from "../lib/queries/leads";
-
-function relativeTime(iso: string | null): string {
-  if (!iso) return "No activity yet";
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString();
-}
 
 export function LeadListItem({
   tenantId,
@@ -27,32 +18,45 @@ export function LeadListItem({
   lead: LeadListItemType;
   stage: CrmStage | null | undefined;
 }) {
-  const name = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim() || "Unnamed lead";
+  const { palette } = useTheme();
   const subtitle = lead.company || lead.phone || lead.email || "No contact info";
 
   return (
     <Pressable
-      onPress={() => router.push(`/(tenant)/sites/${tenantId}/leads/${lead.id}`)}
-      style={styles.row}
+      onPress={() => {
+        tapFeedback();
+        router.push(`/(tenant)/sites/${tenantId}/leads/${lead.id}`);
+      }}
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.md,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: 14,
+          minHeight: 72,
+          backgroundColor: palette.card,
+          borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: palette.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+        shadow.card,
+      ]}
     >
-      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <Text style={styles.name} numberOfLines={1}>{name}</Text>
-        <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
-        <Text style={styles.time}>{relativeTime(lead.last_activity_at)}</Text>
+      <Avatar text={initials(lead)} size={40} />
+      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+        <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
+          {leadDisplayName(lead)}
+        </Text>
+        <Text style={[type.caption, { color: palette.textMuted }]} numberOfLines={1}>
+          {subtitle}
+        </Text>
+        <Text style={[type.caption, { color: palette.textFaint }]}>
+          {lead.last_activity_at ? relativeTime(lead.last_activity_at) : "No activity yet"}
+        </Text>
       </View>
       <StageBadge stage={stage} />
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14,
-    backgroundColor: colors.white, borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  name: { fontSize: 14, fontWeight: "700", color: colors.text },
-  subtitle: { fontSize: 12, color: colors.textMuted },
-  time: { fontSize: 11, color: colors.textFaint, marginTop: 2 },
-});

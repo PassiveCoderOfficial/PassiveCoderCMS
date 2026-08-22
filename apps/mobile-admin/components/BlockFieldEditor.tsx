@@ -17,10 +17,11 @@
 //   null/undefined       -> skipped (not rendered)
 
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
-import { Button, Field, TextField } from "./form";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Button, Field, Switch, TextField } from "./form";
 import { Card } from "./ui";
-import { colors, radius } from "../lib/theme";
+import { radius } from "../lib/theme";
+import { useTheme } from "../lib/themeContext";
 
 const MULTILINE_KEY_HINTS = ["description", "content", "body", "bio", "answer", "message", "html", "summary"];
 
@@ -84,7 +85,11 @@ function FieldRow({ fieldKey, value, onChange }: {
   value: unknown;
   onChange: (v: unknown) => void;
 }) {
+  const { palette } = useTheme();
   const label = humanizeKey(fieldKey);
+  // Humanizing is lossy ("primaryButton" → "Primary button"), so when the two
+  // differ, surface the raw key for anyone matching this against block JSON.
+  const keyHint = label === fieldKey ? undefined : fieldKey;
 
   if (value === null || value === undefined) {
     // Skip rendering — no schema info to know what type this should be.
@@ -93,7 +98,7 @@ function FieldRow({ fieldKey, value, onChange }: {
 
   if (typeof value === "string") {
     return (
-      <Field label={label}>
+      <Field label={label} hint={keyHint}>
         <TextField
           value={value}
           onChangeText={onChange}
@@ -106,7 +111,7 @@ function FieldRow({ fieldKey, value, onChange }: {
 
   if (typeof value === "number") {
     return (
-      <Field label={label}>
+      <Field label={label} hint={keyHint}>
         <TextField
           value={String(value)}
           onChangeText={(t) => {
@@ -122,12 +127,13 @@ function FieldRow({ fieldKey, value, onChange }: {
   if (typeof value === "boolean") {
     return (
       <View style={styles.switchRow}>
-        <Text style={styles.switchLabel}>{label}</Text>
-        <Switch
-          value={value}
-          onValueChange={onChange}
-          trackColor={{ true: colors.primary500, false: colors.border }}
-        />
+        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <Text style={[styles.switchLabel, { color: palette.textMuted }]}>{label}</Text>
+          {keyHint ? (
+            <Text style={{ fontSize: 11, color: palette.textFaint }}>{keyHint}</Text>
+          ) : null}
+        </View>
+        <Switch value={value} onValueChange={onChange} />
       </View>
     );
   }
@@ -149,15 +155,16 @@ function ObjectFieldEditor({ label, value, onChange }: {
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
+  const { palette } = useTheme();
   const [open, setOpen] = useState(false);
   return (
     <View style={{ gap: 10 }}>
       <Pressable style={styles.sectionHeader} onPress={() => setOpen((o) => !o)}>
-        <Text style={styles.sectionChevron}>{open ? "▾" : "▸"}</Text>
-        <Text style={styles.sectionTitle}>{label}</Text>
+        <Text style={[styles.sectionChevron, { color: palette.textMuted }]}>{open ? "▾" : "▸"}</Text>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>{label}</Text>
       </Pressable>
       {open && (
-        <View style={styles.sectionBody}>
+        <View style={[styles.sectionBody, { borderLeftColor: palette.border }]}>
           <BlockFieldEditor data={value} onChange={onChange} />
         </View>
       )}
@@ -170,6 +177,7 @@ function ArrayFieldEditor({ label, items, onChange }: {
   items: unknown[];
   onChange: (v: unknown[]) => void;
 }) {
+  const { palette } = useTheme();
   const objectItems = items.length > 0 && items.every((it) => isPlainObject(it));
 
   function removeAt(index: number) {
@@ -201,13 +209,13 @@ function ArrayFieldEditor({ label, items, onChange }: {
   if (objectItems) {
     return (
       <View style={{ gap: 10 }}>
-        <Text style={styles.sectionTitle}>{label}</Text>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>{label}</Text>
         {items.map((item, index) => (
           <Card key={index} style={{ gap: 10 }}>
             <View style={styles.itemHeaderRow}>
-              <Text style={styles.itemIndex}>#{index + 1}</Text>
+              <Text style={[styles.itemIndex, { color: palette.textFaint }]}>#{index + 1}</Text>
               <Pressable onPress={() => removeAt(index)} hitSlop={8}>
-                <Text style={styles.removeText}>Remove ✕</Text>
+                <Text style={[styles.removeText, { color: palette.red600 }]}>Remove ✕</Text>
               </Pressable>
             </View>
             <BlockFieldEditor
@@ -224,7 +232,7 @@ function ArrayFieldEditor({ label, items, onChange }: {
   // Array of primitives (strings/numbers) or empty array.
   return (
     <View style={{ gap: 8 }}>
-      <Text style={styles.sectionTitle}>{label}</Text>
+      <Text style={[styles.sectionTitle, { color: palette.text }]}>{label}</Text>
       {items.map((item, index) => (
         <View key={index} style={styles.primitiveRow}>
           <TextField
@@ -232,8 +240,12 @@ function ArrayFieldEditor({ label, items, onChange }: {
             value={String(item ?? "")}
             onChangeText={(t) => updateAt(index, typeof item === "number" ? Number(t) || 0 : t)}
           />
-          <Pressable onPress={() => removeAt(index)} hitSlop={8} style={styles.removeBtn}>
-            <Text style={styles.removeText}>✕</Text>
+          <Pressable
+            onPress={() => removeAt(index)}
+            hitSlop={8}
+            style={[styles.removeBtn, { borderColor: palette.borderStrong }]}
+          >
+            <Text style={[styles.removeText, { color: palette.red600 }]}>✕</Text>
           </Pressable>
         </View>
       ))}
@@ -247,20 +259,17 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingVertical: 4,
   },
-  switchLabel: { fontSize: 12, fontWeight: "600", color: colors.textMuted },
+  switchLabel: { fontSize: 12, fontWeight: "600" },
   sectionHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
-  sectionChevron: { fontSize: 12, color: colors.textMuted },
-  sectionTitle: { fontSize: 12, fontWeight: "700", color: colors.text },
-  sectionBody: {
-    borderLeftWidth: 2, borderLeftColor: colors.border,
-    paddingLeft: 12, gap: 14,
-  },
+  sectionChevron: { fontSize: 12 },
+  sectionTitle: { fontSize: 12, fontWeight: "700" },
+  sectionBody: { borderLeftWidth: 2, paddingLeft: 12, gap: 14 },
   itemHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  itemIndex: { fontSize: 11, fontWeight: "700", color: colors.textFaint },
+  itemIndex: { fontSize: 11, fontWeight: "700" },
   primitiveRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   removeBtn: {
     width: 32, height: 32, borderRadius: radius.md, alignItems: "center", justifyContent: "center",
-    borderWidth: 1, borderColor: colors.borderStrong,
+    borderWidth: 1,
   },
-  removeText: { fontSize: 12, fontWeight: "700", color: colors.red600 },
+  removeText: { fontSize: 12, fontWeight: "700" },
 });

@@ -1,16 +1,56 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, radius } from "../lib/theme";
-import { Badge } from "./ui";
-import type { Tenant } from "../lib/types";
+import { Pressable, Text, View } from "react-native";
+import { radius, shadow, spacing, type } from "../lib/theme";
+import { useTheme } from "../lib/themeContext";
+import { tapFeedback } from "../lib/haptics";
+import { humanize } from "../lib/format";
+import { Badge, Tag } from "./ui";
+import type { Tenant, TenantMemberRole } from "../lib/types";
 
-export function TenantCard({ tenant, onPress }: { tenant: Tenant; onPress: () => void }) {
+export function TenantCard({
+  tenant,
+  role,
+  onPress,
+}: {
+  tenant: Tenant;
+  /** The signed-in user's role in this tenant, shown as a small tag. */
+  role?: TenantMemberRole;
+  onPress: () => void;
+}) {
+  const { palette } = useTheme();
+
   return (
-    <Pressable onPress={onPress} style={styles.card}>
+    <Pressable
+      onPress={() => {
+        tapFeedback();
+        onPress();
+      }}
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.md,
+          padding: spacing.lg,
+          backgroundColor: palette.card,
+          borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: palette.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+        shadow.card,
+      ]}
+    >
       <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-        <Text style={styles.name} numberOfLines={1}>{tenant.name}</Text>
-        <Text style={styles.plan}>{tenant.plan} plan</Text>
-        <Text style={styles.domain} numberOfLines={1}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+          <Text style={[type.heading, { color: palette.text, flexShrink: 1 }]} numberOfLines={1}>
+            {tenant.name}
+          </Text>
+          {role ? <Tag label={role} /> : null}
+        </View>
+        <Text style={[type.caption, { color: palette.textMuted }]} numberOfLines={1}>
+          /{tenant.slug} · {humanize(tenant.plan)} plan
+        </Text>
+        <Text style={[type.caption, { color: palette.textFaint }]} numberOfLines={1}>
           {tenant.custom_domain ?? "No custom domain"}
         </Text>
       </View>
@@ -18,14 +58,3 @@ export function TenantCard({ tenant, onPress }: { tenant: Tenant; onPress: () =>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    padding: 16, backgroundColor: colors.white, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  name: { fontSize: 15, fontWeight: "700", color: colors.text },
-  plan: { fontSize: 12, color: colors.textMuted, textTransform: "capitalize" },
-  domain: { fontSize: 12, color: colors.textFaint },
-});

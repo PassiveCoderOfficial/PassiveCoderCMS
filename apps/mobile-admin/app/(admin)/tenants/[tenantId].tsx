@@ -3,15 +3,58 @@
 // into the same (tenant)/sites/[tenantId]/... tree tenant owners use.
 
 import { useCallback, useEffect, useState } from "react";
-import { Alert, StyleSheet, Text } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { listAllTenants, suspendTenant, activateTenant, type AdminTenantListItem } from "../../../lib/queries/admin";
-import { Button, ErrorText } from "../../../components/form";
-import { Badge, Card, LoadingSpinner, Screen } from "../../../components/ui";
-import { colors } from "../../../lib/theme";
+import {
+  listAllTenants,
+  suspendTenant,
+  activateTenant,
+  type AdminTenantListItem,
+} from "../../../lib/queries/admin";
+import { Button } from "../../../components/form";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  Row,
+  Screen,
+  SectionHeader,
+  Skeleton,
+  type BadgeTone,
+} from "../../../components/ui";
+import { absoluteTime, humanize } from "../../../lib/format";
+import { radius, spacing, type } from "../../../lib/theme";
+import { useTheme } from "../../../lib/themeContext";
+import { useToast } from "../../../lib/toast";
+import { warningFeedback } from "../../../lib/haptics";
+
+function statusTone(status: string): BadgeTone {
+  switch (status) {
+    case "active":
+    case "onboarded":
+      return "success";
+    case "trial":
+      return "warning";
+    case "suspended":
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
+  }
+}
+
+function domainTone(status: string): BadgeTone {
+  if (status === "active") return "success";
+  if (status === "pending" || status === "pending_dns") return "warning";
+  if (status === "failed") return "danger";
+  return "neutral";
+}
 
 export default function AdminTenantDetailScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
+  const { palette } = useTheme();
+  const toast = useToast();
+
   const [tenant, setTenant] = useState<AdminTenantListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -49,15 +92,18 @@ export default function AdminTenantDetailScreen() {
     const result = suspending ? await suspendTenant(tenant.id) : await activateTenant(tenant.id);
     setBusy(false);
     if (!result.ok) {
+      toast.error(result.error ?? "Action failed");
       setError(result.error ?? "Action failed");
       return;
     }
+    toast.success(suspending ? "Site suspended" : "Site activated");
     await load();
   }
 
   function confirmToggleStatus() {
     if (!tenant) return;
     const suspending = tenant.status !== "suspended";
+    warningFeedback();
     Alert.alert(
       suspending ? "Suspend site?" : "Activate site?",
       suspending
@@ -65,60 +111,112 @@ export default function AdminTenantDetailScreen() {
         : "This will reactivate the site.",
       [
         { text: "Cancel", style: "cancel" },
-        { text: suspending ? "Suspend" : "Activate", style: suspending ? "destructive" : "default", onPress: onToggleStatus },
+        {
+          text: suspending ? "Suspend" : "Activate",
+          style: suspending ? "destructive" : "default",
+          onPress: onToggleStatus,
+        },
       ]
     );
   }
 
-  if (loading) return <LoadingSpinner />;
-  if (!tenant) {
+  if (loading) {
     return (
       <Screen>
-        <ErrorText>{error ?? "Site not found"}</ErrorText>
+        <Skeleton height={110} radius={radius.lg} />
+        <Skeleton height={180} radius={radius.lg} />
+        <Skeleton height={120} radius={radius.lg} />
       </Screen>
     );
   }
 
+  if (!tenant) {
+    return (
+      <Screen>
+        <EmptyState
+          title="Couldn't load this site"
+          subtitle={error ?? "Site not found"}
+          icon="⚠️"
+          action={{
+            label: "Try again",
+            onPress: () => {
+              setLoading(true);
+              setError(null);
+              load();
+            },
+          }}
+        />
+      </Screen>
+    );
+  }
+
+  const suspended = tenant.status === "suspended";
+
   return (
     <Screen>
-      <Card style={{ gap: 8 }}>
-        <Text style={styles.name}>{tenant.name}</Text>
-        <Text style={styles.label}>Slug</Text>
-        <Text style={styles.value}>{tenant.slug}</Text>
-        <Text style={styles.label}>Status</Text>
-        <Badge label={tenant.status} />
-        <Text style={styles.label}>Custom domain</Text>
-        <Text style={styles.value}>{tenant.custom_domain ?? "None"}</Text>
-        <Text style={styles.label}>Domain status</Text>
-        <Badge label={tenant.domain_status} />
+      {/* ---------------------------------------------------------- Header */}
+      <Card style={{ gap: spacing.sm }}>
+        <Text style={[type.title, { color: palette.text }]}>{tenant.name}</Text>
+        <Text style={[type.caption, { color: palette.textMuted }]}>{tenant.slug}</Text>
+        <View style={{ flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" }}>
+          <Badge label={humanize(tenant.status)} tone={statusTone(tenant.status)} />
+          {tenant.deletion_requested_at ? <Badge label="Deletion requested" tone="danger" /> : null}
+        </View>
       </Card>
 
-      <ErrorText>{error}</ErrorText>
+      {/* -------------------------------------------------------- Metadata */}
+      <SectionHeader title="Details" />
+      <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
+        <Row
+          icon="🌐"
+          title={tenant.custom_domain ?? "No custom domain"}
+          subtitle="Custom domain"
+        />
+        <Row
+          icon="🔌"
+          title="Domain status"
+          right={
+            <Badge label={humanize(tenant.domain_status)} tone={domainTone(tenant.domain_status)} />
+          }
+        />
+        <Row icon="📅" title={absoluteTime(tenant.created_at)} subtitle="Created" />
+        <Row
+          icon={tenant.onboarding_completed ? "✅" : "⏳"}
+          title={tenant.onboarding_completed ? "Completed" : "Not completed"}
+          subtitle="Onboarding"
+        />
+      </Card>
 
-      <Card style={{ gap: 10 }}>
+      {/* --------------------------------------------------------- Actions */}
+      <SectionHeader title="Actions" />
+      <Card style={{ gap: spacing.md }}>
         <Button
-          title={tenant.status === "suspended" ? "Activate site" : "Suspend site"}
-          variant={tenant.status === "suspended" ? "primary" : "danger"}
-          onPress={confirmToggleStatus}
-          loading={busy}
+          title="Manage as this tenant"
+          icon="🛠"
+          onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
         />
         <Button
           title="Transfer ownership"
           variant="outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/transfer`)}
         />
+      </Card>
+
+      {/* ----------------------------------------------------- Danger zone */}
+      <SectionHeader title="Danger zone" />
+      <Card style={{ gap: spacing.md, borderColor: palette.red600 }}>
+        <Text style={[type.caption, { color: palette.textMuted }]}>
+          {suspended
+            ? "This site is suspended. Reactivating restores access for its owner."
+            : "Suspending takes the site away from its owner until it's reactivated."}
+        </Text>
         <Button
-          title="Manage as this tenant"
-          variant="outline"
-          onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
+          title={suspended ? "Activate site" : "Suspend site"}
+          variant={suspended ? "primary" : "danger"}
+          onPress={confirmToggleStatus}
+          loading={busy}
         />
       </Card>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  name: { fontSize: 18, fontWeight: "800", color: colors.text },
-  label: { fontSize: 12, fontWeight: "600", color: colors.textMuted },
-  value: { fontSize: 14, color: colors.text },
-});

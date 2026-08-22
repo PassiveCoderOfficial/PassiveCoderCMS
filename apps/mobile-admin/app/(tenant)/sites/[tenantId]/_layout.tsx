@@ -1,15 +1,17 @@
 import { Stack } from "expo-router";
-import { colors } from "../../../../lib/theme";
+import { useTheme } from "../../../../lib/themeContext";
 
 // Wraps every screen for one selected tenant (pages, leads, settings,
 // domain, transfer) into a single Stack segment nested under sites/_layout.
 export default function TenantSiteStackLayout() {
+  const { palette } = useTheme();
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.primary600 },
-        headerTintColor: colors.white,
+        headerStyle: { backgroundColor: palette.primary600 },
+        headerTintColor: palette.white,
         headerTitleStyle: { fontWeight: "800" },
+        contentStyle: { backgroundColor: palette.bg },
       }}
     >
       <Stack.Screen name="pages/index" options={{ title: "Pages" }} />

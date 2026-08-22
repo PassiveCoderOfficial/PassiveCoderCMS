@@ -8,18 +8,20 @@
 
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../lib/theme";
+import { useTheme } from "../../lib/themeContext";
 
 export default function TenantTabsLayout() {
+  const { palette } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colors.primary600 },
-        headerTintColor: colors.white,
+        headerStyle: { backgroundColor: palette.primary600 },
+        headerTintColor: palette.white,
         headerTitleStyle: { fontWeight: "800" },
-        tabBarActiveTintColor: colors.primary600,
-        tabBarInactiveTintColor: colors.textFaint,
-        tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.border },
+        tabBarActiveTintColor: palette.primary600,
+        tabBarInactiveTintColor: palette.textFaint,
+        tabBarStyle: { backgroundColor: palette.bgElevated, borderTopColor: palette.border },
+        sceneStyle: { backgroundColor: palette.bg },
       }}
     >
       <Tabs.Screen

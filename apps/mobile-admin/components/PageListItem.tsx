@@ -1,34 +1,51 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
-import { colors, radius } from "../lib/theme";
+import { radius, shadow, spacing, type } from "../lib/theme";
+import { useTheme } from "../lib/themeContext";
+import { tapFeedback } from "../lib/haptics";
+import { relativeTime } from "../lib/format";
 import { Badge } from "./ui";
 import type { PageListItem as PageListItemType } from "../lib/queries/pages";
 
 export function PageListItem({ tenantId, page }: { tenantId: string; page: PageListItemType }) {
+  const { palette } = useTheme();
+
   return (
     <Pressable
-      onPress={() => router.push(`/(tenant)/sites/${tenantId}/pages/${page.id}`)}
-      style={styles.row}
+      onPress={() => {
+        tapFeedback();
+        router.push(`/(tenant)/sites/${tenantId}/pages/${page.id}`);
+      }}
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.md,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: 14,
+          minHeight: 72,
+          backgroundColor: palette.card,
+          borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: palette.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+        shadow.card,
+      ]}
     >
-      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <Text style={styles.title} numberOfLines={1}>{page.title}</Text>
-        <Text style={styles.slug} numberOfLines={1}>/{page.slug}</Text>
-        <Text style={styles.updated}>Updated {new Date(page.updated_at).toLocaleDateString()}</Text>
+      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+        <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
+          {page.title}
+        </Text>
+        <Text style={[type.caption, { color: palette.textMuted }]} numberOfLines={1}>
+          /{page.slug}
+        </Text>
+        <Text style={[type.caption, { color: palette.textFaint }]}>
+          Updated {relativeTime(page.updated_at)}
+        </Text>
       </View>
       <Badge label={page.status} />
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14,
-    backgroundColor: colors.white, borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { fontSize: 14, fontWeight: "700", color: colors.text },
-  slug: { fontSize: 12, color: colors.textMuted },
-  updated: { fontSize: 11, color: colors.textFaint, marginTop: 2 },
-});
