@@ -20,7 +20,11 @@ export default function AdminTenantDetailScreen() {
   // No GET /api/super-admin/sites/[id] single-tenant route exists — reuse
   // the list endpoint and find by id, same data the list screen already has.
   const load = useCallback(async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      setError("No site selected");
+      setLoading(false);
+      return;
+    }
     try {
       const rows = await listAllTenants();
       const found = rows.find((t) => t.id === tenantId) ?? null;
