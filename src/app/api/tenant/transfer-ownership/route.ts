@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { transferTenantOwnership } from "@/lib/tenant/transfer-ownership";
 import { canTransferTenant } from "@/lib/tenant/can-transfer";
+import { verifyBearerUser } from "@/lib/auth/verify-bearer";
 
 /**
  * Transfers a site to its client, optionally creating their account.
@@ -20,7 +21,10 @@ import { canTransferTenant } from "@/lib/tenant/can-transfer";
  */
 export async function POST(req: Request) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user: cookieUser } } = await supabase.auth.getUser();
+  // Mobile has no session cookie — fall back to a Bearer Supabase JWT.
+  const bearerUser = cookieUser ? null : await verifyBearerUser(req);
+  const user = cookieUser ?? (bearerUser ? { id: bearerUser.userId } : null);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));

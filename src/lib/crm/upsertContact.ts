@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { notifyTenantNewLead } from "@/lib/crm/notify-new-lead";
 
 export type ContactSource = "manual" | "form" | "booking" | "order" | "enm" | "import" | "api";
 
@@ -142,6 +143,16 @@ export async function upsertContact(input: UpsertContactInput): Promise<string |
       .single();
     if (error || !created) return null;
     contactId = created.id;
+
+    // New lead landing in the CRM with zero notification otherwise (the
+    // page-builder contact block's email is opt-in and easy to leave unset).
+    // Best-effort — a push failure must never affect the visitor-facing submit.
+    notifyTenantNewLead({
+      tenantId: input.tenantId,
+      contactId,
+      name: [firstName, lastName].filter(Boolean).join(" ") || email || phone || "New lead",
+      source: input.source,
+    }).catch(() => null);
   }
 
   if (input.event) {

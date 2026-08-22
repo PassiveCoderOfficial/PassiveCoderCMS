@@ -42,6 +42,11 @@ export default function DashboardScreen() {
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
         />
         <Button
+          title="Leads"
+          variant="outline"
+          onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)}
+        />
+        <Button
           title="Site settings"
           variant="outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/settings`)}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Text, StyleSheet } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { getTenant, updateTenantName } from "../../../../lib/queries/tenant";
 import type { Tenant } from "../../../../lib/types";
 import { Button, ErrorText, Field, TextField } from "../../../../components/form";
@@ -74,6 +74,14 @@ export default function TenantSettingsScreen() {
         </Field>
         <ErrorText>{error}</ErrorText>
         <Button title="Save" onPress={save} loading={saving} />
+      </Card>
+
+      <Card style={{ gap: 10 }}>
+        <Button
+          title="Transfer ownership"
+          variant="outline"
+          onPress={() => router.push(`/(tenant)/sites/${tenantId}/transfer`)}
+        />
       </Card>
     </Screen>
   );

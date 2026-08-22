@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { registerForPush, unregisterPush } from "./push";
 
 interface AuthCtx {
   session: Session | null;
@@ -51,10 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { ok: false, error: error.message };
+    // Fire-and-forget — push registration must never block or fail login.
+    registerForPush().catch(() => {});
     return { ok: true };
   }
 
   async function logout() {
+    // Best-effort, and must run BEFORE signOut() while the session (and thus
+    // the Bearer token apiFetch reads) is still valid.
+    await unregisterPush().catch(() => {});
     await supabase.auth.signOut();
   }
 

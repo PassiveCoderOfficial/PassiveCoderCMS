@@ -1,16 +1,14 @@
 // Design tokens for the admin/tenant companion app.
 //
-// PLACEHOLDER PALETTE: no brand guideline file exists yet for this admin
-// surface (see project notes). Indigo/slate chosen as a clean, professional
-// look distinct from the red Blood Donors consumer app. Swap freely once
-// real brand guidelines land.
+// Passive Coder brand orange (matches public/branding/passivecoder-icon.png
+// and the app icon/splash gradient — #ff8a3d → #f2610c).
 
 export const colors = {
-  primary700: "#3730a3",
-  primary600: "#4f46e5",
-  primary500: "#6366f1",
-  primary100: "#e0e7ff",
-  primary50: "#eef2ff",
+  primary700: "#c2410c",
+  primary600: "#f2610c",
+  primary500: "#ff8a3d",
+  primary100: "#ffe4cc",
+  primary50: "#fff3e8",
 
   green600: "#16a34a",
   green50: "#dcfce7",

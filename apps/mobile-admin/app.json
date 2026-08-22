@@ -10,9 +10,9 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#4f46e5"
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f2610c"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -25,23 +25,35 @@
       "package": "com.passivecoder.admin",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#4f46e5"
+        "monochromeImage": "./assets/adaptive-icon-monochrome.png",
+        "backgroundColor": "#f2610c"
       }
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#f2610c"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#f2610c"
+        }
+      ]
     ],
     "extra": {
-      // Supabase URL/anon key are read from EXPO_PUBLIC_* env vars at runtime
-      // (see .env.example) — not stored here. The Next.js backend base URL
-      // for Bearer-authed API routes (domain connect/disconnect, etc.) is
-      // also an env var (EXPO_PUBLIC_API_BASE), not app config, so it can
-      // differ between dev/staging/prod builds without editing this file.
+      "router": {},
       "eas": {
-        "projectId": "TODO: fill in after `eas init` is run by a human with network access"
+        "projectId": "e168a148-a1b1-44d4-982c-2271ab0ad374"
       }
     }
   }
