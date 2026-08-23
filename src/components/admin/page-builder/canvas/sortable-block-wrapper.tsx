@@ -100,16 +100,22 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
           isDragging && "opacity-30",
           isHiddenInEditor && "opacity-40 grayscale",
         )}
-        onClick={(e) => {
+        onClickCapture={(e) => {
           if (!isEditing) return;
           // Nav/footer blocks render real Next.js <Link>s — they have no idea
           // they're inside the editor, so a click on any menu item or footer
           // link navigated the whole admin session away to that page (or off
-          // the site). preventDefault stops the anchor's own navigation;
-          // stopPropagation (already here) keeps the click from also
-          // selecting whatever block happens to sit behind this one.
+          // the site). Must intercept in the CAPTURE phase, before the click
+          // reaches the <Link>: Next's own onClick handler lives on the
+          // anchor itself and calls router.push() directly (not the browser's
+          // native <a> navigation), so calling preventDefault from a bubbling
+          // handler on this wrapper ran too late — Link's handler had already
+          // fired and pushed the route by the time it got here.
           const link = (e.target as HTMLElement).closest("a");
           if (link) e.preventDefault();
+        }}
+        onClick={(e) => {
+          if (!isEditing) return;
           e.stopPropagation();
           selectBlock(block.id);
         }}
