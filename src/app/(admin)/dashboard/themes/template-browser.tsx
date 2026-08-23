@@ -12,10 +12,12 @@ export function TemplateBrowser({
   templates,
   activeTemplateSlug,
   tenantId,
+  siteName,
 }: {
   templates: Template[];
   activeTemplateSlug: string | null;
   tenantId: string;
+  siteName: string | null;
 }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -173,6 +175,7 @@ export function TemplateBrowser({
                       templateName={template.name}
                       isActive={isActive}
                       tenantId={tenantId}
+                      siteName={siteName}
                     />
                   </div>
                 </div>

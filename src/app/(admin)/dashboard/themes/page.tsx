@@ -17,6 +17,7 @@ export default async function ThemesPage() {
   const admin = await createAdminClient();
 
   let activeTemplateSlug: string | null = null;
+  let siteName: string | null = null;
   if (tenantId) {
     const { data } = await admin
       .from("site_identity")
@@ -24,6 +25,16 @@ export default async function ThemesPage() {
       .eq("tenant_id", tenantId)
       .single();
     activeTemplateSlug = (data as { active_template_slug?: string } | null)?.active_template_slug ?? null;
+
+    // Applying a template is a mutating, hard-to-notice action when tenantId
+    // came from the STAFF_VIEWING_COOKIE fallback in getCurrentTenantId() —
+    // that cookie is shared across every *.passivecoder.com tab and can be
+    // hours stale, so a staff member on their own site's root-domain
+    // dashboard can silently apply to a different site they were last
+    // viewing. The apply confirm dialog names this site so the mismatch is
+    // visible before the click, regardless of how tenantId was resolved.
+    const { data: tenantRow } = await admin.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+    siteName = tenantRow?.name ?? null;
   }
 
   // Published templates only, so drafts stay invisible to tenants. Every
@@ -107,6 +118,7 @@ export default async function ThemesPage() {
         templates={templates}
         activeTemplateSlug={activeTemplateSlug}
         tenantId={tenantId}
+        siteName={siteName}
       />
     </div>
   );

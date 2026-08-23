@@ -1,18 +1,22 @@
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireTemplateAuthor } from "@/modules/templates/permissions";
-import MyTemplatesClient from "./my-templates-client";
+import MyTemplatesClient from "@/app/(superadmin)/super-admin/my-templates/my-templates-client";
 import type { SiteTemplate, TemplateCategory } from "@/modules/templates/types";
 
-export default async function MyTemplatesPage() {
+// Staff-facing mirror of /super-admin/my-templates — same client component,
+// same requireTemplateAuthor() gate (which already scopes staff to their own
+// templates), just reachable from the (staff) layout's lighter requireStaff()
+// gate instead of the (superadmin) layout's manager-or-SA-only one. That gate
+// mismatch was the actual bug: this page's own query logic always supported
+// staff authors, but ordinary (non-manager) staff could never reach the route
+// at all.
+export default async function StaffMyTemplatesPage() {
   const author = await requireTemplateAuthor();
-  if (!author) redirect("/super-admin");
+  if (!author) redirect("/staff");
 
   const admin = await createAdminClient();
 
-  // Staff see their own; super admins see everything authored through this
-  // engine — the 54 legacy catalog rows (owner_id null) are deliberately
-  // excluded, they belong to the old registry path until Phase 3.
   let query = admin
     .from("templates")
     .select("*")
@@ -30,7 +34,7 @@ export default async function MyTemplatesPage() {
       templates={(templates ?? []) as SiteTemplate[]}
       categories={(categories ?? []) as TemplateCategory[]}
       isSuperAdmin={author.isSuperAdmin}
-      basePath="/super-admin/my-templates"
+      basePath="/staff/my-templates"
     />
   );
 }

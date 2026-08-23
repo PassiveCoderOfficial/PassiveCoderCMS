@@ -23,10 +23,12 @@ export default function TemplateDetailClient({
   template,
   pages,
   categories,
+  basePath = "/super-admin/my-templates",
 }: {
   template: SiteTemplate;
   pages: TemplatePageRow[];
   categories: TemplateCategory[];
+  basePath?: string;
 }) {
   const router = useRouter();
   const [name, setName] = useState(template.name);
@@ -107,7 +109,7 @@ export default function TemplateDetailClient({
   return (
     <div className="p-6 space-y-6">
       <div>
-        <Link href="/super-admin/my-templates" className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <Link href={basePath} className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> My Templates
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">

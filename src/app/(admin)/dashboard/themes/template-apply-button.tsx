@@ -12,9 +12,14 @@ interface Props {
   templateName: string;
   isActive: boolean;
   tenantId: string;
+  /** Named explicitly in the confirm dialog below — the tenant id here can
+   *  come from a stale cross-tab cookie (see getCurrentTenantId()'s staff
+   *  fallback), so this is the one chance for whoever clicks Apply to catch
+   *  that they're not on the site they think they are before it mutates. */
+  siteName: string | null;
 }
 
-export function TemplateApplyButton({ templateSlug, templateName, isActive, tenantId }: Props) {
+export function TemplateApplyButton({ templateSlug, templateName, isActive, tenantId, siteName }: Props) {
   const [applying, setApplying] = useState(false);
   const [mode, setMode] = useState<"theme" | "full">("theme");
   // Archiving is opt-in and never destructive — archived pages stay
@@ -27,9 +32,10 @@ export function TemplateApplyButton({ templateSlug, templateName, isActive, tena
       toast.error("No site found. Make sure you are in a site context.");
       return;
     }
+    const target = siteName ? `on "${siteName}"` : "on this site";
     const confirmMsg = mode === "full"
-      ? `Apply "${templateName}" in Full Demo mode? This will overwrite your home page with template content, services, testimonials, pricing, gallery and contact details.${archiveExistingPages ? "\n\nYour existing pages will be archived (recoverable, not deleted)." : ""}`
-      : `Apply "${templateName}" in Theme mode? This changes colors, fonts and layout variants only. Your existing content is preserved.`;
+      ? `Apply "${templateName}" ${target} in Full Demo mode? This will overwrite the home page with template content, services, testimonials, pricing, gallery and contact details.${archiveExistingPages ? "\n\nExisting pages will be archived (recoverable, not deleted)." : ""}\n\nDouble-check that's the right site — this is not undoable from here.`
+      : `Apply "${templateName}" ${target} in Theme mode? This changes colors, fonts and layout variants only. Existing content is preserved.\n\nDouble-check that's the right site.`;
     if (!confirm(confirmMsg)) return;
 
     setApplying(true);

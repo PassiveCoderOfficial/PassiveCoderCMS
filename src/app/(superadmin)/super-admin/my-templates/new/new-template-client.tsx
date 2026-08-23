@@ -12,10 +12,12 @@ export default function NewTemplateClient({
   categories,
   sourceTenant,
   isSuperAdmin,
+  basePath = "/super-admin/my-templates",
 }: {
   categories: TemplateCategory[];
   sourceTenant: { id: string; name: string; slug: string } | null;
   isSuperAdmin: boolean;
+  basePath?: string;
 }) {
   const router = useRouter();
   const [name, setName] = useState(sourceTenant ? `${sourceTenant.name} Template` : "");
@@ -61,7 +63,7 @@ export default function NewTemplateClient({
           ? `Template created from ${sourceTenant.name} (${data.pagesCopied ?? 0} pages copied)`
           : "Template created",
       );
-      router.push(`/super-admin/my-templates/${data.template.id}`);
+      router.push(`${basePath}/${data.template.id}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create template");
     } finally {
@@ -71,7 +73,7 @@ export default function NewTemplateClient({
 
   return (
     <div className="p-6 max-w-2xl">
-      <Link href="/super-admin/my-templates" className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link href={basePath} className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> My Templates
       </Link>
 
@@ -169,7 +171,7 @@ export default function NewTemplateClient({
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {saving ? "Creating…" : sourceTenant ? "Create & Snapshot Site" : "Create Template"}
           </button>
-          <Link href="/super-admin/my-templates" className="rounded-lg border px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-card">
+          <Link href={basePath} className="rounded-lg border px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-card">
             Cancel
           </Link>
         </div>

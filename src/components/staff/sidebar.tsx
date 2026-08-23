@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, ExternalLink, ChevronDown,
+  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, ExternalLink, ChevronDown, LayoutTemplate,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +21,7 @@ const proto = isLocal ? "http" : "https";
 const NAV = [
   { label: "Overview", href: "/staff", icon: LayoutDashboard, exact: true },
   { label: "My Sites", href: "/staff/sites", icon: Globe },
+  { label: "My Templates", href: "/staff/my-templates", icon: LayoutTemplate },
   { label: "Commissions", href: "/staff/commissions", icon: DollarSign },
   { label: "Profile", href: "/staff/profile", icon: Settings },
 ];

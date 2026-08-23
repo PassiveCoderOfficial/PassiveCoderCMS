@@ -1,13 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireTemplateAuthor } from "@/modules/templates/permissions";
-import TemplateDetailClient from "./template-detail-client";
+import TemplateDetailClient from "@/app/(superadmin)/super-admin/my-templates/[id]/template-detail-client";
 import type { SiteTemplate, TemplateCategory } from "@/modules/templates/types";
 
-export default async function TemplateDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StaffTemplateDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const author = await requireTemplateAuthor();
-  if (!author) redirect("/super-admin");
+  if (!author) redirect("/staff");
 
   const admin = await createAdminClient();
   const { data: template } = await admin.from("templates").select("*").eq("id", id).maybeSingle();
@@ -29,7 +29,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
       template={template as SiteTemplate}
       pages={pages ?? []}
       categories={(categories ?? []) as TemplateCategory[]}
-      basePath="/super-admin/my-templates"
+      basePath="/staff/my-templates"
     />
   );
 }

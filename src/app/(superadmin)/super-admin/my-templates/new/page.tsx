@@ -31,6 +31,7 @@ export default async function NewTemplatePage({
       categories={(categories ?? []) as TemplateCategory[]}
       sourceTenant={sourceTenant}
       isSuperAdmin={author.isSuperAdmin}
+      basePath="/super-admin/my-templates"
     />
   );
 }

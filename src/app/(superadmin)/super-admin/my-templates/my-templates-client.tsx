@@ -20,10 +20,16 @@ export default function MyTemplatesClient({
   templates,
   categories,
   isSuperAdmin,
+  basePath = "/super-admin/my-templates",
 }: {
   templates: SiteTemplate[];
   categories: TemplateCategory[];
   isSuperAdmin: boolean;
+  /** Lets the staff console (/staff/my-templates) reuse this exact component
+   *  instead of duplicating it — see requireTemplateAuthor(), which already
+   *  scoped this page's data correctly per-author for staff, but the route
+   *  previously lived only under the SA-only (superadmin) layout gate. */
+  basePath?: string;
 }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -78,7 +84,7 @@ export default function MyTemplatesClient({
           </p>
         </div>
         <Link
-          href="/super-admin/my-templates/new"
+          href={`${basePath}/new`}
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
         >
           <Plus className="h-4 w-4" /> New Template
@@ -166,7 +172,7 @@ export default function MyTemplatesClient({
 
                 <div className="flex flex-wrap gap-1.5">
                   <Link
-                    href={`/super-admin/my-templates/${t.id}`}
+                    href={`${basePath}/${t.id}`}
                     className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90"
                   >
                     <FileEdit className="h-3 w-3" /> Edit
