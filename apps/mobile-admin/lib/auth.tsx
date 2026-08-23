@@ -2,7 +2,7 @@
 // provider/hook shape, but this app uses supabase-js auth directly instead
 // of a custom token/OTP backend.
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { registerForPush, unregisterPush } from "./push";
@@ -49,24 +49,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  async function login(email: string, password: string) {
+  const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { ok: false, error: error.message };
     // Fire-and-forget — push registration must never block or fail login.
     registerForPush().catch(() => {});
     return { ok: true };
-  }
+  }, []);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     // Best-effort, and must run BEFORE signOut() while the session (and thus
     // the Bearer token apiFetch reads) is still valid.
     await unregisterPush().catch(() => {});
     await supabase.auth.signOut();
-  }
+  }, []);
 
-  return (
-    <Ctx.Provider value={{ session, user: session?.user ?? null, loading, login, logout }}>
-      {children}
-    </Ctx.Provider>
+  // `user` is derived, so it must be memoised on the session — RoleProvider's
+  // effect keys off `user`, and a fresh object each render would re-run the
+  // whole role/membership resolution on every unrelated state change.
+  const user = useMemo(() => session?.user ?? null, [session]);
+
+  const value = useMemo(
+    () => ({ session, user, loading, login, logout }),
+    [session, user, loading, login, logout],
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

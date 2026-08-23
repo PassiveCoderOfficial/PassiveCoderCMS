@@ -36,7 +36,10 @@ export default function LeadDetailScreen() {
   const [changingStage, setChangingStage] = useState(false);
 
   const load = useCallback(async () => {
-    if (!tenantId || !contactId) return;
+    if (!tenantId || !contactId) {
+      setLoading(false);
+      return;
+    }
     try {
       const [leadRow, eventRows, stageRows] = await Promise.all([
         getLead(contactId),

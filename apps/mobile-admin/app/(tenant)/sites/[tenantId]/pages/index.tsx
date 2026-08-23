@@ -26,7 +26,11 @@ export default function PagesListScreen() {
   const [status, setStatus] = useState("all");
 
   const load = useCallback(async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
     try {
       const rows = await listPages(tenantId);
       setPages(rows);

@@ -25,7 +25,10 @@ export default function TenantSettingsScreen() {
   const [nameError, setNameError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
     try {
       const t = await getTenant(tenantId);
       setTenant(t);

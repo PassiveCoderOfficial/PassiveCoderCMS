@@ -29,7 +29,11 @@ export default function LeadsListScreen() {
   const [stageFilter, setStageFilter] = useState("all");
 
   const load = useCallback(async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
     try {
       const [leadRows, stageRows] = await Promise.all([listLeads(tenantId), listStages(tenantId)]);
       setLeads(leadRows);

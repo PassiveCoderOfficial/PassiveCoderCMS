@@ -486,7 +486,11 @@ export function Tag({ label }: { label: string }) {
 
 export function Badge({ label, tone }: { label: string; tone?: BadgeTone }) {
   const { palette } = useTheme();
-  const resolved = tone ?? LABEL_TONE[label] ?? "brand";
+  // Callers often pass humanize() output ("Pending dns"), so normalise back
+  // to the raw key shape before looking up a tone — otherwise every
+  // humanised label silently falls through to the brand colour.
+  const key = label.trim().toLowerCase().replace(/\s+/g, "_");
+  const resolved = tone ?? LABEL_TONE[key] ?? "brand";
   const meta = toneColors(palette, resolved);
   return (
     <View

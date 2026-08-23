@@ -93,7 +93,12 @@ export default function BlocksScreen() {
 
   function duplicate(index: number) {
     actionFeedback();
-    const clone: Block = { ...blocks[index], id: randomId() };
+    // Deep clone: a shallow spread would leave `data`, `padding`, `margin`
+    // and `background` shared by reference with the original, so editing the
+    // copy would silently rewrite the block it was copied from. Blocks are
+    // plain JSON (they round-trip through a jsonb column), so this is safe —
+    // and structuredClone isn't guaranteed on this Hermes version.
+    const clone: Block = { ...(JSON.parse(JSON.stringify(blocks[index])) as Block), id: randomId() };
     const next = blocks.slice();
     next.splice(index + 1, 0, clone);
     commit(next);

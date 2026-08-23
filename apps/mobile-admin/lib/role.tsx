@@ -3,7 +3,7 @@
 // apiTenantId()/getCurrentTenantId(): super_admins > pc_staff > tenant
 // membership > owned tenants (fallback for an owner with no membership row).
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth";
 import { supabase } from "./supabase";
 import type { Tenant, TenantMembership, TenantMemberRole } from "./types";
@@ -121,5 +121,13 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user]);
 
-  return <Ctx.Provider value={{ role, isManager, memberships, loading }}>{children}</Ctx.Provider>;
+  // Memoised: an object literal here would be a new identity on every render,
+  // re-rendering every useRole() consumer and re-firing effects that depend on
+  // `memberships` (notably SelectedTenantProvider's resolve()).
+  const value = useMemo(
+    () => ({ role, isManager, memberships, loading }),
+    [role, isManager, memberships, loading],
+  );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

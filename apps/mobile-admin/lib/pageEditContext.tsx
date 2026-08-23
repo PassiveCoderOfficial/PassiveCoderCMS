@@ -40,7 +40,14 @@ export function PageEditProvider({ pageId, children }: { pageId: string; childre
   }, [pageId]);
 
   useEffect(() => {
-    if (pageId) reload();
+    if (pageId) {
+      reload();
+    } else {
+      // No page id in the route params — nothing to fetch. Clear the loading
+      // flag explicitly, otherwise the screens sit on a skeleton forever.
+      setLoading(false);
+      setError("No page selected");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageId]);
 

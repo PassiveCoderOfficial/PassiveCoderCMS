@@ -2,7 +2,7 @@
 // when there's exactly one membership; otherwise the sites picker screen
 // lets the user choose, and the choice is persisted so it survives restarts.
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRole } from "./role";
 
@@ -26,6 +26,8 @@ export function SelectedTenantProvider({ children }: { children: React.ReactNode
   const { memberships, loading: roleLoading } = useRole();
   const [selectedTenantId, setSelectedTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const membershipKey = memberships.map((m) => m.tenantId).join(",");
 
   // Load persisted choice once, then validate/auto-select whenever the
   // membership list changes (e.g. after login).
@@ -70,17 +72,22 @@ export function SelectedTenantProvider({ children }: { children: React.ReactNode
     return () => {
       cancelled = true;
     };
-  }, [memberships, roleLoading]);
+    // Keyed on the membership ids rather than the array itself: RoleProvider
+    // rebuilds that array on every resolve, so depending on its identity
+    // re-ran this effect (and its AsyncStorage reads) on unrelated renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [membershipKey, roleLoading]);
 
-  function setSelectedTenantId(id: string | null) {
+  const setSelectedTenantId = useCallback((id: string | null) => {
     setSelectedTenantIdState(id);
     if (id) AsyncStorage.setItem(STORAGE_KEY, id).catch(() => {});
     else AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
-  }
+  }, []);
 
-  return (
-    <Ctx.Provider value={{ selectedTenantId, setSelectedTenantId, loading: roleLoading || loading }}>
-      {children}
-    </Ctx.Provider>
+  const value = useMemo(
+    () => ({ selectedTenantId, setSelectedTenantId, loading: roleLoading || loading }),
+    [selectedTenantId, setSelectedTenantId, roleLoading, loading],
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

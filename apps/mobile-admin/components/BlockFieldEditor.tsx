@@ -110,18 +110,7 @@ function FieldRow({ fieldKey, value, onChange }: {
   }
 
   if (typeof value === "number") {
-    return (
-      <Field label={label} hint={keyHint}>
-        <TextField
-          value={String(value)}
-          onChangeText={(t) => {
-            const n = Number(t);
-            onChange(Number.isFinite(n) ? n : 0);
-          }}
-          keyboardType="numeric"
-        />
-      </Field>
-    );
+    return <NumberField label={label} hint={keyHint} value={value} onChange={onChange} />;
   }
 
   if (typeof value === "boolean") {
@@ -148,6 +137,46 @@ function FieldRow({ fieldKey, value, onChange }: {
 
   // Unsupported/unknown value shape (function, symbol, etc.) — skip.
   return null;
+}
+
+/**
+ * Numeric input backed by local text state.
+ *
+ * Binding a number field directly to `String(value)` and coercing on every
+ * keystroke makes it impossible to type: clearing the box gives Number("")
+ * === 0 so it snaps back to "0", and an in-progress decimal like "1." is NaN.
+ * Keeping the raw text locally lets the user type freely; the parent only
+ * sees a committed number when the text actually parses.
+ */
+function NumberField({ label, hint, value, onChange }: {
+  label: string;
+  hint?: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const [text, setText] = useState(String(value));
+
+  return (
+    <Field label={label} hint={hint}>
+      <TextField
+        value={text}
+        onChangeText={(t) => {
+          setText(t);
+          const n = Number(t);
+          // Only push a real number upward; an empty or half-typed value
+          // ("", "-", "1.") is left alone until it parses.
+          if (t.trim() !== "" && Number.isFinite(n)) onChange(n);
+        }}
+        onBlur={() => {
+          // Snap the display back to the committed value if the user left it
+          // in an unparseable state.
+          const n = Number(text);
+          if (text.trim() === "" || !Number.isFinite(n)) setText(String(value));
+        }}
+        keyboardType="numeric"
+      />
+    </Field>
+  );
 }
 
 function ObjectFieldEditor({ label, value, onChange }: {
@@ -202,8 +231,13 @@ function ArrayFieldEditor({ label, items, onChange }: {
     // object — the generic editor will render nothing for it until the
     // user's data actually has keys (a known limitation, noted in the
     // task spec: we cannot know a brand-new item's shape without a schema).
-    const sample = items.length > 0 && isPlainObject(items[0]) ? blankClone(items[0]) : {};
-    onChange([...items, { id: randomId(), ...sample }]);
+    const first = items.length > 0 && isPlainObject(items[0]) ? items[0] : null;
+    const sample = first ? blankClone(first) : {};
+    // Only mint an id when the existing items actually carry one — injecting
+    // an `id` key into a shape that never had one adds a field the web
+    // renderer doesn't expect.
+    const next = first && "id" in first ? { ...sample, id: randomId() } : sample;
+    onChange([...items, next]);
   }
 
   if (objectItems) {
@@ -238,7 +272,17 @@ function ArrayFieldEditor({ label, items, onChange }: {
           <TextField
             style={{ flex: 1 }}
             value={String(item ?? "")}
-            onChangeText={(t) => updateAt(index, typeof item === "number" ? Number(t) || 0 : t)}
+            keyboardType={typeof item === "number" ? "numeric" : "default"}
+            onChangeText={(t) => {
+              if (typeof item !== "number") {
+                updateAt(index, t);
+                return;
+              }
+              // Same caveat as NumberField: only commit a parseable number,
+              // so a cleared or half-typed entry doesn't snap back to 0.
+              const n = Number(t);
+              if (t.trim() !== "" && Number.isFinite(n)) updateAt(index, n);
+            }}
           />
           <Pressable
             onPress={() => removeAt(index)}
