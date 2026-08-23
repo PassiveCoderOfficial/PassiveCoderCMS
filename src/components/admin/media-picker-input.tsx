@@ -30,7 +30,7 @@ interface MediaItem {
 
 const MAX_SIZE = 50 * 1024 * 1024;
 
-function InlineUploadZone({ onDone }: { onDone: () => void }) {
+function InlineUploadZone({ onDone, onSelect }: { onDone: () => void; onSelect: (url: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, startUpload] = useTransition();
@@ -43,13 +43,24 @@ function InlineUploadZone({ onDone }: { onDone: () => void }) {
     });
     if (!valid.length) return;
     startUpload(async () => {
-      await Promise.all(valid.map((file) => {
+      const results = await Promise.all(valid.map((file) => {
         const fd = new FormData();
         fd.append("file", file);
         return uploadMediaFile(fd);
       }));
       toast.success(`${valid.length} file(s) uploaded`);
       onDone();
+      // Auto-apply a single upload — this picker exists to fill ONE field
+      // (logo, favicon, hero image...), and uploading used to only refresh
+      // the library grid, leaving the caller to notice their file appear and
+      // click it a second time to actually use it. Easy to miss, especially
+      // mid-onboarding-wizard: a real report was a logo genuinely uploaded
+      // and never applied, because "upload" looked like the whole action.
+      // Multiple files still land in the library only — there's no single
+      // field to auto-fill for those.
+      if (results.length === 1 && "url" in results[0] && results[0].url) {
+        onSelect(results[0].url);
+      }
     });
   };
 
@@ -105,7 +116,7 @@ function LibraryBrowser({ onSelect }: { onSelect: (url: string) => void }) {
   return (
     <div className="flex flex-col gap-3 min-h-0 flex-1">
       {/* Upload zone */}
-      <InlineUploadZone onDone={fetchMedia} />
+      <InlineUploadZone onDone={fetchMedia} onSelect={onSelect} />
 
       {/* Toolbar */}
       <div className="flex items-center gap-2">

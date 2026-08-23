@@ -65,13 +65,21 @@ function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType
 
 export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) {
   const bgStyle = getBlockBackground(withHeroOverlay(block));
+  // block.padding/margin are typed as always present, but a real block can
+  // reach here with either as null — seen on an icon_grid block created by an
+  // older write path (predating one of these fields being required) — and
+  // reading .top off null crashed the whole editor with no recovery, taking
+  // out every other block on the page along with it. Falling back to zero
+  // keeps that one block visually tight rather than losing the page.
+  const padding = block.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  const margin = block.margin ?? { top: 0, right: 0, bottom: 0, left: 0 };
   const paddingStyle = {
-    paddingTop: block.padding.top,
-    paddingRight: block.padding.right,
-    paddingBottom: block.padding.bottom,
-    paddingLeft: block.padding.left,
-    marginTop: block.margin.top,
-    marginBottom: block.margin.bottom,
+    paddingTop: padding.top,
+    paddingRight: padding.right,
+    paddingBottom: padding.bottom,
+    paddingLeft: padding.left,
+    marginTop: margin.top,
+    marginBottom: margin.bottom,
   };
 
   const renderBlock = () => {
