@@ -141,7 +141,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
             <CheckCircle className="h-3.5 w-3.5 text-green-600" />
             <span className="font-semibold">{chosenPlan.name}</span>
             {chosenPlanPrice && <span className="text-muted-foreground">· {chosenPlanPrice}</span>}
-            <span className="text-muted-foreground">· pay after signup</span>
+            <span className="text-muted-foreground">· see your site before you pay</span>
           </div>
         )}
       </div>
@@ -254,7 +254,7 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Choose your plan</h2>
-        <p className="text-muted-foreground mt-1">No payment needed to get started — pay after your account is created.</p>
+        <p className="text-muted-foreground mt-1">We build your site first — you see it before you pay.</p>
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -386,7 +386,7 @@ function Step1({
       <div>
         <h2 className="text-2xl font-bold">How would you like to pay?</h2>
         <p className="text-muted-foreground mt-1">
-          {isCustom ? "Custom plans require contacting our sales team." : "Start now, no payment required — or pay upfront to lock in your plan."}
+          {isCustom ? "Custom plans require contacting our sales team." : "Your site is built first either way — choose how you want to pay for it."}
         </p>
       </div>
 
