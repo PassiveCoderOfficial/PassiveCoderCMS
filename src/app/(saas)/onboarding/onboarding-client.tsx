@@ -327,7 +327,7 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
 
 // ─── Step 1: Payment ──────────────────────────────────────────────────────────
 
-type PayMethod = "paddle" | "shurjopay" | "manual" | "trial";
+type PayMethod = "dodo" | "shurjopay" | "manual" | "trial";
 
 function Step1({
   planId,
@@ -336,24 +336,30 @@ function Step1({
   planId: string;
   onNext: (method: PayMethod) => void;
 }) {
-  const [method, setMethod] = useState<PayMethod>("trial");
+  // Card first, and selected by default. "Pay Later" stays available but is no
+  // longer the default — as the default it collected 29 subscriptions and zero
+  // payments, because nothing downstream ever asked for money.
+  const [method, setMethod] = useState<PayMethod>(
+    planId === "custom" ? "manual" : planId === "biz" ? "trial" : "dodo",
+  );
   const isCustom = planId === "custom";
 
   const OPTIONS: Array<{ id: PayMethod; icon: React.ReactNode; title: string; desc: string; badge?: string; disabled?: boolean; hidden?: boolean }> = [
+    {
+      id: "dodo",
+      icon: <CreditCard className="w-5 h-5 text-blue-500" />,
+      title: "Pay with Card",
+      desc: "Visa, Mastercard, Amex — all major cards. Secure checkout via Dodo Payments.",
+      badge: "Recommended",
+      // Biz has no Dodo product configured yet, so card checkout would 400.
+      disabled: isCustom || planId === "biz",
+    },
     {
       id: "trial",
       icon: <Clock className="w-5 h-5 text-amber-500" />,
       title: "Get Started — Pay Later",
       desc: "Full access from day one. No payment required at signup — pay after your account is set up.",
       badge: "No card needed",
-    },
-    {
-      id: "paddle",
-      icon: <CreditCard className="w-5 h-5 text-blue-500" />,
-      title: "Pay with Card",
-      desc: "Visa, Mastercard, Amex — all major cards. Secure via Paddle.",
-      disabled: true,
-      hidden: true,
     },
     {
       id: "shurjopay",
@@ -416,6 +422,13 @@ function Step1({
         </div>
       )}
 
+      {(method === "dodo" || method === "shurjopay") && (
+        <div className="rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 p-3 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2">
+          <CreditCard className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>We&apos;ll build your site first, then take you to secure checkout. Your site stays live either way.</span>
+        </div>
+      )}
+
       {method === "manual" && (
         <div className="rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 p-3 text-xs text-purple-800 dark:text-purple-400 flex items-start gap-2">
           <MessageSquare className="w-4 h-4 shrink-0 mt-0.5" />
@@ -424,7 +437,7 @@ function Step1({
       )}
 
       <Button size="lg" className="w-full" onClick={() => onNext(method)}>
-        {method === "trial" ? "Create Account — Pay Later" : method === "manual" ? "Contact Sales & Get Started" : "Proceed to Payment"}
+        {method === "trial" ? "Create Account — Pay Later" : method === "manual" ? "Contact Sales & Get Started" : "Continue to Payment"}
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </div>
@@ -845,6 +858,24 @@ function Step6({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tenantId: data.tenantId }),
         });
+
+        // Send paying customers to checkout. The site is already created and
+        // live at this point, so abandoning the payment page loses nothing —
+        // they land in the dashboard and can pay from there instead.
+        if (payMethod === "dodo" || payMethod === "shurjopay") {
+          const payRes = await fetch("/api/billing/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tenantId: data.tenantId, planId, billingCycle, method: payMethod }),
+          });
+          const payData = await payRes.json();
+          if (payRes.ok && payData.checkoutUrl) {
+            if (!cancelled) window.location.href = payData.checkoutUrl;
+            return;
+          }
+          // Checkout unavailable — don't strand the customer on a spinner.
+          toast.error(payData.error || "Could not open checkout. You can pay from your dashboard.");
+        }
 
         if (!cancelled) {
           setSiteUrl(`${ROOT.includes("localhost") ? "http" : "https"}://${slug}.${ROOT}`);

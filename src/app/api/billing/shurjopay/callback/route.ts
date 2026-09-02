@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPayment, resolveSpConfig } from "@/lib/billing/shurjopay";
-import { enmProvision } from "@/lib/enm";
+import { syncENMTier } from "@/lib/enm";
 import { createCommissions } from "@/lib/commissions";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-async function syncENM(admin: SupabaseClient, tenantId: string, tier: "free" | "pro") {
-  const { data: tenant } = await admin.from("tenants").select("id, owner_id").eq("id", tenantId).maybeSingle();
-  if (!tenant) return;
-  const { data: profile } = await admin.from("profiles").select("email, full_name").eq("id", tenant.owner_id).maybeSingle();
-  if (!profile?.email) return;
-  const enmUserId = await enmProvision({ email: profile.email, name: profile.full_name ?? undefined, pcTenantId: tenantId, tier });
-  await admin.from("tenants").update({ enm_user_id: enmUserId, enm_tier: tier }).eq("id", tenantId);
-}
 
 // shurjoPay redirects the customer here after payment with ?order_id=<sp_order_id>.
 async function handle(req: Request, orderId: string | null) {
@@ -52,7 +43,7 @@ async function handle(req: Request, orderId: string | null) {
 
   // Sync ENM tier (best-effort — don't block on failure)
   const enmTier = sub.plan_id === "pro" ? "pro" : "free";
-  syncENM(admin, sub.tenant_id, enmTier).catch(err => console.error("[ENM sync shurjopay]", err));
+  syncENMTier(admin, sub.tenant_id, enmTier).catch(err => console.error("[ENM sync shurjopay]", err));
 
   // Create commission entries (best-effort)
   const amtCents = sub.custom_amount_cents ?? sub.amount_cents ?? 0;

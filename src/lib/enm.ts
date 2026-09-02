@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 // Server-only — never import in client components
 const ENM_BASE_URL = (process.env.ENM_BASE_URL ?? "https://expertnear.me").replace(/\/$/, "");
 const PARTNER_SECRET = process.env.PARTNER_SECRET ?? "";
@@ -26,6 +28,36 @@ export async function enmProvision(opts: {
   const data = await res.json();
   if (!res.ok || !data.ok) throw new Error(data.error ?? "ENM provision failed");
   return data.userId as number;
+}
+
+/**
+ * Provision the tenant's ENM account at `tier` and record it on the tenant row.
+ *
+ * ENM Pro is bundled with CMS Pro rather than sold separately, so every path
+ * that changes a subscription's state has to call this or the entitlement
+ * silently diverges from what the customer paid for. Never throws: ENM being
+ * unreachable must not fail the payment that triggered it.
+ */
+export async function syncENMTier(
+  admin: SupabaseClient,
+  tenantId: string,
+  tier: ENMTier,
+): Promise<void> {
+  try {
+    const { data: tenant } = await admin.from("tenants").select("id, owner_id").eq("id", tenantId).maybeSingle();
+    if (!tenant?.owner_id) return;
+    const { data: profile } = await admin.from("profiles").select("email, full_name").eq("id", tenant.owner_id).maybeSingle();
+    if (!profile?.email) return;
+    const enmUserId = await enmProvision({
+      email: profile.email,
+      name: profile.full_name ?? undefined,
+      pcTenantId: tenantId,
+      tier,
+    });
+    await admin.from("tenants").update({ enm_user_id: enmUserId, enm_tier: tier }).eq("id", tenantId);
+  } catch (err) {
+    console.error(`[enm] tier sync failed for tenant ${tenantId} (${tier}):`, err);
+  }
 }
 
 /** Issue a 5-min SSO token for an ENM userId. */

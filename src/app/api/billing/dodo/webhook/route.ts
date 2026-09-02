@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
 import { createAdminClient } from "@/lib/supabase/server";
+import { syncENMTier } from "@/lib/enm";
 
 export const runtime = "nodejs";
 
@@ -66,6 +67,10 @@ export async function POST(req: Request) {
       },
       { onConflict: "tenant_id" },
     );
+
+    // ENM Pro rides on CMS Pro — grant it on the same event that activates the
+    // subscription, or the customer pays for a bundle they never receive.
+    await syncENMTier(admin, tenantId, planId === "pro" || planId === "biz" ? "pro" : "free");
   }
 
   if (event.type === "subscription.active" || event.type === "subscription.renewed") {
@@ -92,6 +97,10 @@ export async function POST(req: Request) {
     await admin.from("subscriptions")
       .update({ status: event.type === "subscription.cancelled" ? "cancelled" : "expired" })
       .eq("tenant_id", tenantId);
+
+    // Losing CMS Pro drops ENM back to the free listing rather than revoking it
+    // — the profile stays up, the Pro features come off.
+    await syncENMTier(admin, tenantId, "free");
   }
 
   return NextResponse.json({ ok: true });
