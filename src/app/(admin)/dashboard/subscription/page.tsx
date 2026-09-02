@@ -457,6 +457,13 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
   const paid = plans.filter(p => (p.price_yearly ?? 0) > 0);
   const cycleSuffix = cycle === "monthly" ? "/mo" : "/yr";
 
+  // Derive the yearly discount from the plans themselves. It was hardcoded as
+  // "save 2 months", which was wrong at the old 50% rate and is wrong at 30%.
+  const ref = paid.find(p => (p.price_monthly ?? 0) > 0 && (p.price_yearly ?? 0) > 0);
+  const yearlyPctOff = ref
+    ? Math.round((1 - ref.price_yearly / ((ref.price_monthly ?? 0) * 12)) * 100)
+    : 0;
+
   const usdFor = (p: Plan) => (cycle === "monthly" ? (p.price_monthly ?? 0) : p.price_yearly) / 100;
   const bdtFor = (p: Plan) => (cycle === "monthly" ? p.price_monthly_bdt : p.price_yearly_bdt);
 
@@ -473,7 +480,7 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
               cycle === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {c}{c === "yearly" && <span className="ml-1 text-[10px] opacity-80">save 2 months</span>}
+            {c}{c === "yearly" && yearlyPctOff > 0 && <span className="ml-1 text-[10px] opacity-80">save {yearlyPctOff}%</span>}
           </button>
         ))}
       </div>
