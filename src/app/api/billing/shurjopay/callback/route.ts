@@ -41,6 +41,12 @@ async function handle(req: Request, orderId: string | null) {
 
   await admin.from("tenants").update({ status: "active", plan: sub.plan_id }).eq("id", sub.tenant_id);
 
+  // Payment landed: close any open dunning so the chase stops immediately.
+  await admin.from("subscription_dunning")
+    .update({ resolved_at: new Date().toISOString(), stage: 0 })
+    .eq("tenant_id", sub.tenant_id)
+    .is("resolved_at", null);
+
   // Sync ENM tier (best-effort — don't block on failure)
   const enmTier = enmTierForPlan(sub.plan_id);
   syncENMTier(admin, sub.tenant_id, enmTier).catch(err => console.error("[ENM sync shurjopay]", err));

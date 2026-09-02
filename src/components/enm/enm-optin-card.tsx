@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 /**
  * Opt-in card for the ExpertNear.Me listing.
@@ -19,15 +20,22 @@ import { toast } from "sonner";
 export function ENMOptInCard({
   tier,
   provisioned,
+  profileComplete,
   className,
 }: {
   /** ENM tier this tenant's plan entitles them to. */
   tier: "free" | "pro";
   /** True once an ENM account exists for this tenant. */
   provisioned: boolean;
+  /** False until the business profile is filled in. Gates creation. */
+  profileComplete: boolean;
   className?: string;
 }) {
   const [loading, setLoading] = useState(false);
+
+  // Publishing an empty profile produces a listing that makes the business
+  // look abandoned, which is worse than having none.
+  const blocked = !provisioned && !profileComplete;
 
   async function open() {
     setLoading(true);
@@ -69,7 +77,7 @@ export function ENMOptInCard({
           </div>
         </div>
 
-        <Button size="sm" onClick={open} disabled={loading} className="w-full sm:w-auto">
+        <Button size="sm" onClick={open} disabled={loading || blocked} className="w-full sm:w-auto">
           {loading ? (
             <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Opening…</>
           ) : provisioned ? (
@@ -78,6 +86,15 @@ export function ENMOptInCard({
             <><BadgeCheck className="w-3.5 h-3.5 mr-1.5" /> Create my listing</>
           )}
         </Button>
+        {blocked && (
+          <p className="text-xs text-muted-foreground">
+            Fill in your{" "}
+            <Link href="/dashboard/business-profile" className="underline underline-offset-2 hover:text-foreground">
+              business profile
+            </Link>{" "}
+            first — we use it to build the listing.
+          </p>
+        )}
       </div>
     </div>
   );

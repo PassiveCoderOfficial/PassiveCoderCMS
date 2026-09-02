@@ -69,6 +69,7 @@ export default function SubscriptionPage() {
   const [checkout, setCheckout] = useState<{ tenantId: string; plan: CheckoutPlan } | null>(null);
   const [primaryTenantId, setPrimaryTenantId] = useState<string | null>(null);
   const [isSuspended, setIsSuspended] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
   const [currency, setCurrency] = useState<Currency>("USD");
   const bdtRate = useCurrencyRate();
 
@@ -108,6 +109,12 @@ export default function SubscriptionPage() {
         .order("created_at", { ascending: false });
 
       setSubs((data as Subscription[]) ?? []);
+
+      // Gates the ENM listing — publishing an empty profile is worse than none.
+      fetch("/api/business-profile")
+        .then(r => r.json())
+        .then(d => setProfileComplete(!!d.profile?.completed_at))
+        .catch(() => {});
       setLoading(false);
     })();
   }, []);
@@ -190,6 +197,7 @@ export default function SubscriptionPage() {
               discountPct={discountPct}
               currency={currency}
               bdtRate={bdtRate}
+              profileComplete={profileComplete}
               onChoose={(plan) => setCheckout({ tenantId: sub.tenant_id, plan })}
             />
           ))}
@@ -218,7 +226,7 @@ export default function SubscriptionPage() {
   );
 }
 
-function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; onChoose: (plan: CheckoutPlan) => void }) {
+function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; profileComplete: boolean; onChoose: (plan: CheckoutPlan) => void }) {
   const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.cancelled;
   const tenant = sub.tenants;
   const renewDate = sub.current_period_end ?? sub.trial_ends_at;
@@ -308,6 +316,17 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
         </div>
       )}
 
+      {sub.status === "past_due" && (
+        <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-400 flex items-start gap-2">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span>
+            We couldn&apos;t take your last payment — usually an expired or replaced card.
+            Nothing has been deleted. Update payment below to clear it, or message us if
+            something has changed.
+          </span>
+        </div>
+      )}
+
       {sub.total_billed_cents != null && sub.total_billed_cents > 0 && (
         <ClientPaymentsBlock subscriptionId={sub.id} tenantId={sub.tenant_id} />
       )}
@@ -315,6 +334,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
       <ENMOptInCard
         tier={enmTierForPlan(sub.plan_id)}
         provisioned={!!sub.tenants?.enm_user_id}
+        profileComplete={profileComplete}
       />
 
       <div className="flex flex-wrap gap-2 pt-1 items-center">

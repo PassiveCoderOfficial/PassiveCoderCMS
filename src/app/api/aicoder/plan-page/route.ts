@@ -4,6 +4,7 @@ import { apiTenantId } from "@/lib/tenant/api";
 import { requireModule } from "@/lib/modules/resolve-modules";
 import { AiCoderError } from "@/lib/aicoder/generate";
 import { parseBrief, planPage } from "@/lib/aicoder/plan";
+import { renderProfileBrief, mergeBrief } from "@/lib/aicoder/profile-brief";
 import { assertBatchAffordable, AiCoderQuotaError } from "@/lib/aicoder/quota";
 
 /**
@@ -41,7 +42,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const facts = await parseBrief(brief);
+    // Seed the run with the stored business profile, so the owner does not
+    // retype their name, services and contact details on every run.
+    const fullBrief = mergeBrief(await renderProfileBrief(tenantId), brief);
+    const facts = await parseBrief(fullBrief);
     const plan = await planPage(facts, brief, "home");
 
     // Advisory only — the real per-generation gate is inside the build loop.

@@ -4,6 +4,7 @@ import { apiTenantId } from "@/lib/tenant/api";
 import { requireModule } from "@/lib/modules/resolve-modules";
 import { AiCoderError } from "@/lib/aicoder/generate";
 import { parseBrief, planSite } from "@/lib/aicoder/plan";
+import { renderProfileBrief, mergeBrief } from "@/lib/aicoder/profile-brief";
 import { getQuotaStatus } from "@/lib/aicoder/quota";
 
 /** Rough per-page section count, used only to show an up-front cost estimate.
@@ -40,7 +41,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const facts = await parseBrief(brief);
+    // Seed the run with the stored business profile, so the owner does not
+    // retype their name, services and contact details on every run.
+    const fullBrief = mergeBrief(await renderProfileBrief(tenantId), brief);
+    const facts = await parseBrief(fullBrief);
     const plan = await planSite(facts, brief);
 
     const status = await getQuotaStatus(tenantId);

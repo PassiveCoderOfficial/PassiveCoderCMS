@@ -71,6 +71,17 @@ export async function POST(req: Request) {
     // ENM Pro rides on CMS Pro — grant it on the same event that activates the
     // subscription, or the customer pays for a bundle they never receive.
     await syncENMTier(admin, tenantId, enmTierForPlan(planId));
+
+    // Payment landed: close any open dunning and lift a payment suspension
+    // straight away rather than waiting for the next daily pass.
+    await admin.from("subscription_dunning")
+      .update({ resolved_at: new Date().toISOString(), stage: 0 })
+      .eq("tenant_id", tenantId)
+      .is("resolved_at", null);
+    await admin.from("tenants")
+      .update({ status: "active" })
+      .eq("id", tenantId)
+      .eq("status", "suspended");
   }
 
   if (event.type === "subscription.active" || event.type === "subscription.renewed") {

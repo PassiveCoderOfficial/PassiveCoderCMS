@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { enmProvision, enmSSOToken, enmSSOUrl, enmTierForPlan, type ENMTier } from "@/lib/enm";
+import { enmProvision, enmPushProfile, enmSSOToken, enmSSOUrl, enmTierForPlan, type ENMTier } from "@/lib/enm";
 
 export async function GET() {
   const supabase = await createClient();
@@ -61,6 +61,10 @@ export async function GET() {
     }
     // If provision failed but we already have an ID, proceed with SSO anyway
   }
+
+  // Publish the business profile as their listing. Best-effort: a failure
+  // here must not stop them reaching their ENM dashboard.
+  await enmPushProfile(admin, tenant.id);
 
   // Get short-lived SSO token
   let ssoToken: string;

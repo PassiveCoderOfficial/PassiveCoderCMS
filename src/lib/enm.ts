@@ -34,6 +34,67 @@ export async function enmProvision(opts: {
 }
 
 /**
+ * Push the tenant's business profile to ENM as their expert listing.
+ *
+ * Runs after provisioning — the account has to exist first. Best-effort by
+ * design: a directory profile failing to update must never break the CMS
+ * action that triggered it.
+ *
+ * Returns the public profile link when ENM issued one.
+ */
+export async function enmPushProfile(
+  admin: SupabaseClient,
+  tenantId: string,
+): Promise<string | null> {
+  try {
+    const [{ data: tenant }, { data: profile }] = await Promise.all([
+      admin.from("tenants").select("id, owner_id, slug").eq("id", tenantId).maybeSingle(),
+      admin.from("tenant_business_profiles").select("*").eq("tenant_id", tenantId).maybeSingle(),
+    ]);
+    // No profile means nothing worth publishing — an empty listing is worse
+    // than no listing.
+    if (!tenant || !profile?.completed_at) return null;
+
+    const { data: owner } = await admin
+      .from("profiles").select("email").eq("id", tenant.owner_id).maybeSingle();
+    if (!owner?.email) return null;
+
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+
+    const res = await fetch(`${ENM_BASE_URL}/api/partner/expert`, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({
+        pcTenantId: tenantId,
+        email: owner.email,
+        businessName: profile.business_name ?? undefined,
+        ownerName: profile.owner_name ?? undefined,
+        primaryService: profile.primary_service ?? undefined,
+        services: Array.isArray(profile.services) ? profile.services : [],
+        serviceAreas: Array.isArray(profile.service_areas) ? profile.service_areas : [],
+        phone: profile.phone ?? undefined,
+        whatsapp: profile.whatsapp ?? undefined,
+        officeAddress: profile.office_address ?? undefined,
+        countryCode: profile.country_code ?? undefined,
+        about: profile.about ?? undefined,
+        yearsOperating: profile.years_operating,
+        customersServed: profile.customers_served,
+        webAddress: tenant.slug ? `https://${tenant.slug}.${rootDomain}` : undefined,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      console.error(`[enm] profile push failed for tenant ${tenantId}:`, data.error ?? res.status);
+      return null;
+    }
+    return (data.profileLink as string | null) ?? null;
+  } catch (err) {
+    console.error(`[enm] profile push failed for tenant ${tenantId}:`, err);
+    return null;
+  }
+}
+
+/**
  * Provision the tenant's ENM account at `tier` and record it on the tenant row.
  *
  * ENM Pro is bundled with CMS Pro rather than sold separately, so every path

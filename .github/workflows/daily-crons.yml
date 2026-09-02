@@ -1,0 +1,19 @@
+# Daily ticks. Separate from frequent-crons.yml because these are measured in
+# days — running them every 15 minutes would only re-scan the same rows.
+name: Daily crons
+
+on:
+  schedule:
+    # 03:00 UTC = 09:00 Dhaka. Reminders land in the morning, not overnight.
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dunning (overdue payment chase + suspend at day 21)
+        run: |
+          curl -s -X POST "https://passivecoder.com/api/cron/dunning" \
+            -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
+            --max-time 280 || true

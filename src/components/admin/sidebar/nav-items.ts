@@ -221,6 +221,7 @@ export const navSections: NavSection[] = [
   {
     label: "System",
     items: [
+      { label: "Business Profile", href: "/dashboard/business-profile", icon: Briefcase },
       { label: "Modules", href: "/dashboard/modules", icon: ToggleLeft },
       { label: "Users", href: "/dashboard/users", icon: Users },
       { label: "Backups", href: "/dashboard/backups", icon: Archive },
