@@ -91,7 +91,7 @@ const faqs = [
   },
   {
     q: "ইয়ারলি প্যাকেজে আসলে কত সাশ্রয় হয়?",
-    a: "Pro প্ল্যান মাসিক ৳১০,০০০, অর্থাৎ ১২ মাসে ৳১,২০,০০০। ইয়ারলি নিলে দিতে হবে মাত্র ৳৬০,০০০ — সরাসরি ৬ মাসের পেমেন্ট বেঁচে যায়। একই হিসাব Basic প্যাকেজেও প্রযোজ্য।",
+    a: "Pro প্ল্যান মাসিক ৳১০,০০০, অর্থাৎ ১২ মাসে ৳১,২০,০০০। ইয়ারলি নিলে দিতে হবে ৳৮৪,০০০ — ৩০% সাশ্রয়। একই হিসাব Basic প্যাকেজেও প্রযোজ্য। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।",
   },
   {
     q: "সাইট তৈরি হতে কতদিন লাগে?",
@@ -404,7 +404,7 @@ export default function BangladeshiExpatLandingPage() {
       <section className="bg-gray-950 text-white">
         <div className="mx-auto max-w-4xl px-5 py-16 sm:py-20 text-center">
           <span className="inline-block rounded-full bg-orange-500/10 text-orange-400 text-xs sm:text-sm font-bold px-4 py-1.5 border border-orange-500/20 mb-5">
-            ইয়ারলি অফার — ৬ মাস ফ্রি
+            ইয়ারলি নিলে ৩০% সাশ্রয়
           </span>
           <h2 className="text-2xl sm:text-4xl font-bold mb-10">
             আপনার বাজেট যা-ই হোক, একটা প্যাকেজ আছে
@@ -416,11 +416,11 @@ export default function BangladeshiExpatLandingPage() {
               <span className="text-sm font-bold text-gray-400 mb-1">Basic প্যাকেজ</span>
               <div className="flex items-end gap-3 mb-1">
                 <span className="text-gray-500 line-through text-base">৳৬০,০০০</span>
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৩০,০০০</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৪২,০০০</span>
                 <span className="text-gray-400 text-sm mb-1">/বছর</span>
               </div>
               <p className="text-orange-400 text-sm font-semibold mb-6">
-                মাসিক ৳৫,০০০ হিসেবে — ৬ মাস ফ্রি
+                অথবা মাসিক ৳৫,০০০ — ইয়ারলি নিলে ৩০% সাশ্রয়
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {basicFeatures.map((f) => (
@@ -448,11 +448,11 @@ export default function BangladeshiExpatLandingPage() {
               <span className="text-sm font-bold text-orange-300 mb-1">Pro প্যাকেজ</span>
               <div className="flex items-end gap-3 mb-1">
                 <span className="text-gray-400 line-through text-base">৳১,২০,০০০</span>
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৬০,০০০</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৮৪,০০০</span>
                 <span className="text-gray-400 text-sm mb-1">/বছর</span>
               </div>
               <p className="text-orange-300 text-sm font-semibold mb-6">
-                মাসিক ৳১০,০০০ হিসেবে — ৬ মাস ফ্রি
+                অথবা মাসিক ৳১০,০০০ — ইয়ারলি নিলে ৩০% সাশ্রয়
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {proFeatures.map((f) => (
