@@ -173,6 +173,29 @@ How:
 
 ---
 
+## Dunning — built 2026-09-02
+
+Failed-payment recovery ships in v1.0.163 (migration 076, `/api/cron/dunning`,
+daily at 03:00 UTC / 09:00 Dhaka).
+
+Escalation over 21 days: **day 1** (soft — "usually just an expired card"),
+**day 4** (reminder), **day 10** (action needed, invites a conversation),
+**day 21** (suspend).
+
+The site stays up through the entire sequence and is suspended only at the end.
+That is deliberate: a dead site cannot pay its invoice, and a customer whose
+business page vanished without warning does not come back. Nothing is ever
+deleted, and the emails say so.
+
+Both payment webhooks clear open dunning and lift a payment suspension
+immediately rather than waiting for the next daily pass.
+
+**If you change the schedule**, keep the last step as the only suspending one,
+and keep the early messages non-accusatory — the most common cause of a failed
+charge is a replaced card, not an unwillingness to pay.
+
+---
+
 ## What is NOT decided yet
 
 - **Biz Dodo products** — must be created in the Dodo dashboard (see above)
@@ -182,7 +205,4 @@ How:
 - **Overage enforcement** — rates are published but nothing meters or bills
   them. Publishing a rate we do not charge is a claim we cannot defend; either
   implement it or remove it from the pricing page.
-- **Dunning / failed-payment recovery** — no retry, no reminder, no suspension
-  flow for a card that fails on renewal. Monthly billing makes this urgent in a
-  way annual billing did not: with monthly, a failed charge happens 12x more
-  often.
+

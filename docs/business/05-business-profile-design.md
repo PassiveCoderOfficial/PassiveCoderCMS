@@ -1,6 +1,7 @@
 # Design — Business Profile & ENM Provisioning
 
-Status: **design, not built.** Written 2026-09-02 for review before implementation.
+Status: **BUILT 2026-09-02** (CMS v1.0.163, ENM `8f580af`). Kept as the record of
+why it is shaped this way; the open questions at the bottom are still open.
 
 ---
 
@@ -151,16 +152,31 @@ business look abandoned.
 
 ---
 
-## Build order
+## What was built
 
-1. `tenant_business_profiles` table + RLS (CMS)
-2. Dashboard wizard + task card (CMS)
-3. Prefill AiCoder brief from the profile (CMS)
-4. `POST /api/partner/expert` (ENM)
-5. Wire the opt-in card to send the profile, and gate it on `completed_at` (both)
+1. `tenant_business_profiles` (migration 075) with RLS on `is_tenant_editor`
+2. `/dashboard/business-profile` — three-step wizard, saves per step
+3. `GET/PATCH /api/business-profile`
+4. `src/lib/aicoder/profile-brief.ts` — renders the profile as brief text and
+   prepends it to the owner's brief in both plan routes
+5. `POST /api/partner/expert` on ENM, and `enmPushProfile()` on the CMS side,
+   called from `/api/enm/sso` when the owner opts in
+6. The opt-in card is disabled until `completed_at` is set, with a link to the
+   wizard
 
-Steps 1–3 deliver value on their own and do not depend on ENM. Step 4 is the
-only piece needing work in the other repo.
+**Recommendation (b) was taken** — a separate ENM endpoint rather than an
+extended provision. Provisioning is auth state; publishing a listing is
+content.
+
+Two implementation notes worth keeping:
+
+- AiCoder reads the profile by **prepending it to the brief**, not by gaining a
+  second input path. The extractor is already told never to invent what the
+  brief does not state, so stating the profile is what makes it usable. The
+  owner's own text comes last, so it wins on conflict.
+- ENM's service list is replaced wholesale on each push, but only services with
+  **no bookings** are deleted — `Booking` references `Service`, and a past
+  booking must keep its service.
 
 ---
 
