@@ -1,5 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
+import { after } from "next/server";
+import { countVisit } from "@/lib/usage/count-visit";
 import type { Metadata } from "next";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
@@ -131,6 +133,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const tenantId = reqHeaders.get("x-tenant-id");
   const tenantSlug = reqHeaders.get("x-tenant-slug");
   const isBloodSite = tenantSlug === "blood";
+
+  // Count the visit for the plan allowance. after() so it never delays the
+  // page, and countVisit swallows its own errors — a counter is never worth
+  // failing a customer's site over.
+  if (tenantId) {
+    after(() => countVisit(tenantId, reqHeaders.get("user-agent")));
+  }
 
   const settingsCols = "site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
   const [settingsResult, identityResult] = await Promise.all([

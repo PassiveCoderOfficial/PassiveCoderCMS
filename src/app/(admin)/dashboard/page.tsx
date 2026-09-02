@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, ShoppingBag, Users, TrendingUp, Package, AlertCircle, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import { BusinessProfilePrompt } from "@/components/admin/business-profile-prompt";
 import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
@@ -52,6 +53,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <BusinessProfilePrompt />
+
       {showProSiteBanner && (
         <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-700 rounded-xl">
           <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />

@@ -1,20 +1,46 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Briefcase } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import type { ContactBlockProps } from "@/types/cms";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { toast } from "sonner";
 
 export function ContactSettings({ block }: { block: ContactBlockProps }) {
   const { updateBlock } = useBuilderStore();
   const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
+
+  // Fill the contact fields from the tenant's business profile. Only fills
+  // what is empty — it must never overwrite something already written here for
+  // this specific block.
+  const [filling, setFilling] = useState(false);
+  async function fillFromProfile() {
+    setFilling(true);
+    try {
+      const res = await fetch("/api/business-profile");
+      const p = (await res.json()).profile;
+      if (!p) { toast.error("No business profile saved yet"); return; }
+      const next = { ...block.data };
+      let changed = 0;
+      if (!next.email && p.email) { next.email = p.email; changed++; }
+      if (!next.phone && (p.whatsapp || p.phone)) { next.phone = p.whatsapp || p.phone; changed++; }
+      if (!next.address && p.office_address) { next.address = p.office_address; changed++; }
+      if (!changed) { toast.info("Nothing to fill — these are already set"); return; }
+      updateBlock(block.id, { data: next });
+      toast.success(`Filled ${changed} field${changed === 1 ? "" : "s"} from your business profile`);
+    } catch {
+      toast.error("Could not load your business profile");
+    } finally {
+      setFilling(false);
+    }
+  }
 
   const addField = () => {
     update("fields", [...block.data.fields, { id: generateId(), label: "New Field", type: "text", required: false }]);
@@ -47,6 +73,10 @@ export function ContactSettings({ block }: { block: ContactBlockProps }) {
           <div><Label className="text-xs">Email</Label><Input value={block.data.email ?? ""} onChange={e => update("email", e.target.value)} className="h-8 text-xs mt-1" /></div>
           <div><Label className="text-xs">Phone</Label><PhoneInput value={block.data.phone ?? ""} onChange={v => update("phone", v)} className="mt-1" inputClassName="h-8 text-xs" /></div>
           <div><Label className="text-xs">Address</Label><Input value={block.data.address ?? ""} onChange={e => update("address", e.target.value)} className="h-8 text-xs mt-1" /></div>
+          <Button type="button" variant="outline" size="sm" onClick={fillFromProfile} disabled={filling} className="w-full h-8 text-xs">
+            <Briefcase className="w-3 h-3 mr-1.5" />
+            {filling ? "Loading…" : "Fill from business profile"}
+          </Button>
         </>
       )}
       <div className="flex items-center justify-between">

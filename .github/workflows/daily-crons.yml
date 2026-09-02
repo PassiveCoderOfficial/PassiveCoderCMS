@@ -17,3 +17,8 @@ jobs:
           curl -s -X POST "https://passivecoder.com/api/cron/dunning" \
             -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
             --max-time 280 || true
+      - name: Usage warnings (visitor allowance, warn only)
+        run: |
+          curl -s -X POST "https://passivecoder.com/api/cron/usage-warnings" \
+            -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
+            --max-time 280 || true

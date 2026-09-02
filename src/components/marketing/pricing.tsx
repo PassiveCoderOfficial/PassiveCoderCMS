@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Star, ArrowRight, Users, Zap, Plug, BookOpen, Users2, Receipt, Calculator, CreditCard, Mail, ShoppingCart } from "lucide-react";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
-import { useCurrencyRate, formatPrice, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
+import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
 
 interface Plan {
   id: string;
@@ -138,7 +138,6 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
               ? Math.round(yearlyBdt / 12) : null;
             const visitorLimit = plan.visitor_limit_monthly ?? 0;
             const pagesLimit   = plan.pages_limit ?? -1;
-            const overagePerK  = (plan.overage_cents_per_1k ?? 0) / 100;
 
             return (
               <div
@@ -193,11 +192,12 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       <p className="text-xs text-gray-500 mt-0.5">
                         {pagesLimit < 0 ? "Unlimited pages" : `Up to ${pagesLimit} pages`}
                       </p>
-                      {overagePerK > 0 && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <Zap className="w-3 h-3" />{formatCurrency(overagePerK, currency, bdtRate)}/1,000 extra visitors
-                        </p>
-                      )}
+                      {/* No overage rate is published: we do not bill for it.
+                          Going over the allowance triggers an upgrade
+                          conversation, never a surprise charge. */}
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                        <Zap className="w-3 h-3" />No overage charges
+                      </p>
                     </div>
                   </div>
                 )}
