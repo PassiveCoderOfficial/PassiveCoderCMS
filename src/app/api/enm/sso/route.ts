@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { enmProvision, enmSSOToken, enmSSOUrl, type ENMTier } from "@/lib/enm";
+import { enmProvision, enmSSOToken, enmSSOUrl, enmTierForPlan, type ENMTier } from "@/lib/enm";
 
 export async function GET() {
   const supabase = await createClient();
@@ -37,7 +37,7 @@ export async function GET() {
     .limit(1)
     .maybeSingle();
 
-  const tier: ENMTier = sub?.plan_id === "pro" ? "pro" : "free";
+  const tier: ENMTier = enmTierForPlan(sub?.plan_id);
 
   // Provision or sync ENM account
   let enmUserId = tenant.enm_user_id;

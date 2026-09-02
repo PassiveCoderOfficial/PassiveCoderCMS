@@ -29,6 +29,10 @@ interface PlatformSettings {
   dodo_live_webhook_secret?: string | null;
   dodo_live_product_basic_yearly?: string | null;
   dodo_live_product_pro_yearly?: string | null;
+  dodo_live_product_biz_yearly?: string | null;
+  dodo_live_product_biz_monthly?: string | null;
+  dodo_sandbox_product_biz_yearly?: string | null;
+  dodo_sandbox_product_biz_monthly?: string | null;
   dodo_live_product_basic_monthly?: string | null;
   dodo_live_product_pro_monthly?: string | null;
   // Dodo sandbox
@@ -106,6 +110,8 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [dodoLiveProYearly, setDodoLiveProYearly] = useState(s?.dodo_live_product_pro_yearly ?? "");
   const [dodoLiveBasicMonthly, setDodoLiveBasicMonthly] = useState(s?.dodo_live_product_basic_monthly ?? "");
   const [dodoLiveProMonthly, setDodoLiveProMonthly] = useState(s?.dodo_live_product_pro_monthly ?? "");
+  const [dodoLiveBizYearly, setDodoLiveBizYearly] = useState(s?.dodo_live_product_biz_yearly ?? "");
+  const [dodoLiveBizMonthly, setDodoLiveBizMonthly] = useState(s?.dodo_live_product_biz_monthly ?? "");
   // Dodo sandbox creds
   const [dodoSandboxKey, setDodoSandboxKey] = useState(s?.dodo_sandbox_api_key ?? "");
   const [dodoSandboxWebhook, setDodoSandboxWebhook] = useState(s?.dodo_sandbox_webhook_secret ?? "");
@@ -113,6 +119,8 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
   const [dodoSandboxProYearly, setDodoSandboxProYearly] = useState(s?.dodo_sandbox_product_pro_yearly ?? "");
   const [dodoSandboxBasicMonthly, setDodoSandboxBasicMonthly] = useState(s?.dodo_sandbox_product_basic_monthly ?? "");
   const [dodoSandboxProMonthly, setDodoSandboxProMonthly] = useState(s?.dodo_sandbox_product_pro_monthly ?? "");
+  const [dodoSandboxBizYearly, setDodoSandboxBizYearly] = useState(s?.dodo_sandbox_product_biz_yearly ?? "");
+  const [dodoSandboxBizMonthly, setDodoSandboxBizMonthly] = useState(s?.dodo_sandbox_product_biz_monthly ?? "");
   // shurjoPay live creds
   const [spLiveBase, setSpLiveBase] = useState(s?.shurjopay_live_base_url ?? "");
   const [spLiveUser, setSpLiveUser] = useState(s?.shurjopay_live_username ?? "");
@@ -153,6 +161,10 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
         dodo_live_product_pro_yearly: dodoLiveProYearly,
         dodo_live_product_basic_monthly: dodoLiveBasicMonthly,
         dodo_live_product_pro_monthly: dodoLiveProMonthly,
+        dodo_live_product_biz_yearly: dodoLiveBizYearly,
+        dodo_live_product_biz_monthly: dodoLiveBizMonthly,
+        dodo_sandbox_product_biz_yearly: dodoSandboxBizYearly,
+        dodo_sandbox_product_biz_monthly: dodoSandboxBizMonthly,
         dodo_sandbox_api_key: dodoSandboxKey,
         dodo_sandbox_webhook_secret: dodoSandboxWebhook,
         dodo_sandbox_product_basic_yearly: dodoSandboxBasicYearly,
@@ -348,6 +360,8 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
                 <Field label="Pro — Yearly" value={dodoLiveProYearly} onChange={setDodoLiveProYearly} placeholder="pdt_..." mono />
                 <Field label="Basic — Monthly" value={dodoLiveBasicMonthly} onChange={setDodoLiveBasicMonthly} placeholder="pdt_..." mono />
                 <Field label="Pro — Monthly" value={dodoLiveProMonthly} onChange={setDodoLiveProMonthly} placeholder="pdt_..." mono />
+                <Field label={"Biz — Yearly"} value={dodoLiveBizYearly} onChange={setDodoLiveBizYearly} placeholder="pdt_..." mono />
+                <Field label={"Biz — Monthly"} value={dodoLiveBizMonthly} onChange={setDodoLiveBizMonthly} placeholder="pdt_..." mono />
               </div>
             </Section>
 
@@ -360,6 +374,8 @@ export default function SASettingsClient({ settings }: { settings: PlatformSetti
                 <Field label="Pro — Yearly" value={dodoSandboxProYearly} onChange={setDodoSandboxProYearly} placeholder="pdt_..." mono />
                 <Field label="Basic — Monthly" value={dodoSandboxBasicMonthly} onChange={setDodoSandboxBasicMonthly} placeholder="pdt_..." mono />
                 <Field label="Pro — Monthly" value={dodoSandboxProMonthly} onChange={setDodoSandboxProMonthly} placeholder="pdt_..." mono />
+                <Field label={"Biz — Yearly"} value={dodoSandboxBizYearly} onChange={setDodoSandboxBizYearly} placeholder="pdt_..." mono />
+                <Field label={"Biz — Monthly"} value={dodoSandboxBizMonthly} onChange={setDodoSandboxBizMonthly} placeholder="pdt_..." mono />
               </div>
             </Section>
           </div>

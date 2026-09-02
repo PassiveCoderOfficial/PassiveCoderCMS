@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { enmProvision } from "@/lib/enm";
+import { enmProvision, enmTierForPlan } from "@/lib/enm";
 import { createCommissions } from "@/lib/commissions";
 
 // Super-admin approves a pending manual payment (bKash/Nagad/bank) and activates
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   }
 
   // Sync ENM tier (best-effort)
-  const enmTier = sub.plan_id === "pro" ? "pro" : "free";
+  const enmTier = enmTierForPlan(sub.plan_id);
   const { data: tenant } = await admin.from("tenants").select("owner_id").eq("id", sub.tenant_id).maybeSingle();
   if (tenant) {
     const { data: profile } = await admin.from("profiles").select("email, full_name").eq("id", tenant.owner_id).maybeSingle();

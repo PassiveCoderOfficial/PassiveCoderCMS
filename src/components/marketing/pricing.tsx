@@ -14,6 +14,7 @@ interface Plan {
   price_yearly_bdt: number | null;
   price_monthly_bdt: number | null;
   storage_gb: number;
+  pages_limit: number;
   domains: number;
   support_tier: string;
   visitor_limit_monthly: number;
@@ -67,7 +68,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             Everything your business needs online. No surprises.
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-medium px-3 py-1.5 rounded-full border border-green-200">
-            <CheckCircle className="w-4 h-4" /> No payment required at signup — pay after your account is created
+            <CheckCircle className="w-4 h-4" /> We build your site first — you see it before you pay
           </div>
         </div>
 
@@ -136,6 +137,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             const yearlyEffectiveMonthlyBdt = yearlyBdt != null && yearlyBdt > 0
               ? Math.round(yearlyBdt / 12) : null;
             const visitorLimit = plan.visitor_limit_monthly ?? 0;
+            const pagesLimit   = plan.pages_limit ?? -1;
             const overagePerK  = (plan.overage_cents_per_1k ?? 0) / 100;
 
             return (
@@ -188,6 +190,9 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                     <Users className={`w-4 h-4 mt-0.5 shrink-0 ${isPremium ? "text-orange-600" : "text-gray-500"}`} />
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{visitorLimit.toLocaleString()} visitors/month</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {pagesLimit < 0 ? "Unlimited pages" : `Up to ${pagesLimit} pages`}
+                      </p>
                       {overagePerK > 0 && (
                         <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                           <Zap className="w-3 h-3" />{formatCurrency(overagePerK, currency, bdtRate)}/1,000 extra visitors

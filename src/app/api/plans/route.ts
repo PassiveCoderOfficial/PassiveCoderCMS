@@ -5,7 +5,7 @@ export async function GET() {
   const admin = await createAdminClient();
   const { data: rows, error } = await admin
     .from("plans")
-    .select("id, name, price_yearly, price_monthly, price_yearly_bdt, price_monthly_bdt, storage_gb, visitor_limit_monthly, overage_cents_per_1k, features, sort_order, is_active")
+    .select("id, name, price_yearly, price_monthly, price_yearly_bdt, price_monthly_bdt, storage_gb, pages_limit, visitor_limit_monthly, overage_cents_per_1k, features, sort_order, is_active")
     .eq("is_active", true)
     .order("sort_order");
 
@@ -26,6 +26,7 @@ export async function GET() {
     price_yearly_bdt: p.price_yearly_bdt ?? null,
     price_monthly_bdt: p.price_monthly_bdt ?? null,
     storage_gb: p.storage_gb ?? 0,
+    pages_limit: p.pages_limit ?? -1,
     visitor_limit_monthly: p.visitor_limit_monthly ?? 0,
     overage_cents_per_1k: p.overage_cents_per_1k ?? 0,
     features: Array.isArray(p.features) ? p.features : [],

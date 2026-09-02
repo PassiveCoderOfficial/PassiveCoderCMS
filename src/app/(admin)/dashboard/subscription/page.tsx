@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CheckoutDialog, type CheckoutPlan, type PaymentConfig } from "./checkout-dialog";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
+import { ENMOptInCard } from "@/components/enm/enm-optin-card";
+import { enmTierForPlan } from "@/lib/enm-tier";
 import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
 
 interface Subscription {
@@ -25,7 +27,7 @@ interface Subscription {
   total_billed_cents: number | null;
   total_paid_cents: number | null;
   balance_due_cents: number | null;
-  tenants: { name: string; slug: string } | null;
+  tenants: { name: string; slug: string; enm_user_id: number | null; enm_tier: string | null } | null;
 }
 
 interface Plan {
@@ -101,7 +103,7 @@ export default function SubscriptionPage() {
       setPrimaryTenantId(memberships[0].tenant_id);
       const { data } = await supabase
         .from("subscriptions")
-        .select("*, tenants(name, slug)")
+        .select("*, tenants(name, slug, enm_user_id, enm_tier)")
         .in("tenant_id", memberships.map(m => m.tenant_id))
         .order("created_at", { ascending: false });
 
@@ -310,6 +312,11 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
         <ClientPaymentsBlock subscriptionId={sub.id} tenantId={sub.tenant_id} />
       )}
 
+      <ENMOptInCard
+        tier={enmTierForPlan(sub.plan_id)}
+        provisioned={!!sub.tenants?.enm_user_id}
+      />
+
       <div className="flex flex-wrap gap-2 pt-1 items-center">
         {tenant?.slug && (
           <a href={`https://${tenant.slug}.passivecoder.com`} target="_blank" rel="noopener noreferrer">
@@ -318,16 +325,6 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, onChoose }: { sub
             </Button>
           </a>
         )}
-        <a href="/api/enm/sso" target="_blank" rel="noopener noreferrer">
-          <Button
-            size="sm"
-            variant={sub.plan_id === "pro" && sub.status === "active" ? "default" : "outline"}
-            className={cn("flex items-center gap-1.5", sub.plan_id === "pro" && sub.status === "active" ? "bg-orange-500 hover:bg-orange-600 text-white border-0" : "")}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            {sub.plan_id === "pro" && sub.status === "active" ? "Open ExpertNear.Me Pro" : "ExpertNear.Me (Free)"}
-          </Button>
-        </a>
         {sub.status === "pending" && (
           <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" /> Payment awaiting verification

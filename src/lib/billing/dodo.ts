@@ -10,6 +10,8 @@ export interface DodoConfig {
   productProYearly?: string | null;
   productBasicMonthly?: string | null;
   productProMonthly?: string | null;
+  productBizYearly?: string | null;
+  productBizMonthly?: string | null;
 }
 
 export function getDodoClient(config?: { apiKey?: string; sandbox?: boolean }): DodoPayments {
@@ -49,11 +51,17 @@ export function resolveDodoConfig(ps: Record<string, unknown> | null): DodoConfi
     productProMonthly: sandbox
       ? (ps?.dodo_sandbox_product_pro_monthly as string | null) ?? process.env.DODO_PRODUCT_PRO_MONTHLY
       : (ps?.dodo_live_product_pro_monthly as string | null) ?? process.env.DODO_PRODUCT_PRO_MONTHLY,
+    productBizYearly: sandbox
+      ? (ps?.dodo_sandbox_product_biz_yearly as string | null) ?? process.env.DODO_PRODUCT_BIZ_YEARLY
+      : (ps?.dodo_live_product_biz_yearly as string | null) ?? process.env.DODO_PRODUCT_BIZ_YEARLY,
+    productBizMonthly: sandbox
+      ? (ps?.dodo_sandbox_product_biz_monthly as string | null) ?? process.env.DODO_PRODUCT_BIZ_MONTHLY
+      : (ps?.dodo_live_product_biz_monthly as string | null) ?? process.env.DODO_PRODUCT_BIZ_MONTHLY,
   };
 }
 
 export function getDodoProductId(
-  config: Pick<DodoConfig, "productBasicYearly" | "productProYearly" | "productBasicMonthly" | "productProMonthly">,
+  config: Pick<DodoConfig, "productBasicYearly" | "productProYearly" | "productBasicMonthly" | "productProMonthly" | "productBizYearly" | "productBizMonthly">,
   planId: string,
   cycle: "monthly" | "yearly",
 ): string | null {
@@ -62,6 +70,8 @@ export function getDodoProductId(
     pro_yearly:     config.productProYearly,
     basic_monthly:  config.productBasicMonthly,
     pro_monthly:    config.productProMonthly,
+    biz_yearly:     config.productBizYearly,
+    biz_monthly:    config.productBizMonthly,
   };
   return map[`${planId}_${cycle}`] ?? null;
 }

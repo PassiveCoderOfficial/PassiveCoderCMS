@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
 import { createAdminClient } from "@/lib/supabase/server";
-import { syncENMTier } from "@/lib/enm";
+import { syncENMTier, enmTierForPlan } from "@/lib/enm";
 
 export const runtime = "nodejs";
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
     // ENM Pro rides on CMS Pro — grant it on the same event that activates the
     // subscription, or the customer pays for a bundle they never receive.
-    await syncENMTier(admin, tenantId, planId === "pro" || planId === "biz" ? "pro" : "free");
+    await syncENMTier(admin, tenantId, enmTierForPlan(planId));
   }
 
   if (event.type === "subscription.active" || event.type === "subscription.renewed") {

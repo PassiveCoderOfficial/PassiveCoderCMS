@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPayment, resolveSpConfig } from "@/lib/billing/shurjopay";
-import { syncENMTier } from "@/lib/enm";
+import { syncENMTier, enmTierForPlan } from "@/lib/enm";
 import { createCommissions } from "@/lib/commissions";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -42,7 +42,7 @@ async function handle(req: Request, orderId: string | null) {
   await admin.from("tenants").update({ status: "active", plan: sub.plan_id }).eq("id", sub.tenant_id);
 
   // Sync ENM tier (best-effort — don't block on failure)
-  const enmTier = sub.plan_id === "pro" ? "pro" : "free";
+  const enmTier = enmTierForPlan(sub.plan_id);
   syncENMTier(admin, sub.tenant_id, enmTier).catch(err => console.error("[ENM sync shurjopay]", err));
 
   // Create commission entries (best-effort)

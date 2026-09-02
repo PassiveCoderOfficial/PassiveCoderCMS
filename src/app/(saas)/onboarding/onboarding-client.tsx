@@ -92,6 +92,8 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
 
   async function handleSignup() {
     if (!email || !password) { toast.error("Email and password required"); return; }
+    // WhatsApp is how we actually reach this segment — email goes unread.
+    if (!phone.trim()) { toast.error("WhatsApp number required — it is how we will reach you"); return; }
     if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
@@ -153,7 +155,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
         </div>
         {mode === "signup" && (
           <div className="space-y-1.5">
-            <Label>WhatsApp / Phone <span className="text-muted-foreground font-normal text-xs">(optional)</span></Label>
+            <Label>WhatsApp Number</Label>
             <PhoneInput value={phone} onChange={setPhone} inputClassName="h-11" />
           </div>
         )}
@@ -209,7 +211,7 @@ function AuthedBanner({ email, onSwitch }: { email: string; onSwitch: () => void
 
 // ─── Step 0: Plan selection ───────────────────────────────────────────────────
 
-interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_yearly_bdt?: number | null; price_monthly_bdt?: number | null; storage_gb: number; visitor_limit_monthly?: number; overage_cents_per_1k?: number; features: string[] }
+interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_yearly_bdt?: number | null; price_monthly_bdt?: number | null; storage_gb: number; pages_limit?: number; visitor_limit_monthly?: number; overage_cents_per_1k?: number; features: string[] }
 
 type BillingCycle = "monthly" | "yearly";
 const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly" };
@@ -336,13 +338,24 @@ function Step1({
   planId: string;
   onNext: (method: PayMethod) => void;
 }) {
-  // Card first, and selected by default. "Pay Later" stays available but is no
-  // longer the default — as the default it collected 29 subscriptions and zero
-  // payments, because nothing downstream ever asked for money.
-  const [method, setMethod] = useState<PayMethod>(
-    planId === "custom" ? "manual" : planId === "biz" ? "trial" : "dodo",
-  );
   const isCustom = planId === "custom";
+  // Currency decides the rail: Dodo settles USD, shurjoPay settles BDT. Offering
+  // both for one currency just invites a failed charge at the gateway.
+  const [payCurrency, setPayCurrency] = useState<Currency>("USD");
+  const isBdt = payCurrency === "BDT";
+
+  const [method, setMethod] = useState<PayMethod>(isCustom ? "manual" : "dodo");
+
+  // Keep the selection consistent with the currency — switching to BDT while
+  // "card" is selected would otherwise submit Dodo for a taka price.
+  useEffect(() => {
+    if (isCustom) return;
+    setMethod(prev => {
+      if (isBdt && prev === "dodo") return "shurjopay";
+      if (!isBdt && prev === "shurjopay") return "dodo";
+      return prev;
+    });
+  }, [isBdt, isCustom]);
 
   const OPTIONS: Array<{ id: PayMethod; icon: React.ReactNode; title: string; desc: string; badge?: string; disabled?: boolean; hidden?: boolean }> = [
     {
@@ -351,8 +364,17 @@ function Step1({
       title: "Pay with Card",
       desc: "Visa, Mastercard, Amex — all major cards. Secure checkout via Dodo Payments.",
       badge: "Recommended",
-      // Biz has no Dodo product configured yet, so card checkout would 400.
-      disabled: isCustom || planId === "biz",
+      disabled: isCustom,
+      hidden: isBdt,
+    },
+    {
+      id: "shurjopay",
+      icon: <span className="text-lg font-bold text-green-600">৳</span>,
+      title: "ShurjoPay",
+      desc: "bKash, Nagad, Rocket, cards — pay in Bangladeshi taka.",
+      badge: "Recommended",
+      disabled: isCustom,
+      hidden: !isBdt,
     },
     {
       id: "trial",
@@ -362,24 +384,15 @@ function Step1({
       badge: "No card needed",
     },
     {
-      id: "shurjopay",
-      icon: <span className="text-lg font-bold text-green-600">৳</span>,
-      title: "ShurjoPay",
-      desc: "bKash, Nagad, Rocket, cards — for Bangladeshi customers.",
-      disabled: isCustom,
-    },
-    {
       id: "manual",
       icon: <MessageSquare className="w-5 h-5 text-purple-500" />,
-      title: "Contact Sales",
-      desc: isCustom ? "Get a custom quote from our sales team." : "Request invoice or arrange manual payment via our sales team.",
+      title: isCustom ? "Contact Sales" : "Pay another way",
+      desc: isCustom
+        ? "Get a custom quote from our sales team."
+        : "Bank transfer or another arrangement — we'll sort it out on WhatsApp.",
       badge: isCustom ? "Required" : undefined,
     },
   ];
-
-  if (isCustom && method !== "manual" && method !== "trial") {
-    // Auto-select manual for custom
-  }
 
   return (
     <div className="space-y-6">
@@ -388,6 +401,11 @@ function Step1({
         <p className="text-muted-foreground mt-1">
           {isCustom ? "Custom plans require contacting our sales team." : "Your site is built first either way — choose how you want to pay for it."}
         </p>
+        {!isCustom && (
+          <div className="mt-3">
+            <CurrencyToggle currency={payCurrency} onChange={setPayCurrency} />
+          </div>
+        )}
       </div>
 
       <div className="space-y-2.5">
@@ -432,7 +450,7 @@ function Step1({
       {method === "manual" && (
         <div className="rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 p-3 text-xs text-purple-800 dark:text-purple-400 flex items-start gap-2">
           <MessageSquare className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>A support ticket will be created for our sales team. They'll contact you within 1 business day to arrange payment.</span>
+          <span>We&apos;ll message you on WhatsApp to arrange payment. Your site is built and live either way.</span>
         </div>
       )}
 
@@ -697,11 +715,13 @@ function TemplateMiniCard({ template, selected, mode, onSelect, onModeChange }: 
   );
 }
 
-function Step5({ onNext, initialSlug, initialMode, templates }: {
+function Step5({ onNext, initialSlug, initialMode, templates, pagesLimit }: {
   onNext: (templateSlug: string, mode: "theme" | "full") => void;
   initialSlug?: string;
   initialMode?: "theme" | "full";
   templates: Template[];
+  /** Page cap for the chosen plan; -1 means unlimited. */
+  pagesLimit: number;
 }) {
   const params = useSearchParams();
   const urlSlug = params.get("template") ?? initialSlug ?? "";
@@ -714,7 +734,13 @@ function Step5({ onNext, initialSlug, initialMode, templates }: {
   const [selected, setSelected] = useState<string>(urlSlug || templates[0]?.slug || "blank");
   const [mode, setMode] = useState<"theme" | "full">(urlMode);
 
-  const filtered = templates.filter(t => {
+  // A template with more pages than the plan allows cannot be applied, so it
+  // is hidden rather than offered and then rejected. Basic keeps roughly half
+  // the catalogue; the fuller templates become a reason to upgrade.
+  const withinPlan = pagesLimit < 0 ? templates : templates.filter(t => (t.pages ?? 0) <= pagesLimit);
+  const hiddenByPlan = templates.length - withinPlan.length;
+
+  const filtered = withinPlan.filter(t => {
     const matchCat = category === "All" || t.category === category;
     const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
     return matchCat && matchSearch;
@@ -728,6 +754,16 @@ function Step5({ onNext, initialSlug, initialMode, templates }: {
         <h2 className="text-2xl font-bold">Pick a template</h2>
         <p className="text-muted-foreground mt-1">Choose a starting point. You can switch theme or import demo content at any time.</p>
       </div>
+
+      {hiddenByPlan > 0 && (
+        <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
+          <Layout className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+          <span>
+            {hiddenByPlan} more {hiddenByPlan === 1 ? "template needs" : "templates need"} more than {pagesLimit} pages.
+            Upgrade to Pro any time to unlock {hiddenByPlan === 1 ? "it" : "them"} — your site carries over.
+          </span>
+        </div>
+      )}
 
       {/* Search */}
       <Input
@@ -971,6 +1007,19 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
   // Honour ?plan= from the pricing page — without this, picking Pro on the
   // marketing site silently dropped the customer onto Basic.
   const [planId, setPlanId] = useState(params.get("plan") ?? "basic");
+  // Page cap for the chosen plan, used to hide templates the plan cannot hold.
+  // -1 until the plans load, which means "unlimited" and so hides nothing —
+  // failing open is right here, the cap is enforced server-side too.
+  const [pagesLimit, setPagesLimit] = useState(-1);
+  useEffect(() => {
+    fetch("/api/plans")
+      .then(r => r.json())
+      .then(d => {
+        const p = (d.plans ?? []).find((x: Plan) => x.id === planId);
+        setPagesLimit(p?.pages_limit ?? -1);
+      })
+      .catch(() => {});
+  }, [planId]);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
     params.get("cycle") === "yearly" ? "yearly" : "monthly",
   );
@@ -1064,6 +1113,7 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
               initialSlug={templateId}
               initialMode={templateMode}
               templates={templates}
+              pagesLimit={pagesLimit}
               onNext={(slug, m) => { setTemplateId(slug); setTemplateMode(m); setStep(6); }}
             />
           )}

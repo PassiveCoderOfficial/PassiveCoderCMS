@@ -35,10 +35,12 @@ export async function POST(req: Request) {
     "dodo_live_api_key", "dodo_live_webhook_secret",
     "dodo_live_product_basic_yearly", "dodo_live_product_pro_yearly",
     "dodo_live_product_basic_monthly", "dodo_live_product_pro_monthly",
+    "dodo_live_product_biz_yearly", "dodo_live_product_biz_monthly",
     // Dodo sandbox
     "dodo_sandbox_api_key", "dodo_sandbox_webhook_secret",
     "dodo_sandbox_product_basic_yearly", "dodo_sandbox_product_pro_yearly",
     "dodo_sandbox_product_basic_monthly", "dodo_sandbox_product_pro_monthly",
+    "dodo_sandbox_product_biz_yearly", "dodo_sandbox_product_biz_monthly",
     // shurjoPay live
     "shurjopay_live_base_url", "shurjopay_live_username",
     "shurjopay_live_password", "shurjopay_live_prefix",

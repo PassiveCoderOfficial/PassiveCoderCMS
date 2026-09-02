@@ -2,7 +2,6 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
-import { enmProvision } from "@/lib/enm";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -111,14 +110,11 @@ export async function POST(req: Request) {
     { siteName },
   ).catch(err => console.error(`[apply-template] tenant=${tenant.id} slug=${templateId ?? "blank"}`, err));
 
-  // Provision ENM free account (best-effort)
-  const { data: profile } = await supabase.from("profiles").select("email, full_name").eq("id", userId).maybeSingle();
-  if (profile?.email) {
-    const tier = (planId === "pro" ? "pro" : "free") as "pro" | "free";
-    enmProvision({ email: profile.email, name: profile.full_name ?? undefined, pcTenantId: tenant.id, tier })
-      .then(enmUserId => supabase.from("tenants").update({ enm_user_id: enmUserId, enm_tier: tier }).eq("id", tenant.id))
-      .catch(err => console.error("[ENM create-tenant]", err));
-  }
+  // ENM is deliberately NOT provisioned here. Creating an expert directory
+  // account for everyone who signs up for a website produces listings nobody
+  // asked for and inflates ENM's expert count with people who will never use
+  // it. The owner opts in from the dashboard instead, which is also where we
+  // collect the business details a real profile needs.
 
   return NextResponse.json({ tenantId: tenant.id, slug: tenant.slug });
 }

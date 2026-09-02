@@ -11,7 +11,10 @@ function headers() {
   };
 }
 
-export type ENMTier = "free" | "pro";
+// Re-exported so server code has one import for ENM concerns; the rule itself
+// lives in a client-safe module.
+export { enmTierForPlan, type ENMTier } from "./enm-tier";
+import type { ENMTier } from "./enm-tier";
 
 /** Create or update ENM account for a PC tenant. Returns ENM userId. */
 export async function enmProvision(opts: {
