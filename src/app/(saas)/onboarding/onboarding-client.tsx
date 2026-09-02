@@ -8,6 +8,7 @@ import { cn, createSiteSlug } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   CheckCircle, Circle, Loader2, Search, Globe, ArrowRight,
@@ -464,20 +465,61 @@ function Step1({
 
 // ─── Step 2: Site name ────────────────────────────────────────────────────────
 
-function Step2({ onNext }: { onNext: (name: string) => void }) {
+export interface SiteBasics {
+  name: string;
+  /** What the business does, in the owner's words. Drives the whole build. */
+  what: string;
+  /** Where it operates. Used for local copy and contact context. */
+  where: string;
+}
+
+function Step2({ onNext }: { onNext: (basics: SiteBasics) => void }) {
   const [name, setName] = useState("");
+  const [what, setWhat] = useState("");
+  const [where, setWhere] = useState("");
+
+  const canContinue = name.trim().length > 0;
+  const submit = () => onNext({ name: name.trim(), what: what.trim(), where: where.trim() });
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Name your site</h2>
-        <p className="text-muted-foreground mt-1">This is the name visitors will see. You can change it later.</p>
+        <h2 className="text-2xl font-bold">Tell us about your business</h2>
+        <p className="text-muted-foreground mt-1">
+          We write your website from these answers. Two minutes now saves you an
+          empty site to fill in later.
+        </p>
       </div>
-      <div className="space-y-2">
-        <Label>Site Name</Label>
-        <Input value={name} onChange={e => setName(e.target.value)} placeholder="Acme Plumbing, My Portfolio, …"
-          className="h-11 text-base" autoFocus onKeyDown={e => e.key === "Enter" && name.trim() && onNext(name.trim())} />
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Business name</Label>
+          <Input value={name} onChange={e => setName(e.target.value)} placeholder="Acme Plumbing"
+            className="h-11 text-base" autoFocus />
+        </div>
+
+        <div className="space-y-2">
+          <Label>What do you do?</Label>
+          <Textarea
+            value={what}
+            onChange={e => setWhat(e.target.value)}
+            rows={3}
+            placeholder="Emergency plumbing and bathroom fitting for homes and small offices. 12 years experience, same-day callouts."
+          />
+          <p className="text-xs text-muted-foreground">
+            The more you write, the better your site. Mention your services, who
+            you serve, and anything that makes you different.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Where do you work? <span className="text-muted-foreground font-normal text-xs">(optional)</span></Label>
+          <Input value={where} onChange={e => setWhere(e.target.value)} placeholder="Dubai and Sharjah"
+            className="h-11" onKeyDown={e => e.key === "Enter" && canContinue && submit()} />
+        </div>
       </div>
-      <Button size="lg" className="w-full" onClick={() => onNext(name.trim())} disabled={!name.trim()}>
+
+      <Button size="lg" className="w-full" onClick={submit} disabled={!canContinue}>
         Continue <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </div>
@@ -857,15 +899,19 @@ function Step5({ onNext, initialSlug, initialMode, templates, pagesLimit }: {
 // ─── Step 6: Launching ────────────────────────────────────────────────────────
 
 function Step6({
-  siteName, slug, domainChoice, planId, billingCycle, payMethod, templateId, templateMode, referralCode, userId,
+  siteName, siteWhat, siteWhere, slug, domainChoice, planId, billingCycle, payMethod, templateId, templateMode, referralCode, userId,
 }: {
-  siteName: string; slug: string;
+  siteName: string; siteWhat: string; siteWhere: string; slug: string;
   domainChoice: { type: DomainOption; domain?: string };
   planId: string; billingCycle: BillingCycle; payMethod: PayMethod; templateId: string; templateMode: "theme" | "full";
   referralCode?: string; userId: string;
 }) {
   const [status, setStatus] = useState<"creating" | "done" | "error">("creating");
   const [siteUrl, setSiteUrl] = useState("");
+  // Progress of the AI site build, polled after the tenant exists.
+  const [build, setBuild] = useState<{ status: string; total_pages: number; pages_done: number; current_page: string | null } | null>(null);
+  const buildPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => () => { if (buildPollRef.current) clearInterval(buildPollRef.current); }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -894,6 +940,30 @@ function Step6({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tenantId: data.tenantId }),
         });
+
+        // Write the site from what they told us in step 2. Fire-and-forget:
+        // the build runs server-side and survives this page closing, and a
+        // failure leaves the applied template rather than nothing.
+        fetch("/api/onboarding/build-site", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantId: data.tenantId, siteName, what: siteWhat, where: siteWhere }),
+        }).catch(() => {});
+
+        // Watch it so the customer sees their site being written rather than a
+        // finished-looking screen with placeholder copy behind it.
+        const poll = setInterval(async () => {
+          try {
+            const r = await fetch(`/api/onboarding/build-site?tenantId=${data.tenantId}`);
+            const d = await r.json();
+            if (d.job) {
+              setBuild(d.job);
+              if (d.job.status === "done" || d.job.status === "failed") clearInterval(poll);
+            }
+          } catch { /* transient — keep polling */ }
+        }, 3000);
+        // Never leave an interval running if this component goes away.
+        buildPollRef.current = poll;
 
         // Send paying customers to checkout. The site is already created and
         // live at this point, so abandoning the payment page loses nothing —
@@ -972,6 +1042,46 @@ function Step6({
             : "Your site is ready. Start building your pages."}
         </p>
       </div>
+      {build && build.status !== "failed" && (
+        <div className="rounded-xl border bg-muted/40 p-4 text-left w-full space-y-2">
+          <p className="text-sm font-semibold flex items-center gap-2">
+            {build.status === "done"
+              ? <><CheckCircle className="h-4 w-4 text-green-600" /> Your pages are written</>
+              : <><Loader2 className="h-4 w-4 animate-spin text-primary" /> Writing your pages…</>}
+          </p>
+          {build.status === "done" ? (
+            <p className="text-xs text-muted-foreground">
+              We wrote {build.pages_done} {build.pages_done === 1 ? "page" : "pages"} from
+              what you told us, and they are live. Review and edit anything from your dashboard.
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">
+                {build.current_page
+                  ? `Writing "${build.current_page}"…`
+                  : "Planning your site…"}
+                {build.total_pages > 0 && ` (${build.pages_done} of ${build.total_pages})`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                You can close this — it keeps going, and your site is already live.
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {build?.status === "failed" && (
+        <div className="rounded-xl border bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 p-4 text-left w-full">
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-300">
+            We couldn&apos;t write your pages automatically
+          </p>
+          <p className="text-xs text-amber-800 dark:text-amber-400 mt-1">
+            Your site is live with its template. You can write the pages yourself,
+            or use AiCoder from the page builder — no generations were charged.
+          </p>
+        </div>
+      )}
+
       {domainChoice.type === "connect" && domainChoice.domain && (
         <div className="rounded-xl border bg-muted/50 p-4 text-left w-full space-y-3">
           <p className="text-sm font-semibold flex items-center gap-2"><Globe className="h-4 w-4" /> DNS Setup Required</p>
@@ -1025,6 +1135,9 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
   );
   const [payMethod, setPayMethod] = useState<PayMethod>("trial");
   const [siteName, setSiteName] = useState("");
+  // Free-text answers from step 2. Feed the first AI build; never invented.
+  const [siteWhat, setSiteWhat] = useState("");
+  const [siteWhere, setSiteWhere] = useState("");
   const [slug, setSlug] = useState("");
   const [domainChoice, setDomainChoice] = useState<{ type: DomainOption; domain?: string }>({ type: "subdomain" });
   const [templateId, setTemplateId] = useState(params.get("template") ?? "blank");
@@ -1105,7 +1218,7 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
           {showAuthGate && <AuthGate onAuthed={(id, email) => setAuthedUser({ id, email })} />}
           {!showAuthGate && step === 0 && <Step0 cycle={billingCycle} onCycleChange={setBillingCycle} onNext={p => { setPlanId(p); setStep(1); }} />}
           {step === 1 && <Step1 planId={planId} onNext={m => { setPayMethod(m); setStep(2); }} />}
-          {step === 2 && <Step2 onNext={n => { setSiteName(n); setStep(3); }} />}
+          {step === 2 && <Step2 onNext={b => { setSiteName(b.name); setSiteWhat(b.what); setSiteWhere(b.where); setStep(3); }} />}
           {step === 3 && <Step3 siteName={siteName} onNext={s => { setSlug(s); setStep(4); }} />}
           {step === 4 && <Step4 slug={slug} onNext={d => { setDomainChoice(d); setStep(5); }} />}
           {step === 5 && (
@@ -1119,7 +1232,7 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
           )}
           {step === 6 && authedUser && (
             <Step6
-              siteName={siteName} slug={slug} domainChoice={domainChoice}
+              siteName={siteName} siteWhat={siteWhat} siteWhere={siteWhere} slug={slug} domainChoice={domainChoice}
               planId={planId} billingCycle={billingCycle} payMethod={payMethod}
               templateId={templateId} templateMode={templateMode}
               referralCode={referralCode}

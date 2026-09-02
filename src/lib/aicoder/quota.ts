@@ -27,6 +27,14 @@ export async function reserveGeneration(tenantId: string, blockType: string, use
     .maybeSingle();
   if (!tenant) throw new AiCoderQuotaError("Tenant not found");
 
+  // The signup build draws on a one-time grant before touching plan quota. A
+  // six-page site costs far more than Basic's monthly allowance, and putting a
+  // brand-new customer over quota before they have edited anything is the
+  // worst possible first day. Atomic in SQL so concurrent section builds
+  // cannot both spend the same last credit.
+  const { data: usedFreeCredit } = await admin.rpc("consume_free_build_credit", { t: tenantId });
+  if (usedFreeCredit === true) return "quota";
+
   const { data: plan } = await admin.from("plans").select("modules").eq("id", tenant.plan).maybeSingle();
   const monthlyIncluded = (plan?.modules as Record<string, { monthly_generations?: number }> | null)
     ?.ai_coder?.monthly_generations ?? 0;
@@ -121,7 +129,9 @@ export async function assertBatchAffordable(tenantId: string, count: number): Pr
   const status = await getQuotaStatus(tenantId);
   if (!status) throw new AiCoderQuotaError("Tenant not found");
 
-  const available = Math.max(0, status.monthlyIncluded - status.usedThisMonth) + status.purchasedRemaining;
+  const available = Math.max(0, status.monthlyIncluded - status.usedThisMonth)
+    + status.purchasedRemaining
+    + status.freeBuildCredits;
   if (available >= count) return;
 
   throw new AiCoderQuotaError(
@@ -136,6 +146,8 @@ export interface QuotaStatus {
   monthlyIncluded: number;
   usedThisMonth: number;
   purchasedRemaining: number;
+  /** One-time signup-build grant, spent before plan quota. */
+  freeBuildCredits: number;
   resetAt: string;
 }
 
@@ -143,7 +155,7 @@ export async function getQuotaStatus(tenantId: string): Promise<QuotaStatus | nu
   const admin = await createAdminClient();
   const { data: tenant } = await admin
     .from("tenants")
-    .select("plan, ai_generations_used_this_month, ai_generations_reset_at, ai_generations_purchased")
+    .select("plan, ai_generations_used_this_month, ai_generations_reset_at, ai_generations_purchased, ai_free_build_credits")
     .eq("id", tenantId)
     .maybeSingle();
   if (!tenant) return null;
@@ -156,6 +168,7 @@ export async function getQuotaStatus(tenantId: string): Promise<QuotaStatus | nu
     monthlyIncluded,
     usedThisMonth: tenant.ai_generations_used_this_month,
     purchasedRemaining: tenant.ai_generations_purchased,
+    freeBuildCredits: tenant.ai_free_build_credits ?? 0,
     resetAt: tenant.ai_generations_reset_at,
   };
 }

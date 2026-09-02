@@ -5,6 +5,7 @@ import { FileText, ShoppingBag, Users, TrendingUp, Package, AlertCircle, Externa
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { BusinessProfilePrompt } from "@/components/admin/business-profile-prompt";
+import { AiSiteBanner } from "@/components/admin/ai-site-banner";
 import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
@@ -53,6 +54,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <AiSiteBanner tenantId={tenantId} />
+
       <BusinessProfilePrompt />
 
       {showProSiteBanner && (
