@@ -17,7 +17,7 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
-import { useCurrencyRate, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
+import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
 
 // ─── Step bar ─────────────────────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
   }, [planParam]);
 
   const chosenPlanPrice = chosenPlan && planPrice(chosenPlan, cycleParam) > 0
-    ? `${formatCurrency(planPrice(chosenPlan, cycleParam), "USD", bdtRate)}${CYCLE_SUFFIX[cycleParam]}`
+    ? `${formatPrice(planPrice(chosenPlan, cycleParam), planPriceBdt(chosenPlan, cycleParam), "USD", bdtRate)}${CYCLE_SUFFIX[cycleParam]}`
     : null;
 
   async function handleSignup() {
@@ -209,7 +209,7 @@ function AuthedBanner({ email, onSwitch }: { email: string; onSwitch: () => void
 
 // ─── Step 0: Plan selection ───────────────────────────────────────────────────
 
-interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; storage_gb: number; visitor_limit_monthly?: number; overage_cents_per_1k?: number; features: string[] }
+interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; price_yearly_bdt?: number | null; price_monthly_bdt?: number | null; storage_gb: number; visitor_limit_monthly?: number; overage_cents_per_1k?: number; features: string[] }
 
 type BillingCycle = "monthly" | "yearly";
 const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly" };
@@ -217,6 +217,11 @@ const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/y
 function planPrice(plan: Plan, cycle: BillingCycle): number {
   if (cycle === "monthly") return plan.price_monthly ?? 0;
   return plan.price_yearly ?? 0;
+}
+// Fixed taka price for the cycle, when one is set. Falls back to null so
+// formatPrice converts from USD at the live rate instead.
+function planPriceBdt(plan: Plan, cycle: BillingCycle): number | null {
+  return (cycle === "monthly" ? plan.price_monthly_bdt : plan.price_yearly_bdt) ?? null;
 }
 
 const PLAN_HIGHLIGHTS: Record<string, { badge?: string; color: string }> = {
@@ -297,7 +302,7 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
                 <span className="font-bold text-sm">
                   {isCustom ? "Custom pricing"
                     : planPrice(plan, cycle) > 0
-                      ? `${formatCurrency(planPrice(plan, cycle), currency, bdtRate)}${CYCLE_SUFFIX[cycle]}`
+                      ? `${formatPrice(planPrice(plan, cycle), planPriceBdt(plan, cycle), currency, bdtRate)}${CYCLE_SUFFIX[cycle]}`
                       : `Not available ${CYCLE_LABELS[cycle].toLowerCase()}`}
                 </span>
               </div>
