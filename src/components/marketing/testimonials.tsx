@@ -62,7 +62,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 
 const STATS = [
   { value: "4.9/5", label: "Average rating from clients" },
-  { value: "500+", label: "Active websites live today" },
+  { value: "500+", label: "Websites built to date" },
   { value: "$240", label: "Starting price — yearly, all-in" },
   { value: "24h", label: "Average time to go live" },
 ];

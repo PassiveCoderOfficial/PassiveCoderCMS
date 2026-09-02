@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Star, ArrowRight, Users, Zap, Plug, BookOpen, Users2, Receipt, Calculator, CreditCard, Mail, ShoppingCart } from "lucide-react";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
-import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
+import { useCurrencyRate, formatPrice, formatCurrency, type Currency } from "@/lib/hooks/use-currency";
 
 interface Plan {
   id: string;
@@ -124,13 +124,17 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
               : JSON.parse(plan.features as unknown as string ?? "[]");
             const monthlyPrice  = (plan.price_monthly ?? 0) / 100;
             const yearlyPrice   = (plan.price_yearly  ?? 0) / 100;
-            const yearlySavings = monthlyPrice > 0 && yearlyPrice > 0
-              ? Math.round(monthlyPrice * 12 - yearlyPrice) : 0;
+            // Yearly is sold at a discount off 12x the monthly rate. Express it as a
+            // percentage plus an effective monthly rate — an absolute "save $X" figure
+            // reads as nonsense when the discount approaches the price itself.
+            const yearlyPercentOff = monthlyPrice > 0 && yearlyPrice > 0
+              ? Math.round((1 - yearlyPrice / (monthlyPrice * 12)) * 100) : 0;
+            const yearlyEffectiveMonthly = yearlyPrice > 0 ? yearlyPrice / 12 : 0;
             // BDT equivalents (fixed prices) for the same figures
             const monthlyBdt = plan.price_monthly_bdt ?? null;
             const yearlyBdt  = plan.price_yearly_bdt ?? null;
-            const yearlySavingsBdt = monthlyBdt != null && yearlyBdt != null && monthlyBdt > 0 && yearlyBdt > 0
-              ? monthlyBdt * 12 - yearlyBdt : null;
+            const yearlyEffectiveMonthlyBdt = yearlyBdt != null && yearlyBdt > 0
+              ? Math.round(yearlyBdt / 12) : null;
             const visitorLimit = plan.visitor_limit_monthly ?? 0;
             const overagePerK  = (plan.overage_cents_per_1k ?? 0) / 100;
 
@@ -160,11 +164,15 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                         <span className="text-4xl font-extrabold text-gray-900">{formatPrice(price, bdtFor(plan), currency, bdtRate)}</span>
                         <span className="text-gray-500 text-sm">{suffix}</span>
                       </div>
-                      {cycle === "yearly" && yearlySavings > 0 && (
-                        <p className="text-xs text-green-600 font-medium mt-1">Save {formatPrice(yearlySavings, yearlySavingsBdt, currency, bdtRate)}/yr vs monthly</p>
+                      {cycle === "yearly" && yearlyPercentOff > 0 && (
+                        <p className="text-xs text-green-600 font-medium mt-1">
+                          {yearlyPercentOff}% off — {formatPrice(yearlyEffectiveMonthly, yearlyEffectiveMonthlyBdt, currency, bdtRate)}/mo billed yearly
+                        </p>
                       )}
-                      {cycle === "monthly" && yearlyPrice > 0 && yearlySavings > 0 && (
-                        <p className="text-xs text-gray-500 mt-1">Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr — save {formatPrice(yearlySavings, yearlySavingsBdt, currency, bdtRate)}</p>
+                      {cycle === "monthly" && yearlyPrice > 0 && yearlyPercentOff > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr — save {yearlyPercentOff}%
+                        </p>
                       )}
                     </>
                   ) : (
@@ -182,7 +190,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       <p className="text-sm font-semibold text-gray-900">{visitorLimit.toLocaleString()} visitors/month</p>
                       {overagePerK > 0 && (
                         <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <Zap className="w-3 h-3" />${overagePerK}/1,000 extra visitors
+                          <Zap className="w-3 h-3" />{formatCurrency(overagePerK, currency, bdtRate)}/1,000 extra visitors
                         </p>
                       )}
                     </div>

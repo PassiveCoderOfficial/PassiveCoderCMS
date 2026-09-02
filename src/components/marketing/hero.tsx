@@ -46,7 +46,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
         <div className="flex justify-center mb-8">
           <span className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-5 py-2.5 rounded-full border border-orange-500/20">
             <Star className="w-3.5 h-3.5 fill-current" />
-            {s.stat_sites ?? "17+"} live businesses · {s.stat_businesses ?? "8"} countries · built by real developers
+            {s.stat_sites ?? "17+"} websites built · {s.stat_businesses ?? "8"} countries · built by real developers
           </span>
         </div>
 
@@ -104,7 +104,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
         {/* Stats */}
         <div className="mt-14 grid grid-cols-3 gap-4 max-w-xl mx-auto">
           {[
-            { value: s.stat_sites ?? "17+", label: "Live websites", icon: Globe },
+            { value: s.stat_sites ?? "17+", label: "Websites built", icon: Globe },
             { value: s.stat_businesses ?? "8", label: "Countries", icon: TrendingUp },
             { value: s.stat_uptime ?? "99.9%", label: "Uptime SLA", icon: Award },
           ].map(({ value, label, icon: Icon }) => (

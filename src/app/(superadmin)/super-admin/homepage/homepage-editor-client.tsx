@@ -203,7 +203,7 @@ export default function HomepageEditorClient({ settings: initial }: { settings: 
 
           <SectionCard title="Hero Stats">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Field label="Sites Launched" value={s.stat_sites} onChange={v => set("stat_sites", v)} placeholder="17+" />
+              <Field label="Websites Built (all-time)" value={s.stat_sites} onChange={v => set("stat_sites", v)} placeholder="17+" />
               <Field label="Countries" value={s.stat_businesses} onChange={v => set("stat_businesses", v)} placeholder="8" />
               <Field label="Uptime" value={s.stat_uptime} onChange={v => set("stat_uptime", v)} placeholder="99.9%" />
             </div>

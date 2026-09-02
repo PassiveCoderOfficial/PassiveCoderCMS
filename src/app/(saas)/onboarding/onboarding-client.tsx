@@ -70,6 +70,26 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Show which plan the visitor picked on the marketing page, so the auth step
+  // confirms their choice instead of dropping them onto an anonymous form.
+  const params = useSearchParams();
+  const planParam = params.get("plan");
+  const cycleParam: BillingCycle = params.get("cycle") === "yearly" ? "yearly" : "monthly";
+  const [chosenPlan, setChosenPlan] = useState<Plan | null>(null);
+  const bdtRate = useCurrencyRate();
+
+  useEffect(() => {
+    if (!planParam) return;
+    fetch("/api/plans")
+      .then(r => r.json())
+      .then(d => setChosenPlan((d.plans ?? []).find((p: Plan) => p.id === planParam) ?? null))
+      .catch(() => {});
+  }, [planParam]);
+
+  const chosenPlanPrice = chosenPlan && planPrice(chosenPlan, cycleParam) > 0
+    ? `${formatCurrency(planPrice(chosenPlan, cycleParam), "USD", bdtRate)}${CYCLE_SUFFIX[cycleParam]}`
+    : null;
+
   async function handleSignup() {
     if (!email || !password) { toast.error("Email and password required"); return; }
     if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
@@ -114,6 +134,16 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
         <p className="text-muted-foreground mt-1">
           {mode === "signup" ? "Takes 10 seconds. No credit card." : "Sign in to continue building your site."}
         </p>
+        {/* Carry the chosen plan through the auth step — arriving at a bare
+            email/password box after picking a plan loses the thread. */}
+        {chosenPlan && (
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs">
+            <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+            <span className="font-semibold">{chosenPlan.name}</span>
+            {chosenPlanPrice && <span className="text-muted-foreground">· {chosenPlanPrice}</span>}
+            <span className="text-muted-foreground">· pay after signup</span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -902,7 +932,9 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
   const [authChecked, setAuthChecked] = useState(false);
   const [authedUser, setAuthedUser] = useState<{ id: string; email: string } | null>(null);
   const [step, setStep] = useState(0);
-  const [planId, setPlanId] = useState("basic");
+  // Honour ?plan= from the pricing page — without this, picking Pro on the
+  // marketing site silently dropped the customer onto Basic.
+  const [planId, setPlanId] = useState(params.get("plan") ?? "basic");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
     params.get("cycle") === "yearly" ? "yearly" : "monthly",
   );

@@ -8,6 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: BASE, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE}/agents`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/onboarding`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${BASE}/templates`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/website-for-bangladeshi-businesses`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${BASE}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
