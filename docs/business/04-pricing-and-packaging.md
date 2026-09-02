@@ -11,12 +11,14 @@ every few weeks. If you change a price, update this file in the same commit.
 
 Source of truth is the `plans` table. This table must match it.
 
-| Plan | Monthly | Yearly (30% off) | BDT monthly | BDT yearly | Visitors/mo | Pages | Overage /1k |
-|---|---|---|---|---|---|---|---|
-| Basic | $40 | $336 | ৳5,000 | ৳42,000 | 5,000 | 6 | $2 |
-| Pro | $80 | $672 | ৳10,000 | ৳84,000 | 25,000 | unlimited | $1 |
-| Biz | $160 | $1,344 | ৳20,000 | ৳168,000 | 100,000 | unlimited | $1 |
-| Custom | — | — | — | — | — | unlimited | — |
+| Plan | Monthly | Yearly (30% off) | BDT monthly | BDT yearly | Visitors/mo | Pages |
+|---|---|---|---|---|---|---|
+| Basic | $40 | $336 | ৳5,000 | ৳42,000 | 5,000 | 6 |
+| Pro | $80 | $672 | ৳10,000 | ৳84,000 | 25,000 | unlimited |
+| Biz | $160 | $1,344 | ৳20,000 | ৳168,000 | 100,000 | unlimited |
+| Custom | — | — | — | — | — | unlimited |
+
+There is no overage rate. See below.
 
 BDT prices are **fixed**, not converted at the live rate. A round ৳10,000 reads
 as a real price; ৳9,847 reads as a foreign price badly translated.
@@ -196,13 +198,37 @@ charge is a replaced card, not an unwillingness to pay.
 
 ---
 
+## Decision: the visitor allowance is a soft cap
+
+**Decided 2026-09-02 by Wali.** Built in v1.0.165.
+
+The plan allowance is real and now measured, but **nothing is ever auto-charged
+and nothing is auto-suspended for exceeding it.** The published "$2 per 1,000
+extra visitors" rate is gone — it was never billed, and an unenforceable
+published rate is a direct hit on a position built on being verifiable.
+
+How it works: daily per-tenant counters (migration 077), incremented from the
+site layout via `after()` so it cannot slow a page. Obvious crawlers are
+excluded — counting Googlebot against an allowance would warn an owner about
+traffic they never received. A daily cron emails at 80% and 100% of the
+allowance, once per threshold per month.
+
+The emails are framed as the site succeeding, with an upgrade available — not
+as a bill. Going over costs the customer nothing.
+
+**If you ever want to bill for overage**, the counters are already there, but
+re-read this section first: the pricing page currently promises "No overage
+charges", and reversing that on existing customers would be a broken promise,
+not a pricing change.
+
+---
+
 ## What is NOT decided yet
 
 - **Biz Dodo products** — must be created in the Dodo dashboard (see above)
-- **AiCoder top-up packages** — checkout and pricing still unbuilt; the Dodo
-  rail now works, so this is unblocked
+- **AiCoder top-ups** — actually already live (three packages at $9 / $29 /
+  $99, real Dodo product ids, checkout wired into the AiCoder dialog). An
+  earlier note here called these unbuilt; that was wrong.
 - **ENM phase D pricing** (associations, per-seat) — deliberately deferred
-- **Overage enforcement** — rates are published but nothing meters or bills
-  them. Publishing a rate we do not charge is a claim we cannot defend; either
-  implement it or remove it from the pricing page.
+
 
