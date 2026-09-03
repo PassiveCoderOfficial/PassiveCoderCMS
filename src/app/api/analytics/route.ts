@@ -52,8 +52,13 @@ export async function GET(req: Request) {
     byDay.set(r.day, (byDay.get(r.day) ?? 0) + r.views);
     byPath.set(r.path, (byPath.get(r.path) ?? 0) + r.views);
     byDevice.set(r.device_type, (byDevice.get(r.device_type) ?? 0) + r.views);
-    if (r.referrer_domain) byReferrer.set(r.referrer_domain, (byReferrer.get(r.referrer_domain) ?? 0) + r.views);
-    if (r.country) byCountry.set(r.country, (byCountry.get(r.country) ?? 0) + r.views);
+    // 'direct' / 'unknown' are the DB-level sentinels for "no referrer" / "no
+    // geo header" — a composite primary key can't hold null, so those columns
+    // are coalesced before insert. They mean "not applicable", not a real
+    // referrer or country, so they're excluded here rather than showing up
+    // as a fake top entry in either list.
+    if (r.referrer_domain && r.referrer_domain !== "direct") byReferrer.set(r.referrer_domain, (byReferrer.get(r.referrer_domain) ?? 0) + r.views);
+    if (r.country && r.country !== "unknown") byCountry.set(r.country, (byCountry.get(r.country) ?? 0) + r.views);
   }
 
   const topN = (m: Map<string, number>, n: number) =>

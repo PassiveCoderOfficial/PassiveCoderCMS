@@ -43,6 +43,14 @@ create policy pvs_read on public.page_view_stats
 -- can call it without any table grant of its own — same shape as
 -- bump_tenant_views in 077_visitor_counters.sql, which this sits alongside
 -- rather than replaces (that one feeds the plan allowance and stays as-is).
+-- referrer_domain and country sit in the composite primary key, and Postgres
+-- primary-key columns are implicitly NOT NULL — so a direct visit (no
+-- referrer, the common case) or a request with no geo header would violate
+-- the PK constraint on insert. Coalesced to sentinel values that still read
+-- naturally on the dashboard rather than nullable: 'direct' and 'unknown'.
+-- (Discovered live: every real call was silently failing this constraint and
+-- being swallowed by the caller's own error handling — nothing but a direct
+-- client-library test surfaced the actual error.)
 create or replace function public.bump_page_view_stats(
   t uuid, p_path text, p_referrer_domain text, p_device_type text, p_country text
 )
@@ -51,7 +59,13 @@ set search_path = public
 as $$
 begin
   insert into public.page_view_stats (tenant_id, day, path, referrer_domain, device_type, country, views)
-  values (t, current_date, left(p_path, 500), p_referrer_domain, coalesce(p_device_type, 'unknown'), p_country, 1)
+  values (
+    t, current_date, left(p_path, 500),
+    coalesce(nullif(p_referrer_domain, ''), 'direct'),
+    coalesce(p_device_type, 'unknown'),
+    coalesce(nullif(p_country, ''), 'unknown'),
+    1
+  )
   on conflict (tenant_id, day, path, referrer_domain, device_type, country)
   do update set views = public.page_view_stats.views + 1;
 end $$;
