@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
+import { countVisit } from "@/lib/usage/count-visit";
+import { recordPageView } from "@/lib/usage/record-page-view";
 
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createAdminClient();
@@ -35,7 +38,31 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // generateMetadata above) — the support WhatsApp button must only show on
   // the root domain, never on a tenant's site, or tenants lose their own
   // visitor leads to our support number.
-  const tenantId = (await headers()).get("x-tenant-id");
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+
+  // Same gap the theme comment above already flags: tenant "/" renders here,
+  // not through (site)/layout.tsx, so it also missed that layout's pageview
+  // tracking entirely — every tenant homepage visit went uncounted in both
+  // the billing allowance (tenant_visit_counters) and the analytics panel
+  // (page_view_stats). Found by testing recordPageView end-to-end: every
+  // OTHER path recorded correctly, only "/" never did — the opposite of what
+  // it first looked like, since an early test on "/" happened to show a row
+  // that (in hindsight) predated this fix and was likely leftover data.
+  if (tenantId) {
+    const userAgent = reqHeaders.get("user-agent");
+    after(() => countVisit(tenantId, userAgent));
+    after(() =>
+      recordPageView(
+        tenantId,
+        "/",
+        userAgent,
+        reqHeaders.get("referer"),
+        reqHeaders.get("host"),
+        reqHeaders.get("x-vercel-ip-country"),
+      ),
+    );
+  }
 
   // Tenant "/" is rendered here, not by (site)/layout.tsx, so it misses that
   // layout's theme handling. Pin the tenant's colour scheme (falling back to
