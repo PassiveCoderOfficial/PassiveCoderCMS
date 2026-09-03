@@ -310,19 +310,19 @@ function benefitsBlock(order) {
   return {
     ...BASE, id: uid("feat"), type: "features", order,
     background: { type: "color", color: LIGHT },
-    templateVariant: "icon-list-cards",
+    templateVariant: "centered-icons",
     data: {
-      title: "Benefits of Professional Floor Restoration", subtitle: "Our services help you:",
-      layout: "list", columns: 2, style: "checklist",
+      title: "Benefits of Professional Floor Restoration", subtitle: "What a proper repair job gets you",
+      layout: "grid", columns: 4, style: "minimal",
       items: [
-        { id: uid("f"), icon: "Sparkles", title: "Restore the natural shine", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Remove dullness", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Improve the appearance of your property", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Repair damaged flooring", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Extend the life of your floors", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Avoid expensive floor replacement", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Increase property value", description: "" },
-        { id: uid("f"), icon: "Sparkles", title: "Create a clean and welcoming environment", description: "" },
+        { id: uid("f"), icon: "Sparkles", title: "Restore Natural Shine", description: "Bring back the finish your floor had on day one." },
+        { id: uid("f"), icon: "Eraser", title: "Remove Dullness", description: "Clear away scuffs, haze and worn-out patches." },
+        { id: uid("f"), icon: "Home", title: "Improve Appearance", description: "A tidy floor lifts the look of the whole property." },
+        { id: uid("f"), icon: "Wrench", title: "Repair Damage", description: "Tears, dents, gaps and lifted seams fixed properly." },
+        { id: uid("f"), icon: "CalendarClock", title: "Extend Floor Life", description: "Catch problems early and get years more out of it." },
+        { id: uid("f"), icon: "PiggyBank", title: "Avoid Replacement Costs", description: "Repair costs a fraction of a full replacement." },
+        { id: uid("f"), icon: "TrendingUp", title: "Increase Property Value", description: "Well-kept flooring adds real value to your home." },
+        { id: uid("f"), icon: "Smile", title: "A Cleaner Space", description: "A clean, welcoming environment for family or clients." },
       ],
     },
   };
@@ -364,11 +364,11 @@ function whyChooseUsGridBlock(order) {
 
 function statsBlock(order) {
   return {
-    ...BASE, id: uid("stats"), type: "stats", order, padding: { top: 56, right: 0, bottom: 56, left: 0 },
-    background: { type: "gradient", gradient: `linear-gradient(135deg, ${PRIMARY}, ${DARK})` },
-    templateVariant: "colored-row",
+    ...BASE, id: uid("stats"), type: "stats", order, padding: ZERO_PAD,
+    background: { type: "none" },
+    templateVariant: "dark-band",
     data: {
-      columns: 4,
+      columns: 4, animate: true,
       items: [
         { id: uid("st"), value: "500+", label: "Floors Repaired", icon: "Hammer" },
         { id: uid("st"), value: "5.0★", label: "Average Rating", icon: "Star" },

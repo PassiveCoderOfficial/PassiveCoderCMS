@@ -237,7 +237,11 @@ export function NavigationBlock({ block, identityLogo }: {
   const accent = activeColor ?? (tokenMode ? BRAND_PRIMARY : fg);
 
   const ctaV = ctaVariant ?? "gradient";
-  const ctaClasses = "inline-flex items-center px-5 py-2.5 text-[0.9rem] font-semibold rounded-full transition-all hover:-translate-y-0.5";
+  // No display class here — each call site sets its own responsive display
+  // (e.g. "hidden md:inline-flex"). Including `inline-flex` made tailwind-merge
+  // drop the `hidden`, so the desktop CTA rendered on mobile and overflowed
+  // the header.
+  const ctaClasses = "items-center px-5 py-2.5 text-[0.9rem] font-semibold rounded-full transition-all hover:-translate-y-0.5";
   const ctaShadow = "0 8px 20px -6px hsl(var(--primary) / 0.45)";
   const ctaStyleObj: React.CSSProperties =
     ctaV === "outline"
