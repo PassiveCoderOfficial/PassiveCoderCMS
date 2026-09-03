@@ -2,7 +2,6 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { countVisit } from "@/lib/usage/count-visit";
-import { recordPageView } from "@/lib/usage/record-page-view";
 import type { Metadata } from "next";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
@@ -140,22 +139,17 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // page, and countVisit swallows its own errors — a counter is never worth
   // failing a customer's site over.
   if (tenantId) {
-    const userAgent = reqHeaders.get("user-agent");
-    after(() => countVisit(tenantId, userAgent));
-    // Separate call, separate table (page_view_stats) — this feeds the
-    // dashboard analytics panel and must never affect the billing counter
-    // above, so it stays a fully independent write with its own failure mode.
-    after(() =>
-      recordPageView(
-        tenantId,
-        reqHeaders.get("x-pathname") ?? "/",
-        userAgent,
-        reqHeaders.get("referer"),
-        reqHeaders.get("host"),
-        reqHeaders.get("x-vercel-ip-country"),
-      ),
-    );
+    after(() => countVisit(tenantId, reqHeaders.get("user-agent")));
   }
+  // recordPageView (page_view_stats, the analytics panel) is called from
+  // (site)/[...slug]/page.tsx instead of here — it needs the REAL path, and
+  // the x-pathname header this layout tried to inject via middleware proved
+  // unreliable (root-caused to Next 16 renaming middleware.ts's runtime
+  // contract to "Proxy"; the header-forwarding mechanism did not deliver the
+  // value downstream despite matching the documented API). The page
+  // component already has the exact path from its own route params, with no
+  // header plumbing needed — simpler and doesn't depend on a mechanism that
+  // silently failed here.
 
   const settingsCols = "site_theme, custom_css, custom_js, analytics_code, ga_measurement_id, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
   const [settingsResult, identityResult] = await Promise.all([

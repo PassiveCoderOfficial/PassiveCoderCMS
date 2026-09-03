@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { recordPageView } from "@/lib/usage/record-page-view";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
 import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
@@ -109,6 +111,26 @@ export default async function SitePage({ params }: Props) {
   const { data: page } = await pageQuery.maybeSingle();
 
   if (!page && !isRoot) notFound();
+
+  // Recorded here, past the notFound() above: a 404 isn't a real pageview of
+  // this page and shouldn't count as one. Uses pageSlug directly from this
+  // component's own route params rather than an injected x-pathname header —
+  // (site)/layout.tsx tried the header route first; it didn't reliably reach
+  // this layer (root-caused to Next 16's middleware→Proxy rename changing
+  // the response-header-forwarding contract in a way several targeted fixes
+  // didn't resolve), so this sidesteps that mechanism entirely.
+  if (tenantId) {
+    after(() =>
+      recordPageView(
+        tenantId,
+        isRoot ? "/" : `/${pageSlug}`,
+        reqHeaders.get("user-agent"),
+        reqHeaders.get("referer"),
+        reqHeaders.get("host"),
+        reqHeaders.get("x-vercel-ip-country"),
+      ),
+    );
+  }
 
   if (!page) {
     // A marketplace tenant with no hand-built home page still has a real
