@@ -258,7 +258,7 @@ function whyChooseUsBlock(order) {
 function stepsBlock(order) {
   return {
     ...BASE, id: uid("steps"), type: "steps", order,
-    background: { type: "color", color: LIGHT },
+    background: { type: "color", color: "#ffffff" },
     data: {
       title: "How It Works", subtitle: "Simple, straightforward process from enquiry to completion",
       layout: "horizontal", style: "connected",
@@ -351,45 +351,63 @@ function whyChooseUsGridBlock(order) {
     background: { type: "color", color: LIGHT },
     templateVariant: "outlined-cards",
     data: {
-      title: "Why Choose Us?", subtitle: "", columns: 4, iconSize: "md",
+      title: "Why Choose Us?", subtitle: "The difference is in the detail.", columns: 4, iconSize: "md",
       items: [
-        { id: uid("i"), icon: "Wrench", label: "Experienced Floor Specialists", description: "Our team has years of experience repairing different types of flooring." },
-        { id: uid("i"), icon: "HardHat", label: "Professional Equipment", description: "We use proper tools and techniques for consistent, high-quality repairs." },
-        { id: uid("i"), icon: "BadgeCheck", label: "Honest Pricing", description: "No hidden charges. You'll receive a clear quote before work starts." },
-        { id: uid("i"), icon: "ShieldCheck", label: "Quality Workmanship", description: "Every job is completed with care and attention to detail." },
+        { id: uid("i"), icon: "Wrench", color: SECONDARY, label: "Experienced Floor Specialists", description: "Years of experience repairing every type of flooring." },
+        { id: uid("i"), icon: "HardHat", color: SECONDARY, label: "Professional Equipment", description: "Proper tools and techniques for consistent, high-quality repairs." },
+        { id: uid("i"), icon: "BadgeCheck", color: SECONDARY, label: "Honest Pricing", description: "No hidden charges — a clear quote before work starts." },
+        { id: uid("i"), icon: "ShieldCheck", color: SECONDARY, label: "Quality Workmanship", description: "Every job completed with care and attention to detail." },
       ],
     },
   };
 }
 
-function perfectForBlock(order) {
+function statsBlock(order) {
   return {
-    ...BASE, id: uid("ig"), type: "icon_grid", order,
-    background: { type: "color", color: "#ffffff" },
-    templateVariant: "pill-row",
+    ...BASE, id: uid("stats"), type: "stats", order, padding: { top: 56, right: 0, bottom: 56, left: 0 },
+    background: { type: "gradient", gradient: `linear-gradient(135deg, ${PRIMARY}, ${DARK})` },
+    templateVariant: "colored-row",
     data: {
-      title: "Perfect For", subtitle: "", columns: 4, iconSize: "sm",
+      columns: 4,
       items: [
-        "HDB Flats", "Condominiums", "Landed Homes", "Apartments",
-        "Offices", "Hotels", "Restaurants", "Shopping Malls",
-        "Retail Stores", "Schools", "Commercial Buildings",
-      ].map((label) => ({ id: uid("i"), icon: "Star", label })),
+        { id: uid("st"), value: "500+", label: "Floors Repaired", icon: "Hammer" },
+        { id: uid("st"), value: "5.0★", label: "Average Rating", icon: "Star" },
+        { id: uid("st"), value: "24hr", label: "Fast Response", icon: "Clock" },
+        { id: uid("st"), value: "100%", label: "Free Quotes", icon: "BadgeCheck" },
+      ],
+    },
+  };
+}
+
+function perfectForAndTrustBlock(order) {
+  return {
+    ...BASE, id: uid("feat"), type: "features", order,
+    background: { type: "color", color: "#ffffff" },
+    templateVariant: "split-list",
+    data: {
+      title: "Perfect For", subtitle: "HDB flats, condos, landed homes, offices, hotels, restaurants, malls, retail stores, schools and commercial buildings — we cover every property type across Singapore.",
+      layout: "list", columns: 2, style: "minimal",
+      items: [
+        "HDB Flats & Condominiums", "Landed Homes & Apartments", "Offices & Commercial Buildings",
+        "Hotels & Restaurants", "Shopping Malls & Retail Stores", "Schools",
+      ].map((title) => ({ id: uid("i"), icon: "CheckCircle2", title, description: "" })),
     },
   };
 }
 
 function trustBlock(order) {
   return {
-    ...BASE, id: uid("ig"), type: "icon_grid", order,
+    ...BASE, id: uid("feat"), type: "features", order,
     background: { type: "color", color: LIGHT },
-    templateVariant: "numbered-features",
+    templateVariant: "split-list",
     data: {
-      title: "Why Customers Trust Us", subtitle: "", columns: 2, iconSize: "sm",
+      title: "Why Customers Trust Us", subtitle: "What sets our team apart on every job, big or small.",
+      layout: "list", columns: 2, style: "minimal",
       items: [
         "Experienced and Skilled Team", "Proper Tools & Techniques", "Transparent and Honest Pricing",
         "Fast Response Across Singapore", "Reliable and Friendly Service", "High-Quality Workmanship",
         "Residential & Commercial Expertise", "Commitment to Customer Satisfaction",
-      ].map((label) => ({ id: uid("i"), icon: "Star", label })),
+      ].map((title) => ({ id: uid("i"), icon: "CheckCircle2", title, description: "" })),
     },
   };
 }
@@ -406,7 +424,7 @@ function buildHome() {
       img: IMG.heroVinyl,
     }),
     servicesGrid(o++, SERVICES, { bg: "#ffffff" }),
-    whyChooseUsBlock(o++),
+    statsBlock(o++),
     benefitsBlock(o++),
     whyRepairBlock(o++),
     galleryBlock(o++, [
@@ -415,7 +433,7 @@ function buildHome() {
     ], "Recent Projects"),
     stepsBlock(o++),
     whyChooseUsGridBlock(o++),
-    perfectForBlock(o++),
+    perfectForAndTrustBlock(o++),
     trustBlock(o++),
     testimonialsBlock(o++),
     faqBlock(o++),
