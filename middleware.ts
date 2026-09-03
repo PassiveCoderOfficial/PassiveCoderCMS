@@ -106,6 +106,16 @@ export async function middleware(request: NextRequest) {
       hostNoPort !== `www.${rootNoPort}` &&
       hostNoPort.endsWith(`.${rootNoPort}`);
 
+    // Short link for the Bangladesh landing page. Video descriptions and
+    // spoken CTAs need something a person can retype from memory — nobody
+    // types /website-for-bangladeshi-businesses off a screen. Root domain
+    // only, so a tenant's own /bd path is untouched.
+    if (!isSubdomain && request.nextUrl.pathname === "/bd") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/website-for-bangladeshi-businesses";
+      return NextResponse.redirect(url);
+    }
+
     if (isSubdomain) {
       const subdomain = hostNoPort.slice(0, hostNoPort.length - rootNoPort.length - 1);
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BdLeadForm } from "@/components/marketing/bd-lead-form";
 import Image from "next/image";
 import { Hind_Siliguri } from "next/font/google";
 import { LightboxImage } from "./image-lightbox";
@@ -404,7 +405,7 @@ export default function BangladeshiExpatLandingPage() {
       <section className="bg-gray-950 text-white">
         <div className="mx-auto max-w-4xl px-5 py-16 sm:py-20 text-center">
           <span className="inline-block rounded-full bg-orange-500/10 text-orange-400 text-xs sm:text-sm font-bold px-4 py-1.5 border border-orange-500/20 mb-5">
-            ইয়ারলি নিলে ৩০% সাশ্রয়
+            মাসিক পেমেন্ট — যেকোনো সময় বন্ধ করতে পারবেন
           </span>
           <h2 className="text-2xl sm:text-4xl font-bold mb-10">
             আপনার বাজেট যা-ই হোক, একটা প্যাকেজ আছে
@@ -415,12 +416,11 @@ export default function BangladeshiExpatLandingPage() {
             <div className="rounded-2xl border border-gray-800 bg-gray-900/60 p-6 sm:p-8 flex flex-col">
               <span className="text-sm font-bold text-gray-400 mb-1">Basic প্যাকেজ</span>
               <div className="flex items-end gap-3 mb-1">
-                <span className="text-gray-500 line-through text-base">৳৬০,০০০</span>
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৪২,০০০</span>
-                <span className="text-gray-400 text-sm mb-1">/বছর</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৫,০০০</span>
+                <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-400 text-sm font-semibold mb-6">
-                অথবা মাসিক ৳৫,০০০ — ইয়ারলি নিলে ৩০% সাশ্রয়
+                অথবা বছরে ৳৪২,০০০ — ৩০% সাশ্রয়
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {basicFeatures.map((f) => (
@@ -447,12 +447,11 @@ export default function BangladeshiExpatLandingPage() {
               </span>
               <span className="text-sm font-bold text-orange-300 mb-1">Pro প্যাকেজ</span>
               <div className="flex items-end gap-3 mb-1">
-                <span className="text-gray-400 line-through text-base">৳১,২০,০০০</span>
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৮৪,০০০</span>
-                <span className="text-gray-400 text-sm mb-1">/বছর</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳১০,০০০</span>
+                <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-300 text-sm font-semibold mb-6">
-                অথবা মাসিক ৳১০,০০০ — ইয়ারলি নিলে ৩০% সাশ্রয়
+                অথবা বছরে ৳৮৪,০০০ — ৩০% সাশ্রয়
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {proFeatures.map((f) => (
@@ -589,6 +588,17 @@ export default function BangladeshiExpatLandingPage() {
           </p>
           <div className="flex justify-center">
             <CtaButtons dark />
+          </div>
+
+          {/* Third option for the reader who is interested but not ready to
+              open a chat or sign up. Without it they leave no trace. */}
+          <div className="mt-10 text-left">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px flex-1 bg-gray-700" />
+              <span className="text-xs text-gray-400">অথবা</span>
+              <div className="h-px flex-1 bg-gray-700" />
+            </div>
+            <BdLeadForm source="bd-landing-footer" />
           </div>
         </div>
       </section>
