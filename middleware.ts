@@ -16,7 +16,15 @@ async function updateSession(request: NextRequest) {
   mergedHeaders.set("x-pathname", request.nextUrl.pathname);
   const requestWithPathname = new NextRequest(request, { headers: mergedHeaders });
   request = requestWithPathname;
-  let supabaseResponse = NextResponse.next({ request });
+  // Next 16: NextResponse.next() must be given `{ request: { headers } }`
+  // specifically, not `{ request }` (the whole NextRequest object) — passing
+  // the whole request silently strips every request header downstream, which
+  // is exactly the same gotcha already documented in
+  // src/lib/supabase/middleware.ts's own updateSession (an unrelated,
+  // same-named function). This was the actual reason x-pathname read back as
+  // null in every server layout no matter how correctly it was set here:
+  // set correctly, then discarded one line later by this call's shape.
+  let supabaseResponse = NextResponse.next({ request: { headers: mergedHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +36,11 @@ async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
+          // Same fix as above: { headers } specifically, or x-pathname (and
+          // x-tenant-id, on the subdomain path) silently vanish from this
+          // point on for any request that sets a Supabase cookie — which is
+          // most authenticated requests, since session refresh runs here.
+          supabaseResponse = NextResponse.next({ request: { headers: request.headers } });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );
