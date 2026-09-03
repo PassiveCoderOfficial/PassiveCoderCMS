@@ -60,8 +60,11 @@ export async function recordPageView(
       p_device_type: deviceType(userAgent),
       p_country: country,
     });
-  } catch {
-    // Intentionally silent — a stats panel is never worth failing a
-    // customer's site over.
+  } catch (err) {
+    // Intentionally silent to the caller — a stats panel is never worth
+    // failing a customer's site over — but logged, since a swallowed error
+    // here is otherwise completely invisible (no user report, no thrown
+    // exception, just rows that quietly never appear).
+    console.error("[recordPageView] failed", err instanceof Error ? err.message : err);
   }
 }
