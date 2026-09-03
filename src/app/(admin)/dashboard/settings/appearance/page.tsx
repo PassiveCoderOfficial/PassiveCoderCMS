@@ -168,6 +168,21 @@ export default function AppearanceSettingsPage() {
               placeholder="// Your custom JavaScript here"
             />
           </div>
+          <div className="space-y-1.5" id="analytics">
+            <Label>Google Analytics (optional)</Label>
+            <input
+              type="text"
+              value={(settings.ga_measurement_id as string) ?? ""}
+              onChange={(e) => update("ga_measurement_id", e.target.value.trim())}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm font-mono shadow-sm"
+              placeholder="G-XXXXXXXXXX"
+            />
+            <p className="text-xs text-muted-foreground">
+              Your site already has its own analytics — see the Analytics page in the sidebar,
+              nothing to set up. Paste your GA4 Measurement ID here only if you also want data
+              flowing into your own Google Analytics account.
+            </p>
+          </div>
           <div className="space-y-1.5">
             <Label>Analytics Code</Label>
             <Textarea
@@ -175,7 +190,7 @@ export default function AppearanceSettingsPage() {
               onChange={(e) => update("analytics_code", e.target.value)}
               rows={4}
               className="font-mono text-xs"
-              placeholder="<!-- Google Analytics or other tracking code -->"
+              placeholder="<!-- Any other tracking or analytics snippet -->"
             />
           </div>
         </CardContent>

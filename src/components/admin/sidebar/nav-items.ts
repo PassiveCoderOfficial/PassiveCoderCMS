@@ -128,6 +128,7 @@ export const navSections: NavSection[] = [
     label: "Overview",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     ],
   },
   {

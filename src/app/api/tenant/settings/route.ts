@@ -7,7 +7,7 @@ import { getCurrentTenantId } from "@/lib/tenant/current";
 const ALLOWED = [
   "site_name", "site_description", "site_url", "logo_url", "favicon_url",
   "timezone", "language", "maintenance_mode", "meta_title", "meta_description",
-  "analytics_code", "custom_css", "custom_js", "site_theme",
+  "analytics_code", "custom_css", "custom_js", "site_theme", "ga_measurement_id",
   "currency", "currency_symbol", "currency_position",
   "maintenance_title", "maintenance_message", "auto_translate_enabled",
 ] as const;

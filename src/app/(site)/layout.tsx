@@ -2,9 +2,11 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { countVisit } from "@/lib/usage/count-visit";
+import { recordPageView } from "@/lib/usage/record-page-view";
 import type { Metadata } from "next";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
+import Script from "next/script";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { CartDrawer } from "@/components/site/cart-drawer";
@@ -138,10 +140,24 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // page, and countVisit swallows its own errors — a counter is never worth
   // failing a customer's site over.
   if (tenantId) {
-    after(() => countVisit(tenantId, reqHeaders.get("user-agent")));
+    const userAgent = reqHeaders.get("user-agent");
+    after(() => countVisit(tenantId, userAgent));
+    // Separate call, separate table (page_view_stats) — this feeds the
+    // dashboard analytics panel and must never affect the billing counter
+    // above, so it stays a fully independent write with its own failure mode.
+    after(() =>
+      recordPageView(
+        tenantId,
+        reqHeaders.get("x-pathname") ?? "/",
+        userAgent,
+        reqHeaders.get("referer"),
+        reqHeaders.get("host"),
+        reqHeaders.get("x-vercel-ip-country"),
+      ),
+    );
   }
 
-  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
+  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, ga_measurement_id, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
   const [settingsResult, identityResult] = await Promise.all([
     tenantId
       ? createAdminClient().then(admin =>
@@ -374,6 +390,25 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {settings?.auto_translate_enabled && <GoogleTranslateWidget />}
 
+      {settings?.ga_measurement_id && (
+        <>
+          {/* Phase 2 GA connect: inject the tenant's own gtag.js with their own
+              measurement ID. We never read GA data back — their GA account is
+              the source of truth for anyone who wants full GA-parity reporting;
+              our own analytics panel (page_view_stats) is what the dashboard
+              itself reads from. afterInteractive so it never blocks the page. */}
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${settings.ga_measurement_id}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga-init" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${settings.ga_measurement_id}');`}
+          </Script>
+        </>
+      )}
       {settings?.analytics_code && (
         <div dangerouslySetInnerHTML={{ __html: settings.analytics_code }} />
       )}
