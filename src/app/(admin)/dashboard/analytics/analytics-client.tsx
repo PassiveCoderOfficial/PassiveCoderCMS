@@ -182,6 +182,7 @@ export function AnalyticsClient({
 function TrendChart({ series, loading }: { series: { day: string; views: number }[]; loading: boolean }) {
   const [hover, setHover] = useState<number | null>(null);
   const W = 800, H = 220, PAD = 32;
+  const isEmpty = series.every(p => p.views === 0);
   const max = Math.max(1, ...series.map(p => p.views));
   const x = (i: number) => PAD + (i / Math.max(1, series.length - 1)) * (W - PAD * 2);
   const y = (v: number) => H - PAD - (v / max) * (H - PAD * 2);
@@ -197,21 +198,28 @@ function TrendChart({ series, loading }: { series: { day: string; views: number 
           <line key={f} x1={PAD} x2={W - PAD} y1={PAD + f * (H - PAD * 2)} y2={PAD + f * (H - PAD * 2)}
             stroke="hsl(var(--border))" strokeWidth={1} />
         ))}
-        <path d={area} fill="hsl(var(--primary) / 0.08)" />
-        <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-        {hover !== null && (
+        {/* All-zero data collapses the line onto the baseline, which reads as
+            a broken chart rather than an empty one — draw nothing but the
+            grid in that case, and say so in words instead. */}
+        {!isEmpty && (
+          <>
+            <path d={area} fill="hsl(var(--primary) / 0.08)" />
+            <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          </>
+        )}
+        {hover !== null && !isEmpty && (
           <>
             <line x1={x(hover)} x2={x(hover)} y1={PAD} y2={H - PAD} stroke="hsl(var(--border))" strokeWidth={1} />
             <circle cx={x(hover)} cy={y(series[hover].views)} r={4} fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth={2} />
           </>
         )}
         {/* Invisible hit strip per point — hover target much bigger than the mark */}
-        {series.map((p, i) => (
+        {!isEmpty && series.map((p, i) => (
           <rect key={i} x={x(i) - (W / series.length) / 2} y={0} width={W / series.length} height={H}
             fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
         ))}
       </svg>
-      {hover !== null && (
+      {hover !== null && !isEmpty && (
         <div
           className="absolute pointer-events-none rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md -translate-x-1/2 -translate-y-full"
           style={{ left: `${(x(hover) / W) * 100}%`, top: `${(y(series[hover].views) / H) * 100}%` }}
@@ -220,7 +228,7 @@ function TrendChart({ series, loading }: { series: { day: string; views: number 
           <p className="text-muted-foreground">{new Date(series[hover].day).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</p>
         </div>
       )}
-      {series.every(p => p.views === 0) && (
+      {isEmpty && (
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-xs text-muted-foreground">No visits recorded yet in this range.</p>
         </div>
