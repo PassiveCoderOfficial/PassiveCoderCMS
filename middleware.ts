@@ -143,9 +143,19 @@ export async function middleware(request: NextRequest) {
         return new NextResponse("This site's trial has expired.", { status: 403 });
       }
 
-      const requestWithTenant = new NextRequest(request, {
-        headers: { "x-tenant-id": tenant.id },
-      });
+      // Merge onto the ORIGINAL headers rather than replacing them —
+      // `new NextRequest(request, { headers: {...} })` takes `headers` as a
+      // full replacement, not a patch, so this previously discarded every
+      // header on the request except x-tenant-id. updateSession() below sets
+      // x-pathname on whatever it's handed, so that header was silently
+      // empty for every tenant-subdomain request — the exact case this
+      // middleware exists for. Found via a real pageview quietly not being
+      // recorded: x-pathname read back as null downstream for every path
+      // except "/", which only "worked" because a local fallback happened to
+      // produce the right value there by coincidence.
+      const tenantHeaders = new Headers(request.headers);
+      tenantHeaders.set("x-tenant-id", tenant.id);
+      const requestWithTenant = new NextRequest(request, { headers: tenantHeaders });
 
       return updateSession(requestWithTenant);
     }

@@ -141,9 +141,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // failing a customer's site over.
   if (tenantId) {
     const userAgent = reqHeaders.get("user-agent");
-    // TEMP diagnostic — recordPageView silently wrote a row for "/" but not
-    // for "/services" on the same tenant, with no thrown error either time.
-    console.log("[analytics-debug]", { pathname: reqHeaders.get("x-pathname"), tenantId });
     after(() => countVisit(tenantId, userAgent));
     // Separate call, separate table (page_view_stats) — this feeds the
     // dashboard analytics panel and must never affect the billing counter
