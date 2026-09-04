@@ -22,3 +22,8 @@ jobs:
           curl -s -X POST "https://passivecoder.com/api/cron/crm-reminders" \
             -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
             --max-time 120 || true
+      - name: Onboarding site build (one page per tick, resumes after timeouts)
+        run: |
+          curl -s -X POST "https://passivecoder.com/api/cron/onboarding-build" \
+            -H "x-cron-secret: ${{ secrets.INTERNAL_CRON_SECRET }}" \
+            --max-time 280 || true
