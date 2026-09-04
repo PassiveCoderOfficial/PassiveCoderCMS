@@ -25,7 +25,7 @@ const sectionSchema = z.object({
   /** Instruction for this one section, written by the planner for the writer. */
   brief: z.string().min(1).max(600),
   /** Must match a key in BLOCK_VARIANTS for this type; validated post-parse. */
-  variantKey: z.string().max(60).optional(),
+  variantKey: z.string().max(60).nullish(),
 });
 
 const pagePlanSchema = z.object({
@@ -34,8 +34,17 @@ const pagePlanSchema = z.object({
   sections: z.array(sectionSchema).min(3).max(16),
 });
 
-export type PageSection = z.infer<typeof sectionSchema>;
-export type PagePlan = z.infer<typeof pagePlanSchema>;
+// The schema accepts null on variantKey (the model sends it), but planPage()
+// normalizes it to undefined before returning, so the exported type reflects
+// the shape consumers actually receive rather than the raw parse output.
+export type PageSection = Omit<z.infer<typeof sectionSchema>, "variantKey"> & {
+  variantKey?: string;
+};
+// Same normalization as PageSection above — planPage() returns sections with
+// variantKey already reduced to `string | undefined`.
+export type PagePlan = Omit<z.infer<typeof pagePlanSchema>, "sections"> & {
+  sections: PageSection[];
+};
 
 const sitePlanSchema = z.object({
   pages: z.array(z.object({
@@ -131,18 +140,26 @@ export async function planPage(
   // availability list — the enum already guarantees a real BlockType, but not
   // that we permitted it for this business's evidence level.
   const allowed = new Set(allowedBlocks);
-  plan.sections = plan.sections
+  // Normalize variantKey to `string | undefined` here — the schema accepts
+  // null (the model sends it for "no preference"), but every consumer
+  // downstream treats an absent variant as undefined, so this is the one
+  // place the null is turned into the shape the rest of the pipeline uses.
+  const sections: PageSection[] = plan.sections
     .filter(s => allowed.has(s.blockType))
-    .map(s => ({
-      ...s,
-      variantKey: isKnownVariant(s.blockType, s.variantKey) ? s.variantKey : undefined,
-    }));
+    .map(s => {
+      const key = s.variantKey ?? undefined;
+      return {
+        blockType: s.blockType,
+        brief: s.brief,
+        variantKey: isKnownVariant(s.blockType, key) ? key : undefined,
+      };
+    });
 
-  if (plan.sections.length < 3) {
+  if (sections.length < 3) {
     throw new AiCoderError("The planner returned too few usable sections for a page.", "invalid_output");
   }
 
-  return plan;
+  return { pageTitle: plan.pageTitle, metaDescription: plan.metaDescription, sections };
 }
 
 /** Plans a whole site: which pages exist and what each covers. */

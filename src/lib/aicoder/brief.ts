@@ -20,28 +20,35 @@ import { z } from "zod";
  * single downstream call.
  */
 
+// Every optional field here is .nullish(), not .optional(). The model fills
+// this schema, and it returns an explicit `null` for anything the brief
+// didn't mention rather than omitting the key — .optional() accepts a missing
+// key but REJECTS null, which failed the whole parse and took the entire run
+// with it. Hit live on the first real full-site run: "expected string,
+// received null at tone / at designDirection" on a brief that simply said
+// nothing about tone or colours, i.e. the common case, not an edge case.
 export const businessFactsSchema = z.object({
   businessName: z.string().min(1).max(80),
-  primaryService: z.string().max(120).optional(),
+  primaryService: z.string().max(120).nullish(),
   services: z.array(z.string().min(1).max(80)).max(30).default([]),
-  location: z.string().max(120).optional(),
-  audience: z.string().max(200).optional(),
-  goal: z.string().max(200).optional(),
-  tone: z.string().max(200).optional(),
+  location: z.string().max(120).nullish(),
+  audience: z.string().max(200).nullish(),
+  goal: z.string().max(200).nullish(),
+  tone: z.string().max(200).nullish(),
   /** Free-text contact details lifted verbatim from the brief. Never invented —
    *  a wrong phone number is worse than no phone number. */
   contact: z.object({
-    phone: z.string().max(40).optional(),
-    email: z.string().max(80).optional(),
-    whatsapp: z.string().max(40).optional(),
-    address: z.string().max(200).optional(),
-  }).optional(),
+    phone: z.string().max(40).nullish(),
+    email: z.string().max(80).nullish(),
+    whatsapp: z.string().max(40).nullish(),
+    address: z.string().max(200).nullish(),
+  }).nullish(),
   /** Claims the site must NOT make (e.g. "licensed", "24/7", "10+ years"). */
   forbiddenClaims: z.array(z.string().min(1).max(120)).max(20).default([]),
   /** Names/brands that must never appear anywhere on the site. */
   neverMention: z.array(z.string().min(1).max(80)).max(20).default([]),
   /** Colour/typography direction in plain words, for the theme step. */
-  designDirection: z.string().max(400).optional(),
+  designDirection: z.string().max(400).nullish(),
   /** Real figures the brief supplied (years, projects, customers). Empty means
    *  the planner must not schedule a stats block. */
   provenNumbers: z.array(z.string().min(1).max(60)).max(10).default([]),

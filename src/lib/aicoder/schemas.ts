@@ -29,12 +29,12 @@ const imageQuerySchema = z.string().min(3).max(100);
 
 const heroContentSchema = z.object({
   title: z.string().min(1).max(120),
-  subtitle: z.string().max(160).optional(),
-  description: z.string().max(400).optional(),
-  primaryButtonLabel: z.string().max(40).optional(),
-  secondaryButtonLabel: z.string().max(40).optional(),
-  badge: z.string().max(60).optional(),
-  imageQuery: imageQuerySchema.optional(),
+  subtitle: z.string().max(160).nullish(),
+  description: z.string().max(400).nullish(),
+  primaryButtonLabel: z.string().max(40).nullish(),
+  secondaryButtonLabel: z.string().max(40).nullish(),
+  badge: z.string().max(60).nullish(),
+  imageQuery: imageQuerySchema.nullish(),
 });
 
 const textContentSchema = z.object({
@@ -76,28 +76,28 @@ const iconSchema = z.enum(ALLOWED_ICONS);
 const serviceItemContentSchema = z.object({
   title: z.string().min(1).max(60),
   description: z.string().min(1).max(200),
-  icon: iconSchema.optional(),
+  icon: iconSchema.nullish(),
 });
 const servicesContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   items: z.array(serviceItemContentSchema).min(1).max(16),
 });
 
 const ctaContentSchema = z.object({
   title: z.string().min(1).max(100),
-  description: z.string().max(240).optional(),
-  primaryButtonLabel: z.string().max(40).optional(),
-  secondaryButtonLabel: z.string().max(40).optional(),
+  description: z.string().max(240).nullish(),
+  primaryButtonLabel: z.string().max(40).nullish(),
+  secondaryButtonLabel: z.string().max(40).nullish(),
 });
 
 const testimonialItemContentSchema = z.object({
   name: z.string().min(1).max(60),
-  role: z.string().max(60).optional(),
+  role: z.string().max(60).nullish(),
   content: z.string().min(1).max(300),
 });
 const testimonialsContentSchema = z.object({
-  title: z.string().max(80).optional(),
+  title: z.string().max(80).nullish(),
   items: z.array(testimonialItemContentSchema).min(1).max(6),
 });
 
@@ -106,19 +106,19 @@ const faqItemContentSchema = z.object({
   answer: z.string().min(1).max(500),
 });
 const faqContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   items: z.array(faqItemContentSchema).min(1).max(10),
 });
 
 const featureItemContentSchema = z.object({
   title: z.string().min(1).max(60),
   description: z.string().min(1).max(200),
-  icon: iconSchema.optional(),
+  icon: iconSchema.nullish(),
 });
 const featuresContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   items: z.array(featureItemContentSchema).min(1).max(8),
 });
 
@@ -129,19 +129,19 @@ const featuresContentSchema = z.object({
 const statItemContentSchema = z.object({
   value: z.string().min(1).max(12),
   label: z.string().min(1).max(40),
-  suffix: z.string().max(4).optional(),
+  suffix: z.string().max(4).nullish(),
 });
 const statsContentSchema = z.object({
-  title: z.string().max(80).optional(),
+  title: z.string().max(80).nullish(),
   items: z.array(statItemContentSchema).min(2).max(6),
 });
 
 const iconGridItemContentSchema = z.object({
   label: z.string().min(1).max(40),
-  icon: iconSchema.optional(),
+  icon: iconSchema.nullish(),
 });
 const iconGridContentSchema = z.object({
-  title: z.string().max(80).optional(),
+  title: z.string().max(80).nullish(),
   items: z.array(iconGridItemContentSchema).min(3).max(12),
 });
 
@@ -150,8 +150,8 @@ const stepItemContentSchema = z.object({
   description: z.string().min(1).max(220),
 });
 const stepsContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   items: z.array(stepItemContentSchema).min(2).max(6),
 });
 
@@ -159,36 +159,36 @@ const stepsContentSchema = z.object({
  *  source — so the model only writes the section framing and per-slot captions.
  *  The merge step creates that many empty image slots for the owner to fill. */
 const galleryContentSchema = z.object({
-  title: z.string().max(80).optional(),
+  title: z.string().max(80).nullish(),
   captions: z.array(z.string().min(1).max(80)).min(3).max(12),
   /** One search phrase per caption, in the same order. Resolved to real photos
    *  after generation; when absent or short, the caption itself is used. */
-  imageQueries: z.array(imageQuerySchema).max(12).optional(),
+  imageQueries: z.array(imageQuerySchema).max(12).nullish(),
 });
 
 const teamMemberContentSchema = z.object({
   name: z.string().min(1).max(60),
   role: z.string().min(1).max(60),
-  bio: z.string().max(240).optional(),
+  bio: z.string().max(240).nullish(),
 });
 const teamContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   members: z.array(teamMemberContentSchema).min(1).max(8),
 });
 
 const pricingPlanContentSchema = z.object({
   name: z.string().min(1).max(40),
   price: z.string().min(1).max(20),
-  period: z.string().max(20).optional(),
-  description: z.string().max(160).optional(),
+  period: z.string().max(20).nullish(),
+  description: z.string().max(160).nullish(),
   features: z.array(z.string().min(1).max(80)).min(1).max(8),
-  ctaLabel: z.string().max(40).optional(),
-  highlighted: z.boolean().optional(),
+  ctaLabel: z.string().max(40).nullish(),
+  highlighted: z.boolean().nullish(),
 });
 const pricingContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   plans: z.array(pricingPlanContentSchema).min(1).max(4),
 });
 
@@ -197,13 +197,13 @@ const pricingContentSchema = z.object({
 const contactFieldContentSchema = z.object({
   label: z.string().min(1).max(40),
   type: z.enum(["text", "email", "tel", "textarea", "select"]),
-  required: z.boolean().optional(),
+  required: z.boolean().nullish(),
 });
 const contactContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
-  submitLabel: z.string().max(40).optional(),
-  successMessage: z.string().max(200).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
+  submitLabel: z.string().max(40).nullish(),
+  successMessage: z.string().max(200).nullish(),
   fields: z.array(contactFieldContentSchema).min(2).max(8),
 });
 
@@ -217,7 +217,7 @@ const navLinkContentSchema = z.object({
 const navigationContentSchema = z.object({
   logoText: z.string().min(1).max(40),
   links: z.array(navLinkContentSchema).min(2).max(8),
-  ctaLabel: z.string().max(40).optional(),
+  ctaLabel: z.string().max(40).nullish(),
 });
 
 const footerColumnContentSchema = z.object({
@@ -226,18 +226,18 @@ const footerColumnContentSchema = z.object({
 });
 const footerContentSchema = z.object({
   logoText: z.string().min(1).max(40),
-  tagline: z.string().max(200).optional(),
+  tagline: z.string().max(200).nullish(),
   columns: z.array(footerColumnContentSchema).min(1).max(4),
 });
 
 const timelineItemContentSchema = z.object({
   title: z.string().min(1).max(60),
   description: z.string().min(1).max(240),
-  date: z.string().max(30).optional(),
+  date: z.string().max(30).nullish(),
 });
 const timelineContentSchema = z.object({
-  title: z.string().max(80).optional(),
-  subtitle: z.string().max(160).optional(),
+  title: z.string().max(80).nullish(),
+  subtitle: z.string().max(160).nullish(),
   items: z.array(timelineItemContentSchema).min(2).max(8),
 });
 

@@ -115,7 +115,7 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
       b.data.items = c.items.map(item => ({
         id: generateId(),
         name: item.name,
-        role: item.role,
+        role: item.role ?? undefined,
         content: item.content,
         rating: 5,
       }));
@@ -154,7 +154,7 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
         id: generateId(),
         value: item.value,
         label: item.label,
-        suffix: item.suffix,
+        suffix: item.suffix ?? undefined,
       }));
       return b;
     }
@@ -207,7 +207,7 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
         id: generateId(),
         name: m.name,
         role: m.role,
-        bio: m.bio,
+        bio: m.bio ?? undefined,
       }));
       return b;
     }
@@ -220,10 +220,10 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
         id: generateId(),
         name: p.name,
         price: p.price,
-        period: p.period,
-        description: p.description,
+        period: p.period ?? undefined,
+        description: p.description ?? undefined,
         features: p.features,
-        highlighted: p.highlighted,
+        highlighted: p.highlighted ?? undefined,
         ctaLabel: p.ctaLabel ?? "Get Started",
         ctaUrl: "#",
       }));
