@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { after } from "next/server";
+import Script from "next/script";
 import { createAdminClient } from "@/lib/supabase/server";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { countVisit } from "@/lib/usage/count-visit";
@@ -68,12 +69,20 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // layout's theme handling. Pin the tenant's colour scheme (falling back to
   // light) so browser dark mode doesn't repaint native form controls and text.
   let scheme: string | null = null;
+  // Same query also carries the tenant's own GA4 id — tenant "/" renders here,
+  // not through (site)/layout.tsx where the gtag injection lives, so without
+  // this the homepage (the page a client checks first, and the highest-traffic
+  // one) was the ONE page on the site that never sent anything to their
+  // Google Analytics. Fetched alongside site_theme rather than as a second
+  // round-trip.
+  let gaMeasurementId: string | null = null;
   if (tenantId) {
     const supabase = await createAdminClient();
     const { data } = await supabase.from("site_settings")
-      .select("site_theme").eq("tenant_id", tenantId).maybeSingle();
+      .select("site_theme, ga_measurement_id").eq("tenant_id", tenantId).maybeSingle();
     const t = data?.site_theme ?? "light";
     if (t !== "system") scheme = t;
+    gaMeasurementId = (data?.ga_measurement_id as string | null) ?? null;
   }
 
   return (
@@ -98,6 +107,22 @@ export default async function MarketingLayout({ children }: { children: React.Re
         <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
       )}
       {children}
+      {gaMeasurementId && (
+        <>
+          {/* Same injection as (site)/layout.tsx — the tenant's own GA4 tag,
+              their measurement id, their account. We never read GA data back. */}
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga-init" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaMeasurementId}');`}
+          </Script>
+        </>
+      )}
       {!tenantId && <WhatsAppButton />}
     </>
   );
