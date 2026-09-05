@@ -199,8 +199,15 @@ export async function planOnboardingBuild(input: OnboardingBuildInput): Promise<
 
 /** A page attempt that keeps failing must not hold the queue forever. */
 const MAX_ATTEMPTS_PER_JOB = 12;
-/** A lock older than this is treated as abandoned — the holder was killed. */
-const LOCK_STALE_MS = 6 * 60 * 1000;
+/**
+ * A lock older than this is treated as abandoned — the holder was killed.
+ *
+ * A page takes roughly ninety seconds, so six minutes was far too generous:
+ * after an inline attempt was killed the job sat unclaimable while the cron
+ * ticked past it, which would turn a five-page site into a half-hour build.
+ * Three minutes still comfortably clears a healthy page.
+ */
+const LOCK_STALE_MS = 3 * 60 * 1000;
 
 export interface BuildTickResult {
   tenantId: string;

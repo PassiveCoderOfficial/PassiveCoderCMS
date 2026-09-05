@@ -66,8 +66,14 @@ function applyContent(type: SupportedBlockType, content: unknown, block: Block):
       const b = block as Extract<Block, { type: "hero" }>;
       b.data.title = c.title;
       if (c.subtitle) b.data.subtitle = c.subtitle;
-      if (c.description) b.data.description = c.description;
       if (c.badge) b.data.badge = c.badge;
+      // description is optional in the schema, and the block registry seeds it
+      // with instructional copy for a human filling the block in by hand ("Add
+      // a compelling description that explains what you offer..."). Leaving
+      // that default when the model omits the field publishes the instruction
+      // to the customer's live site, which a test signup did. An empty string
+      // renders as nothing, which is what an omission actually means.
+      b.data.description = c.description ?? "";
       if (c.primaryButtonLabel && b.data.primaryButton) b.data.primaryButton.label = c.primaryButtonLabel;
       if (c.secondaryButtonLabel && b.data.secondaryButton) b.data.secondaryButton.label = c.secondaryButtonLabel;
       return b;
