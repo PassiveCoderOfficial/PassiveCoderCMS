@@ -8,6 +8,7 @@ import type { Block } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { SavePresetDialog } from "./save-preset-dialog";
 import { useBlockActions } from "./use-block-actions";
+import { useEditSiteChrome } from "./site-chrome-context";
 
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { DraggableAttributes } from "@dnd-kit/core";
@@ -33,7 +34,8 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
   const { updateBlock } = useBuilderStore();
   const [saveOpen, setSaveOpen] = useState(false);
   const hideOn = block.hideOn ?? [];
-  const actions = useBlockActions(block, path, () => setSaveOpen(true));
+  const editSiteChrome = useEditSiteChrome();
+  const actions = useBlockActions(block, path, () => setSaveOpen(true), editSiteChrome);
 
   const toggleDevice = (device: "desktop" | "tablet" | "mobile") => {
     const next = hideOn.includes(device) ? hideOn.filter((d) => d !== device) : [...hideOn, device];

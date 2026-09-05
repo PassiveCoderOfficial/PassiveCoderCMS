@@ -1,4 +1,4 @@
-import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings, BookmarkPlus, type LucideIcon } from "lucide-react";
+import { GripVertical, Copy, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Settings, BookmarkPlus, PanelTop, type LucideIcon } from "lucide-react";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
@@ -15,7 +15,15 @@ export interface BlockAction {
  *  section actions — consumed by both the hover toolbar (block-toolbar.tsx)
  *  and the right-click/long-press context menu (block-context-menu.tsx) so
  *  the two never drift out of sync with each other. */
-export function useBlockActions(block: Block, path: ContainerPath | undefined, onSaveAsSection: () => void): BlockAction[] {
+export function useBlockActions(
+  block: Block,
+  path: ContainerPath | undefined,
+  onSaveAsSection: () => void,
+  /** Opens the header/footer builder for site chrome blocks. Optional so
+   *  surfaces without a page to return to (the header builder's own canvas)
+   *  simply don't offer it. */
+  onEditSiteChrome?: (target: "header" | "footer") => void,
+): BlockAction[] {
   const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock, setMobileSheet } = useBuilderStore();
   const siblings = path
     ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
@@ -34,6 +42,18 @@ export function useBlockActions(block: Block, path: ContainerPath | undefined, o
     { icon: ChevronUp, label: "Move up", onClick: () => canMoveUp && moveBlock(block.id, siblings[idx - 1].id, path), disabled: !canMoveUp },
     { icon: ChevronDown, label: "Move down", onClick: () => canMoveDown && moveBlock(block.id, siblings[idx + 1].id, path), disabled: !canMoveDown },
     { icon: Copy, label: "Duplicate", onClick: () => duplicateBlock(block.id, path) },
+    // Navigation and footer blocks are site chrome: the same menu and links
+    // appear on every page, and they are edited in the header/footer builder
+    // rather than per page. Without this the only route there is the sidebar,
+    // which means guessing that a block you can see and click is edited
+    // somewhere else entirely.
+    ...(onEditSiteChrome && (block.type === "navigation" || block.type === "footer")
+      ? [{
+          icon: PanelTop,
+          label: block.type === "navigation" ? "Edit site header" : "Edit site footer",
+          onClick: () => onEditSiteChrome(block.type === "navigation" ? "header" : "footer"),
+        }]
+      : []),
     ...(block.type === "container"
       ? [{ icon: BookmarkPlus, label: "Save as section", onClick: onSaveAsSection }]
       : []),

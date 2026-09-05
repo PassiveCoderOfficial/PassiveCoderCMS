@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { SiteChromeProvider } from "./canvas/site-chrome-context";
 import { useBuilderStore } from "@/lib/store/builder";
 import { BuilderCanvas } from "./canvas/builder-canvas";
 import { PreviewFrame } from "./canvas/preview-frame";
@@ -45,6 +47,7 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
   } = useBuilderStore();
   const [saving, setSaving] = useState(false);
   const isMobile = useIsMobile();
+  const router = useRouter();
   const { setEditorContext, clearEditorContext } = useAgentContext();
 
   useEffect(() => {
@@ -131,10 +134,33 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
 
   const controls: BuilderControls = { saving, isDirty, lastSavedAt, handleSave };
 
-  if (isMobile) {
-    return <MobileBuilderShell page={page} controls={controls} />;
-  }
-  return <DesktopBuilderShell controls={controls} aiCoderEnabled={aiCoderEnabled} pageId={page.id} />;
+  /**
+   * Leaves for the header/footer builder from a navigation or footer block.
+   *
+   * Saves first, and only navigates once the save resolves — the user is being
+   * sent out of the editor from a block they clicked, so losing unsaved page
+   * edits here would be losing work they never chose to discard. A failed save
+   * aborts the trip and leaves them on the page with their changes intact
+   * (handleSave has already shown the error).
+   */
+  const editSiteChrome = useCallback(async (target: "header" | "footer") => {
+    if (useBuilderStore.getState().isDirty) {
+      await handleSave();
+      if (useBuilderStore.getState().isDirty) return;
+    }
+    const returnTo = `/dashboard/pages/${page.id}`;
+    router.push(`/dashboard/header-builder?target=${target}&returnTo=${encodeURIComponent(returnTo)}`);
+  }, [handleSave, page.id, router]);
+
+  const shell = isMobile
+    ? <MobileBuilderShell page={page} controls={controls} />
+    : <DesktopBuilderShell controls={controls} aiCoderEnabled={aiCoderEnabled} pageId={page.id} />;
+
+  return (
+    <SiteChromeProvider value={(t) => void editSiteChrome(t)}>
+      {shell}
+    </SiteChromeProvider>
+  );
 }
 
 // ─── Desktop shell (unchanged layout) ───────────────────────────────────────

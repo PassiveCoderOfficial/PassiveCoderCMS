@@ -5,6 +5,7 @@ import {
   ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { useBlockActions } from "./use-block-actions";
+import { useEditSiteChrome } from "./site-chrome-context";
 import { SavePresetDialog } from "./save-preset-dialog";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
@@ -24,7 +25,8 @@ interface BlockContextMenuProps {
  *  the same actions as the hover toolbar — see use-block-actions.ts. */
 export function BlockContextMenu({ block, path, children, open, onOpenChange }: BlockContextMenuProps) {
   const [saveOpen, setSaveOpen] = useState(false);
-  const actions = useBlockActions(block, path, () => setSaveOpen(true));
+  const editSiteChrome = useEditSiteChrome();
+  const actions = useBlockActions(block, path, () => setSaveOpen(true), editSiteChrome);
 
   return (
     <>

@@ -1,15 +1,18 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { toBlocks } from "@/lib/site/global-blocks";
+import { safeReturnTo } from "@/lib/site/return-to";
 import HeaderBuilderClient, { type HeaderTarget } from "./header-builder-client";
 
 export default async function HeaderBuilderPage({
   searchParams,
 }: {
-  searchParams: Promise<{ target?: string }>;
+  searchParams: Promise<{ target?: string; returnTo?: string }>;
 }) {
-  const { target: rawTarget } = await searchParams;
+  const { target: rawTarget, returnTo: rawReturnTo } = await searchParams;
   const target: HeaderTarget = rawTarget === "footer" ? "footer" : "header";
+  // Untrusted — comes straight from the URL. See safeReturnTo.
+  const returnTo = safeReturnTo(rawReturnTo);
 
   const tenantId = await getCurrentTenantId();
   if (!tenantId) {
@@ -32,6 +35,11 @@ export default async function HeaderBuilderPage({
   );
 
   return (
-    <HeaderBuilderClient target={target} initialBlocks={initialBlocks} tenantId={tenantId} />
+    <HeaderBuilderClient
+      target={target}
+      initialBlocks={initialBlocks}
+      tenantId={tenantId}
+      returnTo={returnTo}
+    />
   );
 }
