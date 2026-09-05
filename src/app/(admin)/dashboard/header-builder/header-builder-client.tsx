@@ -107,6 +107,16 @@ export default function HeaderBuilderClient({
 
   const label = target === "header" ? "Header" : "Footer";
 
+  // Overlay headers (nav scrollAware / transparent) draw light text and no
+  // background of their own, expecting a dark hero underneath. Previewed on
+  // the usual white canvas they are white-on-white. Only those need the dark
+  // ground — a solid header or a footer paints its own and looks wrong on it.
+  const previewOnDark = blocks.some(b =>
+    b.type === "navigation" &&
+    Boolean((b.data as { scrollAware?: boolean; transparent?: boolean } | undefined)?.scrollAware
+      ?? (b.data as { transparent?: boolean } | undefined)?.transparent),
+  );
+
   /** Leaves for the page the user came from, saving first when needed so the
    *  round trip can never silently drop header edits. */
   async function returnToPage() {
@@ -212,8 +222,15 @@ export default function HeaderBuilderClient({
               area below the actual header content — sized to content instead,
               with just enough top padding to keep it from touching the edge. */}
           <div className="py-6">
-            <div className="mx-auto max-w-[1400px] bg-card shadow-sm">
-              <BuilderCanvas />
+            {/* Overlay headers (the nav's scroll-aware mode) are designed to
+                sit transparent over a dark hero and render light text with no
+                background of their own. On the builder's white canvas that is
+                white-on-white and effectively invisible, so the preview stands
+                on a neutral dark ground — approximating the hero the header
+                actually overlays, rather than a surface it was never drawn
+                for. Solid headers paint their own background over this. */}
+            <div className="mx-auto max-w-[1400px] shadow-sm">
+              <BuilderCanvas surfaceClassName={previewOnDark ? "bg-neutral-800" : "bg-card"} />
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">
               This {label.toLowerCase()} appears on every page. Changes save automatically.

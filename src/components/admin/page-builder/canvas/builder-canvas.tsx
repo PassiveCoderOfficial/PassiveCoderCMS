@@ -38,7 +38,12 @@ function findBlockAnywhere(blocks: Block[], id: string): Block | undefined {
   return undefined;
 }
 
-export function BuilderCanvas() {
+export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
+  /** Ground the blocks are previewed against. Defaults to white, which is
+   *  right for a page. The header builder overrides it: overlay headers render
+   *  light text on no background of their own and are invisible on white. */
+  surfaceClassName?: string;
+} = {}) {
   const { blocks, mode, moveBlock, selectBlock, selectedBlockId, updateBlock } = useBuilderStore();
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
 
@@ -144,7 +149,8 @@ export function BuilderCanvas() {
         // context) so it can never render above the builder's own chrome —
         // toolbars, the left panel, dialogs — regardless of the block's own
         // z-index value.
-        "min-h-full w-full bg-white transition-all duration-300 isolate",
+        "min-h-full w-full transition-all duration-300 isolate",
+        surfaceClassName,
         // transform-gpu makes this element the containing block for any
         // `position: fixed` descendant (a transformed ancestor takes over from
         // the viewport, per CSS Transforms). Blocks authored for a real page
