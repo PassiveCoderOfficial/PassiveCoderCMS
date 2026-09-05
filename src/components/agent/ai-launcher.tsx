@@ -23,9 +23,14 @@ import { sectionForPath, type SectionDef } from "@/lib/aicoder/sections/registry
 export function AiLauncher({
   agentEnabled,
   aiCoderEnabled,
+  hasBusinessProfile,
 }: {
   agentEnabled: boolean;
   aiCoderEnabled: boolean;
+  /** Section generation reads the stored profile for business context. With no
+   *  profile AND no typed instruction the API refuses — surfaced up front so
+   *  the user isn't told that only after clicking Generate. */
+  hasBusinessProfile: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -71,6 +76,7 @@ export function AiLauncher({
               {section && (
                 <SectionAction
                   section={section}
+                  hasBusinessProfile={hasBusinessProfile}
                   onDone={() => { setOpen(false); router.refresh(); }}
                 />
               )}
@@ -125,7 +131,13 @@ export function AiLauncher({
 }
 
 /** The section-specific generate action, with an inline preview before saving. */
-function SectionAction({ section, onDone }: { section: SectionDef; onDone: () => void }) {
+function SectionAction({
+  section, hasBusinessProfile, onDone,
+}: {
+  section: SectionDef;
+  hasBusinessProfile: boolean;
+  onDone: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [instruction, setInstruction] = useState("");
   const [loading, setLoading] = useState(false);
@@ -199,11 +211,27 @@ function SectionAction({ section, onDone }: { section: SectionDef; onDone: () =>
             value={instruction}
             onChange={e => setInstruction(e.target.value)}
             rows={2}
-            placeholder="Anything to add? (optional — your business profile is used automatically)"
+            placeholder={hasBusinessProfile
+              ? "Anything to add? (optional — your business profile is used automatically)"
+              : "Describe your business — what you do, where, and for whom."}
             className="text-xs"
           />
 
-          <Button size="sm" className="w-full h-7 text-xs gap-1.5" onClick={generate} disabled={loading}>
+          {!hasBusinessProfile && (
+            <p className="text-[10px] text-amber-600 leading-snug">
+              No business profile saved yet, so describe your business above — or
+              {" "}
+              <a href="/dashboard/business-profile" className="underline">fill in your profile</a>
+              {" "}once and every AiCoder action uses it automatically.
+            </p>
+          )}
+
+          <Button
+            size="sm"
+            className="w-full h-7 text-xs gap-1.5"
+            onClick={generate}
+            disabled={loading || (!hasBusinessProfile && !instruction.trim())}
+          >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
             {result ? "Try again" : "Generate"}
           </Button>

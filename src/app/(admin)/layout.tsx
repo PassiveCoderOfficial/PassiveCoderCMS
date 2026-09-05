@@ -11,6 +11,8 @@ import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
 import { AgentContextProvider } from "@/components/agent/agent-context";
 import { AiLauncher } from "@/components/agent/ai-launcher";
+import { renderProfileBrief } from "@/lib/aicoder/profile-brief";
+import { apiTenantId } from "@/lib/tenant/api";
 import type { CMSUser } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -419,6 +421,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const agentEnabled = !!sa || !!enabledModules?.ai_agent;
   const aiCoderEnabled = !!sa || !!enabledModules?.ai_coder;
 
+  // Whether section generation has business context to work from. Uses
+  // renderProfileBrief — the exact function the generate route calls — rather
+  // than checking the profile row exists, because a row whose fields are all
+  // blank renders "" and is refused just like a missing one. Checking anything
+  // else here would let the panel promise a generation the API then rejects.
+  const hasBusinessProfile =
+    aiCoderEnabled ? await tenantHasProfileBrief() : false;
+
   return (
     <AgentContextProvider>
       <div className="flex h-screen overflow-hidden bg-background flex-col">
@@ -445,8 +455,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </main>
           </div>
         </div>
-        <AiLauncher agentEnabled={agentEnabled} aiCoderEnabled={aiCoderEnabled} />
+        <AiLauncher
+          agentEnabled={agentEnabled}
+          aiCoderEnabled={aiCoderEnabled}
+          hasBusinessProfile={hasBusinessProfile}
+        />
       </div>
     </AgentContextProvider>
   );
+}
+
+/** Mirrors how /api/aicoder/section resolves its tenant, so the launcher's
+ *  "no business profile" state matches what that route will actually do. */
+async function tenantHasProfileBrief(): Promise<boolean> {
+  try {
+    const id = await apiTenantId();
+    if (!id) return false;
+    return (await renderProfileBrief(id)).trim().length > 0;
+  } catch {
+    // Never let this optional hint break the dashboard shell. Assuming a
+    // profile exists degrades to the old behaviour: the button works, and a
+    // genuinely missing profile is reported by the API as before.
+    return true;
+  }
 }
