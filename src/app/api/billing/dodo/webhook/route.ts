@@ -5,6 +5,14 @@ import { syncENMTier, enmTierForPlan } from "@/lib/enm";
 
 export const runtime = "nodejs";
 
+// NOTE: register this endpoint in Dodo against the WWW host —
+// https://www.passivecoder.com/api/billing/dodo/webhook
+//
+// The apex domain 307-redirects to www and webhook delivery does not follow
+// redirects, so an apex registration silently never arrives. That is what
+// happened to the sandbox endpoint: a test payment reached "active" at Dodo
+// while the subscription sat at "pending" here, with no error anywhere.
+
 export async function POST(req: Request) {
   const rawBody = await req.text();
 
