@@ -186,3 +186,27 @@ html.dark .cms-canvas-light {
 
   color-scheme: light;
 }
+
+/**
+ * Blocks previewed inside a builder canvas must not use viewport-fixed
+ * positioning.
+ *
+ * Some blocks are legitimately `position: fixed` on a real page — the
+ * navigation bar's overlay-hero mode floats over the hero rather than
+ * consuming layout height above it. Inside the builder that is wrong twice
+ * over: the element escapes the canvas frame, and because a fixed element is
+ * out of flow it contributes zero height, so the canvas collapses to nothing
+ * and the block overlaps whatever is rendered below it.
+ *
+ * Containing it with a transformed ancestor fixes the first half only — the
+ * height is still zero. Rendering it static inside the canvas fixes both, and
+ * is also the more honest preview: the builder shows the bar in its own space
+ * rather than pretending there is a hero underneath.
+ *
+ * Scoped to the canvas, so the published site is untouched.
+ */
+.cms-builder-canvas nav.fixed,
+.cms-builder-canvas header.fixed,
+.cms-builder-canvas > * .fixed.top-0 {
+  position: static;
+}

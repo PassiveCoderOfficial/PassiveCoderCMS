@@ -149,7 +149,7 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
         // context) so it can never render above the builder's own chrome —
         // toolbars, the left panel, dialogs — regardless of the block's own
         // z-index value.
-        "min-h-full w-full transition-all duration-300 isolate",
+        "cms-builder-canvas min-h-full w-full transition-all duration-300 isolate",
         surfaceClassName,
         // transform-gpu makes this element the containing block for any
         // `position: fixed` descendant (a transformed ancestor takes over from
