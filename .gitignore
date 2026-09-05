@@ -47,3 +47,4 @@ scripts/freebird/_*.mjs
 !scripts/freebird/_content.mjs
 scripts/freebird/shots*.mjs
 _incoming/
+_*.mjs
