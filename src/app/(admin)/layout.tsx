@@ -10,7 +10,7 @@ import { SA_VIEWING_COOKIE, STAFF_VIEWING_COOKIE } from "@/lib/tenant/current";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
 import { AgentContextProvider } from "@/components/agent/agent-context";
-import { AgentLauncher } from "@/components/agent/agent-launcher";
+import { AiLauncher } from "@/components/agent/ai-launcher";
 import type { CMSUser } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -414,7 +414,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   // SA bypasses gating everywhere else in this layout, so the launcher does
   // too. Regular tenants/staff need the ai_agent module explicitly enabled.
-  const agentEnabled = sa || !!enabledModules?.ai_agent;
+  // !!sa, not sa — `sa` is the super-admin ROW, and these are passed as real
+  // boolean props now rather than only ever being used in a && short-circuit.
+  const agentEnabled = !!sa || !!enabledModules?.ai_agent;
+  const aiCoderEnabled = !!sa || !!enabledModules?.ai_coder;
 
   return (
     <AgentContextProvider>
@@ -442,7 +445,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </main>
           </div>
         </div>
-        {agentEnabled && <AgentLauncher />}
+        <AiLauncher agentEnabled={agentEnabled} aiCoderEnabled={aiCoderEnabled} />
       </div>
     </AgentContextProvider>
   );
