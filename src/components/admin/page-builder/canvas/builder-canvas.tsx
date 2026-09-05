@@ -145,6 +145,16 @@ export function BuilderCanvas() {
         // toolbars, the left panel, dialogs — regardless of the block's own
         // z-index value.
         "min-h-full w-full bg-white transition-all duration-300 isolate",
+        // transform-gpu makes this element the containing block for any
+        // `position: fixed` descendant (a transformed ancestor takes over from
+        // the viewport, per CSS Transforms). Blocks authored for a real page
+        // legitimately use `fixed` — the navigation bar's overlay-hero mode
+        // does — and without this they escape the canvas entirely and render
+        // across the dashboard's own header, on top of the search field and
+        // toolbar. Same class of bug the nav's mega-menu already had to fix
+        // by anchoring to its <nav> instead of the viewport; this closes it
+        // for every block at the canvas boundary rather than one at a time.
+        "transform-gpu",
         mode === "preview" && "pointer-events-none",
       )}
       onClick={(e) => {
