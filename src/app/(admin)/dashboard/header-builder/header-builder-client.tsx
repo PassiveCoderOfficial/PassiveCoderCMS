@@ -229,7 +229,7 @@ export default function HeaderBuilderClient({
                 on a neutral dark ground — approximating the hero the header
                 actually overlays, rather than a surface it was never drawn
                 for. Solid headers paint their own background over this. */}
-            <div className="mx-auto max-w-[1400px] shadow-sm">
+            <div className="mx-auto max-w-[1400px] shadow-sm cms-canvas-light">
               <BuilderCanvas surfaceClassName={previewOnDark ? "bg-neutral-800" : "bg-card"} />
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">
