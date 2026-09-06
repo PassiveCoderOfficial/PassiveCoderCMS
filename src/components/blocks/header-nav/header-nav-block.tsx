@@ -51,7 +51,14 @@ export function HeaderNavBlock({ block }: { block: HeaderNavBlockProps }) {
       {mobileOpen && (
         <>
           <div className="md:hidden fixed inset-0 top-[4.5rem] bg-black/40 z-40 animate-in fade-in" onClick={() => setMobileOpen(false)} />
-          <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))" }}>
+          {/* fixed to the viewport, not absolute to this block's own column —
+              this block is now one narrow column inside a header container
+              (alongside header_logo/header_cta), not the full-width <nav>
+              the legacy block was. absolute left-0 right-0 here would only
+              span this column's own width, producing a narrow floating box
+              instead of a full-width drawer — found live on a real tenant
+              after the navigation->sub-block migration (2026-09-06). */}
+          <div className="md:hidden fixed left-0 right-0 top-[4.5rem] z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))" }}>
             <MobileNavList items={items} onNavigate={() => setMobileOpen(false)} />
           </div>
         </>
