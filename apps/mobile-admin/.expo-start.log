@@ -1,0 +1,7 @@
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_API_BASE
+Starting project at D:\Dev\Projects\CMS\cms\apps\mobile-admin
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Tunnel connected.
+CommandError: ngrok tunnel took too long to connect.

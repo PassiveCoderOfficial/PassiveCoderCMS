@@ -57,7 +57,7 @@ export default async function PageEditorPage({ params }: Props) {
       ? await resolveDbTemplateIdentity(identity.template_id)
       : null;
     if (templateIdentity) {
-      templateCSSVars = buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography);
+      templateCSSVars = buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography, ".cms-canvas-light");
       templateCustomCss = templateIdentity.customCss ?? null;
     }
     tenantSlug = tenant?.slug ?? null;
@@ -72,7 +72,7 @@ export default async function PageEditorPage({ params }: Props) {
       .eq("id", page.template_id)
       .maybeSingle();
     if (tpl?.palette && tpl?.typography) {
-      templateCSSVars = buildTemplateCSSVars(tpl.palette, tpl.typography);
+      templateCSSVars = buildTemplateCSSVars(tpl.palette, tpl.typography, ".cms-canvas-light");
     }
     templateCustomCss = (tpl?.custom_css as string | null) ?? null;
   }

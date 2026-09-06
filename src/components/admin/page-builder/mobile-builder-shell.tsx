@@ -58,7 +58,7 @@ export function MobileBuilderShell({ page, controls }: { page: Page; controls: B
       </div>
 
       {/* Canvas — full width; the phone is the mobile preview */}
-      <div className="flex-1 overflow-auto bg-white">
+      <div className="flex-1 overflow-auto cms-canvas-light">
         <BuilderCanvas />
       </div>
 

@@ -58,6 +58,22 @@ function isDark(hex: string): boolean {
 export function buildTemplateCSSVars(
   palette: TemplatePalette,
   typography: TemplateTypography,
+  /**
+   * CSS selector these vars are scoped under. Defaults to `:root` for the
+   * published site and template preview, where there is no admin chrome to
+   * conflict with.
+   *
+   * The page editor passes `.cms-canvas-light` instead: injecting at
+   * `:root` there overrides the ADMIN dashboard's own
+   * --background/--foreground for the whole shell (sidebar, toolbar, panels),
+   * not just the canvas, because this rule and the dashboard's `.dark`
+   * class rule have equal specificity and this one is injected later in the
+   * document, so it silently wins and the dark-mode toggle stops doing
+   * anything on the editor route. Scoping to the canvas wrapper keeps the
+   * tenant palette confined to block content, same as the `revert` trick
+   * in globals.css already assumes it will be.
+   */
+  scopeSelector = ":root",
 ): string {
   const p = (hex: string) => hexToHSL(hex);
   // Wrap single font names in quotes, but pass through font stacks / CSS var() refs as-is.
@@ -74,7 +90,7 @@ export function buildTemplateCSSVars(
   const accentSoft = shiftL(palette.accent, darkBg ? -18 : 38);
 
   return `
-:root {
+${scopeSelector} {
   --background: ${p(palette.background)};
   --foreground: ${p(palette.foreground)};
   --card: ${p(palette.card)};
