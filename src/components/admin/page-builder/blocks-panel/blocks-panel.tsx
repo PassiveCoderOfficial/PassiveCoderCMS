@@ -225,7 +225,18 @@ export function BlocksPanel({
       )}
 
       {tab === "config" ? (
-        <SettingsPanel />
+        // min-h-0 is required here: this is a flex child of the flex-col
+        // wrapper above, and a flex child defaults to min-height:auto, which
+        // sizes it to its content instead of the space actually available.
+        // SettingsPanel's own internal ScrollArea then computes its
+        // scrollable height against that oversized box, so the scrollbar
+        // shows room to scroll but the bottom of the content (Animation, the
+        // last field on the Style tab) is unreachable no matter how far you
+        // scroll -- the box scrolled inside was already taller than the
+        // viewport allowed for it.
+        <div className="flex-1 min-h-0">
+          <SettingsPanel />
+        </div>
       ) : (
         <>
       {/* Import — pull a layout in from another page or a template */}

@@ -23,6 +23,11 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
   // inline content image. Keep block.background in sync here so picking a
   // photo from this Content tab actually shows up section-wide.
   const isFullscreen = block.templateVariant === "fullscreen-overlay";
+  const updateButtonField = (btn: "primaryButton" | "secondaryButton", field: "label" | "url", value: string) => {
+    const existing = block.data[btn] ?? { label: "", url: "", variant: btn === "primaryButton" ? "primary" : "outline" };
+    updateBlock(block.id, { data: { ...block.data, [btn]: { ...existing, [field]: value } } });
+  };
+
   const updateImage = (url: string) => {
     if (isFullscreen) {
       updateBlock(block.id, {
@@ -76,6 +81,23 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={updateImage} />
       </FieldGroup>
 
+      <div className="pt-2 border-t space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Primary Button</p>
+        <div className="space-y-1.5">
+          <Input value={block.data.primaryButton?.label ?? ""} onChange={(e) => updateButtonField("primaryButton", "label", e.target.value)} className="h-8 text-xs" placeholder="Label, e.g. Get a Free Quote" />
+          <Input value={block.data.primaryButton?.url ?? ""} onChange={(e) => updateButtonField("primaryButton", "url", e.target.value)} className="h-8 text-xs" placeholder="Link URL, e.g. /contact" />
+        </div>
+
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Secondary Button</p>
+        <div className="space-y-1.5">
+          <Input value={block.data.secondaryButton?.label ?? ""} onChange={(e) => updateButtonField("secondaryButton", "label", e.target.value)} className="h-8 text-xs" placeholder="Label, e.g. WhatsApp Us" />
+          <Input value={block.data.secondaryButton?.url ?? ""} onChange={(e) => updateButtonField("secondaryButton", "url", e.target.value)} className="h-8 text-xs" placeholder="Link URL" />
+        </div>
+        <p className="text-[10px] text-muted-foreground leading-snug">
+          Button colors are in the Style tab.
+        </p>
+      </div>
+
     </div>
   );
 }
@@ -126,33 +148,25 @@ export function HeroStyleSettings({ block }: { block: HeroBlockProps }) {
       </div>
 
       <div className="pt-1 border-t">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Primary Button</p>
-        <div className="space-y-1.5">
-          <Input value={block.data.primaryButton?.label ?? ""} onChange={(e) => updateButton("primaryButton", "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
-          <Input value={block.data.primaryButton?.url ?? ""} onChange={(e) => updateButton("primaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
-          <div className="grid grid-cols-2 gap-1.5">
-            <ColorPicker value={block.data.primaryButton?.bgColor || "#ffffff"} onChange={(v) => updateButton("primaryButton", "bgColor", v)} className="h-7" />
-            <ColorPicker value={block.data.primaryButton?.textColor || "#000000"} onChange={(v) => updateButton("primaryButton", "textColor", v)} className="h-7" />
-          </div>
-          {block.data.primaryButton?.bgColor && (
-            <button onClick={() => { updateButton("primaryButton", "bgColor", ""); updateButton("primaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
-          )}
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Primary Button Color</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <ColorField label="Background" value={block.data.primaryButton?.bgColor || "#ffffff"} onChange={(v) => updateButton("primaryButton", "bgColor", v)} />
+          <ColorField label="Text" value={block.data.primaryButton?.textColor || "#000000"} onChange={(v) => updateButton("primaryButton", "textColor", v)} />
         </div>
+        {block.data.primaryButton?.bgColor && (
+          <button onClick={() => { updateButton("primaryButton", "bgColor", ""); updateButton("primaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline mt-1">Use theme default instead</button>
+        )}
       </div>
 
       <div className="pt-1 border-t">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Secondary Button</p>
-        <div className="space-y-1.5">
-          <Input value={block.data.secondaryButton?.label ?? ""} onChange={(e) => updateButton("secondaryButton", "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
-          <Input value={block.data.secondaryButton?.url ?? ""} onChange={(e) => updateButton("secondaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
-          <div className="grid grid-cols-2 gap-1.5">
-            <ColorPicker value={block.data.secondaryButton?.bgColor || "#00000000"} onChange={(v) => updateButton("secondaryButton", "bgColor", v)} className="h-7" />
-            <ColorPicker value={block.data.secondaryButton?.textColor || "#ffffff"} onChange={(v) => updateButton("secondaryButton", "textColor", v)} className="h-7" />
-          </div>
-          {block.data.secondaryButton?.bgColor && (
-            <button onClick={() => { updateButton("secondaryButton", "bgColor", ""); updateButton("secondaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline">Use theme default instead</button>
-          )}
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Secondary Button Color</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <ColorField label="Background" value={block.data.secondaryButton?.bgColor || "#00000000"} onChange={(v) => updateButton("secondaryButton", "bgColor", v)} />
+          <ColorField label="Text" value={block.data.secondaryButton?.textColor || "#ffffff"} onChange={(v) => updateButton("secondaryButton", "textColor", v)} />
         </div>
+        {block.data.secondaryButton?.bgColor && (
+          <button onClick={() => { updateButton("secondaryButton", "bgColor", ""); updateButton("secondaryButton", "textColor", ""); }} className="text-[11px] text-muted-foreground underline mt-1">Use theme default instead</button>
+        )}
       </div>
 
       <div className="pt-1 border-t">
