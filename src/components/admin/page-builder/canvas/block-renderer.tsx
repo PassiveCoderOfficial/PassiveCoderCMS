@@ -43,6 +43,11 @@ import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { ContainerBlock } from "./container-block";
+import { HeaderLogoBlock } from "@/components/blocks/header-logo/header-logo-block";
+import { HeaderNavBlock } from "@/components/blocks/header-nav/header-nav-block";
+import { HeaderCtaBlock } from "@/components/blocks/header-cta/header-cta-block";
+import { HeaderCartBlock } from "@/components/blocks/header-cart/header-cart-block";
+import { HeaderAccountBlock } from "@/components/blocks/header-account/header-account-block";
 import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
 import type { ContainerPath } from "@/lib/store/builder";
@@ -92,6 +97,13 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
       case "hero": return <HeroBlock block={block} />;
       case "slider": return <SliderBlock block={block} />;
       case "navigation": return <NavigationBlock block={block} />;
+      case "header_logo": return <HeaderLogoBlock block={block} />;
+      case "header_nav": return <HeaderNavBlock block={block} />;
+      case "header_cta": return <HeaderCtaBlock block={block} />;
+      case "header_cart": return <HeaderCartBlock block={block} />;
+      // Editor canvas has no visitor session — always previews signed-out,
+      // the correct default state for what a real visitor sees first.
+      case "header_account": return <HeaderAccountBlock block={block} />;
       case "text": return <TextBlock block={block} />;
       case "services": return <ServicesBlockClient block={block} />;
       case "item_box": return <ItemBoxBlockClient block={block} />;

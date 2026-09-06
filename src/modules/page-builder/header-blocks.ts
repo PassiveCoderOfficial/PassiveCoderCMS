@@ -13,6 +13,17 @@ import type { BlockDefinition } from "@/modules/page-builder/block-registry";
 
 export const HEADER_BLOCK_TYPES: readonly BlockType[] = [
   "navigation",
+  // Independent header sub-blocks (2026-09-06) — compose these instead of
+  // (or alongside) the legacy navigation block. See project_block_editor_bugs
+  // memory: header_nav reuses the exact same menu core as navigation, just
+  // without owning logo/CTA/cart, so a header can be built either the old
+  // way (one navigation block) or the new way (separate Logo/Nav/CTA/Cart/
+  // Account blocks arranged in a container) — both remain fully supported.
+  "header_logo",
+  "header_nav",
+  "header_cta",
+  "header_cart",
+  "header_account",
   "text",
   "cta",
   "columns",
@@ -27,6 +38,9 @@ export const HEADER_BLOCK_TYPES: readonly BlockType[] = [
 export const FOOTER_BLOCK_TYPES: readonly BlockType[] = [
   "footer",
   "navigation",
+  "header_logo",
+  "header_nav",
+  "header_account",
   "text",
   "newsletter",
   "contact",

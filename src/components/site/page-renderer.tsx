@@ -1,11 +1,16 @@
 import React from "react";
 import { headers } from "next/headers";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { Block } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { HeroBlock } from "@/components/blocks/hero/hero-block";
 import { SliderBlock } from "@/components/blocks/slider/slider-block";
 import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
+import { HeaderLogoBlock } from "@/components/blocks/header-logo/header-logo-block";
+import { HeaderNavBlock } from "@/components/blocks/header-nav/header-nav-block";
+import { HeaderCtaBlock } from "@/components/blocks/header-cta/header-cta-block";
+import { HeaderCartBlock } from "@/components/blocks/header-cart/header-cart-block";
+import { HeaderAccountBlock } from "@/components/blocks/header-account/header-account-block";
 import { TextBlock } from "@/components/blocks/text/text-block";
 import { ServicesBlock } from "@/components/blocks/services/services-block-server";
 import { ItemBoxBlock } from "@/components/blocks/item-box/item-box-block-server";
@@ -90,6 +95,18 @@ async function ServerBlock({ block, identityLogo, identityLogoDark, nested, dept
     case "hero":             content = <HeroBlock block={block} />; break;
     case "slider":           content = <SliderBlock block={block} />; break;
     case "navigation":       content = <NavigationBlock block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />; break;
+    case "header_logo":      content = <HeaderLogoBlock block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />; break;
+    case "header_nav":       content = <HeaderNavBlock block={block} />; break;
+    case "header_cta":       content = <HeaderCtaBlock block={block} />; break;
+    case "header_cart":      content = <HeaderCartBlock block={block} />; break;
+    case "header_account": {
+      // Only checked when this block type is actually on the page — avoids
+      // an auth round-trip on every render of every other block type.
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      content = <HeaderAccountBlock block={block} isSignedIn={!!user} />;
+      break;
+    }
     case "text":             content = <TextBlock block={block} />; break;
     case "services":         content = await ServicesBlock({ block: block as import("@/types/cms").ServicesBlockProps }); break;
     case "item_box":         content = await ItemBoxBlock({ block: block as import("@/types/cms").ItemBoxBlockProps }); break;
@@ -248,8 +265,12 @@ async function resolveNavBlocks(
   tenantId: string,
   blocks: Block[],
 ): Promise<Block[]> {
+  // header_nav (2026-09-06) is the new independent nav sub-block — same
+  // menuLocation/dynamic-children resolution as the legacy navigation block,
+  // just a different type tag. Handled in the same pass so both read from
+  // the same nav_menus source and never diverge.
   const navBlocks = blocks.filter(
-    (b): b is import("@/types/cms").NavigationBlockProps => b.type === "navigation",
+    (b) => b.type === "navigation" || b.type === "header_nav",
   );
   if (navBlocks.length === 0) return blocks;
 
@@ -265,8 +286,8 @@ async function resolveNavBlocks(
 
   return Promise.all(
     blocks.map(async (block) => {
-      if (block.type !== "navigation") return block;
-      const nav = block as import("@/types/cms").NavigationBlockProps;
+      if (block.type !== "navigation" && block.type !== "header_nav") return block;
+      const nav = block as import("@/types/cms").NavigationBlockProps | import("@/types/cms").HeaderNavBlockProps;
 
       const source = nav.data.menuLocation
         ? byLocation.get(nav.data.menuLocation) ?? nav.data.items

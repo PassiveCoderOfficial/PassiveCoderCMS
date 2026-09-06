@@ -67,7 +67,18 @@ export type BlockType =
   | "donor_map"
   | "donor_requests"
   | "container"
-  | "item_box";
+  | "item_box"
+  // Header-only sub-blocks (2026-09-06): a header composes these as
+  // independent, separately draggable blocks rather than one big Header
+  // block with many settings sections — see project_block_editor_bugs memory
+  // for the decision. "header_cta" (not "cta") because the existing "cta"
+  // type is a full-width announcement banner already offered in headers;
+  // this is a single button, closer to hero's primaryButton shape.
+  | "header_logo"
+  | "header_nav"
+  | "header_cta"
+  | "header_cart"
+  | "header_account";
 
 export type BlockAlignment = "left" | "center" | "right";
 export type BlockWidth = "full" | "wide" | "normal" | "narrow";
@@ -240,6 +251,65 @@ export type NavItem = {
   /** Cap on generated children, so a tenant with 200 products doesn't render
    *  a 200-item dropdown. Ignored for "manual". */
   childLimit?: number;
+};
+
+/**
+ * Header-only sub-blocks (2026-09-06). A header composes these as
+ * independent, separately draggable/reorderable blocks — see
+ * project_block_editor_bugs memory for the "own block set, not shared with
+ * page blocks" decision. Each is deliberately minimal: the header container
+ * itself (a `container` block) supplies layout/alignment, these only carry
+ * their own content.
+ */
+export type HeaderLogoBlockProps = BlockBase & {
+  type: "header_logo";
+  data: {
+    /** Overrides the tenant's site_identity logo. Falls back to
+     *  identityLogo/identityLogoDark (the real uploaded logo) when unset,
+     *  same pattern the existing navigation block's data.logo already uses. */
+    imageUrl?: string;
+    imageDarkUrl?: string;
+    /** Shown when there is no uploaded logo at all (neither an override nor
+     *  a tenant logo) — same BrandLogo coded-SVG fallback nav already uses. */
+    text?: string;
+    height?: number;
+    linkUrl?: string; // defaults to "/" when unset
+  };
+};
+
+export type HeaderNavBlockProps = BlockBase & {
+  type: "header_nav";
+  data: {
+    items: NavItem[];
+    menuLocation?: "header" | "footer" | "footer_secondary" | "mobile" | "sidebar" | "legal";
+    style: "default" | "centered" | "split" | "minimal";
+    textColor?: string;
+    activeColor?: string;
+  };
+};
+
+export type HeaderCtaBlockProps = BlockBase & {
+  type: "header_cta";
+  data: {
+    label: string;
+    url: string;
+    variant: "solid" | "gradient" | "outline";
+  };
+};
+
+export type HeaderCartBlockProps = BlockBase & {
+  type: "header_cart";
+  data: {
+    /** Icon-only vs icon+"Cart" label. */
+    showLabel?: boolean;
+  };
+};
+
+export type HeaderAccountBlockProps = BlockBase & {
+  type: "header_account";
+  data: {
+    showLabel?: boolean;
+  };
 };
 
 export type TextBlockProps = BlockBase & {
@@ -837,7 +907,12 @@ export type Block =
   | DonorMapBlockProps
   | DonorRequestsBlockProps
   | ContainerBlockProps
-  | ItemBoxBlockProps;
+  | ItemBoxBlockProps
+  | HeaderLogoBlockProps
+  | HeaderNavBlockProps
+  | HeaderCtaBlockProps
+  | HeaderCartBlockProps
+  | HeaderAccountBlockProps;
 
 export type ContainerColumn = {
   id: string;

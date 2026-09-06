@@ -139,6 +139,84 @@ export const blockRegistry: BlockDefinition[] = [
       },
     }),
   },
+  // Header-only sub-blocks (2026-09-06) — an independent header composes
+  // these instead of one big navigation block. See project_block_editor_bugs
+  // memory for the decision and header-blocks.ts for where these are offered
+  // (HEADER_BLOCK_TYPES).
+  {
+    type: "header_logo",
+    label: "Logo",
+    description: "Your site's logo — uses your uploaded logo automatically, or set one just for this header",
+    icon: "🏷️",
+    category: "layout",
+    create: () => ({
+      ...baseBlock("header_logo"),
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      type: "header_logo",
+      data: { height: 34 },
+    }),
+  },
+  {
+    type: "header_nav",
+    label: "Nav Links",
+    description: "The menu links themselves — dropdowns, mega menus, mobile menu",
+    icon: "🧭",
+    category: "layout",
+    create: () => ({
+      ...baseBlock("header_nav"),
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      type: "header_nav",
+      data: {
+        items: [
+          { id: generateId(), label: "Home", url: "/" },
+          { id: generateId(), label: "About", url: "/about" },
+          { id: generateId(), label: "Services", url: "/services" },
+          { id: generateId(), label: "Contact", url: "/contact" },
+        ],
+        style: "default",
+      },
+    }),
+  },
+  {
+    type: "header_cta",
+    label: "Button",
+    description: "A single call-to-action button, e.g. \"Book Now\" or \"Get a Quote\"",
+    icon: "🔘",
+    category: "layout",
+    create: () => ({
+      ...baseBlock("header_cta"),
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      type: "header_cta",
+      data: { label: "Get in Touch", url: "/contact", variant: "gradient" },
+    }),
+  },
+  {
+    type: "header_cart",
+    label: "Cart",
+    description: "Shopping cart icon with live item count",
+    icon: "🛒",
+    category: "layout",
+    moduleKey: "ecommerce",
+    create: () => ({
+      ...baseBlock("header_cart"),
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      type: "header_cart",
+      data: { showLabel: false },
+    }),
+  },
+  {
+    type: "header_account",
+    label: "Account",
+    description: "Sign in / my account link for site visitors",
+    icon: "👤",
+    category: "layout",
+    create: () => ({
+      ...baseBlock("header_account"),
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      type: "header_account",
+      data: { showLabel: false },
+    }),
+  },
   {
     type: "text",
     label: "Text",
