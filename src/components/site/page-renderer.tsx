@@ -221,7 +221,18 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
   let identityLogoDark: string | null = null;
   let resolved = visible;
 
-  const hasNav = visible.some((b) => b.type === "navigation");
+  // header_logo (the new independent sub-block, alongside navigation/
+  // header_nav) also needs identityLogo/identityLogoDark for its own
+  // fallback-to-real-logo behavior — checking only "navigation" here missed
+  // it after the migration to container-based headers (2026-09-06), so a
+  // migrated header's logo silently fell back to the BrandLogo placeholder
+  // everywhere instead of the tenant's real uploaded logo.
+  const hasNav = visible.some((b) =>
+    b.type === "navigation" || b.type === "header_nav" ||
+    (b.type === "container" && (b as import("@/types/cms").ContainerBlockProps).data.columns?.some(
+      (c) => c.blocks?.some((cb) => cb.type === "header_logo"),
+    )),
+  );
   if (hasNav) {
     const reqHeaders = await headers();
     const tenantId = reqHeaders.get("x-tenant-id");

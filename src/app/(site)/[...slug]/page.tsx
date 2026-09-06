@@ -5,7 +5,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { recordPageView } from "@/lib/usage/record-page-view";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
-import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
+import { fetchGlobalLayout, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { isSaaS } from "@/lib/flags";
 import type { Block, Page } from "@/types/cms";
 import type { Metadata } from "next";
@@ -175,8 +175,8 @@ export default async function SitePage({ params }: Props) {
   const hasGlobalHeader = header.length > 0;
   const hasGlobalFooter = footer.length > 0;
   const blocks: Block[] = rawBlocks.filter((b) => {
-    if (hasGlobalHeader && b.type === "navigation") return false;
-    if (hasGlobalFooter && b.type === "footer") return false;
+    if (hasGlobalHeader && isChromeBlock(b, "header")) return false;
+    if (hasGlobalFooter && isChromeBlock(b, "footer")) return false;
     return true;
   });
 

@@ -13,7 +13,7 @@ import CtaSection from "@/components/marketing/cta";
 import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
-import { fetchGlobalLayout, shouldInjectPrefooter } from "@/lib/site/global-blocks";
+import { fetchGlobalLayout, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { fetchPublishedTemplates } from "@/lib/templates/published-templates";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
@@ -81,8 +81,8 @@ export default async function MarketingHomePage() {
     const hasGlobalHeader = isBloodSite || globalHeader.length > 0;
     const hasGlobalFooter = globalFooter.length > 0;
     const blocks: Block[] = rawBlocks.filter((b) => {
-      if (hasGlobalHeader && b.type === "navigation") return false;
-      if (hasGlobalFooter && b.type === "footer") return false;
+      if (hasGlobalHeader && isChromeBlock(b, "header")) return false;
+      if (hasGlobalFooter && isChromeBlock(b, "footer")) return false;
       return true;
     });
 
