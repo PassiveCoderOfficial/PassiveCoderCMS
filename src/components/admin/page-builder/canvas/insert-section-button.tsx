@@ -21,6 +21,11 @@ interface InsertSectionButtonProps {
   allowedBlockTypes?: readonly BlockType[];
   /** Compact trigger for use inside a container column. */
   compact?: boolean;
+  /** Larger, always-visible trigger for an empty canvas — the between-
+   *  sections "+" is deliberately tiny and hover-only, which is right when
+   *  there is content around it to hover over and wrong when it is the only
+   *  thing on the page. */
+  prominent?: boolean;
 }
 
 type Tab = "sections" | "blocks" | "layout";
@@ -33,7 +38,7 @@ type Tab = "sections" | "blocks" | "layout";
  * layout thumbnails rather than a text list, because a name like "Welcome —
  * Big Photo" means very little until you can see the shape of it.
  */
-export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact }: InsertSectionButtonProps) {
+export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact, prominent }: InsertSectionButtonProps) {
   const { addBlock } = useBuilderStore();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("sections");
@@ -93,7 +98,10 @@ export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact 
 
   return (
     <div
-      className={cn("relative z-10 flex items-center justify-center group/insert", compact ? "h-6" : "h-4 -my-2")}
+      className={cn(
+        "relative z-10 flex items-center justify-center group/insert",
+        prominent ? "h-auto" : compact ? "h-6" : "h-4 -my-2",
+      )}
       onClick={(e) => e.stopPropagation()}
     >
       <Popover
@@ -104,13 +112,15 @@ export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact 
           <button
             className={cn(
               "flex items-center gap-1 rounded-full bg-orange-600 text-white font-medium shadow-md transition-opacity hover:bg-orange-700",
-              "opacity-0 group-hover/insert:opacity-100 focus:opacity-100 data-[state=open]:opacity-100",
-              compact ? "text-[10px] px-2 py-0.5" : "text-[11px] pl-1.5 pr-2.5 py-1",
+              prominent
+                ? "text-sm px-4 py-2 gap-1.5 opacity-100"
+                : "opacity-0 group-hover/insert:opacity-100 focus:opacity-100 data-[state=open]:opacity-100",
+              !prominent && (compact ? "text-[10px] px-2 py-0.5" : "text-[11px] pl-1.5 pr-2.5 py-1"),
             )}
             aria-label="Add a section here"
           >
-            <Plus className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
-            {compact ? "Add" : "Add section"}
+            <Plus className={prominent ? "h-4 w-4" : compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+            {compact && !prominent ? "Add" : "Add section"}
           </button>
         </PopoverTrigger>
 

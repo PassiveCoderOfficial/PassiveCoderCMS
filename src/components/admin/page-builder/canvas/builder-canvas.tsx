@@ -17,7 +17,6 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useBuilderStore } from "@/lib/store/builder";
 import { SortableBlockWrapper } from "./sortable-block-wrapper";
 import { BlockRenderer } from "./block-renderer";
-import { TemplatePicker } from "./template-picker";
 import { InsertSectionButton } from "./insert-section-button";
 import { InlineEditContext, type InlineEditContextValue } from "@/components/blocks/inline-text";
 import { cn } from "@/lib/utils";
@@ -133,7 +132,20 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
 
   if (blocks.length === 0) {
     return mode === "edit" ? (
-      <TemplatePicker />
+      // Every tenant already picked a real site template at signup (real
+      // pages, real copy, the tenant's own brand colors) — this used to
+      // offer a SECOND, older template system on top of that for any blank
+      // page (a freshly created page, or an empty header/footer), picking
+      // from industry starters like "Restaurant / Café" or "Wedding
+      // Planner" that have nothing to do with the site already built. Worse,
+      // the header/footer builder used the exact same picker, offering those
+      // industry page starters as if a nav bar could BE a restaurant page.
+      // A blank canvas now just opens straight to adding a section — the
+      // same "+" used between existing sections everywhere else.
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-3 text-center p-8">
+        <p className="text-muted-foreground text-sm max-w-sm">Nothing here yet.</p>
+        <InsertSectionButton prominent />
+      </div>
     ) : (
       <div className="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-8">
         <p className="text-muted-foreground text-sm max-w-sm">This page is empty.</p>
