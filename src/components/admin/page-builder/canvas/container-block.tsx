@@ -51,8 +51,14 @@ function ColumnDropZone({
   });
 
   if (!column) return null;
-  // This column's own path, for children being added/edited inside it.
-  const path: ContainerPath = [...containerPath, { containerId, columnIndex }];
+  // `containerPath` already ends with the step naming THIS column (its last
+  // entry is {containerId: <this container>, columnIndex}) — that's exactly
+  // the path a child living in this column needs, so it's used as-is. Appending
+  // the same step again here (an earlier version of this code did) duplicated
+  // it, and targetArray then tried to find this container A SECOND TIME
+  // inside its own column's (empty) contents, always failing silently and
+  // making every add-inside-a-column a no-op with no visible error.
+  const path: ContainerPath = containerPath;
 
   return (
     <div
