@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { customerLogoutAction } from "../actions";
+import { AccountNav } from "../account-nav";
 
 export const metadata = { title: "My Orders" };
 
@@ -38,14 +38,8 @@ export default async function AccountOrdersPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-xl font-semibold">My Orders</h1>
-        <form action={customerLogoutAction}>
-          <button type="submit" className="text-sm text-muted-foreground hover:text-foreground underline">
-            Sign out
-          </button>
-        </form>
-      </div>
+      <AccountNav />
+      <h1 className="text-xl font-semibold mb-6">My Orders</h1>
 
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">You haven&apos;t placed any orders yet.</p>

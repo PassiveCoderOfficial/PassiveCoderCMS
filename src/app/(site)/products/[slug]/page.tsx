@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import { AddToCartSection } from "./add-to-cart-section";
+import { WishlistButton } from "./wishlist-button";
 import { getCurrencyConfig, formatWithConfig } from "@/lib/ecommerce/currency-server";
 
 interface Props {
@@ -58,6 +59,21 @@ export default async function ProductPage({ params }: Props) {
 
   if (!product) notFound();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  let wishlisted = false;
+  if (user) {
+    // RLS (wishlist_items_own_select, migration 084) scopes this to the
+    // signed-in customer's own rows regardless of the .eq below.
+    const { data: existing } = await supabase
+      .from("wishlist_items")
+      .select("product_id")
+      .eq("tenant_id", tenantId)
+      .eq("customer_id", user.id)
+      .eq("product_id", product.id)
+      .maybeSingle();
+    wishlisted = !!existing;
+  }
+
   const images: string[] = Array.isArray(product.images) ? product.images : [];
   const currencyCfg = await getCurrencyConfig(tenantId);
   const price = formatWithConfig(product.price, currencyCfg);
@@ -102,7 +118,10 @@ export default async function ProductPage({ params }: Props) {
         {/* Details */}
         <div className="space-y-5">
           <div>
-            <h1 className="text-2xl font-bold">{product.name}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-2xl font-bold">{product.name}</h1>
+              <WishlistButton productId={product.id} initiallySaved={wishlisted} isSignedIn={!!user} />
+            </div>
             {product.short_description && (
               <p className="text-muted-foreground mt-1 text-sm">{product.short_description}</p>
             )}
