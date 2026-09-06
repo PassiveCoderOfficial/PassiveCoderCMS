@@ -110,6 +110,15 @@ export function ContainerBlock({
 }) {
   const { data } = block;
   const isEditing = !isPreview;
+  // Header behavior (sticky/scrollAware/transparent) is real on the
+  // published site (container-header-behavior.tsx) but only previewed
+  // statically here — matches how the legacy navigation block's editor
+  // rendering already worked, and avoids re-fighting the fixed-position
+  // canvas-containment fix (.cms-builder-canvas neutralizes position:fixed
+  // so a header block can't escape the canvas frame; adding a second real
+  // "fixed" here would need the exact same neutralizing rule again for no
+  // preview benefit — geometry is what matters in-canvas, not scroll state).
+  const isHeader = data.sticky || data.scrollAware || data.transparent;
 
   return (
     <div
@@ -119,6 +128,7 @@ export function ContainerBlock({
         GAP_CLASS[data.gap],
         ALIGN_CLASS[data.align],
         JUSTIFY_CLASS[data.justify],
+        isHeader && "px-4 sm:px-6 h-[4.5rem] bg-background border-b border-border/60",
       )}
     >
       {data.columns.map((col, i) => (

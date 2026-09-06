@@ -932,6 +932,24 @@ export type ContainerBlockProps = BlockBase & {
     /** Row main-axis alignment (justify-content). */
     justify: "start" | "center" | "end" | "between";
     wrapOnMobile: boolean;
+    // ── Header behavior (2026-09-06) ──────────────────────────────────
+    // A container used as a site header (holding header_logo/header_nav/
+    // header_cta/etc sub-blocks) needs the same sticky/transparent-overlay
+    // behavior the legacy navigation block always had — added here so
+    // migrating a tenant's nav block to the new sub-block model doesn't
+    // lose that visual design. Optional and default-off, so an ordinary
+    // page-content container (not a header) is completely unaffected.
+    /** Stays pinned to the top of the viewport while scrolling. */
+    sticky?: boolean;
+    /** Renders transparent over whatever's behind it (a hero image) until
+     *  the visitor scrolls, then becomes solid — same overlayHero pattern
+     *  navigation's scrollAware/transparent fields already implement. */
+    scrollAware?: boolean;
+    /** Static transparent-at-top without the scroll-solidify behavior —
+     *  same distinction navigation's own transparent field made. */
+    transparent?: boolean;
+    /** Frosted-glass backdrop blur once solid. */
+    glass?: boolean;
   };
 };
 

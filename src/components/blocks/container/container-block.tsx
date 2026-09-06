@@ -1,6 +1,7 @@
 import React from "react";
 import type { ContainerBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
+import { ContainerHeaderBehavior } from "./container-header-behavior";
 
 const GAP_CLASS = { none: "gap-0", sm: "gap-3", md: "gap-6", lg: "gap-10" } as const;
 const ALIGN_CLASS = { start: "items-start", center: "items-center", end: "items-end", stretch: "items-stretch" } as const;
@@ -25,12 +26,13 @@ export function ContainerBlock({
   /** Rendered blocks per column, index-aligned with `block.data.columns`. */
   columnContent: React.ReactNode[];
 }) {
-  const { columns, direction, gap, align, justify, wrapOnMobile } = block.data;
+  const { columns, direction, gap, align, justify, wrapOnMobile, sticky, scrollAware, transparent, glass } = block.data;
   if (!columns?.length) return null;
 
   const isRow = direction === "row";
+  const isHeader = sticky || scrollAware || transparent;
 
-  return (
+  const inner = (
     <div
       className={cn(
         "max-w-7xl mx-auto flex w-full",
@@ -40,6 +42,11 @@ export function ContainerBlock({
         GAP_CLASS[gap] ?? GAP_CLASS.md,
         ALIGN_CLASS[align] ?? ALIGN_CLASS.stretch,
         JUSTIFY_CLASS[justify] ?? JUSTIFY_CLASS.start,
+        // Header containers get their own horizontal padding + fixed height,
+        // matching the legacy nav bar, since this max-w div sits inside
+        // ContainerHeaderBehavior's full-width bar rather than in normal
+        // page flow.
+        isHeader && "px-4 sm:px-6 h-[4.5rem]",
       )}
     >
       {columns.map((col, i) => (
@@ -54,5 +61,13 @@ export function ContainerBlock({
         </div>
       ))}
     </div>
+  );
+
+  if (!isHeader) return inner;
+
+  return (
+    <ContainerHeaderBehavior sticky={sticky} scrollAware={scrollAware} transparent={transparent} glass={glass}>
+      {inner}
+    </ContainerHeaderBehavior>
   );
 }

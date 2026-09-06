@@ -112,6 +112,31 @@ export function ContainerSettings({ block }: { block: ContainerBlockProps }) {
         <Switch checked={block.data.wrapOnMobile} onCheckedChange={(v) => update("wrapOnMobile", v)} />
       </div>
 
+      <div className="border-t pt-3 space-y-2">
+        <p className="text-[10px] font-semibold uppercase text-muted-foreground">Header Behavior</p>
+        <p className="text-[10px] text-muted-foreground leading-snug">
+          Turn these on when this container IS your site header (holding a Logo, Nav, etc) — not for ordinary content sections.
+        </p>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Sticky (stays on scroll)</Label>
+          <Switch checked={!!block.data.sticky} onCheckedChange={(v) => update("sticky", v)} />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Transparent over hero</Label>
+          <Switch checked={!!block.data.transparent} onCheckedChange={(v) => update("transparent", v)} />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Solidify on scroll</Label>
+          <Switch checked={!!block.data.scrollAware} onCheckedChange={(v) => update("scrollAware", v)} />
+        </div>
+        {(block.data.scrollAware || block.data.transparent) && (
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Frosted glass when solid</Label>
+            <Switch checked={!!block.data.glass} onCheckedChange={(v) => update("glass", v)} />
+          </div>
+        )}
+      </div>
+
       <div className="border-t pt-3">
         <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1.5">Split</p>
         <div className="grid grid-cols-4 gap-1 mb-3">
