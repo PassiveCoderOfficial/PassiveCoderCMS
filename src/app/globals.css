@@ -172,7 +172,7 @@ html {
  * override and lets the template's own :root values show through — the same
  * approach the published site layout uses for light-locked tenants.
  */
-html.dark .cms-canvas-light {
+:where(html.dark) .cms-canvas-light {
   --background: revert; --foreground: revert;
   --card: revert; --card-foreground: revert;
   --popover: revert; --popover-foreground: revert;
