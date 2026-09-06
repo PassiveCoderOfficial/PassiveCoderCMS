@@ -38,7 +38,16 @@ export function ContainerBlock({
         "max-w-7xl mx-auto flex w-full",
         // A row stacks on small screens unless the author turned that off —
         // side-by-side columns on a phone are unreadable at these widths.
-        isRow ? (wrapOnMobile === false ? "flex-row" : "flex-col md:flex-row") : "flex-col",
+        // Header containers are the deliberate exception: a site header
+        // stacking into a tall column on mobile is what the legacy single
+        // navigation block never did (it always stayed one row, with its
+        // own hamburger/drawer for what didn't fit) — found live on a real
+        // tenant after the navigation->sub-block migration (2026-09-06):
+        // logo/nav/CTA stacked vertically, the CTA landing mid-page over
+        // the hero with no responsive handling of its own. wrapOnMobile is
+        // simply not the right knob for a header row regardless of its
+        // stored value.
+        isRow ? (isHeader || wrapOnMobile === false ? "flex-row" : "flex-col md:flex-row") : "flex-col",
         GAP_CLASS[gap] ?? GAP_CLASS.md,
         ALIGN_CLASS[align] ?? ALIGN_CLASS.stretch,
         JUSTIFY_CLASS[justify] ?? JUSTIFY_CLASS.start,
@@ -52,10 +61,22 @@ export function ContainerBlock({
       {columns.map((col, i) => (
         <div
           key={col.id}
-          className="min-w-0 flex flex-col gap-2"
-          // flexBasis carries the author's width split; the column still
-          // shrinks below it rather than overflowing a narrow viewport.
-          style={isRow ? { flexBasis: `${col.widthPct}%`, flexGrow: 0, flexShrink: 1 } : undefined}
+          className={cn(
+            "min-w-0 flex flex-col gap-2",
+            // The middle column (nav links) grows to fill whatever space the
+            // logo/CTA don't need, same as the legacy nav's own <ul> did
+            // with its ml-4 flex-1 — without this the mobile hamburger sits
+            // right after the logo instead of pinned to the far right.
+            isHeader && (i === 1 && columns.length > 1 ? "flex-row items-center flex-1" : "flex-row items-center shrink-0"),
+          )}
+          // flexBasis carries the author's width split on ordinary content
+          // rows. A header's columns hold single small sub-blocks (a logo,
+          // a button) sized to their own content instead — a percentage
+          // split tuned for a wide desktop bar (e.g. 25/50/25) would squeeze
+          // the logo into an unreadably narrow sliver on a phone, even once
+          // kept in one row above. auto-sizing plus the shrink allowance is
+          // what the legacy nav bar's own logo/CTA always did.
+          style={isRow && !isHeader ? { flexBasis: `${col.widthPct}%`, flexGrow: 0, flexShrink: 1 } : undefined}
         >
           {columnContent[i] ?? null}
         </div>

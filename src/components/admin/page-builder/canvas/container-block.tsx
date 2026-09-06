@@ -124,7 +124,7 @@ export function ContainerBlock({
     <div
       className={cn(
         "max-w-7xl mx-auto flex",
-        data.direction === "column" ? "flex-col" : data.wrapOnMobile ? "flex-col md:flex-row" : "flex-row",
+        data.direction === "column" ? "flex-col" : (isHeader || !data.wrapOnMobile) ? "flex-row" : "flex-col md:flex-row",
         GAP_CLASS[data.gap],
         ALIGN_CLASS[data.align],
         JUSTIFY_CLASS[data.justify],

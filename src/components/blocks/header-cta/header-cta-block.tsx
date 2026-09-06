@@ -19,7 +19,17 @@ export function HeaderCtaBlock({ block }: { block: HeaderCtaBlockProps }) {
     <Link
       href={data.url || "#"}
       className={cn(
-        "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 shrink-0",
+        // Hidden below md: this block has no mobile layout of its own (no
+        // hamburger/drawer — that's header_nav's job), and a header built
+        // from independent sub-blocks has no single component left to
+        // coordinate "show CTA OR hamburger" the way the legacy monolithic
+        // nav block did. Found live on a real tenant site after the
+        // navigation->sub-block migration (2026-09-06): this button
+        // rendered at full size on mobile with no responsive class at all,
+        // floating mid-page over the hero heading. Hiding it here is the
+        // safe fix; showing it inside header_nav's mobile drawer is a
+        // separate cross-block composition problem, not solved by this.
+        "hidden md:inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 shrink-0",
         data.variant === "outline"
           ? "border-2 border-primary text-primary"
           : "text-primary-foreground",
