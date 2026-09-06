@@ -45,11 +45,16 @@ import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-bl
 import { ContainerBlock } from "./container-block";
 import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
+import type { ContainerPath } from "@/lib/store/builder";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
 
 interface BlockRendererProps {
   block: Block;
   isPreview?: boolean;
+  /** This block's OWN path — where IT sits in the tree. Only meaningful when
+   *  `block` is itself a container, so it can resolve itself and build its
+   *  columns' paths correctly if it's nested inside another container. */
+  path?: ContainerPath;
 }
 
 // Placeholder for server-data blocks in the client builder
@@ -63,7 +68,7 @@ function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType
   );
 }
 
-export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) {
+export function BlockRenderer({ block, isPreview = false, path }: BlockRendererProps) {
   const bgStyle = getBlockBackground(withHeroOverlay(block));
   // block.padding/margin are typed as always present, but a real block can
   // reach here with either as null — seen on an icon_grid block created by an
@@ -124,7 +129,7 @@ export function BlockRenderer({ block, isPreview = false }: BlockRendererProps) 
       case "donor_list": return <DonorListBlock block={block} />;
       case "donor_map": return <DonorMapBlock block={block} />;
       case "donor_requests": return <DonorRequestsBlock block={block} />;
-      case "container": return <ContainerBlock block={block as ContainerBlockProps} isPreview={isPreview} />;
+      case "container": return <ContainerBlock block={block as ContainerBlockProps} isPreview={isPreview} path={path} />;
       // Server data blocks show placeholders in builder
       case "ecommerce_cart":
         return <DataBlockPlaceholder icon={ShoppingBag} label="Shopping Cart — live cart on the public site" />;

@@ -138,7 +138,7 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
             Hidden
           </span>
         )}
-        <BlockRenderer block={block} isPreview={!isEditing} />
+        <BlockRenderer block={block} isPreview={!isEditing} path={path} />
       </div>
     </BlockContextMenu>
   );

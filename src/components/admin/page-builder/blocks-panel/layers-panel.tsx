@@ -176,7 +176,11 @@ function LayerRow({
       </div>
 
       {isContainer && expanded && columns.map((col, i) => {
-        const colPath: ContainerPath = { containerId: block.id, columnIndex: i };
+        // Append to the incoming path rather than replacing it — this
+        // container may itself be nested inside another one, and the full
+        // chain from root has to survive so a block edited three levels deep
+        // still resolves to the right column.
+        const colPath: ContainerPath = [...(path ?? []), { containerId: block.id, columnIndex: i }];
         return (
           <div key={col.id}>
             <div

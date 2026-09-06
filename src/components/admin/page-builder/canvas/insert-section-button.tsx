@@ -70,10 +70,6 @@ export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact,
   const blocks = useMemo(
     () =>
       blockRegistry.filter((b) => {
-        // Containers hold blocks, and the store only supports one level of
-        // nesting — offering one inside a column would produce a layout the
-        // renderer deliberately skips.
-        if (b.type === "container" && path) return false;
         const allowed = !allowedBlockTypes || allowedBlockTypes.includes(b.type);
         const matches = !q || b.label.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
         return allowed && matches;
@@ -86,9 +82,12 @@ export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact,
     [q],
   );
 
-  // A container cannot hold another container, so the layout tab is only
-  // offered at page root.
-  const showLayout = !path && (!allowedBlockTypes || allowedBlockTypes.includes("container"));
+  // Containers may now nest inside containers (Elementor-style — arbitrary
+  // items, arbitrary nesting), so the Columns/Layout tab is offered inside a
+  // column the same as at page root. The published site renders nested
+  // containers up to a depth cap (see MAX_CONTAINER_DEPTH in
+  // page-renderer.tsx) so this stays safe however deep someone actually goes.
+  const showLayout = !allowedBlockTypes || allowedBlockTypes.includes("container");
 
   const TABS: { value: Tab; label: string; count: number }[] = [
     { value: "sections", label: "Sections", count: sectionGroups.reduce((n, g) => n + g.presets.length, 0) },

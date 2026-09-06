@@ -3,35 +3,56 @@
 import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useBuilderStore } from "@/lib/store/builder";
+import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { SortableBlockWrapper } from "./sortable-block-wrapper";
 import { InsertSectionButton } from "./insert-section-button";
 import { cn } from "@/lib/utils";
-import type { ContainerBlockProps } from "@/types/cms";
+import type { Block, ContainerBlockProps } from "@/types/cms";
 
 const GAP_CLASS = { none: "gap-0", sm: "gap-3", md: "gap-6", lg: "gap-10" };
 const ALIGN_CLASS = { start: "items-start", center: "items-center", end: "items-end", stretch: "items-stretch" };
 const JUSTIFY_CLASS = { start: "justify-start", center: "justify-center", end: "justify-end", between: "justify-between" };
 
+/** Resolves the container the LAST step of `path` names — walking every
+ *  earlier step first to find the right block array to search in. Mirrors
+ *  the store's own targetContainerAndColumn, needed here because this
+ *  component can't reach into the store's internals directly. */
+function resolveContainer(blocks: Block[], path: ContainerPath): ContainerBlockProps | undefined {
+  if (path.length === 0) return undefined;
+  let arr = blocks;
+  for (let i = 0; i < path.length - 1; i++) {
+    const step = path[i];
+    const container = arr.find((b) => b.id === step.containerId) as ContainerBlockProps | undefined;
+    const column = container?.data.columns[step.columnIndex];
+    if (!column) return undefined;
+    arr = column.blocks;
+  }
+  const last = path[path.length - 1];
+  return arr.find((b) => b.id === last.containerId) as ContainerBlockProps | undefined;
+}
+
 function ColumnDropZone({
-  containerId,
+  containerPath,
   columnIndex,
   isEditing,
 }: {
-  containerId: string;
+  /** Full path to the container this column belongs to. */
+  containerPath: ContainerPath;
   columnIndex: number;
   isEditing: boolean;
 }) {
   const { blocks } = useBuilderStore();
-  const container = blocks.find((b) => b.id === containerId) as ContainerBlockProps | undefined;
+  const container = resolveContainer(blocks, containerPath);
   const column = container?.data.columns[columnIndex];
+  const containerId = containerPath[containerPath.length - 1].containerId;
   const { setNodeRef, isOver } = useDroppable({
     id: `column:${containerId}:${columnIndex}`,
     data: { containerId, columnIndex },
   });
 
   if (!column) return null;
-  const path = { containerId, columnIndex };
+  // This column's own path, for children being added/edited inside it.
+  const path: ContainerPath = [...containerPath, { containerId, columnIndex }];
 
   return (
     <div
@@ -53,11 +74,13 @@ function ColumnDropZone({
         </div>
       )}
       <SortableContext items={column.blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-        {/* A container nested in a column is skipped by the site renderer, so
-            showing it here would promise a layout that never publishes. It
-            can only arrive from imported or saved content, since the picker
-            withholds containers inside a column. */}
-        {column.blocks.filter((b) => b.type !== "container").map((block) => (
+        {/* Containers may nest inside containers — the published site
+            renders nested containers up to MAX_CONTAINER_DEPTH (see
+            page-renderer.tsx); this component recurses the same way here,
+            with no depth limit needed client-side since nesting only grows
+            one level at a time through this same UI, never from untrusted
+            JSON the way the server's recursive render has to guard against. */}
+        {column.blocks.map((block) => (
           <React.Fragment key={block.id}>
             <SortableBlockWrapper block={block} isEditing={isEditing} path={path} />
             {isEditing && <InsertSectionButton path={path} afterId={block.id} compact />}
@@ -68,7 +91,17 @@ function ColumnDropZone({
   );
 }
 
-export function ContainerBlock({ block, isPreview = false }: { block: ContainerBlockProps; isPreview?: boolean }) {
+export function ContainerBlock({
+  block, isPreview = false, path,
+}: {
+  block: ContainerBlockProps;
+  isPreview?: boolean;
+  /** This container's OWN path — where it sits in the tree, not its columns'
+   *  path. Undefined/empty means this container lives at page root. Needed
+   *  so a container nested inside another container's column can find
+   *  itself, and so its columns' paths chain correctly for their children. */
+  path?: ContainerPath;
+}) {
   const { data } = block;
   const isEditing = !isPreview;
 
@@ -83,7 +116,12 @@ export function ContainerBlock({ block, isPreview = false }: { block: ContainerB
       )}
     >
       {data.columns.map((col, i) => (
-        <ColumnDropZone key={col.id} containerId={block.id} columnIndex={i} isEditing={isEditing} />
+        <ColumnDropZone
+          key={col.id}
+          containerPath={[...(path ?? []), { containerId: block.id, columnIndex: i }]}
+          columnIndex={i}
+          isEditing={isEditing}
+        />
       ))}
     </div>
   );

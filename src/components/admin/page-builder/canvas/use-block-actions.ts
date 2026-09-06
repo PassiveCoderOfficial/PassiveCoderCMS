@@ -24,10 +24,15 @@ export function useBlockActions(
    *  simply don't offer it. */
   onEditSiteChrome?: (target: "header" | "footer") => void,
 ): BlockAction[] {
-  const { blocks, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock, setMobileSheet } = useBuilderStore();
-  const siblings = path
-    ? ((blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined)
-        ?.data.columns[path.columnIndex]?.blocks ?? [])
+  const { blocks, getBlock, removeBlock, duplicateBlock, updateBlock, moveBlock, selectBlock, setMobileSheet } = useBuilderStore();
+  // path is the full ancestor chain now that containers can nest inside
+  // containers — only the LAST step names the container/column this block
+  // directly lives in; getBlock finds that container at whatever depth it's
+  // actually at, rather than assuming it's at page root.
+  const lastStep = path && path.length > 0 ? path[path.length - 1] : undefined;
+  const siblings = lastStep
+    ? ((getBlock(lastStep.containerId) as ContainerBlockProps | undefined)
+        ?.data.columns[lastStep.columnIndex]?.blocks ?? [])
     : blocks;
   const idx = siblings.findIndex((b) => b.id === block.id);
   const canMoveUp = idx > 0;

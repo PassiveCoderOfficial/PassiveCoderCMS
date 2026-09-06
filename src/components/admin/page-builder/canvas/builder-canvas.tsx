@@ -14,7 +14,7 @@ import {
   DragOverlay,
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useBuilderStore } from "@/lib/store/builder";
+import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { SortableBlockWrapper } from "./sortable-block-wrapper";
 import { BlockRenderer } from "./block-renderer";
 import { InsertSectionButton } from "./insert-section-button";
@@ -22,19 +22,16 @@ import { InlineEditContext, type InlineEditContextValue } from "@/components/blo
 import { cn } from "@/lib/utils";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
-// One level deep — a container's own columns cannot hold another container.
-function findBlockAnywhere(blocks: Block[], id: string): Block | undefined {
-  const direct = blocks.find((b) => b.id === id);
-  if (direct) return direct;
-  for (const b of blocks) {
-    if (b.type === "container") {
-      for (const col of (b as ContainerBlockProps).data.columns) {
-        const found = col.blocks.find((c) => c.id === id);
-        if (found) return found;
-      }
-    }
-  }
-  return undefined;
+/** Path to the ARRAY a block currently lives in — every ancestor container
+ *  step, but not the block's own entry. `undefined` means the block lives at
+ *  page root. Built from the store's own arbitrary-depth path resolver so
+ *  this stays correct as containers nest inside containers. */
+function pathToBlock(blockId: string): ContainerPath | undefined {
+  const entries = useBuilderStore.getState().getBlockPath(blockId);
+  if (!entries) return undefined;
+  const ancestors = entries.slice(0, -1);
+  if (ancestors.length === 0) return undefined;
+  return ancestors.map((e) => ({ containerId: e.id, columnIndex: e.columnIndex ?? 0 }));
 }
 
 export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
@@ -67,9 +64,9 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
   );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const block = findBlockAnywhere(blocks, String(event.active.id));
+    const block = useBuilderStore.getState().getBlock(String(event.active.id));
     if (block) setActiveBlock(block);
-  }, [blocks]);
+  }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -79,30 +76,28 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
     const overIdStr = String(over.id);
     const store = useBuilderStore.getState();
 
-    // Dropped directly on a column's empty-space droppable (id "column:<containerId>:<index>")
-    // rather than on a sibling block — relocate into that column.
+    // Dropped directly on a column's empty-space droppable
+    // (id "column:<containerId>:<index>") rather than on a sibling block —
+    // relocate into that column. The droppable id only names its OWN
+    // container/index, not the ancestor chain above it, so resolve the full
+    // path via that container's own current position in the tree.
     const columnMatch = overIdStr.match(/^column:(.+):(\d+)$/);
     if (columnMatch) {
-      store.moveBlockToColumn(activeIdStr, { containerId: columnMatch[1], columnIndex: Number(columnMatch[2]) });
+      const containerId = columnMatch[1];
+      const columnIndex = Number(columnMatch[2]);
+      const ancestorPath = pathToBlock(containerId) ?? [];
+      store.moveBlockToColumn(activeIdStr, [...ancestorPath, { containerId, columnIndex }]);
       setActiveBlock(null);
       return;
     }
 
-    // Which array (root, or which container column) does the active block
-    // actually live in? moveBlock needs that path to find both ids.
-    let path: { containerId: string; columnIndex: number } | undefined;
-    if (!store.blocks.some((b) => b.id === activeIdStr)) {
-      for (const b of store.blocks) {
-        if (b.type !== "container") continue;
-        const container = b as ContainerBlockProps;
-        const colIdx = container.data.columns.findIndex((c) => c.blocks.some((cb) => cb.id === activeIdStr));
-        if (colIdx !== -1) { path = { containerId: b.id, columnIndex: colIdx }; break; }
-      }
-    }
-
-    const siblingArr = path
-      ? (store.blocks.find((b) => b.id === path!.containerId) as ContainerBlockProps | undefined)
-          ?.data.columns[path.columnIndex]?.blocks ?? []
+    // Which array (root, or which container column, at any depth) does the
+    // active block actually live in? moveBlock needs that path to find both ids.
+    const path = pathToBlock(activeIdStr);
+    const activeStep = path ? path[path.length - 1] : undefined;
+    const siblingArr = activeStep
+      ? (store.getBlock(activeStep.containerId) as ContainerBlockProps | undefined)
+          ?.data.columns[activeStep.columnIndex]?.blocks ?? []
       : store.blocks;
 
     if (siblingArr.some((b) => b.id === overIdStr)) {
@@ -111,16 +106,10 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
     } else {
       // over is a block living in a different column/root — relocate active
       // there (appends; fine-grained position-among-siblings is a follow-up).
-      let overPath: { containerId: string; columnIndex: number } | undefined;
-      for (const b of store.blocks) {
-        if (b.type !== "container") continue;
-        const container = b as ContainerBlockProps;
-        const colIdx = container.data.columns.findIndex((c) => c.blocks.some((cb) => cb.id === overIdStr));
-        if (colIdx !== -1) { overPath = { containerId: b.id, columnIndex: colIdx }; break; }
-      }
-      if (overPath) {
-        store.moveBlockToColumn(activeIdStr, overPath);
-      }
+      // overIdStr's own ancestor chain (root -> its container's column) is
+      // exactly the destination path.
+      const overPath = pathToBlock(overIdStr);
+      if (overPath) store.moveBlockToColumn(activeIdStr, overPath);
     }
     setActiveBlock(null);
   }, [moveBlock]);

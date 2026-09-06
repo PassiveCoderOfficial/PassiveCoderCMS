@@ -5,12 +5,26 @@ import { deepClone, generateId } from "@/lib/utils";
 
 const MAX_HISTORY = 50;
 
-/** Identifies a single column's block list inside a container block. One level
- *  of nesting only — a container's columns cannot themselves hold a container. */
-export interface ContainerPath {
+/** One "step" into a container: which container, which of its columns.
+ *  A full path is a chain of these, root-first, so a block nested three
+ *  containers deep has a 3-entry path. Empty/undefined means page root. */
+export interface ContainerStep {
   containerId: string;
   columnIndex: number;
 }
+
+/**
+ * Identifies a block list inside arbitrarily nested containers.
+ *
+ * Was a single flat `{containerId, columnIndex}` — exactly one level, by
+ * construction. Containers now nest inside containers (Elementor-style,
+ * 2026-09-06), so a path is an array of steps instead: walk into the first
+ * step's column, find the container named by the second step inside THAT
+ * column, walk into its column, and so on. `[]` and `undefined` both mean
+ * root. Every function below that used to do one `.find()` on `state.blocks`
+ * now walks this chain instead.
+ */
+export type ContainerPath = ContainerStep[];
 
 interface BuilderStore extends BuilderState {
   // Actions
@@ -41,17 +55,47 @@ interface BuilderStore extends BuilderState {
   reset: () => void;
 }
 
-/** Returns the mutable block array a path points at: a container column's
- *  list, or the top-level page blocks when no path is given. */
+/**
+ * Walks a chain of container steps and returns the block array the LAST step
+ * points at — a container column's list, or the top-level page blocks when
+ * the path is empty/undefined. Each intermediate step must resolve to an
+ * actual container at that point in the chain, or the walk fails (returns
+ * undefined) rather than guessing.
+ */
 function targetArray(state: BuilderState, path?: ContainerPath): Block[] | undefined {
-  if (!path) return state.blocks;
-  const container = state.blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined;
-  return container?.data.columns[path.columnIndex]?.blocks;
+  if (!path || path.length === 0) return state.blocks;
+  let arr: Block[] = state.blocks;
+  for (const step of path) {
+    const container = arr.find((b) => b.id === step.containerId) as ContainerBlockProps | undefined;
+    const column = container?.data.columns[step.columnIndex];
+    if (!column) return undefined;
+    arr = column.blocks;
+  }
+  return arr;
 }
 
-/** One level deep: the array (root, or a container column) that actually
- *  holds the block with this id. Used to auto-locate a block for callers
- *  (existing settings panels) that don't know about container nesting. */
+/** Same walk as targetArray, but returns the container BLOCK the last step
+ *  names (not its column's contents) — needed by callers that mutate the
+ *  column list itself (filter/reassign), not just read from it. */
+function targetContainerAndColumn(
+  state: BuilderState,
+  path: ContainerPath,
+): { container: ContainerBlockProps; columnIndex: number } | undefined {
+  if (path.length === 0) return undefined;
+  let arr: Block[] = state.blocks;
+  for (let i = 0; i < path.length - 1; i++) {
+    const step = path[i];
+    const container = arr.find((b) => b.id === step.containerId) as ContainerBlockProps | undefined;
+    const column = container?.data.columns[step.columnIndex];
+    if (!column) return undefined;
+    arr = column.blocks;
+  }
+  const last = path[path.length - 1];
+  const container = arr.find((b) => b.id === last.containerId) as ContainerBlockProps | undefined;
+  if (!container || !container.data.columns[last.columnIndex]) return undefined;
+  return { container, columnIndex: last.columnIndex };
+}
+
 /** Recursively regenerates a block's id and those of any blocks nested in its
  *  container columns, so a copy never shares an id with its source. */
 export function withFreshIds(block: Block): Block {
@@ -64,26 +108,31 @@ export function withFreshIds(block: Block): Block {
   return block;
 }
 
+/** Finds the array (root, or a container column, at ANY depth) that directly
+ *  holds the block with this id — searching recursively rather than one
+ *  level, now that containers can nest inside containers. */
 function findArrayContaining(blocks: Block[], id: string): Block[] | undefined {
   if (blocks.some((b) => b.id === id)) return blocks;
   for (const b of blocks) {
     if (b.type === "container") {
       for (const col of (b as ContainerBlockProps).data.columns) {
-        if (col.blocks.some((c) => c.id === id)) return col.blocks;
+        const found = findArrayContaining(col.blocks, id);
+        if (found) return found;
       }
     }
   }
   return undefined;
 }
 
-/** One level deep: checks top-level blocks, then each container's columns. */
+/** Depth-first search for a block by id, through arbitrarily nested
+ *  container columns. */
 function findBlockDeep(blocks: Block[], id: string): Block | undefined {
   const direct = blocks.find((b) => b.id === id);
   if (direct) return direct;
   for (const b of blocks) {
     if (b.type === "container") {
       for (const col of (b as ContainerBlockProps).data.columns) {
-        const found = col.blocks.find((c) => c.id === id);
+        const found = findBlockDeep(col.blocks, id);
         if (found) return found;
       }
     }
@@ -92,16 +141,16 @@ function findBlockDeep(blocks: Block[], id: string): Block | undefined {
 }
 
 /** A single crumb in a block's ancestry, root-first. The last entry is
- *  always the block itself; a mid entry is its parent container (with the
- *  column index it lives in), when nested one level deep. */
+ *  always the block itself; every earlier entry is an ancestor container
+ *  (with the column index the NEXT crumb lives in). Depth is no longer
+ *  capped — a block nested three containers deep produces a 4-entry path. */
 export interface BlockPathEntry {
   id: string;
   type: string;
   columnIndex?: number;
 }
 
-/** Root -> [container (+ column)] -> block. Container nesting is capped at
- *  one level, so this path is at most 2 entries. */
+/** Root -> ...ancestor containers... -> block, however deep it's nested. */
 function getBlockPathDeep(blocks: Block[], id: string): BlockPathEntry[] | undefined {
   const direct = blocks.find((b) => b.id === id);
   if (direct) return [{ id: direct.id, type: direct.type }];
@@ -109,8 +158,8 @@ function getBlockPathDeep(blocks: Block[], id: string): BlockPathEntry[] | undef
     if (b.type === "container") {
       const columns = (b as ContainerBlockProps).data.columns;
       for (let i = 0; i < columns.length; i++) {
-        const found = columns[i].blocks.find((c) => c.id === id);
-        if (found) return [{ id: b.id, type: b.type }, { id: found.id, type: found.type, columnIndex: i }];
+        const rest = getBlockPathDeep(columns[i].blocks, id);
+        if (rest) return [{ id: b.id, type: b.type, columnIndex: i }, ...rest];
       }
     }
   }
@@ -182,10 +231,11 @@ export const useBuilderStore = create<BuilderStore>()(
       set((state) => {
         pushHistory(state);
         // Existing per-block settings panels don't know about container
-        // nesting and never pass a path — auto-locate the block one level
-        // deep so editing a block inside a column still writes to the right
-        // place instead of silently no-op'ing.
-        const arr = path ? targetArray(state, path) : findArrayContaining(state.blocks, id);
+        // nesting and never pass a path — auto-locate the block at whatever
+        // depth it actually lives, so editing a block inside a column (at
+        // any nesting level) still writes to the right place instead of
+        // silently no-op'ing.
+        const arr = path && path.length > 0 ? targetArray(state, path) : findArrayContaining(state.blocks, id);
         const idx = arr?.findIndex((b) => b.id === id) ?? -1;
         if (arr && idx !== -1) {
           Object.assign(arr[idx], data);
@@ -196,18 +246,17 @@ export const useBuilderStore = create<BuilderStore>()(
     removeBlock: (id, path) =>
       set((state) => {
         pushHistory(state);
-        const arr = targetArray(state, path);
-        if (!arr) return;
-        if (path) {
-          const container = state.blocks.find((b) => b.id === path.containerId) as ContainerBlockProps | undefined;
-          const col = container?.data.columns[path.columnIndex];
-          if (col) col.blocks = col.blocks.filter((b) => b.id !== id);
+        if (path && path.length > 0) {
+          const target = targetContainerAndColumn(state, path);
+          const col = target?.container.data.columns[target.columnIndex];
+          if (!col) return;
+          col.blocks = col.blocks.filter((b) => b.id !== id);
+          reorderBlocks(col.blocks);
         } else {
           state.blocks = state.blocks.filter((b) => b.id !== id);
+          reorderBlocks(state.blocks);
         }
         if (state.selectedBlockId === id) state.selectedBlockId = undefined;
-        const after = targetArray(state, path);
-        if (after) reorderBlocks(after);
         state.isDirty = true;
       }),
 

@@ -9,15 +9,19 @@ export function SettingsBreadcrumb({ blockId }: { blockId: string }) {
   const path = getBlockPath(blockId);
   if (!path) return null;
 
-  // Expand the (block, block) path into (block, column, block) crumbs when
-  // nested, so the column position is its own clickable/visible segment.
-  const crumbs = path.length === 2
-    ? [
-        { key: path[0].id, label: path[0].type.replace(/_/g, " "), onClick: () => selectBlock(path[0].id) },
-        { key: `${path[0].id}-col`, label: `Column ${(path[1].columnIndex ?? 0) + 1}`, onClick: () => selectBlock(path[0].id) },
-        { key: path[1].id, label: path[1].type.replace(/_/g, " "), onClick: () => selectBlock(path[1].id) },
-      ]
-    : [{ key: path[0].id, label: path[0].type.replace(/_/g, " "), onClick: () => selectBlock(path[0].id) }];
+  // Every entry except the last is an ancestor container — expand each one
+  // into (container, column) crumbs, so a block nested arbitrarily deep
+  // (containers inside containers) still gets one clickable segment per
+  // level instead of the breadcrumb only ever supporting a single container.
+  const crumbs = path.flatMap((entry, i) => {
+    const isLast = i === path.length - 1;
+    const own = { key: entry.id, label: entry.type.replace(/_/g, " "), onClick: () => selectBlock(entry.id) };
+    if (isLast) return [own];
+    return [
+      own,
+      { key: `${entry.id}-col`, label: `Column ${(entry.columnIndex ?? 0) + 1}`, onClick: () => selectBlock(entry.id) },
+    ];
+  });
 
   return (
     <div className="flex items-center gap-1 px-3 py-1.5 border-b bg-muted/30 text-[11px] text-muted-foreground overflow-x-auto">

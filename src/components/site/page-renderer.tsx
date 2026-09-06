@@ -57,9 +57,24 @@ interface PageBlockProps {
   /** Rendered inside a container column. The column already sets the width,
    *  so the usual centered max-width wrapper would constrain it twice. */
   nested?: boolean;
+  /** How many containers deep this block already sits. Passed down, never
+   *  read from the block itself, so it can't be spoofed by document content —
+   *  only genuine recursive calls increment it. */
+  depth?: number;
 }
 
-async function ServerBlock({ block, identityLogo, identityLogoDark, nested }: PageBlockProps) {
+// Containers may nest inside containers (2026-09-06: block editor pass toward
+// Elementor-style containers — arbitrary flex items, arbitrary nesting). A
+// page document is user-authored JSON, not a closed type — a corrupted
+// import or a future bug could still produce many levels of nesting, and
+// server-side recursion has no viewport/frame budget to fall back on the way
+// a runaway client render would. Capping depth is what stands between
+// "flexible nesting" and a stack-exhausting render on a malformed document.
+// 4 levels is generously past any layout a real editor session builds by
+// hand (section > row > column > card is already 3) with room to spare.
+const MAX_CONTAINER_DEPTH = 4;
+
+async function ServerBlock({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
   const bgStyle = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding?.top,
@@ -118,16 +133,18 @@ async function ServerBlock({ block, identityLogo, identityLogoDark, nested }: Pa
     case "ecommerce_cart":   content = null; break; // cart is injected by layout
     // Containers hold their own blocks, so each column's children are
     // rendered here and handed to the layout shell. Awaited because several
-    // block types fetch their own data. One level only — the builder doesn't
-    // allow a container inside a container, and recursing without that limit
-    // would let a malformed document loop forever.
+    // block types fetch their own data. Containers may nest inside
+    // containers now (see MAX_CONTAINER_DEPTH above) — past the cap, a
+    // nested container is skipped rather than crashing the page, since the
+    // rest of the content is still worth publishing.
     case "container": {
+      if (depth >= MAX_CONTAINER_DEPTH) { content = null; break; }
       const container = block as import("@/types/cms").ContainerBlockProps;
       const columnContent = await Promise.all(
         (container.data.columns ?? []).map(async (col) =>
           Promise.all(
             (col.blocks ?? [])
-              .filter((child) => child.visible !== false && child.type !== "container")
+              .filter((child) => child.visible !== false)
               .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
               .map(async (child) => (
                 <ServerBlock
@@ -136,6 +153,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark, nested }: Pa
                   identityLogo={identityLogo}
                   identityLogoDark={identityLogoDark}
                   nested
+                  depth={depth + 1}
                 />
               )),
           ),
