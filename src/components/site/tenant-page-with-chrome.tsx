@@ -1,6 +1,6 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
-import { fetchGlobalLayout, toBlocks, shouldInjectPrefooter } from "@/lib/site/global-blocks";
+import { fetchGlobalLayout, toBlocks, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
 import type { Block } from "@/types/cms";
@@ -59,8 +59,25 @@ export async function TenantPageWithChrome({ tenantId, slug }: { tenantId: strin
   const templateCSSVars = buildTemplateCSSVars(mergedPalette, templateIdentity?.typography ?? FALLBACK_TYPOGRAPHY);
   const templateCustomCss = templateIdentity?.customCss ?? null;
 
-  const blocks: Block[] = toBlocks(page?.blocks);
+  const rawBlocks: Block[] = toBlocks(page?.blocks);
   const { header, footer, prefooter } = layout;
+  // This component renders header/footer separately (below) whenever the
+  // tenant has global chrome — a page's own nav/footer block must be
+  // stripped the same way (site)/[...slug]/page.tsx and (marketing)/page.tsx
+  // already do, or it renders twice. Missed here originally: found live
+  // (2026-09-09) on afnanunited's /contact showing two full headers —
+  // this is the third of three render paths a tenant page can take
+  // (site catch-all, marketing homepage, and this one for /contact,
+  // /pricing, /privacy, /terms, /refund), and only the first two got the
+  // isChromeBlock fix when the double-render bug from the nav migration
+  // was found and fixed. Same bug, same fix, third place it was hiding.
+  const hasGlobalHeader = header.length > 0;
+  const hasGlobalFooter = footer.length > 0;
+  const blocks: Block[] = rawBlocks.filter((b) => {
+    if (hasGlobalHeader && isChromeBlock(b, "header")) return false;
+    if (hasGlobalFooter && isChromeBlock(b, "footer")) return false;
+    return true;
+  });
   const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
     ? [...blocks, ...prefooter]
     : blocks;
