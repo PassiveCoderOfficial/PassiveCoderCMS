@@ -31,6 +31,24 @@ interface InsertSectionButtonProps {
 type Tab = "sections" | "blocks" | "layout";
 
 /**
+ * Header sub-blocks (2026-09-06) exist to compose INSIDE a header container
+ * — logo/nav/CTA arranged as columns — never as a standalone block loose at
+ * page/header root. HEADER_BLOCK_TYPES offers them in the header builder's
+ * picker at every depth, so nothing stopped adding one directly at root.
+ * Found live on a real tenant (afnanunited, 2026-09-09): a header_logo block
+ * ended up as a sibling of the real header container in global_header,
+ * rendering as its own small floating logo strip below the actual header —
+ * a genuine visual double-header, not the isChromeBlock dedup bug from the
+ * migration (that was two full headers from two different sources; this is
+ * one real header plus one orphan fragment of it). Filtered out here rather
+ * than removed from HEADER_BLOCK_TYPES entirely, since they're still the
+ * right thing to offer once you're inside a column.
+ */
+const HEADER_SUB_BLOCK_TYPES: readonly BlockType[] = [
+  "header_logo", "header_nav", "header_cta", "header_cart", "header_account",
+];
+
+/**
  * The "+" between sections: a visual picker for what goes here.
  *
  * Three tabs, matching how people actually decide — a ready-made section, a
@@ -70,6 +88,9 @@ export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact,
   const blocks = useMemo(
     () =>
       blockRegistry.filter((b) => {
+        // See HEADER_SUB_BLOCK_TYPES above — these compose inside a
+        // container's column only, never loose at root.
+        if (!path && HEADER_SUB_BLOCK_TYPES.includes(b.type)) return false;
         const allowed = !allowedBlockTypes || allowedBlockTypes.includes(b.type);
         const matches = !q || b.label.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
         return allowed && matches;
