@@ -6,25 +6,20 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { countVisit } from "@/lib/usage/count-visit";
 import { recordPageView } from "@/lib/usage/record-page-view";
+import { buildSiteMetadata } from "@/lib/site/site-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createAdminClient();
   const tenantId = (await headers()).get("x-tenant-id");
 
-  // Tenant subdomain: use the tenant's branding + favicon (marketing root domain falls
-  // back to the platform homepage settings).
-  if (tenantId) {
-    const { data: identity } = await supabase
-      .from("site_identity")
-      .select("site_name, favicon_url")
-      .eq("tenant_id", tenantId)
-      .single();
-    const fav = identity?.favicon_url ?? "/branding/passivecoder-icon.png";
-    return {
-      title: { default: identity?.site_name ?? "Home", template: `%s | ${identity?.site_name ?? ""}` },
-      icons: { icon: fav, shortcut: fav, apple: fav },
-    };
-  }
+  // Tenant subdomain hitting a (marketing) route (e.g. "/" — the [...slug]
+  // catch-all can't match it, see (marketing)/page.tsx). Same shared
+  // resolver (site)/layout.tsx uses, so a tenant's homepage gets the same
+  // title/description/favicon/OG as every other page on their site instead
+  // of a partial version — this branch used to resolve a favicon but never
+  // set a description at all, so a tenant's own "/" silently inherited the
+  // platform's "Modern CMS built with Next.js and Supabase".
+  if (tenantId) return buildSiteMetadata(tenantId);
 
   const { data } = await supabase.from("homepage_settings").select("meta_title,meta_description").single();
   return {

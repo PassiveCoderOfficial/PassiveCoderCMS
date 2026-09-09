@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { PLATFORM_ICONS } from "@/lib/site/site-metadata";
 
 // Login/signup are PassiveCoder's own pages, not a tenant's site.
 export const metadata: Metadata = {
-  icons: { icon: "/branding/passivecoder-icon.png", shortcut: "/branding/passivecoder-icon.png", apple: "/branding/passivecoder-icon.png" },
+  icons: PLATFORM_ICONS,
 };
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {

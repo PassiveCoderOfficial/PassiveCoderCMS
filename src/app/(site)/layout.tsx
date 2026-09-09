@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { buildSiteMetadata } from "@/lib/site/site-metadata";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { countVisit } from "@/lib/usage/count-visit";
@@ -28,104 +29,13 @@ const WHATSAPP_TENANT_ID = "72dd48ef-497c-4e22-9894-4d43a9a4556b";
 import type { Block } from "@/types/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const supabase = await createClient();
-  const reqHeaders = await headers();
-  const tenantId = reqHeaders.get("x-tenant-id");
-
-  // Favicon/site name can be set from two different screens which write two
-  // different tables: Templates > Header/Footer writes site_identity, while
-  // Settings writes site_settings. Read both and prefer identity, otherwise a
-  // favicon uploaded on the Settings screen silently never appears.
-  const [{ data: settings }, identityResult] = await Promise.all([
-    tenantId
-      ? createAdminClient().then(admin =>
-          admin.from("site_settings").select("site_name, meta_description, site_description, favicon_url").eq("tenant_id", tenantId).maybeSingle()
-        )
-      : supabase.from("site_settings").select("site_name, meta_description, site_description, favicon_url").maybeSingle(),
-    tenantId
-      ? createAdminClient().then(admin =>
-          admin.from("site_identity").select("site_name, favicon_url, logo_url, tagline").eq("tenant_id", tenantId).single()
-        )
-      : Promise.resolve({ data: null }),
-  ]);
-  const identity = identityResult?.data as
-    { site_name?: string; favicon_url?: string; logo_url?: string; tagline?: string } | null;
-
-  // These columns hold "" as often as NULL — a site saved with the field left
-  // blank stores an empty string — and ?? only skips null/undefined, so an
-  // empty description would win and render an empty meta tag.
-  const firstNonEmpty = (...vals: (string | null | undefined)[]) =>
-    vals.find((v) => typeof v === "string" && v.trim().length > 0)?.trim();
-
-  const siteName = firstNonEmpty(identity?.site_name, settings?.site_name) ?? "CMS Site";
-  let description = firstNonEmpty(
-    settings?.meta_description,
-    settings?.site_description,
-    identity?.tagline,
-  );
-
-  // Most sites never fill in a description — 34 of 43 tenants had none when
-  // this was written — which left shared links with no summary at all. The
-  // homepage hero is the site's own opening line, so it stands in until
-  // someone writes a proper one, rather than leaving the preview blank or
-  // (as before) inheriting the platform's.
-  if (!description && tenantId) {
-    const admin = await createAdminClient();
-    const { data: homePage } = await admin
-      .from("pages")
-      .select("blocks")
-      .eq("tenant_id", tenantId)
-      .eq("slug", "home")
-      .eq("status", "published")
-      .maybeSingle();
-    const hero = ((homePage?.blocks as Block[] | null) ?? []).find((b) => b.type === "hero");
-    const heroData = hero?.data as { description?: string; subtitle?: string } | undefined;
-    description = firstNonEmpty(heroData?.description, heroData?.subtitle);
-  }
-  // Fall back to the platform icon only when the tenant genuinely has none —
-  // never to another tenant's, and never to the removed app/favicon.ico
-  // file-convention icon that used to silently win over this value.
-  const faviconUrl =
-    firstNonEmpty(identity?.favicon_url, (settings as { favicon_url?: string } | null)?.favicon_url) ??
-    "/branding/passivecoder-icon.png";
-  // Link-preview image: the tenant's own logo if they have one, then their
-  // favicon (a small square image beats no image), never the platform's own
-  // branding — a client's WhatsApp preview showing "Passive Coder" is the
-  // bug this fixes, so nothing here may fall through to it.
-  const ogImage = firstNonEmpty(identity?.logo_url, identity?.favicon_url);
-
-  // WhatsApp/Telegram/Facebook link previews read og:* tags and, absent an
-  // openGraph block at this level, Next synthesizes one from the *root*
-  // layout's title/description — which is PassiveCoder's own marketing copy.
-  // That's exactly what clients were seeing instead of their own site's
-  // description and image. Every tenant route now gets its own openGraph
-  // (and matching twitter card) so nothing here can inherit upward.
-  // Resolved from the request host so each tenant's metadata is based on its
-  // own origin — a shared constant would resolve every relative URL (the
-  // platform fallback icon, most obviously) against the wrong domain, and
-  // without any base Next warns and leaves them unresolved.
-  const host = reqHeaders.get("host");
-  const proto = host?.startsWith("localhost") || host?.startsWith("127.") ? "http" : "https";
-  const metadataBase = host ? new URL(`${proto}://${host}`) : undefined;
-
-  return {
-    metadataBase,
-    title: { default: siteName, template: `%s | ${siteName}` },
-    description,
-    icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
-    openGraph: {
-      title: siteName,
-      description,
-      siteName,
-      images: ogImage ? [{ url: ogImage }] : [],
-    },
-    twitter: {
-      card: ogImage ? "summary_large_image" : "summary",
-      title: siteName,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
-  };
+  const tenantId = (await headers()).get("x-tenant-id");
+  // Full resolution (site_identity + site_settings, description fallback to
+  // the homepage hero, auto-generated favicon when nothing's uploaded,
+  // OG/twitter cards, per-request metadataBase) now lives in one shared
+  // place — see site-metadata.ts for why: this was the one route-group that
+  // had it right, everywhere else had a partial copy or none at all.
+  return buildSiteMetadata(tenantId);
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {

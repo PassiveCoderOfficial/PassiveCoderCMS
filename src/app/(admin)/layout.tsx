@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { PLATFORM_ICONS } from "@/lib/site/site-metadata";
 import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
 import { AdminTopbar } from "@/components/admin/topbar/topbar";
 import { SABanner } from "@/components/admin/sa-banner";
@@ -34,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: siteName, template: `%s | ${siteName}` },
     // Dashboard is PassiveCoder's own tool UI, not a tenant's public site —
     // always the platform icon here, regardless of which tenant is open.
-    icons: { icon: "/branding/passivecoder-icon.png", shortcut: "/branding/passivecoder-icon.png", apple: "/branding/passivecoder-icon.png" },
+    icons: PLATFORM_ICONS,
   };
 }
 

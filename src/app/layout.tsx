@@ -11,11 +11,14 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700
 // No static icons here on purpose. This root metadata is the outermost
 // layer, but a file-convention `app/favicon.ico` or `app/icon.png` would be
 // served at those literal paths for every route regardless of what a nested
-// layout's generateMetadata returns — which is exactly why every tenant site
-// showed the PassiveCoder icon instead of their own. Every route group that
-// needs a favicon (site, marketing, admin, ...) now sets its own `icons` via
-// generateMetadata, falling back to /branding/passivecoder-icon.png only
-// when there's no tenant-specific one.
+// layout's generateMetadata returns. Every route group sets its own `icons`
+// via generateMetadata instead — tenant-facing groups ((site), (marketing))
+// through the shared resolveSiteMetadata/buildSiteMetadata in
+// lib/site/site-metadata.ts, which auto-generates a small coded favicon for
+// a tenant with none uploaded rather than falling back to PLATFORM_ICONS —
+// a client's site must never show Passive Coder's own icon. Only the CMS's
+// own tool UI ((admin)/(auth)/(staff)/(superadmin), never tenant-facing)
+// uses PLATFORM_ICONS directly.
 export const metadata: Metadata = {
   title: "Passive Coder",
   description: "Modern CMS built with Next.js and Supabase",

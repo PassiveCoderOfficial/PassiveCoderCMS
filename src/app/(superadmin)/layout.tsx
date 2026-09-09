@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 import { requireManagerOrSuperAdmin } from "@/lib/super-admin";
 import SuperAdminSidebar from "@/components/super-admin/sidebar";
 import type { Metadata } from "next";
+import { PLATFORM_ICONS } from "@/lib/site/site-metadata";
 
 // Super-admin console is PassiveCoder's own tool UI, not a tenant's site.
 export const metadata: Metadata = {
-  icons: { icon: "/branding/passivecoder-icon.png", shortcut: "/branding/passivecoder-icon.png", apple: "/branding/passivecoder-icon.png" },
+  icons: PLATFORM_ICONS,
 };
 
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
