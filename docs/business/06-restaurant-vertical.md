@@ -103,10 +103,12 @@ answer "where's my order" without calling the rider.
   flow needed for this.
 
 ### Phase 4 — Rider assignment
-- Rider role under tenant (or branch — decide at build time based on whether
-  riders are shared across a chain's branches, likely yes for BD context).
+- Riders scoped **per-branch** (locked 2026-09-12, overriding the earlier
+  "leaning per-tenant" note below — Wali decided per-branch instead).
 - Assign rider to a delivery order, status pipeline
   (assigned → picked_up → delivered), no live location.
+- Not started — phases 1-3 (schema, dine-in ordering, kitchen/POS/86-toggle)
+  shipped 2026-09-12; priority went to the onboarding template next instead.
 
 ### Phase 5 — Printer bridge
 - Ship after the ordering + POS flow is provably solid, not before — a
@@ -122,10 +124,13 @@ answer "where's my order" without calling the rider.
 - Live rider GPS tracking.
 - Table reservations / booking.
 - Split-bill / per-seat billing.
-- Real Restaurant & Cafe onboarding template — "Restaurant & Cafe" exists
-  today only as a template *category* label; no template row backs it. Build
-  after phase 2 ships, using a real customer's site as the reference rather
-  than guessing menu-section conventions in advance.
+- ~~Real Restaurant & Cafe onboarding template~~ — **built 2026-09-12.** 5
+  pages (Home, Menu, About, Order Info, Contact), hand-written to match the
+  exact block jsonb of the existing "Cleaning service" template rather than
+  generated. Menu page uses the ecommerce_products block against the real
+  `products` table, so a restaurant's menu items (with dietary_info from
+  086) show up there automatically once entered — no separate menu data
+  model.
 
 ---
 
@@ -154,10 +159,24 @@ answer "where's my order" without calling the rider.
 
 ## Open questions for next planning pass
 
-- Riders scoped per-branch or per-tenant (shared pool across a chain)?
-  Leaning per-tenant for BD context but not locked — decide at phase 4.
-- Does `orders` already have a generic status column phase 1 can extend, or
-  does one need to be added? Check before writing the migration.
+- ~~Riders scoped per-branch or per-tenant~~ — **resolved 2026-09-12:
+  per-branch.**
+- ~~Does `orders` already have a generic status column phase 1 can extend~~
+  — resolved: yes (`status`, generic commerce lifecycle), which is exactly
+  why `kitchen_status` was added as its own column instead of reusing it.
 - Pricing: does restaurant Pro carry a different price than standard Pro, or
   same price with more perceived value? Not decided — flag to Wali before
   the pricing page changes.
+
+## Progress log
+
+- **2026-09-12** — Phases 1-3 shipped and live in production (migrations
+  087, 088; commits f5e13d5, 335c03c, 9019141). Schema, QR dine-in ordering,
+  kitchen board + table occupancy, POS branch/table picker + 86-toggle all
+  working. A real RLS gap (public read policies with no tenant scoping) was
+  found while building phase 3 and closed in the same session — see 088.
+  The Restaurant & Cafe onboarding template (089) also shipped the same day
+  — 5 pages, hand-written to match an existing published template's block
+  schema rather than AI-generated, at Wali's direction to skip the AiCoder
+  pipeline entirely for this. Phase 4 (riders, per-branch — locked) is the
+  remaining piece, not yet started.
