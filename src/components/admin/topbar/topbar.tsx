@@ -61,6 +61,12 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
   const [activeChips, setActiveChips] = useState<Set<FilterChip>>(new Set());
   const [planFilter, setPlanFilter] = useState<string>("");
   const [sortMode, setSortMode] = useState<"latest" | "oldest" | "az">("latest");
+  // Tracks whether the user has ever clicked a sort button. Without this,
+  // the long-list auto-A-Z default below was indistinguishable from the user
+  // explicitly clicking "Latest" — the tab stayed highlighted "Latest" while
+  // silently sorting alphabetically, so a just-created site never appeared
+  // at the top of a 50+ site list even though the label said otherwise.
+  const [sortTouched, setSortTouched] = useState(false);
 
   const active = list.find(s => s.is_primary) ?? list[0];
 
@@ -77,7 +83,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
     });
   }
 
-  const filtered = useMemo(() => {
+  const preFiltered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let result = list;
 
@@ -108,16 +114,26 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
       result = result.filter(s => s.plan === planFilter);
     }
 
-    // Past AZ_THRESHOLD results with no active filter/search, default to
-    // alphabetical so a long unfiltered list is still scannable — recency
-    // stops being useful once there's dozens of sites. Still overridable via
-    // the sort toggle in either direction, and only applies to the untouched
-    // default view (a search or filter narrowing the list keeps whatever
-    // sort was explicitly chosen).
+    return result;
+  }, [list, query, activeChips, planFilter]);
+
+  // Past AZ_THRESHOLD results with no active filter/search AND the user has
+  // never touched the sort toggle, default to alphabetical so a long
+  // unfiltered list is still scannable. Once the user has clicked any sort
+  // button — including clicking "Latest" itself — that choice is real and
+  // must win, even past the threshold; otherwise "Latest" stays highlighted
+  // while silently sorting A-Z, hiding a just-created site at the bottom.
+  // Shared between the actual sort below and the tab highlight, so the
+  // label shown always matches what's actually applied.
+  const effectiveSort = useMemo(() => {
     const isDefaultView = !query && !activeChips.size && !planFilter;
-    const effectiveSort = sortMode === "latest" && isDefaultView && result.length > AZ_THRESHOLD
+    return !sortTouched && sortMode === "latest" && isDefaultView && preFiltered.length > AZ_THRESHOLD
       ? "az"
       : sortMode;
+  }, [sortTouched, sortMode, query, activeChips, planFilter, preFiltered.length]);
+
+  const filtered = useMemo(() => {
+    let result = preFiltered;
 
     if (effectiveSort === "az") {
       result = [...result].sort((a, b) => a.name.localeCompare(b.name));
@@ -128,7 +144,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
     }
 
     return result;
-  }, [list, query, activeChips, planFilter, sortMode]);
+  }, [preFiltered, effectiveSort]);
 
   function exitImpersonation() {
     // SA's own site is the first in the list (ordered by created_at ASC)
@@ -207,9 +223,9 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
               {(["latest", "oldest", "az"] as const).map(mode => (
                 <button
                   key={mode}
-                  onClick={() => setSortMode(mode)}
+                  onClick={() => { setSortMode(mode); setSortTouched(true); }}
                   className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                    sortMode === mode ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    effectiveSort === mode ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {mode === "az" && <ArrowDownAZ className="h-2.5 w-2.5" />}
