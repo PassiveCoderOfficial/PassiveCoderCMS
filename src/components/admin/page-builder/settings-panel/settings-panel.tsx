@@ -18,6 +18,7 @@ import { HeaderNavSettings } from "./header-nav-settings";
 import { HeaderCtaSettings } from "./header-cta-settings";
 import { HeaderCartSettings } from "./header-cart-settings";
 import { HeaderAccountSettings } from "./header-account-settings";
+import { FooterSettings, FooterStyleSettings } from "./footer-settings";
 import { SpacerSettings } from "./spacer-settings";
 import { EcommerceProductsSettings } from "./ecommerce-products-settings";
 import { AccountingFeedSettings } from "./accounting-feed-settings";
@@ -105,6 +106,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "gallery": return <GallerySettings block={block} />;
     case "cta": return <CTASettings block={block} />;
     case "navigation": return <NavigationSettings block={block} />;
+    case "footer": return <FooterSettings block={block} />;
     case "header_logo": return <HeaderLogoSettings block={block} />;
     case "header_nav": return <HeaderNavSettings block={block} />;
     case "header_cta": return <HeaderCtaSettings block={block} />;
@@ -149,6 +151,7 @@ function BlockContentSettings({ block }: { block: Block }) {
 function BlockStyleSettings({ block }: { block: Block }) {
   switch (block.type) {
     case "hero": return <HeroStyleSettings block={block} />;
+    case "footer": return <FooterStyleSettings block={block} />;
     default: return null;
   }
 }
