@@ -75,6 +75,33 @@ function playNewOrderChime() {
   }
 }
 
+/**
+ * A real OS-level notification, not just an in-tab chime — fires even when
+ * the kitchen tab is in the background (a phone screen off, another app
+ * focused), which the tab-title flash and Web Audio chime above cannot do
+ * on their own.
+ *
+ * This is the browser Notification API, not push: it only fires while this
+ * tab is open somewhere (background is fine, fully closed is not). True
+ * closed-tab push needs a service worker plus a VAPID key pair and a
+ * subscription stored per device — a real backend piece, not a follow-on to
+ * this. Flagged rather than silently built, since it changes what "the
+ * kitchen gets notified" can promise.
+ */
+function notifyNewOrder(order: KitchenOrder) {
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  try {
+    new Notification("New order — " + order.order_number, {
+      body: `${order.customer_name} · ${tableLabel(order)}`,
+      tag: order.id, // replaces rather than stacks if the same order somehow fires twice
+    });
+  } catch {
+    // Some platforms (iOS Safari, certain PWA contexts) reject `new
+    // Notification()` even when permission reads "granted" — the chime and
+    // title flash already cover the same event, so this is not fatal.
+  }
+}
+
 function tableLabel(order: KitchenOrder): string {
   const t = Array.isArray(order.restaurant_tables) ? order.restaurant_tables[0] : order.restaurant_tables;
   if (t) return `Table ${t.table_number}`;
@@ -98,6 +125,18 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
   // interval on every poll purely to keep its closure's id set current.
   const knownIds = useRef(new Set(initial.map(o => o.id)));
   const originalTitle = useRef<string>("");
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">("default");
+
+  useEffect(() => {
+    if (typeof Notification === "undefined") { setNotifPermission("unsupported"); return; }
+    setNotifPermission(Notification.permission);
+  }, []);
+
+  function requestNotifPermission() {
+    if (typeof Notification === "undefined") return;
+    Notification.requestPermission().then(setNotifPermission);
+  }
+
   useEffect(() => {
     originalTitle.current = document.title;
     const interval = setInterval(async () => {
@@ -106,12 +145,13 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
         if (!res.ok) return;
         const { orders: fresh } = await res.json() as { orders: KitchenOrder[] };
         const freshIds = new Set(fresh.map(o => o.id));
-        const isNewOrder = fresh.some(o => !knownIds.current.has(o.id));
+        const newOrders = fresh.filter(o => !knownIds.current.has(o.id));
         knownIds.current = freshIds;
         setOrders(fresh);
-        if (isNewOrder) {
+        if (newOrders.length) {
           playNewOrderChime();
           document.title = "🔔 New order — " + originalTitle.current;
+          newOrders.forEach(notifyNewOrder);
         }
       } catch {
         // A dropped poll just tries again next interval — nothing to
@@ -226,6 +266,19 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
           </select>
         )}
       </div>
+
+      {notifPermission === "default" && (
+        <button onClick={requestNotifPermission}
+          className="w-full flex items-center justify-between gap-3 bg-indigo-500/10 border border-indigo-600/40 rounded-lg px-4 py-2.5 text-sm text-indigo-300 hover:bg-indigo-500/20 transition-colors">
+          <span>Turn on notifications to hear new orders even when this tab isn't in front.</span>
+          <span className="text-xs font-medium underline shrink-0">Enable</span>
+        </button>
+      )}
+      {notifPermission === "denied" && (
+        <p className="text-xs text-amber-400">
+          Notifications are blocked for this site — enable them in your browser's site settings to get alerted on new orders.
+        </p>
+      )}
 
       {shownTables.length > 0 && (
         <div className="flex flex-wrap gap-2">
