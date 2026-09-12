@@ -8,6 +8,7 @@ import { useCart } from "@/lib/cart/cart-context";
 import { useEcommerceCurrency } from "@/lib/hooks/use-ecommerce-currency";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getDineInTableToken, clearDineInTableToken } from "@/lib/dine-in/table-context";
 
 interface Gateway {
   id: string;
@@ -42,9 +43,25 @@ export default function SingleVendorCheckout() {
   // address section entirely — a customer picking up in person has no
   // delivery address to give, and forcing one made every pickup checkout
   // collect a fake address just to satisfy the form.
-  const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup">("delivery");
+  const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup" | "dine_in">("delivery");
   const [pickupTime, setPickupTime] = useState("");
   const isPickup = fulfillmentType === "pickup";
+  // Set once, on mount, from the token a QR-code scan stashed
+  // (src/app/(site)/table/[qrToken]/table-landing.tsx). Locked decision
+  // (docs/business/06-restaurant-vertical.md): dine-in is never a picker
+  // option a customer chooses themselves — it's implied entirely by having
+  // scanned a table's code, so the UI below just shows it as already chosen
+  // rather than offering delivery/pickup/dine-in as three equal buttons.
+  const [tableToken, setTableToken] = useState<string | null>(null);
+  const isDineIn = fulfillmentType === "dine_in";
+
+  useEffect(() => {
+    const token = getDineInTableToken();
+    if (token) {
+      setTableToken(token);
+      setFulfillmentType("dine_in");
+    }
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -61,7 +78,7 @@ export default function SingleVendorCheckout() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const addressRequired = !isPickup;
+    const addressRequired = !isPickup && !isDineIn;
     if (!form.email || !form.first_name || !form.last_name
       || (addressRequired && (!form.address_line1 || !form.city || !form.country))) {
       toast.error("Please fill in all required fields");
@@ -95,6 +112,7 @@ export default function SingleVendorCheckout() {
           notes: form.notes,
           fulfillment_type: fulfillmentType,
           pickup_time: isPickup ? pickupTime : undefined,
+          table_qr_token: isDineIn ? tableToken : undefined,
         }),
       });
 
@@ -106,6 +124,10 @@ export default function SingleVendorCheckout() {
       }
 
       clearCart();
+      // The table was for this one visit/order — clear it so a second,
+      // later order from the same browser tab doesn't silently reuse a
+      // stale table token instead of asking again.
+      if (isDineIn) clearDineInTableToken();
       router.push(`/order-confirmation/${data.orderId}`);
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -169,22 +191,32 @@ export default function SingleVendorCheckout() {
             {/* Fulfillment */}
             <section className="border rounded-xl p-6 space-y-4">
               <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">How would you like to get this?</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFulfillmentType("delivery")}
-                  className={`rounded-lg border-2 px-4 py-3 text-sm font-medium text-left transition-colors ${fulfillmentType === "delivery" ? "border-primary bg-primary/5" : "border-input"}`}
-                >
-                  Delivery
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFulfillmentType("pickup")}
-                  className={`rounded-lg border-2 px-4 py-3 text-sm font-medium text-left transition-colors ${isPickup ? "border-primary bg-primary/5" : "border-input"}`}
-                >
-                  Pickup
-                </button>
-              </div>
+              {isDineIn ? (
+                // Not a choice here — scanning the table's QR code already
+                // decided it. Showing delivery/pickup buttons next to a
+                // dine-in order would invite a customer sitting at the
+                // table to accidentally pick "delivery" for no reason.
+                <div className="rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 text-sm font-medium">
+                  Dine-in — served to your table
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFulfillmentType("delivery")}
+                    className={`rounded-lg border-2 px-4 py-3 text-sm font-medium text-left transition-colors ${fulfillmentType === "delivery" ? "border-primary bg-primary/5" : "border-input"}`}
+                  >
+                    Delivery
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFulfillmentType("pickup")}
+                    className={`rounded-lg border-2 px-4 py-3 text-sm font-medium text-left transition-colors ${isPickup ? "border-primary bg-primary/5" : "border-input"}`}
+                  >
+                    Pickup
+                  </button>
+                </div>
+              )}
               {isPickup && (
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Pickup Time</label>
@@ -199,10 +231,11 @@ export default function SingleVendorCheckout() {
               )}
             </section>
 
-            {/* Shipping address — pickup has nowhere to deliver to, so this
-                whole section is skipped rather than collecting an address
+            {/* Shipping address — pickup has nowhere to deliver to and
+                dine-in customers are already at the table, so this whole
+                section is skipped rather than collecting an address
                 nobody needs. */}
-            {!isPickup && (
+            {!isPickup && !isDineIn && (
               <section className="border rounded-xl p-6 space-y-4">
                 <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Shipping Address</h2>
                 <div className="space-y-1.5">

@@ -11,9 +11,14 @@ interface OrderPayload {
   payment_method: string;
   notes?: string;
   /** Restaurant pickup/delivery support (2026-09-12) — defaults to
-   *  "delivery" so every existing caller is unaffected. */
-  fulfillment_type?: "delivery" | "pickup";
+   *  "delivery" so every existing caller is unaffected. "dine_in" added for
+   *  the restaurant vertical (docs/business/06-restaurant-vertical.md). */
+  fulfillment_type?: "delivery" | "pickup" | "dine_in";
   pickup_time?: string;
+  /** dine_in only: the qr_token printed on the table, never the raw table
+   *  id — resolved server-side below so a client can't address an
+   *  arbitrary table_id it was never shown. */
+  table_qr_token?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -21,7 +26,8 @@ export async function POST(req: NextRequest) {
     const tenantId = req.headers.get("x-tenant-id");
     const body: OrderPayload = await req.json();
 
-    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time } = body;
+    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time, table_qr_token } = body;
+    const isDineIn = fulfillment_type === "dine_in";
 
     if (!items?.length) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -29,8 +35,36 @@ export async function POST(req: NextRequest) {
     if (!billing_address?.email) {
       return NextResponse.json({ error: "Billing address required" }, { status: 400 });
     }
+    // Dine-in has no address to give — the customer is at the table the QR
+    // code was printed on, which the token below identifies server-side.
+    if (isDineIn && !table_qr_token) {
+      return NextResponse.json({ error: "Missing table" }, { status: 400 });
+    }
 
     const supabase = await createClient();
+
+    // Resolve the table from its qr_token, never trust a client-sent table
+    // id directly — the token is the only thing the customer actually saw
+    // (printed on the table), so it's the only thing that should carry
+    // authority here. Also recovers branch_id from the table's own branch,
+    // rather than trusting a client-sent branch_id that could be swapped
+    // for a different tenant's branch.
+    let branchId: string | null = null;
+    let tableId: string | null = null;
+    if (isDineIn) {
+      const { data: table } = await supabase
+        .from("restaurant_tables")
+        .select("id, branch_id, is_active, restaurant_branches!inner(tenant_id, is_active)")
+        .eq("qr_token", table_qr_token)
+        .maybeSingle();
+      const branch = (table as unknown as { restaurant_branches?: { tenant_id: string; is_active: boolean } } | null)
+        ?.restaurant_branches;
+      if (!table || !table.is_active || !branch?.is_active || (tenantId && branch.tenant_id !== tenantId)) {
+        return NextResponse.json({ error: "Table not found" }, { status: 400 });
+      }
+      tableId = table.id;
+      branchId = table.branch_id;
+    }
 
     // Verify products still active + get current prices
     const productIds = [...new Set(items.map((i) => i.product_id))];
@@ -75,12 +109,17 @@ export async function POST(req: NextRequest) {
       tax,
       total,
       notes: notes ?? null,
-      fulfillment_type: fulfillment_type === "pickup" ? "pickup" : "delivery",
+      fulfillment_type: isDineIn ? "dine_in" : fulfillment_type === "pickup" ? "pickup" : "delivery",
       // A blank datetime-local input sends "" (not null/undefined), and ""
       // is not a valid timestamptz -- caught live, this 500'd every pickup
       // order with an empty pickup time, i.e. the common case ("leave blank
       // for ASAP"). Must check for an empty string explicitly, not just ??.
       pickup_time: fulfillment_type === "pickup" && pickup_time?.trim() ? pickup_time : null,
+      branch_id: branchId,
+      table_id: tableId,
+      // Dine-in and pickup orders go straight to the kitchen; a delivery
+      // order that hasn't been branch-routed has no kitchen to notify yet.
+      kitchen_status: isDineIn || fulfillment_type === "pickup" ? "new" : null,
     };
 
     if (tenantId) orderRow.tenant_id = tenantId;
