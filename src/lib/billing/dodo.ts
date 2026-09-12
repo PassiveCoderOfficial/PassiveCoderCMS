@@ -1,4 +1,6 @@
 import DodoPayments from "dodopayments";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 type DodoEnv = "live_mode" | "test_mode";
 
@@ -74,4 +76,25 @@ export function getDodoProductId(
     biz_monthly:    config.productBizMonthly,
   };
   return map[`${planId}_${cycle}`] ?? null;
+}
+
+/**
+ * A real name for a Dodo checkout's Full Name field. Every checkout route
+ * previously passed `user.email!` as both email and name — Dodo's hosted
+ * form then showed the customer's own email address prefilled in the Name
+ * box, which reads as a data-entry bug even though nothing downstream
+ * actually parses the name.
+ *
+ * auth user_metadata is tried first (set at signup, e.g. by an OAuth
+ * provider — no extra query needed); profiles.full_name is the fallback for
+ * anyone who filled it in themselves afterward. Falls all the way back to
+ * the email only if neither source has anything, so a checkout never fails
+ * for lack of a name.
+ */
+export async function resolveCustomerName(admin: SupabaseClient, user: Pick<User, "id" | "email" | "user_metadata">): Promise<string> {
+  const metaName = (user.user_metadata?.full_name || user.user_metadata?.name) as string | undefined;
+  if (metaName?.trim()) return metaName.trim();
+
+  const { data: profile } = await admin.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+  return profile?.full_name?.trim() || user.email || "Customer";
 }

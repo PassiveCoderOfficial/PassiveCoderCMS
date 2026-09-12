@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { makePayment, resolveSpConfig } from "@/lib/billing/shurjopay";
-import { getDodoClient, getDodoProductId, resolveDodoConfig } from "@/lib/billing/dodo";
+import { getDodoClient, getDodoProductId, resolveDodoConfig, resolveCustomerName } from "@/lib/billing/dodo";
 
 const MANUAL_METHODS = ["bkash", "nagad", "bank"] as const;
 
@@ -149,10 +149,11 @@ export async function POST(req: Request) {
     }
 
     const origin = new URL(req.url).origin;
+    const customerName = await resolveCustomerName(admin, user);
     try {
       const session = await getDodoClient({ apiKey: dodoConfig.apiKey, sandbox: dodoConfig.sandbox }).checkoutSessions.create({
         product_cart: [{ product_id: productId, quantity: 1 }],
-        customer: { email: user.email!, name: user.email! },
+        customer: { email: user.email!, name: customerName },
         return_url: `${origin}/dashboard/subscription?paid=1`,
         cancel_url: `${origin}/dashboard/subscription?cancelled=1`,
         metadata: { tenant_id: tenantId, plan_id: planId, billing_cycle: billingCycle },

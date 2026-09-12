@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
-import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
+import { getDodoClient, resolveDodoConfig, resolveCustomerName } from "@/lib/billing/dodo";
 import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 
 /**
@@ -55,10 +55,11 @@ export async function POST(req: Request) {
   }
 
   const origin = new URL(req.url).origin;
+  const customerName = await resolveCustomerName(admin, user);
   try {
     const session = await getDodoClient({ apiKey: dodoConfig.apiKey, sandbox: dodoConfig.sandbox }).checkoutSessions.create({
       product_cart: [{ product_id: productId, quantity: 1 }],
-      customer: { email: user.email!, name: user.email! },
+      customer: { email: user.email!, name: customerName },
       return_url: `${origin}/dashboard/pages?aicoder_topup=1`,
       cancel_url: `${origin}/dashboard/pages?aicoder_topup=cancelled`,
       metadata: { type: "ai_topup", tenant_id: tenantId, package_id: pkg.id, generations: String(pkg.generations) },
