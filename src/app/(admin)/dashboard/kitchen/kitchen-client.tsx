@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike } from "lucide-react";
+import React, { useState } from "react";
+import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus } from "lucide-react";
 
 interface OrderItem { name: string; quantity: number }
 interface KitchenOrder {
@@ -14,16 +14,30 @@ interface KitchenOrder {
   fulfillment_type: string;
   customer_name: string;
   created_at: string;
+  rider_id: string | null;
+  delivery_status: string | null;
   restaurant_tables: { table_number: string } | { table_number: string }[] | null;
 }
 interface Branch { id: string; name: string }
 interface TableRow { id: string; table_number: string; branch_id: string; occupied: boolean }
+interface Rider { id: string; name: string; branch_id: string }
+
+const DELIVERY_LABEL: Record<string, string> = {
+  assigned: "Assigned",
+  picked_up: "Picked up",
+  delivered: "Delivered",
+};
+function nextDeliveryStatus(current: string): string | null {
+  if (current === "assigned") return "picked_up";
+  if (current === "picked_up") return "delivered";
+  return null;
+}
 
 const STAGES = [
   { key: "new", label: "New", icon: Clock },
   { key: "preparing", label: "Preparing", icon: ChefHat },
   { key: "ready", label: "Ready", icon: CheckCircle2 },
-  { key: "served", label: "Served / out", icon: Bike },
+  { key: "served", label: "Served / picked up", icon: Bike },
 ] as const;
 
 function nextStage(current: string): string | null {
@@ -38,10 +52,30 @@ function tableLabel(order: KitchenOrder): string {
   return order.fulfillment_type === "pickup" ? "Pickup" : order.fulfillment_type === "delivery" ? "Delivery" : "Takeaway";
 }
 
-export default function KitchenClient({ branches, orders: initial, tables = [] }: { branches: Branch[]; orders: KitchenOrder[]; tables?: TableRow[] }) {
+export default function KitchenClient({ branches, orders: initial, tables = [], riders = [] }: {
+  branches: Branch[]; orders: KitchenOrder[]; tables?: TableRow[]; riders?: Rider[];
+}) {
   const [orders, setOrders] = useState(initial);
   const [branchFilter, setBranchFilter] = useState<string>("all");
   const [busy, setBusy] = useState<string | null>(null);
+  const [riderList, setRiderList] = useState(riders);
+  const [showAddRider, setShowAddRider] = useState(false);
+  const [newRider, setNewRider] = useState({ branch_id: branches[0]?.id ?? "", name: "", phone: "" });
+
+  async function addRider(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newRider.branch_id || !newRider.name.trim()) return;
+    const res = await fetch("/api/ecommerce/riders", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newRider),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setRiderList(prev => [...prev, data.rider]);
+      setNewRider({ branch_id: newRider.branch_id, name: "", phone: "" });
+      setShowAddRider(false);
+    }
+  }
 
   async function advance(order: KitchenOrder) {
     const next = nextStage(order.kitchen_status);
@@ -63,6 +97,52 @@ export default function KitchenClient({ branches, orders: initial, tables = [] }
       setOrders(prev => next === "completed"
         ? [...prev, { ...order, kitchen_status: prevStatus }]
         : prev.map(o => o.id === order.id ? { ...o, kitchen_status: prevStatus } : o));
+    }
+  }
+
+  // A delivery order at "ready" stays there — kitchen_status only tracks the
+  // food, and the food is done. What happens next (rider assigned, picked
+  // up, delivered) is delivery_status's job; the order only leaves the
+  // board once actually delivered (see advanceDelivery below), not the
+  // moment a rider is picked.
+  async function assignRider(order: KitchenOrder, riderId: string) {
+    setBusy(order.id);
+    const res = await fetch("/api/ecommerce/delivery", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_id: order.id, rider_id: riderId }),
+    });
+    setBusy(null);
+    if (res.ok) {
+      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, rider_id: riderId, delivery_status: "assigned" } : o));
+    }
+  }
+
+  async function advanceDelivery(order: KitchenOrder) {
+    const next = nextDeliveryStatus(order.delivery_status ?? "");
+    if (!next) return;
+    setBusy(order.id);
+    const prev = order.delivery_status;
+    // Delivered is the actual end of this order's life on the board — mark
+    // kitchen_status completed at the same time so it drops off here,
+    // exactly like advance() does for dine-in/pickup.
+    setOrders(cur => next === "delivered"
+      ? cur.filter(o => o.id !== order.id)
+      : cur.map(o => o.id === order.id ? { ...o, delivery_status: next } : o));
+    const res = await fetch("/api/ecommerce/delivery", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_id: order.id, delivery_status: next }),
+    });
+    if (res.ok && next === "delivered") {
+      await fetch("/api/ecommerce/kitchen", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: order.id, kitchen_status: "completed" }),
+      });
+    }
+    setBusy(null);
+    if (!res.ok) {
+      setOrders(cur => next === "delivered"
+        ? [...cur, { ...order, delivery_status: prev }]
+        : cur.map(o => o.id === order.id ? { ...o, delivery_status: prev } : o));
     }
   }
 
@@ -97,6 +177,40 @@ export default function KitchenClient({ branches, orders: initial, tables = [] }
         </div>
       )}
 
+      {branches.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {riderList.map(r => (
+            <span key={r.id} className="px-2.5 py-1 rounded-lg text-xs bg-gray-900 border border-gray-800 text-gray-400">
+              {r.name}
+            </span>
+          ))}
+          <button onClick={() => setShowAddRider(v => !v)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border border-dashed border-gray-700 text-gray-500 hover:text-white hover:border-gray-500 transition-colors">
+            <UserPlus className="w-3 h-3" /> Add rider
+          </button>
+        </div>
+      )}
+
+      {showAddRider && (
+        <form onSubmit={addRider} className="flex flex-wrap gap-2 bg-gray-900 border border-gray-800 rounded-lg p-3">
+          {branches.length > 1 && (
+            <select value={newRider.branch_id} onChange={(e) => setNewRider(r => ({ ...r, branch_id: e.target.value }))}
+              className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white">
+              {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          )}
+          <input placeholder="Rider name" value={newRider.name}
+            onChange={(e) => setNewRider(r => ({ ...r, name: e.target.value }))}
+            className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white placeholder-gray-500" />
+          <input placeholder="Phone (optional)" value={newRider.phone}
+            onChange={(e) => setNewRider(r => ({ ...r, phone: e.target.value }))}
+            className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white placeholder-gray-500" />
+          <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-md px-3 py-1.5 text-xs font-medium transition-colors">
+            Add
+          </button>
+        </form>
+      )}
+
       {branches.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 opacity-40" />
@@ -113,22 +227,62 @@ export default function KitchenClient({ branches, orders: initial, tables = [] }
                   <Icon className="w-4 h-4 text-indigo-400" /> {stage.label}
                   <span className="text-gray-600 font-normal">({inStage.length})</span>
                 </div>
-                {inStage.map(order => (
-                  <button key={order.id} onClick={() => advance(order)} disabled={busy === order.id}
-                    className="w-full text-left bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-lg p-3 transition-colors disabled:opacity-50">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-xs font-mono text-gray-500">{order.order_number}</span>
-                      <span className="text-xs text-indigo-400 shrink-0">{tableLabel(order)}</span>
+                {inStage.map(order => {
+                  // Only a "ready" delivery order branches away from plain
+                  // tap-to-advance — every other stage/fulfillment combo
+                  // behaves exactly as before.
+                  const isDeliveryReady = stage.key === "ready" && order.fulfillment_type === "delivery";
+                  const branchRiders = riderList.filter(r => r.branch_id === order.branch_id);
+                  const cardBody = (
+                    <>
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-xs font-mono text-gray-500">{order.order_number}</span>
+                        <span className="text-xs text-indigo-400 shrink-0">{tableLabel(order)}</span>
+                      </div>
+                      <div className="text-sm text-white mt-1">{order.customer_name}</div>
+                      <ul className="text-xs text-gray-400 mt-1.5 space-y-0.5">
+                        {order.items.slice(0, 4).map((it, i) => (
+                          <li key={i}>{it.quantity}× {it.name}</li>
+                        ))}
+                        {order.items.length > 4 && <li className="text-gray-600">+{order.items.length - 4} more</li>}
+                      </ul>
+                    </>
+                  );
+
+                  if (!isDeliveryReady) {
+                    return (
+                      <button key={order.id} onClick={() => advance(order)} disabled={busy === order.id}
+                        className="w-full text-left bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-lg p-3 transition-colors disabled:opacity-50">
+                        {cardBody}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <div key={order.id} className="bg-gray-800 border border-gray-700 rounded-lg p-3">
+                      {cardBody}
+                      <div className="mt-2 pt-2 border-t border-gray-700">
+                        {!order.rider_id ? (
+                          branchRiders.length > 0 ? (
+                            <select disabled={busy === order.id} defaultValue=""
+                              onChange={(e) => e.target.value && assignRider(order, e.target.value)}
+                              className="w-full bg-gray-900 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white">
+                              <option value="" disabled>Assign rider…</option>
+                              {branchRiders.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                            </select>
+                          ) : (
+                            <p className="text-[11px] text-amber-400">No riders — add one in Rider settings</p>
+                          )
+                        ) : (
+                          <button onClick={() => advanceDelivery(order)} disabled={busy === order.id}
+                            className="w-full flex items-center justify-center gap-1.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 rounded-md px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50">
+                            <Bike className="w-3 h-3" /> {DELIVERY_LABEL[order.delivery_status ?? "assigned"]} — tap to advance
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm text-white mt-1">{order.customer_name}</div>
-                    <ul className="text-xs text-gray-400 mt-1.5 space-y-0.5">
-                      {order.items.slice(0, 4).map((it, i) => (
-                        <li key={i}>{it.quantity}× {it.name}</li>
-                      ))}
-                      {order.items.length > 4 && <li className="text-gray-600">+{order.items.length - 4} more</li>}
-                    </ul>
-                  </button>
-                ))}
+                  );
+                })}
                 {inStage.length === 0 && <p className="text-xs text-gray-700 text-center py-6">Empty</p>}
               </div>
             );

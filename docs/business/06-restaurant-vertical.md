@@ -107,8 +107,13 @@ answer "where's my order" without calling the rider.
   "leaning per-tenant" note below — Wali decided per-branch instead).
 - Assign rider to a delivery order, status pipeline
   (assigned → picked_up → delivered), no live location.
-- Not started — phases 1-3 (schema, dine-in ordering, kitchen/POS/86-toggle)
-  shipped 2026-09-12; priority went to the onboarding template next instead.
+- **Shipped 2026-09-12** (090). Riders are a lightweight name+phone table,
+  deliberately not tied to auth.users/tenant_members — no login needed to
+  be assigned. kitchen_status and delivery_status stay independent columns:
+  a delivery order sits at kitchen_status='ready' the whole time a rider is
+  assigned/picked up/delivering, only flipping to 'completed' once
+  delivery_status reaches 'delivered'. Rider management (add/list) lives
+  inline on the kitchen page rather than a separate settings page.
 
 ### Phase 5 — Printer bridge
 - Ship after the ordering + POS flow is provably solid, not before — a
@@ -178,5 +183,8 @@ answer "where's my order" without calling the rider.
   The Restaurant & Cafe onboarding template (089) also shipped the same day
   — 5 pages, hand-written to match an existing published template's block
   schema rather than AI-generated, at Wali's direction to skip the AiCoder
-  pipeline entirely for this. Phase 4 (riders, per-branch — locked) is the
-  remaining piece, not yet started.
+  pipeline entirely for this. Phase 4 (riders, per-branch) shipped the same
+  day (090) — schema, assignment on the kitchen board, delivery status
+  pipeline independent of kitchen_status. Only phase 5 (printer bridge)
+  remains, explicitly deferred until the ordering+POS flow has real
+  customer usage behind it.

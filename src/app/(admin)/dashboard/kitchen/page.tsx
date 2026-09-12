@@ -18,10 +18,10 @@ export default async function KitchenPage() {
   const tid = await getCurrentTenantId();
   const supabase = await createClient();
 
-  const [{ data: branches }, { data: orders }, { data: tables }] = await Promise.all([
+  const [{ data: branches }, { data: orders }, { data: tables }, { data: riders }] = await Promise.all([
     supabase.from("restaurant_branches").select("id, name").eq("tenant_id", tid).eq("is_active", true),
     supabase.from("orders")
-      .select("id, order_number, items, branch_id, table_id, kitchen_status, fulfillment_type, customer_name, created_at, restaurant_tables(table_number)")
+      .select("id, order_number, items, branch_id, table_id, kitchen_status, fulfillment_type, customer_name, created_at, rider_id, delivery_status, restaurant_tables(table_number)")
       .eq("tenant_id", tid)
       .not("kitchen_status", "is", null)
       .not("kitchen_status", "eq", "completed")
@@ -34,6 +34,14 @@ export default async function KitchenPage() {
       .select("id, table_number, branch_id, restaurant_branches!inner(tenant_id)")
       .eq("is_active", true)
       .eq("restaurant_branches.tenant_id", tid),
+    // Riders scoped per-branch (locked decision) — load every active rider
+    // across every branch, client filters to the order's own branch when
+    // offering the assign picker, same pattern as branch-scoped
+    // availability on the POS page.
+    supabase.from("restaurant_riders")
+      .select("id, name, branch_id, restaurant_branches!inner(tenant_id)")
+      .eq("is_active", true)
+      .eq("restaurant_branches.tenant_id", tid),
   ]);
 
   // occupied = has a live (non-completed) kitchen order sitting on it right now.
@@ -44,6 +52,7 @@ export default async function KitchenPage() {
       branches={branches ?? []}
       orders={orders ?? []}
       tables={(tables ?? []).map(t => ({ id: t.id, table_number: t.table_number, branch_id: t.branch_id, occupied: occupiedTableIds.has(t.id) }))}
+      riders={(riders ?? []).map(r => ({ id: r.id, name: r.name, branch_id: r.branch_id }))}
     />
   );
 }
