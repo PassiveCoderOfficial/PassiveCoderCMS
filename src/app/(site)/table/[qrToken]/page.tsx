@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { TableLanding } from "./table-landing";
 
 interface Props {
@@ -18,13 +18,18 @@ export const metadata = { title: "Order at your table" };
  *
  * Resolved server-side against the current tenant so a QR code printed by
  * one restaurant can never be used to silently order from another.
+ *
+ * Uses the admin client deliberately, not the RLS-bound one — this table
+ * has no public SELECT policy (see migration 088), the qr_token match plus
+ * the tenant_id check right below is the actual access control, done at
+ * this layer instead of in RLS.
  */
 export default async function TablePage({ params }: Props) {
   const { qrToken } = await params;
   const tenantId = (await headers()).get("x-tenant-id");
   if (!tenantId) notFound();
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: table } = await supabase
     .from("restaurant_tables")
     .select("id, table_number, is_active, restaurant_branches!inner(id, name, tenant_id, is_active)")

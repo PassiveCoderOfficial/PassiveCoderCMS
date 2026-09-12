@@ -38,6 +38,7 @@
   Droplet,
   Store,
   BadgeCheck,
+  ChefHat,
   Wallet,
   AlertTriangle,
   type LucideIcon,
@@ -253,6 +254,13 @@ export const navSections: NavSection[] = [
       },
       { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase, moduleKey: "jobs" },
       { label: "POS", href: "/dashboard/pos", icon: ShoppingCart, moduleKey: "pos" },
+      // Restaurant vertical (docs/business/06-restaurant-vertical.md phase 3).
+      // Rides on the same "pos" module gate rather than a new module key —
+      // this is the same operational surface (running the counter), not a
+      // separately-sellable feature. Page itself renders nothing for a
+      // tenant with no branches, so it costs a non-restaurant tenant one
+      // harmless sidebar link at worst.
+      { label: "Kitchen", href: "/dashboard/kitchen", icon: ChefHat, moduleKey: "pos" },
       { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },
       {
         label: "Accounting",

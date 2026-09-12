@@ -48,11 +48,15 @@ export async function POST(req: NextRequest) {
     // (printed on the table), so it's the only thing that should carry
     // authority here. Also recovers branch_id from the table's own branch,
     // rather than trusting a client-sent branch_id that could be swapped
-    // for a different tenant's branch.
+    // for a different tenant's branch. Uses the admin client: restaurant_tables
+    // has no public SELECT policy (migration 088) — the qr_token match plus
+    // the tenant_id check right below is the access control here, not RLS.
     let branchId: string | null = null;
     let tableId: string | null = null;
     if (isDineIn) {
-      const { data: table } = await supabase
+      const { createAdminClient: createAdmin } = await import("@/lib/supabase/server");
+      const adminForTable = await createAdmin();
+      const { data: table } = await adminForTable
         .from("restaurant_tables")
         .select("id, branch_id, is_active, restaurant_branches!inner(tenant_id, is_active)")
         .eq("qr_token", table_qr_token)

@@ -15,6 +15,19 @@ export async function POST(req: NextRequest) {
   const items: PosItem[] = Array.isArray(body.items) ? body.items : [];
   if (!items.length) return NextResponse.json({ error: "No items" }, { status: 400 });
 
+  // Restaurant vertical (docs/business/06-restaurant-vertical.md phase 3):
+  // staff can ring up a dine-in order directly on the POS (no QR scan) by
+  // picking the table themselves, so this needs the same branch/table/
+  // fulfillment fields the web checkout gained in phase 2. All optional —
+  // a plain retail tenant's POS keeps working exactly as before.
+  const branchId: string | null = body.branch_id || null;
+  const tableId: string | null = body.table_id || null;
+  const fulfillmentType: string = ["delivery", "pickup", "dine_in"].includes(body.fulfillment_type)
+    ? body.fulfillment_type
+    // A branch was picked but no table — staff rang up a takeaway/pickup
+    // sale at the counter, not a dine-in one.
+    : (tableId ? "dine_in" : branchId ? "pickup" : "delivery");
+
   const admin = await createAdminClient();
 
   // Server-side prices
@@ -52,6 +65,13 @@ export async function POST(req: NextRequest) {
       tax: 0,
       total,
       notes: body.notes ?? null,
+      branch_id: branchId,
+      table_id: tableId,
+      fulfillment_type: fulfillmentType,
+      // POS sales are rung up as already paid/completed, but a dine-in
+      // table order still needs to pass through the kitchen — a plain
+      // walk-in retail sale (no branch) has nothing for a kitchen to make.
+      kitchen_status: branchId ? "new" : null,
     })
     .select("id, order_number")
     .single();
