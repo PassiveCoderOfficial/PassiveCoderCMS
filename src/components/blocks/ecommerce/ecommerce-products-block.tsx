@@ -51,7 +51,7 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
 
   let productsQuery = supabase
     .from("products")
-    .select("id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity")
+    .select("id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity, dietary_info")
     .eq("status", "active")
     .order(orderMap[sortBy] ?? "created_at", { ascending })
     .limit(displayCount);

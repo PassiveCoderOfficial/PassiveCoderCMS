@@ -86,6 +86,9 @@ export function ProductCardWide({ product, showAddToCart = true, showDescription
           {showDescription && product.short_description && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.short_description}</p>
           )}
+          {!!product.dietary_info?.spice_level && (
+            <span className="text-xs mt-1 inline-block">{"🌶".repeat(product.dietary_info.spice_level)}</span>
+          )}
         </div>
 
         <div className="flex items-center justify-between mt-2 gap-2">

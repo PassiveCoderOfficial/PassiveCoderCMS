@@ -36,7 +36,16 @@ export interface ProductCardData {
   images: string[];
   short_description?: string | null;
   inStock?: boolean;
+  /** Restaurant menu metadata (2026-09-12) — empty/absent on ordinary
+   *  ecommerce products, so this renders nothing for non-menu catalogs. */
+  dietary_info?: { diet?: "veg" | "non_veg" | "vegan"; spice_level?: number; tags?: string[] };
 }
+
+const DIET_DOT: Record<string, string> = {
+  veg: "border-green-600 text-green-600",
+  vegan: "border-green-700 text-green-700",
+  non_veg: "border-red-600 text-red-600",
+};
 
 interface ProductCardProps {
   product: ProductCardData;
@@ -121,6 +130,25 @@ export function ProductCard({
 
         {showDescription && product.short_description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.short_description}</p>
+        )}
+
+        {(product.dietary_info?.diet || !!product.dietary_info?.spice_level) && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            {product.dietary_info?.diet && (
+              <span
+                className={cn(
+                  "w-3.5 h-3.5 border-2 rounded-sm flex items-center justify-center shrink-0",
+                  DIET_DOT[product.dietary_info.diet],
+                )}
+                title={product.dietary_info.diet.replace("_", "-")}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              </span>
+            )}
+            {!!product.dietary_info?.spice_level && (
+              <span className="text-xs">{"🌶".repeat(product.dietary_info.spice_level)}</span>
+            )}
+          </div>
         )}
 
         <div className={cn("mt-3 flex items-center", showAddToCart ? "justify-between" : "justify-start", "gap-2")}>
