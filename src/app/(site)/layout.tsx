@@ -18,6 +18,7 @@ import { PushConsent } from "@/components/donors/push-consent";
 import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { FloatingWhatsApp } from "@/components/site/floating-whatsapp";
+import { DineInBadge } from "@/components/site/dine-in-badge";
 import { MarketplaceHeader } from "@/components/marketplace-ecom/marketplace-header";
 import { MarketplaceFooter } from "@/components/marketplace-ecom/marketplace-footer";
 import { getMarketplaceChrome } from "@/lib/marketplace-ecom/chrome";
@@ -289,6 +290,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <ScrollReveal />
 
       {tenantId === WHATSAPP_TENANT_ID && <FloatingWhatsApp />}
+
+      <DineInBadge />
 
       {isAdminViewer && <AdminEditWidget />}
 

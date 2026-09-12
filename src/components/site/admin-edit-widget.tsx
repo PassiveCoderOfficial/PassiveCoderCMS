@@ -15,6 +15,11 @@ export function AdminEditWidget() {
   const [pageId, setPageId] = useState<string | null>(null);
 
   useEffect(() => {
+    // App routes that are never a page-builder page — /table/[qrToken]
+    // (restaurant dine-in QR landing) is the first of these, added rather
+    // than guessed at generically since new non-page routes are rare and a
+    // wrong guess here just costs one 404, not a real bug.
+    if (/^\/table\//.test(pathname)) { setPageId(null); return; }
     const slug = pathname === "/" ? "home" : pathname.replace(/^\//, "");
     let cancelled = false;
     fetch(`/api/site/current-page?slug=${encodeURIComponent(slug)}`)
