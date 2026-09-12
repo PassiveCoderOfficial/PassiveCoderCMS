@@ -106,7 +106,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       total: result.grand_total,
       notes: notes?.trim() || null,
       fulfillment_type: fulfillmentType,
-      pickup_time: isPickup ? (input.pickupTime ?? null) : null,
+      // Empty string ("" from a blank datetime-local input) is not a valid
+      // timestamptz — caught live via api/ecommerce/orders/route.ts's
+      // identical field, must check for a real value, not just ??.
+      pickup_time: isPickup && input.pickupTime?.trim() ? input.pickupTime : null,
     })
     .select("id, order_number")
     .single();

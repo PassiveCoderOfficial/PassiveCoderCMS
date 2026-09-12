@@ -76,7 +76,11 @@ export async function POST(req: NextRequest) {
       total,
       notes: notes ?? null,
       fulfillment_type: fulfillment_type === "pickup" ? "pickup" : "delivery",
-      pickup_time: fulfillment_type === "pickup" ? (pickup_time ?? null) : null,
+      // A blank datetime-local input sends "" (not null/undefined), and ""
+      // is not a valid timestamptz -- caught live, this 500'd every pickup
+      // order with an empty pickup time, i.e. the common case ("leave blank
+      // for ASAP"). Must check for an empty string explicitly, not just ??.
+      pickup_time: fulfillment_type === "pickup" && pickup_time?.trim() ? pickup_time : null,
     };
 
     if (tenantId) orderRow.tenant_id = tenantId;
