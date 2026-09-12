@@ -20,6 +20,8 @@ interface SubOrder {
   orders: {
     order_number: string;
     payment_method: string;
+    fulfillment_type?: "delivery" | "pickup";
+    pickup_time?: string | null;
     shipping_address: {
       name?: string; phone?: string; address?: string; area?: string; city?: string; note?: string;
     } | null;
@@ -27,7 +29,10 @@ interface SubOrder {
 }
 
 /** Mirrors the server-side FLOW map in /api/vendor/orders — the API is the
- *  authority, this only decides which button to show. */
+ *  authority, this only decides which button to show. Same underlying
+ *  status machine for delivery and pickup (courier/ledger side effects are
+ *  keyed off these exact values) — pickup just gets kitchen-facing labels
+ *  via NEXT_STEP_PICKUP/STATUS_LABEL_PICKUP below, never new status values. */
 const NEXT_STEP: Record<string, { to: SubOrder["status"]; label: string } | null> = {
   pending: { to: "accepted", label: "Accept order" },
   accepted: { to: "packed", label: "Mark packed" },
@@ -36,6 +41,30 @@ const NEXT_STEP: Record<string, { to: SubOrder["status"]; label: string } | null
   delivered: null,
   cancelled: null,
   returned: null,
+};
+
+/** Restaurant pickup flow (2026-09-12): received → preparing → ready →
+ *  completed, skipping the courier-only "shipped" leg entirely — a pickup
+ *  order goes straight from packed/ready to delivered/completed when the
+ *  customer collects it. */
+const NEXT_STEP_PICKUP: Record<string, { to: SubOrder["status"]; label: string } | null> = {
+  pending: { to: "accepted", label: "Start preparing" },
+  accepted: { to: "packed", label: "Mark ready" },
+  packed: { to: "delivered", label: "Mark completed" },
+  shipped: { to: "delivered", label: "Mark completed" },
+  delivered: null,
+  cancelled: null,
+  returned: null,
+};
+
+const STATUS_LABEL_PICKUP: Record<SubOrder["status"], string> = {
+  pending: "received",
+  accepted: "preparing",
+  packed: "ready",
+  shipped: "ready",
+  delivered: "completed",
+  cancelled: "cancelled",
+  returned: "returned",
 };
 
 const STATUS_CLS: Record<SubOrder["status"], string> = {
@@ -134,17 +163,26 @@ export default function VendorOrdersClient() {
       ) : (
         <div className="space-y-3">
           {orders.map((o) => {
-            const step = NEXT_STEP[o.status];
+            const isPickup = o.orders?.fulfillment_type === "pickup";
+            const step = isPickup ? NEXT_STEP_PICKUP[o.status] : NEXT_STEP[o.status];
+            const statusLabel = isPickup ? STATUS_LABEL_PICKUP[o.status] : o.status;
             const addr = o.orders?.shipping_address;
             const isCod = o.orders?.payment_method === "cod";
-            const needsCourier = o.status === "packed";
+            const needsCourier = !isPickup && o.status === "packed";
             return (
               <div key={o.id} className="border border-[#EAECF0] rounded-2xl bg-white overflow-hidden">
                 <div className="px-4 py-3 border-b border-[#EAECF0] flex flex-wrap items-center gap-2">
                   <span className="font-mono text-sm text-[#1A1330]">{o.sub_order_number}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full border capitalize ${STATUS_CLS[o.status]}`}>
-                    {o.status}
+                    {statusLabel}
                   </span>
+                  {isPickup && (
+                    <span className="text-xs px-2 py-0.5 rounded-full border bg-[#F9FAFB] border-[#EAECF0] text-[#475467]">
+                      Pickup{o.orders?.pickup_time
+                        ? ` · ${new Date(o.orders.pickup_time).toLocaleString()}`
+                        : " · ASAP"}
+                    </span>
+                  )}
                   {isCod && (
                     <span className="text-xs px-2 py-0.5 rounded-full border bg-[#F9FAFB] border-[#EAECF0] text-[#475467] flex items-center gap-1">
                       <Banknote className="w-3 h-3" /> COD {tk(o.cod_amount)}
@@ -168,7 +206,7 @@ export default function VendorOrdersClient() {
                       ))}
                     </ul>
 
-                    {addr && (
+                    {!isPickup && addr && (
                       <div className="text-sm text-[#667085] space-y-1 border-t border-[#EAECF0] pt-3">
                         <p className="text-gray-200">{addr.name}</p>
                         {addr.phone && (
@@ -194,9 +232,11 @@ export default function VendorOrdersClient() {
                     <div className="flex justify-between text-[#667085]">
                       <span>Items</span><span>{tk(o.subtotal)}</span>
                     </div>
-                    <div className="flex justify-between text-[#667085]">
-                      <span>Delivery</span><span>{tk(o.shipping_cost)}</span>
-                    </div>
+                    {!isPickup && (
+                      <div className="flex justify-between text-[#667085]">
+                        <span>Delivery</span><span>{tk(o.shipping_cost)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-[#98A2B3]">
                       <span>Commission</span><span>−{tk(o.commission_amount)}</span>
                     </div>
@@ -233,7 +273,7 @@ export default function VendorOrdersClient() {
                       </div>
                     )}
 
-                    {o.courier && o.status !== "packed" && (
+                    {!isPickup && o.courier && o.status !== "packed" && (
                       <p className="text-xs text-[#98A2B3] flex items-center gap-1.5">
                         <Truck className="w-3.5 h-3.5" /> {o.courier}
                         {o.tracking_number ? ` · ${o.tracking_number}` : ""}

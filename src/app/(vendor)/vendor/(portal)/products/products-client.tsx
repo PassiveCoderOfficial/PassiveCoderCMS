@@ -16,10 +16,19 @@ interface Product {
   approval_status: "pending" | "approved" | "rejected";
   rejection_reason: string | null;
   category_ids: string[];
+  dietary_info?: DietaryInfo;
   created_at: string;
 }
 
+interface DietaryInfo {
+  diet?: "veg" | "non_veg" | "vegan";
+  spice_level?: number;
+  tags?: string[];
+}
+
 interface Category { id: string; name: string }
+
+const SPICE_LABELS = ["None", "Mild", "Medium", "Hot"];
 
 const APPROVAL_META = {
   pending: { label: "In review", cls: "bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]", icon: Clock },
@@ -48,6 +57,9 @@ function ProductForm({
     description: "",
     category: initial?.category_ids?.[0] ?? "",
     image: initial?.images?.[0] ?? "",
+    diet: (initial?.dietary_info?.diet ?? "") as "" | "veg" | "non_veg" | "vegan",
+    spice_level: initial?.dietary_info?.spice_level ?? 0,
+    tags: initial?.dietary_info?.tags?.join(", ") ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +79,13 @@ function ProductForm({
       description: f.description.trim() || null,
       category_ids: f.category ? [f.category] : [],
       images: f.image.trim() ? [f.image.trim()] : [],
+      dietary_info: {
+        ...(f.diet ? { diet: f.diet } : {}),
+        ...(f.spice_level > 0 ? { spice_level: f.spice_level } : {}),
+        ...(f.tags.trim()
+          ? { tags: f.tags.split(",").map((t) => t.trim()).filter(Boolean) }
+          : {}),
+      },
     };
 
     const res = await fetch("/api/vendor/products", {
@@ -121,6 +140,27 @@ function ProductForm({
           value={f.short_description} onChange={(e) => setF({ ...f, short_description: e.target.value })} />
         <textarea className={inputCls} rows={3} placeholder="Full description"
           value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+
+        <div className="border-t border-[#EAECF0] pt-3 space-y-2">
+          <p className="text-xs font-medium text-[#667085]">Menu item info (optional)</p>
+          <div className="grid grid-cols-2 gap-2">
+            <select className={inputCls} value={f.diet}
+              onChange={(e) => setF({ ...f, diet: e.target.value as typeof f.diet })}>
+              <option value="">Diet — not set</option>
+              <option value="veg">Veg</option>
+              <option value="non_veg">Non-veg</option>
+              <option value="vegan">Vegan</option>
+            </select>
+            <select className={inputCls} value={f.spice_level}
+              onChange={(e) => setF({ ...f, spice_level: Number(e.target.value) })}>
+              {SPICE_LABELS.map((label, i) => (
+                <option key={i} value={i}>{i === 0 ? "Spice — none" : `Spice — ${label}`}</option>
+              ))}
+            </select>
+          </div>
+          <input className={inputCls} placeholder="Tags, comma separated (e.g. gluten-free, chef's special)"
+            value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} />
+        </div>
 
         {error && <p className="text-sm text-[#B42318]">{error}</p>}
         <div className="flex justify-end gap-2">
@@ -216,6 +256,16 @@ export default function VendorProductsClient({ categories }: { categories: Categ
                     <span className={low ? "text-[#B54708] ml-2" : "text-[#98A2B3] ml-2"}>
                       · {p.stock_quantity} in stock
                     </span>
+                    {p.dietary_info?.diet && (
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded border border-[#EAECF0] text-[#475467] capitalize">
+                        {p.dietary_info.diet.replace("_", "-")}
+                      </span>
+                    )}
+                    {!!p.dietary_info?.spice_level && (
+                      <span className="ml-1 text-xs text-[#B54708]">
+                        {"🌶".repeat(p.dietary_info.spice_level)}
+                      </span>
+                    )}
                   </p>
                   {p.rejection_reason && (
                     <p className="text-xs text-[#B42318] mt-1">Rejected: {p.rejection_reason}</p>

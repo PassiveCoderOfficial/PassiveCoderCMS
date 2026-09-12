@@ -19,6 +19,7 @@ const EDITABLE = [
   "category_ids",
   "attributes",
   "brand",
+  "dietary_info",
 ] as const;
 
 function slugify(s: string) {
@@ -33,7 +34,7 @@ export async function GET() {
   const { data, error } = await admin
     .from("products")
     .select(
-      "id, name, slug, price, compare_price, images, stock_quantity, track_inventory, status, approval_status, rejection_reason, category_ids, created_at",
+      "id, name, slug, price, compare_price, images, stock_quantity, track_inventory, status, approval_status, rejection_reason, category_ids, dietary_info, created_at",
     )
     .eq("vendor_id", vendor.vendor_id)
     .order("created_at", { ascending: false });

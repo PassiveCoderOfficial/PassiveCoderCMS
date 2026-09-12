@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   let query = admin
     .from("sub_orders")
     .select(
-      "id, sub_order_number, status, items, subtotal, shipping_cost, total, commission_amount, vendor_earning, cod_amount, cod_collected, courier, tracking_number, created_at, delivered_at, orders(order_number, shipping_address, payment_method)",
+      "id, sub_order_number, status, items, subtotal, shipping_cost, total, commission_amount, vendor_earning, cod_amount, cod_collected, courier, tracking_number, created_at, delivered_at, orders(order_number, shipping_address, payment_method, fulfillment_type, pickup_time)",
     )
     .eq("vendor_id", vendor.vendor_id)
     .order("created_at", { ascending: false })
