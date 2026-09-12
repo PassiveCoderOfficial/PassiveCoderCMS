@@ -37,8 +37,6 @@ interface Site {
   has_owner?: boolean;
 }
 
-const AZ_THRESHOLD = 15;
-
 type FilterChip = "own" | "no_tenant" | "active" | "trial" | "suspended";
 
 const FILTER_CHIPS: { key: FilterChip; label: string }[] = [
@@ -60,13 +58,13 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
   const [query, setQuery] = useState("");
   const [activeChips, setActiveChips] = useState<Set<FilterChip>>(new Set());
   const [planFilter, setPlanFilter] = useState<string>("");
+  // "latest" is the real default, always — no silent auto-A-Z override past
+  // any list length. An earlier version switched to alphabetical once the
+  // list passed 15 sites while leaving the "Latest" tab highlighted, so a
+  // site created moments ago never showed at the top of the full list.
+  // Reported live twice; the fix is to not have a second, hidden sort mode
+  // at all — what's shown always matches the tab that's lit.
   const [sortMode, setSortMode] = useState<"latest" | "oldest" | "az">("latest");
-  // Tracks whether the user has ever clicked a sort button. Without this,
-  // the long-list auto-A-Z default below was indistinguishable from the user
-  // explicitly clicking "Latest" — the tab stayed highlighted "Latest" while
-  // silently sorting alphabetically, so a just-created site never appeared
-  // at the top of a 50+ site list even though the label said otherwise.
-  const [sortTouched, setSortTouched] = useState(false);
 
   const active = list.find(s => s.is_primary) ?? list[0];
 
@@ -117,34 +115,19 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
     return result;
   }, [list, query, activeChips, planFilter]);
 
-  // Past AZ_THRESHOLD results with no active filter/search AND the user has
-  // never touched the sort toggle, default to alphabetical so a long
-  // unfiltered list is still scannable. Once the user has clicked any sort
-  // button — including clicking "Latest" itself — that choice is real and
-  // must win, even past the threshold; otherwise "Latest" stays highlighted
-  // while silently sorting A-Z, hiding a just-created site at the bottom.
-  // Shared between the actual sort below and the tab highlight, so the
-  // label shown always matches what's actually applied.
-  const effectiveSort = useMemo(() => {
-    const isDefaultView = !query && !activeChips.size && !planFilter;
-    return !sortTouched && sortMode === "latest" && isDefaultView && preFiltered.length > AZ_THRESHOLD
-      ? "az"
-      : sortMode;
-  }, [sortTouched, sortMode, query, activeChips, planFilter, preFiltered.length]);
-
   const filtered = useMemo(() => {
     let result = preFiltered;
 
-    if (effectiveSort === "az") {
+    if (sortMode === "az") {
       result = [...result].sort((a, b) => a.name.localeCompare(b.name));
-    } else if (effectiveSort === "oldest") {
+    } else if (sortMode === "oldest") {
       result = [...result].sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
     } else {
       result = [...result].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
     }
 
     return result;
-  }, [preFiltered, effectiveSort]);
+  }, [preFiltered, sortMode]);
 
   function exitImpersonation() {
     // SA's own site is the first in the list (ordered by created_at ASC)
@@ -223,9 +206,9 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
               {(["latest", "oldest", "az"] as const).map(mode => (
                 <button
                   key={mode}
-                  onClick={() => { setSortMode(mode); setSortTouched(true); }}
+                  onClick={() => setSortMode(mode)}
                   className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                    effectiveSort === mode ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    sortMode === mode ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {mode === "az" && <ArrowDownAZ className="h-2.5 w-2.5" />}
