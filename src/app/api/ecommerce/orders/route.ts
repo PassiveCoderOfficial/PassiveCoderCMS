@@ -10,6 +10,10 @@ interface OrderPayload {
   billing_address: BillingAddress;
   payment_method: string;
   notes?: string;
+  /** Restaurant pickup/delivery support (2026-09-12) — defaults to
+   *  "delivery" so every existing caller is unaffected. */
+  fulfillment_type?: "delivery" | "pickup";
+  pickup_time?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -17,7 +21,7 @@ export async function POST(req: NextRequest) {
     const tenantId = req.headers.get("x-tenant-id");
     const body: OrderPayload = await req.json();
 
-    const { items, billing_address, payment_method, notes } = body;
+    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time } = body;
 
     if (!items?.length) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -71,6 +75,8 @@ export async function POST(req: NextRequest) {
       tax,
       total,
       notes: notes ?? null,
+      fulfillment_type: fulfillment_type === "pickup" ? "pickup" : "delivery",
+      pickup_time: fulfillment_type === "pickup" ? (pickup_time ?? null) : null,
     };
 
     if (tenantId) orderRow.tenant_id = tenantId;

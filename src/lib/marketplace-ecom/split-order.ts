@@ -82,6 +82,18 @@ export async function splitCart(
   tenantId: string,
   items: CheckoutItem[],
   area?: string | null,
+  // Pickup orders (2026-09-12): rateForArea falls back to the tenant's
+  // default shipping rate whenever area is absent, on the reasoning that an
+  // unlisted delivery area should still be quotable rather than blocking
+  // checkout — right for delivery, wrong for pickup, which isn't being
+  // shipped at all. Passing area=undefined alone does NOT suppress the
+  // rate (this was the actual bug caught while wiring pickup support: the
+  // fix looked like it worked by subtracting shipping_total back out of the
+  // order total afterward, but sub_orders.shipping_cost/total were still
+  // computed with the wrongly-applied rate). This flag is the single point
+  // that actually zeroes it, rather than a subtraction that has to be
+  // repeated correctly at every place shipping_cost is used downstream.
+  noShipping = false,
 ): Promise<{ result: SplitResult; products: PricedProduct[]; rate: ShippingRate | null }> {
   if (!items.length) throw new Error("Cart is empty");
 
@@ -106,7 +118,7 @@ export async function splitCart(
     .eq("tenant_id", tenantId)
     .order("sort_order");
   const rates = (rateRows ?? []) as ShippingRate[];
-  const rate = rateForArea(rates, area);
+  const rate = noShipping ? null : rateForArea(rates, area);
 
   const groups = new Map<string, VendorGroup>();
 

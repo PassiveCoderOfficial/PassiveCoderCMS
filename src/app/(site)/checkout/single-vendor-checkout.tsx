@@ -37,6 +37,14 @@ export default function SingleVendorCheckout() {
     country: "",
     notes: "",
   });
+  // Restaurant pickup/delivery support (2026-09-12): defaults to delivery so
+  // an ordinary shop's checkout is unaffected. Toggling to pickup hides the
+  // address section entirely — a customer picking up in person has no
+  // delivery address to give, and forcing one made every pickup checkout
+  // collect a fake address just to satisfy the form.
+  const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup">("delivery");
+  const [pickupTime, setPickupTime] = useState("");
+  const isPickup = fulfillmentType === "pickup";
 
   useEffect(() => {
     const supabase = createClient();
@@ -53,7 +61,9 @@ export default function SingleVendorCheckout() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.email || !form.first_name || !form.last_name || !form.address_line1 || !form.city || !form.country) {
+    const addressRequired = !isPickup;
+    if (!form.email || !form.first_name || !form.last_name
+      || (addressRequired && (!form.address_line1 || !form.city || !form.country))) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -83,6 +93,8 @@ export default function SingleVendorCheckout() {
           },
           payment_method: selectedGateway,
           notes: form.notes,
+          fulfillment_type: fulfillmentType,
+          pickup_time: isPickup ? pickupTime : undefined,
         }),
       });
 
@@ -154,42 +166,79 @@ export default function SingleVendorCheckout() {
               </div>
             </section>
 
-            {/* Shipping address */}
+            {/* Fulfillment */}
             <section className="border rounded-xl p-6 space-y-4">
-              <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Shipping Address</h2>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Address Line 1 <span className="text-red-500">*</span></label>
-                <input name="address_line1" value={form.address_line1} onChange={handleChange} required
-                  className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+              <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">How would you like to get this?</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFulfillmentType("delivery")}
+                  className={`rounded-lg border-2 px-4 py-3 text-sm font-medium text-left transition-colors ${fulfillmentType === "delivery" ? "border-primary bg-primary/5" : "border-input"}`}
+                >
+                  Delivery
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFulfillmentType("pickup")}
+                  className={`rounded-lg border-2 px-4 py-3 text-sm font-medium text-left transition-colors ${isPickup ? "border-primary bg-primary/5" : "border-input"}`}
+                >
+                  Pickup
+                </button>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Address Line 2</label>
-                <input name="address_line2" value={form.address_line2} onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {isPickup && (
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">City <span className="text-red-500">*</span></label>
-                  <input name="city" value={form.city} onChange={handleChange} required
-                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  <label className="text-sm font-medium">Pickup Time</label>
+                  <input
+                    type="datetime-local"
+                    value={pickupTime}
+                    onChange={(e) => setPickupTime(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <p className="text-xs text-muted-foreground">Leave blank for as soon as possible.</p>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">State / Province</label>
-                  <input name="state" value={form.state} onChange={handleChange}
-                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Postal Code</label>
-                  <input name="postal_code" value={form.postal_code} onChange={handleChange}
-                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Country <span className="text-red-500">*</span></label>
-                <input name="country" value={form.country} onChange={handleChange} required
-                  className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-              </div>
+              )}
             </section>
+
+            {/* Shipping address — pickup has nowhere to deliver to, so this
+                whole section is skipped rather than collecting an address
+                nobody needs. */}
+            {!isPickup && (
+              <section className="border rounded-xl p-6 space-y-4">
+                <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Shipping Address</h2>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Address Line 1 <span className="text-red-500">*</span></label>
+                  <input name="address_line1" value={form.address_line1} onChange={handleChange} required
+                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Address Line 2</label>
+                  <input name="address_line2" value={form.address_line2} onChange={handleChange}
+                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">City <span className="text-red-500">*</span></label>
+                    <input name="city" value={form.city} onChange={handleChange} required
+                      className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">State / Province</label>
+                    <input name="state" value={form.state} onChange={handleChange}
+                      className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Postal Code</label>
+                    <input name="postal_code" value={form.postal_code} onChange={handleChange}
+                      className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Country <span className="text-red-500">*</span></label>
+                  <input name="country" value={form.country} onChange={handleChange} required
+                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+              </section>
+            )}
 
             {/* Payment method */}
             <section className="border rounded-xl p-6 space-y-4">

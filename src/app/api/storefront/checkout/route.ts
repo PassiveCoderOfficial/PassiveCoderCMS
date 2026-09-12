@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { result, rate } = await splitCart(tenantId, body.items ?? [], body.area);
+    const isPickup = body.fulfillment_type === "pickup";
+    const { result, rate } = await splitCart(tenantId, body.items ?? [], body.area, isPickup);
     return NextResponse.json({
       ...result,
       shipping_rate: rate ? { name: rate.name, rate: rate.rate, free_above: rate.free_above } : null,
@@ -46,6 +47,8 @@ export async function PUT(req: NextRequest) {
       paymentMethod: method,
       customerId: user?.id ?? null,
       notes: body.notes,
+      fulfillmentType: body.fulfillment_type === "pickup" ? "pickup" : "delivery",
+      pickupTime: body.pickup_time,
     });
 
     return NextResponse.json(result);

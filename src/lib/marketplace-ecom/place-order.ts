@@ -5,7 +5,11 @@ export interface CheckoutAddress {
   name: string;
   phone: string;
   email?: string;
-  address: string;
+  // Optional now — required only for delivery, see placeOrder below. A
+  // pickup order (2026-09-12, restaurant pickup/delivery support) has no
+  // delivery address at all; forcing one made every pickup checkout collect
+  // a fake address just to satisfy this type.
+  address?: string;
   area?: string;
   city?: string;
   note?: string;
@@ -18,6 +22,13 @@ export interface PlaceOrderInput {
   paymentMethod: "cod" | "bkash";
   customerId?: string | null;
   notes?: string;
+  /** Defaults to "delivery" — every existing caller keeps its current
+   *  behavior unchanged. "pickup" skips address validation and shipping
+   *  cost entirely. */
+  fulfillmentType?: "delivery" | "pickup";
+  /** When fulfillmentType is "pickup", when the customer said they'd come
+   *  by. Ignored for delivery. */
+  pickupTime?: string;
 }
 
 export interface PlaceOrderResult {
@@ -38,12 +49,20 @@ export interface PlaceOrderResult {
  */
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
   const { tenantId, items, address, paymentMethod, customerId, notes } = input;
+  const fulfillmentType = input.fulfillmentType ?? "delivery";
+  const isPickup = fulfillmentType === "pickup";
 
   if (!address?.phone?.trim()) throw new Error("Phone number is required");
   if (!address?.name?.trim()) throw new Error("Name is required");
-  if (!address?.address?.trim()) throw new Error("Delivery address is required");
+  // Pickup has no delivery address to collect — the customer is coming to
+  // the tenant's own location, which the tenant already knows.
+  if (!isPickup && !address?.address?.trim()) throw new Error("Delivery address is required");
 
-  const { result, products, rate } = await splitCart(tenantId, items, address.area);
+  // noShipping=true for pickup zeroes the rate at the source (splitCart),
+  // not by subtracting it back out afterward — rateForArea falls back to
+  // the tenant's default rate whenever area is absent, so passing no area
+  // alone does NOT suppress shipping; it has to be told explicitly.
+  const { result, products, rate } = await splitCart(tenantId, items, address.area, isPickup);
   if (!result.groups.length) throw new Error("Cart is empty");
 
   const admin = await createAdminClient();
@@ -54,7 +73,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     name: address.name.trim(),
     phone: address.phone.trim(),
     email: address.email?.trim() || null,
-    address: address.address.trim(),
+    address: address.address?.trim() || null,
     area: address.area?.trim() || null,
     city: address.city?.trim() || null,
     note: address.note?.trim() || null,
@@ -78,10 +97,16 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       shipping_address: shippingAddress,
       subtotal: result.subtotal,
       discount: result.discount_total,
+      // Already correctly 0 for pickup — splitCart was called with
+      // noShipping=true above, so result.shipping_total (and every group's
+      // own shipping_cost/total) never had a rate applied in the first
+      // place. No after-the-fact correction needed here.
       shipping_cost: result.shipping_total,
       tax: 0,
       total: result.grand_total,
       notes: notes?.trim() || null,
+      fulfillment_type: fulfillmentType,
+      pickup_time: isPickup ? (input.pickupTime ?? null) : null,
     })
     .select("id, order_number")
     .single();
