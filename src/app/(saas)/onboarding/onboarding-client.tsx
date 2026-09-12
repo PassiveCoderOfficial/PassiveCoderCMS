@@ -771,9 +771,13 @@ function Step5({ onNext, initialSlug, initialMode, templates, pagesLimit }: {
 
   const [category, setCategory] = useState<string>("All");
   const [search, setSearch] = useState("");
-  // Falls back to "blank" rather than templates[0] — with no published
-  // templates there is nothing to preselect, and blank is always valid.
-  const [selected, setSelected] = useState<string>(urlSlug || templates[0]?.slug || "blank");
+  // No default pick at all (except a real ?template= link, or resuming a
+  // prior incomplete attempt) — every real site created through onboarding
+  // was landing on the generic "blank" starter (title/hero literally reading
+  // "Welcome to your new site") because this used to silently preselect
+  // blank (or templates[0]) and the Next button worked immediately with
+  // nothing chosen. Now the user must click something before continuing.
+  const [selected, setSelected] = useState<string>(urlSlug || "");
   const [mode, setMode] = useState<"theme" | "full">(urlMode);
 
   // A template with more pages than the plan allows cannot be applied, so it
@@ -836,9 +840,19 @@ function Step5({ onNext, initialSlug, initialMode, templates, pagesLimit }: {
         )}
       </div>
 
-      {/* Grid */}
+      {/* Grid — real templates first, Blank Site always last so it reads as
+          the fallback it is, never the path of least resistance. */}
       <div className="grid grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
-        {/* Blank option */}
+        {filtered.map(t => (
+          <TemplateMiniCard
+            key={t.slug}
+            template={t}
+            selected={selected === t.slug}
+            mode={mode}
+            onSelect={() => setSelected(t.slug)}
+            onModeChange={setMode}
+          />
+        ))}
         {(category === "All" || !search) && (
           <div
             onClick={() => setSelected("blank")}
@@ -853,16 +867,6 @@ function Step5({ onNext, initialSlug, initialMode, templates, pagesLimit }: {
             </div>
           </div>
         )}
-        {filtered.map(t => (
-          <TemplateMiniCard
-            key={t.slug}
-            template={t}
-            selected={selected === t.slug}
-            mode={mode}
-            onSelect={() => setSelected(t.slug)}
-            onModeChange={setMode}
-          />
-        ))}
       </div>
 
       {/* Selected summary */}
@@ -888,8 +892,12 @@ function Step5({ onNext, initialSlug, initialMode, templates, pagesLimit }: {
         </div>
       )}
 
-      <Button size="lg" className="w-full" onClick={() => onNext(selected, mode)}>
-        {selected === "blank" ? "Start with blank site" : `Use ${selectedTemplate?.name ?? selected} (${mode === "full" ? "Full Demo" : "Theme Only"})`}
+      <Button size="lg" className="w-full" disabled={!selected} onClick={() => onNext(selected, mode)}>
+        {!selected
+          ? "Pick a template to continue"
+          : selected === "blank"
+            ? "Start with blank site"
+            : `Use ${selectedTemplate?.name ?? selected} (${mode === "full" ? "Full Demo" : "Theme Only"})`}
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </div>
@@ -1140,7 +1148,9 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
   const [siteWhere, setSiteWhere] = useState("");
   const [slug, setSlug] = useState("");
   const [domainChoice, setDomainChoice] = useState<{ type: DomainOption; domain?: string }>({ type: "subdomain" });
-  const [templateId, setTemplateId] = useState(params.get("template") ?? "blank");
+  // No default of "blank" — see Step5's `selected` init for why. A real
+  // ?template= link (shared/marketing) still pre-fills correctly.
+  const [templateId, setTemplateId] = useState(params.get("template") ?? "");
   const [templateMode, setTemplateMode] = useState<"theme" | "full">((params.get("mode") as "theme" | "full") ?? "full");
   const referralCode = params.get("ref") ?? undefined;
 
