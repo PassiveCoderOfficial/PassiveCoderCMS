@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus } from "lucide-react";
 
 interface OrderItem { name: string; quantity: number }
@@ -46,6 +46,35 @@ function nextStage(current: string): string | null {
   return STAGES[i + 1].key;
 }
 
+/**
+ * Two short beeps via the Web Audio API — no audio file, no new dependency,
+ * for one sound played rarely. A fresh AudioContext per call rather than a
+ * shared one: browsers suspend an AudioContext that goes quiet for a while,
+ * and resuming it reliably needs its own userland gesture handling, more
+ * complexity than a sound this occasional is worth.
+ */
+function playNewOrderChime() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    [0, 0.18].forEach((delay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 880;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.15);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.15);
+    });
+  } catch {
+    // Autoplay policy or no audio hardware — a missed chime is not worth
+    // surfacing an error over, the board itself still updates visually.
+  }
+}
+
 function tableLabel(order: KitchenOrder): string {
   const t = Array.isArray(order.restaurant_tables) ? order.restaurant_tables[0] : order.restaurant_tables;
   if (t) return `Table ${t.table_number}`;
@@ -61,6 +90,40 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
   const [riderList, setRiderList] = useState(riders);
   const [showAddRider, setShowAddRider] = useState(false);
   const [newRider, setNewRider] = useState({ branch_id: branches[0]?.id ?? "", name: "", phone: "" });
+
+  // Live polling — the board previously never updated after the initial
+  // page load, so a new order sitting in the tab a staff member wasn't
+  // looking at simply never appeared until they manually refreshed. A ref
+  // (not state) for the known-order-id set avoids re-subscribing the
+  // interval on every poll purely to keep its closure's id set current.
+  const knownIds = useRef(new Set(initial.map(o => o.id)));
+  const originalTitle = useRef<string>("");
+  useEffect(() => {
+    originalTitle.current = document.title;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/ecommerce/kitchen");
+        if (!res.ok) return;
+        const { orders: fresh } = await res.json() as { orders: KitchenOrder[] };
+        const freshIds = new Set(fresh.map(o => o.id));
+        const isNewOrder = fresh.some(o => !knownIds.current.has(o.id));
+        knownIds.current = freshIds;
+        setOrders(fresh);
+        if (isNewOrder) {
+          playNewOrderChime();
+          document.title = "🔔 New order — " + originalTitle.current;
+        }
+      } catch {
+        // A dropped poll just tries again next interval — nothing to
+        // reconcile, the board's current state stays exactly as it was.
+      }
+    }, 8000);
+    // Staff looking back at the tab is what should clear the flashed title,
+    // not a timeout — a fixed delay could clear it while they're still away.
+    const onFocus = () => { document.title = originalTitle.current; };
+    window.addEventListener("focus", onFocus);
+    return () => { clearInterval(interval); window.removeEventListener("focus", onFocus); document.title = originalTitle.current; };
+  }, []);
 
   async function addRider(e: React.FormEvent) {
     e.preventDefault();
