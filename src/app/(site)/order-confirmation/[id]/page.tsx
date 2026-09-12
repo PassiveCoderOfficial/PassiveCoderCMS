@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { CheckCircle, Package, ArrowLeft, Store, Truck, Banknote } from "lucide-react";
+import { CheckCircle, Package, ArrowLeft, Store, Truck, Banknote, UtensilsCrossed, ShoppingBag } from "lucide-react";
 import type { CartItem } from "@/types/cms";
 import { OrderSummary } from "./order-summary";
 
@@ -48,7 +48,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
   // RLS and every guest would land on a 404 right after paying. The order id
   // is an unguessable uuid handed straight back to the buyer.
   const supabase = await createAdminClient();
-  let q = supabase.from("orders").select("*").eq("id", id);
+  let q = supabase.from("orders").select("*, restaurant_tables(table_number), restaurant_branches(name, address, phone)").eq("id", id);
   if (tenantId) q = q.eq("tenant_id", tenantId);
   const { data: order } = await q.maybeSingle();
 
@@ -64,6 +64,14 @@ export default async function OrderConfirmationPage({ params }: Props) {
   const items = (order.items ?? []) as CartItem[];
   const billing = (order.billing_address ?? {}) as DeliveryAddress;
   const isCod = order.payment_method === "cod";
+  const fulfillmentType = (order as { fulfillment_type?: string }).fulfillment_type ?? "delivery";
+  const isDineIn = fulfillmentType === "dine_in";
+  const isPickup = fulfillmentType === "pickup";
+  const tableRel = (order as { restaurant_tables?: { table_number: string } | { table_number: string }[] | null }).restaurant_tables;
+  const tableNumber = Array.isArray(tableRel) ? tableRel[0]?.table_number : tableRel?.table_number;
+  const branchRel = (order as { restaurant_branches?: { name: string; address: string | null; phone: string | null } | { name: string; address: string | null; phone: string | null }[] | null }).restaurant_branches;
+  const branch = Array.isArray(branchRel) ? branchRel[0] : branchRel;
+  const pickupTime = (order as { pickup_time?: string | null }).pickup_time;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
@@ -71,9 +79,13 @@ export default async function OrderConfirmationPage({ params }: Props) {
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold">Order confirmed</h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          {isCod
-            ? "Please keep the exact amount ready for the delivery person."
-            : "Thank you for your purchase. Your order has been received."}
+          {isDineIn
+            ? `Your order is on its way to Table ${tableNumber ?? ""}.`
+            : isPickup
+              ? "Your order has been sent to the kitchen — we'll have it ready for pickup."
+              : isCod
+                ? "Please keep the exact amount ready for the delivery person."
+                : "Thank you for your purchase. Your order has been received."}
         </p>
         <div className="inline-flex items-center gap-2 mt-4 bg-muted/60 rounded-full px-4 py-2">
           <Package className="h-4 w-4 text-muted-foreground" />
@@ -146,21 +158,45 @@ export default async function OrderConfirmationPage({ params }: Props) {
           </div>
         )}
 
-        <div className="border rounded-xl p-4">
-          <h2 className="font-semibold mb-2">Delivery address</h2>
-          <div className="text-sm text-muted-foreground space-y-0.5">
-            <p className="text-foreground">{order.customer_name}</p>
-            {billing?.phone && <p>{billing.phone}</p>}
-            {(billing.address || billing.address_line1) && (
-              <p>
-                {billing.address ?? billing.address_line1}
-                {billing.area ? `, ${billing.area}` : ""}
-                {!billing.area && billing.city ? `, ${billing.city}` : ""}
+        {isDineIn ? (
+          <div className="border rounded-xl p-4 flex items-start gap-3">
+            <UtensilsCrossed className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-sm">{branch?.name ?? "Dine-in"} — Table {tableNumber ?? "—"}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                No need to wait at the counter — it'll be brought straight to your table.
               </p>
-            )}
-            {billing?.note && <p className="italic">Note: {billing.note}</p>}
+            </div>
           </div>
-        </div>
+        ) : isPickup ? (
+          <div className="border rounded-xl p-4 flex items-start gap-3">
+            <ShoppingBag className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-sm">{branch?.name ?? "Pickup"}</p>
+              {branch?.address && <p className="text-sm text-muted-foreground mt-0.5">{branch.address}</p>}
+              {branch?.phone && <p className="text-sm text-muted-foreground">{branch.phone}</p>}
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {pickupTime ? `Ready around ${new Date(pickupTime).toLocaleString()}.` : "We'll have it ready as soon as possible."}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="border rounded-xl p-4">
+            <h2 className="font-semibold mb-2">Delivery address</h2>
+            <div className="text-sm text-muted-foreground space-y-0.5">
+              <p className="text-foreground">{order.customer_name}</p>
+              {billing?.phone && <p>{billing.phone}</p>}
+              {(billing.address || billing.address_line1) && (
+                <p>
+                  {billing.address ?? billing.address_line1}
+                  {billing.area ? `, ${billing.area}` : ""}
+                  {!billing.area && billing.city ? `, ${billing.city}` : ""}
+                </p>
+              )}
+              {billing?.note && <p className="italic">Note: {billing.note}</p>}
+            </div>
+          </div>
+        )}
 
         <Link
           href="/shop"

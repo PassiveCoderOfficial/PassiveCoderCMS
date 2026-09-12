@@ -261,6 +261,7 @@ export const navSections: NavSection[] = [
       // tenant with no branches, so it costs a non-restaurant tenant one
       // harmless sidebar link at worst.
       { label: "Kitchen", href: "/dashboard/kitchen", icon: ChefHat, moduleKey: "pos" },
+      { label: "Branches", href: "/dashboard/branches", icon: Store, moduleKey: "pos" },
       { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },
       {
         label: "Accounting",

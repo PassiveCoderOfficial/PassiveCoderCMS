@@ -185,6 +185,17 @@ answer "where's my order" without calling the rider.
   schema rather than AI-generated, at Wali's direction to skip the AiCoder
   pipeline entirely for this. Phase 4 (riders, per-branch) shipped the same
   day (090) — schema, assignment on the kitchen board, delivery status
-  pipeline independent of kitchen_status. Only phase 5 (printer bridge)
-  remains, explicitly deferred until the ordering+POS flow has real
-  customer usage behind it.
+  pipeline independent of kitchen_status.
+- **2026-09-12 (later same day)** — two gaps found in the phase 1-4 work,
+  closed: (a) a Branches admin page (/dashboard/branches) — until this
+  existed, adding a branch or table meant a direct DB insert, which
+  blocked onboarding a second real restaurant without Claude doing it by
+  hand. Includes QR image generation and a printable table-tent view, via
+  a public keyless QR image API rather than a new npm dependency for one
+  feature. (b) order-confirmation page always showed a "Delivery address"
+  block regardless of fulfillment_type — a dine-in or pickup order showed
+  a blank address section and generic "thank you for your purchase" copy
+  that never mentioned the table or pickup time. Fixed to branch on
+  fulfillment_type properly.
+- Only phase 5 (printer bridge) remains, explicitly deferred until the
+  ordering+POS flow has real customer usage behind it.
