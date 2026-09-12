@@ -291,6 +291,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {tenantId === WHATSAPP_TENANT_ID && <FloatingWhatsApp />}
 
+      {/* TEMP DEBUG MARKER — remove before final commit */}
+      <div id="debug-marker-12345" style={{ position: "fixed", bottom: 0, right: 0, background: "red", color: "white", padding: 8, zIndex: 99999 }}>DEBUG</div>
+
       <DineInBadge />
 
       {isAdminViewer && <AdminEditWidget />}
