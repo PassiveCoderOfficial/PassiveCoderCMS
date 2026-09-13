@@ -135,7 +135,7 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
       <div>
         <h2 className="text-2xl font-bold">{mode === "signup" ? "Create your account" : "Welcome back"}</h2>
         <p className="text-muted-foreground mt-1">
-          {mode === "signup" ? "Takes 10 seconds. No credit card." : "Sign in to continue building your site."}
+          {mode === "signup" ? "Takes 10 seconds." : "Sign in to continue building your site."}
         </p>
         {/* Carry the chosen plan through the auth step — arriving at a bare
             email/password box after picking a plan loses the thread. */}
@@ -144,7 +144,6 @@ function AuthGate({ onAuthed }: { onAuthed: (userId: string, email: string) => v
             <CheckCircle className="h-3.5 w-3.5 text-green-600" />
             <span className="font-semibold">{chosenPlan.name}</span>
             {chosenPlanPrice && <span className="text-muted-foreground">· {chosenPlanPrice}</span>}
-            <span className="text-muted-foreground">· see your site before you pay</span>
           </div>
         )}
       </div>

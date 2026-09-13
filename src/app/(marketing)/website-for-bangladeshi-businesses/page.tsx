@@ -78,7 +78,7 @@ const trustPoints = [
   { icon: "📘", title: "ফেসবুক বিজনেস পেজ", desc: "পাবলিক পেজ, রিভিউ ও হিস্ট্রি সবই দেখা যায়" },
   { icon: "✅", title: "CEO-র ভেরিফায়েড প্রোফাইল", desc: "ফেসবুক ও লিংকডইনে ভেরিফায়েড, রিয়েল আইডেন্টিটি" },
   { icon: "🎥", title: "১২,০০০+ সাবস্ক্রাইবার", desc: "২০০+ পাবলিক ভিডিও — কাজ, প্রসেস সব স্বচ্ছ" },
-  { icon: "🔒", title: "পেমেন্টের আগেই ড্যাশবোর্ড চেক করার সুযোগ", desc: "কাজ বুঝে পেমেন্ট — ব্লক করে পালানোর সুযোগ নেই" },
+  { icon: "🔒", title: "নিরাপদ পেমেন্ট গেটওয়ে", desc: "কার্ড, বিকাশ, নগদ — সব পেমেন্ট সিকিউর ও ভেরিফায়েড" },
 ];
 
 const faqs = [
@@ -99,8 +99,8 @@ const faqs = [
     a: "সাধারণত সাইন-আপের পর কয়েক দিনের মধ্যেই আপনার সাইট লাইভ হয়ে যায়। ডিজাইন, কন্টেন্ট, ডোমেইন — সব আমরা হ্যান্ডেল করি।",
   },
   {
-    q: "পেমেন্টের আগে কি কাজ যাচাই করতে পারব?",
-    a: "অবশ্যই। পেমেন্টের আগেই আমাদের ড্যাশবোর্ড ফ্রি টেস্ট করতে পারবেন, আমাদের আগের ২০+ লাইভ প্রজেক্ট দেখতে পারবেন, ইউটিউবে ২০০+ ভিডিও দেখতে পারবেন — বিশ্বাস তৈরি না হলে আমরা কাজ শুরুই করি না।",
+    q: "পেমেন্টের আগে কি বিশ্বাস করার মতো প্রমাণ পাব?",
+    a: "অবশ্যই। আমাদের আগের ২০+ লাইভ প্রজেক্ট দেখতে পারবেন, ইউটিউবে ২০০+ ভিডিও দেখতে পারবেন, ভেরিফায়েড ফেসবুক ও লিংকডইন প্রোফাইল চেক করতে পারবেন — বিশ্বাস তৈরি না হলে আমরা কাজ শুরুই করি না।",
   },
   {
     q: "পেমেন্ট কিভাবে করব?",
@@ -252,7 +252,7 @@ export default function BangladeshiExpatLandingPage() {
           <div className="mt-8 flex flex-col items-center gap-3">
             <CtaButtons dark />
             <span className="text-xs sm:text-sm text-gray-400">
-              পেমেন্টের আগেই ড্যাশবোর্ড টেস্ট করুন — কোনো বাধ্যবাধকতা নেই
+              কার্ড, বিকাশ, নগদ — যেভাবে সুবিধা সেভাবে পেমেন্ট
             </span>
           </div>
 
@@ -363,11 +363,10 @@ export default function BangladeshiExpatLandingPage() {
       {/* ── Dashboard tour ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-5 py-14 sm:py-20">
         <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
-          পেমেন্টের আগেই দেখে নিন — ভেতরে আসলে কী পাচ্ছেন
+          ভেতরে আসলে কী পাচ্ছেন — দেখে নিন
         </h2>
         <p className="text-center text-slate-500 max-w-2xl mx-auto mb-10">
-          এগুলো আমাদের নিজের প্রোডাক্টের আসল স্ক্রিনশট — কোনো মকআপ না। ফ্রি
-          ড্যাশবোর্ড টেস্ট করেও নিজে হাতে-কলমে দেখতে পারবেন।
+          এগুলো আমাদের নিজের প্রোডাক্টের আসল স্ক্রিনশট — কোনো মকআপ না।
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {dashboardTour.map((d) => (
@@ -392,11 +391,11 @@ export default function BangladeshiExpatLandingPage() {
         </div>
         <div className="flex justify-center mt-10">
           <Link
-            href="/onboarding"
+            href="/onboarding?plan=basic&currency=bdt"
             className="inline-flex items-center gap-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <DashboardIcon />
-            নিজে হাতে-কলমে টেস্ট করুন
+            এখনই শুরু করুন
           </Link>
         </div>
       </section>
@@ -611,10 +610,10 @@ export default function BangladeshiExpatLandingPage() {
       {/* ── Sticky mobile CTA bar ────────────────────────────────────── */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-50 flex shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
         <Link
-          href="/onboarding"
+          href="/onboarding?plan=basic&currency=bdt"
           className="flex-1 bg-gray-900 text-white font-bold text-center py-3.5 flex items-center justify-center gap-1.5 text-sm"
         >
-          ফ্রি ড্যাশবোর্ড টেস্ট
+          এখনই শুরু করুন
         </Link>
         <a
           href={WA_URL}
@@ -635,7 +634,7 @@ function CtaButtons({ dark = false }: { dark?: boolean }) {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-3">
       <Link
-        href="/onboarding"
+        href="/onboarding?plan=basic&currency=bdt"
         className={
           dark
             ? "inline-flex items-center gap-2.5 bg-white text-gray-900 font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
@@ -643,7 +642,7 @@ function CtaButtons({ dark = false }: { dark?: boolean }) {
         }
       >
         <DashboardIcon />
-        ফ্রি ড্যাশবোর্ড টেস্ট করুন
+        এখনই শুরু করুন
       </Link>
       <a
         href={WA_URL}
