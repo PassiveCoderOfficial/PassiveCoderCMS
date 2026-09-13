@@ -430,14 +430,12 @@ export default function BangladeshiExpatLandingPage() {
                   </div>
                 ))}
               </div>
-              <a
-                href={WA_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/onboarding?plan=basic&currency=bdt"
                 className="inline-flex items-center justify-center gap-2 bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors"
               >
-                Basic নিয়ে জানতে চাই
-              </a>
+                Basic শুরু করুন
+              </Link>
             </div>
 
             {/* Pro — highlighted */}
@@ -461,14 +459,12 @@ export default function BangladeshiExpatLandingPage() {
                   </div>
                 ))}
               </div>
-              <a
-                href={WA_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/onboarding?plan=pro&currency=bdt"
                 className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-400 hover:to-rose-400 text-white font-bold px-6 py-3 rounded-xl transition-all"
               >
-                Pro নিয়ে জানতে চাই
-              </a>
+                Pro শুরু করুন
+              </Link>
             </div>
           </div>
 

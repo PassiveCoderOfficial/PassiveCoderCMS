@@ -239,7 +239,10 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
   const [selected, setSelected] = useState(defaultPlan);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currency, setCurrency] = useState<Currency>("USD");
+  // ?currency=bdt lets a referring page (e.g. the all-Bangla probashi
+  // landing page) land the visitor on the currency they already saw prices
+  // in, instead of USD-first for an audience that never sees a $ figure.
+  const [currency, setCurrency] = useState<Currency>(params.get("currency") === "bdt" ? "BDT" : "USD");
   const bdtRate = useCurrencyRate();
 
   useEffect(() => {
@@ -344,11 +347,15 @@ function Step1({
   onNext: (method: PayMethod) => void;
 }) {
   const isCustom = planId === "custom";
+  const params = useSearchParams();
   // Currency is still offered so the price shown matches what a BDT customer
   // expects, but no longer hides Dodo — shurjoPay/manual and card checkout
   // are both real options for anyone, since neither charges the wrong
   // currency any more (shurjoPay's charge doesn't happen at signup at all).
-  const [payCurrency, setPayCurrency] = useState<Currency>("USD");
+  // Defaults from ?currency=bdt the same way Step0's plan picker does, so a
+  // visitor referred from an all-Bangla landing page sees BDT consistently
+  // through both steps, not just the first one.
+  const [payCurrency, setPayCurrency] = useState<Currency>(params.get("currency") === "bdt" ? "BDT" : "USD");
 
   const [method, setMethod] = useState<PayMethod>(isCustom ? "manual" : "dodo");
 
