@@ -1,6 +1,6 @@
 import {
   Globe, ShoppingBag, Image, BarChart3, Shield, Zap,
-  Smartphone, Mail, Archive, Palette, FormInput, HeadphonesIcon, Star,
+  Smartphone, Mail, Archive, Palette, FormInput, HeadphonesIcon, Sparkles,
 } from "lucide-react";
 
 const FEATURES = [
@@ -79,38 +79,47 @@ const FEATURES = [
 ];
 
 const COMPARISON = [
-  { feature: "Annual price", us: "$199/year", agency: "$3,000+/year", diy: "$0 (+ your time)" },
-  { feature: "Setup time", us: "24 hours", agency: "4–8 weeks", diy: "Weeks of learning" },
+  { feature: "Annual price", us: "$256/year", agency: "$3,000+/year", diy: "$0 (+ your time)" },
+  { feature: "Setup time", us: "Hours", agency: "4–8 weeks", diy: "Weeks of learning" },
   { feature: "Ongoing updates", us: "You control it", agency: "$150–500/update", diy: "You build it" },
-  { feature: "Mobile-ready", us: "Always ✓", agency: "Sometimes", diy: "You have to build it" },
-  { feature: "SSL included", us: "✓ Free", agency: "Extra cost", diy: "Depends on host" },
-  { feature: "Support", us: "Real humans", agency: "Project manager", diy: "Stack Overflow 😅" },
+  { feature: "Mobile-ready", us: "Always", agency: "Sometimes", diy: "You have to build it" },
+  { feature: "SSL included", us: "Free", agency: "Extra cost", diy: "Depends on host" },
+  { feature: "Support", us: "Real humans", agency: "Project manager", diy: "Stack Overflow" },
 ];
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="py-24 bg-white">
+    <section id="features" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-            <Star className="w-3 h-3 fill-current" /> Everything included — no plugins, no add-ons, no surprises
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+            <Sparkles className="w-3.5 h-3.5" /> Everything included — no plugins, no add-ons, no surprises
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
             One platform. Every tool your business needs.
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
             Most website builders charge extra for ecommerce, forms, or analytics. With Passive Coder, it&apos;s all included from day one.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
           {FEATURES.map(({ icon: Icon, title, desc, highlight }) => (
-            <div key={title} className={`group p-6 rounded-2xl border transition-all ${highlight ? "border-orange-200 bg-gradient-to-br from-orange-50 to-rose-50 hover:shadow-lg hover:shadow-orange-100" : "border-gray-100 hover:border-orange-200 hover:shadow-md hover:shadow-orange-50"}`}>
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors ${highlight ? "bg-gradient-to-br from-orange-500 to-rose-500 shadow-lg shadow-orange-200" : "bg-orange-50 group-hover:bg-orange-100"}`}>
-                <Icon className={`w-5 h-5 ${highlight ? "text-white" : "text-orange-500"}`} />
+            <div
+              key={title}
+              className={`group p-6 rounded-2xl border transition-all ${
+                highlight
+                  ? "border-indigo-400/20 bg-gradient-to-br from-indigo-500/[0.08] to-violet-500/[0.05] hover:border-indigo-400/30"
+                  : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.03]"
+              }`}
+            >
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors ${
+                highlight ? "bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-950/50" : "bg-white/[0.05] group-hover:bg-white/[0.08]"
+              }`}>
+                <Icon className={`w-5 h-5 ${highlight ? "text-white" : "text-indigo-300"}`} />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
+              <h3 className="font-semibold text-white mb-2">{title}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
@@ -118,26 +127,26 @@ export default function FeaturesSection() {
         {/* Comparison table */}
         <div className="mt-20">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-extrabold text-gray-900">How does Passive Coder compare?</h3>
-            <p className="text-gray-500 mt-2">Agency quality at a fraction of the cost.</p>
+            <h3 className="text-2xl font-bold text-white">How does Passive Coder compare?</h3>
+            <p className="text-slate-500 mt-2">Agency quality at a fraction of the cost.</p>
           </div>
-          <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-white/[0.08]">
             <table className="w-full text-sm min-w-[500px]">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-5 py-3.5 text-gray-600 font-semibold">Feature</th>
-                  <th className="px-5 py-3.5 text-center font-bold text-orange-600 bg-orange-50">Passive Coder</th>
-                  <th className="px-5 py-3.5 text-center text-gray-500 font-semibold">Web Agency</th>
-                  <th className="px-5 py-3.5 text-center text-gray-500 font-semibold">DIY (WordPress)</th>
+                <tr className="border-b border-white/[0.08] bg-white/[0.02]">
+                  <th className="text-left px-5 py-3.5 text-slate-400 font-semibold">Feature</th>
+                  <th className="px-5 py-3.5 text-center font-bold text-indigo-300 bg-indigo-500/[0.06]">Passive Coder</th>
+                  <th className="px-5 py-3.5 text-center text-slate-500 font-semibold">Web Agency</th>
+                  <th className="px-5 py-3.5 text-center text-slate-500 font-semibold">DIY (WordPress)</th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON.map((row, i) => (
-                  <tr key={row.feature} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
-                    <td className="px-5 py-3.5 font-medium text-gray-700">{row.feature}</td>
-                    <td className="px-5 py-3.5 text-center font-semibold text-orange-600 bg-orange-50/50">{row.us}</td>
-                    <td className="px-5 py-3.5 text-center text-gray-500">{row.agency}</td>
-                    <td className="px-5 py-3.5 text-center text-gray-500">{row.diy}</td>
+                  <tr key={row.feature} className={`border-b border-white/[0.05] ${i % 2 === 0 ? "bg-transparent" : "bg-white/[0.015]"}`}>
+                    <td className="px-5 py-3.5 font-medium text-slate-300">{row.feature}</td>
+                    <td className="px-5 py-3.5 text-center font-semibold text-indigo-300 bg-indigo-500/[0.04]">{row.us}</td>
+                    <td className="px-5 py-3.5 text-center text-slate-500">{row.agency}</td>
+                    <td className="px-5 py-3.5 text-center text-slate-500">{row.diy}</td>
                   </tr>
                 ))}
               </tbody>

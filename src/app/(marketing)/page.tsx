@@ -214,7 +214,7 @@ export default async function MarketingHomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#05060a] text-white">
       {settings?.announcement_enabled && (
         <AnnouncementBar text={settings.announcement_text} url={settings.announcement_url} />
       )}

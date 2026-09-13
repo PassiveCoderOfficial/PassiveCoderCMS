@@ -4,7 +4,7 @@ const LOGO = process.env.NEXT_PUBLIC_LOGO_URL ?? "https://mljchiaabgvdzdsfobxs.s
 
 export default function FooterSection() {
   return (
-    <footer className="bg-gray-950 text-gray-400 py-16">
+    <footer className="bg-[#05060a] text-gray-400 py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
@@ -25,11 +25,11 @@ export default function FooterSection() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/#features" className="hover:text-orange-400 transition-colors">Features</Link></li>
-              <li><Link href="/#templates" className="hover:text-orange-400 transition-colors">Templates</Link></li>
-              <li><Link href="/#pricing" className="hover:text-orange-400 transition-colors">Pricing</Link></li>
-              <li><Link href="/onboarding" className="hover:text-orange-400 transition-colors">Get Started</Link></li>
-              <li><Link href="/dashboard" className="hover:text-orange-400 transition-colors">Dashboard</Link></li>
+              <li><Link href="/#features" className="hover:text-indigo-300 transition-colors">Features</Link></li>
+              <li><Link href="/#templates" className="hover:text-indigo-300 transition-colors">Templates</Link></li>
+              <li><Link href="/#pricing" className="hover:text-indigo-300 transition-colors">Pricing</Link></li>
+              <li><Link href="/onboarding" className="hover:text-indigo-300 transition-colors">Get Started</Link></li>
+              <li><Link href="/dashboard" className="hover:text-indigo-300 transition-colors">Dashboard</Link></li>
             </ul>
           </div>
 
@@ -37,10 +37,10 @@ export default function FooterSection() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/#clients" className="hover:text-orange-400 transition-colors">Our Clients</Link></li>
-              <li><Link href="/contact" className="hover:text-orange-400 transition-colors">Contact</Link></li>
-              <li><Link href="/contact?dept=sales" className="hover:text-orange-400 transition-colors">Sales</Link></li>
-<li><Link href="/#faq" className="hover:text-orange-400 transition-colors">FAQ</Link></li>
+              <li><Link href="/#clients" className="hover:text-indigo-300 transition-colors">Our Clients</Link></li>
+              <li><Link href="/contact" className="hover:text-indigo-300 transition-colors">Contact</Link></li>
+              <li><Link href="/contact?dept=sales" className="hover:text-indigo-300 transition-colors">Sales</Link></li>
+<li><Link href="/#faq" className="hover:text-indigo-300 transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
@@ -48,14 +48,14 @@ export default function FooterSection() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Legal</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/privacy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-orange-400 transition-colors">Terms of Service</Link></li>
-              <li><Link href="/refund" className="hover:text-orange-400 transition-colors">Refund Policy</Link></li>
+              <li><Link href="/privacy" className="hover:text-indigo-300 transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-indigo-300 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/refund" className="hover:text-indigo-300 transition-colors">Refund Policy</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+        <div className="border-t border-white/[0.06] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <p>© {new Date().getFullYear()} Passive Coder. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>

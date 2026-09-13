@@ -132,17 +132,17 @@ export default function ClientsSection() {
   const filtered = filter === "All" ? CLIENTS : CLIENTS.filter(c => c.flag === filter);
 
   return (
-    <section id="clients" className="py-24 bg-white">
+    <section id="clients" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-            <Globe className="w-3 h-3" /> Real Client Websites
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+            <Globe className="w-3.5 h-3.5" /> Real Client Websites
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
             Trusted by businesses across{" "}
-            <span className="bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">8 countries</span>
+            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">8 countries</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
             Every one of these websites was built and is maintained on Passive Coder. Real businesses, real results.
           </p>
         </div>
@@ -155,8 +155,8 @@ export default function ClientsSection() {
               onClick={() => setFilter(c)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 filter === c
-                  ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-200"
-                  : "bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-600"
+                  ? "bg-white text-slate-950"
+                  : "bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-white border border-white/[0.06]"
               }`}
             >
               {c}
@@ -172,30 +172,30 @@ export default function ClientsSection() {
               href={`https://${client.domain}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative bg-white border border-gray-200 rounded-2xl p-5 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all"
+              className="group relative bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:border-white/[0.15] hover:bg-white/[0.04] transition-all"
             >
               {/* Favicon / initial */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-50 to-rose-50 border border-orange-100 flex items-center justify-center text-lg flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-lg flex-shrink-0">
                     {client.country}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm group-hover:text-orange-600 transition-colors">{client.name}</h3>
-                    <p className="text-xs text-gray-400">{client.category}</p>
+                    <h3 className="font-semibold text-white text-sm group-hover:text-indigo-300 transition-colors">{client.name}</h3>
+                    <p className="text-xs text-slate-500">{client.category}</p>
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-orange-400 transition-colors flex-shrink-0 mt-1" />
+                <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors flex-shrink-0 mt-1" />
               </div>
 
               {/* Domain */}
               <div className="flex items-center gap-1.5 mt-2">
-                <Globe className="w-3 h-3 text-gray-300" />
-                <span className="text-xs text-gray-400 font-mono">{client.domain}</span>
+                <Globe className="w-3 h-3 text-slate-600" />
+                <span className="text-xs text-slate-500 font-mono">{client.domain}</span>
               </div>
 
               {/* Hover gradient border effect */}
-              <div className="absolute inset-0 rounded-2xl ring-1 ring-orange-500/0 group-hover:ring-orange-500/20 transition-all pointer-events-none" />
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-indigo-500/0 group-hover:ring-indigo-500/20 transition-all pointer-events-none" />
             </a>
           ))}
         </div>
@@ -208,9 +208,9 @@ export default function ClientsSection() {
             { value: "9", label: "Industries" },
             { value: "24/7", label: "Uptime monitoring" },
           ].map(stat => (
-            <div key={stat.label} className="text-center p-5 bg-orange-50 rounded-2xl border border-orange-100">
-              <div className="text-3xl font-extrabold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">{stat.value}</div>
-              <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
+            <div key={stat.label} className="text-center p-5 bg-white/[0.03] rounded-2xl border border-white/[0.06]">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">{stat.value}</div>
+              <div className="text-sm text-slate-400 mt-1">{stat.label}</div>
             </div>
           ))}
         </div>

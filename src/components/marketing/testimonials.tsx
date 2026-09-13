@@ -62,8 +62,8 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 
 const STATS = [
   { value: "4.9/5", label: "Average rating from clients" },
-  { value: "500+", label: "Websites built to date" },
-  { value: "$240", label: "Starting price — yearly, all-in" },
+  { value: "17+", label: "Websites built to date" },
+  { value: "$32", label: "Starting price — per month" },
   { value: "24h", label: "Average time to go live" },
 ];
 
@@ -71,7 +71,7 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Te
   const items = testimonials.length > 0 ? testimonials : DEFAULT_TESTIMONIALS;
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-6">
           <div className="flex justify-center gap-0.5 mb-3">
@@ -79,32 +79,32 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Te
               <Star key={i} className="w-5 h-5 text-amber-400 fill-current" />
             ))}
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Real businesses, real results</h2>
-          <p className="mt-4 text-gray-600 text-lg">Don&apos;t take our word for it — hear from business owners who use Passive Coder every day.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">Real businesses, real results</h2>
+          <p className="mt-4 text-slate-400 text-lg">Don&apos;t take our word for it — hear from business owners who use Passive Coder every day.</p>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {STATS.map(stat => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-5 text-center shadow-sm">
-              <div className="text-2xl font-extrabold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">{stat.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
+            <div key={stat.label} className="bg-white/[0.02] rounded-2xl border border-white/[0.06] p-5 text-center">
+              <div className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">{stat.value}</div>
+              <div className="text-xs text-slate-500 mt-1">{stat.label}</div>
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((t, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all relative">
+            <div key={i} className="bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03] transition-all relative">
               {t.result && (
                 <div className="absolute top-4 right-4">
-                  <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full border border-green-100">
-                    ✓ {t.result}
+                  <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-full border border-emerald-500/20">
+                    {t.result}
                   </span>
                 </div>
               )}
 
-              <Quote className="w-5 h-5 text-orange-200 mb-4" />
+              <Quote className="w-5 h-5 text-indigo-400/40 mb-4" />
 
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
@@ -112,15 +112,15 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Te
                 ))}
               </div>
 
-              <blockquote className="text-gray-700 text-sm leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</blockquote>
+              <blockquote className="text-slate-300 text-sm leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</blockquote>
 
-              <div className="flex items-center gap-2 pt-4 border-t border-gray-50">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-rose-100 border border-orange-100 flex items-center justify-center text-base">
+              <div className="flex items-center gap-2 pt-4 border-t border-white/[0.05]">
+                <div className="w-8 h-8 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-base">
                   {t.country ?? "🌐"}
                 </div>
                 <div>
-                  <div className="font-bold text-gray-900 text-sm">{t.name}</div>
-                  <div className="text-xs text-gray-500">{t.business}</div>
+                  <div className="font-semibold text-white text-sm">{t.name}</div>
+                  <div className="text-xs text-slate-500">{t.business}</div>
                 </div>
               </div>
             </div>

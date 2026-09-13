@@ -11,7 +11,7 @@ const DEFAULT_FAQ: FaqItem[] = [
   },
   {
     q: "How is Passive Coder different from Wix or Squarespace?",
-    a: "Three things: (1) We're built specifically for local service businesses — templates are designed for your exact industry, not generic. (2) We offer real human support that knows your site, not a chatbot. (3) Our pricing is far lower — $199/year all-in vs $200+/year just for the basics on most platforms.",
+    a: "Three things: (1) We're built specifically for local service businesses — templates are designed for your exact industry, not generic. (2) We offer real human support that knows your site, not a chatbot. (3) Our pricing is far lower — from $32/month all-in, vs $200+/year just for the basics on most platforms.",
   },
   {
     q: "Can I try before paying?",
@@ -31,7 +31,7 @@ const DEFAULT_FAQ: FaqItem[] = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept all major credit and debit cards (Visa, Mastercard, Amex) via Paddle, and ShurjoPay for Bangladeshi customers. You can also contact our sales team for manual payment or invoice billing.",
+    a: "We accept all major credit and debit cards (Visa, Mastercard, Amex), and ShurjoPay — bKash, Nagad, Rocket — for Bangladeshi customers. You can also contact us for manual payment or invoice billing.",
   },
   {
     q: "Will my site rank on Google?",
@@ -56,11 +56,11 @@ export default function FaqSection({ faq }: { faq: FaqItem[] }) {
   const right = items.slice(half);
 
   return (
-    <section id="faq" className="py-24 bg-white">
+    <section id="faq" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Got questions? We have answers.</h2>
-          <p className="text-gray-500 mt-3 text-lg">Everything you need to know before signing up.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">Got questions? We have answers.</h2>
+          <p className="text-slate-400 mt-3 text-lg">Everything you need to know before signing up.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-x-10 gap-y-3 items-start">
@@ -69,16 +69,16 @@ export default function FaqSection({ faq }: { faq: FaqItem[] }) {
               {col.map((item, li) => {
                 const i = ci === 0 ? li : li + half;
                 return (
-                  <div key={i} className={`border rounded-xl overflow-hidden transition-all ${open === i ? "border-orange-200 shadow-sm shadow-orange-50" : "border-gray-200"}`}>
+                  <div key={i} className={`border rounded-xl overflow-hidden transition-all ${open === i ? "border-indigo-400/25 bg-white/[0.02]" : "border-white/[0.07]"}`}>
                     <button
                       onClick={() => setOpen(open === i ? null : i)}
-                      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
                     >
-                      <span className="font-semibold text-gray-900 text-sm pr-4 leading-snug">{item.q}</span>
-                      <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${open === i ? "rotate-180 text-orange-500" : ""}`} />
+                      <span className="font-semibold text-white text-sm pr-4 leading-snug">{item.q}</span>
+                      <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open === i ? "rotate-180 text-indigo-400" : ""}`} />
                     </button>
                     {open === i && (
-                      <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3 bg-orange-50/30">
+                      <div className="px-5 pb-4 text-sm text-slate-400 leading-relaxed border-t border-white/[0.05] pt-3">
                         {item.a}
                       </div>
                     )}
@@ -91,15 +91,15 @@ export default function FaqSection({ faq }: { faq: FaqItem[] }) {
 
         {/* Still have questions */}
         <div className="mt-12 text-center">
-          <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-gray-50 border border-gray-200 rounded-2xl px-8 py-5">
-            <MessageCircle className="w-6 h-6 text-orange-500 flex-shrink-0" />
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white/[0.02] border border-white/[0.07] rounded-2xl px-8 py-5">
+            <MessageCircle className="w-6 h-6 text-indigo-400 flex-shrink-0" />
             <div className="text-left">
-              <p className="font-semibold text-gray-900 text-sm">Still have questions?</p>
-              <p className="text-gray-500 text-xs mt-0.5">Talk to a real person. We respond fast.</p>
+              <p className="font-semibold text-white text-sm">Still have questions?</p>
+              <p className="text-slate-500 text-xs mt-0.5">Talk to a real person. We respond fast.</p>
             </div>
             <a
               href="/contact"
-              className="flex-shrink-0 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+              className="flex-shrink-0 bg-white hover:bg-slate-100 text-slate-950 font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
             >
               Contact Us
             </a>

@@ -37,19 +37,19 @@ function TemplateThumbnail({ template }: { template: Template }) {
 
 function TemplateCard({ template }: { template: Template }) {
   return (
-    <div className="group bg-white rounded-2xl border border-gray-200 hover:border-orange-300 hover:shadow-2xl hover:shadow-orange-100/60 transition-all duration-300 overflow-hidden flex flex-col">
+    <div className="group bg-white rounded-2xl border border-white/[0.08] hover:border-indigo-300/60 hover:shadow-2xl hover:shadow-indigo-950/40 transition-all duration-300 overflow-hidden flex flex-col">
       <div className="relative flex-shrink-0">
         <TemplateThumbnail template={template} />
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-1 z-10">
           {template.featured && (
-            <span className="flex items-center gap-0.5 bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
+            <span className="flex items-center gap-0.5 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
               <Star className="w-2 h-2 fill-current" /> Featured
             </span>
           )}
           {template.badge && (
-            <span className="bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
+            <span className="bg-slate-900 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
               {template.badge}
             </span>
           )}
@@ -66,7 +66,7 @@ function TemplateCard({ template }: { template: Template }) {
           </Link>
           <Link
             href={`/onboarding?template=${template.slug}`}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl hover:from-orange-600 hover:to-rose-600 transition-colors shadow-xl"
+            className="flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl hover:bg-indigo-500 transition-colors shadow-xl"
           >
             <Zap className="w-3.5 h-3.5" /> Use Template
           </Link>
@@ -97,7 +97,7 @@ function TemplateCard({ template }: { template: Template }) {
             <span key={tag} className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">{tag}</span>
           ))}
           {template.hasDemo && (
-            <span className="text-[10px] bg-green-50 text-green-600 font-medium px-1.5 py-0.5 rounded-md">Demo</span>
+            <span className="text-[10px] bg-emerald-50 text-emerald-600 font-medium px-1.5 py-0.5 rounded-md">Demo</span>
           )}
         </div>
 
@@ -112,7 +112,7 @@ function TemplateCard({ template }: { template: Template }) {
           </Link>
           <Link
             href={`/onboarding?template=${template.slug}`}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold py-2 rounded-xl hover:from-orange-600 hover:to-rose-600 transition-all shadow-sm hover:shadow-orange-200"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-indigo-500 transition-all shadow-sm"
           >
             <Zap className="w-3.5 h-3.5" /> Use Template
           </Link>
@@ -152,17 +152,17 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
   const hasMore = filtered.length > ITEMS_PER_PAGE && !showAll;
 
   return (
-    <section id="templates" className="py-24 bg-gradient-to-b from-white to-gray-50">
+    <section id="templates" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-            <Sparkles className="w-3 h-3" /> {allTemplates.length} Industry Templates
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+            <Sparkles className="w-3.5 h-3.5" /> {allTemplates.length} Industry Templates
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
             Pick a template. Launch in minutes.
           </h2>
-          <p className="mt-4 text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
             Every template ships with real demo content, full mobile optimization, and a contact form — ready to go live the same day.
           </p>
         </div>
@@ -173,7 +173,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
             value={search}
             onChange={e => { setSearch(e.target.value); setShowAll(false); }}
             placeholder="Search by industry, style or feature…"
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 bg-white shadow-sm"
+            className="flex-1 border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white/[0.04]"
           />
         </div>
 
@@ -185,8 +185,8 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
               onClick={() => { setCategory(cat); setShowAll(false); }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
                 category === cat
-                  ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-200"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600 hover:shadow-sm"
+                  ? "bg-white text-slate-950"
+                  : "bg-white/[0.04] border border-white/[0.08] text-slate-400 hover:border-white/[0.15] hover:text-white"
               }`}
             >
               {cat}
@@ -195,7 +195,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
         </div>
 
         {/* Count */}
-        <p className="text-xs text-gray-400 text-center mb-6">
+        <p className="text-xs text-slate-500 text-center mb-6">
           {filtered.length} template{filtered.length !== 1 ? "s" : ""}
           {category !== "All" && ` in ${category}`}
           {search && ` matching "${search}"`}
@@ -204,7 +204,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
         {/* Grid */}
         {displayed.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-400 text-sm">No templates found for &quot;{search}&quot;.</p>
+            <p className="text-slate-500 text-sm">No templates found for &quot;{search}&quot;.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -217,7 +217,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
           <div className="text-center mt-12">
             <button
               onClick={() => setShowAll(true)}
-              className="inline-flex items-center gap-2 bg-white border border-gray-200 hover:border-orange-300 text-gray-700 hover:text-orange-600 font-semibold px-8 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.1] hover:border-white/[0.2] text-slate-300 hover:text-white font-semibold px-8 py-3.5 rounded-xl transition-all"
             >
               Show all {filtered.length} templates
               <ChevronRight className="w-4 h-4" />
@@ -226,9 +226,9 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
         )}
 
         {/* Bottom note */}
-        <div className="text-center mt-12 text-sm text-gray-400">
+        <div className="text-center mt-12 text-sm text-slate-500">
           Don&apos;t see your industry?{" "}
-          <Link href="/contact" className="text-orange-500 hover:text-orange-600 font-semibold">
+          <Link href="/contact" className="text-indigo-400 hover:text-indigo-300 font-semibold">
             Request a custom template →
           </Link>
         </div>
