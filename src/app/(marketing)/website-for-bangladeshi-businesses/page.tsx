@@ -92,7 +92,7 @@ const faqs = [
   },
   {
     q: "ইয়ারলি প্যাকেজে আসলে কত সাশ্রয় হয়?",
-    a: "Pro প্ল্যান মাসিক ৳১০,০০০, অর্থাৎ ১২ মাসে ৳১,২০,০০০। ইয়ারলি নিলে দিতে হবে ৳৮৪,০০০ — ৩০% সাশ্রয়। একই হিসাব Basic প্যাকেজেও প্রযোজ্য। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।",
+    a: "Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০। ইয়ারলি নিলে দিতে হবে ৳৬০,০০০ — মানে ৪ মাস একদম ফ্রি। একই হিসাব Basic প্যাকেজেও প্রযোজ্য। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।",
   },
   {
     q: "সাইট তৈরি হতে কতদিন লাগে?",
@@ -416,11 +416,11 @@ export default function BangladeshiExpatLandingPage() {
             <div className="rounded-2xl border border-gray-800 bg-gray-900/60 p-6 sm:p-8 flex flex-col">
               <span className="text-sm font-bold text-gray-400 mb-1">Basic প্যাকেজ</span>
               <div className="flex items-end gap-3 mb-1">
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৫,০০০</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৪,০০০</span>
                 <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-400 text-sm font-semibold mb-6">
-                অথবা বছরে ৳৪২,০০০ — ৩০% সাশ্রয়
+                অথবা বছরে ৳৩২,০০০ — ৪ মাস ফ্রি
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {basicFeatures.map((f) => (
@@ -447,11 +447,11 @@ export default function BangladeshiExpatLandingPage() {
               </span>
               <span className="text-sm font-bold text-orange-300 mb-1">Pro প্যাকেজ</span>
               <div className="flex items-end gap-3 mb-1">
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳১০,০০০</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৭,৫০০</span>
                 <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-300 text-sm font-semibold mb-6">
-                অথবা বছরে ৳৮৪,০০০ — ৩০% সাশ্রয়
+                অথবা বছরে ৳৬০,০০০ — ৪ মাস ফ্রি
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {proFeatures.map((f) => (
