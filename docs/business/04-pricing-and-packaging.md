@@ -103,6 +103,28 @@ this was already unconditional on every signup regardless of payment method
 chosen; this decision just shortens it to match, rather than running two
 different trial-length concepts.
 
+**Dashboard countdown + cancel (2026-09-13):** shurjoPay/manual trials show
+a real days-remaining countdown on `/dashboard/subscription`
+(`TrialCountdown`), urgency-styled inside the last 2 days. The existing
+`CheckoutDialog` already covered "pay now" for every method (dodo,
+shurjopay, bkash, nagad, whatsapp) — nothing new needed there.
+
+Self-serve cancel ("cancel within 6 days, don't pay") did not exist
+anywhere before this: no cancel button in the dashboard, and no
+`dodo_subscription_id` stored on our `subscriptions` row to call Dodo's
+cancel API against for a specific customer. Added: migration 091
+(`dodo_subscription_id`, captured from the `subscription.active` webhook —
+which fires the moment a Dodo trial starts, since Dodo treats a trialing
+subscription as active with $0 billed, making this the correct single
+capture point), a `/api/billing/dodo/cancel` route using
+`cancel_at_next_billing_date: true` (cancels before the trial's first real
+charge rather than an immediate forced cancel — same mechanism handles a
+customer who cancels after converting to a paid month gracefully, since
+they keep access through what they already paid for), and a `CancelTrialButton`
+next to Visit Site on the subscription card. shurjoPay/manual trials never
+had money move in the first place, so cancelling one is just a local status
+flip — no Dodo call needed for those.
+
 ---
 
 ## Decision: page limits

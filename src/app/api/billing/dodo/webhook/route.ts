@@ -97,12 +97,19 @@ export async function POST(req: Request) {
     const tenantId = sub.metadata?.tenant_id as string | undefined;
     if (!tenantId) return NextResponse.json({ ok: true });
 
+    // subscription.active fires the moment a trial starts, not just after
+    // the first real charge — Dodo's own model treats a trialing
+    // subscription as active with $0 billed so far. That makes this the
+    // right place to capture subscription_id: a customer needs to be able
+    // to cancel from the dashboard during the trial itself, which needs
+    // this id to call Dodo's cancel API against.
     await admin.from("subscriptions").upsert(
       {
         tenant_id: tenantId,
         status: "active",
         payment_provider: "dodo",
         current_period_end: sub.next_billing_date ?? null,
+        dodo_subscription_id: sub.subscription_id ?? null,
       },
       { onConflict: "tenant_id" },
     );

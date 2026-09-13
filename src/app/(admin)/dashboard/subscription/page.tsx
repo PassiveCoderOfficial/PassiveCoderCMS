@@ -22,11 +22,13 @@ interface Subscription {
   amount_cents: number | null;
   currency: string | null;
   payment_provider: string | null;
+  payment_method: string | null;
   billing_cycle: string | null;
   tenant_id: string;
   total_billed_cents: number | null;
   total_paid_cents: number | null;
   balance_due_cents: number | null;
+  cancelled_at: string | null;
   tenants: { name: string; slug: string; enm_user_id: number | null; enm_tier: string | null } | null;
 }
 
@@ -226,6 +228,88 @@ export default function SubscriptionPage() {
   );
 }
 
+/**
+ * Trial countdown, shown only for shurjoPay/manual signups — Dodo customers
+ * already have a real 7-day trial enforced by Dodo itself (card saved, no
+ * charge until day 8), so they get no "act before X" pressure here; this is
+ * specifically for the payment methods that don't auto-charge and need the
+ * customer to come back and pay.
+ */
+function TrialCountdown({ trialEndsAt }: { trialEndsAt: string }) {
+  const end = new Date(trialEndsAt).getTime();
+  const now = Date.now();
+  const msLeft = end - now;
+  const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+
+  if (daysLeft <= 0) {
+    return (
+      <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-400 flex items-start gap-2">
+        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+        <span>Your 7-day trial has ended. Pay now to keep your site live — it will be suspended shortly if unpaid.</span>
+      </div>
+    );
+  }
+
+  const urgent = daysLeft <= 2;
+  return (
+    <div className={cn(
+      "rounded-lg border p-3 text-xs flex items-start gap-2",
+      urgent
+        ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400"
+        : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400",
+    )}>
+      <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+      <span>
+        <strong>{daysLeft} day{daysLeft === 1 ? "" : "s"} left</strong> in your free trial — pay before{" "}
+        {new Date(trialEndsAt).toLocaleDateString()} to keep your site active with no interruption.
+      </span>
+    </div>
+  );
+}
+
+function CancelTrialButton({ tenantId }: { tenantId: string }) {
+  const [confirming, setConfirming] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function cancel() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/billing/dodo/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not cancel");
+      toast.success("Cancelled. You won't be charged.");
+      window.location.reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not cancel");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!confirming) {
+    return (
+      <button onClick={() => setConfirming(true)} className="text-xs text-muted-foreground hover:text-red-500 underline underline-offset-2">
+        Cancel trial
+      </button>
+    );
+  }
+  return (
+    <span className="text-xs flex items-center gap-2">
+      <span className="text-muted-foreground">Cancel and pay nothing?</span>
+      <button onClick={cancel} disabled={loading} className="text-red-600 font-semibold hover:underline disabled:opacity-50">
+        {loading ? "Cancelling…" : "Yes, cancel"}
+      </button>
+      <button onClick={() => setConfirming(false)} disabled={loading} className="text-muted-foreground hover:underline">
+        Never mind
+      </button>
+    </span>
+  );
+}
+
 function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; profileComplete: boolean; onChoose: (plan: CheckoutPlan) => void }) {
   const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.cancelled;
   const tenant = sub.tenants;
@@ -309,7 +393,10 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
         </div>
       )}
 
-      {(sub.status === "onboarded" || sub.status === "pending") && renewDate && (
+      {(sub.status === "onboarded" || sub.status === "pending") && sub.trial_ends_at
+        && (sub.payment_method === "shurjopay" || sub.payment_method === "manual") ? (
+        <TrialCountdown trialEndsAt={sub.trial_ends_at} />
+      ) : (sub.status === "onboarded" || sub.status === "pending") && renewDate && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
           <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           Payment pending — your site stays active. Add payment by {new Date(renewDate).toLocaleDateString()} to keep it live.
@@ -349,6 +436,14 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
           <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" /> Payment awaiting verification
           </span>
+        )}
+        {/* Still in the trial window and hasn't already asked to cancel —
+            "cancel within 6 days, don't pay" only makes sense before the
+            trial converts. Once status is active/past_due/cancelled/expired
+            this stops rendering rather than offering a cancel that no
+            longer means "pay nothing". */}
+        {(sub.status === "onboarded" || sub.status === "pending") && !sub.cancelled_at && (
+          <CancelTrialButton tenantId={sub.tenant_id} />
         )}
       </div>
 
