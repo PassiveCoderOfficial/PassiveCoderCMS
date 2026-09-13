@@ -1,6 +1,6 @@
 # Pricing & Packaging — Rationale
 
-Last updated: 2026-09-02. Owner: Wali.
+Last updated: 2026-09-13. Owner: Wali.
 
 Purpose: record *why* each pricing decision was made, so it is not re-litigated
 every few weeks. If you change a price, update this file in the same commit.
@@ -11,12 +11,19 @@ every few weeks. If you change a price, update this file in the same commit.
 
 Source of truth is the `plans` table. This table must match it.
 
-| Plan | Monthly | Yearly (30% off) | BDT monthly | BDT yearly | Visitors/mo | Pages |
+| Plan | Monthly | Yearly (4 months free) | BDT monthly | BDT yearly | Visitors/mo | Pages |
 |---|---|---|---|---|---|---|
-| Basic | $40 | $336 | ৳5,000 | ৳42,000 | 5,000 | 6 |
-| Pro | $80 | $672 | ৳10,000 | ৳84,000 | 25,000 | unlimited |
-| Biz | $160 | $1,344 | ৳20,000 | ৳168,000 | 100,000 | unlimited |
+| Basic | $32 | $256 | ৳4,000 | ৳32,000 | 5,000 | 6 |
+| Pro | $60 | $480 | ৳7,500 | ৳60,000 | 25,000 | unlimited |
+| Biz | $160 | $1,280 | ৳20,000 | ৳160,000 | 100,000 | unlimited |
 | Custom | — | — | — | — | — | unlimited |
+
+Yearly is **exactly 8× the monthly price** on every plan — pay for 8 months,
+get 12 — so "4 months free" is arithmetically exact, not a rounded label. If a
+price ever changes, keep this formula rather than picking an arbitrary
+percentage, or the label goes back to being wrong (see 06-restaurant-vertical.md
+and the BD landing page fix on 2026-09-13, both born from stale prices drifting
+out of sync with what marketing pages said).
 
 There is no overage rate. See below.
 
@@ -25,9 +32,12 @@ as a real price; ৳9,847 reads as a foreign price badly translated.
 
 ---
 
-## Decision: monthly-first, yearly at 30% off
+## Decision: monthly-first, yearly at 4 months free (8× monthly)
 
-**Decided 2026-09-02 by Wali.** Supersedes the earlier 50% yearly decision.
+**Decided 2026-09-02 by Wali, refined 2026-09-13.** Supersedes the earlier 50%
+yearly decision, and refines the original ~30%-off framing to an exact 8×
+monthly formula so "4 months free" is literally true rather than a rounded
+approximation of "roughly 8.4 months out of 12".
 
 Monthly is the headline everywhere — in the video, on the pricing page, in the
 WhatsApp quote. Yearly is a loyalty discount offered at checkout, not a
@@ -35,20 +45,24 @@ competing headline.
 
 **Why monthly leads:**
 - Lower barrier for a buyer who has been burned by a vanishing freelancer.
-  $80 to start is a far easier yes than $480 upfront.
+  $60 to start is a far easier yes than $480 upfront.
 - Recurring billing is what the product actually is. Selling it as an annual
   lump sum was a WordPress-build habit.
 - It shortens the gap between signup and first payment, which is the metric
   that has been broken all along.
 
-**Why 30% and not 50%:** at 50%, marketing the monthly price makes monthly look
-like a penalty — a customer who reads both prices feels overcharged for
-choosing the flexible option. 30% (paying for roughly 8.4 months out of 12) is
-a real incentive that does not undercut the headline.
+**Why 8× monthly (4 months free) and not 50% off:** at 50%, marketing the
+monthly price makes monthly look like a penalty — a customer who reads both
+prices feels overcharged for choosing the flexible option. Paying for 8 months
+to get 12 is a real incentive that does not undercut the headline, and unlike
+a percentage, "4 months free" is a framing a Bangladeshi-expat/probashi
+audience reads instantly without doing arithmetic — this is why the BD
+landing page moved to this wording first (2026-09-13), then the rest of the
+platform matched it rather than running two different discount stories.
 
 **Cost of monthly-first:** first-year cash is materially thinner than annual
-prepayment. Accepted deliberately — a customer who pays $80 once and stays is
-worth more than one who prepays $240 and churns at renewal.
+prepayment. Accepted deliberately — a customer who pays $60 once and stays is
+worth more than one who prepays $180 and churns at renewal.
 
 **Revisit when:** 20+ paying customers, or when the first renewals land.
 Grandfather existing customers when raising.

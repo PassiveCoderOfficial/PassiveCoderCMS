@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `${billingCycle} billing not available for this plan` }, { status: 400 });
   }
 
-  // priceForCycle stored as USD cents (e.g. 4000 = $40.00)
+  // priceForCycle stored as USD cents (e.g. 6000 = $60.00)
   const amountUsd = Number(priceForCycle) / 100;
   const amountCents = Number(priceForCycle);
   // Fixed BDT price per plan; fall back to USD×rate only if not configured.

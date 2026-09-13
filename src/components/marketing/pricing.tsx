@@ -167,12 +167,12 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       </div>
                       {cycle === "yearly" && yearlyPercentOff > 0 && (
                         <p className="text-xs text-green-600 font-medium mt-1">
-                          {yearlyPercentOff}% off — {formatPrice(yearlyEffectiveMonthly, yearlyEffectiveMonthlyBdt, currency, bdtRate)}/mo billed yearly
+                          4 months free — {formatPrice(yearlyEffectiveMonthly, yearlyEffectiveMonthlyBdt, currency, bdtRate)}/mo billed yearly
                         </p>
                       )}
                       {cycle === "monthly" && yearlyPrice > 0 && yearlyPercentOff > 0 && (
                         <p className="text-xs text-gray-500 mt-1">
-                          Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr — save {yearlyPercentOff}%
+                          Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr — 4 months free
                         </p>
                       )}
                     </>
