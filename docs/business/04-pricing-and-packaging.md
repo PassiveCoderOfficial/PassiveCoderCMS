@@ -69,6 +69,42 @@ Grandfather existing customers when raising.
 
 ---
 
+## Decision: 7-day trial, card required, "Pay Later" removed entirely
+
+**Decided 2026-09-13 by Wali.** Replaces the old no-card "trial" method
+(`method === "trial"` in onboarding, "Get Started — Pay Later" everywhere) —
+removed from the onboarding UI, the marketing site's CTAs, and the codebase
+entirely.
+
+**Card/Dodo path:** real 7-day free trial via Dodo's native
+`trial_period_days` on every subscription product (set directly on the live
+and sandbox catalog, all 6 products). Card is saved at checkout, never
+charged during the trial, auto-charges on day 8 unless cancelled. This is
+Dodo's own mechanism — no custom code needed to enforce it.
+
+**ShurjoPay/manual path:** shurjoPay has no card-on-file/recurring-charge API
+in this integration (checked — it's one-shot hosted checkout only), so a
+matching auto-charge-after-trial isn't buildable the same way. Instead: the
+account activates immediately, nothing is charged at signup, and the
+dashboard shows the same 7-day window with a "pay now" prompt (shurjoPay
+checkout or WhatsApp/manual arrangement). `subscriptions.trial_ends_at` +
+the existing `expire-trials` cron (already built for the old trial
+mechanism, reused as-is) suspends the tenant if unpaid when the window
+closes. Not a fake auto-charge promise — a real activate-now, pay-during-
+window flow, same underlying trial length as the card path.
+
+`subscriptions.payment_method` is now recorded at signup (`dodo` |
+`shurjopay` | `manual`) so the dashboard payment-due prompt knows which rail
+to offer instead of guessing.
+
+**Existing 14-day trial_ends_at mechanism changed to 7 days** platform-wide
+(`create-tenant/route.ts`, both the `tenants` and `subscriptions` rows) —
+this was already unconditional on every signup regardless of payment method
+chosen; this decision just shortens it to match, rather than running two
+different trial-length concepts.
+
+---
+
 ## Decision: page limits
 
 **Decided 2026-09-02 by Wali.**

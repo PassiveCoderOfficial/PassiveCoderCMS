@@ -7,6 +7,14 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { siteName, slug, userId, planId, templateId, templateMode } = body;
   const billingCycle = body.billingCycle === "monthly" ? "monthly" : "yearly";
+  // shurjopay/manual signups activate immediately and pay nothing at signup
+  // (see docs/business/04-pricing-and-packaging.md) — recorded here so the
+  // dashboard payment-due prompt knows which rail to offer instead of
+  // guessing. "dodo" also gets recorded even though its own subscription
+  // row is upserted again by the webhook once checkout completes; storing
+  // it here too means the payment method is known immediately, before that
+  // webhook has had a chance to fire.
+  const payMethod: string = ["dodo", "shurjopay", "manual"].includes(body.payMethod) ? body.payMethod : "manual";
   // URL param wins; fallback to persistent cookie (last-ref-wins affiliate tracking)
   const cookieStore = await cookies();
   const referralCode: string | undefined = body.referralCode || cookieStore.get("ref_code")?.value || undefined;
@@ -40,7 +48,7 @@ export async function POST(req: Request) {
       referredByStaffId = staffRow?.id ?? null;
     }
 
-    const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: created, error } = await supabase
       .from("tenants")
       .insert({ slug, name: siteName, owner_id: userId, status: "onboarded", trial_ends_at: trialEndsAt, referred_by_staff_id: referredByStaffId })
@@ -74,10 +82,13 @@ export async function POST(req: Request) {
     { onConflict: "tenant_id,user_id" },
   );
 
-  // Upsert subscription row with trial end date (14-day trial)
-  const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+  // Upsert subscription row with trial end date (7-day trial)
+  const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   await supabase.from("subscriptions").upsert(
-    { tenant_id: tenant.id, plan_id: planId ?? "basic", status: "onboarded", trial_ends_at: trialEnd, billing_cycle: billingCycle },
+    {
+      tenant_id: tenant.id, plan_id: planId ?? "basic", status: "onboarded",
+      trial_ends_at: trialEnd, billing_cycle: billingCycle, payment_method: payMethod,
+    },
     { onConflict: "tenant_id" },
   );
 

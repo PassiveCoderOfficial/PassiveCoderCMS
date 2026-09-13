@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import {
   CheckCircle, Circle, Loader2, Search, Globe, ArrowRight,
   Sparkles, ExternalLink, AlertCircle, Star, CreditCard,
-  Clock, MessageSquare, Zap, Layout, Eye, EyeOff, User, LogOut,
+  MessageSquare, Zap, Layout, Eye, EyeOff, User, LogOut,
 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
@@ -330,7 +330,11 @@ function Step0({ cycle, onCycleChange, onNext }: { cycle: BillingCycle; onCycleC
 
 // ─── Step 1: Payment ──────────────────────────────────────────────────────────
 
-type PayMethod = "dodo" | "shurjopay" | "manual" | "trial";
+// "trial" (no card, pay whenever) removed platform-wide — every signup now
+// either starts a real card-backed Dodo trial or activates immediately with
+// a payment due within the trial window (shurjoPay/manual). See
+// docs/business/04-pricing-and-packaging.md for why.
+type PayMethod = "dodo" | "shurjopay" | "manual";
 
 function Step1({
   planId,
@@ -340,49 +344,29 @@ function Step1({
   onNext: (method: PayMethod) => void;
 }) {
   const isCustom = planId === "custom";
-  // Currency decides the rail: Dodo settles USD, shurjoPay settles BDT. Offering
-  // both for one currency just invites a failed charge at the gateway.
+  // Currency is still offered so the price shown matches what a BDT customer
+  // expects, but no longer hides Dodo — shurjoPay/manual and card checkout
+  // are both real options for anyone, since neither charges the wrong
+  // currency any more (shurjoPay's charge doesn't happen at signup at all).
   const [payCurrency, setPayCurrency] = useState<Currency>("USD");
-  const isBdt = payCurrency === "BDT";
 
   const [method, setMethod] = useState<PayMethod>(isCustom ? "manual" : "dodo");
 
-  // Keep the selection consistent with the currency — switching to BDT while
-  // "card" is selected would otherwise submit Dodo for a taka price.
-  useEffect(() => {
-    if (isCustom) return;
-    setMethod(prev => {
-      if (isBdt && prev === "dodo") return "shurjopay";
-      if (!isBdt && prev === "shurjopay") return "dodo";
-      return prev;
-    });
-  }, [isBdt, isCustom]);
-
-  const OPTIONS: Array<{ id: PayMethod; icon: React.ReactNode; title: string; desc: string; badge?: string; disabled?: boolean; hidden?: boolean }> = [
+  const OPTIONS: Array<{ id: PayMethod; icon: React.ReactNode; title: string; desc: string; badge?: string; disabled?: boolean }> = [
     {
       id: "dodo",
       icon: <CreditCard className="w-5 h-5 text-blue-500" />,
-      title: "Pay with Card",
-      desc: "Visa, Mastercard, Amex — all major cards. Secure checkout via Dodo Payments.",
+      title: "Pay with Card — 7-Day Free Trial",
+      desc: "Visa, Mastercard, Amex. Your card is saved but not charged for 7 days — cancel any time before then and you pay nothing.",
       badge: "Recommended",
       disabled: isCustom,
-      hidden: isBdt,
     },
     {
       id: "shurjopay",
       icon: <span className="text-lg font-bold text-green-600">৳</span>,
-      title: "ShurjoPay",
-      desc: "bKash, Nagad, Rocket, cards — pay in Bangladeshi taka.",
-      badge: "Recommended",
+      title: "ShurjoPay (bKash / Nagad / Rocket)",
+      desc: "Your site activates immediately. Pay in taka any time within your 7-day trial — no charge up front.",
       disabled: isCustom,
-      hidden: !isBdt,
-    },
-    {
-      id: "trial",
-      icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: "Get Started — Pay Later",
-      desc: "Full access from day one. No payment required at signup — pay after your account is set up.",
-      badge: "No card needed",
     },
     {
       id: "manual",
@@ -390,7 +374,7 @@ function Step1({
       title: isCustom ? "Contact Sales" : "Pay another way",
       desc: isCustom
         ? "Get a custom quote from our sales team."
-        : "Bank transfer or another arrangement — we'll sort it out on WhatsApp.",
+        : "Bank transfer or another arrangement — we'll sort it out on WhatsApp within your 7-day trial.",
       badge: isCustom ? "Required" : undefined,
     },
   ];
@@ -410,7 +394,7 @@ function Step1({
       </div>
 
       <div className="space-y-2.5">
-        {OPTIONS.filter(o => !o.disabled && !o.hidden).map(opt => (
+        {OPTIONS.filter(o => !o.disabled).map(opt => (
           <button
             key={opt.id}
             onClick={() => setMethod(opt.id)}
@@ -434,21 +418,28 @@ function Step1({
         ))}
       </div>
 
-      {method === "trial" && (
-        <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
-          <Zap className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-          <span>Your site goes live immediately. No payment required now — you can add payment details from your dashboard at any time.</span>
-        </div>
-      )}
-
-      {(method === "dodo" || method === "shurjopay") && (
+      {method === "dodo" && (
         <div className="rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 p-3 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2">
           <CreditCard className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>We&apos;ll build your site first, then take you to secure checkout. Your site stays live either way.</span>
+          <span>We&apos;ll build your site first, then take you to secure checkout to save your card. Nothing is charged for 7 days — cancel any time in that window and you pay nothing.</span>
         </div>
       )}
 
-      {method === "manual" && (
+      {method === "shurjopay" && (
+        <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
+          <Zap className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+          <span>Your site goes live immediately, no charge today. Pay via ShurjoPay from your dashboard any time in the next 7 days.</span>
+        </div>
+      )}
+
+      {method === "manual" && !isCustom && (
+        <div className="rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 p-3 text-xs text-purple-800 dark:text-purple-400 flex items-start gap-2">
+          <MessageSquare className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>Your site goes live immediately, no charge today. We&apos;ll message you on WhatsApp to arrange payment within your 7-day trial.</span>
+        </div>
+      )}
+
+      {method === "manual" && isCustom && (
         <div className="rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 p-3 text-xs text-purple-800 dark:text-purple-400 flex items-start gap-2">
           <MessageSquare className="w-4 h-4 shrink-0 mt-0.5" />
           <span>We&apos;ll message you on WhatsApp to arrange payment. Your site is built and live either way.</span>
@@ -456,7 +447,7 @@ function Step1({
       )}
 
       <Button size="lg" className="w-full" onClick={() => onNext(method)}>
-        {method === "trial" ? "Create Account — Pay Later" : method === "manual" ? "Contact Sales & Get Started" : "Continue to Payment"}
+        {method === "dodo" ? "Continue to Checkout" : method === "manual" && isCustom ? "Contact Sales & Get Started" : "Activate My Site — Pay Within 7 Days"}
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </div>
@@ -976,7 +967,12 @@ function Step6({
         // Send paying customers to checkout. The site is already created and
         // live at this point, so abandoning the payment page loses nothing —
         // they land in the dashboard and can pay from there instead.
-        if (payMethod === "dodo" || payMethod === "shurjopay") {
+        // Only Dodo charges (well, saves a card) at signup — its 7-day trial
+        // is native to the checkout session. shurjoPay/manual now activate
+        // immediately with nothing charged, payment collected from the
+        // dashboard within the trial window instead, so neither hits this
+        // checkout redirect any more.
+        if (payMethod === "dodo") {
           const payRes = await fetch("/api/billing/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1043,11 +1039,11 @@ function Step6({
       <div className="space-y-1">
         <h2 className="text-2xl font-bold">🎉 {siteName} is live!</h2>
         <p className="text-muted-foreground">
-          {payMethod === "trial"
-            ? "Your site is live. Add payment details from your dashboard whenever you're ready."
-            : payMethod === "manual"
+          {payMethod === "manual" && planId === "custom"
             ? "Our sales team will reach out within 1 business day to arrange payment."
-            : "Your site is ready. Start building your pages."}
+            : payMethod === "manual" || payMethod === "shurjopay"
+            ? "Your site is live now, nothing charged yet — pay from your dashboard any time in the next 7 days."
+            : "Your site is ready. Your 7-day free trial has started — you won't be charged until it ends."}
         </p>
       </div>
       {build && build.status !== "failed" && (
@@ -1141,7 +1137,7 @@ export default function OnboardingClient({ templates }: { templates: Template[] 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
     params.get("cycle") === "yearly" ? "yearly" : "monthly",
   );
-  const [payMethod, setPayMethod] = useState<PayMethod>("trial");
+  const [payMethod, setPayMethod] = useState<PayMethod>("dodo");
   const [siteName, setSiteName] = useState("");
   // Free-text answers from step 2. Feed the first AI build; never invented.
   const [siteWhat, setSiteWhat] = useState("");
