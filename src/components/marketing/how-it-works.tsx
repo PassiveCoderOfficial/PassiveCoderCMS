@@ -7,7 +7,7 @@ const STEPS = [
     title: "Pick your plan & template",
     desc: "Choose Standard or Premium and pick from 50+ industry-specific templates built for your exact business type.",
     detail: "Takes under 2 minutes",
-    color: "from-indigo-500 to-violet-500",
+    color: "from-orange-500 to-rose-500",
   },
   {
     icon: Paintbrush,
@@ -15,7 +15,7 @@ const STEPS = [
     title: "Customize your site",
     desc: "Add your logo, colors, services, and pricing using the drag-and-drop builder. No code needed. Every section is editable — hero, testimonials, contact forms, gallery, and more.",
     detail: "Most businesses finish in 1–2 hours",
-    color: "from-violet-500 to-fuchsia-500",
+    color: "from-rose-500 to-amber-500",
   },
   {
     icon: Rocket,
@@ -23,7 +23,7 @@ const STEPS = [
     title: "Go live & start getting customers",
     desc: "Connect your domain (or get one free from us). We handle SSL, CDN, and hosting. Your site goes live instantly — and starts appearing in Google search results within days.",
     detail: "Live within 24 hours",
-    color: "from-cyan-500 to-indigo-500",
+    color: "from-amber-500 to-orange-500",
   },
 ];
 
@@ -41,7 +41,7 @@ export default function HowItWorksSection() {
     <section id="how-it-works" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-orange-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
             <Clock className="w-3.5 h-3.5" /> From zero to live in under 24 hours
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">Up and running faster than you think</h2>
@@ -52,7 +52,7 @@ export default function HowItWorksSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
           {/* Connector line */}
-          <div className="hidden md:block absolute top-14 left-[33%] right-[33%] h-px bg-gradient-to-r from-indigo-500/40 via-violet-500/40 to-cyan-500/40" />
+          <div className="hidden md:block absolute top-14 left-[33%] right-[33%] h-px bg-gradient-to-r from-orange-500/40 via-rose-500/40 to-amber-500/40" />
 
           {STEPS.map(({ icon: Icon, step, title, desc, detail, color }) => (
             <div key={step} className="relative bg-white/[0.02] rounded-2xl border border-white/[0.06] p-7 hover:border-white/[0.12] hover:bg-white/[0.03] transition-all group">
@@ -79,7 +79,7 @@ export default function HowItWorksSection() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {TIMELINE.map(({ time, event }, i) => (
               <div key={i} className="text-center">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 text-xs font-black ${i === 5 ? "bg-gradient-to-br from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-950/40" : "bg-white/[0.05] text-slate-400"}`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 text-xs font-black ${i === 5 ? "bg-gradient-to-br from-emerald-500 to-amber-500 text-white shadow-lg shadow-emerald-950/40" : "bg-white/[0.05] text-slate-400"}`}>
                   {time}
                 </div>
                 <p className={`text-xs leading-snug ${i === 5 ? "text-emerald-400 font-semibold" : "text-slate-400"}`}>{event}</p>

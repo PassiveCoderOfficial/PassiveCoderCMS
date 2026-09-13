@@ -69,13 +69,13 @@ export default function FaqSection({ faq }: { faq: FaqItem[] }) {
               {col.map((item, li) => {
                 const i = ci === 0 ? li : li + half;
                 return (
-                  <div key={i} className={`border rounded-xl overflow-hidden transition-all ${open === i ? "border-indigo-400/25 bg-white/[0.02]" : "border-white/[0.07]"}`}>
+                  <div key={i} className={`border rounded-xl overflow-hidden transition-all ${open === i ? "border-orange-400/25 bg-white/[0.02]" : "border-white/[0.07]"}`}>
                     <button
                       onClick={() => setOpen(open === i ? null : i)}
                       className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
                     >
                       <span className="font-semibold text-white text-sm pr-4 leading-snug">{item.q}</span>
-                      <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open === i ? "rotate-180 text-indigo-400" : ""}`} />
+                      <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open === i ? "rotate-180 text-orange-400" : ""}`} />
                     </button>
                     {open === i && (
                       <div className="px-5 pb-4 text-sm text-slate-400 leading-relaxed border-t border-white/[0.05] pt-3">
@@ -92,7 +92,7 @@ export default function FaqSection({ faq }: { faq: FaqItem[] }) {
         {/* Still have questions */}
         <div className="mt-12 text-center">
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white/[0.02] border border-white/[0.07] rounded-2xl px-8 py-5">
-            <MessageCircle className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+            <MessageCircle className="w-6 h-6 text-orange-400 flex-shrink-0" />
             <div className="text-left">
               <p className="font-semibold text-white text-sm">Still have questions?</p>
               <p className="text-slate-500 text-xs mt-0.5">Talk to a real person. We respond fast.</p>

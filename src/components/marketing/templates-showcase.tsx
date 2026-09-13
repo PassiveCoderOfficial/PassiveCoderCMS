@@ -37,14 +37,14 @@ function TemplateThumbnail({ template }: { template: Template }) {
 
 function TemplateCard({ template }: { template: Template }) {
   return (
-    <div className="group bg-white rounded-2xl border border-white/[0.08] hover:border-indigo-300/60 hover:shadow-2xl hover:shadow-indigo-950/40 transition-all duration-300 overflow-hidden flex flex-col">
+    <div className="group bg-white rounded-2xl border border-white/[0.08] hover:border-orange-300/60 hover:shadow-2xl hover:shadow-orange-950/40 transition-all duration-300 overflow-hidden flex flex-col">
       <div className="relative flex-shrink-0">
         <TemplateThumbnail template={template} />
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-1 z-10">
           {template.featured && (
-            <span className="flex items-center gap-0.5 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
+            <span className="flex items-center gap-0.5 bg-orange-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
               <Star className="w-2 h-2 fill-current" /> Featured
             </span>
           )}
@@ -66,7 +66,7 @@ function TemplateCard({ template }: { template: Template }) {
           </Link>
           <Link
             href={`/onboarding?template=${template.slug}`}
-            className="flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl hover:bg-indigo-500 transition-colors shadow-xl"
+            className="flex items-center gap-1.5 bg-orange-600 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl hover:bg-orange-500 transition-colors shadow-xl"
           >
             <Zap className="w-3.5 h-3.5" /> Use Template
           </Link>
@@ -112,7 +112,7 @@ function TemplateCard({ template }: { template: Template }) {
           </Link>
           <Link
             href={`/onboarding?template=${template.slug}`}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-indigo-500 transition-all shadow-sm"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-orange-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-orange-500 transition-all shadow-sm"
           >
             <Zap className="w-3.5 h-3.5" /> Use Template
           </Link>
@@ -156,7 +156,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-orange-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
             <Sparkles className="w-3.5 h-3.5" /> {allTemplates.length} Industry Templates
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
@@ -173,7 +173,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
             value={search}
             onChange={e => { setSearch(e.target.value); setShowAll(false); }}
             placeholder="Search by industry, style or feature…"
-            className="flex-1 border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white/[0.04]"
+            className="flex-1 border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-orange-400/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 bg-white/[0.04]"
           />
         </div>
 
@@ -228,7 +228,7 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
         {/* Bottom note */}
         <div className="text-center mt-12 text-sm text-slate-500">
           Don&apos;t see your industry?{" "}
-          <Link href="/contact" className="text-indigo-400 hover:text-indigo-300 font-semibold">
+          <Link href="/contact" className="text-orange-400 hover:text-orange-300 font-semibold">
             Request a custom template →
           </Link>
         </div>

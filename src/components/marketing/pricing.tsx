@@ -144,7 +144,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                 key={plan.id}
                 className={`relative rounded-2xl border p-8 flex flex-col ${
                   isPremium
-                    ? "border-indigo-400/30 bg-gradient-to-b from-indigo-500/[0.08] to-transparent"
+                    ? "border-orange-400/30 bg-gradient-to-b from-orange-500/[0.08] to-transparent"
                     : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.15] transition-all"
                 }`}
               >
@@ -185,8 +185,8 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
 
                 {/* Visitor allowance */}
                 {visitorLimit > 0 && (
-                  <div className={`mb-5 rounded-xl px-4 py-3 flex items-start gap-2.5 ${isPremium ? "bg-indigo-500/[0.08]" : "bg-white/[0.03]"}`}>
-                    <Users className={`w-4 h-4 mt-0.5 shrink-0 ${isPremium ? "text-indigo-300" : "text-slate-500"}`} />
+                  <div className={`mb-5 rounded-xl px-4 py-3 flex items-start gap-2.5 ${isPremium ? "bg-orange-500/[0.08]" : "bg-white/[0.03]"}`}>
+                    <Users className={`w-4 h-4 mt-0.5 shrink-0 ${isPremium ? "text-orange-300" : "text-slate-500"}`} />
                     <div>
                       <p className="text-sm font-semibold text-white">{visitorLimit.toLocaleString()} visitors/month</p>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -206,7 +206,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                 <ul className="space-y-3 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-sm text-slate-300">
-                      <CheckCircle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isPremium ? "text-indigo-400" : "text-emerald-500"}`} />
+                      <CheckCircle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isPremium ? "text-orange-400" : "text-emerald-500"}`} />
                       {f}
                     </li>
                   ))}
@@ -216,7 +216,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                     enmTierForPlan(), the single source of truth for this),
                     Basic does not. */}
                 {(plan.id === "pro" || plan.id === "biz") && (
-                  <div className="mb-6 flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5">
+                  <div className="mb-6 flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2.5">
                     <Plug className="w-4 h-4 text-white shrink-0" />
                     <p className="text-xs font-bold text-white">Includes ExpertNear.Me Pro — see integrations →</p>
                   </div>
@@ -241,7 +241,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             plan cards. Previously the 4th item in the 3-column plan grid
             above, which squeezed it into a single narrow column instead of
             giving it the width this much content needs. ── */}
-        <div className="relative mt-6 mx-auto max-w-3xl rounded-2xl border border-indigo-400/25 bg-gradient-to-b from-indigo-500/[0.08] to-violet-500/[0.04] p-8 text-white">
+        <div className="relative mt-6 mx-auto max-w-3xl rounded-2xl border border-orange-400/25 bg-gradient-to-b from-orange-500/[0.08] to-rose-500/[0.04] p-8 text-white">
           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
             <span className="inline-flex items-center gap-1 bg-white text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow whitespace-nowrap">
               <Plug className="w-3 h-3" /> Included with Pro &amp; Biz
@@ -250,7 +250,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
 
           <div className="mb-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Plug className="w-5 h-5 text-indigo-300" />
+              <Plug className="w-5 h-5 text-orange-300" />
               <h3 className="text-lg font-bold text-white">ExpertNear.Me Pro</h3>
             </div>
             <p className="text-slate-400 text-sm leading-snug max-w-xl mx-auto">
@@ -262,7 +262,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             {ENM_INTEGRATIONS.map(({ icon: Icon, label, desc, note }) => (
               <li key={label} className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-3.5 h-3.5 text-indigo-300" />
+                  <Icon className="w-3.5 h-3.5 text-orange-300" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-white">{label}</p>

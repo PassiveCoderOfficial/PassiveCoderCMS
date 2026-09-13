@@ -22,9 +22,9 @@ export default function HeroSection({ settings }: { settings: Settings | null })
           rather than "agency site": layered radial glows instead of a flat
           brand-color wash. */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 left-1/4 w-[700px] h-[700px] bg-indigo-600/20 rounded-full blur-[120px]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/15 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px]" />
+        <div className="absolute -top-40 left-1/4 w-[700px] h-[700px] bg-orange-600/20 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rose-600/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -38,7 +38,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
         {/* Top badge */}
         <div className="flex justify-center mb-8">
-          <span className="inline-flex items-center gap-2 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full border border-white/[0.08] backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 bg-white/[0.06] text-orange-300 text-xs font-semibold px-4 py-2 rounded-full border border-white/[0.08] backdrop-blur-sm">
             <Sparkles className="w-3.5 h-3.5" />
             AI-assisted build pipeline · {s.stat_sites ?? "17+"} sites shipped across {s.stat_businesses ?? "8"} countries
           </span>
@@ -51,7 +51,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
           ) : (
             <>
               The Platform Behind Websites{" "}
-              <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-orange-400 via-rose-400 to-amber-400 bg-clip-text text-transparent">
                 That Actually Convert
               </span>
             </>
@@ -66,7 +66,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
           <Link
             href={s.hero_cta_url ?? "/onboarding"}
-            className="group inline-flex items-center gap-2 bg-white text-slate-950 font-semibold px-8 py-4 rounded-xl shadow-2xl shadow-indigo-950/50 transition-all hover:scale-[1.02] hover:shadow-indigo-500/20 text-base"
+            className="group inline-flex items-center gap-2 bg-white text-slate-950 font-semibold px-8 py-4 rounded-xl shadow-2xl shadow-orange-950/50 transition-all hover:scale-[1.02] hover:shadow-orange-500/20 text-base"
           >
             {s.hero_cta_text ?? "Get Started"}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
@@ -131,7 +131,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
                   {["Overview", "Pages", "Products", "Orders", "CRM", "Analytics", "Settings"].map((item, i) => (
                     <div
                       key={item}
-                      className={`text-xs px-3 py-2 rounded-lg ${i === 0 ? "bg-indigo-500/10 text-indigo-300 font-medium" : "text-slate-500"}`}
+                      className={`text-xs px-3 py-2 rounded-lg ${i === 0 ? "bg-orange-500/10 text-orange-300 font-medium" : "text-slate-500"}`}
                     >
                       {item}
                     </div>
@@ -153,7 +153,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
                   </div>
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 h-28 flex items-end gap-1.5">
                     {[40, 65, 45, 80, 60, 90, 70, 95, 75, 100, 85, 92].map((h, i) => (
-                      <div key={i} className="flex-1 bg-gradient-to-t from-indigo-500/40 to-violet-400/60 rounded-sm" style={{ height: `${h}%` }} />
+                      <div key={i} className="flex-1 bg-gradient-to-t from-orange-500/40 to-rose-400/60 rounded-sm" style={{ height: `${h}%` }} />
                     ))}
                   </div>
                 </div>

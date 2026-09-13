@@ -92,7 +92,7 @@ export default function FeaturesSection() {
     <section id="features" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-orange-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
             <Sparkles className="w-3.5 h-3.5" /> Everything included — no plugins, no add-ons, no surprises
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
@@ -109,14 +109,14 @@ export default function FeaturesSection() {
               key={title}
               className={`group p-6 rounded-2xl border transition-all ${
                 highlight
-                  ? "border-indigo-400/20 bg-gradient-to-br from-indigo-500/[0.08] to-violet-500/[0.05] hover:border-indigo-400/30"
+                  ? "border-orange-400/20 bg-gradient-to-br from-orange-500/[0.08] to-rose-500/[0.05] hover:border-orange-400/30"
                   : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.03]"
               }`}
             >
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors ${
-                highlight ? "bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-950/50" : "bg-white/[0.05] group-hover:bg-white/[0.08]"
+                highlight ? "bg-gradient-to-br from-orange-500 to-rose-500 shadow-lg shadow-orange-950/50" : "bg-white/[0.05] group-hover:bg-white/[0.08]"
               }`}>
-                <Icon className={`w-5 h-5 ${highlight ? "text-white" : "text-indigo-300"}`} />
+                <Icon className={`w-5 h-5 ${highlight ? "text-white" : "text-orange-300"}`} />
               </div>
               <h3 className="font-semibold text-white mb-2">{title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
@@ -135,7 +135,7 @@ export default function FeaturesSection() {
               <thead>
                 <tr className="border-b border-white/[0.08] bg-white/[0.02]">
                   <th className="text-left px-5 py-3.5 text-slate-400 font-semibold">Feature</th>
-                  <th className="px-5 py-3.5 text-center font-bold text-indigo-300 bg-indigo-500/[0.06]">Passive Coder</th>
+                  <th className="px-5 py-3.5 text-center font-bold text-orange-300 bg-orange-500/[0.06]">Passive Coder</th>
                   <th className="px-5 py-3.5 text-center text-slate-500 font-semibold">Web Agency</th>
                   <th className="px-5 py-3.5 text-center text-slate-500 font-semibold">DIY (WordPress)</th>
                 </tr>
@@ -144,7 +144,7 @@ export default function FeaturesSection() {
                 {COMPARISON.map((row, i) => (
                   <tr key={row.feature} className={`border-b border-white/[0.05] ${i % 2 === 0 ? "bg-transparent" : "bg-white/[0.015]"}`}>
                     <td className="px-5 py-3.5 font-medium text-slate-300">{row.feature}</td>
-                    <td className="px-5 py-3.5 text-center font-semibold text-indigo-300 bg-indigo-500/[0.04]">{row.us}</td>
+                    <td className="px-5 py-3.5 text-center font-semibold text-orange-300 bg-orange-500/[0.04]">{row.us}</td>
                     <td className="px-5 py-3.5 text-center text-slate-500">{row.agency}</td>
                     <td className="px-5 py-3.5 text-center text-slate-500">{row.diy}</td>
                   </tr>

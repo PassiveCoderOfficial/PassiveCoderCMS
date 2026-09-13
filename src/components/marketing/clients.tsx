@@ -135,12 +135,12 @@ export default function ClientsSection() {
     <section id="clients" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-indigo-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
+          <span className="inline-flex items-center gap-1.5 bg-white/[0.06] text-orange-300 text-xs font-semibold px-4 py-2 rounded-full mb-4 border border-white/[0.08]">
             <Globe className="w-3.5 h-3.5" /> Real Client Websites
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
             Trusted by businesses across{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">8 countries</span>
+            <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">8 countries</span>
           </h2>
           <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
             Every one of these websites was built and is maintained on Passive Coder. Real businesses, real results.
@@ -181,11 +181,11 @@ export default function ClientsSection() {
                     {client.country}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-sm group-hover:text-indigo-300 transition-colors">{client.name}</h3>
+                    <h3 className="font-semibold text-white text-sm group-hover:text-orange-300 transition-colors">{client.name}</h3>
                     <p className="text-xs text-slate-500">{client.category}</p>
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors flex-shrink-0 mt-1" />
+                <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-orange-400 transition-colors flex-shrink-0 mt-1" />
               </div>
 
               {/* Domain */}
@@ -195,7 +195,7 @@ export default function ClientsSection() {
               </div>
 
               {/* Hover gradient border effect */}
-              <div className="absolute inset-0 rounded-2xl ring-1 ring-indigo-500/0 group-hover:ring-indigo-500/20 transition-all pointer-events-none" />
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-orange-500/0 group-hover:ring-orange-500/20 transition-all pointer-events-none" />
             </a>
           ))}
         </div>
@@ -209,7 +209,7 @@ export default function ClientsSection() {
             { value: "24/7", label: "Uptime monitoring" },
           ].map(stat => (
             <div key={stat.label} className="text-center p-5 bg-white/[0.03] rounded-2xl border border-white/[0.06]">
-              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">{stat.value}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">{stat.value}</div>
               <div className="text-sm text-slate-400 mt-1">{stat.label}</div>
             </div>
           ))}
