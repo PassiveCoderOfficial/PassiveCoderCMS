@@ -15,7 +15,7 @@ const DEFAULT_FAQ: FaqItem[] = [
   },
   {
     q: "Can I try before paying?",
-    a: "Yes — every plan comes with a 7-day free trial. Full access to every feature, no credit card required. You only pay when you decide to keep it. If you cancel during the trial, you owe nothing.",
+    a: "Payment is collected when you sign up via card or ShurjoPay. If you'd like to discuss a trial or a different arrangement first, message us on WhatsApp — we're happy to help case by case.",
   },
   {
     q: "What happens to my site if I cancel?",

@@ -44,7 +44,7 @@ interface Settings {
 
 const DEFAULT: Settings = {
   id: "",
-  hero_headline: "", hero_subheadline: "", hero_cta_text: "Start Free Trial",
+  hero_headline: "", hero_subheadline: "", hero_cta_text: "Get Started",
   hero_cta_url: "/onboarding", hero_secondary_cta: "See Pricing",
   stat_sites: "17+", stat_businesses: "8", stat_uptime: "99.9%",
   announcement_enabled: false, announcement_text: "", announcement_url: "",

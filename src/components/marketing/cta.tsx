@@ -62,7 +62,7 @@ export default function CtaSection({ settings }: { settings: Settings | null }) 
             href={settings?.hero_cta_url ?? "/onboarding"}
             className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-400 hover:to-rose-400 text-white font-bold px-10 py-4 rounded-xl shadow-2xl shadow-orange-900/40 transition-all hover:scale-105 text-base"
           >
-            {settings?.hero_cta_text ?? "Start Free Trial — 7 Days"}
+            {settings?.hero_cta_text ?? "Get Started"}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link

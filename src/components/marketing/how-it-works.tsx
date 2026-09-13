@@ -5,7 +5,7 @@ const STEPS = [
     icon: MousePointerClick,
     step: "01",
     title: "Pick your plan & template",
-    desc: "Choose Standard or Premium. Start with a 7-day free trial — no payment needed to get started. Then pick from 50+ industry-specific templates built for your exact business type.",
+    desc: "Choose Standard or Premium and pick from 50+ industry-specific templates built for your exact business type.",
     detail: "Takes under 2 minutes",
     color: "from-orange-500 to-amber-500",
     glow: "shadow-orange-200",

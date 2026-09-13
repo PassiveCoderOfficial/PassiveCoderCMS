@@ -230,7 +230,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       : "bg-gray-900 text-white hover:bg-gray-700"
                   }`}
                 >
-                  Start Free Trial <ArrowRight className="w-4 h-4" />
+                  Get Started <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             );

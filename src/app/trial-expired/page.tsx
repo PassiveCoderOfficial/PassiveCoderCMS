@@ -11,7 +11,7 @@ export default function TrialExpiredPage() {
         <div>
           <h1 className="text-3xl font-extrabold text-white">Trial Expired</h1>
           <p className="mt-3 text-gray-400">
-            Your 7-day free trial has ended. Upgrade to keep your site live and all your content intact.
+            Your trial has ended. Upgrade to keep your site live and all your content intact.
           </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4 text-left">

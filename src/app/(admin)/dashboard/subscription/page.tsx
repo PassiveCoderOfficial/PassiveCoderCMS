@@ -229,11 +229,11 @@ export default function SubscriptionPage() {
 }
 
 /**
- * Trial countdown, shown only for shurjoPay/manual signups — Dodo customers
- * already have a real 7-day trial enforced by Dodo itself (card saved, no
- * charge until day 8), so they get no "act before X" pressure here; this is
- * specifically for the payment methods that don't auto-charge and need the
- * customer to come back and pay.
+ * Trial countdown — shown only when subscriptions.trial_ends_at is actually
+ * set. No signup grants one automatically any more (reverted 2026-09-13,
+ * see docs/business/04-pricing-and-packaging.md); this only fires for a
+ * customer staff has manually given a trial to (super-admin subscription
+ * edit), which happens case by case on request, not by default.
  */
 function TrialCountdown({ trialEndsAt }: { trialEndsAt: string }) {
   const end = new Date(trialEndsAt).getTime();
@@ -245,7 +245,7 @@ function TrialCountdown({ trialEndsAt }: { trialEndsAt: string }) {
     return (
       <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-400 flex items-start gap-2">
         <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        <span>Your 7-day trial has ended. Pay now to keep your site live — it will be suspended shortly if unpaid.</span>
+        <span>Your trial has ended. Pay now to keep your site live — it will be suspended shortly if unpaid.</span>
       </div>
     );
   }
@@ -393,8 +393,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
         </div>
       )}
 
-      {(sub.status === "onboarded" || sub.status === "pending") && sub.trial_ends_at
-        && (sub.payment_method === "shurjopay" || sub.payment_method === "manual") ? (
+      {(sub.status === "onboarded" || sub.status === "pending") && sub.trial_ends_at ? (
         <TrialCountdown trialEndsAt={sub.trial_ends_at} />
       ) : (sub.status === "onboarded" || sub.status === "pending") && renewDate && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
@@ -437,12 +436,10 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
             <Clock className="w-3.5 h-3.5" /> Payment awaiting verification
           </span>
         )}
-        {/* Still in the trial window and hasn't already asked to cancel —
-            "cancel within 6 days, don't pay" only makes sense before the
-            trial converts. Once status is active/past_due/cancelled/expired
-            this stops rendering rather than offering a cancel that no
-            longer means "pay nothing". */}
-        {(sub.status === "onboarded" || sub.status === "pending") && !sub.cancelled_at && (
+        {/* Only shown when a manually-granted trial actually exists — no
+            signup gets one automatically any more, so most onboarded/
+            pending subs have nothing to cancel here. */}
+        {(sub.status === "onboarded" || sub.status === "pending") && sub.trial_ends_at && !sub.cancelled_at && (
           <CancelTrialButton tenantId={sub.tenant_id} />
         )}
       </div>

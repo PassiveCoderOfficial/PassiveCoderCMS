@@ -83,7 +83,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
             href={s.hero_cta_url ?? "/onboarding"}
             className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-400 hover:to-rose-400 text-white font-bold px-8 py-4 rounded-xl shadow-2xl shadow-orange-900/50 transition-all hover:scale-105 text-base"
           >
-            {s.hero_cta_text ?? "Start Your Free Trial"}
+            {s.hero_cta_text ?? "Get Started"}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
@@ -96,8 +96,8 @@ export default function HeroSection({ settings }: { settings: Settings | null })
 
         {/* Trust line */}
         <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-sm text-gray-500">
-          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> No credit card required</span>
-          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Pay after signup</span>
+          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Card, bKash & Nagad accepted</span>
+          <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Real human support</span>
           <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-green-500" /> Cancel anytime</span>
         </div>
 

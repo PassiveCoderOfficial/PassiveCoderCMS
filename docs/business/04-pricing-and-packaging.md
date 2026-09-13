@@ -127,6 +127,42 @@ flip — no Dodo call needed for those.
 
 ---
 
+## Decision: automatic trial removed entirely (reverses the above)
+
+**Decided 2026-09-13 by Wali, same day as the trial rollout above.** The
+7-day trial — both the Dodo-native card trial and the shurjoPay/manual
+activate-now version — is no longer granted automatically to anyone.
+
+**What changed back:**
+- `trial_period_days` set to 0 on all 12 Dodo products (6 live, 6 sandbox).
+  Every card checkout charges immediately again.
+- shurjoPay checkout also charges immediately again — reverted out of the
+  immediate-checkout-redirect exemption it had gotten.
+- `create-tenant/route.ts` no longer sets `trial_ends_at` on `tenants` or
+  `subscriptions` for anyone. The column and the `expire-trials` cron are
+  untouched — both still work, they're just never populated by a normal
+  signup any more.
+- Onboarding copy, the dashboard countdown, and every marketing CTA
+  ("Start Free Trial", "no credit card required", "7-day free trial" in the
+  homepage hero/FAQ/how-it-works copy, `hero_cta_text` in `homepage_settings`)
+  reverted to reflect immediate payment, not a trial promise.
+
+**What stays exactly as-is:** `subscriptions.payment_method`,
+`dodo_subscription_id`, the cancel route, `TrialCountdown`, and
+`CancelTrialButton` — all still useful, just conditional now on
+`trial_ends_at` actually being set rather than assuming everyone has one.
+
+**The only path to a trial now:** the "manual" payment option in onboarding
+— renamed "Contact Us" — tells the customer to message WhatsApp to discuss
+payment or a trial. Staff decide case by case and grant one by setting
+`trial_ends_at` directly (super-admin subscription edit), which the
+dashboard countdown and the expire-trials cron both already handle
+correctly without any further code change — this is exactly the
+infrastructure the trial rollout built, just switched from automatic to
+manual-only.
+
+---
+
 ## Decision: page limits
 
 **Decided 2026-09-02 by Wali.**
