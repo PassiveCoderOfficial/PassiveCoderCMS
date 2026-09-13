@@ -112,7 +112,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
           </div>
         )}
 
-        {/* 3-column grid: Basic | Pro | ENM Integrations */}
+        {/* Plan cards: Basic | Pro | Biz */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
 
           {/* ── Basic + Pro plan cards ── */}
@@ -212,8 +212,10 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                   ))}
                 </ul>
 
-                {/* ENM Pro badge on Pro card */}
-                {isPremium && (
+                {/* ENM Pro badge — Pro and Biz both bundle it (see
+                    enmTierForPlan(), the single source of truth for this),
+                    Basic does not. */}
+                {(plan.id === "pro" || plan.id === "biz") && (
                   <div className="mb-6 flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5">
                     <Plug className="w-4 h-4 text-white shrink-0" />
                     <p className="text-xs font-bold text-white">Includes ExpertNear.Me Pro — see integrations →</p>
@@ -233,43 +235,46 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
               </div>
             );
           })}
+        </div>
 
-          {/* ── Column 3: ExpertNear.Me Pro Integrations ── */}
-          <div className="relative rounded-2xl border-2 border-orange-400 bg-gradient-to-b from-orange-600 to-orange-700 p-8 flex flex-col text-white shadow-xl shadow-orange-200">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-              <span className="inline-flex items-center gap-1 bg-white text-orange-600 text-xs font-bold px-3 py-1 rounded-full shadow">
-                <Plug className="w-3 h-3" /> Included with Pro
-              </span>
+        {/* ── ExpertNear.Me Pro Integrations — full-width, own row below the
+            plan cards. Previously the 4th item in the 3-column plan grid
+            above, which squeezed it into a single narrow column instead of
+            giving it the width this much content needs. ── */}
+        <div className="relative mt-6 mx-auto max-w-3xl rounded-2xl border-2 border-orange-400 bg-gradient-to-b from-orange-600 to-orange-700 p-8 text-white shadow-xl shadow-orange-200">
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+            <span className="inline-flex items-center gap-1 bg-white text-orange-600 text-xs font-bold px-3 py-1 rounded-full shadow whitespace-nowrap">
+              <Plug className="w-3 h-3" /> Included with Pro &amp; Biz
+            </span>
+          </div>
+
+          <div className="mb-6 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Plug className="w-5 h-5 text-orange-200" />
+              <h3 className="text-lg font-bold text-white">ExpertNear.Me Pro</h3>
             </div>
+            <p className="text-orange-200 text-sm leading-snug max-w-xl mx-auto">
+              Live API integrations powering your business operations — connected directly to your Passive Coder website.
+            </p>
+          </div>
 
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <Plug className="w-5 h-5 text-orange-200" />
-                <h3 className="text-lg font-bold text-white">ExpertNear.Me Pro</h3>
-              </div>
-              <p className="text-orange-200 text-sm leading-snug">
-                Live API integrations powering your business operations — connected directly to your Passive Coder website.
-              </p>
-            </div>
+          <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-4 mb-8">
+            {ENM_INTEGRATIONS.map(({ icon: Icon, label, desc, note }) => (
+              <li key={label} className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{label}</p>
+                  <p className="text-xs text-orange-200">{desc}</p>
+                  <p className="text-[10px] text-orange-300 mt-0.5 italic">{note}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-            <ul className="space-y-4 flex-1 mb-8">
-              {ENM_INTEGRATIONS.map(({ icon: Icon, label, desc, note }) => (
-                <li key={label} className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <Icon className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{label}</p>
-                    <p className="text-xs text-orange-200">{desc}</p>
-                    <p className="text-[10px] text-orange-300 mt-0.5 italic">{note}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="rounded-xl bg-white/15 border border-white/20 px-4 py-3 text-xs text-orange-100 text-center">
-              Activated automatically when you subscribe to the <strong className="text-white">Pro</strong> plan
-            </div>
+          <div className="rounded-xl bg-white/15 border border-white/20 px-4 py-3 text-xs text-orange-100 text-center">
+            Activated automatically when you subscribe to the <strong className="text-white">Pro</strong> or <strong className="text-white">Biz</strong> plan
           </div>
         </div>
 
