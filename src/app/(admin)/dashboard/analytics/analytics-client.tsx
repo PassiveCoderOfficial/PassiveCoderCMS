@@ -3,8 +3,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, Link2, Smartphone, Globe2, ExternalLink } from "lucide-react";
+import {
+  Users, FileText, Link2, Smartphone, Globe2, ExternalLink, ShoppingBag, Package,
+  TrendingUp, AlertCircle, CheckCircle2, Loader2,
+} from "lucide-react";
 import Link from "next/link";
+import { formatCurrency } from "@/lib/utils";
+import { AiSiteBanner } from "@/components/admin/ai-site-banner";
+import { BusinessProfilePrompt } from "@/components/admin/business-profile-prompt";
+
+interface Order {
+  id: string; order_number: string; customer_name: string; total: number; status: string;
+}
+interface Transaction {
+  id: string; description: string; type: string; date: string; amount: number; currency?: string;
+}
+interface DashboardStats {
+  pageCount: number; postCount: number; orderCount: number; productCount: number; userCount: number;
+}
 
 interface Row {
   day: string;
@@ -64,11 +80,19 @@ function aggregate(rows: Row[], range: number): ApiResult {
 const RANGES = [7, 30, 90] as const;
 
 export function AnalyticsClient({
-  initialRows, initialRange, gaConnected,
+  tenantId, initialRows, initialRange, gaConnected, gaOAuthEmail, gaPropertyId,
+  showProSiteBanner, dashboardStats, recentOrders, recentTransactions,
 }: {
+  tenantId: string;
   initialRows: Row[];
   initialRange: number;
   gaConnected: boolean;
+  gaOAuthEmail: string | null;
+  gaPropertyId: string | null;
+  showProSiteBanner: boolean;
+  dashboardStats: DashboardStats;
+  recentOrders: Order[];
+  recentTransactions: Transaction[];
 }) {
   const [range, setRange] = useState<number>(initialRange);
   const [data, setData] = useState<ApiResult>(() => aggregate(initialRows, initialRange));
@@ -99,9 +123,160 @@ export function AnalyticsClient({
 
   return (
     <div className="p-6 space-y-6">
+      <AiSiteBanner tenantId={tenantId} />
+
+      <BusinessProfilePrompt />
+
+      {showProSiteBanner && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-700 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-bold text-red-700 dark:text-red-400">Your Pro site is not set up yet</p>
+            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">
+              You have an active Pro subscription from ExpertNear.Me. Complete your site setup to go live — choose a site name, subdomain, and template.
+            </p>
+          </div>
+          <Link href="/onboarding">
+            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white border-0 shrink-0 flex items-center gap-1.5">
+              <ExternalLink className="w-3.5 h-3.5" /> Create Your Pro Site
+            </Button>
+          </Link>
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Analytics</h1>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Welcome back to your CMS — site overview and traffic, together.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/pages/new">New Page</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/dashboard/posts/new">New Post</Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Site summary — moved here from the old standalone /dashboard page */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {[
+          { label: "Total Pages", value: dashboardStats.pageCount, icon: FileText, href: "/dashboard/pages", color: "text-blue-600" },
+          { label: "Blog Posts", value: dashboardStats.postCount, icon: FileText, href: "/dashboard/posts", color: "text-purple-600" },
+          { label: "Products", value: dashboardStats.productCount, icon: Package, href: "/dashboard/ecommerce/products", color: "text-orange-600" },
+          { label: "Orders", value: dashboardStats.orderCount, icon: ShoppingBag, href: "/dashboard/ecommerce/orders", color: "text-green-600" },
+          { label: "Users", value: dashboardStats.userCount, icon: Users, href: "/dashboard/users", color: "text-pink-600" },
+        ].map((stat) => (
+          <Link key={stat.label} href={stat.href}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                  <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                </div>
+                <p className="text-2xl font-bold">{stat.value.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Recent Orders</CardTitle>
+              <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
+                <Link href="/dashboard/ecommerce/orders">View all</Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!recentOrders?.length ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No orders yet</p>
+            ) : (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-medium">#{order.order_number}</p>
+                      <p className="text-xs text-muted-foreground">{order.customer_name}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{formatCurrency(order.total)}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                        order.status === "completed" ? "bg-green-100 text-green-700" :
+                        order.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                        "bg-gray-100 text-gray-700"
+                      }`}>{order.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Recent Transactions</CardTitle>
+              <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
+                <Link href="/dashboard/accounting/transactions">View all</Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!recentTransactions?.length ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No transactions yet</p>
+            ) : (
+              <div className="space-y-3">
+                {recentTransactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-medium">{tx.description}</p>
+                      <p className="text-xs text-muted-foreground">{tx.type} · {tx.date}</p>
+                    </div>
+                    <p className={`font-semibold ${tx.type === "expense" ? "text-red-600" : "text-green-600"}`}>
+                      {tx.type === "expense" ? "-" : "+"}{formatCurrency(tx.amount, tx.currency)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "New Page", href: "/dashboard/pages/new" },
+              { label: "New Post", href: "/dashboard/posts/new" },
+              { label: "Add Product", href: "/dashboard/ecommerce/products/new" },
+              { label: "Upload Media", href: "/dashboard/media" },
+              { label: "Manage Themes", href: "/dashboard/themes" },
+              { label: "Manage Modules", href: "/dashboard/modules" },
+              { label: "Site Settings", href: "/dashboard/settings" },
+            ].map((action) => (
+              <Button key={action.href} asChild variant="outline" size="sm">
+                <Link href={action.href}>{action.label}</Link>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Traffic — own-data panel, previously the whole of this page */}
+      <div className="flex items-center justify-between flex-wrap gap-3 pt-2">
+        <div>
+          <h2 className="text-xl font-bold">Traffic</h2>
           <p className="text-sm text-muted-foreground">Visits to your site, tracked automatically — no setup needed.</p>
         </div>
         <div className="flex items-center gap-1 rounded-lg border p-1">
@@ -176,7 +351,11 @@ export function AnalyticsClient({
         <RankedList title="Top countries" icon={Globe2} items={data.topCountries} formatKey={(k) => k} empty="No location data yet." />
       </div>
 
-      <GoogleAnalyticsCard connected={gaConnected} />
+      <GoogleAnalyticsCard
+        measurementIdSet={gaConnected}
+        initialOAuthEmail={gaOAuthEmail}
+        initialPropertyId={gaPropertyId}
+      />
     </div>
   );
 }
@@ -270,23 +449,162 @@ function RankedList({
   );
 }
 
-function GoogleAnalyticsCard({ connected }: { connected: boolean }) {
+interface GaProperty { id: string; displayName: string }
+interface GaStatus {
+  connected: boolean;
+  tokenValid?: boolean;
+  email?: string | null;
+  propertyId?: string | null;
+  properties?: GaProperty[];
+}
+
+/**
+ * Real Google OAuth connect (2026-09-14, per Wali — supersedes the old
+ * paste-your-Measurement-ID-only card). "Connect Google Analytics" sends the
+ * browser through Google's consent screen (api/analytics/google/connect);
+ * once back, this polls /api/analytics/google/status for the account +
+ * property list and lets the tenant pick which GA4 property feeds a live
+ * report — see report/route.ts. The old ga_measurement_id field (writes an
+ * ID onto the tenant's own site) still works independently and is shown
+ * here too, since it's a different, still-useful thing: sending OUR
+ * visit data to THEIR GA, versus reading THEIR GA data back into us.
+ */
+function GoogleAnalyticsCard({
+  measurementIdSet, initialOAuthEmail, initialPropertyId,
+}: {
+  measurementIdSet: boolean;
+  initialOAuthEmail: string | null;
+  initialPropertyId: string | null;
+}) {
+  const [status, setStatus] = useState<GaStatus>({
+    connected: !!initialOAuthEmail, email: initialOAuthEmail, propertyId: initialPropertyId, properties: [],
+  });
+  const [loadingStatus, setLoadingStatus] = useState(false);
+  const [savingProperty, setSavingProperty] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [notConfigured, setNotConfigured] = useState(false);
+
+  function refreshStatus() {
+    setLoadingStatus(true);
+    fetch("/api/analytics/google/status")
+      .then(r => r.json())
+      .then((d: GaStatus) => setStatus(d))
+      .catch(() => {})
+      .finally(() => setLoadingStatus(false));
+  }
+
+  useEffect(() => {
+    // Re-check status after bouncing back from Google (ga_connected=1 /
+    // ga_error=... in the URL) or on a normal load if we already had a
+    // connected email from the server render — properties weren't sent down
+    // with the initial page load, only fetched here.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("ga_connected") || params.get("ga_error") || initialOAuthEmail) {
+      refreshStatus();
+    }
+    if (params.get("ga_error") === "not_configured") setNotConfigured(true);
+    if (params.has("ga_connected") || params.has("ga_error")) {
+      // Clean the URL so a refresh doesn't re-trigger the same message.
+      params.delete("ga_connected");
+      params.delete("ga_error");
+      const clean = params.toString();
+      window.history.replaceState(null, "", clean ? `?${clean}` : window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function selectProperty(propertyId: string) {
+    setSavingProperty(true);
+    const res = await fetch("/api/analytics/google/property", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ property_id: propertyId }),
+    });
+    setSavingProperty(false);
+    if (res.ok) setStatus(s => ({ ...s, propertyId }));
+  }
+
+  async function disconnect() {
+    setDisconnecting(true);
+    const res = await fetch("/api/analytics/google/disconnect", { method: "POST" });
+    setDisconnecting(false);
+    if (res.ok) setStatus({ connected: false, properties: [] });
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-sm">Google Analytics</CardTitle>
       </CardHeader>
-      <CardContent className="flex items-center justify-between gap-4 flex-wrap">
-        <p className="text-xs text-muted-foreground max-w-md">
-          {connected
-            ? "Connected — your site sends visit data to your own Google Analytics account too. View the full report at analytics.google.com."
-            : "The panel above is your own data — nothing to set up. If you already use Google Analytics, connect your Measurement ID and we'll add it to your site alongside this."}
-        </p>
-        <Button asChild size="sm" variant="outline">
-          <Link href="/dashboard/settings/general#analytics">
-            {connected ? "Manage connection" : "Connect Google Analytics"}
-          </Link>
-        </Button>
+      <CardContent className="space-y-4">
+        {!status.connected ? (
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-xs text-muted-foreground max-w-md">
+              The panel above is your own data — nothing to set up. Connect a Google account to also
+              pull a live report straight from your GA4 property, right here on this page.
+              {measurementIdSet && " (Your site is also already sending its own visit data out to GA — see Settings.)"}
+            </p>
+            <Button asChild size="sm" variant="outline">
+              <a href="/api/analytics/google/connect">Connect Google Analytics</a>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2 text-xs">
+                {status.tokenValid === false ? (
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                )}
+                <span className="text-muted-foreground">
+                  {status.tokenValid === false
+                    ? "Connection needs to be renewed"
+                    : "Connected"}
+                  {status.email && <> as <span className="font-medium text-foreground">{status.email}</span></>}
+                </span>
+                {loadingStatus && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+              </div>
+              <div className="flex gap-2">
+                {status.tokenValid === false && (
+                  <Button asChild size="sm" variant="outline">
+                    <a href="/api/analytics/google/connect">Reconnect</a>
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" onClick={disconnect} disabled={disconnecting}>
+                  {disconnecting ? "Disconnecting…" : "Disconnect"}
+                </Button>
+              </div>
+            </div>
+
+            {status.tokenValid !== false && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <label className="text-xs text-muted-foreground shrink-0">GA4 property:</label>
+                {status.properties && status.properties.length > 0 ? (
+                  <select
+                    value={status.propertyId ?? ""}
+                    disabled={savingProperty}
+                    onChange={(e) => e.target.value && selectProperty(e.target.value)}
+                    className="text-xs h-8 rounded-md border border-input bg-transparent px-2"
+                  >
+                    <option value="" disabled>Choose a property…</option>
+                    {status.properties.map(p => (
+                      <option key={p.id} value={p.id}>{p.displayName}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {loadingStatus ? "Loading properties…" : "No GA4 properties found on this account."}
+                  </span>
+                )}
+              </div>
+            )}
+          </>
+        )}
+        {notConfigured && (
+          <p className="text-xs text-amber-600">
+            Google OAuth isn't set up on this deployment yet (missing GOOGLE_CLIENT_ID/SECRET) — ask an admin to add them.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

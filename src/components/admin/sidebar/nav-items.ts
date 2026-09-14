@@ -128,8 +128,10 @@ export const navSections: NavSection[] = [
   {
     label: "Overview",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+      // Dashboard + Analytics merged onto one page (2026-09-14) — /dashboard
+      // itself just redirects here now (page.tsx), one sidebar entry instead
+      // of two that used to split "site overview" from "traffic".
+      { label: "Dashboard", href: "/dashboard/analytics", icon: LayoutDashboard },
     ],
   },
   {
