@@ -116,5 +116,17 @@ const NOOP_CART: CartContextValue = {
 };
 
 export function useCart() {
-  return useContext(CartContext) ?? NOOP_CART;
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    // Was a silent no-op with zero trace (786ecd3) — a component calling
+    // this outside <CartProvider> looked, to a user, exactly like "Add to
+    // cart did nothing": a toast could still fire from the caller's own
+    // code, but nothing was ever added, no badge updated, no error
+    // anywhere to find. Loud in the console now so this class of bug is
+    // traceable the next time it happens, without changing the safe
+    // fallback behavior itself (still never throws into the caller).
+    console.error("useCart() called outside <CartProvider> — cart actions on this component are no-ops. Check that this component's route actually renders inside (site)/layout.tsx's <CartProvider>.");
+    return NOOP_CART;
+  }
+  return ctx;
 }
