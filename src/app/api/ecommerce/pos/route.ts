@@ -75,6 +75,11 @@ export async function POST(req: NextRequest) {
       branch_id: branchId,
       table_id: tableId,
       fulfillment_type: fulfillmentType,
+      // Split-bill (Tier 3 restaurant vertical, migration 097) — both
+      // optional, only ever set when this sale is one piece of a table's
+      // cart split into several sub-bills. A normal sale leaves both null.
+      split_group_id: body.split_group_id || null,
+      split_label: body.split_label || null,
       // POS sales are rung up as already paid/completed, but a dine-in
       // table order still needs to pass through the kitchen — a plain
       // walk-in retail sale (no branch) has nothing for a kitchen to make.

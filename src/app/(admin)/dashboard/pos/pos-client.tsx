@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban,
+  ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban, Split, X,
 } from "lucide-react";
 import { PrinterNotice } from "@/components/admin/printer-notice";
 
@@ -53,6 +53,15 @@ export default function PosClient({ products, currency, branches = [], availabil
   const [method, setMethod] = useState("cash");
   const [saving, setSaving] = useState(false);
   const [receipt, setReceipt] = useState<{ orderNumber: string; total: number } | null>(null);
+  // Split-bill (Tier 3 restaurant vertical): showSplit opens the seat
+  // editor; seatCount picks how many even seats to start from (per-line
+  // assignment below can still move an item to any seat after that).
+  // seatOf maps product_id -> seat index (0-based); a line not present in
+  // the map defaults to seat 0 the first time the editor opens.
+  const [showSplit, setShowSplit] = useState(false);
+  const [seatCount, setSeatCount] = useState(2);
+  const [seatOf, setSeatOf] = useState<Record<string, number>>({});
+  const [splitting, setSplitting] = useState(false);
 
   const money = (n: number) => {
     try { return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n); }
@@ -89,6 +98,73 @@ export default function PosClient({ products, currency, branches = [], availabil
     if (!res.ok) { alert(d.error ?? "Sale failed"); return; }
     setReceipt({ orderNumber: d.orderNumber, total: d.total });
     setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId("");
+  }
+
+  function openSplit() {
+    // Default every line to seat 0 (or its previously-assigned seat if the
+    // editor was opened before and the cart hasn't changed) — starting
+    // everything in seat 0 means "assign at least one item elsewhere" is
+    // the only action needed for a simple 2-way split.
+    setSeatOf(prev => {
+      const next: Record<string, number> = {};
+      for (const l of cart) next[l.product_id] = prev[l.product_id] ?? 0;
+      return next;
+    });
+    setShowSplit(true);
+  }
+
+  function seatLines(seat: number): CartLine[] {
+    return cart.filter(l => (seatOf[l.product_id] ?? 0) === seat);
+  }
+  function seatTotal(seat: number): number {
+    return seatLines(seat).reduce((s, l) => s + l.price * l.quantity, 0);
+  }
+
+  /** Checks out every non-empty seat as its own POS order, sharing one
+   *  split_group_id (migration 097) so they read as pieces of one table's
+   *  bill in Orders history. Discount is applied to the FIRST non-empty
+   *  seat only — splitting a discount across seats proportionally would be
+   *  a reasonable next step, but guessing that allocation silently is
+   *  worse than a staff member seeing it land on one bill and adjusting by
+   *  hand if that's not what they meant. */
+  async function checkoutSplit() {
+    const nonEmptySeats = Array.from({ length: seatCount }, (_, i) => i).filter(seat => seatLines(seat).length > 0);
+    if (nonEmptySeats.length < 2) { alert("Assign items to at least 2 seats to split the bill."); return; }
+
+    setSplitting(true);
+    const groupId = crypto.randomUUID();
+    let anyFailed = false;
+    let lastOrderNumber = "";
+    let lastTotal = 0;
+
+    for (let i = 0; i < nonEmptySeats.length; i++) {
+      const seat = nonEmptySeats[i];
+      const lines = seatLines(seat);
+      const seatDiscount = i === 0 ? discount : 0;
+      const res = await fetch("/api/ecommerce/pos", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: lines, discount: seatDiscount, payment_method: method, ...customer,
+          branch_id: branchId || undefined,
+          table_id: tableId || undefined,
+          split_group_id: groupId,
+          split_label: `Seat ${seat + 1} of ${nonEmptySeats.length}`,
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) { anyFailed = true; break; }
+      lastOrderNumber = d.orderNumber;
+      lastTotal = d.total;
+    }
+
+    setSplitting(false);
+    if (anyFailed) {
+      alert("One of the split bills failed to save — check Orders before re-ringing anything, some seats may have already gone through.");
+      return;
+    }
+    setShowSplit(false);
+    setReceipt({ orderNumber: `${nonEmptySeats.length} split bills (last: ${lastOrderNumber})`, total: lastTotal });
+    setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId(""); setSeatOf({});
   }
 
   const shown = products.filter(p =>
@@ -214,9 +290,80 @@ export default function PosClient({ products, currency, branches = [], availabil
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
               Complete sale
             </button>
+            {/* Split-bill only makes sense for a dine-in table with more
+                than one item — a takeaway or single-item sale has nothing
+                to divide. */}
+            {tableId && cart.length > 1 && (
+              <button onClick={openSplit}
+                className="w-full flex items-center justify-center gap-2 border border-gray-700 hover:border-gray-600 text-gray-300 px-4 py-2 rounded-lg text-xs font-medium transition-colors">
+                <Split className="w-3.5 h-3.5" /> Split bill
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {showSplit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowSplit(false)} />
+          <div className="relative bg-gray-950 border border-gray-800 rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2"><Split className="w-5 h-5 text-indigo-400" /> Split bill</h3>
+              <button onClick={() => setShowSplit(false)} className="p-1 text-gray-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-500">Seats</label>
+              <button onClick={() => setSeatCount(n => Math.max(2, n - 1))}
+                className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-white"><Minus className="w-3.5 h-3.5" /></button>
+              <span className="text-sm text-white w-6 text-center">{seatCount}</span>
+              <button onClick={() => setSeatCount(n => Math.min(8, n + 1))}
+                className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-white"><Plus className="w-3.5 h-3.5" /></button>
+              <span className="text-xs text-gray-600 ml-2">Tap a seat number next to each item to move it</span>
+            </div>
+
+            <div className="space-y-2">
+              {cart.map(l => (
+                <div key={l.product_id} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-lg p-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm text-white truncate">{l.quantity}× {l.name}</div>
+                    <div className="text-xs text-gray-500">{money(l.price * l.quantity)}</div>
+                  </div>
+                  <div className="flex gap-1">
+                    {Array.from({ length: seatCount }, (_, seat) => (
+                      <button key={seat} onClick={() => setSeatOf(prev => ({ ...prev, [l.product_id]: seat }))}
+                        className={`w-7 h-7 rounded-md text-xs font-semibold transition-colors ${
+                          (seatOf[l.product_id] ?? 0) === seat
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-800 text-gray-500 hover:text-white"
+                        }`}>
+                        {seat + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-gray-800 pt-3 space-y-1.5">
+              {Array.from({ length: seatCount }, (_, seat) => (
+                seatLines(seat).length > 0 && (
+                  <div key={seat} className="flex justify-between text-sm text-gray-300">
+                    <span>Seat {seat + 1} ({seatLines(seat).length} item{seatLines(seat).length === 1 ? "" : "s"})</span>
+                    <span>{money(seatTotal(seat))}</span>
+                  </div>
+                )
+              ))}
+            </div>
+
+            <button onClick={checkoutSplit} disabled={splitting}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors">
+              {splitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
+              {splitting ? "Charging seats…" : "Charge all seats"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {receipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
