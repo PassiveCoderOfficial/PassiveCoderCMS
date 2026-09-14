@@ -264,6 +264,7 @@ export const navSections: NavSection[] = [
       // harmless sidebar link at worst.
       { label: "Kitchen", href: "/dashboard/kitchen", icon: ChefHat, moduleKey: "pos" },
       { label: "Branches", href: "/dashboard/branches", icon: Store, moduleKey: "pos" },
+      { label: "Reservations", href: "/dashboard/reservations", icon: CalendarClock, moduleKey: "pos" },
       { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },
       {
         label: "Accounting",
