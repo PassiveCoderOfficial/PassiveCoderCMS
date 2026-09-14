@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Store, Plus, QrCode, Trash2, Copy, Check, Printer, Tv, Tablet, ChefHat, KeyRound } from "lucide-react";
+import { PrinterNotice } from "@/components/admin/printer-notice";
 
 interface TableRow { id: string; table_number: string; qr_token: string; is_active: boolean; table_pin: string | null }
 interface Branch {
@@ -133,6 +134,8 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
           <Plus className="w-4 h-4" /> Add branch
         </button>
       </div>
+
+      <PrinterNotice />
 
       {showAddBranch && (
         <form onSubmit={addBranch} className="bg-gray-900 border border-gray-800 rounded-xl p-4 grid sm:grid-cols-3 gap-3">

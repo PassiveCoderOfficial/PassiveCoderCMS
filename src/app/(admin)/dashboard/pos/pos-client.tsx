@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban,
 } from "lucide-react";
+import { PrinterNotice } from "@/components/admin/printer-notice";
 
 interface Product {
   id: string; name: string; sku: string | null; price: number;
@@ -98,6 +99,8 @@ export default function PosClient({ products, currency, branches = [], availabil
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
         <ShoppingCart className="w-6 h-6 text-indigo-400" /> Point of Sale
       </h1>
+
+      {branches.length > 0 && <PrinterNotice />}
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
         {/* Product picker */}
