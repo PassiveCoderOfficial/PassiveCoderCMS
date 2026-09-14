@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await admin
     .from("restaurant_riders")
     .insert({ branch_id, name: name.trim(), phone: phone?.trim() || null })
-    .select("id, name, phone, branch_id, is_active")
+    .select("id, name, phone, branch_id, is_active, rider_token")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

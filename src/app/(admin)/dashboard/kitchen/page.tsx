@@ -4,6 +4,9 @@ import KitchenClient from "./kitchen-client";
 
 export const metadata = { title: "Kitchen — Dashboard" };
 
+const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+const PROTO = ROOT.includes("localhost") ? "http" : "https";
+
 /**
  * Kitchen order pipeline (docs/business/06-restaurant-vertical.md phase 3).
  * Reads every order with a non-null kitchen_status — seeded by both the
@@ -18,7 +21,8 @@ export default async function KitchenPage() {
   const tid = await getCurrentTenantId();
   const supabase = await createClient();
 
-  const [{ data: branches }, { data: orders }, { data: tables }, { data: riders }] = await Promise.all([
+  const [{ data: tenant }, { data: branches }, { data: orders }, { data: tables }, { data: riders }] = await Promise.all([
+    supabase.from("tenants").select("slug, custom_domain").eq("id", tid).maybeSingle(),
     supabase.from("restaurant_branches").select("id, name").eq("tenant_id", tid).eq("is_active", true),
     supabase.from("orders")
       .select("id, order_number, items, branch_id, table_id, kitchen_status, fulfillment_type, customer_name, created_at, rider_id, delivery_status, restaurant_tables(table_number)")
@@ -42,20 +46,22 @@ export default async function KitchenPage() {
     // offering the assign picker, same pattern as branch-scoped
     // availability on the POS page.
     supabase.from("restaurant_riders")
-      .select("id, name, branch_id, restaurant_branches!inner(tenant_id)")
+      .select("id, name, branch_id, rider_token, restaurant_branches!inner(tenant_id)")
       .eq("is_active", true)
       .eq("restaurant_branches.tenant_id", tid),
   ]);
 
   // occupied = has a live (non-completed) kitchen order sitting on it right now.
   const occupiedTableIds = new Set((orders ?? []).map(o => o.table_id).filter(Boolean));
+  const siteUrl = tenant?.custom_domain ? `${PROTO}://${tenant.custom_domain}` : `${PROTO}://${tenant?.slug}.${ROOT}`;
 
   return (
     <KitchenClient
       branches={branches ?? []}
       orders={orders ?? []}
       tables={(tables ?? []).map(t => ({ id: t.id, table_number: t.table_number, branch_id: t.branch_id, occupied: occupiedTableIds.has(t.id) }))}
-      riders={(riders ?? []).map(r => ({ id: r.id, name: r.name, branch_id: r.branch_id }))}
+      riders={(riders ?? []).map(r => ({ id: r.id, name: r.name, branch_id: r.branch_id, rider_token: r.rider_token }))}
+      siteUrl={siteUrl}
     />
   );
 }

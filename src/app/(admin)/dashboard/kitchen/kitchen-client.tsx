@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus } from "lucide-react";
+import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus, Link2, Check } from "lucide-react";
 
 interface OrderItem { name: string; quantity: number }
 interface KitchenOrder {
@@ -20,7 +20,7 @@ interface KitchenOrder {
 }
 interface Branch { id: string; name: string }
 interface TableRow { id: string; table_number: string; branch_id: string; occupied: boolean }
-interface Rider { id: string; name: string; branch_id: string }
+interface Rider { id: string; name: string; branch_id: string; rider_token: string }
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pending",
@@ -147,8 +147,8 @@ function tableLabel(order: KitchenOrder): string {
   return order.fulfillment_type === "pickup" ? "Pickup" : order.fulfillment_type === "delivery" ? "Delivery" : "Dine In";
 }
 
-export default function KitchenClient({ branches, orders: initial, tables = [], riders = [] }: {
-  branches: Branch[]; orders: KitchenOrder[]; tables?: TableRow[]; riders?: Rider[];
+export default function KitchenClient({ branches, orders: initial, tables = [], riders = [], siteUrl }: {
+  branches: Branch[]; orders: KitchenOrder[]; tables?: TableRow[]; riders?: Rider[]; siteUrl: string;
 }) {
   const [orders, setOrders] = useState(initial);
   const [branchFilter, setBranchFilter] = useState<string>("all");
@@ -156,6 +156,18 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
   const [riderList, setRiderList] = useState(riders);
   const [showAddRider, setShowAddRider] = useState(false);
   const [newRider, setNewRider] = useState({ branch_id: branches[0]?.id ?? "", name: "", phone: "" });
+  const [copiedRiderId, setCopiedRiderId] = useState<string | null>(null);
+
+  function riderLink(token: string) {
+    return `${siteUrl}/rider/${token}`;
+  }
+
+  function copyRiderLink(rider: Rider) {
+    navigator.clipboard?.writeText(riderLink(rider.rider_token)).then(() => {
+      setCopiedRiderId(rider.id);
+      setTimeout(() => setCopiedRiderId(null), 1500);
+    });
+  }
 
   // Live polling — the board previously never updated after the initial
   // page load, so a new order sitting in the tab a staff member wasn't
@@ -336,8 +348,15 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
       {branches.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {riderList.map(r => (
-            <span key={r.id} className="px-2.5 py-1 rounded-lg text-xs bg-gray-900 border border-gray-800 text-gray-400">
+            <span key={r.id} className="flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg text-xs bg-gray-900 border border-gray-800 text-gray-400">
               {r.name}
+              {/* The rider's own no-login link into /rider/[token] — see
+                  migration 094. Copy it and send over WhatsApp/SMS, same as
+                  how a rider gets told their shift already. */}
+              <button onClick={() => copyRiderLink(r)} title="Copy rider link"
+                className="p-1 text-gray-600 hover:text-indigo-400 rounded">
+                {copiedRiderId === r.id ? <Check className="w-3 h-3 text-green-400" /> : <Link2 className="w-3 h-3" />}
+              </button>
             </span>
           ))}
           <button onClick={() => setShowAddRider(v => !v)}
