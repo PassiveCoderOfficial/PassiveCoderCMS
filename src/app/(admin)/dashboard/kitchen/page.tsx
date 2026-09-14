@@ -46,7 +46,7 @@ export default async function KitchenPage() {
     // offering the assign picker, same pattern as branch-scoped
     // availability on the POS page.
     supabase.from("restaurant_riders")
-      .select("id, name, branch_id, rider_token, restaurant_branches!inner(tenant_id)")
+      .select("id, name, branch_id, rider_token, last_lat, last_lng, last_location_at, restaurant_branches!inner(tenant_id)")
       .eq("is_active", true)
       .eq("restaurant_branches.tenant_id", tid),
   ]);
@@ -60,7 +60,10 @@ export default async function KitchenPage() {
       branches={branches ?? []}
       orders={orders ?? []}
       tables={(tables ?? []).map(t => ({ id: t.id, table_number: t.table_number, branch_id: t.branch_id, occupied: occupiedTableIds.has(t.id) }))}
-      riders={(riders ?? []).map(r => ({ id: r.id, name: r.name, branch_id: r.branch_id, rider_token: r.rider_token }))}
+      riders={(riders ?? []).map(r => ({
+        id: r.id, name: r.name, branch_id: r.branch_id, rider_token: r.rider_token,
+        last_lat: r.last_lat, last_lng: r.last_lng, last_location_at: r.last_location_at,
+      }))}
       siteUrl={siteUrl}
     />
   );

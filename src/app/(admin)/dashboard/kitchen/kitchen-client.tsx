@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus, Link2, Check } from "lucide-react";
+import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus, Link2, Check, MapPin } from "lucide-react";
 
 interface OrderItem { name: string; quantity: number }
 interface KitchenOrder {
@@ -20,7 +20,24 @@ interface KitchenOrder {
 }
 interface Branch { id: string; name: string }
 interface TableRow { id: string; table_number: string; branch_id: string; occupied: boolean }
-interface Rider { id: string; name: string; branch_id: string; rider_token: string }
+interface Rider {
+  id: string; name: string; branch_id: string; rider_token: string;
+  last_lat: number | null; last_lng: number | null; last_location_at: string | null;
+}
+
+function minutesAgo(iso: string): string {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins === 1) return "1 min";
+  return `${mins} min`;
+}
+// A location older than 5 minutes is treated as stale — the rider's PWA
+// posts roughly every 20s while a delivery is active (rider-app.tsx), so a
+// gap this long means the signal genuinely stopped, not just a slow tick.
+function isStaleLocation(iso: string | null): boolean {
+  if (!iso) return true;
+  return Date.now() - new Date(iso).getTime() > 5 * 60 * 1000;
+}
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pending",
@@ -194,11 +211,16 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
       try {
         const res = await fetch("/api/ecommerce/kitchen");
         if (!res.ok) return;
-        const { orders: fresh } = await res.json() as { orders: KitchenOrder[] };
+        const { orders: fresh, riders: freshRiders } = await res.json() as { orders: KitchenOrder[]; riders: Rider[] };
         const freshIds = new Set(fresh.map(o => o.id));
         const newOrders = fresh.filter(o => !knownIds.current.has(o.id));
         knownIds.current = freshIds;
         setOrders(fresh);
+        // Live GPS (Tier 3): refresh rider locations on the same poll —
+        // only overwrite if the response actually carried riders, so an
+        // older cached client build hitting a stale service worker doesn't
+        // wipe the list to empty.
+        if (freshRiders) setRiderList(freshRiders);
         if (newOrders.length) {
           playNewOrderChime();
           document.title = "🔔 New order — " + originalTitle.current;
@@ -357,6 +379,20 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
                 className="p-1 text-gray-600 hover:text-indigo-400 rounded">
                 {copiedRiderId === r.id ? <Check className="w-3 h-3 text-green-400" /> : <Link2 className="w-3 h-3" />}
               </button>
+              {/* Live GPS (Tier 3, migration 098) — last-known position as a
+                  plain map link, not an embedded map widget (no maps SDK
+                  dependency for this). A stale timestamp reads as "gone" —
+                  the rider's phone slept, lost signal, or closed the tab. */}
+              {r.last_lat != null && r.last_lng != null && (
+                <a
+                  href={`https://www.google.com/maps?q=${r.last_lat},${r.last_lng}`}
+                  target="_blank" rel="noopener noreferrer"
+                  title={r.last_location_at ? `Last seen ${minutesAgo(r.last_location_at)} ago` : "View last known location"}
+                  className={`p-1 rounded ${isStaleLocation(r.last_location_at) ? "text-gray-700 hover:text-gray-400" : "text-green-500 hover:text-green-400"}`}
+                >
+                  <MapPin className="w-3 h-3" />
+                </a>
+              )}
             </span>
           ))}
           <button onClick={() => setShowAddRider(v => !v)}

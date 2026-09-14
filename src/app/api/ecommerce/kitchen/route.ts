@@ -26,15 +26,25 @@ export async function GET() {
   }
 
   const admin = await createAdminClient();
-  const { data: orders } = await admin
-    .from("orders")
-    .select("id, order_number, items, branch_id, table_id, kitchen_status, fulfillment_type, customer_name, created_at, rider_id, delivery_status, restaurant_tables(table_number)")
-    .eq("tenant_id", tenantId)
-    .not("kitchen_status", "is", null)
-    .not("kitchen_status", "in", `(${TERMINAL.join(",")})`)
-    .order("created_at", { ascending: true });
+  const [{ data: orders }, { data: riders }] = await Promise.all([
+    admin
+      .from("orders")
+      .select("id, order_number, items, branch_id, table_id, kitchen_status, fulfillment_type, customer_name, created_at, rider_id, delivery_status, restaurant_tables(table_number)")
+      .eq("tenant_id", tenantId)
+      .not("kitchen_status", "is", null)
+      .not("kitchen_status", "in", `(${TERMINAL.join(",")})`)
+      .order("created_at", { ascending: true }),
+    // Live GPS (Tier 3, migration 098) — included in the same poll the
+    // board already runs every 8s so a rider's last-known position updates
+    // on the board without staff needing to refresh the whole page.
+    admin
+      .from("restaurant_riders")
+      .select("id, name, branch_id, rider_token, last_lat, last_lng, last_location_at, restaurant_branches!inner(tenant_id)")
+      .eq("is_active", true)
+      .eq("restaurant_branches.tenant_id", tenantId),
+  ]);
 
-  return NextResponse.json({ orders: orders ?? [] });
+  return NextResponse.json({ orders: orders ?? [], riders: riders ?? [] });
 }
 
 /** Advance (or move back) one order's kitchen_status. Staff-only, tenant-scoped. */

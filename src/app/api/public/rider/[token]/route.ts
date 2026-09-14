@@ -29,14 +29,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
   return NextResponse.json({ orders: orders ?? [] });
 }
 
-/** POST: advance one of this rider's own orders (picked_up -> delivered). */
+/**
+ * POST: two things a rider's own device does, told apart by which fields
+ * are present rather than a separate route — both are "this rider, right
+ * now, tell us something" and share the same token lookup + not-found
+ * handling, not worth splitting into two files for.
+ *   { order_id, delivery_status } -> advance an order (picked_up -> delivered)
+ *   { lat, lng }                  -> live GPS ping (Tier 3, migration 098)
+ */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const { order_id, delivery_status } = await req.json();
-
-  if (!order_id || !VALID_STATUS.includes(delivery_status)) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  const body = await req.json();
 
   const admin = await createAdminClient();
   const { data: rider } = await admin
@@ -46,6 +49,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     .maybeSingle();
 
   if (!rider || !rider.is_active) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  if (typeof body.lat === "number" && typeof body.lng === "number") {
+    // No rate limiting here beyond what the client itself paces (rider-app.tsx
+    // posts on its own interval, not on every raw Geolocation callback) —
+    // one rider's own device, a low-value target, not worth the complexity
+    // of a server-side throttle for this.
+    const { error } = await admin
+      .from("restaurant_riders")
+      .update({ last_lat: body.lat, last_lng: body.lng, last_location_at: new Date().toISOString() })
+      .eq("id", rider.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true });
+  }
+
+  const { order_id, delivery_status } = body;
+  if (!order_id || !VALID_STATUS.includes(delivery_status)) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 
   // .eq("rider_id", rider.id) in the same update is the whole access
   // control here — a rider can only ever advance an order actually
