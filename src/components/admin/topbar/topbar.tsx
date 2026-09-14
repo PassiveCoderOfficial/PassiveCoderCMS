@@ -22,6 +22,18 @@ import type { CMSUser } from "@/types/cms";
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
 const isLocal = ROOT.includes("localhost");
 const proto = isLocal ? "http" : "https";
+// The platform's own tenant row has slug === ROOT's first label (e.g.
+// "passivecoder" for passivecoder.com) — see (admin)/layout.tsx's identical
+// rootSlug logic. Its real address is the bare root domain, never its own
+// subdomain: passivecoder.passivecoder.com is a real, working URL (every
+// tenant's subdomain resolves), but it's the wrong one to show/link for this
+// specific tenant — found live in the site switcher.
+const ROOT_SLUG = ROOT.split(".")[0];
+function hostFor(site: Pick<Site, "slug" | "custom_domain">): string {
+  if (site.custom_domain) return site.custom_domain;
+  if (site.slug === ROOT_SLUG) return ROOT;
+  return `${site.slug}.${ROOT}`;
+}
 
 interface Site {
   id: string;
@@ -89,7 +101,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
       result = result.filter(s =>
         s.name.toLowerCase().includes(q) ||
         s.slug.toLowerCase().includes(q) ||
-        `${s.slug}.${ROOT}`.toLowerCase().includes(q) ||
+        hostFor(s).toLowerCase().includes(q) ||
         s.custom_domain?.toLowerCase().includes(q) ||
         s.owner_email?.toLowerCase().includes(q)
       );
@@ -133,7 +145,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
     // SA's own site is the first in the list (ordered by created_at ASC)
     const ownSite = list[0];
     if (ownSite) {
-      window.location.href = `${proto}://${ownSite.slug}.${ROOT}/dashboard`;
+      window.location.href = `${proto}://${hostFor(ownSite)}/dashboard`;
     } else {
       window.location.href = `${proto}://${ROOT}/dashboard`;
     }
@@ -141,7 +153,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
 
   function switchSite(site: Site) {
     if (site.is_primary) return;
-    window.location.href = `${proto}://${site.slug}.${ROOT}/dashboard`;
+    window.location.href = `${proto}://${hostFor(site)}/dashboard`;
   }
 
   return (
@@ -238,7 +250,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
             >
               <span className="text-sm font-medium truncate w-full">{site.name}</span>
               <span className="text-xs text-muted-foreground truncate w-full">
-                {site.custom_domain ?? `${site.slug}.${ROOT}`}
+                {hostFor(site)}
               </span>
               {isSuperAdmin && site.owner_email && (
                 <span className="text-[11px] text-muted-foreground/70 truncate w-full">{site.owner_email}</span>
@@ -246,7 +258,7 @@ function SiteSwitcher({ sites, isSuperAdmin }: { sites: Site[]; isSuperAdmin: bo
             </button>
             {/* External link — visit site frontend */}
             <a
-              href={`${proto}://${site.slug}.${ROOT}`}
+              href={`${proto}://${hostFor(site)}`}
               target="_blank"
               rel="noopener noreferrer"
               title="Visit site"

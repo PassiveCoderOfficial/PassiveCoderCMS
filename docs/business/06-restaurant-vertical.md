@@ -199,3 +199,177 @@ answer "where's my order" without calling the rider.
   fulfillment_type properly.
 - Only phase 5 (printer bridge) remains, explicitly deferred until the
   ordering+POS flow has real customer usage behind it.
+
+---
+
+## Phase 6 planning (2026-09-14) — the restaurant vertical becomes a real
+## product line, not a proof of concept
+
+Discussed with Wali after the platform-analytics gap surfaced (a dashboard
+analytics build from an earlier session existed and was recording real data
+for 16 tenants, but had no visible presence on the dashboard home — nav-only
+discoverability isn't real discoverability; the fix is a summary card on
+the dashboard home, not backend work).
+
+### Pricing/gating decision — supersedes nothing, adds to it
+
+**Biz plan price cut: ৳20,000/mo → ৳15,000/mo, $160/mo → $120/mo** (yearly
+follows the existing 8x-monthly formula: ৳120,000/yr, $960/yr). Rationale:
+restaurant ops is "a concurrent business process" in Wali's words — Biz
+becomes the tier for a business actually *running* on the platform day to
+day, not just "more pages than Pro". This is a real price change to the
+live Dodo catalog (same mechanism as the Basic/Pro cuts earlier — product
+price update via the SDK, no new product needed since Biz already exists in
+both live and sandbox).
+
+**Restaurant stack (POS, Kitchen, Monitor, Table, Riders) now gates to Biz
+specifically**, not "any paid plan" as it effectively was before (branches/
+kitchen/POS nav items had no plan check at all — gated only by whether
+`restaurant_branches` rows existed, which any tenant could create via the
+API regardless of plan). This is a real enforcement gap to close: the
+nav-visibility gating was never actually plan-aware. Needs a plan check
+added to the branches/kitchen/POS pages and their API routes, not just the
+sidebar link.
+
+Deliberately **not** a new pricing tier — Wali's call, keeps one Pro/Biz
+ladder everywhere rather than a restaurant-specific SKU, consistent with
+the platform's "affordable vs agencies" positioning. Means restaurant
+revenue per customer is capped at Biz's price; the bet is retention/volume,
+not per-customer revenue matching regional POS competitors (Toast,
+Foodics).
+
+### Kitchen status vocabulary — real rebuild, not a rename
+
+Current `kitchen_status` enum (`new/preparing/ready/served/completed`) is
+generic across every fulfillment type. Wali wants a fulfillment-type-aware
+path instead:
+
+- **Dine-in:** Pending → Cooking → Ready → Served on Table
+- **Pickup:** Pending → Cooking → Ready to Pick → Picked Up
+- **Delivery:** Pending → Cooking → Ready to Pick → Out for Delivery →
+  Delivered
+
+Note delivery's "Out for Delivery → Delivered" overlaps with the existing
+`delivery_status` column (assigned/picked_up/delivered) from phase 4 — this
+needs reconciling, not two parallel status tracks for the same trip. Likely
+resolution: `kitchen_status` stops at "Ready to Pick" for delivery orders,
+and the existing rider-assignment/`delivery_status` pipeline (already
+built, already correct) owns everything after that — matches how phase 4
+was designed (kitchen tracks the food, delivery_status tracks the trip).
+Decide the exact enum values and whether this is one column with
+fulfillment-conditional allowed-values or genuinely different columns
+before writing the migration — don't guess mid-build.
+
+### Three toggleable screens — new architecture, most of this is new build
+
+Restaurant admin/manager can independently toggle which of these three
+interfaces are active for their operation (`restaurant_branches` or a new
+settings row needs a per-screen enabled flag):
+
+1. **KITCHEN** (exists, `/dashboard/kitchen`) — staff-facing, tap to
+   advance status. Needs the new status vocabulary above.
+2. **MONITOR** (new) — public-facing display, order number + queue only,
+   no interaction. Meant for a TV/screen visible to waiting customers
+   (common in Gulf/Malaysia/Singapore quick-service and food-court
+   settings). Shows order numbers in each status stage, nothing customer-
+   identifying (no names/tables, matches the public nature of the screen).
+3. **TABLE** (new) — per-table tablet, PIN/passcode set by staff or
+   management, customer-facing self-service ordering + status view for
+   that specific table. Different from the QR dine-in flow already built
+   (phone-based, no PIN) — this is a dedicated device left at the table,
+   needs its own lightweight auth (a short PIN, not a full login) scoped
+   to one table for one seating.
+
+### Rider app — separate, minimal, not folded into the main admin app
+
+Confirmed: build a distinct, lightweight surface for riders (PWA/web-first,
+matching the platform's existing pattern, not a native app project) rather
+than adding a rider role inside the main dashboard app. A rider needs
+almost nothing — their assigned deliveries, one tap to advance
+picked_up/delivered, maybe an address map link. Bundling that into the full
+admin app means exposing an irrelevant, heavier surface (billing, settings,
+pages) to a rider's phone for no reason. The backend for this
+(`restaurant_riders`, `delivery_status`) already exists from phase 4; this
+is a thin UI layer on infrastructure already built, not new backend work.
+
+### Admin app — stays one generic app, not a second restaurant-only app
+
+Confirmed: no second admin app. Same pattern already used on the web
+dashboard (module-gated nav items) extends to the native admin app —
+restaurant sections appear conditionally based on plan + branch setup,
+same codebase, not a fork. A second app doubles maintenance forever for a
+small team and would still need to re-include most of the generic CMS
+surface anyway (business profile, subscription, users) since restaurant
+owners want that too.
+
+### Printer notification at signup — new, small
+
+When a restaurant tenant is set up (or Biz-upgrades), the dashboard should
+prompt them that they'll need a POS printer/device and suggest a specific
+model — this was planned back in phase 5 (Sunmi V2 Pro) but never surfaced
+to the customer anywhere. Small UI addition, not a new integration.
+
+### Priority order agreed for execution
+
+**Tier 1 (do first — table stakes for a sellable restaurant product):**
+1. Menu modifiers/variants (size, add-ons, free-text notes) — biggest real
+   gap; the menu is currently plain ecommerce products with dietary tags
+   bolted on, no variant pricing at all. Nothing else matters if a
+   restaurant literally cannot price "large fries +$1" correctly.
+2. Kitchen status vocabulary rebuild (this section) + gate restaurant
+   stack to Biz plan (this section) + Biz price cut on live Dodo catalog.
+3. MONITOR screen (new).
+4. TABLE screen with PIN auth (new).
+5. Printer bridge (Sunmi V2 Pro) — was phase 5, now genuinely urgent once
+   a real Biz customer exists.
+6. Rider PWA (new, thin layer on existing backend).
+7. Dashboard-home analytics summary card — surfaces the already-working
+   analytics build, not new backend.
+
+**Tier 2 (retention, after Tier 1 is live and stable):**
+8. Restaurant-specific sales analytics (best-sellers, peak hours, ticket
+   size) — was the original phase-6-planning list item #4, still valid,
+   sequenced after the core ops stack because an owner needs the ops tools
+   working before they care about analytics on top of them.
+9. Table reservations (Middle East dining pattern skews toward this more
+   than BD/casual markets).
+10. Inventory auto-deduction + low-stock flagging tied to order
+    completion.
+
+**Tier 3 (explicitly not now):**
+- Split-bill/per-seat billing.
+- Live rider GPS tracking.
+- Load-testing kitchen board under real concurrent order volume — real
+  concern, but there's no real customer volume to test against yet; revisit
+  once a paying restaurant is live.
+- Offline-tolerant POS (queue sales locally, sync on reconnect) — real
+  operational need for patchy-connectivity venues, but a genuinely separate
+  engineering project (local-first data layer), not a quick addition.
+
+### Status reconciliation — resolved
+
+**Confirmed by Wali:** `kitchen_status` stops at "Ready to Pick" for
+delivery orders — the existing `delivery_status` column (assigned →
+picked_up → delivered, phase 4) owns everything after that. Kitchen tracks
+the food, delivery_status tracks the trip, no duplicated state. Matches how
+phase 4 was already designed; this just makes it explicit for the new
+vocabulary. Full resolved mapping:
+
+- Dine-in: `pending` → `cooking` → `ready` → `served` (kitchen_status only,
+  delivery_status stays null — no trip)
+- Pickup: `pending` → `cooking` → `ready_to_pick` → (customer collects;
+  `picked_up`-equivalent is just marking the order complete, still
+  kitchen_status only — a pickup has no rider/trip either)
+- Delivery: `pending` → `cooking` → `ready_to_pick` (kitchen_status stops
+  here) → `assigned` → `picked_up` → `delivered` (delivery_status takes
+  over)
+
+### Not yet decided, flag before building
+
+- Whether the per-screen toggle (KITCHEN/MONITOR/TABLE) lives on
+  `restaurant_branches` (per-branch) or a tenant-level settings row —
+  branches already carry most restaurant config, leaning per-branch, but
+  confirm before the migration.
+- TABLE screen PIN mechanism specifics: numeric PIN length, who resets it,
+  whether it's per-table-per-day or persistent until changed.
+  ordering+POS flow has real customer usage behind it.

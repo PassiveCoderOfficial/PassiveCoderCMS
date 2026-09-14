@@ -1,6 +1,6 @@
 # Pricing & Packaging — Rationale
 
-Last updated: 2026-09-13. Owner: Wali.
+Last updated: 2026-09-14. Owner: Wali.
 
 Purpose: record *why* each pricing decision was made, so it is not re-litigated
 every few weeks. If you change a price, update this file in the same commit.
@@ -15,7 +15,7 @@ Source of truth is the `plans` table. This table must match it.
 |---|---|---|---|---|---|---|
 | Basic | $32 | $256 | ৳4,000 | ৳32,000 | 5,000 | 6 |
 | Pro | $60 | $480 | ৳7,500 | ৳60,000 | 25,000 | unlimited |
-| Biz | $160 | $1,280 | ৳20,000 | ৳160,000 | 100,000 | unlimited |
+| Biz | $120 | $960 | ৳15,000 | ৳120,000 | 100,000 | unlimited |
 | Custom | — | — | — | — | — | unlimited |
 
 Yearly is **exactly 8× the monthly price** on every plan — pay for 8 months,
@@ -198,10 +198,8 @@ column for any future limit change — never apply a cap retroactively.
 The payment step shows only the rail matching the selected currency. Offering
 both invites a charge the gateway will reject.
 
-Biz now has real Dodo product IDs and is purchasable by card like Pro.
-**Outstanding:** create `biz_monthly` and `biz_yearly` products in the Dodo
-dashboard and paste the IDs into Super Admin → Settings, or Biz card checkout
-returns "No Dodo product ID configured".
+Biz now has real Dodo product IDs (live + sandbox, monthly + yearly) and is
+purchasable by card like Pro.
 
 ---
 
@@ -331,9 +329,37 @@ not a pricing change.
 
 ---
 
+## Decision: Biz price cut, $160→$120 (restaurant vertical)
+
+**Decided 2026-09-14 by Wali.** See
+[06-restaurant-vertical.md](06-restaurant-vertical.md) for the full Phase 6
+restaurant-vertical planning this is part of.
+
+Biz drops from $160/mo (৳20,000) to **$120/mo (৳15,000)**, yearly staying
+exactly 8× monthly at $960 (৳120,000). The restaurant stack (branches, POS,
+kitchen, riders, and the new MONITOR/TABLE screens) is gated to Biz
+specifically, not any paid plan — restaurant is "a concurrent biz process"
+per Wali, and belongs in the tier that already carries that name rather than
+justifying a new tier above it. A new, more expensive Restaurant tier was
+considered and explicitly rejected in favour of keeping the existing
+Basic/Pro/Biz ladder.
+
+Applied to the `plans` table (`biz` row) and all 4 Biz Dodo products (2
+live, 2 sandbox — monthly + yearly each), `trial_period_days: 0` on all,
+consistent with the automatic-trial-removed decision above. Verified via a
+GET retrieve on the live monthly product (`price: 12000, trial_period_days:
+0`) and a follow-up SELECT on `plans`.
+
+**Outstanding (code, not pricing):** the restaurant stack's nav items and
+API routes are not yet plan-aware — they're gated only by whether
+`restaurant_branches` rows exist, which any tenant on any plan could
+currently create. Needs a real Biz-plan check before this price/gating
+decision is actually enforced, not just documented.
+
+---
+
 ## What is NOT decided yet
 
-- **Biz Dodo products** — must be created in the Dodo dashboard (see above)
 - **AiCoder top-ups** — actually already live (three packages at $9 / $29 /
   $99, real Dodo product ids, checkout wired into the AiCoder dialog). An
   earlier note here called these unbuilt; that was wrong.
