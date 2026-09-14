@@ -8,6 +8,7 @@ import {
   TrendingUp, AlertCircle, CheckCircle2, Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import { AiSiteBanner } from "@/components/admin/ai-site-banner";
 import { BusinessProfilePrompt } from "@/components/admin/business-profile-prompt";
@@ -80,13 +81,14 @@ function aggregate(rows: Row[], range: number): ApiResult {
 const RANGES = [7, 30, 90] as const;
 
 export function AnalyticsClient({
-  tenantId, initialRows, initialRange, gaConnected, gaOAuthEmail, gaPropertyId,
+  tenantId, initialRows, initialRange, gaConnected, gaMeasurementId, gaOAuthEmail, gaPropertyId,
   showProSiteBanner, dashboardStats, recentOrders, recentTransactions,
 }: {
   tenantId: string;
   initialRows: Row[];
   initialRange: number;
   gaConnected: boolean;
+  gaMeasurementId: string | null;
   gaOAuthEmail: string | null;
   gaPropertyId: string | null;
   showProSiteBanner: boolean;
@@ -353,6 +355,7 @@ export function AnalyticsClient({
 
       <GoogleAnalyticsCard
         measurementIdSet={gaConnected}
+        initialMeasurementId={gaMeasurementId}
         initialOAuthEmail={gaOAuthEmail}
         initialPropertyId={gaPropertyId}
       />
@@ -471,9 +474,10 @@ interface GaStatus {
  * needs to know what a Measurement ID even is, let alone copy-paste one.
  */
 function GoogleAnalyticsCard({
-  measurementIdSet, initialOAuthEmail, initialPropertyId,
+  measurementIdSet, initialMeasurementId, initialOAuthEmail, initialPropertyId,
 }: {
   measurementIdSet: boolean;
+  initialMeasurementId: string | null;
   initialOAuthEmail: string | null;
   initialPropertyId: string | null;
 }) {
@@ -485,6 +489,12 @@ function GoogleAnalyticsCard({
   const [disconnecting, setDisconnecting] = useState(false);
   const [notConfigured, setNotConfigured] = useState(false);
   const [autoTagged, setAutoTagged] = useState(measurementIdSet);
+  // Manual Measurement ID field — moved here from Settings -> Appearance
+  // (2026-09-14, per Wali) so the whole GA setup lives in one place.
+  // Independent of the OAuth flow above: a tenant can paste an id here
+  // without ever connecting, or override what auto-tag picked.
+  const [measurementId, setMeasurementId] = useState(initialMeasurementId ?? "");
+  const [savingMeasurementId, setSavingMeasurementId] = useState(false);
 
   function refreshStatus() {
     setLoadingStatus(true);
@@ -530,6 +540,23 @@ function GoogleAnalyticsCard({
       // just means this GA4 property has no web data stream (an app-only
       // property, say); the report pull above still works either way.
       setAutoTagged(!!json.measurementId);
+      if (json.measurementId) setMeasurementId(json.measurementId);
+    }
+  }
+
+  async function saveMeasurementId() {
+    setSavingMeasurementId(true);
+    const res = await fetch("/api/analytics/google/measurement-id", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ measurement_id: measurementId }),
+    });
+    const json = await res.json().catch(() => ({}));
+    setSavingMeasurementId(false);
+    if (res.ok) {
+      setAutoTagged(!!measurementId.trim());
+      toast.success(measurementId.trim() ? "Measurement ID saved" : "Measurement ID cleared");
+    } else {
+      toast.error(json.error ?? "Failed to save Measurement ID");
     }
   }
 
@@ -551,7 +578,7 @@ function GoogleAnalyticsCard({
             <p className="text-xs text-muted-foreground max-w-md">
               The panel above is your own data — nothing to set up. Connect a Google account to also
               pull a live report straight from your GA4 property, right here on this page.
-              {measurementIdSet && " (Your site is also already sending its own visit data out to GA — see Settings.)"}
+              {measurementIdSet && " (Your site is also already sending its own visit data out to GA.)"}
             </p>
             <Button asChild size="sm" variant="outline">
               <a href="/api/analytics/google/connect">Connect Google Analytics</a>
@@ -617,7 +644,7 @@ function GoogleAnalyticsCard({
               ) : (
                 <p className="text-xs text-amber-600">
                   This property has no web data stream, so we can&apos;t auto-tag your site from it — add one in Google Analytics
-                  (Admin → Data Streams → Add stream → Web), or paste a Measurement ID manually in Settings.
+                  (Admin → Data Streams → Add stream → Web), or paste a Measurement ID below.
                 </p>
               )
             )}
@@ -628,6 +655,30 @@ function GoogleAnalyticsCard({
             Google OAuth isn't set up on this deployment yet (missing GOOGLE_CLIENT_ID/SECRET) — ask an admin to add them.
           </p>
         )}
+
+        {/* Manual Measurement ID — independent of the OAuth flow above.
+            Moved here from Settings -> Appearance (2026-09-14) so the whole
+            GA setup lives in one place. Connecting + picking a property
+            already fills this in automatically; this is the fallback for a
+            property with no web stream, or a tenant who'd rather paste an
+            id directly without connecting OAuth at all. */}
+        <div className="pt-3 border-t space-y-1.5">
+          <label className="text-xs text-muted-foreground">
+            {status.connected ? "Or set a Measurement ID manually" : "Or just paste your GA4 Measurement ID"}
+          </label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <input
+              type="text"
+              value={measurementId}
+              onChange={(e) => setMeasurementId(e.target.value)}
+              placeholder="G-XXXXXXXXXX"
+              className="flex h-8 w-48 rounded-md border border-input bg-transparent px-2 text-xs font-mono shadow-sm"
+            />
+            <Button size="sm" variant="outline" onClick={saveMeasurementId} disabled={savingMeasurementId}>
+              {savingMeasurementId ? "Saving…" : "Save"}
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

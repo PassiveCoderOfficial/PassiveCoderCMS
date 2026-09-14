@@ -71,6 +71,7 @@ export default async function AnalyticsPage() {
       initialRows={rows ?? []}
       initialRange={30}
       gaConnected={!!gaSettings?.ga_measurement_id}
+      gaMeasurementId={gaSettings?.ga_measurement_id ?? null}
       gaOAuthEmail={gaSettings?.ga_oauth_connected_email ?? null}
       gaPropertyId={gaSettings?.ga_property_id ?? null}
       showProSiteBanner={showProSiteBanner}

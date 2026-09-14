@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -169,18 +170,12 @@ export default function AppearanceSettingsPage() {
             />
           </div>
           <div className="space-y-1.5" id="analytics">
-            <Label>Google Analytics (optional)</Label>
-            <input
-              type="text"
-              value={(settings.ga_measurement_id as string) ?? ""}
-              onChange={(e) => update("ga_measurement_id", e.target.value.trim())}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm font-mono shadow-sm"
-              placeholder="G-XXXXXXXXXX"
-            />
+            <Label>Google Analytics</Label>
             <p className="text-xs text-muted-foreground">
-              Your site already has its own analytics — see the Analytics page in the sidebar,
-              nothing to set up. Paste your GA4 Measurement ID here only if you also want data
-              flowing into your own Google Analytics account.
+              Moved to the Google Analytics card on the{" "}
+              <Link href="/dashboard/analytics" className="underline text-foreground">Analytics page</Link>{" "}
+              — connect + pick a property there and it's tagged automatically, or paste a
+              Measurement ID directly without connecting anything.
             </p>
           </div>
           <div className="space-y-1.5">
