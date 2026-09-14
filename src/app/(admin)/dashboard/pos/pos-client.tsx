@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban, Split, X,
+  ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban, Split, X, WifiOff, RefreshCw,
 } from "lucide-react";
 import { PrinterNotice } from "@/components/admin/printer-notice";
+import { enqueueSale, getQueue, syncQueue } from "@/lib/pos/offline-queue";
 
 interface Product {
   id: string; name: string; sku: string | null; price: number;
@@ -52,7 +53,45 @@ export default function PosClient({ products, currency, branches = [], availabil
   const [discount, setDiscount] = useState(0);
   const [method, setMethod] = useState("cash");
   const [saving, setSaving] = useState(false);
-  const [receipt, setReceipt] = useState<{ orderNumber: string; total: number } | null>(null);
+  const [receipt, setReceipt] = useState<{ orderNumber: string; total: number; queued?: boolean } | null>(null);
+  // Offline-tolerant POS (Tier 3): queuedCount is read straight from
+  // localStorage rather than kept as derived cart-shaped state, since a
+  // queued sale needs to survive (and be reflected across) a page reload —
+  // exactly the case an offline shift is most likely to hit.
+  const [queuedCount, setQueuedCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    setQueuedCount(getQueue().length);
+    setIsOnline(typeof navigator === "undefined" ? true : navigator.onLine);
+
+    async function attemptSync() {
+      if (getQueue().length === 0) return;
+      setSyncing(true);
+      const result = await syncQueue();
+      setSyncing(false);
+      setQueuedCount(getQueue().length);
+      setIsOnline(!result.stillOffline);
+    }
+
+    attemptSync();
+    // Retries on the browser's own "back online" signal (near-instant) AND
+    // a slow poll (60s) as a backstop — the online event isn't reliable on
+    // every device/network stack (a captive portal, a flaky wifi handoff),
+    // so the fallback interval is what actually guarantees a queued sale
+    // doesn't sit stuck until someone happens to reopen the tab.
+    const onOnline = () => { setIsOnline(true); attemptSync(); };
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    const interval = setInterval(attemptSync, 60000);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+      clearInterval(interval);
+    };
+  }, []);
   // Split-bill (Tier 3 restaurant vertical): showSplit opens the seat
   // editor; seatCount picks how many even seats to start from (per-line
   // assignment below can still move an item to any seat after that).
@@ -84,15 +123,31 @@ export default function PosClient({ products, currency, branches = [], availabil
   const total = Math.max(0, subtotal - discount);
 
   async function checkout() {
+    const payload = {
+      items: cart, discount, payment_method: method, ...customer,
+      branch_id: branchId || undefined,
+      table_id: tableId || undefined,
+    };
     setSaving(true);
-    const res = await fetch("/api/ecommerce/pos", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: cart, discount, payment_method: method, ...customer,
-        branch_id: branchId || undefined,
-        table_id: tableId || undefined,
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch("/api/ecommerce/pos", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      });
+    } catch {
+      // A thrown fetch means the request never reached the server at all
+      // (offline, DNS failure, connection dropped mid-request) — genuinely
+      // different from a 4xx/5xx the server DID answer with, which is a
+      // real problem (bad data, out of stock) that queuing would only hide.
+      // Only the "never got there" case is safe to queue and retry later.
+      setSaving(false);
+      const entry = enqueueSale(payload);
+      setQueuedCount(getQueue().length);
+      setIsOnline(false);
+      setReceipt({ orderNumber: `Queued — will sync as ${entry.id.slice(0, 8)}…`, total, queued: true });
+      setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId("");
+      return;
+    }
     const d = await res.json();
     setSaving(false);
     if (!res.ok) { alert(d.error ?? "Sale failed"); return; }
@@ -177,6 +232,23 @@ export default function PosClient({ products, currency, branches = [], availabil
       </h1>
 
       {branches.length > 0 && <PrinterNotice />}
+
+      {/* Offline-tolerant POS (Tier 3): only shown when there's actually
+          something to say — a queued sale or a confirmed-offline state.
+          Silent the rest of the time so this never competes for attention
+          on a normal, connected shift. */}
+      {(queuedCount > 0 || !isOnline) && (
+        <div className={`flex items-center gap-3 rounded-xl p-3 border ${
+          isOnline ? "bg-amber-500/10 border-amber-600/40" : "bg-red-500/10 border-red-600/40"
+        }`}>
+          {isOnline ? <RefreshCw className={`w-4 h-4 text-amber-400 shrink-0 ${syncing ? "animate-spin" : ""}`} /> : <WifiOff className="w-4 h-4 text-red-400 shrink-0" />}
+          <p className="text-xs flex-1">
+            {!isOnline
+              ? `No connection — sales will keep ringing up and sync automatically once you're back online.${queuedCount > 0 ? ` ${queuedCount} waiting to sync.` : ""}`
+              : `Syncing ${queuedCount} sale${queuedCount === 1 ? "" : "s"} made while offline…`}
+          </p>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
         {/* Product picker */}
@@ -369,10 +441,18 @@ export default function PosClient({ products, currency, branches = [], availabil
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setReceipt(null)} />
           <div className="relative bg-gray-950 border border-gray-800 rounded-2xl p-8 text-center space-y-3 max-w-sm w-full">
-            <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
-            <p className="text-lg font-bold text-white">Sale complete</p>
+            {receipt.queued ? (
+              <WifiOff className="w-12 h-12 text-amber-400 mx-auto" />
+            ) : (
+              <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
+            )}
+            <p className="text-lg font-bold text-white">{receipt.queued ? "Sale saved — offline" : "Sale complete"}</p>
             <p className="text-sm text-gray-400">{receipt.orderNumber} · {money(receipt.total)}</p>
-            <p className="text-xs text-gray-500">Recorded in Orders and Accounting. Stock updated.</p>
+            <p className="text-xs text-gray-500">
+              {receipt.queued
+                ? "No connection right now — this will sync (and update stock/accounting) automatically once you're back online. Don't ring it up again."
+                : "Recorded in Orders and Accounting. Stock updated."}
+            </p>
             <button onClick={() => setReceipt(null)}
               className="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
               New sale
