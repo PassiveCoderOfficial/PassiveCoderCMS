@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import {
-  ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban, Split, X, WifiOff, RefreshCw,
+  ShoppingCart, Search, Plus, Minus, Trash2, Loader2, CheckCircle, Banknote, Ban, Split, X, WifiOff, RefreshCw, Printer,
 } from "lucide-react";
 import { PrinterNotice } from "@/components/admin/printer-notice";
 import { enqueueSale, getQueue, syncQueue } from "@/lib/pos/offline-queue";
+import { printReceipt } from "@/lib/pos/printer";
 
 interface Product {
   id: string; name: string; sku: string | null; price: number;
@@ -20,8 +21,8 @@ const PAYMENT_METHODS = ["cash", "bkash", "nagad", "card", "bank"];
 
 interface AvailabilityRow { branch_id: string; product_id: string; in_stock: boolean }
 
-export default function PosClient({ products, currency, branches = [], availability = [] }: {
-  products: Product[]; currency: string; branches?: Branch[]; availability?: AvailabilityRow[];
+export default function PosClient({ products, currency, branches = [], availability = [], siteName = "Receipt" }: {
+  products: Product[]; currency: string; branches?: Branch[]; availability?: AvailabilityRow[]; siteName?: string;
 }) {
   // Only a restaurant tenant has any branches at all — this whole block of
   // state stays inert (branchId/tableId always null) for a plain retail POS.
@@ -53,7 +54,11 @@ export default function PosClient({ products, currency, branches = [], availabil
   const [discount, setDiscount] = useState(0);
   const [method, setMethod] = useState("cash");
   const [saving, setSaving] = useState(false);
-  const [receipt, setReceipt] = useState<{ orderNumber: string; total: number; queued?: boolean } | null>(null);
+  const [receipt, setReceipt] = useState<{
+    orderNumber: string; total: number; queued?: boolean;
+    lines: CartLine[]; subtotal: number; discount: number; tableLabel: string | null; paymentMethod: string;
+  } | null>(null);
+  const [printResult, setPrintResult] = useState<"ok" | "failed" | null>(null);
   // Offline-tolerant POS (Tier 3): queuedCount is read straight from
   // localStorage rather than kept as derived cart-shaped state, since a
   // queued sale needs to survive (and be reflected across) a page reload —
@@ -122,12 +127,19 @@ export default function PosClient({ products, currency, branches = [], availabil
   const subtotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
   const total = Math.max(0, subtotal - discount);
 
+  function currentTableLabel(): string | null {
+    if (!tableId) return null;
+    const t = activeTables.find(x => x.id === tableId);
+    return t ? `Table ${t.table_number}` : null;
+  }
+
   async function checkout() {
     const payload = {
       items: cart, discount, payment_method: method, ...customer,
       branch_id: branchId || undefined,
       table_id: tableId || undefined,
     };
+    const receiptDetail = { lines: cart, subtotal, discount, tableLabel: currentTableLabel(), paymentMethod: method };
     setSaving(true);
     let res: Response;
     try {
@@ -144,14 +156,14 @@ export default function PosClient({ products, currency, branches = [], availabil
       const entry = enqueueSale(payload);
       setQueuedCount(getQueue().length);
       setIsOnline(false);
-      setReceipt({ orderNumber: `Queued — will sync as ${entry.id.slice(0, 8)}…`, total, queued: true });
+      setReceipt({ orderNumber: `Queued — will sync as ${entry.id.slice(0, 8)}…`, total, queued: true, ...receiptDetail });
       setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId("");
       return;
     }
     const d = await res.json();
     setSaving(false);
     if (!res.ok) { alert(d.error ?? "Sale failed"); return; }
-    setReceipt({ orderNumber: d.orderNumber, total: d.total });
+    setReceipt({ orderNumber: d.orderNumber, total: d.total, ...receiptDetail });
     setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId("");
   }
 
@@ -196,6 +208,7 @@ export default function PosClient({ products, currency, branches = [], availabil
       const seat = nonEmptySeats[i];
       const lines = seatLines(seat);
       const seatDiscount = i === 0 ? discount : 0;
+      const label = `Seat ${seat + 1} of ${nonEmptySeats.length}`;
       const res = await fetch("/api/ecommerce/pos", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -203,13 +216,25 @@ export default function PosClient({ products, currency, branches = [], availabil
           branch_id: branchId || undefined,
           table_id: tableId || undefined,
           split_group_id: groupId,
-          split_label: `Seat ${seat + 1} of ${nonEmptySeats.length}`,
+          split_label: label,
         }),
       });
       const d = await res.json();
       if (!res.ok) { anyFailed = true; break; }
       lastOrderNumber = d.orderNumber;
       lastTotal = d.total;
+      // Print each seat's own ticket as it completes rather than one
+      // combined receipt at the end — a split bill exists precisely
+      // because each seat is paying separately, so each one gets its own
+      // paper. A print failure here (popup blocked, no printer) doesn't
+      // stop the sale from having gone through — printReceipt itself never
+      // throws, its boolean result just isn't checked here since the loop
+      // needs to keep going regardless.
+      printReceipt({
+        orderNumber: d.orderNumber, siteName, currency,
+        lines, subtotal: lines.reduce((s: number, l: CartLine) => s + l.price * l.quantity, 0),
+        discount: seatDiscount, total: d.total, tableLabel: currentTableLabel(), splitLabel: label, paymentMethod: method,
+      });
     }
 
     setSplitting(false);
@@ -218,7 +243,10 @@ export default function PosClient({ products, currency, branches = [], availabil
       return;
     }
     setShowSplit(false);
-    setReceipt({ orderNumber: `${nonEmptySeats.length} split bills (last: ${lastOrderNumber})`, total: lastTotal });
+    setReceipt({
+      orderNumber: `${nonEmptySeats.length} split bills (last: ${lastOrderNumber})`, total: lastTotal,
+      lines: [], subtotal: 0, discount: 0, tableLabel: currentTableLabel(), paymentMethod: method,
+    });
     setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId(""); setSeatOf({});
   }
 
@@ -453,10 +481,33 @@ export default function PosClient({ products, currency, branches = [], availabil
                 ? "No connection right now — this will sync (and update stock/accounting) automatically once you're back online. Don't ring it up again."
                 : "Recorded in Orders and Accounting. Stock updated."}
             </p>
-            <button onClick={() => setReceipt(null)}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              New sale
-            </button>
+            {printResult === "failed" && (
+              <p className="text-xs text-amber-500">Couldn't print — pop-up blocked or no printer found. Try again, or check the popup blocker.</p>
+            )}
+            <div className="flex gap-2">
+              {/* Split bills already printed one ticket per seat as they
+                  went through (checkoutSplit) — an empty lines array here
+                  is how this branch is told apart from a normal sale, no
+                  separate flag needed. */}
+              {receipt.lines.length > 0 && (
+                <button
+                  onClick={() => {
+                    const ok = printReceipt({
+                      orderNumber: receipt.orderNumber, siteName, currency,
+                      lines: receipt.lines, subtotal: receipt.subtotal, discount: receipt.discount, total: receipt.total,
+                      tableLabel: receipt.tableLabel, paymentMethod: receipt.paymentMethod,
+                    });
+                    setPrintResult(ok ? "ok" : "failed");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 border border-gray-700 hover:border-gray-600 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                  <Printer className="w-4 h-4" /> Print receipt
+                </button>
+              )}
+              <button onClick={() => { setReceipt(null); setPrintResult(null); }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                New sale
+              </button>
+            </div>
           </div>
         </div>
       )}

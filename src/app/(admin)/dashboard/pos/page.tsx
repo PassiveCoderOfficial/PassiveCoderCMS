@@ -8,7 +8,7 @@ export default async function PosPage() {
   const tid = await getCurrentTenantId();
   const supabase = await createClient();
 
-  const [{ data: products }, { data: settings }, { data: branches }] = await Promise.all([
+  const [{ data: products }, { data: settings }, { data: branches }, { data: tenant }] = await Promise.all([
     supabase.from("products")
       .select("id, name, sku, price, stock_quantity, track_inventory, status")
       .eq("tenant_id", tid).eq("status", "active").order("name"),
@@ -19,6 +19,9 @@ export default async function PosPage() {
     supabase.from("restaurant_branches")
       .select("id, name, restaurant_tables(id, table_number, is_active)")
       .eq("tenant_id", tid).eq("is_active", true).order("name"),
+    // Tenant name for the printed receipt header (printer.ts, printer
+    // bridge, Phase 5).
+    supabase.from("tenants").select("name").eq("id", tid).maybeSingle(),
   ]);
 
   // Every explicit 86 across every branch — small table, cheap to load in
@@ -35,6 +38,7 @@ export default async function PosPage() {
       currency={settings?.currency || "USD"}
       branches={branches ?? []}
       availability={availability ?? []}
+      siteName={tenant?.name ?? "Receipt"}
     />
   );
 }
