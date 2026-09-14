@@ -100,12 +100,17 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // Google Analytics. Fetched alongside site_theme rather than as a second
   // round-trip.
   let gaMeasurementId: string | null = null;
-  if (tenantId) {
+  // Same root-domain gap as the pageview tracking above: this used to only
+  // fetch (and therefore only inject gtag) when a tenant subdomain header
+  // was present, so passivecoder.com's own homepage never tagged itself
+  // even after connecting/picking a GA4 property from the dashboard.
+  const gtagTenantId = tenantId ?? effectiveTenantId;
+  if (gtagTenantId) {
     const supabase = await createAdminClient();
     const { data } = await supabase.from("site_settings")
-      .select("site_theme, ga_measurement_id").eq("tenant_id", tenantId).maybeSingle();
+      .select("site_theme, ga_measurement_id").eq("tenant_id", gtagTenantId).maybeSingle();
     const t = data?.site_theme ?? "light";
-    if (t !== "system") scheme = t;
+    if (tenantId && t !== "system") scheme = t;
     gaMeasurementId = (data?.ga_measurement_id as string | null) ?? null;
   }
 

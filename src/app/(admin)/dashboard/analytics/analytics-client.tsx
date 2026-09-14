@@ -464,10 +464,11 @@ interface GaStatus {
  * browser through Google's consent screen (api/analytics/google/connect);
  * once back, this polls /api/analytics/google/status for the account +
  * property list and lets the tenant pick which GA4 property feeds a live
- * report — see report/route.ts. The old ga_measurement_id field (writes an
- * ID onto the tenant's own site) still works independently and is shown
- * here too, since it's a different, still-useful thing: sending OUR
- * visit data to THEIR GA, versus reading THEIR GA data back into us.
+ * report — see report/route.ts. Picking a property ALSO auto-fills
+ * ga_measurement_id from that property's own web data stream
+ * (property/route.ts) and the site's own gtag injection ((site)/layout.tsx,
+ * (marketing)/layout.tsx) picks it up automatically — a DIY client never
+ * needs to know what a Measurement ID even is, let alone copy-paste one.
  */
 function GoogleAnalyticsCard({
   measurementIdSet, initialOAuthEmail, initialPropertyId,
@@ -483,6 +484,7 @@ function GoogleAnalyticsCard({
   const [savingProperty, setSavingProperty] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [notConfigured, setNotConfigured] = useState(false);
+  const [autoTagged, setAutoTagged] = useState(measurementIdSet);
 
   function refreshStatus() {
     setLoadingStatus(true);
@@ -519,8 +521,16 @@ function GoogleAnalyticsCard({
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ property_id: propertyId }),
     });
+    const json = await res.json().catch(() => ({}));
     setSavingProperty(false);
-    if (res.ok) setStatus(s => ({ ...s, propertyId }));
+    if (res.ok) {
+      setStatus(s => ({ ...s, propertyId }));
+      // The site is auto-tagged with this property's own Measurement ID
+      // (property/route.ts) — no manual copy-paste needed. A missing one
+      // just means this GA4 property has no web data stream (an app-only
+      // property, say); the report pull above still works either way.
+      setAutoTagged(!!json.measurementId);
+    }
   }
 
   async function disconnect() {
@@ -597,6 +607,19 @@ function GoogleAnalyticsCard({
                   </span>
                 )}
               </div>
+            )}
+
+            {status.propertyId && status.tokenValid !== false && (
+              autoTagged ? (
+                <p className="text-xs text-green-600 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Your site is tagged and sending visits to this property — nothing else to set up.
+                </p>
+              ) : (
+                <p className="text-xs text-amber-600">
+                  This property has no web data stream, so we can&apos;t auto-tag your site from it — add one in Google Analytics
+                  (Admin → Data Streams → Add stream → Web), or paste a Measurement ID manually in Settings.
+                </p>
+              )
             )}
           </>
         )}
