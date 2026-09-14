@@ -1,7 +1,7 @@
 # Restaurant Vertical — Plan
 
-Last updated: 2026-09-12. Owner: Wali. Status: planning, no code shipped yet
-except the two prep migrations noted below.
+Last updated: 2026-09-14. Owner: Wali. Status: Tier 1 and Tier 2 shipped,
+Tier 3 in progress (split-bill + rider GPS + load-test done, offline POS next).
 
 Purpose: sell CMS Pro to restaurants with a website + ordering app (dine-in,
 pickup, delivery) as the pitch, and a POS as the reason they don't churn.
@@ -364,12 +364,67 @@ vocabulary. Full resolved mapping:
   here) → `assigned` → `picked_up` → `delivered` (delivery_status takes
   over)
 
-### Not yet decided, flag before building
+### Resolved by proceeding (never got an explicit separate confirm, noted for the record)
 
-- Whether the per-screen toggle (KITCHEN/MONITOR/TABLE) lives on
-  `restaurant_branches` (per-branch) or a tenant-level settings row —
-  branches already carry most restaurant config, leaning per-branch, but
-  confirm before the migration.
-- TABLE screen PIN mechanism specifics: numeric PIN length, who resets it,
-  whether it's per-table-per-day or persistent until changed.
-  ordering+POS flow has real customer usage behind it.
+- Per-screen toggle (KITCHEN/MONITOR/TABLE) lives on `restaurant_branches`,
+  not a tenant-level row — matches migration 092 as shipped.
+- TABLE screen PIN: 4-6 digit numeric, staff-set from Branches (no reset
+  flow beyond re-setting it there), persistent until changed rather than
+  per-seating — matches migration 092/restaurant-tables PATCH as shipped.
+
+---
+
+## Tier 1 and Tier 2 — shipped, 2026-09-14
+
+Every Tier 1 item (kitchen vocabulary rebuild, Biz-plan gating, Biz price
+cut, MONITOR, TABLE, printer notice, rider PWA) and every Tier 2 item
+(restaurant sales analytics, table reservations, low-stock alerts) shipped
+same-day, one after another. See git log 2026-09-14 for the individual
+commits — not re-summarized here since the commit messages already carry
+the full rationale per item.
+
+## Tier 3 — in progress, 2026-09-14
+
+**Split-bill / per-seat billing — shipped.** Cart splits into N seats
+(default all-in-seat-1, tap to move an item), each non-empty seat rings up
+as its own normal POS order sharing a `split_group_id` (migration 097).
+No new order-level split-payment model — every existing per-order feature
+keeps working unmodified per sub-bill.
+
+**Live rider GPS — shipped.** Last-known position + timestamp only
+(migration 098), not a location trail. Rider PWA shares via
+`watchPosition` only while it has an active delivery. Staff see a plain
+Google Maps link on the kitchen board, color-coded for freshness — no maps
+SDK dependency added.
+
+**Load-testing the kitchen board — done, real result below.**
+
+Ran against the real "Passive Coder Restaurant Demo" tenant on production
+(no staging environment exists) — test orders inserted via the Supabase
+Management API, timed the exact filter `api/ecommerce/kitchen`'s GET runs
+at 25/100/300 concurrent-shaped orders (up to 425 live-at-once after
+accumulation), 5 concurrent poll reads per volume simulating multiple
+staff tabs. All test rows cleaned up immediately after, verified zero left
+behind both runs.
+
+**Honest result: no measurable slowdown found that a database index could
+meaningfully fix.** Poll time grew from ~250ms at 25 orders to ~700-900ms
+at 425 orders, but re-running the identical test with a new supporting
+index (`orders_kitchen_board_idx`, migration 099, backing exactly the
+`tenant_id + kitchen_status` filter this query uses) showed no consistent
+improvement — most of the measured latency was overhead in the test
+harness itself (Management API round-trip), not the query plan. Added the
+index anyway since it can only help or be a no-op, is cheap (partial index,
+most orders never touch the kitchen board), and protects against the
+platform's *total* orders row count growing over time — but this is not a
+"found and fixed a bottleneck" result, and shouldn't be described as one.
+
+425 concurrent live orders is already an unrealistic ceiling for any real
+kitchen (this table only holds currently-open orders — TERMINAL statuses
+drop out of the query entirely, a real kitchen clears orders continuously).
+If a real bottleneck ever shows up at production scale, client-side render
+cost of the board at that row count is a more likely suspect than this
+query — worth a real browser-based test (not scripted against the DB
+directly) if that day comes.
+
+**Offline-tolerant POS — not started.** Next up.
