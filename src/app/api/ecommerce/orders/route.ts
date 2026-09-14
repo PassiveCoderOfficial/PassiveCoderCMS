@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       table_id: tableId,
       // Dine-in and pickup orders go straight to the kitchen; a delivery
       // order that hasn't been branch-routed has no kitchen to notify yet.
-      kitchen_status: isDineIn || fulfillment_type === "pickup" ? "new" : null,
+      kitchen_status: isDineIn || fulfillment_type === "pickup" ? "pending" : null,
     };
 
     if (tenantId) orderRow.tenant_id = tenantId;

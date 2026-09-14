@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       // POS sales are rung up as already paid/completed, but a dine-in
       // table order still needs to pass through the kitchen — a plain
       // walk-in retail sale (no branch) has nothing for a kitchen to make.
-      kitchen_status: branchId ? "new" : null,
+      kitchen_status: branchId ? "pending" : null,
     })
     .select("id, order_number")
     .single();

@@ -22,6 +22,16 @@ interface Branch { id: string; name: string }
 interface TableRow { id: string; table_number: string; branch_id: string; occupied: boolean }
 interface Rider { id: string; name: string; branch_id: string }
 
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  cooking: "Cooking",
+  ready: "Ready",
+  ready_to_pick: "Ready to Pick",
+  served: "Served on Table",
+  picked_up: "Picked Up",
+  completed: "Completed",
+};
+
 const DELIVERY_LABEL: Record<string, string> = {
   assigned: "Assigned",
   picked_up: "Picked up",
@@ -33,17 +43,46 @@ function nextDeliveryStatus(current: string): string | null {
   return null;
 }
 
-const STAGES = [
-  { key: "new", label: "New", icon: Clock },
-  { key: "preparing", label: "Preparing", icon: ChefHat },
-  { key: "ready", label: "Ready", icon: CheckCircle2 },
-  { key: "served", label: "Served / picked up", icon: Bike },
+// Fulfillment-aware kitchen pipeline (migration 092,
+// docs/business/06-restaurant-vertical.md):
+//   Dine In:  pending -> cooking -> ready -> served
+//   Pick Up:  pending -> cooking -> ready_to_pick -> picked_up
+//   Delivery: pending -> cooking -> ready_to_pick, then delivery_status
+//             (assigned/picked_up/delivered) takes over
+// The board itself keeps 4 fixed columns so the layout never jumps around —
+// only the label of the 3rd/4th column and what tapping a card does changes
+// per order's fulfillment_type.
+// Column headers stay generic (never per-order) since one column holds mixed
+// fulfillment types at once — e.g. "Ready" holds a dine-in order truly at
+// "ready" AND a pickup/delivery order at "ready_to_pick" side by side.
+const COLUMNS = [
+  { key: "pending", label: "Pending", icon: Clock },
+  { key: "cooking", label: "Cooking", icon: ChefHat },
+  { key: "ready", label: "Ready / Ready to Pick", icon: CheckCircle2 },
+  { key: "served", label: "Served / Picked Up", icon: Bike },
 ] as const;
 
-function nextStage(current: string): string | null {
-  const i = STAGES.findIndex(s => s.key === current);
-  if (i === -1 || i === STAGES.length - 1) return "completed";
-  return STAGES[i + 1].key;
+/** Which real kitchen_status value a given fulfillment type's 3rd/4th column represents. */
+function stageStatus(fulfillmentType: string, columnKey: (typeof COLUMNS)[number]["key"]): string {
+  if (columnKey === "ready") return fulfillmentType === "dine_in" ? "ready" : "ready_to_pick";
+  if (columnKey === "served") {
+    if (fulfillmentType === "dine_in") return "served";
+    if (fulfillmentType === "pickup") return "picked_up";
+    return "ready_to_pick"; // delivery never sits in this column — filtered out below
+  }
+  return columnKey;
+}
+
+function nextStage(order: KitchenOrder): string | null {
+  const type = order.fulfillment_type;
+  if (order.kitchen_status === "pending") return "cooking";
+  if (order.kitchen_status === "cooking") return type === "dine_in" ? "ready" : "ready_to_pick";
+  if (order.kitchen_status === "ready") return "served"; // dine-in only
+  if (order.kitchen_status === "ready_to_pick") {
+    if (type === "pickup") return "picked_up";
+    return null; // delivery: hands off to delivery_status, see assignRider/advanceDelivery
+  }
+  return null; // served/picked_up/completed are terminal
 }
 
 /**
@@ -105,7 +144,7 @@ function notifyNewOrder(order: KitchenOrder) {
 function tableLabel(order: KitchenOrder): string {
   const t = Array.isArray(order.restaurant_tables) ? order.restaurant_tables[0] : order.restaurant_tables;
   if (t) return `Table ${t.table_number}`;
-  return order.fulfillment_type === "pickup" ? "Pickup" : order.fulfillment_type === "delivery" ? "Delivery" : "Takeaway";
+  return order.fulfillment_type === "pickup" ? "Pickup" : order.fulfillment_type === "delivery" ? "Delivery" : "Dine In";
 }
 
 export default function KitchenClient({ branches, orders: initial, tables = [], riders = [] }: {
@@ -181,14 +220,15 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
   }
 
   async function advance(order: KitchenOrder) {
-    const next = nextStage(order.kitchen_status);
+    const next = nextStage(order);
     if (!next) return;
+    const isTerminal = next === "served" || next === "picked_up";
     setBusy(order.id);
     // Optimistic: a kitchen screen that lags a network round-trip behind a
     // tap reads as broken to someone standing at a hot line. Roll back only
     // if the request actually fails.
     const prevStatus = order.kitchen_status;
-    setOrders(prev => next === "completed"
+    setOrders(prev => isTerminal
       ? prev.filter(o => o.id !== order.id)
       : prev.map(o => o.id === order.id ? { ...o, kitchen_status: next } : o));
     const res = await fetch("/api/ecommerce/kitchen", {
@@ -197,7 +237,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
     });
     setBusy(null);
     if (!res.ok) {
-      setOrders(prev => next === "completed"
+      setOrders(prev => isTerminal
         ? [...prev, { ...order, kitchen_status: prevStatus }]
         : prev.map(o => o.id === order.id ? { ...o, kitchen_status: prevStatus } : o));
     }
@@ -334,26 +374,38 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {STAGES.map(stage => {
-            const inStage = shown.filter(o => o.kitchen_status === stage.key);
-            const Icon = stage.icon;
+          {COLUMNS.map(column => {
+            // An order sits in a column when its real kitchen_status matches
+            // what that column means FOR ITS OWN fulfillment_type — e.g. a
+            // delivery order in "ready_to_pick" shows under the 3rd column
+            // ("Ready to Pick"), never the 4th, since delivery hands off to
+            // delivery_status instead of ever reaching "served"/"picked_up".
+            const inStage = shown.filter(o => o.kitchen_status === stageStatus(o.fulfillment_type, column.key)
+              // Guard against the 3rd/4th column both resolving to
+              // "ready_to_pick" for a delivery order — only the 3rd column
+              // (column.key === "ready") should claim it.
+              && !(o.fulfillment_type === "delivery" && column.key === "served"));
+            const Icon = column.icon;
             return (
-              <div key={stage.key} className="bg-gray-900 border border-gray-800 rounded-xl p-3 space-y-2 min-h-[200px]">
+              <div key={column.key} className="bg-gray-900 border border-gray-800 rounded-xl p-3 space-y-2 min-h-[200px]">
                 <div className="flex items-center gap-2 text-sm font-semibold text-white px-1">
-                  <Icon className="w-4 h-4 text-indigo-400" /> {stage.label}
+                  <Icon className="w-4 h-4 text-indigo-400" /> {column.label}
                   <span className="text-gray-600 font-normal">({inStage.length})</span>
                 </div>
                 {inStage.map(order => {
-                  // Only a "ready" delivery order branches away from plain
-                  // tap-to-advance — every other stage/fulfillment combo
-                  // behaves exactly as before.
-                  const isDeliveryReady = stage.key === "ready" && order.fulfillment_type === "delivery";
+                  // A delivery order sitting in "ready_to_pick" branches away
+                  // from plain tap-to-advance into rider assignment — every
+                  // other stage/fulfillment combo behaves exactly as before.
+                  const isDeliveryReady = order.kitchen_status === "ready_to_pick" && order.fulfillment_type === "delivery";
                   const branchRiders = riderList.filter(r => r.branch_id === order.branch_id);
                   const cardBody = (
                     <>
                       <div className="flex justify-between items-start gap-2">
                         <span className="text-xs font-mono text-gray-500">{order.order_number}</span>
                         <span className="text-xs text-indigo-400 shrink-0">{tableLabel(order)}</span>
+                      </div>
+                      <div className="text-[10px] uppercase tracking-wide text-gray-600 mt-0.5">
+                        {STATUS_LABEL[order.kitchen_status] ?? order.kitchen_status}
                       </div>
                       <div className="text-sm text-white mt-1">{order.customer_name}</div>
                       <ul className="text-xs text-gray-400 mt-1.5 space-y-0.5">

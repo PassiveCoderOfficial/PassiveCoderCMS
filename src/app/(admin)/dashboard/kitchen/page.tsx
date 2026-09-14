@@ -24,7 +24,10 @@ export default async function KitchenPage() {
       .select("id, order_number, items, branch_id, table_id, kitchen_status, fulfillment_type, customer_name, created_at, rider_id, delivery_status, restaurant_tables(table_number)")
       .eq("tenant_id", tid)
       .not("kitchen_status", "is", null)
-      .not("kitchen_status", "eq", "completed")
+      // Terminal per fulfillment type (migration 092): dine-in ends at
+      // "served", pickup at "picked_up", delivery at "completed" once
+      // delivery_status finishes — same set the poll route excludes.
+      .not("kitchen_status", "in", "(served,picked_up,completed)")
       .order("created_at", { ascending: true }),
     // Table occupancy: every active table, joined against branch (RLS on
     // restaurant_branches is tenant-scoped, restaurant_tables' own read
