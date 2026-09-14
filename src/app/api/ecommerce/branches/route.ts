@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { requireModule } from "@/lib/modules/resolve-modules";
 
 /** Create a branch for the current tenant. */
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Restaurant stack is Biz-plan-only (docs/business/04-pricing-and-packaging.md,
+  // "pos" module). Nav-hiding alone doesn't stop a direct POST from a Pro
+  // tenant creating branches the sidebar never showed them.
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Branches are not available on your plan" }, { status: 403 });
+  }
 
   const { name, address, phone } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -25,6 +32,9 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Branches are not available on your plan" }, { status: 403 });
+  }
 
   const { branch_id, ...patch } = await req.json();
   if (!branch_id) return NextResponse.json({ error: "Missing branch_id" }, { status: 400 });

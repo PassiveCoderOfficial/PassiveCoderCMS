@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { requireModule } from "@/lib/modules/resolve-modules";
 
 // Fulfillment-aware vocabulary (migration 092, docs/business/06-restaurant-vertical.md):
 // dine-in ends at "served", pickup ends at "picked_up", delivery hands off to
@@ -20,6 +21,9 @@ const TERMINAL = ["served", "picked_up", "completed"];
 export async function GET() {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Kitchen is not available on your plan" }, { status: 403 });
+  }
 
   const admin = await createAdminClient();
   const { data: orders } = await admin
@@ -37,6 +41,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Kitchen is not available on your plan" }, { status: 403 });
+  }
 
   const { order_id, kitchen_status } = await req.json();
   if (!order_id || !VALID.includes(kitchen_status)) {

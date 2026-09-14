@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { requireModule } from "@/lib/modules/resolve-modules";
 
 /**
  * Toggle a product's per-branch availability (the menu "86" flip) —
@@ -11,6 +12,9 @@ import { apiTenantId } from "@/lib/tenant/api";
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Branch availability is not available on your plan" }, { status: 403 });
+  }
 
   const { branch_id, product_id, in_stock } = await req.json();
   if (!branch_id || !product_id || typeof in_stock !== "boolean") {

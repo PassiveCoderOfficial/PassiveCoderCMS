@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { requireModule } from "@/lib/modules/resolve-modules";
 
 const VALID_STATUS = ["assigned", "picked_up", "delivered"];
 
@@ -13,6 +14,9 @@ const VALID_STATUS = ["assigned", "picked_up", "delivered"];
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Delivery is not available on your plan" }, { status: 403 });
+  }
 
   const { order_id, rider_id, delivery_status } = await req.json();
   if (!order_id) return NextResponse.json({ error: "Invalid request" }, { status: 400 });

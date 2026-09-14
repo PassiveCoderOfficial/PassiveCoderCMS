@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { upsertContact } from "@/lib/crm/upsertContact";
+import { requireModule } from "@/lib/modules/resolve-modules";
 
 interface PosItem { product_id: string; name: string; price: number; quantity: number }
 
@@ -10,6 +11,12 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Nav-hiding and the page-level redirect aren't enough on their own — a
+  // Pro tenant could still POST directly here. Same "pos" module the sidebar
+  // gates on (docs/business/04-pricing-and-packaging.md, Biz price cut).
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "POS is not available on your plan" }, { status: 403 });
+  }
 
   const body = await req.json();
   const items: PosItem[] = Array.isArray(body.items) ? body.items : [];
