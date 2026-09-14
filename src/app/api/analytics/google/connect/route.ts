@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { signState } from "@/lib/analytics/google-oauth-state";
 
 /**
  * Kicks off real Google OAuth for "Connect Google Analytics" (2026-09-14,
@@ -50,14 +50,4 @@ export async function GET() {
   authUrl.searchParams.set("state", state);
 
   return NextResponse.redirect(authUrl.toString());
-}
-
-/** HMAC-signed state so the callback can trust tenantId came from us, not a
- *  crafted query string — no session cookie survives the round trip through
- *  Google reliably enough to lean on that instead. */
-export function signState(payload: { tenantId: string; userId: string; ts: number }): string {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "dev-only-insecure-secret";
-  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const sig = crypto.createHmac("sha256", secret).update(body).digest("base64url");
-  return `${body}.${sig}`;
 }

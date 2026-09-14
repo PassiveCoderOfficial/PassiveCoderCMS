@@ -1,24 +1,6 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/server";
-
-/** Mirrors signState in connect/route.ts — verifies the state wasn't forged
- *  and hasn't expired (10 minutes, generous for a consent-screen round
- *  trip but not indefinitely replayable). */
-function verifyState(state: string): { tenantId: string; userId: string } | null {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "dev-only-insecure-secret";
-  const [body, sig] = state.split(".");
-  if (!body || !sig) return null;
-  const expected = crypto.createHmac("sha256", secret).update(body).digest("base64url");
-  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
-    if (Date.now() - payload.ts > 10 * 60 * 1000) return null;
-    return { tenantId: payload.tenantId, userId: payload.userId };
-  } catch {
-    return null;
-  }
-}
+import { verifyState } from "@/lib/analytics/google-oauth-state";
 
 function backToAnalytics(root: string, proto: string, tenantSlugOrRoot: string, query: string) {
   return NextResponse.redirect(`${proto}://${tenantSlugOrRoot}/dashboard/analytics?${query}`);
