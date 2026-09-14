@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Users, FileText, Link2, Smartphone, Globe2, ExternalLink, ShoppingBag, Package,
-  TrendingUp, AlertCircle, CheckCircle2, Loader2,
+  TrendingUp, AlertCircle, CheckCircle2, Loader2, ChefHat, Clock3, Receipt,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -82,7 +82,7 @@ const RANGES = [7, 30, 90] as const;
 
 export function AnalyticsClient({
   tenantId, initialRows, initialRange, gaConnected, gaMeasurementId, gaOAuthEmail, gaPropertyId,
-  showProSiteBanner, dashboardStats, recentOrders, recentTransactions,
+  showProSiteBanner, dashboardStats, recentOrders, recentTransactions, hasRestaurantBranches,
 }: {
   tenantId: string;
   initialRows: Row[];
@@ -95,6 +95,7 @@ export function AnalyticsClient({
   dashboardStats: DashboardStats;
   recentOrders: Order[];
   recentTransactions: Transaction[];
+  hasRestaurantBranches: boolean;
 }) {
   const [range, setRange] = useState<number>(initialRange);
   const [data, setData] = useState<ApiResult>(() => aggregate(initialRows, initialRange));
@@ -353,6 +354,8 @@ export function AnalyticsClient({
         <RankedList title="Top countries" icon={Globe2} items={data.topCountries} formatKey={(k) => k} empty="No location data yet." />
       </div>
 
+      {hasRestaurantBranches && <RestaurantSalesCard />}
+
       <GoogleAnalyticsCard
         measurementIdSet={gaConnected}
         initialMeasurementId={gaMeasurementId}
@@ -459,6 +462,131 @@ interface GaStatus {
   email?: string | null;
   propertyId?: string | null;
   properties?: GaProperty[];
+}
+
+interface SalesAnalytics {
+  range: number; orderCount: number; totalRevenue: number; avgTicket: number;
+  bestSellers: { name: string; quantity: number; revenue: number }[];
+  peakHours: { hour: number; count: number }[];
+  fulfillmentSplit: { type: string; count: number }[];
+}
+
+const SALES_RANGES = [7, 30, 90] as const;
+
+function hourLabel(h: number): string {
+  const period = h < 12 ? "am" : "pm";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}${period}`;
+}
+
+/**
+ * Restaurant sales analytics (Tier 2, docs/business/06-restaurant-vertical.md)
+ * — best sellers, peak hours, average ticket. Only rendered for a tenant
+ * with active branches (hasRestaurantBranches, set server-side in page.tsx).
+ */
+function RestaurantSalesCard() {
+  const [range, setRange] = useState(30);
+  const [data, setData] = useState<SalesAnalytics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/restaurant/sales-analytics?range=${range}`)
+      .then(r => r.json())
+      .then((d: SalesAnalytics) => { if (!cancelled) setData(d); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [range]);
+
+  const maxHourCount = Math.max(1, ...(data?.peakHours.map(h => h.count) ?? [1]));
+  const maxBestSeller = Math.max(1, ...(data?.bestSellers.map(b => b.quantity) ?? [1]));
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <CardTitle className="text-sm flex items-center gap-2"><ChefHat className="w-4 h-4 text-muted-foreground" /> Restaurant sales</CardTitle>
+          <div className="flex items-center gap-1 rounded-lg border p-1">
+            {SALES_RANGES.map(r => (
+              <button key={r} onClick={() => setRange(r)}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                  range === r ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+                }`}>
+                {r}d
+              </button>
+            ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5" style={{ opacity: loading ? 0.6 : 1 }}>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <p className="text-xl font-bold tabular-nums">{data?.orderCount ?? 0}</p>
+            <p className="text-xs text-muted-foreground">Orders</p>
+          </div>
+          <div>
+            <p className="text-xl font-bold tabular-nums">{formatCurrency(data?.totalRevenue ?? 0)}</p>
+            <p className="text-xs text-muted-foreground">Revenue</p>
+          </div>
+          <div className="flex items-start gap-1.5">
+            <Receipt className="w-4 h-4 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-xl font-bold tabular-nums">{formatCurrency(data?.avgTicket ?? 0)}</p>
+              <p className="text-xs text-muted-foreground">Avg ticket</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5" /> Best sellers</p>
+          {!data?.bestSellers.length ? (
+            <p className="text-xs text-muted-foreground py-2">No orders in this range yet.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {data.bestSellers.map(b => (
+                <div key={b.name} className="flex items-center gap-3 text-xs">
+                  <span className="flex-1 min-w-0 truncate">{b.name}</span>
+                  <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${(b.quantity / maxBestSeller) * 100}%` }} />
+                  </div>
+                  <span className="w-10 text-right tabular-nums text-muted-foreground shrink-0">{b.quantity}×</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5"><Clock3 className="w-3.5 h-3.5" /> Peak hours</p>
+          <div className="flex items-end gap-0.5 h-16">
+            {(data?.peakHours ?? []).map(h => (
+              <div key={h.hour} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                <div className="w-full bg-primary/70 rounded-t-sm" style={{ height: `${(h.count / maxHourCount) * 100}%`, minHeight: h.count > 0 ? "2px" : "0" }} />
+                <span className="hidden group-hover:block absolute -top-5 text-[10px] bg-popover border rounded px-1 whitespace-nowrap">
+                  {hourLabel(h.hour)}: {h.count}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <span>12am</span><span>12pm</span><span>11pm</span>
+          </div>
+        </div>
+
+        {!!data?.fulfillmentSplit.length && (
+          <div className="flex flex-wrap gap-2">
+            {data.fulfillmentSplit.map(f => (
+              <span key={f.type} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                {f.type.replace("_", " ")}: {f.count}
+              </span>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 /**

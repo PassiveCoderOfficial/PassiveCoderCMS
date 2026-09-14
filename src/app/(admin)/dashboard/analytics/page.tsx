@@ -50,6 +50,7 @@ export default async function AnalyticsPage() {
     { count: userCount },
     { data: recentOrders },
     { data: recentTransactions },
+    { count: branchCount },
   ] = await Promise.all([
     admin.from("page_view_stats").select("day, path, referrer_domain, device_type, country, views").eq("tenant_id", tenantId).gte("day", sinceStr),
     // GA OAuth connection status + which property is picked. Tokens
@@ -63,6 +64,10 @@ export default async function AnalyticsPage() {
     supabase.from("tenant_members").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
     supabase.from("orders").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
     supabase.from("transactions").select("*").order("created_at", { ascending: false }).limit(5),
+    // Restaurant sales analytics section only makes sense for a tenant
+    // actually running the restaurant stack — same "does this tenant have
+    // any branches" signal used elsewhere (kitchen/page.tsx's empty state).
+    supabase.from("restaurant_branches").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("is_active", true),
   ]);
 
   return (
@@ -84,6 +89,7 @@ export default async function AnalyticsPage() {
       }}
       recentOrders={recentOrders ?? []}
       recentTransactions={recentTransactions ?? []}
+      hasRestaurantBranches={(branchCount ?? 0) > 0}
     />
   );
 }
