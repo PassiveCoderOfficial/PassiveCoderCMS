@@ -8,6 +8,19 @@ import { countVisit } from "@/lib/usage/count-visit";
 import { recordPageView } from "@/lib/usage/record-page-view";
 import { buildSiteMetadata } from "@/lib/site/site-metadata";
 
+/** Root-domain requests carry no x-tenant-id (middleware only sets that on
+ *  the subdomain-routing branch), but the platform's own marketing site is
+ *  still a real tenant row (slug === NEXT_PUBLIC_ROOT_DOMAIN's first label)
+ *  — same rootSlug convention as getCurrentTenantId's SA-on-root-domain
+ *  fallback (lib/tenant/current.ts). Used only to attribute pageview/visit
+ *  tracking to the right tenant; never for auth or ownership decisions. */
+async function resolveRootTenantId(): Promise<string | null> {
+  const admin = await createAdminClient();
+  const rootSlug = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(".")[0];
+  const { data } = await admin.from("tenants").select("id").eq("slug", rootSlug).maybeSingle();
+  return data?.id ?? null;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createAdminClient();
   const tenantId = (await headers()).get("x-tenant-id");
@@ -36,6 +49,12 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // visitor leads to our support number.
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
+  // The real path, not just "/" — this layout also wraps /pricing,
+  // /contact, etc (see the directory listing under (marketing)), so
+  // hardcoding "/" mis-recorded every one of those under the tenant's own
+  // homepage row. Falls back to "/" only if middleware's x-pathname header
+  // is somehow missing.
+  const path = reqHeaders.get("x-pathname") ?? "/";
 
   // Same gap the theme comment above already flags: tenant "/" renders here,
   // not through (site)/layout.tsx, so it also missed that layout's pageview
@@ -45,13 +64,23 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // OTHER path recorded correctly, only "/" never did — the opposite of what
   // it first looked like, since an early test on "/" happened to show a row
   // that (in hindsight) predated this fix and was likely leftover data.
-  if (tenantId) {
+  //
+  // Root-domain requests (passivecoder.com itself — no x-tenant-id, since
+  // middleware only sets that header on the subdomain-routing branch) fell
+  // through this whole block entirely, so the platform's OWN marketing site
+  // never recorded a single pageview — reported live: "my main dashboard
+  // analytics have no value? blank?" while viewing Analytics on the root
+  // domain itself. Resolved to the platform's own "passivecoder" tenant row
+  // so root traffic gets tracked the same way any tenant's does, rather than
+  // silently going uncounted forever.
+  const effectiveTenantId = tenantId ?? (await resolveRootTenantId());
+  if (effectiveTenantId) {
     const userAgent = reqHeaders.get("user-agent");
-    after(() => countVisit(tenantId, userAgent));
+    after(() => countVisit(effectiveTenantId, userAgent));
     after(() =>
       recordPageView(
-        tenantId,
-        "/",
+        effectiveTenantId,
+        path,
         userAgent,
         reqHeaders.get("referer"),
         reqHeaders.get("host"),
