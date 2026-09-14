@@ -1,10 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Store, Plus, QrCode, Trash2, Copy, Check, Printer } from "lucide-react";
+import { Store, Plus, QrCode, Trash2, Copy, Check, Printer, Tv, Tablet, ChefHat, KeyRound } from "lucide-react";
 
-interface TableRow { id: string; table_number: string; qr_token: string; is_active: boolean }
-interface Branch { id: string; name: string; address: string | null; phone: string | null; is_active: boolean; restaurant_tables: TableRow[] }
+interface TableRow { id: string; table_number: string; qr_token: string; is_active: boolean; table_pin: string | null }
+interface Branch {
+  id: string; name: string; address: string | null; phone: string | null; is_active: boolean;
+  kitchen_screen_enabled: boolean; monitor_screen_enabled: boolean; table_screen_enabled: boolean;
+  restaurant_tables: TableRow[];
+}
 
 const inputCls = "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 
@@ -23,6 +27,9 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
   const [tableDraft, setTableDraft] = useState<Record<string, string>>({});
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [printTable, setPrintTable] = useState<{ branchName: string; table: TableRow } | null>(null);
+  const [pinDraft, setPinDraft] = useState<Record<string, string>>({});
+  const [savingPin, setSavingPin] = useState<string | null>(null);
+  const [savingToggle, setSavingToggle] = useState<string | null>(null);
 
   async function addBranch(e: React.FormEvent) {
     e.preventDefault();
@@ -65,8 +72,47 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
     }
   }
 
+  async function toggleScreen(branchId: string, field: "kitchen_screen_enabled" | "monitor_screen_enabled" | "table_screen_enabled", value: boolean) {
+    setSavingToggle(`${branchId}:${field}`);
+    const res = await fetch("/api/ecommerce/branches", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ branch_id: branchId, [field]: value }),
+    });
+    setSavingToggle(null);
+    if (res.ok) {
+      setBranches(prev => prev.map(b => b.id === branchId ? { ...b, [field]: value } : b));
+    }
+  }
+
+  async function saveTablePin(branchId: string, tableId: string) {
+    const pin = pinDraft[tableId]?.trim() ?? "";
+    setSavingPin(tableId);
+    const res = await fetch("/api/ecommerce/restaurant-tables", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table_id: tableId, table_pin: pin }),
+    });
+    const data = await res.json();
+    setSavingPin(null);
+    if (res.ok) {
+      setBranches(prev => prev.map(b => b.id === branchId
+        ? { ...b, restaurant_tables: b.restaurant_tables.map(t => t.id === tableId ? { ...t, table_pin: data.table_pin } : t) }
+        : b));
+      setPinDraft(prev => ({ ...prev, [tableId]: "" }));
+    } else {
+      alert(data.error ?? "Could not save PIN");
+    }
+  }
+
   function tableUrl(qrToken: string) {
     return `${siteUrl}/table/${qrToken}`;
+  }
+
+  function monitorUrl(branchId: string) {
+    return `${siteUrl}/monitor/${branchId}`;
+  }
+
+  function tableScreenUrl(qrToken: string) {
+    return `${siteUrl}/table-screen/${qrToken}`;
   }
 
   function copyLink(qrToken: string) {
@@ -112,16 +158,48 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
       ) : (
         <div className="space-y-4">
           {branches.map(branch => (
-            <div key={branch.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+            <div key={branch.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-4">
               <div>
                 <h2 className="font-semibold text-white">{branch.name}</h2>
                 {branch.address && <p className="text-xs text-gray-500">{branch.address}</p>}
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              {/* Screen toggles — which of KITCHEN/MONITOR/TABLE this branch
+                  actually runs (migration 092). Manager picks per operational
+                  reality: not every location has a spare screen for MONITOR
+                  or tablets for TABLE. */}
+              <div className="flex flex-wrap gap-3 pb-3 border-b border-gray-800">
+                {([
+                  { key: "kitchen_screen_enabled" as const, label: "Kitchen", icon: ChefHat, href: "/dashboard/kitchen" },
+                  { key: "monitor_screen_enabled" as const, label: "Monitor", icon: Tv, href: monitorUrl(branch.id) },
+                  { key: "table_screen_enabled" as const, label: "Table screen", icon: Tablet, href: null },
+                ]).map(({ key, label, icon: Icon, href }) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleScreen(branch.id, key, !branch[key])}
+                      disabled={savingToggle === `${branch.id}:${key}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                        branch[key]
+                          ? "bg-indigo-600/20 border-indigo-600/40 text-indigo-300"
+                          : "bg-gray-800 border-gray-700 text-gray-500"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" /> {label} {branch[key] ? "on" : "off"}
+                    </button>
+                    {branch[key] && href && (
+                      <a href={href} target="_blank" rel="noopener noreferrer" title={`Open ${label}`}
+                        className="text-xs text-gray-500 hover:text-indigo-400 underline">
+                        open
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
                 {branch.restaurant_tables.filter(t => t.is_active).map(t => (
-                  <div key={t.id} className="flex items-center gap-1 bg-gray-800 border border-gray-700 rounded-lg pl-3 pr-1 py-1">
-                    <span className="text-xs text-white">Table {t.table_number}</span>
+                  <div key={t.id} className="flex flex-wrap items-center gap-1 bg-gray-800 border border-gray-700 rounded-lg pl-3 pr-1 py-1.5">
+                    <span className="text-xs text-white w-20 shrink-0">Table {t.table_number}</span>
                     <button onClick={() => setPrintTable({ branchName: branch.name, table: t })} title="Show QR code"
                       className="p-1 text-gray-500 hover:text-indigo-400 rounded"><QrCode className="w-3.5 h-3.5" /></button>
                     <button onClick={() => copyLink(t.qr_token)} title="Copy order link"
@@ -130,6 +208,30 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
                     </button>
                     <button onClick={() => removeTable(branch.id, t.id)} title="Remove table"
                       className="p-1 text-gray-500 hover:text-red-400 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+
+                    {branch.table_screen_enabled && (
+                      <div className="flex items-center gap-1 ml-2 pl-2 border-l border-gray-700">
+                        <KeyRound className="w-3 h-3 text-gray-500 shrink-0" />
+                        <input
+                          placeholder={t.table_pin ? `PIN: ${t.table_pin}` : "Set PIN"}
+                          value={pinDraft[t.id] ?? ""}
+                          maxLength={6}
+                          onChange={(e) => setPinDraft(prev => ({ ...prev, [t.id]: e.target.value.replace(/\D/g, "") }))}
+                          onKeyDown={(e) => e.key === "Enter" && saveTablePin(branch.id, t.id)}
+                          className={`${inputCls} w-24 py-1 text-xs`}
+                        />
+                        <button onClick={() => saveTablePin(branch.id, t.id)} disabled={savingPin === t.id}
+                          className="text-xs text-indigo-400 hover:text-indigo-300 px-1.5 disabled:opacity-50">
+                          {savingPin === t.id ? "…" : "Set"}
+                        </button>
+                        {t.table_pin && (
+                          <a href={tableScreenUrl(t.qr_token)} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-gray-500 hover:text-indigo-400 underline shrink-0">
+                            open screen
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
                 <div className="flex items-center gap-1">

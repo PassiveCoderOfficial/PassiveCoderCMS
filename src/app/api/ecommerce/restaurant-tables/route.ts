@@ -37,6 +37,43 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ table: data });
 }
 
+/**
+ * Set/change/clear a table's PIN — what scopes a TABLE-screen tablet to
+ * this specific table (migration 092). Persistent until staff changes it,
+ * not per-seating: a tablet mounted at a table stays logged into that
+ * table across every customer who sits there, same as the QR code does for
+ * scan-to-order.
+ */
+export async function PATCH(req: NextRequest) {
+  const tenantId = await apiTenantId();
+  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "Tables are not available on your plan" }, { status: 403 });
+  }
+
+  const { table_id, table_pin } = await req.json();
+  if (!table_id) return NextResponse.json({ error: "Missing table_id" }, { status: 400 });
+
+  const trimmed = typeof table_pin === "string" ? table_pin.trim() : "";
+  if (trimmed && !/^\d{4,6}$/.test(trimmed)) {
+    return NextResponse.json({ error: "PIN must be 4-6 digits" }, { status: 400 });
+  }
+
+  const admin = await createAdminClient();
+  const { data: ownedBranchIds } = await admin.from("restaurant_branches").select("id").eq("tenant_id", tenantId);
+  const { data, error } = await admin
+    .from("restaurant_tables")
+    .update({ table_pin: trimmed || null })
+    .eq("id", table_id)
+    .in("branch_id", (ownedBranchIds ?? []).map(b => b.id))
+    .select("id, table_pin")
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (!data) return NextResponse.json({ error: "Table not found" }, { status: 404 });
+  return NextResponse.json({ ok: true, table_pin: data.table_pin });
+}
+
 /** Deactivate a table (soft — past orders keep the reference and qr_token). */
 export async function DELETE(req: NextRequest) {
   const tenantId = await apiTenantId();

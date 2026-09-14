@@ -21,7 +21,7 @@ export default async function BranchesPage() {
   const [{ data: tenant }, { data: branches }] = await Promise.all([
     supabase.from("tenants").select("slug, custom_domain").eq("id", tid).maybeSingle(),
     supabase.from("restaurant_branches")
-      .select("id, name, address, phone, is_active, restaurant_tables(id, table_number, qr_token, is_active)")
+      .select("id, name, address, phone, is_active, kitchen_screen_enabled, monitor_screen_enabled, table_screen_enabled, restaurant_tables(id, table_number, qr_token, is_active, table_pin)")
       .eq("tenant_id", tid)
       .order("created_at"),
   ]);

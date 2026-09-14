@@ -44,6 +44,13 @@ export async function PATCH(req: NextRequest) {
   if (typeof patch.address === "string") allowed.address = patch.address.trim() || null;
   if (typeof patch.phone === "string") allowed.phone = patch.phone.trim() || null;
   if (typeof patch.is_active === "boolean") allowed.is_active = patch.is_active;
+  // Per-branch screen toggles (migration 092, docs/business/06-restaurant-vertical.md
+  // Phase 6) — manager picks which of KITCHEN/MONITOR/TABLE this branch
+  // actually runs. Kitchen defaults on; the other two default off since
+  // they need a physical screen/tablets the branch may not have yet.
+  if (typeof patch.kitchen_screen_enabled === "boolean") allowed.kitchen_screen_enabled = patch.kitchen_screen_enabled;
+  if (typeof patch.monitor_screen_enabled === "boolean") allowed.monitor_screen_enabled = patch.monitor_screen_enabled;
+  if (typeof patch.table_screen_enabled === "boolean") allowed.table_screen_enabled = patch.table_screen_enabled;
   allowed.updated_at = new Date().toISOString();
 
   const admin = await createAdminClient();
@@ -54,10 +61,10 @@ export async function PATCH(req: NextRequest) {
     .update(allowed)
     .eq("id", branch_id)
     .eq("tenant_id", tenantId)
-    .select("id")
+    .select("id, kitchen_screen_enabled, monitor_screen_enabled, table_screen_enabled")
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!data) return NextResponse.json({ error: "Branch not found" }, { status: 404 });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, branch: data });
 }
