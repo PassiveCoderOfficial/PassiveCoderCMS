@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
+import { callerCanManageTenant } from "@/lib/auth/verify-bearer";
 
 /**
  * Self-serve trial cancellation (docs/business/04-pricing-and-packaging.md,
@@ -13,22 +14,17 @@ import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
  * off mid-period.
  */
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { tenantId } = await req.json();
   if (!tenantId) return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
 
-  const admin = await createAdminClient();
+  // Cookie session (web) first, Bearer token (mobile) fallback — same
+  // dual-auth shape as domain/connect and api/ecommerce/pos, added so the
+  // Passive Coder Admin app's subscription screen can call this route.
+  if (!(await callerCanManageTenant(req, tenantId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-  const { data: membership } = await admin
-    .from("tenant_members")
-    .select("user_id")
-    .eq("tenant_id", tenantId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await createAdminClient();
 
   const { data: sub } = await admin
     .from("subscriptions")

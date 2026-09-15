@@ -2,17 +2,38 @@ import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { makePayment, resolveSpConfig } from "@/lib/billing/shurjopay";
 import { getDodoClient, getDodoProductId, resolveDodoConfig, resolveCustomerName } from "@/lib/billing/dodo";
+import { verifyBearerUser } from "@/lib/auth/verify-bearer";
+import { isSuperAdmin } from "@/lib/super-admin";
 
 const MANUAL_METHODS = ["bkash", "nagad", "bank"] as const;
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Cookie session (web) first, Bearer token (mobile) fallback — same
+  // dual-auth shape used by api/ecommerce/pos and domain/connect. Unlike
+  // those, this route needs the actual user object (email, for the
+  // receipt/checkout customer info), not just a pass/fail check, so this
+  // resolves a real { id, email } from whichever auth path succeeded
+  // rather than calling callerCanManageTenant's boolean-only helper.
+  const cookieAuth = await createClient();
+  const { data: { user: cookieUser } } = await cookieAuth.auth.getUser();
+  let user: { id: string; email?: string; user_metadata: Record<string, unknown> } | null =
+    cookieUser ? { id: cookieUser.id, email: cookieUser.email, user_metadata: cookieUser.user_metadata } : null;
+  if (!user) {
+    const bearer = await verifyBearerUser(req);
+    if (bearer) {
+      const admin0 = await createAdminClient();
+      const { data: authUser } = await admin0.auth.admin.getUserById(bearer.userId);
+      user = authUser?.user
+        ? { id: authUser.user.id, email: authUser.user.email, user_metadata: authUser.user.user_metadata }
+        : { id: bearer.userId, user_metadata: {} };
+    }
+  }
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { tenantId, planId, method, txnRef, senderNumber } = body as {
+  const { tenantId, planId, method, txnRef, senderNumber, returnUrl: returnUrlOverride, cancelUrl: cancelUrlOverride } = body as {
     tenantId: string; planId: string; method: string; txnRef?: string; senderNumber?: string;
+    returnUrl?: string; cancelUrl?: string;
   };
   const billingCycle: "monthly" | "yearly" =
     body.billingCycle === "monthly" ? "monthly" : "yearly";
@@ -22,14 +43,16 @@ export async function POST(req: Request) {
 
   const admin = await createAdminClient();
 
-  // Caller must be a member of the tenant they are paying for.
+  // Caller must be a member of the tenant they are paying for (or SA).
   const { data: membership } = await admin
     .from("tenant_members")
     .select("user_id")
     .eq("tenant_id", tenantId)
     .eq("user_id", user.id)
     .maybeSingle();
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!membership && !(await isSuperAdmin(user.id))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const [{ data: plan }, { data: ps }] = await Promise.all([
     admin.from("plans").select("id, name, price_yearly, price_monthly, price_yearly_bdt, price_monthly_bdt").eq("id", planId).maybeSingle(),
@@ -108,8 +131,12 @@ export async function POST(req: Request) {
         amount: amountBdt,
         orderId,
         currency: "BDT",
+        // shurjoPay's own server-to-server callback stays fixed regardless
+        // of caller — mobile's return handoff happens via cancelUrl below
+        // (opened in an in-app browser session) instead, since shurjoPay
+        // itself always calls returnUrl directly, not the client.
         returnUrl: `${origin}/api/billing/shurjopay/callback`,
-        cancelUrl: `${origin}/dashboard/subscription?cancelled=1`,
+        cancelUrl: cancelUrlOverride || `${origin}/dashboard/subscription?cancelled=1`,
         customerName: user.email ?? "Customer",
         customerEmail: user.email ?? undefined,
         config: spConfig,
@@ -154,8 +181,12 @@ export async function POST(req: Request) {
       const session = await getDodoClient({ apiKey: dodoConfig.apiKey, sandbox: dodoConfig.sandbox }).checkoutSessions.create({
         product_cart: [{ product_id: productId, quantity: 1 }],
         customer: { email: user.email!, name: customerName },
-        return_url: `${origin}/dashboard/subscription?paid=1`,
-        cancel_url: `${origin}/dashboard/subscription?cancelled=1`,
+        // Mobile passes its own pcadmin:// return/cancel URLs so
+        // expo-web-browser's openAuthSessionAsync can detect the redirect
+        // back into the app; web sends neither and keeps today's dashboard
+        // URLs unchanged.
+        return_url: returnUrlOverride || `${origin}/dashboard/subscription?paid=1`,
+        cancel_url: cancelUrlOverride || `${origin}/dashboard/subscription?cancelled=1`,
         metadata: { tenant_id: tenantId, plan_id: planId, billing_cycle: billingCycle },
         feature_flags: { redirect_immediately: true },
       });

@@ -1,11 +1,33 @@
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
+import { verifyBearerUser } from "@/lib/auth/verify-bearer";
 
 export async function POST(req: Request) {
   const body = await req.json();
   const { siteName, slug, userId, planId, templateId, templateMode } = body;
+
+  // Real gap, found while porting onboarding to the Passive Coder Admin
+  // mobile app: this route previously trusted `userId` from the request
+  // body with no verification at all — anyone who could POST here could
+  // create a tenant (and, via the upsert below, claim ownership) under any
+  // user id they typed in, not just their own. Cookie session first (web,
+  // unchanged), Bearer fallback (mobile — the app has no cookie), same
+  // dual-auth shape as callerCanManageTenant elsewhere in this codebase.
+  // Either way, the VERIFIED caller id must equal the userId in the body —
+  // this endpoint creates real billing/ownership records, so trusting an
+  // unverified client-supplied id here was never sound.
+  const cookieAuth = await createClient();
+  const { data: { user: cookieUser } } = await cookieAuth.auth.getUser();
+  let callerId = cookieUser?.id ?? null;
+  if (!callerId) {
+    const bearer = await verifyBearerUser(req);
+    callerId = bearer?.userId ?? null;
+  }
+  if (!callerId || callerId !== userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const billingCycle = body.billingCycle === "monthly" ? "monthly" : "yearly";
   // No automatic trial any more (reverted 2026-09-13 — see
   // docs/business/04-pricing-and-packaging.md). Dodo and shurjoPay both
