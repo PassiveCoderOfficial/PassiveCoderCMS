@@ -17,17 +17,20 @@ export async function GET(req: Request) {
 
   const id = new URL(req.url).searchParams.get("id");
 
-  const [ticketsResult, { data: depts }] = await Promise.all([
+  const [ticketsResult, { data: depts }, messagesResult] = await Promise.all([
     id
       ? supabase!.from("support_tickets").select("*").eq("id", id).maybeSingle()
       : supabase!.from("support_tickets")
           .select("id,subject,department,priority,status,guest_name,guest_email,created_at,tenant_id")
           .order("created_at", { ascending: false }).limit(500),
     supabase!.from("support_departments").select("id,name,slug").order("sort_order"),
+    id
+      ? supabase!.from("support_ticket_messages").select("id,user_id,author_name,body,is_internal,created_at").eq("ticket_id", id).order("created_at")
+      : Promise.resolve({ data: [] }),
   ]);
 
   if (id) {
-    return NextResponse.json({ ticket: ticketsResult.data ?? null, depts: depts ?? [] });
+    return NextResponse.json({ ticket: ticketsResult.data ?? null, depts: depts ?? [], messages: messagesResult.data ?? [] });
   }
   return NextResponse.json({ tickets: (ticketsResult as { data: unknown[] | null }).data ?? [], depts: depts ?? [] });
 }
@@ -85,4 +88,46 @@ export async function POST(req: Request) {
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
   return NextResponse.json({ id: data.id });
+}
+
+/** Super-admin reply to a ticket (or an internal, staff-only note). Uses the
+ *  admin client like the rest of this route — RLS's ticket_messages_insert_
+ *  super_admin policy would allow this directly too, but keeping every
+ *  super-admin write in the same authed()-gated route is the existing
+ *  pattern here (see GET/PATCH above), not a new one. */
+export async function PUT(req: Request) {
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  const { error, supabase } = await authed();
+  if (error) return error;
+
+  const { ticketId, body: message, isInternal } = await req.json();
+  if (!ticketId || !message?.trim())
+    return NextResponse.json({ error: "ticketId and body required" }, { status: 400 });
+
+  const { data, error: dbErr } = await supabase!
+    .from("support_ticket_messages")
+    .insert({
+      ticket_id: ticketId,
+      user_id: user!.id,
+      author_name: user!.email ?? "Support",
+      body: message.trim(),
+      is_internal: !!isInternal,
+    })
+    .select("id, created_at")
+    .single();
+
+  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
+
+  // A reply implies the ticket is being actively worked — reopen it if it
+  // had been marked resolved/closed so the tenant sees it needs attention
+  // again, same as the owner-reopen-on-reply behavior on the tenant side.
+  if (!isInternal) {
+    await supabase!.from("support_tickets")
+      .update({ status: "in_progress", updated_at: new Date().toISOString() })
+      .eq("id", ticketId)
+      .in("status", ["resolved", "closed"]);
+  }
+
+  return NextResponse.json({ message: data });
 }

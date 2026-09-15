@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Image as ImageIcon, Trash2 } from "lucide-react";
+import { Loader2, Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Image as ImageIcon, Trash2, ArrowLeft, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Ticket {
@@ -19,6 +19,15 @@ interface Ticket {
   attachments: string[];
   created_at: string;
   updated_at: string;
+}
+
+interface TicketMessage {
+  id: string;
+  user_id: string | null;
+  author_name: string | null;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
 }
 
 interface Department { id: string; name: string; slug: string; }
@@ -41,9 +50,18 @@ export default function SupportPage() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [form, setForm] = useState({ subject: "", body: "", priority: "normal", department: "support" });
   const [attachments, setAttachments] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Thread view — selecting a ticket opens its conversation instead of
+  // navigating away, same single-page pattern as the rest of the dashboard.
+  const [openTicket, setOpenTicket] = useState<Ticket | null>(null);
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
 
   // Deep-link support: /dashboard/support?new=1&dept=custom_dev opens the form
   // with the department preselected (used by the subscription "Contact Support" CTA).
@@ -54,10 +72,20 @@ export default function SupportPage() {
     if (dept) setForm(f => ({ ...f, department: dept }));
   }, []);
 
+  async function loadTickets(currentTenantId: string) {
+    const { data } = await supabase
+      .from("support_tickets")
+      .select("id,subject,body,status,priority,department,attachments,created_at,updated_at")
+      .eq("tenant_id", currentTenantId)
+      .order("created_at", { ascending: false });
+    setTickets(data ?? []);
+  }
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUserId(user.id);
       // Tenant comes from the server (subdomain-aware) rather than from a
       // tenant_members lookup: a super admin has no membership row, so
       // .single() returned HTTP 406 and support rendered permanently empty
@@ -70,12 +98,7 @@ export default function SupportPage() {
       const currentTenantId = tenantRes?.tenantId as string | null;
       if (!currentTenantId) { setLoading(false); return; }
       setTenantId(currentTenantId);
-      const { data } = await supabase
-        .from("support_tickets")
-        .select("id,subject,body,status,priority,department,attachments,created_at,updated_at")
-        .eq("tenant_id", currentTenantId)
-        .order("created_at", { ascending: false });
-      setTickets(data ?? []);
+      await loadTickets(currentTenantId);
       setLoading(false);
     })();
   }, []);
@@ -95,10 +118,10 @@ export default function SupportPage() {
   }
 
   async function submitTicket() {
-    if (!form.subject.trim() || !form.body.trim() || !tenantId) return;
+    if (!form.subject.trim() || !form.body.trim() || !tenantId || !userId) return;
     setSubmitting(true);
     const { error } = await supabase.from("support_tickets").insert({
-      tenant_id: tenantId, subject: form.subject.trim(), body: form.body.trim(),
+      tenant_id: tenantId, user_id: userId, subject: form.subject.trim(), body: form.body.trim(),
       priority: form.priority, department: form.department || "support",
       status: "open", attachments,
     });
@@ -106,14 +129,117 @@ export default function SupportPage() {
     toast.success("Ticket submitted.");
     setForm({ subject: "", body: "", priority: "normal", department: "support" });
     setAttachments([]); setShowForm(false);
-    const { data } = await supabase.from("support_tickets")
-      .select("id,subject,body,status,priority,department,attachments,created_at,updated_at")
-      .eq("tenant_id", tenantId).order("created_at", { ascending: false });
-    setTickets(data ?? []);
+    await loadTickets(tenantId);
     setSubmitting(false);
   }
 
+  async function openThread(ticket: Ticket) {
+    setOpenTicket(ticket);
+    setMessagesLoading(true);
+    const { data } = await supabase
+      .from("support_ticket_messages")
+      .select("id,user_id,author_name,body,is_internal,created_at")
+      // Internal notes are hidden from the tenant by the RLS SELECT policy
+      // already (ticket_messages_select has no is_internal carve-out for
+      // non-super-admins reading someone else's note) — no client filter
+      // needed, but is_internal rows for THIS tenant's own replies never
+      // exist anyway since tickets_insert forces is_internal=false.
+      .eq("ticket_id", ticket.id)
+      .order("created_at");
+    setMessages(data ?? []);
+    setMessagesLoading(false);
+  }
+
+  async function sendReply() {
+    if (!reply.trim() || !openTicket || !userId) return;
+    setSending(true);
+    const { error } = await supabase.from("support_ticket_messages").insert({
+      ticket_id: openTicket.id, user_id: userId, body: reply.trim(), is_internal: false,
+    });
+    if (error) { toast.error(error.message); setSending(false); return; }
+    // Reopen if it had been marked resolved/closed — a reply on a "done"
+    // ticket should surface back to support, not sit invisibly closed.
+    if (openTicket.status === "resolved" || openTicket.status === "closed") {
+      await supabase.from("support_tickets").update({ status: "open" }).eq("id", openTicket.id);
+      setOpenTicket(t => t ? { ...t, status: "open" } : t);
+      if (tenantId) await loadTickets(tenantId);
+    }
+    setReply("");
+    await openThread(openTicket);
+    setSending(false);
+  }
+
   const deptLabel = (slug: string) => departments.find(d => d.slug === slug)?.name ?? slug;
+
+  if (openTicket) {
+    const cfg = STATUS_CONFIG[openTicket.status] ?? STATUS_CONFIG.open;
+    return (
+      <div className="p-6 space-y-4 max-w-3xl">
+        <button onClick={() => setOpenTicket(null)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to tickets
+        </button>
+
+        <div className="rounded-xl border bg-card p-4 space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-semibold">{openTicket.subject}</h1>
+            <span className={cn("flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap", cfg.color)}>
+              {cfg.icon}{openTicket.status.replace("_", " ")}
+            </span>
+          </div>
+          <p className="text-sm whitespace-pre-wrap">{openTicket.body}</p>
+          {openTicket.attachments?.length > 0 && (
+            <div className="flex gap-1.5 flex-wrap pt-1">
+              {openTicket.attachments.map((url, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer"><img src={url} alt="" className="w-14 h-14 rounded object-cover border" /></a>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
+            <span className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{deptLabel(openTicket.department)}</span>
+            <span>Submitted {new Date(openTicket.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <p className="text-sm font-semibold">Conversation</p>
+          {messagesLoading ? (
+            <div className="flex justify-center py-6"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
+          ) : messages.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No replies yet — our team typically responds within 1 business day.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {messages.map(m => (
+                <div key={m.id} className={cn("rounded-lg p-3 text-sm", m.user_id === userId ? "bg-primary/10 ml-8" : "bg-muted/40 mr-8")}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold">{m.user_id === userId ? "You" : (m.author_name ?? "Support")}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(m.created_at).toLocaleString()}</span>
+                  </div>
+                  <p className="whitespace-pre-wrap">{m.body}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-2 pt-2 border-t">
+            <textarea
+              rows={3}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Write a reply..."
+              value={reply}
+              onChange={e => setReply(e.target.value)}
+            />
+            <div className="flex justify-end">
+              <Button size="sm" onClick={sendReply} disabled={sending || !reply.trim()}>
+                {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Send className="w-3.5 h-3.5 mr-1.5" />}
+                Send reply
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-3xl">
@@ -207,7 +333,7 @@ export default function SupportPage() {
           {tickets.map(ticket => {
             const cfg = STATUS_CONFIG[ticket.status] ?? STATUS_CONFIG.open;
             return (
-              <div key={ticket.id} className="rounded-xl border bg-card p-4 space-y-2">
+              <button key={ticket.id} onClick={() => openThread(ticket)} className="w-full text-left rounded-xl border bg-card p-4 space-y-2 hover:border-primary/50 transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-semibold text-sm">{ticket.subject}</p>
                   <span className={cn("flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap", cfg.color)}>
@@ -230,7 +356,7 @@ export default function SupportPage() {
                   <span className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{deptLabel(ticket.department)}</span>
                   <span>Submitted {new Date(ticket.created_at).toLocaleDateString()}</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

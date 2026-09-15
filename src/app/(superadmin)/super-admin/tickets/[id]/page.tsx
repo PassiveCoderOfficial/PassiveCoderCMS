@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { TicketIcon, ArrowLeft, Loader2, Save, CheckCircle } from "lucide-react";
+import { TicketIcon, ArrowLeft, Loader2, Save, CheckCircle, Send, Lock } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface Ticket {
   id: string;
@@ -31,24 +32,37 @@ interface PendingSub { id: string; plan_id: string; payment_provider: string; am
 
 interface Dept { id: string; name: string; slug: string; }
 
+interface TicketMessage {
+  id: string;
+  user_id: string | null;
+  author_name: string | null;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
+}
+
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [depts, setDepts] = useState<Dept[]>([]);
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
   const [pendingSub, setPendingSub] = useState<PendingSub | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [reply, setReply] = useState("");
+  const [internalNote, setInternalNote] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const [editDept, setEditDept] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [editPriority, setEditPriority] = useState("");
 
-  useEffect(() => {
-    fetch(`/api/super-admin/tickets?id=${id}`)
+  function load() {
+    return fetch(`/api/super-admin/tickets?id=${id}`)
       .then(r => r.json())
-      .then(({ ticket: t, depts: d }) => {
+      .then(({ ticket: t, depts: d, messages: m }) => {
         if (t) {
           setTicket(t as Ticket);
           setEditDept(t.department);
@@ -63,9 +77,28 @@ export default function TicketDetailPage() {
             .catch(() => {});
         }
         setDepts(d ?? []);
+        setMessages(m ?? []);
         setLoading(false);
       });
-  }, [id]);
+  }
+
+  useEffect(() => { load(); }, [id]);
+
+  async function sendReply() {
+    if (!reply.trim()) return;
+    setSending(true);
+    const res = await fetch("/api/super-admin/tickets", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticketId: id, body: reply.trim(), isInternal: internalNote }),
+    });
+    setSending(false);
+    if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d.error ?? "Failed to send"); return; }
+    setReply("");
+    setInternalNote(false);
+    toast.success(internalNote ? "Note added" : "Reply sent");
+    await load();
+  }
 
   async function save() {
     if (!ticket) return;
@@ -143,6 +176,56 @@ export default function TicketDetailPage() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Conversation thread */}
+      <Card>
+        <CardHeader><CardTitle className="text-sm">Conversation</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          {messages.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No replies yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {messages.map(m => (
+                <div key={m.id} className={cn(
+                  "rounded-lg p-3 text-sm",
+                  m.is_internal ? "bg-amber-900/20 border border-amber-800/50" : "bg-muted/40",
+                )}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold">{m.author_name ?? "Support"}</span>
+                    {m.is_internal && (
+                      <span className="flex items-center gap-1 text-[10px] text-amber-400">
+                        <Lock className="w-2.5 h-2.5" /> internal note
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(m.created_at).toLocaleString()}</span>
+                  </div>
+                  <p className="whitespace-pre-wrap">{m.body}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-2 pt-2 border-t">
+            <textarea
+              rows={3}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder={internalNote ? "Internal note (staff only, not visible to the tenant)..." : "Reply to this ticket..."}
+              value={reply}
+              onChange={e => setReply(e.target.value)}
+            />
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                <input type="checkbox" checked={internalNote} onChange={e => setInternalNote(e.target.checked)} />
+                Internal note (staff only)
+              </label>
+              <Button size="sm" onClick={sendReply} disabled={sending || !reply.trim()}>
+                {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {internalNote ? "Add note" : "Send reply"}
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
