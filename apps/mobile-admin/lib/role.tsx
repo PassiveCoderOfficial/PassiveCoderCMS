@@ -82,7 +82,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       const { data: rows } = await supabase
         .from("tenant_members")
         .select(
-          "tenant_id, role, tenants(id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at)"
+          "tenant_id, role, tenants(id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules)"
         )
         .eq("user_id", user.id);
       if (cancelled) return;
@@ -103,7 +103,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       if (built.length === 0) {
         const { data: owned } = await supabase
           .from("tenants")
-          .select("id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at")
+          .select("id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules")
           .eq("owner_id", user.id);
         if (cancelled) return;
         built = (owned ?? []).map((t) => ({ tenantId: t.id, role: "owner" as const, tenant: t as Tenant }));

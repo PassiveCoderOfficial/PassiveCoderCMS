@@ -21,6 +21,7 @@ export default function TenantSiteStackLayout() {
       <Stack.Screen name="settings" options={{ title: "Settings" }} />
       <Stack.Screen name="domain" options={{ title: "Domain" }} />
       <Stack.Screen name="transfer" options={{ title: "Transfer ownership" }} />
+      <Stack.Screen name="restaurant" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -16,7 +16,17 @@ export interface ApiResult<T = unknown> {
 
 export async function apiFetch<T = unknown>(
   path: string,
-  options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown } = {}
+  options: {
+    method?: "GET" | "POST" | "PATCH" | "DELETE";
+    body?: unknown;
+    /** Selected tenant id, sent as X-Tenant-Id. Web routes resolve tenant
+     *  from the subdomain/cookie session; mobile has neither, so it sends
+     *  its own selected tenant explicitly — the server verifies the caller
+     *  actually belongs to it (verifyBearerTenantMember) rather than
+     *  trusting the header alone. Only routes that opt into Bearer auth
+     *  (currently just api/ecommerce/pos) read this. */
+    tenantId?: string;
+  } = {}
 ): Promise<ApiResult<T>> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
@@ -24,6 +34,7 @@ export async function apiFetch<T = unknown>(
   const headers: Record<string, string> = {};
   if (options.body) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (options.tenantId) headers["X-Tenant-Id"] = options.tenantId;
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {

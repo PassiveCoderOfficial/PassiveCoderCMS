@@ -13,6 +13,11 @@ export interface Tenant {
   custom_domain: string | null;
   domain_status: "none" | "pending" | "active" | "failed";
   trial_ends_at: string | null;
+  /** Per-tenant module overrides (see lib/restaurant.ts) — mirrors
+   *  tenants.enabled_modules on the web. A module still needs the tenant's
+   *  plan to include it in the first place (checked server-side); this is
+   *  the tenant-level on/off within what the plan allows. */
+  enabled_modules?: Record<string, boolean> | null;
 }
 
 export type TenantMemberRole = "owner" | "admin" | "editor" | "viewer";

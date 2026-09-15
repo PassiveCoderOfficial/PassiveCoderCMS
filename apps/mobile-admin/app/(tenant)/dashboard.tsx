@@ -25,6 +25,7 @@ import { radius, shadow, spacing, type } from "../../lib/theme";
 import { useTheme } from "../../lib/themeContext";
 import { useToast } from "../../lib/toast";
 import { tapFeedback } from "../../lib/haptics";
+import { hasRestaurantAccess } from "../../lib/restaurant";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -43,9 +44,17 @@ export default function DashboardScreen() {
   const [leads, setLeads] = useState<RecentLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [restaurantAccess, setRestaurantAccess] = useState(false);
 
   const membership = memberships.find((m) => m.tenantId === selectedTenantId);
   const tenantId = membership?.tenantId;
+
+  useEffect(() => {
+    if (!membership) { setRestaurantAccess(false); return; }
+    let cancelled = false;
+    hasRestaurantAccess(membership.tenant).then((v) => { if (!cancelled) setRestaurantAccess(v); });
+    return () => { cancelled = true; };
+  }, [membership]);
 
   const load = useCallback(async () => {
     if (!tenantId) {
@@ -209,6 +218,21 @@ export default function DashboardScreen() {
           right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
         />
       </Card>
+
+      {/* ------------------------------------------------------ Restaurant */}
+      {restaurantAccess && (
+        <>
+          <SectionHeader title="Restaurant" />
+          <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
+            <Row icon="🍳" title="Kitchen" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/kitchen`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+            <Row icon="🧾" title="POS" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/pos`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+            <Row icon="🏪" title="Branches" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/branches`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+            <Row icon="🏍️" title="Riders" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/riders`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+            <Row icon="📅" title="Reservations" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/reservations`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+            <Row icon="📊" title="Sales" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/sales`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+          </Card>
+        </>
+      )}
     </Screen>
   );
 }
