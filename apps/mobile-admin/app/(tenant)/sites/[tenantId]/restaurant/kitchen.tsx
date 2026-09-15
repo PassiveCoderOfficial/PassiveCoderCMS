@@ -8,11 +8,11 @@
 // Polls every 8s, same cadence as web, since there's no push-on-new-order
 // wired up yet for this app.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { getKitchenOrders, advanceKitchenStatus, type KitchenOrder } from "../../../../../lib/queries/restaurant";
-import { EmptyState, Screen, SkeletonList, Badge, Card } from "../../../../../components/ui";
+import { getKitchenOrders, advanceKitchenStatus, getBranches, type KitchenOrder, type RestaurantBranch } from "../../../../../lib/queries/restaurant";
+import { EmptyState, Screen, SkeletonList, Badge, Card, Pill } from "../../../../../components/ui";
 import { Button } from "../../../../../components/form";
 import { spacing, type } from "../../../../../lib/theme";
 import { useTheme } from "../../../../../lib/themeContext";
@@ -42,6 +42,8 @@ export default function KitchenScreen() {
   const { palette } = useTheme();
   const { error: toastError } = useToast();
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
+  const [branches, setBranches] = useState<RestaurantBranch[]>([]);
+  const [branchFilter, setBranchFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -50,8 +52,9 @@ export default function KitchenScreen() {
   const load = useCallback(async (silent = false) => {
     if (!tenantId) { setLoading(false); return; }
     try {
-      const rows = await getKitchenOrders(tenantId);
+      const [rows, b] = await Promise.all([getKitchenOrders(tenantId), getBranches(tenantId)]);
       setOrders(rows);
+      setBranches(b);
     } catch (e) {
       if (!silent) toastError(e instanceof Error ? e.message : "Failed to load kitchen orders");
     } finally {
@@ -65,6 +68,11 @@ export default function KitchenScreen() {
     pollRef.current = setInterval(() => load(true), 8000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [load]);
+
+  const shown = useMemo(
+    () => branchFilter === "all" ? orders : orders.filter((o) => o.branch_id === branchFilter),
+    [orders, branchFilter],
+  );
 
   async function advance(order: KitchenOrder) {
     const next = nextStatus(order);
@@ -89,8 +97,16 @@ export default function KitchenScreen() {
 
   return (
     <Screen scroll={false}>
+      {branches.length > 1 && (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, padding: spacing.lg, paddingBottom: 0 }}>
+          <Pill label="All branches" selected={branchFilter === "all"} onPress={() => setBranchFilter("all")} />
+          {branches.map((b) => (
+            <Pill key={b.id} label={b.name} selected={branchFilter === b.id} onPress={() => setBranchFilter(b.id)} />
+          ))}
+        </View>
+      )}
       <FlatList
-        data={orders}
+        data={shown}
         keyExtractor={(o) => o.id}
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, flexGrow: 1 }}
         refreshControl={

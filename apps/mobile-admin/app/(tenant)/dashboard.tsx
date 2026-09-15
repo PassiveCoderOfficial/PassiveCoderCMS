@@ -217,6 +217,13 @@ export default function DashboardScreen() {
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/domain`)}
           right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
         />
+        <Row
+          icon="💳"
+          title="Billing"
+          subtitle={humanize(stats?.plan ?? tenant.plan)}
+          onPress={() => router.push(`/(tenant)/sites/${tenant.id}/billing`)}
+          right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
+        />
       </Card>
 
       {/* ------------------------------------------------------ Restaurant */}

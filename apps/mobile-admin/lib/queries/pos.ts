@@ -14,6 +14,15 @@ export interface CartLine {
   quantity: number;
 }
 
+/** Local-only grouping id for a split bill's sub-orders — not a security
+ *  token, just needs to be unique enough to tie N orders together in
+ *  Orders history (matches split_group_id's actual use on the web).
+ *  global.crypto.randomUUID isn't reliably present in the Hermes/RN
+ *  runtime across Expo SDK versions, so this avoids depending on it. */
+function localGroupId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export interface PosCheckoutResult {
   ok: boolean;
   orderId?: string;
@@ -62,4 +71,47 @@ export async function ringUpSale(
   );
   if (!res.ok) return { ok: false, error: res.data.error ?? `Sale failed (${res.status})` };
   return { ok: true, orderId: res.data.orderId, orderNumber: res.data.orderNumber, total: res.data.total };
+}
+
+export interface SplitSeat { items: CartLine[]; discount: number }
+
+export interface SplitCheckoutResult {
+  ok: boolean;
+  seatsCharged: number;
+  lastOrderNumber?: string;
+  lastTotal?: number;
+  error?: string;
+}
+
+/** Same "one order per non-empty seat" flow as the web's checkoutSplit —
+ *  fires sequentially (not parallel) so a mid-split failure is reported
+ *  against a known "N seats already went through" count, not an ambiguous
+ *  partial-success race. */
+export async function ringUpSplitSale(
+  tenantId: string,
+  seats: SplitSeat[],
+  common: { payment_method: string; customer_name?: string; branch_id?: string; table_id?: string },
+): Promise<SplitCheckoutResult> {
+  const nonEmpty = seats.filter((s) => s.items.length > 0);
+  if (nonEmpty.length < 2) return { ok: false, seatsCharged: 0, error: "Assign items to at least 2 seats to split the bill." };
+
+  const groupId = localGroupId();
+  let lastOrderNumber: string | undefined;
+  let lastTotal: number | undefined;
+
+  for (let i = 0; i < nonEmpty.length; i++) {
+    const seat = nonEmpty[i];
+    const res = await ringUpSale(tenantId, {
+      ...common,
+      items: seat.items,
+      discount: seat.discount,
+      split_group_id: groupId,
+      split_label: `Seat ${i + 1} of ${nonEmpty.length}`,
+    });
+    if (!res.ok) return { ok: false, seatsCharged: i, error: res.error ?? "One of the split bills failed to save — check Orders before re-ringing anything, some seats may have already gone through." };
+    lastOrderNumber = res.orderNumber;
+    lastTotal = res.total;
+  }
+
+  return { ok: true, seatsCharged: nonEmpty.length, lastOrderNumber, lastTotal };
 }

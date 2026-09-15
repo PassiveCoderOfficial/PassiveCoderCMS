@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Stack, router } from "expo-router";
+import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
@@ -43,6 +43,7 @@ function Gate({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { loading: roleLoading } = useRole();
   const ready = !authLoading && !roleLoading;
+  const segments = useSegments();
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
@@ -52,9 +53,17 @@ function Gate({ children }: { children: React.ReactNode }) {
   // deep inside (admin)/(tenant) doesn't re-mount it, so nothing sends the
   // user back to /login on its own. Force it here, at the root, whenever
   // auth resolves to signed-out after the initial load.
+  //
+  // /onboard is the one route a signed-out visitor is allowed to be on —
+  // it has its own signup step (mirroring web's AuthGate). Without this
+  // exception, a brand-new visitor tapping "Create a site" from /login
+  // would be bounced straight back to /login by this same effect before
+  // they could ever sign up.
   useEffect(() => {
-    if (ready && !user) router.replace("/login");
-  }, [ready, user]);
+    if (!ready || user) return;
+    if (segments[0] === "onboard") return;
+    router.replace("/login");
+  }, [ready, user, segments]);
 
   if (!ready) return <LoadingSpinner />;
   return <>{children}</>;
@@ -82,6 +91,7 @@ function ThemedRoot() {
         >
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ title: "Log in", headerShown: false }} />
+          <Stack.Screen name="onboard" options={{ headerShown: false }} />
           <Stack.Screen name="(tenant)" options={{ headerShown: false }} />
           <Stack.Screen name="(admin)" options={{ headerShown: false }} />
         </Stack>

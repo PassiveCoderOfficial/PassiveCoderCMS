@@ -3,7 +3,7 @@
 // apiTenantId()/getCurrentTenantId(): super_admins > pc_staff > tenant
 // membership > owned tenants (fallback for an owner with no membership row).
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "./auth";
 import { supabase } from "./supabase";
 import type { Tenant, TenantMembership, TenantMemberRole } from "./types";
@@ -15,6 +15,12 @@ interface RoleCtx {
   isManager: boolean;
   memberships: TenantMembership[];
   loading: boolean;
+  /** Re-runs resolution without waiting for the `user` object's identity to
+   *  change. Needed after onboarding creates a brand-new tenant_members row
+   *  server-side — nothing about the auth session itself changes, so the
+   *  effect below would never re-fire on its own, and the app would keep
+   *  showing "no sites yet" for a tenant that was just created. */
+  refresh: () => Promise<void>;
 }
 
 const Ctx = createContext<RoleCtx>({
@@ -22,6 +28,7 @@ const Ctx = createContext<RoleCtx>({
   isManager: false,
   memberships: [],
   loading: true,
+  refresh: async () => {},
 });
 
 export const useRole = () => useContext(Ctx);
@@ -32,101 +39,101 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const [isManager, setIsManager] = useState(false);
   const [memberships, setMemberships] = useState<TenantMembership[]>([]);
   const [loading, setLoading] = useState(true);
+  const cancelledRef = useRef(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function resolve() {
-      if (!user) {
-        setRole(null);
-        setIsManager(false);
-        setMemberships([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-
-      // 1. Super admin.
-      const { data: sa } = await supabase
-        .from("super_admins")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (cancelled) return;
-      if (sa) {
-        setRole("super_admin");
-        setIsManager(false);
-        setMemberships([]);
-        setLoading(false);
-        return;
-      }
-
-      // 2. Passive Coder staff.
-      const { data: staff } = await supabase
-        .from("pc_staff")
-        .select("user_id, status, is_manager")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .maybeSingle();
-      if (cancelled) return;
-      if (staff) {
-        setRole("pc_staff");
-        setIsManager(Boolean(staff.is_manager));
-        setMemberships([]);
-        setLoading(false);
-        return;
-      }
-
-      // 3. Tenant membership.
-      const { data: rows } = await supabase
-        .from("tenant_members")
-        .select(
-          "tenant_id, role, tenants(id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules)"
-        )
-        .eq("user_id", user.id);
-      if (cancelled) return;
-
-      // supabase-js types the joined relation loosely; narrow it by hand.
-      type Row = { tenant_id: string; role: TenantMemberRole; tenants: Tenant | Tenant[] | null };
-      let built: TenantMembership[] = ((rows ?? []) as Row[])
-        .map((r) => {
-          const tenant = Array.isArray(r.tenants) ? r.tenants[0] : r.tenants;
-          if (!tenant) return null;
-          return { tenantId: r.tenant_id, role: r.role, tenant };
-        })
-        .filter((m): m is TenantMembership => m !== null);
-
-      // 4. Fallback: tenants owned directly with no membership row (shouldn't
-      // normally happen — ownership is supposed to be mirrored into
-      // tenant_members — but this covers it defensively, same as the web).
-      if (built.length === 0) {
-        const { data: owned } = await supabase
-          .from("tenants")
-          .select("id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules")
-          .eq("owner_id", user.id);
-        if (cancelled) return;
-        built = (owned ?? []).map((t) => ({ tenantId: t.id, role: "owner" as const, tenant: t as Tenant }));
-      }
-
-      setRole(built.length > 0 ? "tenant" : null);
+  const resolve = useCallback(async () => {
+    if (!user) {
+      setRole(null);
       setIsManager(false);
-      setMemberships(built);
+      setMemberships([]);
       setLoading(false);
+      return;
     }
 
+    setLoading(true);
+
+    // 1. Super admin.
+    const { data: sa } = await supabase
+      .from("super_admins")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (cancelledRef.current) return;
+    if (sa) {
+      setRole("super_admin");
+      setIsManager(false);
+      setMemberships([]);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Passive Coder staff.
+    const { data: staff } = await supabase
+      .from("pc_staff")
+      .select("user_id, status, is_manager")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (cancelledRef.current) return;
+    if (staff) {
+      setRole("pc_staff");
+      setIsManager(Boolean(staff.is_manager));
+      setMemberships([]);
+      setLoading(false);
+      return;
+    }
+
+    // 3. Tenant membership.
+    const { data: rows } = await supabase
+      .from("tenant_members")
+      .select(
+        "tenant_id, role, tenants(id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules)"
+      )
+      .eq("user_id", user.id);
+    if (cancelledRef.current) return;
+
+    // supabase-js types the joined relation loosely; narrow it by hand.
+    type Row = { tenant_id: string; role: TenantMemberRole; tenants: Tenant | Tenant[] | null };
+    let built: TenantMembership[] = ((rows ?? []) as Row[])
+      .map((r) => {
+        const tenant = Array.isArray(r.tenants) ? r.tenants[0] : r.tenants;
+        if (!tenant) return null;
+        return { tenantId: r.tenant_id, role: r.role, tenant };
+      })
+      .filter((m): m is TenantMembership => m !== null);
+
+    // 4. Fallback: tenants owned directly with no membership row (shouldn't
+    // normally happen — ownership is supposed to be mirrored into
+    // tenant_members — but this covers it defensively, same as the web).
+    if (built.length === 0) {
+      const { data: owned } = await supabase
+        .from("tenants")
+        .select("id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules")
+        .eq("owner_id", user.id);
+      if (cancelledRef.current) return;
+      built = (owned ?? []).map((t) => ({ tenantId: t.id, role: "owner" as const, tenant: t as Tenant }));
+    }
+
+    setRole(built.length > 0 ? "tenant" : null);
+    setIsManager(false);
+    setMemberships(built);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    cancelledRef.current = false;
     resolve();
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
-  }, [user]);
+  }, [resolve]);
 
   // Memoised: an object literal here would be a new identity on every render,
   // re-rendering every useRole() consumer and re-firing effects that depend on
   // `memberships` (notably SelectedTenantProvider's resolve()).
   const value = useMemo(
-    () => ({ role, isManager, memberships, loading }),
-    [role, isManager, memberships, loading],
+    () => ({ role, isManager, memberships, loading, refresh: resolve }),
+    [role, isManager, memberships, loading, resolve],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

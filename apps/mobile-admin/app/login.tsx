@@ -114,6 +114,10 @@ export default function LoginScreen() {
 
         <Button title="Sign In" onPress={submit} loading={busy} disabled={!canSubmit} />
       </Card>
+
+      <Pressable onPress={() => router.push("/onboard")} style={{ alignSelf: "center", marginTop: spacing.lg }}>
+        <Text style={[type.body, { color: palette.primary600 }]}>New here? Create a site</Text>
+      </Pressable>
     </Screen>
   );
 }

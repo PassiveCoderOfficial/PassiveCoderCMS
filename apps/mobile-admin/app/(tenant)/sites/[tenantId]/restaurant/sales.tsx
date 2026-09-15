@@ -10,13 +10,9 @@ import { Card, Screen, SectionHeader, Skeleton, Pill, Tag } from "../../../../..
 import { spacing, type } from "../../../../../lib/theme";
 import { useTheme } from "../../../../../lib/themeContext";
 import { useToast } from "../../../../../lib/toast";
+import { getTenantCurrency, formatMoney } from "../../../../../lib/currency";
 
 const RANGES: (7 | 30 | 90)[] = [7, 30, 90];
-
-function money(n: number): string {
-  try { return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n); }
-  catch { return `$${n.toFixed(2)}`; }
-}
 
 export default function SalesScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
@@ -25,12 +21,15 @@ export default function SalesScreen() {
   const [range, setRange] = useState<7 | 30 | 90>(30);
   const [data, setData] = useState<SalesAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currency, setCurrency] = useState("USD");
 
   const load = useCallback(async () => {
     if (!tenantId) { setLoading(false); return; }
     setLoading(true);
     try {
-      setData(await getSalesAnalytics(tenantId, range));
+      const [d, c] = await Promise.all([getSalesAnalytics(tenantId, range), getTenantCurrency(tenantId)]);
+      setData(d);
+      setCurrency(c);
     } catch (e) {
       toastError(e instanceof Error ? e.message : "Failed to load sales data");
     } finally {
@@ -63,12 +62,12 @@ export default function SalesScreen() {
               <Text style={[type.caption, { color: palette.textMuted }]}>Orders</Text>
             </Card>
             <Card style={{ flex: 1 }}>
-              <Text style={[type.title, { color: palette.text }]}>{money(data.totalRevenue)}</Text>
+              <Text style={[type.title, { color: palette.text }]}>{formatMoney(data.totalRevenue, currency)}</Text>
               <Text style={[type.caption, { color: palette.textMuted }]}>Revenue</Text>
             </Card>
           </View>
           <Card>
-            <Text style={[type.bodyStrong, { color: palette.text }]}>{money(data.avgTicket)}</Text>
+            <Text style={[type.bodyStrong, { color: palette.text }]}>{formatMoney(data.avgTicket, currency)}</Text>
             <Text style={[type.caption, { color: palette.textMuted }]}>Average ticket</Text>
           </Card>
 
