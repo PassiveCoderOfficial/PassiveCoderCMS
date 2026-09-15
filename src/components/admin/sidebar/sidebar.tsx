@@ -1,132 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { navSections } from "./nav-items";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShieldCheck, Menu, X, LogOut, Zap, MessageCircle, ChevronDown } from "lucide-react";
-import type { NavItem, ModuleKey } from "./nav-items";
+import { ExternalLink, ShieldCheck, LogOut, Zap, MessageCircle, X, Store } from "lucide-react";
+import type { ModuleKey } from "./nav-items";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
+import { Shell } from "@/components/admin-shell/sidebar";
+import type { ShellNavItem } from "@/components/admin-shell/types";
 
-function NavLinkItem({ item, pathname, onClose, dark = false, brand = false }: { item: NavItem; pathname: string; onClose?: () => void; dark?: boolean; brand?: boolean }) {
-  const isExternal = item.href === "/";
-  const hasChildren = (item.children?.length ?? 0) > 0;
+// Routes where the full-width page builder needs the sidebar out of the way by
+// default. Still user-togglable via the rail button — this only sets the
+// initial state per route.
+const BUILDER_ROUTE = /^\/dashboard\/pages\/[^/]+$/;
 
-  // A child route is "within" this item if pathname matches the parent base —
-  // or any child's own href. Several groups (Templates especially) have
-  // children on unrelated top-level paths (/dashboard/navigation,
-  // /dashboard/header-builder…), so a prefix check alone collapsed the group
-  // as soon as you opened one of its own sub-pages.
-  const onChildRoute = (item.children ?? []).some(
-    (c) => c.href !== "/" && (pathname === c.href || pathname.startsWith(c.href + "/")),
-  );
-  const withinParent = (pathname.startsWith(item.href) && item.href !== "/") || onChildRoute;
-  const [expanded, setExpanded] = useState(withinParent);
-
-  // Keep the group open when navigating between its sub-pages — useState only
-  // seeds on mount, so client-side nav left it stuck closed.
-  useEffect(() => {
-    if (withinParent) setExpanded(true);
-  }, [withinParent]);
-
-  const isActive =
-    item.href === "/dashboard"
-      ? pathname === item.href
-      : hasChildren
-        ? pathname === item.href // parent only "active" on its own exact page
-        : withinParent;
-
-  // Tone classes — the "tools" section sits on a dark panel in both themes;
-  // "brand" (Subscription/Support) is always white-on-orange regardless of theme.
-  const idle = brand
-    ? "text-white/90 hover:bg-black/10 hover:text-white"
-    : dark
-      ? "text-gray-400 hover:bg-white/10 hover:text-white"
-      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground";
-  const active = brand
-    ? "bg-black/20 text-white"
-    : dark
-      ? "bg-indigo-600 text-white"
-      : "bg-primary text-primary-foreground";
-  const parentOpen = brand
-    ? "bg-black/10 text-white"
-    : dark
-      ? "bg-white/10 text-white"
-      : "bg-accent/50 text-foreground";
-
-  if (hasChildren) {
-    return (
-      <li>
-        <div
-          className={cn(
-            "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors cursor-pointer",
-            withinParent && !expanded ? parentOpen : idle,
-          )}
-          onClick={() => setExpanded((v) => !v)}
-        >
-          <item.icon className="h-4 w-4 shrink-0" />
-          <span className="flex-1">{item.label}</span>
-          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")} />
-        </div>
-        {expanded && (
-          <ul className={cn("mt-0.5 ml-3 pl-2 border-l space-y-0.5", dark ? "border-gray-700" : "border-border")}>
-            {item.children!.map((child) => {
-              const childActive = pathname === child.href;
-              return (
-                <li key={child.href}>
-                  <Link
-                    href={child.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors",
-                      childActive ? active : idle,
-                    )}
-                  >
-                    <child.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="flex-1">{child.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </li>
-    );
-  }
-
+function AdminHeader({ onClose }: { onClose?: () => void }) {
   return (
-    <li>
-      <Link
-        href={item.href}
-        target={isExternal ? "_blank" : undefined}
-        onClick={onClose}
-        className={cn(
-          "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",
-          isActive ? active : idle,
+    <div className="flex h-14 items-center justify-between px-4 border-b gap-2">
+      <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center min-w-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"
+          alt="Passive Coder"
+          className="h-7 w-auto"
+        />
+      </a>
+      <div className="flex items-center gap-1 shrink-0">
+        {/* href="/" resolves relative to the current tenant subdomain, so this
+            always opens that tenant's own live homepage — not passivecoder.com. */}
+        <Link
+          href="/"
+          target="_blank"
+          title="Visit Site"
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </Link>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
         )}
-      >
-        <item.icon className="h-4 w-4 shrink-0" />
-        <span className="flex-1">{item.label}</span>
-        {isExternal && <ExternalLink className="h-3 w-3 opacity-50" />}
-        {item.badge && (
-          <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-medium", dark ? "bg-white/15" : "bg-primary/20")}>
-            {item.badge}
-          </span>
-        )}
-      </Link>
-    </li>
+      </div>
+    </div>
   );
 }
 
-function SidebarContent({ isSuperAdmin, isStaff, enabledModules, onClose }: {
-  isSuperAdmin: boolean; isStaff: boolean; enabledModules?: Record<ModuleKey, boolean>; onClose?: () => void;
-}) {
-  const pathname = usePathname();
+function AdminFooter({ isSuperAdmin, isStaff, isVendor }: { isSuperAdmin: boolean; isStaff: boolean; isVendor: boolean }) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -137,82 +60,12 @@ function SidebarContent({ isSuperAdmin, isStaff, enabledModules, onClose }: {
 
   return (
     <>
-      {/* Logo */}
-      <div className="flex h-14 items-center justify-between px-4 border-b gap-2">
-        <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center min-w-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png"
-            alt="Passive Coder"
-            className="h-7 w-auto"
-          />
-        </a>
-        <div className="flex items-center gap-1 shrink-0">
-          {/* href="/" resolves relative to the current tenant subdomain, so this
-              always opens that tenant's own live homepage — not passivecoder.com. */}
-          <Link
-            href="/"
-            target="_blank"
-            title="Visit Site"
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-          </Link>
-          {onClose && (
-            <button onClick={onClose} className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground">
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Nav */}
-      <ScrollArea className="flex-1">
-        <nav className="px-2 py-3 space-y-4">
-          {navSections.map((section) => {
-            const isTools = section.variant === "tools";
-            const isBrand = section.variant === "brand";
-            return (
-              <div
-                key={section.label}
-                className={cn(
-                  isTools && "rounded-xl bg-gray-950 border border-gray-800 p-2 shadow-inner",
-                  isBrand && "rounded-xl p-2 shadow-sm",
-                )}
-                style={isBrand ? { backgroundColor: "#C2410C" } : undefined}
-              >
-                <p className={cn(
-                  "px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest",
-                  isTools ? "text-gray-500 pt-1" : isBrand ? "text-white/70 pt-1" : "text-muted-foreground",
-                )}>
-                  {section.label}
-                </p>
-                <ul className="space-y-0.5">
-                  {section.items.filter((item) => {
-                    if (item.saasOnly && !isSaaS) return false;
-                    if (item.standaloneOnly && isSaaS) return false;
-                    // enabledModules is undefined for super admins (bypass) —
-                    // only gate when it's actually resolved (regular tenants/agents).
-                    if (item.moduleKey && enabledModules && !enabledModules[item.moduleKey]) return false;
-                    return true;
-                  }).map((item) => (
-                    <NavLinkItem key={item.href} item={item} pathname={pathname} onClose={onClose} dark={isTools} brand={isBrand} />
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </nav>
-      </ScrollArea>
-
-      {/* Footer */}
       <Separator />
       <div className="p-3 space-y-1">
         <div className="flex items-center gap-1">
           {isSuperAdmin && (
             <Link
               href="/super-admin"
-              onClick={onClose}
               className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-indigo-500 hover:bg-accent hover:text-indigo-400 transition-colors"
             >
               <ShieldCheck className="h-4 w-4 shrink-0" />
@@ -222,12 +75,20 @@ function SidebarContent({ isSuperAdmin, isStaff, enabledModules, onClose }: {
           {isStaff && !isSuperAdmin && (
             <a
               href={`${typeof window !== "undefined" && window.location.hostname.includes("localhost") ? "http" : "https"}://${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com"}/staff`}
-              onClick={onClose}
               className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-yellow-500 hover:bg-accent hover:text-yellow-400 transition-colors"
             >
               <Zap className="h-4 w-4 shrink-0" />
               Staff Portal
             </a>
+          )}
+          {isVendor && !isSuperAdmin && !isStaff && (
+            <Link
+              href="/vendor/dashboard"
+              className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-emerald-600 hover:bg-accent hover:text-emerald-500 transition-colors"
+            >
+              <Store className="h-4 w-4 shrink-0" />
+              Seller Centre
+            </Link>
           )}
           <button
             onClick={handleLogout}
@@ -252,80 +113,27 @@ function SidebarContent({ isSuperAdmin, isStaff, enabledModules, onClose }: {
   );
 }
 
-// Routes where the full-width page builder needs the sidebar out of the way by
-// default. Still user-togglable via the rail button — this only sets the
-// initial state per route.
-const BUILDER_ROUTE = /^\/dashboard\/pages\/[^/]+$/;
-
-export function AdminSidebar({ isSuperAdmin = false, isStaff = false, enabledModules }: {
-  isSuperAdmin?: boolean; isStaff?: boolean; enabledModules?: Record<ModuleKey, boolean>;
+export function AdminSidebar({ isSuperAdmin = false, isStaff = false, isVendor = false, enabledModules }: {
+  isSuperAdmin?: boolean; isStaff?: boolean; isVendor?: boolean; enabledModules?: Record<ModuleKey, boolean>;
 }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const isBuilderRoute = BUILDER_ROUTE.test(pathname) && pathname !== "/dashboard/pages/new";
 
-  // Reset to the route's default collapse state whenever the route itself
-  // changes (e.g. navigating into/out of a page editor), while still letting
-  // the user toggle away from that default within the same route. Storing the
-  // "last seen route" in state (not a ref) keeps this comparison pure during
-  // render instead of mutating a ref or calling setState from an effect.
-  const [lastPath, setLastPath] = useState(pathname);
-  const [collapsed, setCollapsed] = useState(isBuilderRoute);
-  if (pathname !== lastPath) {
-    setLastPath(pathname);
-    setCollapsed(isBuilderRoute);
-  }
-
   return (
-    <>
-      {/* Mobile hamburger — shown in topbar via this exported button */}
-      <button
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-3.5 left-3 z-40 p-2 rounded-md bg-background border shadow-sm"
-        aria-label="Open menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
-      {/* Mobile overlay */}
-      {open && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      {/* Mobile drawer */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col w-60 border-r bg-sidebar transition-transform duration-200 lg:hidden",
-        open ? "translate-x-0" : "-translate-x-full",
-      )}>
-        <SidebarContent isSuperAdmin={isSuperAdmin} isStaff={isStaff} enabledModules={enabledModules} onClose={() => setOpen(false)} />
-      </aside>
-
-      {/* Desktop sidebar — collapsible; defaults collapsed on the page builder route */}
-      <div className="hidden lg:flex h-screen flex-shrink-0 relative">
-        <aside className={cn(
-          "h-screen flex-col border-r bg-sidebar overflow-hidden transition-[width] duration-200",
-          collapsed ? "w-0" : "w-60 flex",
-        )}>
-          {/* Fixed-width flex column, independent of the parent's animated
-              width, so ScrollArea's flex-1 still has a bounded height to fill
-              — without h-full flex flex-col here the nav list can't scroll
-              and anything past the viewport becomes unreachable. */}
-          <div className="w-60 h-full flex flex-col">
-            <SidebarContent isSuperAdmin={isSuperAdmin} isStaff={isStaff} enabledModules={enabledModules} />
-          </div>
-        </aside>
-        <button
-          onClick={() => setCollapsed((v) => !v)}
-          className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 flex items-center justify-center w-6 h-6 rounded-full border bg-background shadow-sm hover:bg-accent transition-colors"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed ? "-rotate-90" : "rotate-90")} />
-        </button>
-      </div>
-    </>
+    <Shell
+      theme="light"
+      sections={navSections}
+      defaultCollapsed={isBuilderRoute}
+      header={(onClose) => <AdminHeader onClose={onClose} />}
+      footer={<AdminFooter isSuperAdmin={isSuperAdmin} isStaff={isStaff} isVendor={isVendor} />}
+      filterItem={(item: ShellNavItem) => {
+        if (item.saasOnly && !isSaaS) return false;
+        if (item.standaloneOnly && isSaaS) return false;
+        // enabledModules is undefined for super admins (bypass) — only gate
+        // when it's actually resolved (regular tenants/agents).
+        if (item.moduleKey && enabledModules && !enabledModules[item.moduleKey as ModuleKey]) return false;
+        return true;
+      }}
+    />
   );
 }

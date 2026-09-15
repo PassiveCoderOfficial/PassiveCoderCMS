@@ -26,11 +26,11 @@ export default async function VendorLayout({ children }: { children: React.React
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] text-[#1A1330]">
-      <header className="border-b border-[#EAECF0] bg-white sticky top-0 z-30 backdrop-blur">
+    <div className="min-h-screen bg-muted/30 text-foreground">
+      <header className="border-b bg-background sticky top-0 z-30 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-4">
           <Link href="/vendor/dashboard" className="flex items-center gap-2 font-semibold shrink-0">
-            <Store className="w-5 h-5 text-[#FF5A1F]" />
+            <Store className="w-5 h-5 text-primary" />
             <span className="hidden sm:inline">Seller Centre</span>
           </Link>
           <nav className="flex items-center gap-1 overflow-x-auto">
@@ -38,13 +38,13 @@ export default async function VendorLayout({ children }: { children: React.React
               <Link
                 key={n.href}
                 href={n.href}
-                className="px-3 py-1.5 rounded-lg text-sm text-[#667085] hover:text-[#1A1330] hover:bg-[#F9FAFB] whitespace-nowrap transition-colors"
+                className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent whitespace-nowrap transition-colors"
               >
                 {n.label}
               </Link>
             ))}
           </nav>
-          <div className="ml-auto text-sm text-[#667085] truncate max-w-[40%] text-right">
+          <div className="ml-auto text-sm text-muted-foreground truncate max-w-[40%] text-right">
             {vendor.name}
           </div>
         </div>

@@ -14,6 +14,7 @@ import { AgentContextProvider } from "@/components/agent/agent-context";
 import { AiLauncher } from "@/components/agent/ai-launcher";
 import { renderProfileBrief } from "@/lib/aicoder/profile-brief";
 import { apiTenantId } from "@/lib/tenant/api";
+import { crossPortalAccess } from "@/lib/admin-shell/cross-portal-access";
 import type { CMSUser } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -422,6 +423,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const agentEnabled = !!sa || !!enabledModules?.ai_agent;
   const aiCoderEnabled = !!sa || !!enabledModules?.ai_coder;
 
+  // Additive cross-portal link only — doesn't gate anything, /vendor/dashboard
+  // re-checks its own vendor status regardless of this flag.
+  const isVendorUser = !sa ? (await crossPortalAccess(user.id)).vendor : false;
+
   // Whether section generation has business context to work from. Uses
   // renderProfileBrief — the exact function the generate route calls — rather
   // than checking the profile row exists, because a row whose fields are all
@@ -448,7 +453,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <StaffBanner tenantName={staffViewingTenantName} />
         )}
         <div className="flex flex-1 overflow-hidden">
-          <AdminSidebar isSuperAdmin={!!sa} isStaff={profile.role === "pc_staff"} enabledModules={enabledModules} />
+          <AdminSidebar isSuperAdmin={!!sa} isStaff={profile.role === "pc_staff"} isVendor={isVendorUser} enabledModules={enabledModules} />
           <div className="flex flex-1 flex-col overflow-hidden">
             <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
             <main className="flex-1 overflow-auto pl-0 lg:pl-0">
