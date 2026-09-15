@@ -98,6 +98,37 @@ export async function getTables(branchId: string): Promise<RestaurantTable[]> {
   return data ?? [];
 }
 
+export async function createTable(branchId: string, tableNumber: string): Promise<RestaurantTable> {
+  const { data, error } = await supabase
+    .from("restaurant_tables")
+    .insert({ branch_id: branchId, table_number: tableNumber.trim() })
+    .select("id, branch_id, table_number, qr_token, is_active, table_pin")
+    .single();
+  if (error) {
+    // Same unique (branch_id, table_number) index the web route's 23505
+    // handling covers — surfaced the same way here since this goes direct
+    // through RLS rather than that route.
+    if ((error as { code?: string }).code === "23505") throw new Error("That table number already exists");
+    throw error;
+  }
+  return data;
+}
+
+/** 4-6 digit PIN, same validation the web route (PATCH .../restaurant-tables)
+ *  enforces server-side — replicated here since this write goes direct
+ *  through RLS, not that route. */
+export async function setTablePin(tableId: string, pin: string): Promise<void> {
+  const trimmed = pin.trim();
+  if (trimmed && !/^\d{4,6}$/.test(trimmed)) throw new Error("PIN must be 4-6 digits");
+  const { error } = await supabase.from("restaurant_tables").update({ table_pin: trimmed || null }).eq("id", tableId);
+  if (error) throw error;
+}
+
+export async function deactivateTable(tableId: string): Promise<void> {
+  const { error } = await supabase.from("restaurant_tables").update({ is_active: false }).eq("id", tableId);
+  if (error) throw error;
+}
+
 export async function createBranch(tenantId: string, name: string, address?: string, phone?: string): Promise<RestaurantBranch> {
   const { data, error } = await supabase
     .from("restaurant_branches")

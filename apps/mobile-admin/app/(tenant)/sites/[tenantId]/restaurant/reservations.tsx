@@ -5,8 +5,9 @@
 // assignment.
 
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, RefreshControl, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import {
   getBranches, getReservations, createReservation, updateReservationStatus,
   type RestaurantBranch, type Reservation,
@@ -40,6 +41,11 @@ export default function ReservationsScreen() {
   const [phone, setPhone] = useState("");
   const [partySize, setPartySize] = useState("2");
   const [saving, setSaving] = useState(false);
+  // Defaults to +1hr from now, same starting point as the old placeholder —
+  // now actually adjustable instead of fixed.
+  const [reservedAt, setReservedAt] = useState(() => new Date(Date.now() + 60 * 60 * 1000));
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const load = useCallback(async () => {
     if (!tenantId) { setLoading(false); return; }
@@ -69,21 +75,41 @@ export default function ReservationsScreen() {
     if (!tenantId || !branchId || !customerName.trim() || !phone.trim()) return;
     setSaving(true);
     try {
-      // v1: books "now + 1 hour" as a placeholder time — a proper date/time
-      // picker is a fast-follow, flagged rather than silently shipped as
-      // "done"; staff can still adjust by cancelling and re-adding for now.
-      const reservedAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
       const reservation = await createReservation(tenantId, branchId, {
-        customer_name: customerName, customer_phone: phone, party_size: Number(partySize) || 1, reserved_at: reservedAt,
+        customer_name: customerName, customer_phone: phone, party_size: Number(partySize) || 1, reserved_at: reservedAt.toISOString(),
       });
       setReservations((prev) => [...prev, reservation].sort((a, b) => a.reserved_at.localeCompare(b.reserved_at)));
       setCustomerName(""); setPhone(""); setPartySize("2"); setShowAdd(false);
+      setReservedAt(new Date(Date.now() + 60 * 60 * 1000));
       success("Reservation added");
     } catch (e) {
       toastError(e instanceof Error ? e.message : "Failed to add reservation");
     } finally {
       setSaving(false);
     }
+  }
+
+  function onPickDate(event: DateTimePickerEvent, picked?: Date) {
+    // Android's picker dismisses itself after one tap; iOS stays open as an
+    // inline/spinner control until the caller closes it — same asymmetry
+    // handled the same way as every other native-picker usage in RN.
+    if (Platform.OS === "android") setShowDatePicker(false);
+    if (event.type === "dismissed" || !picked) return;
+    setReservedAt((prev) => {
+      const next = new Date(prev);
+      next.setFullYear(picked.getFullYear(), picked.getMonth(), picked.getDate());
+      return next;
+    });
+  }
+
+  function onPickTime(event: DateTimePickerEvent, picked?: Date) {
+    if (Platform.OS === "android") setShowTimePicker(false);
+    if (event.type === "dismissed" || !picked) return;
+    setReservedAt((prev) => {
+      const next = new Date(prev);
+      next.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+      return next;
+    });
   }
 
   async function setStatus(id: string, status: Reservation["status"]) {
@@ -117,9 +143,32 @@ export default function ReservationsScreen() {
             <Field label="Party size">
               <TextField value={partySize} onChangeText={setPartySize} placeholder="2" keyboardType="number-pad" />
             </Field>
-            <Text style={[type.caption, { color: palette.textMuted, marginTop: -4, marginBottom: 4 }]}>
-              Books for 1 hour from now — adjust the exact time on the web dashboard.
-            </Text>
+            <Field label="Date & time">
+              <View style={{ flexDirection: "row", gap: spacing.sm }}>
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  style={{ flex: 1, borderWidth: 1, borderColor: palette.border, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 14 }}
+                >
+                  <Text style={[type.body, { color: palette.text }]}>
+                    {reservedAt.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setShowTimePicker(true)}
+                  style={{ flex: 1, borderWidth: 1, borderColor: palette.border, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 14 }}
+                >
+                  <Text style={[type.body, { color: palette.text }]}>
+                    {reservedAt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
+                  </Text>
+                </Pressable>
+              </View>
+            </Field>
+            {showDatePicker && (
+              <DateTimePicker value={reservedAt} mode="date" minimumDate={new Date()} onChange={onPickDate} />
+            )}
+            {showTimePicker && (
+              <DateTimePicker value={reservedAt} mode="time" onChange={onPickTime} />
+            )}
             <View style={{ flexDirection: "row", gap: spacing.sm }}>
               <Button title="Cancel" variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
               <Button title="Add" onPress={addReservation} loading={saving} style={{ flex: 1 }} />

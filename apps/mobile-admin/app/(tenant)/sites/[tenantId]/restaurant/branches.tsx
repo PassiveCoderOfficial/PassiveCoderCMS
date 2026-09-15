@@ -1,12 +1,10 @@
 // Branch management — list + add + per-branch KITCHEN/MONITOR/TABLE screen
-// toggles, mirroring the web's branches-client.tsx. Table/QR management
-// itself stays web-only for v1 (printing a QR code isn't a mobile task) —
-// this screen covers what a manager actually needs on their phone: adding
-// a location and deciding which screens are live at it.
+// toggles, mirroring the web's branches-client.tsx, plus a link into
+// per-branch table/QR management (tables.tsx).
 
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { getBranches, createBranch, toggleBranchScreen, type RestaurantBranch } from "../../../../../lib/queries/restaurant";
 import { Card, EmptyState, Row, Screen, SkeletonList } from "../../../../../components/ui";
 import { Button, Field, TextField, Switch } from "../../../../../components/form";
@@ -101,6 +99,7 @@ export default function BranchesScreen() {
             <Row title="Kitchen" subtitle="Staff order board" right={<Switch value={item.kitchen_screen_enabled} onValueChange={(v) => toggle(item, "kitchen_screen_enabled", v)} />} />
             <Row title="Monitor" subtitle="Public queue display" right={<Switch value={item.monitor_screen_enabled} onValueChange={(v) => toggle(item, "monitor_screen_enabled", v)} />} />
             <Row title="Table screen" subtitle="PIN-gated per-table tablet" right={<Switch value={item.table_screen_enabled} onValueChange={(v) => toggle(item, "table_screen_enabled", v)} />} />
+            <Row title="Tables & QR codes" subtitle="Add tables, set PINs, share order links" onPress={() => router.push({ pathname: "/(tenant)/sites/[tenantId]/restaurant/tables", params: { tenantId, branchId: item.id, branchName: item.name } })} />
           </Card>
         )}
         ListEmptyComponent={

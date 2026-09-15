@@ -19,6 +19,7 @@ export default function RestaurantStackLayout() {
       <Stack.Screen name="kitchen" options={{ title: "Kitchen" }} />
       <Stack.Screen name="pos" options={{ title: "POS" }} />
       <Stack.Screen name="branches" options={{ title: "Branches" }} />
+      <Stack.Screen name="tables" options={{ title: "Tables" }} />
       <Stack.Screen name="riders" options={{ title: "Riders" }} />
       <Stack.Screen name="reservations" options={{ title: "Reservations" }} />
       <Stack.Screen name="sales" options={{ title: "Sales" }} />
