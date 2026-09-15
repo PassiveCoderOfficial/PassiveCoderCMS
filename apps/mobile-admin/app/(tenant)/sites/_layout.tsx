@@ -16,6 +16,13 @@ export default function SitesStackLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: "Sites" }} />
+      {/* Without this, Expo Router briefly shows the raw segment name
+          ("[tenantId]") as the header title during the transition into the
+          nested stack below, before that stack's own per-screen title takes
+          over — headerShown:false hides that flash entirely since the
+          nested layout (sites/[tenantId]/_layout.tsx) renders its own
+          header immediately. */}
+      <Stack.Screen name="[tenantId]" options={{ headerShown: false }} />
     </Stack>
   );
 }

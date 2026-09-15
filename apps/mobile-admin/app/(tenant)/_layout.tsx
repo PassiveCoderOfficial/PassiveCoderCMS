@@ -9,9 +9,16 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../lib/themeContext";
+import { useRole } from "../../lib/role";
+import { useSelectedTenant } from "../../lib/tenant";
+import { TenantHeaderTitle } from "../../components/TenantSwitcher";
 
 export default function TenantTabsLayout() {
   const { palette } = useTheme();
+  const { memberships } = useRole();
+  const { selectedTenantId } = useSelectedTenant();
+  const siteName = memberships.find((m) => m.tenantId === selectedTenantId)?.tenant.name;
+
   return (
     <Tabs
       screenOptions={{
@@ -28,6 +35,7 @@ export default function TenantTabsLayout() {
         name="dashboard"
         options={{
           title: "Dashboard",
+          headerTitle: () => <TenantHeaderTitle title="Dashboard" siteName={siteName} />,
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
