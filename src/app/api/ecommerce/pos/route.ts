@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { verifyBearerTenantMember } from "@/lib/auth/verify-bearer";
 import { upsertContact } from "@/lib/crm/upsertContact";
 import { requireModule } from "@/lib/modules/resolve-modules";
 
@@ -9,7 +10,19 @@ interface PosItem { product_id: string; name: string; price: number; quantity: n
 /** In-person quick sale: paid order + stock decrement + accounting income. */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const tenantId = await apiTenantId();
+  // Web: cookie session, subdomain-resolved tenant (apiTenantId, unchanged).
+  // Mobile (Passive Coder Admin app): no cookie, no subdomain — sends
+  // Authorization: Bearer <token> + X-Tenant-Id explicitly. Cookie path is
+  // checked first and is the only path web ever hits, so this can't change
+  // existing web behavior. requireEditor excludes a 'viewer' role member,
+  // same restriction the web dashboard's own POS access implies.
+  let tenantId = await apiTenantId();
+  if (!tenantId) {
+    const bearerTenantId = req.headers.get("x-tenant-id");
+    if (bearerTenantId && await verifyBearerTenantMember(req, bearerTenantId, { requireEditor: true })) {
+      tenantId = bearerTenantId;
+    }
+  }
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // Nav-hiding and the page-level redirect aren't enough on their own — a
   // Pro tenant could still POST directly here. Same "pos" module the sidebar
