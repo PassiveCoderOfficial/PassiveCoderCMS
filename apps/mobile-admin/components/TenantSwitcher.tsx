@@ -6,10 +6,11 @@
 // it reachable from the header everywhere instead of one screen deep.
 
 import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useRole } from "../lib/role";
 import { useSelectedTenant } from "../lib/tenant";
+import { publicUrl } from "../lib/siteUrls";
 import { Row } from "./ui";
 import { spacing, type, radius } from "../lib/theme";
 import { useTheme } from "../lib/themeContext";
@@ -78,7 +79,17 @@ export function TenantSwitcherSheet({ visible, onClose }: { visible: boolean; on
                 key={m.tenantId}
                 title={m.tenant.name}
                 subtitle={m.tenant.slug}
-                right={m.tenantId === selectedTenantId ? <Text style={{ color: palette.primary600, fontSize: 16 }}>✓</Text> : undefined}
+                right={
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
+                    <Pressable
+                      onPress={() => { tapFeedback(); Linking.openURL(publicUrl(m.tenant)); }}
+                      hitSlop={10}
+                    >
+                      <Text style={{ color: palette.textFaint, fontSize: 15 }}>↗</Text>
+                    </Pressable>
+                    {m.tenantId === selectedTenantId && <Text style={{ color: palette.primary600, fontSize: 16 }}>✓</Text>}
+                  </View>
+                }
                 onPress={() => switchTo(m.tenantId, m.tenant.name)}
               />
             ))}

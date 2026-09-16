@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, RefreshControl, ScrollView, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { FlatList, Linking, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { listPages, type PageListItem as PageListItemType } from "../../../../../lib/queries/pages";
 import { PageListItem } from "../../../../../components/PageListItem";
 import { EmptyState, Pill, Screen, SkeletonList } from "../../../../../components/ui";
 import { SearchField } from "../../../../../components/form";
 import { spacing } from "../../../../../lib/theme";
 import { useTheme } from "../../../../../lib/themeContext";
+import { useRole } from "../../../../../lib/role";
+import { publicUrl } from "../../../../../lib/siteUrls";
+import { tapFeedback } from "../../../../../lib/haptics";
 
 const STATUS_FILTERS = [
   { label: "All", value: "all" },
@@ -18,6 +21,8 @@ const STATUS_FILTERS = [
 export default function PagesListScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { memberships } = useRole();
+  const tenant = memberships.find((m) => m.tenantId === tenantId)?.tenant;
   const [pages, setPages] = useState<PageListItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -60,6 +65,21 @@ export default function PagesListScreen() {
 
   return (
     <Screen scroll={false}>
+      {tenant && (
+        <Stack.Screen
+          options={{
+            headerRight: () => (
+              <Pressable
+                onPress={() => { tapFeedback(); Linking.openURL(publicUrl(tenant)); }}
+                hitSlop={10}
+                style={{ padding: 4 }}
+              >
+                <Text style={{ color: palette.white, fontSize: 13, fontWeight: "700" }}>Preview site</Text>
+              </Pressable>
+            ),
+          }}
+        />
+      )}
       <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.md }}>
         <SearchField value={query} onChangeText={setQuery} placeholder="Search pages" />
         <ScrollView

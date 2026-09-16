@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
-import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { usePageEdit } from "../../../../../../lib/pageEditContext";
 import { updatePageBlocks } from "../../../../../../lib/queries/pages";
 import { getBlockCatalogEntry, blockCatalogByCategory } from "../../../../../../lib/blockCatalog";
+import { publicUrl } from "../../../../../../lib/siteUrls";
+import { useRole } from "../../../../../../lib/role";
 import type { Block } from "../../../../../../lib/types";
 import { Button, SearchField } from "../../../../../../components/form";
 import {
@@ -55,9 +57,25 @@ export default function BlocksScreen() {
   const { palette } = useTheme();
   const toast = useToast();
   const insets = useSafeAreaInsets();
+  const { memberships } = useRole();
+  const tenant = memberships.find((m) => m.tenantId === tenantId)?.tenant;
 
   const [saving, setSaving] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  function openPreview() {
+    if (!tenant || !page) return;
+    if (page.status !== "published") {
+      Alert.alert(
+        "Not published yet",
+        "This page is a draft — it isn't visible on the live site until you publish it. Preview it in Preview mode instead once available, or publish first.",
+      );
+      return;
+    }
+    tapFeedback();
+    const path = page.slug === "home" ? "" : `/${page.slug}`;
+    Linking.openURL(publicUrl(tenant, path));
+  }
 
   const blocks = useMemo(
     () => (page?.blocks ? [...page.blocks].sort((a, b) => a.order - b.order) : []),
@@ -170,6 +188,15 @@ export default function BlocksScreen() {
 
   return (
     <Screen scroll={false}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={openPreview} hitSlop={10} style={{ padding: 4 }}>
+              <Text style={{ color: palette.white, fontSize: 13, fontWeight: "700" }}>Preview</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <FlatList
         data={blocks}
         keyExtractor={(b) => b.id}
