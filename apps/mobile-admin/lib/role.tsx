@@ -60,9 +60,21 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       .maybeSingle();
     if (cancelledRef.current) return;
     if (sa) {
+      // Same real bug as the pc_staff branch below, one level up: a super
+      // admin can ALSO genuinely own real tenants directly (confirmed
+      // live — an SA account owned 8 real tenant_members rows, all
+      // invisible here before this fix, because this branch hard-stopped
+      // with memberships:[] the instant SA status was confirmed). The
+      // (tenant)/dashboard and (tenant)/sites tabs are reachable
+      // regardless of role (see (tenant)/_layout.tsx's own comment: "safe
+      // destinations regardless of selection state") — an SA landing on
+      // them via the bottom tab bar, not just (admin)/tenants, needs
+      // their own sites populated same as anyone else.
+      const built = await fetchMemberships(user.id);
+      if (cancelledRef.current) return;
       setRole("super_admin");
       setIsManager(false);
-      setMemberships([]);
+      setMemberships(built);
       setLoading(false);
       return;
     }
