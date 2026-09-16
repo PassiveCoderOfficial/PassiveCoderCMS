@@ -27,9 +27,9 @@ const EMAIL = "info@sgpfloorrepair.com";
 const ADDRESS = "117 Defu Lane 10, Singapore 539229";
 const WA = `https://wa.me/${PHONE.replace(/\+/g, "")}`;
 
-// Coded SVG logo — stacked wood-plank icon + two-tone wordmark ("SGP" gold / "Floor Repair" navy)
-// Uploaded via one-off script to Supabase storage (see uploads/sgp-floor-repair/logo.svg)
-const LOGO_URL = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/sgp-floor-repair/logo.svg";
+// Client's real logo — circular badge, black/gold/white, transparent background
+// Uploaded via one-off script to Supabase storage (see uploads/sgp-floor-repair/logo-real.png)
+const LOGO_URL = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/sgp-floor-repair/logo-real.png";
 
 // Stock imagery (Unsplash direct-serve URLs — no download needed)
 const IMG = {
@@ -123,7 +123,7 @@ function globalHeader() {
     data: {
       logoText: SITE_NAME, logo: LOGO_URL, items: NAV_ITEMS,
       sticky: true, transparent: false, style: "default",
-      backgroundColor: "#ffffff", textColor: PRIMARY, logoHeight: 36, logoCaption: "",
+      backgroundColor: "#ffffff", textColor: PRIMARY, logoHeight: 52, logoCaption: "",
       showCta: true, ctaLabel: "Get a Free Quote", ctaUrl: "/contact",
     },
   };
@@ -134,6 +134,7 @@ function globalFooter() {
     id: uid("footer"), type: "footer", order: 0, visible: true, width: "full",
     padding: ZERO_PAD, margin: ZERO_PAD, background: { type: "none" },
     data: {
+      logo: LOGO_URL,
       logoText: SITE_NAME,
       tagline: SLOGAN,
       logoCaption: "Vinyl Flooring Repair Specialist — Singapore",
