@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Plus, X, Sparkles, ExternalLink } from "lucide-react";
 
 export interface BusinessProfile {
   business_name: string | null;
@@ -84,7 +84,7 @@ function ListField({
   );
 }
 
-export function ProfileWizard({ initial }: { initial: BusinessProfile | null }) {
+export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: BusinessProfile | null; initialEnmProfileLink?: string | null }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -104,6 +104,8 @@ export function ProfileWizard({ initial }: { initial: BusinessProfile | null }) 
   const [customersServed, setCustomersServed] = useState(initial?.customers_served?.toString() ?? "");
   const [projectsCompleted, setProjectsCompleted] = useState(initial?.projects_completed?.toString() ?? "");
   const [about, setAbout] = useState(initial?.about ?? "");
+  const [generatingAbout, setGeneratingAbout] = useState(false);
+  const [enmProfileLink, setEnmProfileLink] = useState<string | null>(initialEnmProfileLink ?? null);
 
   // A blank numeric field must stay null, never become 0 — these figures are
   // published as claims, and "0 customers served" is a worse claim than none.
@@ -139,6 +141,7 @@ export function ProfileWizard({ initial }: { initial: BusinessProfile | null }) 
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not save");
+      if (data.enmProfileLink) setEnmProfileLink(data.enmProfileLink);
       if (!opts.silent) toast.success(opts.completed ? "Business profile complete" : "Saved");
       return true;
     } catch (err) {
@@ -160,6 +163,29 @@ export function ProfileWizard({ initial }: { initial: BusinessProfile | null }) 
 
   async function finish() {
     if (await save({ completed: true })) router.refresh();
+  }
+
+  async function generateAbout() {
+    if (!businessName.trim()) {
+      toast.error("Fill in the business name and services first — there's nothing to write from yet.");
+      return;
+    }
+    // Uses whatever's currently on the form, not just what's saved — write it
+    // through first so the generator sees the same facts the tenant is
+    // looking at (services/track-record edited but not yet saved otherwise).
+    if (!await save({ silent: true })) return;
+    setGeneratingAbout(true);
+    try {
+      const res = await fetch("/api/business-profile/generate-about", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not generate");
+      setAbout(data.about);
+      toast.success("Generated — review and edit before saving");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not generate");
+    } finally {
+      setGeneratingAbout(false);
+    }
   }
 
   return (
@@ -261,10 +287,37 @@ export function ProfileWizard({ initial }: { initial: BusinessProfile | null }) 
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>About your business</Label>
+            <div className="flex items-center justify-between">
+              <Label>About your business</Label>
+              <Button
+                type="button" variant="outline" size="sm"
+                onClick={generateAbout} disabled={generatingAbout || saving}
+                className="h-7 text-xs gap-1.5"
+              >
+                {generatingAbout ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                {about.trim() ? "Regenerate" : "Write it for me"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Written from the business name, services and track record above — review and edit before saving.
+            </p>
             <Textarea value={about} onChange={e => setAbout(e.target.value)} rows={5}
               placeholder="What you do, who you do it for, and what makes you different. A few sentences is enough." />
           </div>
+
+          {enmProfileLink && (
+            <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Your ExpertNear.Me listing is live</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Built from this profile — check how it looks.</p>
+              </div>
+              <Button variant="outline" size="sm" asChild className="shrink-0">
+                <a href={enmProfileLink} target="_blank" rel="noopener noreferrer">
+                  Preview listing <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                </a>
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

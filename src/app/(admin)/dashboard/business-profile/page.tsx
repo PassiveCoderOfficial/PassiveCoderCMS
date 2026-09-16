@@ -7,12 +7,13 @@ import { ProfileWizard, type BusinessProfile } from "./profile-wizard";
 export default function BusinessProfilePage() {
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [seeded, setSeeded] = useState(false);
+  const [enmProfileLink, setEnmProfileLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/business-profile")
       .then(r => r.json())
-      .then(d => { setProfile(d.profile ?? null); setSeeded(!!d.seeded); })
+      .then(d => { setProfile(d.profile ?? null); setSeeded(!!d.seeded); setEnmProfileLink(d.enmProfileLink ?? null); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -38,7 +39,7 @@ export default function BusinessProfilePage() {
         </div>
       )}
 
-      <ProfileWizard initial={profile} />
+      <ProfileWizard initial={profile} initialEnmProfileLink={enmProfileLink} />
     </div>
   );
 }

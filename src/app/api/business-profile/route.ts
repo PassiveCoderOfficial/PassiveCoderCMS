@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { seedBusinessProfileFromSite } from "@/modules/business-profile/seed-from-site";
+import { enmPushProfile } from "@/lib/enm";
 
 /**
  * The tenant's business profile — the single record behind AiCoder generation,
@@ -46,7 +47,7 @@ export async function GET() {
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
-  if (data) return NextResponse.json({ profile: data });
+  if (data) return NextResponse.json({ profile: data, enmProfileLink: data.enm_profile_link ?? null });
 
   // No profile saved yet — a tenant whose site was actually built (staff,
   // AiCoder, manual) already has real business name/services/contact data
@@ -114,5 +115,19 @@ export async function PATCH(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ profile: data });
+
+  // Push to ENM the moment the profile is marked complete, and persist the
+  // public listing link so GET can hand it back on every later visit — there
+  // was no way to see the listing this created at all before. Best-effort: a
+  // push failure must not fail the profile save that triggered it.
+  let enmProfileLink: string | null = data.enm_profile_link ?? null;
+  if (completed === true) {
+    const link = await enmPushProfile(admin, tenantId);
+    if (link) {
+      enmProfileLink = link;
+      await admin.from("tenant_business_profiles").update({ enm_profile_link: link }).eq("tenant_id", tenantId);
+    }
+  }
+
+  return NextResponse.json({ profile: data, enmProfileLink });
 }
