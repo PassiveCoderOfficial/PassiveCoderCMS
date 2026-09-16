@@ -80,7 +80,7 @@ interface PageBlockProps {
 const MAX_CONTAINER_DEPTH = 4;
 
 async function ServerBlock({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
-  const bgStyle = getBlockBackground(withHeroOverlay(block));
+  const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding?.top,
     paddingRight: block.padding?.right,
@@ -185,7 +185,7 @@ async function ServerBlock({ block, identityLogo, identityLogoDark, nested, dept
   if (!content) return null;
 
   return (
-    <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", hideOnClasses(block.hideOn))}>
+    <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", bgClassName, hideOnClasses(block.hideOn))}>
       <div className={nested ? "w-full" : getContainerClass(block.width)}>{content}</div>
     </div>
   );

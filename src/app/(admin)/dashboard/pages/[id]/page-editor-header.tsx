@@ -16,12 +16,13 @@ import { duplicatePage } from "../content-status";
 import { createSlug } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Page } from "@/types/cms";
+import { publicUrl } from "@/lib/tenant/site-urls";
 
-const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
-const isLocal = ROOT.includes("localhost");
-const proto = isLocal ? "http" : "https";
-
-export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug: string | null }) {
+export function PageEditorHeader({
+  page, tenantSlug, tenantCustomDomain,
+}: {
+  page: Page; tenantSlug: string | null; tenantCustomDomain?: string | null;
+}) {
   const router = useRouter();
   const [status, setStatus] = useState(page.status);
   const [saving, setSaving] = useState(false);
@@ -162,8 +163,14 @@ export function PageEditorHeader({ page, tenantSlug }: { page: Page; tenantSlug:
             {tenantSlug ? (
               // Relative /slug resolves against whatever subdomain the tab happens to
               // be on — wrong when a staff member has multiple tenant tabs open. Build the
-              // preview URL against the page's own tenant explicitly.
-              <a href={`${proto}://${tenantSlug}.${ROOT}/${page.slug}`} target="_blank" rel="noopener noreferrer">
+              // preview URL against the page's own tenant explicitly. Uses the real
+              // custom domain when one is attached — this is what a visitor sees,
+              // unlike admin/dashboard links which must stay on the subdomain.
+              <a
+                href={publicUrl({ slug: tenantSlug, custom_domain: tenantCustomDomain }, `/${page.slug}`)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Eye className="h-3 w-3" /> View
               </a>
             ) : (

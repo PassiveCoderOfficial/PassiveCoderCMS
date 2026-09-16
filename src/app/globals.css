@@ -51,6 +51,26 @@ html {
     --ring: 212.7 26.8% 83.9%;
     --sidebar: 222.2 84% 6%;
   }
+
+  /* A block's custom color/gradient background (--pc-block-bg, set inline
+   * per block by getBlockBackground in block-utils.ts) is a literal value
+   * the editor picked — it has no light/dark awareness, but the block's own
+   * text mostly does (theme-aware Tailwind classes with no explicit color).
+   * A "system"-theme tenant with any custom block background color got
+   * white text stuck on a background that stayed white when the OS/browser
+   * was in dark mode. Only override in dark mode — light mode (and a
+   * light-locked tenant, which never gets .dark at all) shows the editor's
+   * picked color exactly as chosen. */
+  .pc-block-bg {
+    background-color: var(--pc-block-bg);
+  }
+  .pc-block-bg-gradient {
+    background: var(--pc-block-bg);
+  }
+  .dark .pc-block-bg,
+  .dark .pc-block-bg-gradient {
+    background: hsl(var(--background));
+  }
 }
 
 @theme inline {

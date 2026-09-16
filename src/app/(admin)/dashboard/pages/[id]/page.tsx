@@ -45,13 +45,14 @@ export default async function PageEditorPage({ params }: Props) {
   let templateCSSVars: string | null = null;
   let templateCustomCss: string | null = null;
   let tenantSlug: string | null = null;
+  let tenantCustomDomain: string | null = null;
   let aiCoderEnabled = false;
   if (page.tenant_id) {
     aiCoderEnabled = (await resolveEnabledModules(page.tenant_id)).ai_coder ?? false;
     const admin = await createAdminClient();
     const [{ data: identity }, { data: tenant }] = await Promise.all([
       admin.from("site_identity").select("template_id").eq("tenant_id", page.tenant_id).maybeSingle(),
-      admin.from("tenants").select("slug").eq("id", page.tenant_id).maybeSingle(),
+      admin.from("tenants").select("slug, custom_domain").eq("id", page.tenant_id).maybeSingle(),
     ]);
     const templateIdentity = identity?.template_id
       ? await resolveDbTemplateIdentity(identity.template_id)
@@ -61,6 +62,7 @@ export default async function PageEditorPage({ params }: Props) {
       templateCustomCss = templateIdentity.customCss ?? null;
     }
     tenantSlug = tenant?.slug ?? null;
+    tenantCustomDomain = tenant?.custom_domain ?? null;
   } else if (page.template_id) {
     // Template-owned page: theme the canvas from the template's own stored
     // palette rather than a tenant's site_identity, so authoring a template
@@ -81,7 +83,7 @@ export default async function PageEditorPage({ params }: Props) {
     <div className="flex flex-col h-screen overflow-hidden">
       {templateCSSVars && <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />}
       {templateCustomCss && <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />}
-      <PageEditorHeader page={page as Page} tenantSlug={tenantSlug} />
+      <PageEditorHeader page={page as Page} tenantSlug={tenantSlug} tenantCustomDomain={tenantCustomDomain} />
       <div className="flex-1 overflow-hidden">
         <BuilderInterface page={page as Page} aiCoderEnabled={aiCoderEnabled} />
       </div>

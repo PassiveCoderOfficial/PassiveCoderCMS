@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
 import { HeroBlock } from "@/components/blocks/hero/hero-block";
 import { SliderBlock } from "@/components/blocks/slider/slider-block";
@@ -74,7 +75,7 @@ function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType
 }
 
 export function BlockRenderer({ block, isPreview = false, path }: BlockRendererProps) {
-  const bgStyle = getBlockBackground(withHeroOverlay(block));
+  const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
   // block.padding/margin are typed as always present, but a real block can
   // reach here with either as null — seen on an icon_grid block created by an
   // older write path (predating one of these fields being required) — and
@@ -161,7 +162,7 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
   };
 
   return (
-    <div style={{ ...bgStyle, ...paddingStyle }} className="w-full">
+    <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", bgClassName)}>
       <div className={getContainerClass(block.width)}>{renderBlock()}</div>
     </div>
   );
