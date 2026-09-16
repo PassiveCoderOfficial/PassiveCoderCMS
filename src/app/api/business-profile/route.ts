@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { seedBusinessProfileFromSite } from "@/modules/business-profile/seed-from-site";
 
 /**
  * The tenant's business profile — the single record behind AiCoder generation,
@@ -45,7 +46,32 @@ export async function GET() {
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
-  return NextResponse.json({ profile: data ?? null });
+  if (data) return NextResponse.json({ profile: data });
+
+  // No profile saved yet — a tenant whose site was actually built (staff,
+  // AiCoder, manual) already has real business name/services/contact data
+  // sitting in their own pages. Seed the wizard from that instead of
+  // opening it blank and asking them to retype what they already wrote.
+  // Never persisted here — this is a prefill only, saved for real the first
+  // time the tenant hits Continue/Save on the wizard itself.
+  const seed = await seedBusinessProfileFromSite(admin, tenantId);
+  const hasAnySeedData = Object.values(seed).some((v) => (Array.isArray(v) ? v.length > 0 : !!v));
+  if (!hasAnySeedData) return NextResponse.json({ profile: null });
+
+  return NextResponse.json({
+    profile: {
+      ...seed,
+      owner_name: null,
+      years_operating: null,
+      customers_served: null,
+      projects_completed: null,
+      service_areas: null,
+      country_code: null,
+      about: null,
+      completed_at: null,
+    },
+    seeded: true,
+  });
 }
 
 export async function PATCH(req: Request) {

@@ -6,12 +6,13 @@ import { ProfileWizard, type BusinessProfile } from "./profile-wizard";
 
 export default function BusinessProfilePage() {
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
+  const [seeded, setSeeded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/business-profile")
       .then(r => r.json())
-      .then(d => setProfile(d.profile ?? null))
+      .then(d => { setProfile(d.profile ?? null); setSeeded(!!d.seeded); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -30,6 +31,12 @@ export default function BusinessProfilePage() {
           ExpertNear.Me listing. Nothing is published without you.
         </p>
       </div>
+
+      {seeded && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 max-w-xl">
+          Pre-filled from your live site — check it over and edit anything before continuing.
+        </div>
+      )}
 
       <ProfileWizard initial={profile} />
     </div>
