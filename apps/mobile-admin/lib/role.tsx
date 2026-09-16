@@ -76,31 +76,28 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       .maybeSingle();
     if (cancelledRef.current) return;
     if (staff) {
+      // A staff member can ALSO own/co-manage real tenant_members rows —
+      // web's (admin)/layout.tsx explicitly handles this ("staff who also
+      // own a site already have full access to it via hasTenantAccess/
+      // memberships"). Mobile used to hard-stop here with memberships:[],
+      // which made a staff member's own client sites (or "Passive Coder"
+      // itself, which every staffer is an admin member of) completely
+      // invisible — the (admin)/tenants cross-tenant list is manager-only,
+      // so a non-manager staffer landed there and hit an unrecoverable
+      // 401 with nowhere else to go. Fetch memberships for staff too, same
+      // query as step 3 below.
+      const built = await fetchMemberships(user.id);
+      if (cancelledRef.current) return;
       setRole("pc_staff");
       setIsManager(Boolean(staff.is_manager));
-      setMemberships([]);
+      setMemberships(built);
       setLoading(false);
       return;
     }
 
     // 3. Tenant membership.
-    const { data: rows } = await supabase
-      .from("tenant_members")
-      .select(
-        "tenant_id, role, tenants(id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules)"
-      )
-      .eq("user_id", user.id);
+    let built = await fetchMemberships(user.id);
     if (cancelledRef.current) return;
-
-    // supabase-js types the joined relation loosely; narrow it by hand.
-    type Row = { tenant_id: string; role: TenantMemberRole; tenants: Tenant | Tenant[] | null };
-    let built: TenantMembership[] = ((rows ?? []) as Row[])
-      .map((r) => {
-        const tenant = Array.isArray(r.tenants) ? r.tenants[0] : r.tenants;
-        if (!tenant) return null;
-        return { tenantId: r.tenant_id, role: r.role, tenant };
-      })
-      .filter((m): m is TenantMembership => m !== null);
 
     // 4. Fallback: tenants owned directly with no membership row (shouldn't
     // normally happen — ownership is supposed to be mirrored into
@@ -119,6 +116,25 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     setMemberships(built);
     setLoading(false);
   }, [user]);
+
+  async function fetchMemberships(userId: string): Promise<TenantMembership[]> {
+    const { data: rows } = await supabase
+      .from("tenant_members")
+      .select(
+        "tenant_id, role, tenants(id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules)"
+      )
+      .eq("user_id", userId);
+
+    // supabase-js types the joined relation loosely; narrow it by hand.
+    type Row = { tenant_id: string; role: TenantMemberRole; tenants: Tenant | Tenant[] | null };
+    return ((rows ?? []) as Row[])
+      .map((r) => {
+        const tenant = Array.isArray(r.tenants) ? r.tenants[0] : r.tenants;
+        if (!tenant) return null;
+        return { tenantId: r.tenant_id, role: r.role, tenant };
+      })
+      .filter((m): m is TenantMembership => m !== null);
+  }
 
   useEffect(() => {
     cancelledRef.current = false;

@@ -133,22 +133,36 @@ export default function AdminTenantsScreen() {
   if (loading) return <SkeletonList count={6} />;
 
   // A failed fetch is not "no sites" — give it its own retryable state so an
-  // outage never reads as an empty platform.
+  // outage never reads as an empty platform. "Unauthorized" specifically
+  // means this account can't see the cross-tenant list (manager/SA only,
+  // see (admin)/tenants server route) — Retry can never fix that, so it
+  // gets its own message instead of implying a transient glitch. Under
+  // normal routing (see app/index.tsx) a non-manager staffer never lands
+  // here at all; this only fires if that guard is somehow bypassed.
   if (error) {
+    const isAuthError = error.toLowerCase().includes("unauthorized");
     return (
       <Screen>
         <EmptyState
-          title="Couldn't load sites"
-          subtitle={error}
-          icon="⚠️"
-          action={{
-            label: "Retry",
-            onPress: () => {
-              setLoading(true);
-              setError(null);
-              load();
-            },
-          }}
+          title={isAuthError ? "No access to the full site list" : "Couldn't load sites"}
+          subtitle={
+            isAuthError
+              ? "This list is only visible to managers and super admins. Check your own sites from the Sites tab instead."
+              : error
+          }
+          icon={isAuthError ? "🔒" : "⚠️"}
+          action={
+            isAuthError
+              ? { label: "Go to my sites", onPress: () => router.replace("/(tenant)/sites") }
+              : {
+                  label: "Retry",
+                  onPress: () => {
+                    setLoading(true);
+                    setError(null);
+                    load();
+                  },
+                }
+          }
         />
       </Screen>
     );

@@ -10,12 +10,19 @@ import { EmptyState, LoadingSpinner, Screen } from "../components/ui";
 
 export default function Index() {
   const { user, loading: authLoading, logout } = useAuth();
-  const { role, loading: roleLoading } = useRole();
+  const { role, isManager, memberships, loading: roleLoading } = useRole();
 
   const ready = !authLoading && !roleLoading;
-  // Signed in, but not a super admin / staff member and not a member of any
-  // tenant. There is nowhere to route them.
-  const stranded = ready && !!user && role === null;
+  // A non-manager staffer with no real site memberships has nowhere to go
+  // either — (admin)/tenants is manager-only and would 401 them the moment
+  // they land on it (confirmed live: a real staff account with 4 real
+  // tenant_members rows was still routed here before memberships were
+  // fetched for pc_staff at all — see role.tsx). Once that fetch happens,
+  // this only remains "stranded" for a staffer truly assigned nothing yet.
+  const staffWithNoSites = role === "pc_staff" && !isManager && memberships.length === 0;
+  // Signed in, but not a super admin / manager-staff, and not a member of
+  // any tenant. There is nowhere to route them.
+  const stranded = ready && !!user && (role === null || staffWithNoSites);
 
   useEffect(() => {
     if (!ready || stranded) return;
@@ -25,15 +32,19 @@ export default function Index() {
       return;
     }
 
-    if (role === "super_admin" || role === "pc_staff") {
+    if (role === "super_admin" || (role === "pc_staff" && isManager)) {
       router.replace("/(admin)/tenants");
       return;
     }
 
-    if (role === "tenant") {
+    // Non-manager staff with real site access (owns/co-manages tenants,
+    // e.g. Passive Coder's own site, or a client they're admin on) lands on
+    // their sites the same way a plain tenant user does — (admin)/tenants
+    // would just 401 them, it's gated manager-only server-side.
+    if (role === "tenant" || (role === "pc_staff" && !isManager)) {
       router.replace("/(tenant)/sites");
     }
-  }, [user, role, ready, stranded]);
+  }, [user, role, isManager, ready, stranded]);
 
   if (stranded) {
     // Previously this redirected to /login, which was a trap: Gate only
@@ -55,8 +66,12 @@ export default function Index() {
         <EmptyState
           icon="🚀"
           title="No sites yet"
-          subtitle="Create your first site to get started, or ask an administrator to add you to an existing one."
-          action={{ label: "Create a site", onPress: () => router.replace("/onboard") }}
+          subtitle={
+            staffWithNoSites
+              ? "You're not assigned to any sites yet. Ask a manager to add you as a member on a site, or make you a manager."
+              : "Create your first site to get started, or ask an administrator to add you to an existing one."
+          }
+          action={staffWithNoSites ? undefined : { label: "Create a site", onPress: () => router.replace("/onboard") }}
         />
         <Pressable
           onPress={() => {
