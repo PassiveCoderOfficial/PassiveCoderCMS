@@ -18,19 +18,22 @@ import { spacing, type } from "../../../../lib/theme";
 import { useTheme } from "../../../../lib/themeContext";
 import { useToast } from "../../../../lib/toast";
 import { useAuth } from "../../../../lib/auth";
-
-const PRIORITIES = [
-  { label: "Low", value: "low" },
-  { label: "Normal", value: "normal" },
-  { label: "High", value: "high" },
-  { label: "Urgent", value: "urgent" },
-];
+import { useLanguage } from "../../../../lib/languageContext";
+import type { TranslationKey } from "../../../../lib/locales/en";
 
 export default function SupportScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { user } = useAuth();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
+
+  const PRIORITIES = [
+    { label: t("priority.low"), value: "low" },
+    { label: t("priority.normal"), value: "normal" },
+    { label: t("priority.high"), value: "high" },
+    { label: t("priority.urgent"), value: "urgent" },
+  ];
 
   const [departments, setDepartments] = useState<SupportDepartment[]>([]);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -116,32 +119,42 @@ export default function SupportScreen() {
 
   const deptLabel = (slug: string) => departments.find((d) => d.slug === slug)?.name ?? slug;
 
+  // ticket.status/priority are free-text DB columns, not TS unions — an
+  // unrecognized value falls back to the raw text rather than a lookup
+  // that could throw, same reasoning as the web version of this helper.
+  const KNOWN_STATUSES = new Set(["open", "in_progress", "resolved", "closed"]);
+  const KNOWN_PRIORITIES = new Set(["low", "normal", "high", "urgent"]);
+  const statusLabel = (status: string) =>
+    KNOWN_STATUSES.has(status) ? t(`ticketStatus.${status}` as TranslationKey) : status.replace("_", " ");
+  const priorityLabel = (priority: string) =>
+    KNOWN_PRIORITIES.has(priority) ? t(`priority.${priority}` as TranslationKey) : priority;
+
   if (loading) return <SkeletonList count={4} />;
 
   if (openTicket) {
     return (
       <Screen keyboardAvoiding>
         <Pressable onPress={() => setOpenTicket(null)} style={{ marginBottom: spacing.md }}>
-          <Text style={[type.body, { color: palette.primary600 }]}>← Back to tickets</Text>
+          <Text style={[type.body, { color: palette.primary600 }]}>← {t("support.backToTickets")}</Text>
         </Pressable>
 
         <Card>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
             <Text style={[type.bodyStrong, { color: palette.text, flex: 1 }]}>{openTicket.subject}</Text>
-            <Badge label={openTicket.status.replace("_", " ")} />
+            <Badge label={statusLabel(openTicket.status)} />
           </View>
           <Text style={[type.body, { color: palette.textMuted, marginTop: spacing.xs }]}>{openTicket.body}</Text>
           <Text style={[type.caption, { color: palette.textFaint, marginTop: spacing.sm }]}>
-            {deptLabel(openTicket.department)} · Submitted {new Date(openTicket.created_at).toLocaleDateString()}
+            {deptLabel(openTicket.department)} · {new Date(openTicket.created_at).toLocaleDateString()}
           </Text>
         </Card>
 
         <Card style={{ marginTop: spacing.md }}>
-          <Text style={[type.bodyStrong, { color: palette.text, marginBottom: spacing.sm }]}>Conversation</Text>
+          <Text style={[type.bodyStrong, { color: palette.text, marginBottom: spacing.sm }]}>{t("support.conversation")}</Text>
           {messagesLoading ? (
             <SkeletonList count={2} />
           ) : messages.length === 0 ? (
-            <Text style={[type.caption, { color: palette.textMuted }]}>No replies yet — our team typically responds within 1 business day.</Text>
+            <Text style={[type.caption, { color: palette.textMuted }]}>{t("support.noReplies")}</Text>
           ) : (
             <View style={{ gap: spacing.sm }}>
               {messages.map((m) => {
@@ -156,7 +169,7 @@ export default function SupportScreen() {
                     }}
                   >
                     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                      <Text style={[type.caption, { color: palette.text, fontWeight: "700" }]}>{mine ? "You" : (m.author_name ?? "Support")}</Text>
+                      <Text style={[type.caption, { color: palette.text, fontWeight: "700" }]}>{mine ? t("support.you") : (m.author_name ?? "Support")}</Text>
                       <Text style={[type.caption, { color: palette.textFaint }]}>{new Date(m.created_at).toLocaleDateString()}</Text>
                     </View>
                     <Text style={[type.body, { color: palette.text, marginTop: 2 }]}>{m.body}</Text>
@@ -167,8 +180,8 @@ export default function SupportScreen() {
           )}
 
           <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
-            <TextField value={reply} onChangeText={setReply} placeholder="Write a reply..." multiline numberOfLines={3} />
-            <Button title="Send reply" onPress={submitReply} loading={sending} disabled={!reply.trim()} />
+            <TextField value={reply} onChangeText={setReply} placeholder={t("support.replyPlaceholder")} multiline numberOfLines={3} />
+            <Button title={t("support.sendReply")} onPress={submitReply} loading={sending} disabled={!reply.trim()} />
           </View>
         </Card>
       </Screen>
@@ -180,27 +193,27 @@ export default function SupportScreen() {
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         {showForm ? (
           <Card>
-            <Field label="Subject">
-              <TextField value={subject} onChangeText={setSubject} placeholder="Brief description" autoFocus />
+            <Field label={t("common.subject")}>
+              <TextField value={subject} onChangeText={setSubject} placeholder={t("support.subjectPlaceholder")} autoFocus />
             </Field>
             {departments.length > 1 && (
-              <Field label="Department">
-                <Select value={department} placeholder="Choose a department" onChange={setDepartment} options={departments.map((d) => ({ label: d.name, value: d.slug }))} />
+              <Field label={t("common.department")}>
+                <Select value={department} placeholder={t("common.department")} onChange={setDepartment} options={departments.map((d) => ({ label: d.name, value: d.slug }))} />
               </Field>
             )}
-            <Field label="Priority">
-              <Select value={priority} placeholder="Choose a priority" onChange={setPriority} options={PRIORITIES} />
+            <Field label={t("common.priority")}>
+              <Select value={priority} placeholder={t("common.priority")} onChange={setPriority} options={PRIORITIES} />
             </Field>
-            <Field label="Message">
-              <TextField value={body} onChangeText={setBody} placeholder="Describe your issue in detail..." multiline numberOfLines={4} />
+            <Field label={t("common.message")}>
+              <TextField value={body} onChangeText={setBody} placeholder={t("support.messagePlaceholder")} multiline numberOfLines={4} />
             </Field>
             <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
-              <Button title="Cancel" variant="outline" onPress={() => setShowForm(false)} style={{ flex: 1 }} />
-              <Button title="Submit" onPress={submitTicket} loading={submitting} disabled={!subject.trim() || !body.trim()} style={{ flex: 1 }} />
+              <Button title={t("common.cancel")} variant="outline" onPress={() => setShowForm(false)} style={{ flex: 1 }} />
+              <Button title={t("common.submit")} onPress={submitTicket} loading={submitting} disabled={!subject.trim() || !body.trim()} style={{ flex: 1 }} />
             </View>
           </Card>
         ) : (
-          <Button title="New ticket" icon="➕" variant="outline" onPress={() => setShowForm(true)} />
+          <Button title={t("support.newTicket")} icon="➕" variant="outline" onPress={() => setShowForm(true)} />
         )}
       </View>
 
@@ -216,12 +229,12 @@ export default function SupportScreen() {
             <Card>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <Text style={[type.bodyStrong, { color: palette.text, flex: 1 }]} numberOfLines={1}>{item.subject}</Text>
-                <Badge label={item.status.replace("_", " ")} />
+                <Badge label={statusLabel(item.status)} />
               </View>
               <Text style={[type.caption, { color: palette.textMuted, marginTop: 2 }]} numberOfLines={2}>{item.body}</Text>
               <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm, alignItems: "center" }}>
                 <Text style={[type.caption, { color: item.priority === "urgent" ? palette.red600 : item.priority === "high" ? palette.amber600 : palette.textFaint }]}>
-                  {item.priority}
+                  {priorityLabel(item.priority)}
                 </Text>
                 <Text style={[type.caption, { color: palette.textFaint }]}>· {deptLabel(item.department)}</Text>
                 <Text style={[type.caption, { color: palette.textFaint }]}>· {new Date(item.created_at).toLocaleDateString()}</Text>
@@ -230,7 +243,7 @@ export default function SupportScreen() {
           </Pressable>
         )}
         ListEmptyComponent={
-          <EmptyState title="No support tickets yet" subtitle="Submit a ticket and our team will respond within 1 business day." icon="🎫" />
+          <EmptyState title={t("support.noTickets")} subtitle={t("support.noTicketsHint")} icon="🎫" />
         }
       />
     </Screen>

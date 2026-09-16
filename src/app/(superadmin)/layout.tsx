@@ -3,6 +3,7 @@ import { requireManagerOrSuperAdmin } from "@/lib/super-admin";
 import SuperAdminSidebar from "@/components/super-admin/sidebar";
 import type { Metadata } from "next";
 import { PLATFORM_ICONS } from "@/lib/site/site-metadata";
+import { LanguageProvider } from "@/lib/i18n/language-provider";
 
 // Super-admin console is PassiveCoder's own tool UI, not a tenant's site.
 export const metadata: Metadata = {
@@ -14,11 +15,13 @@ export default async function SuperAdminLayout({ children }: { children: React.R
   if (!auth?.user) redirect("/login?error=unauthorized");
 
   return (
-    <div className="dark flex h-screen bg-background text-foreground">
-      <SuperAdminSidebar isSA={auth.isSA} />
-      <main className="flex-1 overflow-y-auto bg-background pt-14 lg:pt-0">
-        {children}
-      </main>
-    </div>
+    <LanguageProvider>
+      <div className="dark flex h-screen bg-background text-foreground">
+        <SuperAdminSidebar isSA={auth.isSA} />
+        <main className="flex-1 overflow-y-auto bg-background pt-14 lg:pt-0">
+          {children}
+        </main>
+      </div>
+    </LanguageProvider>
   );
 }

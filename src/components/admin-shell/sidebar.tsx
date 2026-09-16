@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, ExternalLink, Menu, Plus, X } from "lucide-react";
 import type { ShellNavItem, ShellNavSection, ShellTheme } from "./types";
+import { LanguageSwitcher } from "./language-switcher";
 
 function NavRow({ item, pathname, onClose, dark, brand }: {
   item: ShellNavItem; pathname: string; onClose?: () => void; dark: boolean; brand: boolean;
@@ -140,6 +141,12 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
   return (
     <>
       {typeof header === "function" ? header(onClose) : header}
+      {/* Below the logo, above the nav — Wali's explicit placement.
+          Shared here once so admin/staff/super-admin/vendor all get it for
+          free, same reasoning as every other piece of Shell chrome. */}
+      <div className="px-3 py-2 border-b flex justify-center">
+        <LanguageSwitcher />
+      </div>
       <ScrollArea className="flex-1">
         <nav className="px-2 py-3 space-y-4">
           {sections.map((section) => {

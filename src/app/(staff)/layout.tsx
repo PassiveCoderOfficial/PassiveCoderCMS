@@ -5,6 +5,7 @@ import StaffSidebar from "@/components/staff/sidebar";
 import { Mail } from "lucide-react";
 import type { Metadata } from "next";
 import { PLATFORM_ICONS } from "@/lib/site/site-metadata";
+import { LanguageProvider } from "@/lib/i18n/language-provider";
 
 // Staff console is PassiveCoder's own tool UI, not a tenant's site.
 export const metadata: Metadata = {
@@ -50,11 +51,13 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <StaffSidebar agent={agent} sites={staffSites} />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
-    </div>
+    <LanguageProvider>
+      <div className="flex h-screen bg-background">
+        <StaffSidebar agent={agent} sites={staffSites} />
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </LanguageProvider>
   );
 }

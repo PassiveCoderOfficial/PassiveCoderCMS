@@ -15,6 +15,7 @@ import { AiLauncher } from "@/components/agent/ai-launcher";
 import { renderProfileBrief } from "@/lib/aicoder/profile-brief";
 import { apiTenantId } from "@/lib/tenant/api";
 import { crossPortalAccess } from "@/lib/admin-shell/cross-portal-access";
+import { LanguageProvider } from "@/lib/i18n/language-provider";
 import type { CMSUser } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -436,6 +437,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     aiCoderEnabled ? await tenantHasProfileBrief() : false;
 
   return (
+    <LanguageProvider>
     <AgentContextProvider>
       <div className="flex h-screen overflow-hidden bg-background flex-col">
         {showSetupWizard && (
@@ -474,6 +476,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         />
       </div>
     </AgentContextProvider>
+    </LanguageProvider>
   );
 }
 

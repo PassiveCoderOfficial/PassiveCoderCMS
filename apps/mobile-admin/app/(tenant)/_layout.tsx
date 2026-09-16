@@ -12,12 +12,15 @@ import { useTheme } from "../../lib/themeContext";
 import { useRole } from "../../lib/role";
 import { useSelectedTenant } from "../../lib/tenant";
 import { TenantHeaderTitle } from "../../components/TenantSwitcher";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
+import { useLanguage } from "../../lib/languageContext";
 
 export default function TenantTabsLayout() {
   const { palette } = useTheme();
   const { memberships } = useRole();
   const { selectedTenantId } = useSelectedTenant();
   const siteName = memberships.find((m) => m.tenantId === selectedTenantId)?.tenant.name;
+  const { t } = useLanguage();
 
   return (
     <Tabs
@@ -25,6 +28,7 @@ export default function TenantTabsLayout() {
         headerStyle: { backgroundColor: palette.primary600 },
         headerTintColor: palette.white,
         headerTitleStyle: { fontWeight: "800" },
+        headerRight: () => <LanguageSwitcher />,
         tabBarActiveTintColor: palette.primary600,
         tabBarInactiveTintColor: palette.textFaint,
         tabBarStyle: { backgroundColor: palette.bgElevated, borderTopColor: palette.border },
@@ -34,15 +38,15 @@ export default function TenantTabsLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Dashboard",
-          headerTitle: () => <TenantHeaderTitle title="Dashboard" siteName={siteName} />,
+          title: t("nav.dashboard"),
+          headerTitle: () => <TenantHeaderTitle title={t("nav.dashboard")} siteName={siteName} />,
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="sites"
         options={{
-          title: "Sites",
+          title: t("nav.sites"),
           // sites/_layout.tsx is its own Stack with its own header — showing
           // the Tabs header too would stack two headers on screen.
           headerShown: false,
@@ -52,7 +56,7 @@ export default function TenantTabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("nav.profile"),
           tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />,
         }}
       />

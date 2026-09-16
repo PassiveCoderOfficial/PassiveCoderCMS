@@ -9,6 +9,7 @@ import { RoleProvider, useRole } from "../lib/role";
 import { SelectedTenantProvider } from "../lib/tenant";
 import { LoadingSpinner } from "../components/ui";
 import { ThemeProvider, useTheme } from "../lib/themeContext";
+import { LanguageProvider } from "../lib/languageContext";
 import { ToastProvider } from "../lib/toast";
 
 // Keep the native splash screen up until auth/role are resolved, then fade
@@ -106,15 +107,17 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <RoleProvider>
-              <SelectedTenantProvider>
-                <ThemedRoot />
-              </SelectedTenantProvider>
-            </RoleProvider>
-          </AuthProvider>
-        </ToastProvider>
+        <LanguageProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <RoleProvider>
+                <SelectedTenantProvider>
+                  <ThemedRoot />
+                </SelectedTenantProvider>
+              </RoleProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

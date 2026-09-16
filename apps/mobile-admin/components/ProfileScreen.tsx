@@ -11,6 +11,7 @@ import { Avatar, Badge, Card, Pill, Row, Screen, SectionHeader, Tag } from "./ui
 import { Button } from "./form";
 import { spacing, type } from "../lib/theme";
 import { useTheme, type ThemePreference } from "../lib/themeContext";
+import { useLanguage } from "../lib/languageContext";
 import { useToast } from "../lib/toast";
 import { tapFeedback, warningFeedback } from "../lib/haptics";
 
@@ -20,18 +21,19 @@ const ROLE_LABEL: Record<string, string> = {
   tenant: "Site member",
 };
 
-const APPEARANCE_OPTIONS: { label: string; value: ThemePreference }[] = [
-  { label: "System", value: "system" },
-  { label: "Light", value: "light" },
-  { label: "Dark", value: "dark" },
-];
-
 export function ProfileScreen({ showMemberships }: { showMemberships: boolean }) {
   const { user, logout } = useAuth();
   const { role, isManager, memberships } = useRole();
   const { selectedTenantId, setSelectedTenantId } = useSelectedTenant();
   const { palette, preference, setPreference } = useTheme();
+  const { t } = useLanguage();
   const toast = useToast();
+
+  const APPEARANCE_OPTIONS: { label: string; value: ThemePreference }[] = [
+    { label: t("profile.system"), value: "system" },
+    { label: t("profile.light"), value: "light" },
+    { label: t("profile.dark"), value: "dark" },
+  ];
 
   const email = user?.email ?? "";
   const roleLabel = (role ? ROLE_LABEL[role] : undefined) ?? "Member";
@@ -42,7 +44,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
     Alert.alert("Log out?", "You'll need to sign in again to manage your sites.", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Log out",
+        text: t("profile.logOut"),
         style: "destructive",
         onPress: () => {
           logout().catch(() => toast.error("Couldn't log out — try again"));
@@ -64,7 +66,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
         </View>
       </Card>
 
-      <SectionHeader title="Appearance" />
+      <SectionHeader title={t("profile.appearance")} />
       <Card style={{ gap: spacing.md }}>
         <Text style={[type.caption, { color: palette.textMuted }]}>
           System follows your device's light or dark setting.
@@ -86,7 +88,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
 
       {showMemberships && (
         <>
-          <SectionHeader title="Your sites" />
+          <SectionHeader title={t("profile.yourSites")} />
           <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
             {memberships.length === 0 ? (
               <View style={{ padding: spacing.lg }}>
@@ -117,7 +119,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
         </>
       )}
 
-      <Button title="Log out" variant="danger" onPress={confirmLogout} />
+      <Button title={t("profile.logOut")} variant="danger" onPress={confirmLogout} />
 
       {!!version && (
         <Text style={[type.caption, { color: palette.textFaint, textAlign: "center" }]}>
