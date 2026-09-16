@@ -11,13 +11,21 @@ import { useRouter } from "next/navigation";
 import { isSaaS } from "@/lib/flags";
 import { Shell } from "@/components/admin-shell/sidebar";
 import type { ShellNavItem } from "@/components/admin-shell/types";
+import { publicUrl } from "@/lib/tenant/site-urls";
 
 // Routes where the full-width page builder needs the sidebar out of the way by
 // default. Still user-togglable via the rail button — this only sets the
 // initial state per route.
 const BUILDER_ROUTE = /^\/dashboard\/pages\/[^/]+$/;
 
-function AdminHeader({ onClose }: { onClose?: () => void }) {
+function AdminHeader({ onClose, activeSite }: { onClose?: () => void; activeSite?: { slug: string; custom_domain?: string } | null }) {
+  // Relative "/" resolves against the current tenant subdomain — always the
+  // wrong host once a tenant has attached a custom domain (nobody markets
+  // the .passivecoder.com subdomain once they have their own domain).
+  // publicUrl resolves the real one, falling back to the subdomain when no
+  // custom domain is set. Reported live via screenshot alongside the icon
+  // having no visible label, only a hover tooltip.
+  const visitHref = activeSite ? publicUrl(activeSite, "/") : "/";
   return (
     <div className="flex h-14 items-center justify-between px-4 border-b gap-2">
       <a href="https://passivecoder.com" target="_blank" rel="noopener noreferrer" className="flex items-center min-w-0">
@@ -29,16 +37,16 @@ function AdminHeader({ onClose }: { onClose?: () => void }) {
         />
       </a>
       <div className="flex items-center gap-1 shrink-0">
-        {/* href="/" resolves relative to the current tenant subdomain, so this
-            always opens that tenant's own live homepage — not passivecoder.com. */}
-        <Link
-          href="/"
+        <a
+          href={visitHref}
           target="_blank"
+          rel="noopener noreferrer"
           title="Visit Site"
           className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-        </Link>
+          <span className="hidden sm:inline">Visit Site</span>
+        </a>
         {onClose && (
           <button onClick={onClose} className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
@@ -113,8 +121,9 @@ function AdminFooter({ isSuperAdmin, isStaff, isVendor }: { isSuperAdmin: boolea
   );
 }
 
-export function AdminSidebar({ isSuperAdmin = false, isStaff = false, isVendor = false, enabledModules }: {
+export function AdminSidebar({ isSuperAdmin = false, isStaff = false, isVendor = false, enabledModules, activeSite }: {
   isSuperAdmin?: boolean; isStaff?: boolean; isVendor?: boolean; enabledModules?: Record<ModuleKey, boolean>;
+  activeSite?: { slug: string; custom_domain?: string } | null;
 }) {
   const pathname = usePathname();
   const isBuilderRoute = BUILDER_ROUTE.test(pathname) && pathname !== "/dashboard/pages/new";
@@ -124,7 +133,7 @@ export function AdminSidebar({ isSuperAdmin = false, isStaff = false, isVendor =
       theme="light"
       sections={navSections}
       defaultCollapsed={isBuilderRoute}
-      header={(onClose) => <AdminHeader onClose={onClose} />}
+      header={(onClose) => <AdminHeader onClose={onClose} activeSite={activeSite} />}
       footer={<AdminFooter isSuperAdmin={isSuperAdmin} isStaff={isStaff} isVendor={isVendor} />}
       filterItem={(item: ShellNavItem) => {
         if (item.saasOnly && !isSaaS) return false;

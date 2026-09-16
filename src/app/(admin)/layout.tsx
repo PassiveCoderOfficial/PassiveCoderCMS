@@ -453,7 +453,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <StaffBanner tenantName={staffViewingTenantName} />
         )}
         <div className="flex flex-1 overflow-hidden">
-          <AdminSidebar isSuperAdmin={!!sa} isStaff={profile.role === "pc_staff"} isVendor={isVendorUser} enabledModules={enabledModules} />
+          <AdminSidebar
+            isSuperAdmin={!!sa}
+            isStaff={profile.role === "pc_staff"}
+            isVendor={isVendorUser}
+            enabledModules={enabledModules}
+            activeSite={userSites.find((s) => s.is_primary) ?? null}
+          />
           <div className="flex flex-1 flex-col overflow-hidden">
             <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} />
             <main className="flex-1 overflow-auto pl-0 lg:pl-0">
