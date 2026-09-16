@@ -16,7 +16,7 @@ function CTAButtons({ data, dark }: { data: CTABlockProps["data"]; dark?: boolea
           className={cn(
             "inline-flex items-center px-7 py-3.5 font-semibold rounded-lg transition-all text-sm",
             dark
-              ? "bg-white text-foreground hover:bg-muted"
+              ? "bg-white text-slate-900 hover:bg-slate-100"
               : "bg-primary text-primary-foreground hover:opacity-90",
           )}
         >
@@ -157,7 +157,7 @@ function CTALegacy({ block }: { block: CTABlockProps }) {
       {(data.primaryButton || data.secondaryButton) && (
         <div className={cn("flex gap-3 flex-wrap", layout !== "split" && "justify-center mt-4")}>
           {data.primaryButton && (
-            <Link href={data.primaryButton.url} className="inline-flex items-center px-6 py-3 bg-white text-foreground font-semibold rounded-lg hover:bg-muted transition-colors">
+            <Link href={data.primaryButton.url} className="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg hover:bg-slate-100 transition-colors">
               {data.primaryButton.label}
             </Link>
           )}
