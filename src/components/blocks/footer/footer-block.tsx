@@ -115,9 +115,9 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
         >
           {/* Brand column */}
           <div className="col-span-2 md:col-span-3 lg:col-auto">
-            <Link href="/" className="flex items-center mb-4 max-w-[220px]">
+            <Link href="/" className="inline-flex items-center gap-2 mb-4">
               {logo ? (
-                <Image src={logo} alt={logoText ?? "Logo"} width={440} height={160} className="w-full h-auto object-contain" />
+                <Image src={logo} alt={logoText ?? "Logo"} width={280} height={96} className="h-20 w-auto object-contain" />
               ) : (
                 <BrandLogo size={32} color={accent} textColor={fg} text={logoText ?? "Brand"} />
               )}
