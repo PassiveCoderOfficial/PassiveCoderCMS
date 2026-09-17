@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import { AiSiteBanner } from "@/components/admin/ai-site-banner";
 import { BusinessProfilePrompt } from "@/components/admin/business-profile-prompt";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Order {
   id: string; order_number: string; customer_name: string; total: number; status: string;
@@ -97,6 +98,7 @@ export function AnalyticsClient({
   recentTransactions: Transaction[];
   hasRestaurantBranches: boolean;
 }) {
+  const t = useT();
   const [range, setRange] = useState<number>(initialRange);
   const [data, setData] = useState<ApiResult>(() => aggregate(initialRows, initialRange));
   const [loading, setLoading] = useState(false);
@@ -149,15 +151,15 @@ export function AnalyticsClient({
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Welcome back to your CMS — site overview and traffic, together.</p>
+          <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.welcome")}</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/pages/new">New Page</Link>
+            <Link href="/dashboard/pages/new">{t("dashboard.newPage")}</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/dashboard/posts/new">New Post</Link>
+            <Link href="/dashboard/posts/new">{t("dashboard.newPost")}</Link>
           </Button>
         </div>
       </div>
@@ -165,11 +167,11 @@ export function AnalyticsClient({
       {/* Site summary — moved here from the old standalone /dashboard page */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { label: "Total Pages", value: dashboardStats.pageCount, icon: FileText, href: "/dashboard/pages", color: "text-blue-600" },
-          { label: "Blog Posts", value: dashboardStats.postCount, icon: FileText, href: "/dashboard/posts", color: "text-purple-600" },
-          { label: "Products", value: dashboardStats.productCount, icon: Package, href: "/dashboard/ecommerce/products", color: "text-orange-600" },
-          { label: "Orders", value: dashboardStats.orderCount, icon: ShoppingBag, href: "/dashboard/ecommerce/orders", color: "text-green-600" },
-          { label: "Users", value: dashboardStats.userCount, icon: Users, href: "/dashboard/users", color: "text-pink-600" },
+          { label: t("dashboard.totalPages"), value: dashboardStats.pageCount, icon: FileText, href: "/dashboard/pages", color: "text-blue-600" },
+          { label: t("dashboard.blogPosts"), value: dashboardStats.postCount, icon: FileText, href: "/dashboard/posts", color: "text-purple-600" },
+          { label: t("dashboard.products"), value: dashboardStats.productCount, icon: Package, href: "/dashboard/ecommerce/products", color: "text-orange-600" },
+          { label: t("dashboard.orders"), value: dashboardStats.orderCount, icon: ShoppingBag, href: "/dashboard/ecommerce/orders", color: "text-green-600" },
+          { label: t("dashboard.users"), value: dashboardStats.userCount, icon: Users, href: "/dashboard/users", color: "text-pink-600" },
         ].map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -190,15 +192,15 @@ export function AnalyticsClient({
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Recent Orders</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t("dashboard.recentOrders")}</CardTitle>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link href="/dashboard/ecommerce/orders">View all</Link>
+                <Link href="/dashboard/ecommerce/orders">{t("dashboard.viewAll")}</Link>
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             {!recentOrders?.length ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No orders yet</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t("dashboard.noOrdersYet")}</p>
             ) : (
               <div className="space-y-3">
                 {recentOrders.map((order) => (
@@ -225,15 +227,15 @@ export function AnalyticsClient({
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Recent Transactions</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t("dashboard.recentTransactions")}</CardTitle>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link href="/dashboard/accounting/transactions">View all</Link>
+                <Link href="/dashboard/accounting/transactions">{t("dashboard.viewAll")}</Link>
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             {!recentTransactions?.length ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No transactions yet</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t("dashboard.noTransactionsYet")}</p>
             ) : (
               <div className="space-y-3">
                 {recentTransactions.map((tx) => (
@@ -255,18 +257,18 @@ export function AnalyticsClient({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t("dashboard.quickActions")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "New Page", href: "/dashboard/pages/new" },
-              { label: "New Post", href: "/dashboard/posts/new" },
-              { label: "Add Product", href: "/dashboard/ecommerce/products/new" },
-              { label: "Upload Media", href: "/dashboard/media" },
-              { label: "Manage Themes", href: "/dashboard/themes" },
-              { label: "Manage Modules", href: "/dashboard/modules" },
-              { label: "Site Settings", href: "/dashboard/settings" },
+              { label: t("dashboard.newPage"), href: "/dashboard/pages/new" },
+              { label: t("dashboard.newPost"), href: "/dashboard/posts/new" },
+              { label: t("dashboard.addProduct"), href: "/dashboard/ecommerce/products/new" },
+              { label: t("dashboard.uploadMedia"), href: "/dashboard/media" },
+              { label: t("dashboard.manageThemes"), href: "/dashboard/themes" },
+              { label: t("dashboard.manageModules"), href: "/dashboard/modules" },
+              { label: t("dashboard.siteSettings"), href: "/dashboard/settings" },
             ].map((action) => (
               <Button key={action.href} asChild variant="outline" size="sm">
                 <Link href={action.href}>{action.label}</Link>
@@ -279,8 +281,8 @@ export function AnalyticsClient({
       {/* Traffic — own-data panel, previously the whole of this page */}
       <div className="flex items-center justify-between flex-wrap gap-3 pt-2">
         <div>
-          <h2 className="text-xl font-bold">Traffic</h2>
-          <p className="text-sm text-muted-foreground">Visits to your site, tracked automatically — no setup needed.</p>
+          <h2 className="text-xl font-bold">{t("dashboard.traffic")}</h2>
+          <p className="text-sm text-muted-foreground">{t("dashboard.trafficSubtitle")}</p>
         </div>
         <div className="flex items-center gap-1 rounded-lg border p-1">
           {RANGES.map(r => (
@@ -305,7 +307,7 @@ export function AnalyticsClient({
             </div>
             <p className="text-2xl font-bold tabular-nums">{data.total.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Visits, last {range} days
+              {t("dashboard.visitsLast", { range })}
               {prevTotal !== null && (
                 <span className={prevTotal >= 0 ? "text-green-600 ml-1.5" : "text-red-600 ml-1.5"}>
                   {prevTotal >= 0 ? "+" : ""}{prevTotal}%
@@ -320,7 +322,7 @@ export function AnalyticsClient({
               <FileText className="w-4 h-4 text-primary" />
             </div>
             <p className="text-2xl font-bold tabular-nums">{data.topPaths.length}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Pages with traffic</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.pagesWithTraffic")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -329,29 +331,29 @@ export function AnalyticsClient({
               <Link2 className="w-4 h-4 text-primary" />
             </div>
             <p className="text-2xl font-bold tabular-nums">{data.topReferrers.length}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Referring sites</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.referringSites")}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-sm">Visits over time</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("dashboard.visitsOverTime")}</CardTitle></CardHeader>
         <CardContent>
-          <TrendChart series={data.series} loading={loading} />
+          <TrendChart series={data.series} loading={loading} noVisitsLabel={t("dashboard.noVisitsInRange")} />
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RankedList title="Top pages" icon={FileText} items={data.topPaths} formatKey={(k) => k} />
+        <RankedList title={t("dashboard.topPages")} icon={FileText} items={data.topPaths} formatKey={(k) => k} empty={t("dashboard.noDataYet")} />
         <RankedList
-          title="Top referrers"
+          title={t("dashboard.topReferrers")}
           icon={ExternalLink}
           items={data.topReferrers}
           formatKey={(k) => k}
-          empty="No referring sites yet — visits are arriving directly or from search."
+          empty={t("dashboard.noReferrersYet")}
         />
-        <RankedList title="Devices" icon={Smartphone} items={data.devices} formatKey={(k) => k[0].toUpperCase() + k.slice(1)} />
-        <RankedList title="Top countries" icon={Globe2} items={data.topCountries} formatKey={(k) => k} empty="No location data yet." />
+        <RankedList title={t("dashboard.devices")} icon={Smartphone} items={data.devices} formatKey={(k) => k[0].toUpperCase() + k.slice(1)} empty={t("dashboard.noDataYet")} />
+        <RankedList title={t("dashboard.topCountries")} icon={Globe2} items={data.topCountries} formatKey={(k) => k} empty={t("dashboard.noLocationYet")} />
       </div>
 
       {hasRestaurantBranches && <RestaurantSalesCard />}
@@ -366,7 +368,7 @@ export function AnalyticsClient({
   );
 }
 
-function TrendChart({ series, loading }: { series: { day: string; views: number }[]; loading: boolean }) {
+function TrendChart({ series, loading, noVisitsLabel }: { series: { day: string; views: number }[]; loading: boolean; noVisitsLabel: string }) {
   const [hover, setHover] = useState<number | null>(null);
   const W = 800, H = 220, PAD = 32;
   const isEmpty = series.every(p => p.views === 0);
@@ -417,7 +419,7 @@ function TrendChart({ series, loading }: { series: { day: string; views: number 
       )}
       {isEmpty && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-xs text-muted-foreground">No visits recorded yet in this range.</p>
+          <p className="text-xs text-muted-foreground">{noVisitsLabel}</p>
         </div>
       )}
     </div>
