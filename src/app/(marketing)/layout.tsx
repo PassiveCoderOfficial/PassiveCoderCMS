@@ -109,13 +109,34 @@ export default async function MarketingLayout({ children }: { children: React.Re
     const supabase = await createAdminClient();
     const { data } = await supabase.from("site_settings")
       .select("site_theme, ga_measurement_id").eq("tenant_id", gtagTenantId).maybeSingle();
-    const t = data?.site_theme ?? "light";
-    if (tenantId && t !== "system") scheme = t;
+    // Matches (site)/layout.tsx's own default: only an explicit "dark"
+    // opts a tenant out of the light lock, "system" included — the
+    // previous `t !== "system"` check left every "system"-theme tenant
+    // (the default every tenant starts on) completely unlocked on their
+    // own homepage, the one path this layout renders instead of
+    // (site)/layout.tsx.
+    const t = data?.site_theme === "dark" ? "dark" : "light";
+    if (tenantId) scheme = t;
     gaMeasurementId = (data?.ga_measurement_id as string | null) ?? null;
   }
 
+  // (site)/layout.tsx locks a tenant's theme by stamping documentElement's
+  // class + data-theme-locked before hydration (via next/script
+  // beforeInteractive) — this layout only ever set the color-scheme CSS
+  // variables above, never that stamp, so the root ThemeProvider's own
+  // mount-effect OS-preference sync always won here regardless: a
+  // light-locked tenant's own homepage (the one path rendered by THIS
+  // layout, not (site)/layout.tsx — see the comments above) still flipped
+  // dark for any visitor with OS dark mode on. Same fix, ported here.
+  const themeLockScript = scheme
+    ? `document.documentElement.classList.add('${scheme}');document.documentElement.classList.remove('${scheme === "dark" ? "light" : "dark"}');document.documentElement.style.colorScheme='${scheme}';document.documentElement.dataset.themeLocked='${scheme}';`
+    : null;
+
   return (
     <>
+      {themeLockScript && (
+        <Script id="pc-theme-lock" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeLockScript }} />
+      )}
       {scheme === "light" && (
         <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `
           :root, html.dark, html.light { color-scheme: light; }
