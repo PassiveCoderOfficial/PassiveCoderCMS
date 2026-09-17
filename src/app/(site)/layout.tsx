@@ -237,9 +237,15 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {siteTheme === "dark" && (
         <style precedence="pc-theme" dangerouslySetInnerHTML={{ __html: `:root{color-scheme:dark;}` }} />
       )}
-      {/* Theme flash prevention */}
-      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-      <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      {/* Theme flash prevention. next/script's beforeInteractive strategy is
+          what actually runs this before hydration — a bare <script> here
+          rendered wherever this nested layout sits in the body's render
+          tree with no such guarantee, which meant it ran too late (or after)
+          ThemeProvider's own mount effect to beat the OS-preference sync
+          race it exists to prevent. `precedence` (the <style>-tag hoisting
+          mechanism used elsewhere on this page) is not a valid prop for
+          <script> — it silently did nothing here. */}
+      <Script id="pc-theme-lock" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
       {templateCSSVars && (
         <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />
       )}
