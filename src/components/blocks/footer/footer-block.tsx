@@ -126,7 +126,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               <p className="text-sm leading-relaxed mb-2 max-w-xs" style={{ color: mutedFg }}>{tagline}</p>
             )}
             {logoCaption && (
-              <p className="text-xs mb-5" style={{ color: mutedFg }}>{logoCaption}</p>
+              <p className="text-xs mb-5 whitespace-pre-line" style={{ color: mutedFg }}>{logoCaption}</p>
             )}
             {/* Socials */}
             {socials.length > 0 && (

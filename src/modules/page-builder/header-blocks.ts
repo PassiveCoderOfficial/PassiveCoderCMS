@@ -38,9 +38,6 @@ export const HEADER_BLOCK_TYPES: readonly BlockType[] = [
 export const FOOTER_BLOCK_TYPES: readonly BlockType[] = [
   "footer",
   "navigation",
-  "header_logo",
-  "header_nav",
-  "header_account",
   "text",
   "newsletter",
   "contact",
