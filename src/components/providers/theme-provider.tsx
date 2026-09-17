@@ -51,6 +51,24 @@ export function ThemeProvider({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // A published tenant site that pins its own theme stamps
+    // documentElement with data-theme-locked (set by (site)/layout.tsx's
+    // inline head script, before this provider ever mounts) — this
+    // provider's own system-preference sync must never override that lock.
+    // Without this check, a light-locked tenant site briefly rendered
+    // correctly on first paint, then this effect ran on mount, checked the
+    // visitor's real OS dark-mode preference, and stomped the lock straight
+    // back to dark — the exact bug (site)/layout.tsx's own comment already
+    // describes fixing once, that came back because this provider is
+    // mounted globally in the root layout with no route-group awareness.
+    const locked = document.documentElement.dataset.themeLocked;
+    if (locked === "light" || locked === "dark") {
+      setThemeState(locked as Theme);
+      setResolvedTheme(locked as "light" | "dark");
+      setMounted(true);
+      return;
+    }
+
     const stored = localStorage.getItem(storageKey) as Theme | null;
     const initial = stored ?? defaultTheme;
     setThemeState(initial);

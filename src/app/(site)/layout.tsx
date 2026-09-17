@@ -141,10 +141,16 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // controls (select popups, date pickers, autofill, scrollbars) using the
   // visitor's OS dark mode even when the site itself is locked to light —
   // which is what made input text unreadable on dark-mode devices.
+  // data-theme-locked tells the root layout's global ThemeProvider (mounted
+  // above every route group, admin dashboard included) not to resync this
+  // element with the visitor's OS preference once it mounts — without it,
+  // that provider's own system-preference effect ran right after this
+  // script and silently flipped a light-locked site back to dark on any
+  // visitor with OS dark mode on.
   const themeScript =
     siteTheme === "dark"
-      ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';`
-      : `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';`;
+      ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';document.documentElement.dataset.themeLocked='dark';`
+      : `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';document.documentElement.dataset.themeLocked='light';`;
 
   // Roughly half the tenants have never had a template applied. Those used to
   // inherit whatever colour the block components hardcoded; now that blocks are
