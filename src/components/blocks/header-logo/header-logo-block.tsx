@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { HeaderLogoBlockProps } from "@/types/cms";
 import { BrandLogo } from "@/components/site/brand-logo";
+import { cn } from "@/lib/utils";
 
 /**
  * Independent header sub-block: just the logo, separated out of what the
@@ -31,7 +32,7 @@ export function HeaderLogoBlock({
 }) {
   const { data } = block;
   const logo = data.imageUrl || identityLogo || null;
-  const logoDark = data.imageDarkUrl || identityLogoDark || logo;
+  const logoDark = data.imageDarkUrl || identityLogoDark || null;
   const height = data.height ?? 34;
 
   return (
@@ -40,16 +41,21 @@ export function HeaderLogoBlock({
         <>
           {/* Light/dark logo pair, same approach the nav block uses: both
               render, CSS picks the right one for the current theme so no
-              client JS is needed just to show a logo. */}
+              client JS is needed just to show a logo. Only hide the light
+              logo behind `dark:hidden` when a real dark variant exists to
+              replace it — most tenants never upload one, and OS dark mode
+              still adds .dark to <html> on light-locked sites (see
+              (site)/layout.tsx), which was making the logo vanish entirely
+              with nothing to fall back to. */}
           <Image
             src={logo}
             alt={data.text ?? "Logo"}
             width={height * 3.4}
             height={height}
             style={{ height }}
-            className="w-auto object-contain dark:hidden"
+            className={cn("w-auto object-contain", logoDark && "dark:hidden")}
           />
-          {logoDark && logoDark !== logo && (
+          {logoDark && (
             <Image
               src={logoDark}
               alt={data.text ?? "Logo"}
