@@ -26,7 +26,7 @@ export function HeaderNavBlock({ block }: { block: HeaderNavBlockProps }) {
   const fg = textColor ?? "hsl(var(--foreground))";
 
   return (
-    <div className="relative flex items-center flex-1 min-w-0">
+    <div className="flex items-center flex-1 min-w-0">
       <ul className={cn(
         "hidden md:flex items-center gap-0.5",
         style === "centered" ? "mx-auto" : "flex-1",

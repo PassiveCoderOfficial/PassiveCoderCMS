@@ -35,7 +35,13 @@ export function ContainerBlock({
   const inner = (
     <div
       className={cn(
-        "max-w-7xl mx-auto flex w-full",
+        "relative max-w-7xl mx-auto flex w-full",
+        // `relative` here (not on header_nav's own wrapper) so a mega-menu
+        // trigger — which deliberately strips `relative` off its own <li>,
+        // see nav-menu-core.tsx — anchors its absolute panel to this full
+        // header row instead of to header_nav's own narrow column, matching
+        // the legacy single-block <nav>'s width. Found squeezed/truncated on
+        // a real tenant otherwise (2026-09-17).
         // A row stacks on small screens unless the author turned that off —
         // side-by-side columns on a phone are unreadable at these widths.
         // Header containers are the deliberate exception: a site header
