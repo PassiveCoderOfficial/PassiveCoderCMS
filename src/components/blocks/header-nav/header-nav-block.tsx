@@ -23,7 +23,7 @@ export function HeaderNavBlock({ block }: { block: HeaderNavBlockProps }) {
   const { data } = block;
   const { items, style, textColor } = data;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const fg = textColor ?? "hsl(var(--foreground))";
+  const fg = textColor ?? "var(--header-fg, hsl(var(--foreground)))";
 
   return (
     <div className="flex items-center flex-1 min-w-0">

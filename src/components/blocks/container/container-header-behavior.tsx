@@ -50,6 +50,14 @@ export function ContainerHeaderBehavior({
         background: !solid ? "transparent" : glass ? "hsl(var(--background) / 0.88)" : "hsl(var(--background))",
         color: solid ? "hsl(var(--foreground))" : "#ffffff",
         boxShadow: solid ? "var(--shadow-sm)" : undefined,
+        // Sub-blocks (header_nav, etc.) were split out of the old monolithic
+        // nav block and each own their own static text color — they have no
+        // way to know this wrapper just switched white/dark on scroll. This
+        // variable is that missing bridge: a sub-block with no explicit
+        // textColor override falls back to it instead of a hardcoded
+        // foreground color, so it re-colors along with the header instead of
+        // staying dark-on-transparent (unreadable over a hero photo).
+        ["--header-fg" as string]: solid ? "hsl(var(--foreground))" : "#ffffff",
       }}
     >
       {children}
