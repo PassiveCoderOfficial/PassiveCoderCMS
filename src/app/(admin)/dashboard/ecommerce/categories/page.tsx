@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Tag, Plus, Trash2, Pencil, Check, X, Loader2, ImagePlus, Package } from "lucide-react";
 import { uploadMediaFile } from "@/app/(admin)/dashboard/media/actions";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Category {
   id: string;
@@ -28,6 +29,7 @@ function slugify(s: string) {
 const supabase = createClient();
 
 export default function CategoriesPage() {
+  const t = useT();
   const [categories, setCategories] = useState<Category[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -71,15 +73,15 @@ export default function CategoriesPage() {
   }
 
   async function handleImageUpload(file: File) {
-    if (!file.type.startsWith("image/")) { toast.error("Select an image file"); return; }
+    if (!file.type.startsWith("image/")) { toast.error(t("categories.selectImageFile")); return; }
     setUploading(true);
     const fd = new FormData();
     fd.append("file", file);
     const res = await uploadMediaFile(fd);
     setUploading(false);
-    if (res.error || !res.url) { toast.error(res.error ?? "Upload failed"); return; }
+    if (res.error || !res.url) { toast.error(res.error ?? t("categories.uploadFailed")); return; }
     set("image_url", res.url);
-    toast.success("Image uploaded");
+    toast.success(t("categories.imageUploaded"));
   }
 
   async function save() {
@@ -99,14 +101,14 @@ export default function CategoriesPage() {
       setCategories((prev) => prev.map((c) => c.id === editingId ? { ...c, ...payload } : c));
     } else {
       const tenantId = await getClientTenantId();
-      if (!tenantId) { toast.error("No tenant found for your account"); setSaving(false); return; }
+      if (!tenantId) { toast.error(t("categories.noTenantFound")); setSaving(false); return; }
       const { data, error } = await supabase.from("categories").insert({ ...payload, tenant_id: tenantId }).select().single();
       if (error) { toast.error(error.message); setSaving(false); return; }
       setCategories((prev) => [...prev, data as Category].sort((a, b) => a.name.localeCompare(b.name)));
     }
     resetForm();
     setSaving(false);
-    toast.success("Saved");
+    toast.success(t("categories.saved"));
   }
 
   function startEdit(c: Category) {
@@ -119,7 +121,7 @@ export default function CategoriesPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Delete this category?")) return;
+    if (!confirm(t("categories.deleteConfirm"))) return;
     await supabase.from("categories").delete().eq("id", id);
     setCategories((prev) => prev.filter((c) => c.id !== id));
     if (editingId === id) resetForm();
@@ -133,16 +135,16 @@ export default function CategoriesPage() {
         {/* ── Left: add / edit form ── */}
         <div className="space-y-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2"><Tag className="h-6 w-6" /> Categories</h1>
-            <p className="text-muted-foreground text-sm mt-1">{categories.length} product categories</p>
+            <h1 className="text-2xl font-bold flex items-center gap-2"><Tag className="h-6 w-6" /> {t("categories.title")}</h1>
+            <p className="text-muted-foreground text-sm mt-1">{t("categories.count", { count: categories.length })}</p>
           </div>
 
           <div className="border rounded-xl p-5 space-y-4 bg-card">
-            <h3 className="font-semibold text-sm">{editingId ? "Edit Category" : "Add New Category"}</h3>
+            <h3 className="font-semibold text-sm">{editingId ? t("categories.editCategory") : t("categories.addNewCategory")}</h3>
 
             {/* Thumbnail */}
             <div>
-              <Label className="text-xs mb-1.5 block">Thumbnail</Label>
+              <Label className="text-xs mb-1.5 block">{t("categories.thumbnail")}</Label>
               <input ref={fileRef} type="file" accept="image/*" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = ""; }} />
               <div
@@ -170,39 +172,39 @@ export default function CategoriesPage() {
                 ) : (
                   <div className="flex flex-col items-center gap-1 text-muted-foreground">
                     <ImagePlus className="h-6 w-6" />
-                    <span className="text-xs">Click or drop image</span>
+                    <span className="text-xs">{t("categories.clickOrDrop")}</span>
                   </div>
                 )}
               </div>
             </div>
 
             <div>
-              <Label className="text-xs mb-1 block">Name *</Label>
-              <Input value={form.name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Clothing" className="h-9" />
+              <Label className="text-xs mb-1 block">{t("categories.name")}</Label>
+              <Input value={form.name} onChange={(e) => handleNameChange(e.target.value)} placeholder={t("categories.namePlaceholder")} className="h-9" />
             </div>
             <div>
-              <Label className="text-xs mb-1 block">Slug</Label>
-              <Input value={form.slug} onChange={(e) => set("slug", e.target.value)} placeholder="clothing" className="h-9" />
+              <Label className="text-xs mb-1 block">{t("categories.slug")}</Label>
+              <Input value={form.slug} onChange={(e) => set("slug", e.target.value)} placeholder={t("categories.slugPlaceholder")} className="h-9" />
             </div>
             <div>
-              <Label className="text-xs mb-1 block">Parent Category</Label>
+              <Label className="text-xs mb-1 block">{t("categories.parentCategory")}</Label>
               <select
                 value={form.parent_id}
                 onChange={(e) => set("parent_id", e.target.value)}
                 className="w-full h-9 border rounded-md px-2 text-sm bg-background outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="">— None (top level) —</option>
+                <option value="">{t("categories.noneTopLevel")}</option>
                 {categories.filter((c) => c.id !== editingId).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <Label className="text-xs mb-1 block">Description</Label>
+              <Label className="text-xs mb-1 block">{t("categories.description")}</Label>
               <textarea
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
-                placeholder="Optional"
+                placeholder={t("categories.descriptionPlaceholder")}
                 rows={3}
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background outline-none focus:ring-1 focus:ring-primary resize-none"
               />
@@ -211,11 +213,11 @@ export default function CategoriesPage() {
             <div className="flex gap-2 pt-1">
               <Button size="sm" onClick={save} disabled={saving || !form.name.trim()} className="flex-1">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                {editingId ? "Update" : "Add Category"}
+                {editingId ? t("categories.update") : t("categories.addCategory")}
               </Button>
               {editingId && (
                 <Button size="sm" variant="outline" onClick={resetForm}>
-                  <X className="w-4 h-4 mr-1" /> Cancel
+                  <X className="w-4 h-4 mr-1" /> {t("categories.cancel")}
                 </Button>
               )}
             </div>
@@ -229,8 +231,8 @@ export default function CategoriesPage() {
           ) : categories.length === 0 ? (
             <div className="border border-dashed rounded-xl flex flex-col items-center justify-center py-24 text-center">
               <Tag className="h-12 w-12 text-muted-foreground mb-3 opacity-40" />
-              <p className="font-medium">No categories yet</p>
-              <p className="text-sm text-muted-foreground">Use the form to add your first product category.</p>
+              <p className="font-medium">{t("categories.noCategoriesYet")}</p>
+              <p className="text-sm text-muted-foreground">{t("categories.noCategoriesHint")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -264,7 +266,7 @@ export default function CategoriesPage() {
                         <h3 className="font-semibold text-sm leading-snug truncate">{cat.name}</h3>
                         <p className="text-xs text-muted-foreground">/{cat.slug}</p>
                         {parentName(cat.parent_id) && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5">in {parentName(cat.parent_id)}</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{t("categories.inParent", { parent: parentName(cat.parent_id) ?? "" })}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-0.5 shrink-0">
