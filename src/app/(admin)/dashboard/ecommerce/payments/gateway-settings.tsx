@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Gateway {
   id: string;
@@ -54,6 +55,7 @@ const GATEWAY_FIELDS: Record<string, Array<{ key: string; label: string; secret?
 };
 
 export function GatewaySettings({ gateway }: { gateway: Gateway }) {
+  const t = useT();
   const [settings, setSettings] = useState<Record<string, string>>(gateway.settings ?? {});
   const [testMode, setTestMode] = useState(gateway.is_test_mode);
   const [saving, setSaving] = useState(false);
@@ -64,8 +66,8 @@ export function GatewaySettings({ gateway }: { gateway: Gateway }) {
     setSaving(true);
     const supabase = createClient();
     const { error } = await supabase.from("payment_gateways").update({ settings, is_test_mode: testMode }).eq("id", gateway.id);
-    if (error) { toast.error("Failed to save settings"); setSaving(false); return; }
-    toast.success("Settings saved");
+    if (error) { toast.error(t("payments.failedToSaveSettings")); setSaving(false); return; }
+    toast.success(t("payments.settingsSaved"));
     setSaving(false);
     router.refresh();
   };
@@ -76,12 +78,16 @@ export function GatewaySettings({ gateway }: { gateway: Gateway }) {
     <div className="space-y-3 pt-2 border-t">
       <div className="flex items-center justify-between">
         <div>
-          <Label className="text-sm">Test Mode</Label>
-          <p className="text-xs text-muted-foreground">Use sandbox/test credentials</p>
+          <Label className="text-sm">{t("payments.testMode")}</Label>
+          <p className="text-xs text-muted-foreground">{t("payments.testModeHint")}</p>
         </div>
         <Switch checked={testMode} onCheckedChange={setTestMode} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Field labels (Publishable Key, Secret Key, etc.) stay English —
+            these are gateway API credential names merchants cross-reference
+            against each provider's own dashboard/docs, which are English
+            regardless of admin UI language. */}
         {fields.map((field) => (
           <div key={field.key} className="space-y-1">
             <Label className="text-xs">{field.label}</Label>
@@ -90,14 +96,14 @@ export function GatewaySettings({ gateway }: { gateway: Gateway }) {
               value={settings[field.key] ?? ""}
               onChange={(e) => setSettings({ ...settings, [field.key]: e.target.value })}
               className="h-8 text-xs"
-              placeholder={`Enter ${field.label.toLowerCase()}`}
+              placeholder={t("payments.enterFieldPlaceholder", { field: field.label.toLowerCase() })}
             />
           </div>
         ))}
       </div>
       <Button size="sm" onClick={handleSave} disabled={saving} className="mt-2">
         {saving && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
-        Save Settings
+        {t("payments.saveSettings")}
       </Button>
     </div>
   );

@@ -5,8 +5,10 @@ import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n/language-provider";
 
 export function GatewayToggle({ gatewayId, isEnabled }: { gatewayId: string; isEnabled: boolean }) {
+  const t = useT();
   const [enabled, setEnabled] = useState(isEnabled);
   const router = useRouter();
 
@@ -14,8 +16,8 @@ export function GatewayToggle({ gatewayId, isEnabled }: { gatewayId: string; isE
     setEnabled(checked);
     const supabase = createClient();
     const { error } = await supabase.from("payment_gateways").update({ is_enabled: checked }).eq("id", gatewayId);
-    if (error) { setEnabled(!checked); toast.error("Failed to update"); return; }
-    toast.success(checked ? "Gateway enabled" : "Gateway disabled");
+    if (error) { setEnabled(!checked); toast.error(t("payments.failedToUpdate")); return; }
+    toast.success(checked ? t("payments.gatewayEnabled") : t("payments.gatewayDisabled"));
     router.refresh();
   };
 

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { GatewayToggle } from "./gateway-toggle";
 import { GatewaySettings } from "./gateway-settings";
+import { PaymentsHeader } from "./payments-header";
 
 export default async function PaymentsPage() {
   const supabase = await createClient();
@@ -13,10 +14,7 @@ export default async function PaymentsPage() {
 
   return (
     <div className="p-6 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Payment Gateways</h1>
-        <p className="text-muted-foreground text-sm mt-1">Enable and configure your payment gateways</p>
-      </div>
+      <PaymentsHeader />
 
       <div className="space-y-4">
         {gateways?.map((gateway) => (

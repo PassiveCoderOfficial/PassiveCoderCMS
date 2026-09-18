@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Truck, Plus, Trash2, Pencil, Check, X, Loader2, GripVertical } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface DeliveryOption {
   id: string;
@@ -23,6 +24,7 @@ interface DeliveryOption {
 const supabase = createClient();
 
 export default function DeliveryPage() {
+  const t = useT();
   const [options, setOptions] = useState<DeliveryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -63,7 +65,7 @@ export default function DeliveryPage() {
     }
     setForm({ name: "", description: "", price: "0", estimated_days: "", is_enabled: true });
     setSaving(false);
-    toast.success("Saved");
+    toast.success(t("delivery.saved"));
   }
 
   function startEdit(o: DeliveryOption) {
@@ -73,7 +75,7 @@ export default function DeliveryPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Delete this delivery option?")) return;
+    if (!confirm(t("delivery.deleteConfirm"))) return;
     await supabase.from("delivery_options").delete().eq("id", id);
     setOptions(prev => prev.filter(o => o.id !== id));
   }
@@ -86,36 +88,36 @@ export default function DeliveryPage() {
   const formPanel = (
     <Card>
       <CardContent className="p-5 space-y-4">
-        <h3 className="font-semibold text-sm">{editingId ? "Edit Option" : "New Delivery Option"}</h3>
+        <h3 className="font-semibold text-sm">{editingId ? t("delivery.editOption") : t("delivery.newOption")}</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <Label className="text-xs mb-1 block">Name *</Label>
-            <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Standard Delivery" />
+            <Label className="text-xs mb-1 block">{t("delivery.name")}</Label>
+            <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder={t("delivery.namePlaceholder")} />
           </div>
           <div>
-            <Label className="text-xs mb-1 block">Price</Label>
+            <Label className="text-xs mb-1 block">{t("delivery.price")}</Label>
             <Input type="number" min="0" step="0.01" value={form.price} onChange={e => set("price", e.target.value)} />
           </div>
           <div>
-            <Label className="text-xs mb-1 block">Estimated Days</Label>
-            <Input value={form.estimated_days} onChange={e => set("estimated_days", e.target.value)} placeholder="3-5 business days" />
+            <Label className="text-xs mb-1 block">{t("delivery.estimatedDays")}</Label>
+            <Input value={form.estimated_days} onChange={e => set("estimated_days", e.target.value)} placeholder={t("delivery.estimatedDaysPlaceholder")} />
           </div>
           <div className="col-span-2">
-            <Label className="text-xs mb-1 block">Description</Label>
-            <Input value={form.description} onChange={e => set("description", e.target.value)} placeholder="Optional details…" />
+            <Label className="text-xs mb-1 block">{t("delivery.description")}</Label>
+            <Input value={form.description} onChange={e => set("description", e.target.value)} placeholder={t("delivery.descriptionPlaceholder")} />
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.is_enabled} onCheckedChange={v => set("is_enabled", v)} id="enabled" />
-            <Label htmlFor="enabled" className="text-sm">Enabled</Label>
+            <Label htmlFor="enabled" className="text-sm">{t("delivery.enabled")}</Label>
           </div>
         </div>
         <div className="flex gap-2">
           <Button size="sm" onClick={save} disabled={saving || !form.name.trim()}>
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-            {editingId ? "Update" : "Add"}
+            {editingId ? t("delivery.update") : t("delivery.add")}
           </Button>
           <Button size="sm" variant="outline" onClick={() => { setAdding(false); setEditingId(null); }}>
-            <X className="w-4 h-4 mr-2" /> Cancel
+            <X className="w-4 h-4 mr-2" /> {t("delivery.cancel")}
           </Button>
         </div>
       </CardContent>
@@ -126,11 +128,11 @@ export default function DeliveryPage() {
     <div className="p-6 space-y-6 max-w-2xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2"><Truck className="w-6 h-6" /> Delivery Options</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage shipping and delivery methods shown at checkout.</p>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Truck className="w-6 h-6" /> {t("delivery.title")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("delivery.subtitle")}</p>
         </div>
         {!adding && !editingId && (
-          <Button size="sm" onClick={() => setAdding(true)}><Plus className="w-4 h-4 mr-2" /> Add Option</Button>
+          <Button size="sm" onClick={() => setAdding(true)}><Plus className="w-4 h-4 mr-2" /> {t("delivery.addOption")}</Button>
         )}
       </div>
 
@@ -142,8 +144,8 @@ export default function DeliveryPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <Truck className="h-10 w-10 text-muted-foreground mb-3" />
-            <p className="font-medium">No delivery options yet</p>
-            <p className="text-sm text-muted-foreground">Add options like Standard, Express, Free shipping.</p>
+            <p className="font-medium">{t("delivery.noOptionsYet")}</p>
+            <p className="text-sm text-muted-foreground">{t("delivery.noOptionsHint")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -156,12 +158,12 @@ export default function DeliveryPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-sm">{o.name}</p>
-                      {!o.is_enabled && <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">Disabled</span>}
+                      {!o.is_enabled && <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{t("delivery.disabled")}</span>}
                     </div>
                     {o.description && <p className="text-xs text-muted-foreground">{o.description}</p>}
                     {o.estimated_days && <p className="text-xs text-muted-foreground">{o.estimated_days}</p>}
                   </div>
-                  <p className="font-semibold text-sm shrink-0">{o.price === 0 ? "Free" : `$${o.price.toFixed(2)}`}</p>
+                  <p className="font-semibold text-sm shrink-0">{o.price === 0 ? t("delivery.free") : `$${o.price.toFixed(2)}`}</p>
                   <div className="flex items-center gap-1 shrink-0">
                     <Switch checked={o.is_enabled} onCheckedChange={() => toggleEnabled(o)} />
                     <Button size="sm" variant="ghost" onClick={() => startEdit(o)}><Pencil className="w-3.5 h-3.5" /></Button>
