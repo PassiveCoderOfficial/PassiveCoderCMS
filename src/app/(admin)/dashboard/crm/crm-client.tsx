@@ -6,6 +6,8 @@ import {
   Loader2, Mail, Phone, MessageCircle, Trash2, Check, ChevronLeft,
   ChevronRight, StickyNote, Clock, GripVertical, Pencil,
 } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface Stage {
   id: string; name: string; color: string; position: number;
@@ -29,24 +31,31 @@ interface Task {
   contacts?: { id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; whatsapp: string | null } | null;
 }
 
-const SOURCE_LABELS: Record<string, string> = {
-  manual: "Manual", form: "Form", booking: "Booking", order: "Order",
-  enm: "ENM", import: "Import", api: "API",
-};
+type TFn = ReturnType<typeof useT>;
 
-function contactName(c: { first_name?: string | null; last_name?: string | null; email?: string | null; phone?: string | null }) {
+// Module-level constants can't call the t() hook — these take t as a param,
+// called inside whichever component needs them (same pattern as
+// subscription/page.tsx's statusConfig).
+function sourceLabels(t: TFn): Record<string, string> {
+  return {
+    manual: t("crm.sourceManual"), form: t("crm.sourceForm"), booking: t("crm.sourceBooking"),
+    order: t("crm.sourceOrder"), enm: t("crm.sourceEnm"), import: t("crm.sourceImport"), api: t("crm.sourceApi"),
+  };
+}
+
+function contactName(c: { first_name?: string | null; last_name?: string | null; email?: string | null; phone?: string | null }, t: TFn) {
   const n = [c.first_name, c.last_name].filter(Boolean).join(" ").trim();
-  return n || c.email || c.phone || "Unnamed";
+  return n || c.email || c.phone || t("crm.unnamed");
 }
 function waLink(num: string | null | undefined) {
   return num ? `https://wa.me/${num.replace(/\D/g, "")}` : null;
 }
-function timeAgo(iso: string) {
+function timeAgo(iso: string, t: TFn) {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (s < 60) return "now";
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  if (s < 2592000) return `${Math.floor(s / 86400)}d ago`;
+  if (s < 60) return t("crm.now");
+  if (s < 3600) return t("crm.minAgo", { n: Math.floor(s / 60) });
+  if (s < 86400) return t("crm.hourAgo", { n: Math.floor(s / 3600) });
+  if (s < 2592000) return t("crm.dayAgo", { n: Math.floor(s / 86400) });
   return new Date(iso).toLocaleDateString();
 }
 
@@ -61,6 +70,7 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
   onChanged: (c: Contact) => void;
   onDeleted: (id: string) => void;
 }) {
+  const t = useT();
   const [contact, setContact] = useState<Contact | null>(null);
   const [events, setEvents] = useState<ContactEvent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -140,7 +150,7 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
   }
 
   async function del() {
-    if (!confirm("Delete this contact and its history?")) return;
+    if (!confirm(t("crm.deleteContactConfirm"))) return;
     const res = await fetch(`/api/crm/contacts/${contactId}`, { method: "DELETE" });
     if (res.ok) { onDeleted(contactId); onClose(); }
   }
@@ -157,9 +167,9 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
           <div className="p-5 space-y-5">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">{contactName(contact)}</h2>
+                <h2 className="text-xl font-bold text-white">{contactName(contact, t)}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {SOURCE_LABELS[contact.source] ?? contact.source} · added {timeAgo(contact.created_at)}
+                  {t("crm.addedTimeAgo", { source: sourceLabels(t)[contact.source] ?? contact.source, time: timeAgo(contact.created_at, t) })}
                 </p>
               </div>
               <div className="flex items-center gap-1">
@@ -172,21 +182,21 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
             {/* Quick actions */}
             <div className="flex flex-wrap gap-2">
               {contact.phone && (
-                <a href={`tel:${contact.phone}`} className={btnGhost}><Phone className="w-4 h-4" /> Call</a>
+                <a href={`tel:${contact.phone}`} className={btnGhost}><Phone className="w-4 h-4" /> {t("crm.call")}</a>
               )}
               {wa && (
                 <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-green-600/20 border border-green-700/50 text-green-300 hover:bg-green-600/30 px-3 py-2 rounded-lg text-sm transition-colors">
-                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                  <MessageCircle className="w-4 h-4" /> {t("crm.whatsapp")}
                 </a>
               )}
               {contact.email && (
-                <a href={`mailto:${contact.email}`} className={btnGhost}><Mail className="w-4 h-4" /> Email</a>
+                <a href={`mailto:${contact.email}`} className={btnGhost}><Mail className="w-4 h-4" /> {t("crm.email")}</a>
               )}
             </div>
 
             {/* Stage selector */}
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Pipeline stage</label>
+              <label className="block text-xs text-gray-500 mb-1.5">{t("crm.pipelineStage")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {stages.map((s) => (
                   <button key={s.id} onClick={() => changeStage(s.id)}
@@ -206,19 +216,19 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
             {editing ? (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <input className={inputCls} placeholder="First name" value={form.first_name ?? ""} onChange={(e) => setForm(f => ({ ...f, first_name: e.target.value }))} />
-                  <input className={inputCls} placeholder="Last name" value={form.last_name ?? ""} onChange={(e) => setForm(f => ({ ...f, last_name: e.target.value }))} />
+                  <input className={inputCls} placeholder={t("crm.firstName")} value={form.first_name ?? ""} onChange={(e) => setForm(f => ({ ...f, first_name: e.target.value }))} />
+                  <input className={inputCls} placeholder={t("crm.lastName")} value={form.last_name ?? ""} onChange={(e) => setForm(f => ({ ...f, last_name: e.target.value }))} />
                 </div>
-                <input className={inputCls} placeholder="Email" value={form.email ?? ""} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+                <input className={inputCls} placeholder={t("crm.emailField")} value={form.email ?? ""} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-3">
-                  <input className={inputCls} placeholder="Phone" value={form.phone ?? ""} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
-                  <input className={inputCls} placeholder="WhatsApp" value={form.whatsapp ?? ""} onChange={(e) => setForm(f => ({ ...f, whatsapp: e.target.value }))} />
+                  <input className={inputCls} placeholder={t("crm.phone")} value={form.phone ?? ""} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
+                  <input className={inputCls} placeholder={t("crm.whatsappField")} value={form.whatsapp ?? ""} onChange={(e) => setForm(f => ({ ...f, whatsapp: e.target.value }))} />
                 </div>
-                <input className={inputCls} placeholder="Company" value={form.company ?? ""} onChange={(e) => setForm(f => ({ ...f, company: e.target.value }))} />
-                <textarea className={inputCls} rows={3} placeholder="Notes" value={form.notes ?? ""} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
+                <input className={inputCls} placeholder={t("crm.company")} value={form.company ?? ""} onChange={(e) => setForm(f => ({ ...f, company: e.target.value }))} />
+                <textarea className={inputCls} rows={3} placeholder={t("crm.notes")} value={form.notes ?? ""} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} className={btnPrimary}><Check className="w-4 h-4" /> Save</button>
-                  <button onClick={() => { setEditing(false); setForm(contact); }} className={btnGhost}>Cancel</button>
+                  <button onClick={saveEdit} className={btnPrimary}><Check className="w-4 h-4" /> {t("crm.saveChanges")}</button>
+                  <button onClick={() => { setEditing(false); setForm(contact); }} className={btnGhost}>{t("crm.cancel")}</button>
                 </div>
               </div>
             ) : (
@@ -228,28 +238,28 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
                 {contact.company && <div className="text-gray-400">{contact.company}</div>}
                 {contact.notes && <div className="text-gray-400 whitespace-pre-wrap pt-1 border-t border-gray-800">{contact.notes}</div>}
                 {!contact.email && !contact.phone && !contact.company && !contact.notes && (
-                  <div className="text-gray-600">No details yet — click the pencil to edit.</div>
+                  <div className="text-gray-600">{t("crm.noDetailsYet")}</div>
                 )}
               </div>
             )}
 
             {/* Tasks */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2"><CheckSquare className="w-4 h-4 text-indigo-400" /> Follow-ups</h3>
-              {tasks.filter(t => t.status !== "cancelled").map((t) => (
-                <div key={t.id} className="flex items-center gap-2 text-sm">
-                  <button onClick={() => toggleTask(t)}
-                    className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center ${t.status === "done" ? "bg-green-600 border-green-600" : "border-gray-600"}`}>
-                    {t.status === "done" && <Check className="w-3 h-3 text-white" />}
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2"><CheckSquare className="w-4 h-4 text-indigo-400" /> {t("crm.followUps")}</h3>
+              {tasks.filter(tk => tk.status !== "cancelled").map((tk) => (
+                <div key={tk.id} className="flex items-center gap-2 text-sm">
+                  <button onClick={() => toggleTask(tk)}
+                    className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center ${tk.status === "done" ? "bg-green-600 border-green-600" : "border-gray-600"}`}>
+                    {tk.status === "done" && <Check className="w-3 h-3 text-white" />}
                   </button>
-                  <span className={t.status === "done" ? "line-through text-gray-600" : "text-gray-300"}>{t.title}</span>
-                  <span className={`ml-auto text-xs ${new Date(t.due_at) < new Date() && t.status === "open" ? "text-red-400" : "text-gray-500"}`}>
-                    {new Date(t.due_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  <span className={tk.status === "done" ? "line-through text-gray-600" : "text-gray-300"}>{tk.title}</span>
+                  <span className={`ml-auto text-xs ${new Date(tk.due_at) < new Date() && tk.status === "open" ? "text-red-400" : "text-gray-500"}`}>
+                    {new Date(tk.due_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               ))}
               <div className="flex gap-2">
-                <input className={inputCls} placeholder="Follow up about…" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} />
+                <input className={inputCls} placeholder={t("crm.followUpPlaceholder")} value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} />
                 <input type="datetime-local" className={`${inputCls} w-auto`} value={taskDue} onChange={(e) => setTaskDue(e.target.value)} />
                 <button onClick={addTask} className={btnGhost}><Plus className="w-4 h-4" /></button>
               </div>
@@ -258,7 +268,7 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
             {/* Note composer + timeline */}
             <div className="space-y-3">
               <div className="flex gap-2">
-                <input className={inputCls} placeholder="Add a note…" value={note}
+                <input className={inputCls} placeholder={t("crm.addNotePlaceholder")} value={note}
                   onChange={(e) => setNote(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addNote()} />
                 <button onClick={addNote} disabled={savingNote} className={btnPrimary}>
@@ -270,12 +280,12 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
                   <div key={ev.id} className="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-white font-medium">{ev.title}</span>
-                      <span className="text-xs text-gray-500">{timeAgo(ev.created_at)}</span>
+                      <span className="text-xs text-gray-500">{timeAgo(ev.created_at, t)}</span>
                     </div>
                     {ev.body && <p className="text-xs text-gray-400 mt-1 whitespace-pre-wrap">{ev.body}</p>}
                   </div>
                 ))}
-                {!events.length && <p className="text-sm text-gray-600 text-center py-4">No activity yet.</p>}
+                {!events.length && <p className="text-sm text-gray-600 text-center py-4">{t("crm.noActivityYet")}</p>}
               </div>
             </div>
           </div>
@@ -289,19 +299,20 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
 function AddContactModal({ stages, onClose, onCreated }: {
   stages: Stage[]; onClose: () => void; onCreated: (c: Contact) => void;
 }) {
+  const t = useT();
   const [f, setF] = useState({ first_name: "", last_name: "", email: "", phone: "", company: "", stage_id: stages[0]?.id ?? "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function save() {
-    if (!f.email.trim() && !f.phone.trim()) { setError("Email or phone required"); return; }
+    if (!f.email.trim() && !f.phone.trim()) { setError(t("crm.emailOrPhoneRequired")); return; }
     setSaving(true); setError(null);
     const res = await fetch("/api/crm/contacts", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f),
     });
     const d = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(d.error ?? "Failed"); return; }
+    if (!res.ok) { setError(d.error ?? t("crm.addContactFailed")); return; }
     onCreated(d); onClose();
   }
 
@@ -310,22 +321,22 @@ function AddContactModal({ stages, onClose, onCreated }: {
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">New contact</h2>
+          <h2 className="text-lg font-bold text-white">{t("crm.newContact")}</h2>
           <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <input className={inputCls} placeholder="First name" value={f.first_name} onChange={(e) => setF(p => ({ ...p, first_name: e.target.value }))} />
-          <input className={inputCls} placeholder="Last name" value={f.last_name} onChange={(e) => setF(p => ({ ...p, last_name: e.target.value }))} />
+          <input className={inputCls} placeholder={t("crm.firstName")} value={f.first_name} onChange={(e) => setF(p => ({ ...p, first_name: e.target.value }))} />
+          <input className={inputCls} placeholder={t("crm.lastName")} value={f.last_name} onChange={(e) => setF(p => ({ ...p, last_name: e.target.value }))} />
         </div>
-        <input className={inputCls} placeholder="Email" value={f.email} onChange={(e) => setF(p => ({ ...p, email: e.target.value }))} />
-        <input className={inputCls} placeholder="Phone (e.g. 01712…)" value={f.phone} onChange={(e) => setF(p => ({ ...p, phone: e.target.value }))} />
-        <input className={inputCls} placeholder="Company" value={f.company} onChange={(e) => setF(p => ({ ...p, company: e.target.value }))} />
+        <input className={inputCls} placeholder={t("crm.emailField")} value={f.email} onChange={(e) => setF(p => ({ ...p, email: e.target.value }))} />
+        <input className={inputCls} placeholder={t("crm.phonePlaceholder")} value={f.phone} onChange={(e) => setF(p => ({ ...p, phone: e.target.value }))} />
+        <input className={inputCls} placeholder={t("crm.company")} value={f.company} onChange={(e) => setF(p => ({ ...p, company: e.target.value }))} />
         <select className={inputCls} value={f.stage_id} onChange={(e) => setF(p => ({ ...p, stage_id: e.target.value }))}>
           {stages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button onClick={save} disabled={saving} className={`${btnPrimary} w-full justify-center`}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add contact
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} {t("crm.addContact")}
         </button>
       </div>
     </div>
@@ -334,6 +345,7 @@ function AddContactModal({ stages, onClose, onCreated }: {
 
 // ── Stages settings tab ──────────────────────────────────────────────────────
 function StagesTab({ stages, onChange }: { stages: Stage[]; onChange: (s: Stage[]) => void }) {
+  const t = useT();
   const [newName, setNewName] = useState("");
 
   async function add() {
@@ -359,7 +371,7 @@ function StagesTab({ stages, onChange }: { stages: Stage[]; onChange: (s: Stage[
     });
   }
   async function remove(id: string) {
-    if (!confirm("Delete stage? Contacts keep their data, just lose this stage.")) return;
+    if (!confirm(t("crm.deleteStageConfirm"))) return;
     await fetch(`/api/crm/stages?id=${id}`, { method: "DELETE" });
     onChange(stages.filter(s => s.id !== id));
   }
@@ -386,7 +398,7 @@ function StagesTab({ stages, onChange }: { stages: Stage[]; onChange: (s: Stage[
               defaultValue={s.name} onBlur={(e) => e.target.value !== s.name && rename(s.id, e.target.value)} />
             {(s.is_won || s.is_lost) && (
               <span className={`text-xs px-2 py-0.5 rounded-full ${s.is_won ? "bg-green-900/50 text-green-300" : "bg-red-900/50 text-red-300"}`}>
-                {s.is_won ? "won" : "lost"}
+                {s.is_won ? t("crm.won") : t("crm.lost")}
               </span>
             )}
             <button disabled={i === 0} onClick={() => move(i, -1)} className="p-1 text-gray-500 hover:text-white disabled:opacity-30"><ChevronLeft className="w-4 h-4 rotate-90" /></button>
@@ -396,9 +408,9 @@ function StagesTab({ stages, onChange }: { stages: Stage[]; onChange: (s: Stage[
         ))}
       </div>
       <div className="flex gap-2">
-        <input className={inputCls} placeholder="New stage name" value={newName}
+        <input className={inputCls} placeholder={t("crm.newStageName")} value={newName}
           onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <button onClick={add} className={btnPrimary}><Plus className="w-4 h-4" /> Add</button>
+        <button onClick={add} className={btnPrimary}><Plus className="w-4 h-4" /> {t("crm.add")}</button>
       </div>
     </div>
   );
@@ -408,6 +420,7 @@ function StagesTab({ stages, onChange }: { stages: Stage[]; onChange: (s: Stage[
 export default function CrmClient({ initialStages, initialContacts, initialTotal, initialTasks }: {
   initialStages: Stage[]; initialContacts: Contact[]; initialTotal: number; initialTasks: Task[];
 }) {
+  const t = useT();
   const [tab, setTab] = useState<"contacts" | "pipeline" | "tasks" | "stages">("contacts");
   const [stages, setStages] = useState(initialStages);
   const [contacts, setContacts] = useState(initialContacts);
@@ -477,30 +490,30 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
   const totalPages = Math.max(1, Math.ceil(total / 25));
 
   const TABS = [
-    { id: "contacts" as const, label: "Contacts", icon: Users },
-    { id: "pipeline" as const, label: "Pipeline", icon: KanbanSquare },
-    { id: "tasks" as const, label: "Follow-ups", icon: CheckSquare, badge: tasks.filter(t => t.status === "open").length },
-    { id: "stages" as const, label: "Stages", icon: Settings2 },
+    { id: "contacts" as const, label: t("crm.tabContacts"), icon: Users },
+    { id: "pipeline" as const, label: t("crm.tabPipeline"), icon: KanbanSquare },
+    { id: "tasks" as const, label: t("crm.tabFollowUps"), icon: CheckSquare, badge: tasks.filter(tk => tk.status === "open").length },
+    { id: "stages" as const, label: t("crm.tabStages"), icon: Settings2 },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Users className="w-6 h-6 text-indigo-400" /> CRM
+          <Users className="w-6 h-6 text-indigo-400" /> {t("crm.title")}
         </h1>
-        <button onClick={() => setShowAdd(true)} className={btnPrimary}><Plus className="w-4 h-4" /> New contact</button>
+        <button onClick={() => setShowAdd(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("crm.newContact")}</button>
       </div>
 
       <div className="flex gap-1 border-b border-gray-800">
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
+        {TABS.map(tabItem => (
+          <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === t.id ? "border-indigo-500 text-white" : "border-transparent text-gray-400 hover:text-gray-200"
+              tab === tabItem.id ? "border-indigo-500 text-white" : "border-transparent text-gray-400 hover:text-gray-200"
             }`}>
-            <t.icon className="w-4 h-4" /> {t.label}
-            {"badge" in t && !!t.badge && (
-              <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full">{t.badge}</span>
+            <tabItem.icon className="w-4 h-4" /> {tabItem.label}
+            {"badge" in tabItem && !!tabItem.badge && (
+              <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full">{tabItem.badge}</span>
             )}
           </button>
         ))}
@@ -511,11 +524,11 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-1 min-w-52">
               <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input className={`${inputCls} pl-9`} placeholder="Search name, email, phone, company…"
+              <input className={`${inputCls} pl-9`} placeholder={t("crm.searchPlaceholder")}
                 value={q} onChange={(e) => onSearch(e.target.value)} />
             </div>
             <select className={`${inputCls} w-auto`} value={stageFilter} onChange={(e) => onStageFilter(e.target.value)}>
-              <option value="">All stages</option>
+              <option value="">{t("crm.allStages")}</option>
               {stages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
@@ -525,7 +538,7 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
               <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-500" /></div>
             ) : contacts.length === 0 ? (
               <div className="text-center py-16 text-gray-500 text-sm">
-                No contacts yet. They appear automatically from form submissions, bookings and orders — or add one manually.
+                {t("crm.noContactsYet")}
               </div>
             ) : (
               <div className="divide-y divide-gray-800">
@@ -535,11 +548,11 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
                     <div key={c.id} onClick={() => setOpenContact(c.id)}
                       className="flex items-center gap-4 px-4 py-3 hover:bg-gray-800/60 cursor-pointer transition-colors">
                       <div className="w-9 h-9 rounded-full bg-indigo-600/20 text-indigo-300 flex items-center justify-center text-sm font-semibold shrink-0">
-                        {contactName(c).charAt(0).toUpperCase()}
+                        {contactName(c, t).charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-white truncate">{contactName(c)}</span>
+                          <span className="text-sm font-medium text-white truncate">{contactName(c, t)}</span>
                           {c.crm_stages && (
                             <span className="text-xs px-2 py-0.5 rounded-full shrink-0"
                               style={{ backgroundColor: c.crm_stages.color + "33", color: c.crm_stages.color }}>
@@ -548,10 +561,10 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
                           )}
                         </div>
                         <div className="text-xs text-gray-500 truncate">
-                          {[c.email, c.phone, c.company].filter(Boolean).join(" · ") || SOURCE_LABELS[c.source]}
+                          {[c.email, c.phone, c.company].filter(Boolean).join(" · ") || sourceLabels(t)[c.source]}
                         </div>
                       </div>
-                      <span className="text-xs text-gray-600 shrink-0 hidden sm:block">{timeAgo(c.last_activity_at)}</span>
+                      <span className="text-xs text-gray-600 shrink-0 hidden sm:block">{timeAgo(c.last_activity_at, t)}</span>
                       <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                         {c.phone && <a href={`tel:${c.phone}`} className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-700"><Phone className="w-4 h-4" /></a>}
                         {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-700"><MessageCircle className="w-4 h-4" /></a>}
@@ -566,7 +579,7 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between text-sm text-gray-400">
-              <span>{total} contacts</span>
+              <span>{t("crm.contactsCount", { count: total })}</span>
               <div className="flex items-center gap-2">
                 <button disabled={page === 0} onClick={() => onPage(page - 1)} className={`${btnGhost} disabled:opacity-40`}><ChevronLeft className="w-4 h-4" /></button>
                 <span>{page + 1} / {totalPages}</span>
@@ -597,7 +610,7 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
                         onDragStart={(e) => e.dataTransfer.setData("contactId", c.id)}
                         onClick={() => setOpenContact(c.id)}
                         className="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2.5 cursor-pointer hover:border-gray-600 transition-colors">
-                        <div className="text-sm font-medium text-white truncate">{contactName(c)}</div>
+                        <div className="text-sm font-medium text-white truncate">{contactName(c, t)}</div>
                         <div className="text-xs text-gray-500 truncate">{c.email ?? c.phone ?? ""}</div>
                       </div>
                     ))}
@@ -606,33 +619,33 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
               );
             })}
           </div>
-          <p className="text-xs text-gray-600 mt-3">Drag cards between stages. Pipeline shows the currently loaded page of contacts.</p>
+          <p className="text-xs text-gray-600 mt-3">{t("crm.dragHint")}</p>
         </div>
       )}
 
       {tab === "tasks" && (
         <div className="max-w-2xl space-y-2">
-          {tasks.filter(t => t.status === "open").length === 0 ? (
-            <div className="text-center py-16 text-gray-500 text-sm">No open follow-ups. Add them from a contact&apos;s panel.</div>
-          ) : tasks.filter(t => t.status === "open").map((t) => {
-            const overdue = new Date(t.due_at) < new Date();
-            const wa = t.contacts ? waLink(t.contacts.whatsapp ?? t.contacts.phone) : null;
+          {tasks.filter(tk => tk.status === "open").length === 0 ? (
+            <div className="text-center py-16 text-gray-500 text-sm">{t("crm.noOpenFollowUps")}</div>
+          ) : tasks.filter(tk => tk.status === "open").map((tk) => {
+            const overdue = new Date(tk.due_at) < new Date();
+            const wa = tk.contacts ? waLink(tk.contacts.whatsapp ?? tk.contacts.phone) : null;
             return (
-              <div key={t.id} className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
-                <button onClick={() => completeTask(t)}
+              <div key={tk.id} className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+                <button onClick={() => completeTask(tk)}
                   className="w-5 h-5 rounded-full border border-gray-600 hover:border-green-500 hover:bg-green-500/20 shrink-0 transition-colors" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm text-white truncate">{t.title}</div>
+                  <div className="text-sm text-white truncate">{tk.title}</div>
                   <div className="text-xs text-gray-500 truncate">
-                    {t.contacts ? contactName(t.contacts) : "No contact"}
+                    {tk.contacts ? contactName(tk.contacts, t) : t("crm.noContact")}
                   </div>
                 </div>
                 <span className={`text-xs flex items-center gap-1 shrink-0 ${overdue ? "text-red-400" : "text-gray-500"}`}>
                   <Clock className="w-3.5 h-3.5" />
-                  {new Date(t.due_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {new Date(tk.due_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  {t.contacts?.phone && <a href={`tel:${t.contacts.phone}`} className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-700"><Phone className="w-4 h-4" /></a>}
+                  {tk.contacts?.phone && <a href={`tel:${tk.contacts.phone}`} className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-700"><Phone className="w-4 h-4" /></a>}
                   {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-700"><MessageCircle className="w-4 h-4" /></a>}
                 </div>
               </div>
