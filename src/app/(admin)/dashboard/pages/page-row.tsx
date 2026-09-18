@@ -11,6 +11,7 @@ import { formatDateTime, cn } from "@/lib/utils";
 import { updateStatus, updateScheduledAt } from "./content-status";
 import { PageActions } from "./page-actions";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface PageRowProps {
   page: {
@@ -61,23 +62,28 @@ export function PageRow({ page, inTrash }: PageRowProps) {
 
 function StatusPicker({ pageId, status, disabled }: { pageId: string; status: string; disabled?: boolean }) {
   const router = useRouter();
+  const t = useT();
   const [value, setValue] = useState(status);
   const [saving, setSaving] = useState(false);
 
   const variants: Record<string, "default" | "success" | "warning" | "outline"> = {
     published: "success", draft: "outline", scheduled: "warning", archived: "secondary" as never,
   };
+  const statusLabel: Record<string, string> = {
+    published: t("pages.statusPublished"), draft: t("pages.statusDraft"),
+    scheduled: t("pages.statusScheduled"), archived: t("pages.statusArchived"),
+  };
 
   if (disabled) {
-    return <Badge variant={variants[value] ?? "outline"} className="capitalize text-xs">{value}</Badge>;
+    return <Badge variant={variants[value] ?? "outline"} className="text-xs">{statusLabel[value] ?? value}</Badge>;
   }
 
   const handleChange = async (next: string) => {
     setSaving(true);
     const { error } = await updateStatus(pageId, next);
-    if (error) { toast.error("Failed to update status"); setSaving(false); return; }
+    if (error) { toast.error(t("pages.failedUpdateStatus")); setSaving(false); return; }
     setValue(next);
-    toast.success(`Marked ${next}`);
+    toast.success(t("pages.markedStatus", { status: statusLabel[next] ?? next }));
     setSaving(false);
     router.refresh();
   };
@@ -93,17 +99,17 @@ function StatusPicker({ pageId, status, disabled }: { pageId: string; status: st
     <Select value={value} onValueChange={handleChange} disabled={saving}>
       <SelectTrigger
         className={cn(
-          "h-6 text-xs w-auto min-w-24 border-none px-2.5 py-0.5 rounded-full capitalize font-semibold shadow-none focus:ring-0 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-60",
+          "h-6 text-xs w-auto min-w-24 border-none px-2.5 py-0.5 rounded-full font-semibold shadow-none focus:ring-0 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-60",
           badgeColor[value] ?? "border text-foreground",
         )}
       >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="draft" className="text-xs">Draft</SelectItem>
-        <SelectItem value="published" className="text-xs">Published</SelectItem>
-        <SelectItem value="scheduled" className="text-xs">Scheduled</SelectItem>
-        <SelectItem value="archived" className="text-xs">Archived</SelectItem>
+        <SelectItem value="draft" className="text-xs">{t("pages.statusDraft")}</SelectItem>
+        <SelectItem value="published" className="text-xs">{t("pages.statusPublished")}</SelectItem>
+        <SelectItem value="scheduled" className="text-xs">{t("pages.statusScheduled")}</SelectItem>
+        <SelectItem value="archived" className="text-xs">{t("pages.statusArchived")}</SelectItem>
       </SelectContent>
     </Select>
   );
@@ -113,6 +119,7 @@ function ScheduleTrigger({
   pageId, updatedAt, scheduledAt, disabled,
 }: { pageId: string; updatedAt: string; scheduledAt?: string | null; disabled?: boolean }) {
   const router = useRouter();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(() => toLocalInputValue(scheduledAt ?? updatedAt));
   const [saving, setSaving] = useState(false);
@@ -124,8 +131,8 @@ function ScheduleTrigger({
     setSaving(true);
     const iso = new Date(value).toISOString();
     const { error } = await updateScheduledAt(pageId, iso);
-    if (error) { toast.error("Failed to update schedule"); setSaving(false); return; }
-    toast.success(new Date(iso) > new Date() ? "Scheduled" : "Timestamp updated");
+    if (error) { toast.error(t("pages.failedUpdateSchedule")); setSaving(false); return; }
+    toast.success(new Date(iso) > new Date() ? t("pages.scheduled") : t("pages.timestampUpdated"));
     setSaving(false);
     setOpen(false);
     router.refresh();
@@ -140,7 +147,7 @@ function ScheduleTrigger({
       </PopoverTrigger>
       <PopoverContent className="w-64 space-y-3" align="start">
         <div className="space-y-1">
-          <label className="text-xs font-medium">Publish / schedule date</label>
+          <label className="text-xs font-medium">{t("pages.publishScheduleDate")}</label>
           <input
             type="datetime-local"
             value={value}
@@ -148,11 +155,11 @@ function ScheduleTrigger({
             className="w-full h-8 rounded-md border bg-background px-2 text-xs"
           />
           <p className="text-[10px] text-muted-foreground">
-            Future time auto-schedules and publishes then. Past/now just adjusts the timestamp.
+            {t("pages.scheduleHint")}
           </p>
         </div>
         <Button size="sm" className="w-full h-7 text-xs" onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : "Save"}
+          {saving ? t("pages.saving") : t("common.save")}
         </Button>
       </PopoverContent>
     </Popover>

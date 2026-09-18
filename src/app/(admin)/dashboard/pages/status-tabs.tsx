@@ -1,17 +1,22 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
-const TABS: { key: string; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "published", label: "Published" },
-  { key: "draft", label: "Draft" },
-  { key: "scheduled", label: "Scheduled" },
-  { key: "trash", label: "Trash" },
+const TABS: { key: string; labelKey: TranslationKey }[] = [
+  { key: "all", labelKey: "pages.tabAll" },
+  { key: "published", labelKey: "pages.statusPublished" },
+  { key: "draft", labelKey: "pages.statusDraft" },
+  { key: "scheduled", labelKey: "pages.statusScheduled" },
+  { key: "trash", labelKey: "pages.tabTrash" },
 ];
 
 // Shared filter-tab strip (build once, reuse everywhere) — used by both
 // /dashboard/pages and /dashboard/posts, and any future post-type list.
 export function StatusTabs({ basePath, active }: { basePath: string; active: string }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-1 mb-4 border-b overflow-x-auto">
       {TABS.map((tab) => (
@@ -25,7 +30,7 @@ export function StatusTabs({ basePath, active }: { basePath: string; active: str
               : "border-transparent text-muted-foreground hover:text-foreground",
           )}
         >
-          {tab.label}
+          {t(tab.labelKey)}
         </Link>
       ))}
     </div>

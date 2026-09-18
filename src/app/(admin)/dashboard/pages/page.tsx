@@ -1,11 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, FileText } from "lucide-react";
 import { PageRow } from "./page-row";
 import { StatusTabs } from "./status-tabs";
+import { PagesHeader, PagesEmptyState, PagesTableHead } from "./pages-header";
 
 const TABS = ["all", "published", "draft", "scheduled", "trash"] as const;
 type Tab = (typeof TABS)[number];
@@ -38,41 +36,18 @@ export default async function PagesListPage({
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">Pages</h1>
-          <p className="text-muted-foreground text-sm mt-1">{pages?.length ?? 0} pages</p>
-        </div>
-        <Button asChild>
-          <Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> New Page</Link>
-        </Button>
-      </div>
+      <PagesHeader count={pages?.length ?? 0} />
 
       <StatusTabs basePath="/dashboard/pages" active={tab} />
 
       {!pages?.length ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="font-semibold text-lg mb-2">{tab === "trash" ? "Trash is empty" : "No pages yet"}</h3>
-          {tab !== "trash" && (
-            <>
-              <p className="text-muted-foreground text-sm mb-4">Create your first page to get started</p>
-              <Button asChild><Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> Create Page</Link></Button>
-            </>
-          )}
-        </div>
+        <PagesEmptyState inTrash={tab === "trash"} />
       ) : (
         <Card>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full min-w-[300px]">
               <thead>
-                <tr className="border-b text-xs text-muted-foreground">
-                  <th className="px-4 py-3 text-left font-medium">Title</th>
-                  <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">Slug</th>
-                  <th className="px-4 py-3 text-left font-medium hidden md:table-cell">Status</th>
-                  <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Updated</th>
-                  <th className="px-4 py-3 text-right font-medium">Actions</th>
-                </tr>
+                <PagesTableHead />
               </thead>
               <tbody className="divide-y">
                 {pages.map((page) => (
