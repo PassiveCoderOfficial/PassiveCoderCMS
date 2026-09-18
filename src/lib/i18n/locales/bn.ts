@@ -572,4 +572,13 @@ export const bn = {
   "categories.noTenantFound": "আপনার অ্যাকাউন্টের জন্য কোনো টেন্যান্ট পাওয়া যায়নি",
   "categories.saved": "সেভ করা হয়েছে",
   "categories.deleteConfirm": "এই ক্যাটাগরিটি ডিলিট করবেন?",
+
+  // ── Ecommerce: Inventory ───────────────────────────────────────────────
+  "inventory.title": "ইনভেন্টরি",
+  "inventory.lowStockCount": "{count}টি লো স্টক",
+  "inventory.searchPlaceholder": "প্রোডাক্ট অথবা SKU খুঁজুন…",
+  "inventory.noProductsFound": "কোনো প্রোডাক্ট পাওয়া যায়নি।",
+  "inventory.noSku": "SKU নেই",
+  "inventory.track": "ট্র্যাক",
+  "inventory.alertAt": "অ্যালার্ট",
 } satisfies Record<TranslationKey, string>;

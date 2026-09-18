@@ -566,6 +566,15 @@ export const en = {
   "categories.noTenantFound": "No tenant found for your account",
   "categories.saved": "Saved",
   "categories.deleteConfirm": "Delete this category?",
+
+  // ── Ecommerce: Inventory ───────────────────────────────────────────────
+  "inventory.title": "Inventory",
+  "inventory.lowStockCount": "{count} low stock",
+  "inventory.searchPlaceholder": "Search product or SKU…",
+  "inventory.noProductsFound": "No products found.",
+  "inventory.noSku": "No SKU",
+  "inventory.track": "Track",
+  "inventory.alertAt": "Alert at",
 } as const;
 
 export type TranslationKey = keyof typeof en;
