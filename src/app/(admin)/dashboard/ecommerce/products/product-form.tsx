@@ -25,6 +25,7 @@ import Link from "next/link";
 import { uploadMediaFile } from "@/app/(admin)/dashboard/media/actions";
 import type { Product } from "@/types/cms";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/language-provider";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ function MediaLibraryDialog({
   onSelect: (urls: string[]) => void;
   currentImages: string[];
 }) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +93,7 @@ function MediaLibraryDialog({
   const upload = (files: FileList | null) => {
     if (!files?.length) return;
     const valid = Array.from(files).filter(f => {
-      if (f.size > MAX_UPLOAD_SIZE) { toast.error(`${f.name} exceeds 50 MB`); return false; }
+      if (f.size > MAX_UPLOAD_SIZE) { toast.error(t("productForm.exceedsSize", { name: f.name })); return false; }
       return f.type.startsWith("image/");
     });
     if (!valid.length) return;
@@ -101,7 +103,7 @@ function MediaLibraryDialog({
         fd.append("file", file);
         return uploadMediaFile(fd);
       }));
-      toast.success(`${valid.length} image(s) uploaded`);
+      toast.success(t("productForm.imagesUploaded", { count: valid.length }));
       fetchMedia();
     });
   };
@@ -129,8 +131,8 @@ function MediaLibraryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
         <DialogHeader className="px-4 pt-4 pb-3 border-b shrink-0">
-          <DialogTitle className="text-sm font-semibold">Add Product Images</DialogTitle>
-          <p className="text-xs text-muted-foreground mt-0.5">Select multiple images — click to toggle selection</p>
+          <DialogTitle className="text-sm font-semibold">{t("productForm.addProductImages")}</DialogTitle>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("productForm.selectMultipleHint")}</p>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 p-4 overflow-hidden">
@@ -147,8 +149,8 @@ function MediaLibraryDialog({
           >
             <input ref={inputRef} type="file" multiple accept="image/*" className="hidden" onChange={e => upload(e.target.files)} />
             {uploading
-              ? <><Loader2 className="h-4 w-4 animate-spin text-primary" /><span className="text-xs text-muted-foreground">Uploading…</span></>
-              : <><Upload className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground">Upload new images — drag & drop or click</span></>
+              ? <><Loader2 className="h-4 w-4 animate-spin text-primary" /><span className="text-xs text-muted-foreground">{t("productForm.uploading")}</span></>
+              : <><Upload className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground">{t("productForm.uploadNewImages")}</span></>
             }
           </div>
 
@@ -156,7 +158,7 @@ function MediaLibraryDialog({
           <div className="flex items-center gap-2 shrink-0">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search images…" className="pl-7 h-8 text-xs" />
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("productForm.searchImages")} className="pl-7 h-8 text-xs" />
               {search && <button onClick={() => setSearch("")} className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>}
             </div>
             <div className="flex rounded-md border overflow-hidden shrink-0">
@@ -175,7 +177,7 @@ function MediaLibraryDialog({
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 gap-2">
                 <FolderOpen className="h-8 w-8 text-muted-foreground/50" />
-                <p className="text-xs text-muted-foreground">{search ? "No images match" : "No images uploaded yet"}</p>
+                <p className="text-xs text-muted-foreground">{search ? t("productForm.noImagesMatch") : t("productForm.noImagesUploadedYet")}</p>
               </div>
             ) : view === "grid" ? (
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 p-2">
@@ -199,7 +201,7 @@ function MediaLibraryDialog({
                         </div>
                       )}
                       {alreadyAdded && (
-                        <div className="absolute bottom-1 left-1 text-[9px] bg-background/80 px-1 rounded">Added</div>
+                        <div className="absolute bottom-1 left-1 text-[9px] bg-background/80 px-1 rounded">{t("productForm.added")}</div>
                       )}
                     </button>
                   );
@@ -219,7 +221,7 @@ function MediaLibraryDialog({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{item.original_name}</p>
-                        <p className="text-[10px] text-muted-foreground">{alreadyAdded ? "Already added" : isSelected ? "Selected" : "Click to select"}</p>
+                        <p className="text-[10px] text-muted-foreground">{alreadyAdded ? t("productForm.alreadyAdded") : isSelected ? t("productForm.selected") : t("productForm.clickToSelect")}</p>
                       </div>
                       {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
                     </button>
@@ -232,12 +234,12 @@ function MediaLibraryDialog({
 
         <div className="px-4 py-3 border-t flex items-center justify-between gap-3 shrink-0">
           <p className="text-xs text-muted-foreground">
-            {selected.size > 0 ? `${selected.size} image${selected.size > 1 ? "s" : ""} selected` : "No images selected"}
+            {selected.size > 0 ? t("productForm.imagesSelectedCount", { count: selected.size, plural: selected.size > 1 ? "s" : "" }) : t("productForm.noImagesSelected")}
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>{t("productForm.cancel")}</Button>
             <Button size="sm" onClick={confirm} disabled={selected.size === 0}>
-              Add {selected.size > 0 ? selected.size : ""} Image{selected.size !== 1 ? "s" : ""}
+              {t("productForm.addImagesCount", { count: selected.size > 0 ? selected.size : "", plural: selected.size !== 1 ? "s" : "" })}
             </Button>
           </div>
         </div>
@@ -256,6 +258,7 @@ interface CategoryOption { id: string; name: string; }
 
 export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
+  const t = useT();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -291,9 +294,9 @@ export function ProductForm({ product }: ProductFormProps) {
       setCategories((prev) => [...prev, cat].sort((a, b) => a.name.localeCompare(b.name)));
       setCategoryIds((prev) => [...prev, cat.id]); // auto-select the new one
       setNewCategory("");
-      toast.success(`Category "${name}" created`);
+      toast.success(t("productForm.categoryCreated", { name }));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create category");
+      toast.error(err instanceof Error ? err.message : t("productForm.failedToCreateCategory"));
     } finally {
       setCreatingCategory(false);
     }
@@ -401,19 +404,19 @@ export function ProductForm({ product }: ProductFormProps) {
         // Update the existing product OR the auto-saved draft row.
         const { error } = await supabase.from("products").update(payload).eq("id", existingId);
         if (error) throw error;
-        toast.success(product?.id ? "Product updated" : "Product created");
+        toast.success(product?.id ? t("productForm.productUpdated") : t("productForm.productCreated"));
         if (!product?.id) router.push("/dashboard/ecommerce/products");
       } else {
         const tenantId = await getClientTenantId();
-        if (!tenantId) throw new Error("No tenant found for your account");
+        if (!tenantId) throw new Error(t("productForm.noTenantFound"));
         const { error } = await supabase.from("products").insert({ ...payload, tenant_id: tenantId });
         if (error) throw error;
-        toast.success("Product created");
+        toast.success(t("productForm.productCreated"));
         router.push("/dashboard/ecommerce/products");
       }
       router.refresh();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to save product");
+      toast.error(err instanceof Error ? err.message : t("productForm.failedToSave"));
     } finally {
       setLoading(false);
     }
@@ -434,9 +437,9 @@ export function ProductForm({ product }: ProductFormProps) {
         <Card>
           <CardHeader className="pb-3 pt-4 px-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm">Product Images</CardTitle>
+              <CardTitle className="text-sm">{t("productForm.productImages")}</CardTitle>
               <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen(true)} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Add Images
+                <Plus className="h-3.5 w-3.5" /> {t("productForm.addImages")}
               </Button>
             </div>
           </CardHeader>
@@ -445,8 +448,8 @@ export function ProductForm({ product }: ProductFormProps) {
               <button type="button" onClick={() => setPickerOpen(true)}
                 className="w-full border-2 border-dashed rounded-lg p-8 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/40 hover:bg-muted/20 transition-colors">
                 <ImageIcon className="h-8 w-8 opacity-40" />
-                <span className="text-sm">Click to add product images</span>
-                <span className="text-xs">Choose from media library or upload new</span>
+                <span className="text-sm">{t("productForm.clickToAddImages")}</span>
+                <span className="text-xs">{t("productForm.chooseOrUpload")}</span>
               </button>
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -456,17 +459,17 @@ export function ProductForm({ product }: ProductFormProps) {
                     <img src={url} alt="" className="w-full h-full object-cover" />
                     {i === 0 && (
                       <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 rounded font-semibold leading-tight">
-                        Primary
+                        {t("productForm.primary")}
                       </span>
                     )}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
                       {i !== 0 && (
-                        <button type="button" onClick={() => setPrimary(i)} title="Set primary"
+                        <button type="button" onClick={() => setPrimary(i)} title={t("productForm.setPrimary")}
                           className="h-7 w-7 rounded-full bg-white/20 hover:bg-yellow-500 text-white flex items-center justify-center transition-colors">
                           <Star className="h-3.5 w-3.5" />
                         </button>
                       )}
-                      <button type="button" onClick={() => removeImage(i)} title="Remove"
+                      <button type="button" onClick={() => removeImage(i)} title={t("productForm.remove")}
                         className="h-7 w-7 rounded-full bg-white/20 hover:bg-destructive text-white flex items-center justify-center transition-colors">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -477,12 +480,12 @@ export function ProductForm({ product }: ProductFormProps) {
                 <button type="button" onClick={() => setPickerOpen(true)}
                   className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/60 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
                   <Plus className="h-5 w-5" />
-                  <span className="text-[10px]">More</span>
+                  <span className="text-[10px]">{t("productForm.more")}</span>
                 </button>
               </div>
             )}
             {images.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-2">First image is the primary. Hover to remove or ★ to set as primary.</p>
+              <p className="text-xs text-muted-foreground mt-2">{t("productForm.primaryImageHint")}</p>
             )}
           </CardContent>
         </Card>
@@ -491,54 +494,54 @@ export function ProductForm({ product }: ProductFormProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-5">
             <Card>
-              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Product Details</CardTitle></CardHeader>
+              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.productDetails")}</CardTitle></CardHeader>
               <CardContent className="px-4 pb-4 space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Product Name</Label>
-                  <Input {...form.register("name")} onChange={handleNameChange} placeholder="My awesome product" />
+                  <Label>{t("productForm.productName")}</Label>
+                  <Input {...form.register("name")} onChange={handleNameChange} placeholder={t("productForm.productNamePlaceholder")} />
                   {form.formState.errors.name && <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Slug</Label>
+                  <Label>{t("productForm.slug")}</Label>
                   <Input {...form.register("slug")} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Short Description</Label>
-                  <Textarea {...form.register("short_description")} rows={2} placeholder="One-line summary shown in listings" />
+                  <Label>{t("productForm.shortDescription")}</Label>
+                  <Textarea {...form.register("short_description")} rows={2} placeholder={t("productForm.shortDescriptionPlaceholder")} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Full Description</Label>
-                  <Textarea {...form.register("description")} rows={5} placeholder="Detailed product description…" />
+                  <Label>{t("productForm.fullDescription")}</Label>
+                  <Textarea {...form.register("description")} rows={5} placeholder={t("productForm.fullDescriptionPlaceholder")} />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Pricing</CardTitle></CardHeader>
+              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.pricing")}</CardTitle></CardHeader>
               <CardContent className="px-4 pb-4 space-y-4">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-1.5"><Label>Regular Price</Label><Input type="number" step="0.01" min="0" {...form.register("price")} /></div>
-                  <div className="space-y-1.5"><Label>Compare Price</Label><Input type="number" step="0.01" {...form.register("compare_price")} placeholder="Was…" /></div>
-                  <div className="space-y-1.5"><Label>Cost Price</Label><Input type="number" step="0.01" {...form.register("cost_price")} placeholder="Your cost" /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.regularPrice")}</Label><Input type="number" step="0.01" min="0" {...form.register("price")} /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.comparePrice")}</Label><Input type="number" step="0.01" {...form.register("compare_price")} placeholder={t("productForm.comparePricePlaceholder")} /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.costPrice")}</Label><Input type="number" step="0.01" {...form.register("cost_price")} placeholder={t("productForm.costPricePlaceholder")} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><Label>SKU</Label><Input {...form.register("sku")} /></div>
-                  <div className="space-y-1.5"><Label>Barcode</Label><Input {...form.register("barcode")} /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.sku")}</Label><Input {...form.register("sku")} /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.barcode")}</Label><Input {...form.register("barcode")} /></div>
                 </div>
-                <div className="space-y-1.5 max-w-xs"><Label>Weight (kg)</Label><Input type="number" step="0.001" {...form.register("weight")} /></div>
+                <div className="space-y-1.5 max-w-xs"><Label>{t("productForm.weight")}</Label><Input type="number" step="0.001" {...form.register("weight")} /></div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Inventory</CardTitle></CardHeader>
+              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.inventory")}</CardTitle></CardHeader>
               <CardContent className="px-4 pb-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <div><Label>Track Inventory</Label><p className="text-xs text-muted-foreground">Monitor stock levels</p></div>
+                  <div><Label>{t("productForm.trackInventory")}</Label><p className="text-xs text-muted-foreground">{t("productForm.trackInventoryHint")}</p></div>
                   <Switch defaultChecked={form.getValues("track_inventory")} onCheckedChange={v => form.setValue("track_inventory", v)} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><Label>Stock Quantity</Label><Input type="number" {...form.register("stock_quantity")} /></div>
-                  <div className="space-y-1.5"><Label>Low Stock Threshold</Label><Input type="number" {...form.register("low_stock_threshold")} /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.stockQuantity")}</Label><Input type="number" {...form.register("stock_quantity")} /></div>
+                  <div className="space-y-1.5"><Label>{t("productForm.lowStockThreshold")}</Label><Input type="number" {...form.register("low_stock_threshold")} /></div>
                 </div>
               </CardContent>
             </Card>
@@ -547,38 +550,38 @@ export function ProductForm({ product }: ProductFormProps) {
           {/* ── Sidebar: status, type, featured ── */}
           <div className="space-y-5">
             <Card>
-              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Publish</CardTitle></CardHeader>
+              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.publish")}</CardTitle></CardHeader>
               <CardContent className="px-4 pb-4 space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Status</Label>
+                  <Label>{t("productForm.status")}</Label>
                   <Select defaultValue={form.getValues("status")} onValueChange={v => form.setValue("status", v as "active" | "draft" | "archived")}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
+                      <SelectItem value="draft">{t("productForm.statusDraft")}</SelectItem>
+                      <SelectItem value="active">{t("productForm.statusActive")}</SelectItem>
+                      <SelectItem value="archived">{t("productForm.statusArchived")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Product Type</Label>
+                  <Label>{t("productForm.productType")}</Label>
                   <Select defaultValue={form.getValues("type")} onValueChange={v => form.setValue("type", v as "simple" | "variable" | "digital")}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="simple">Simple</SelectItem>
-                      <SelectItem value="variable">Variable</SelectItem>
-                      <SelectItem value="digital">Digital</SelectItem>
+                      <SelectItem value="simple">{t("productForm.typeSimple")}</SelectItem>
+                      <SelectItem value="variable">{t("productForm.typeVariable")}</SelectItem>
+                      <SelectItem value="digital">{t("productForm.typeDigital")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div><Label>Featured</Label><p className="text-xs text-muted-foreground">Show in featured sections</p></div>
+                  <div><Label>{t("productForm.featured")}</Label><p className="text-xs text-muted-foreground">{t("productForm.featuredHint")}</p></div>
                   <Switch {...form.register("featured")} onCheckedChange={v => form.setValue("featured", v)} defaultChecked={form.getValues("featured")} />
                 </div>
                 {product && (
                   <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
                     <Link href={`/products/${form.getValues("slug")}`} target="_blank">
-                      <Eye className="h-3.5 w-3.5" /> View Product
+                      <Eye className="h-3.5 w-3.5" /> {t("productForm.viewProduct")}
                     </Link>
                   </Button>
                 )}
@@ -587,10 +590,10 @@ export function ProductForm({ product }: ProductFormProps) {
 
             {/* ── Categories ── */}
             <Card>
-              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">Categories</CardTitle></CardHeader>
+              <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.categories")}</CardTitle></CardHeader>
               <CardContent className="px-4 pb-4 space-y-3">
                 {categories.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No product categories yet — add one below.</p>
+                  <p className="text-xs text-muted-foreground">{t("productForm.noCategoriesYet")}</p>
                 ) : (
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {categories.map((c) => (
@@ -615,7 +618,7 @@ export function ProductForm({ product }: ProductFormProps) {
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createCategory(); } }}
-                    placeholder="New category…"
+                    placeholder={t("productForm.newCategoryPlaceholder")}
                     className="h-8 text-xs"
                   />
                   <Button
@@ -634,18 +637,18 @@ export function ProductForm({ product }: ProductFormProps) {
 
             <Card>
               <CardContent className="pt-4 pb-4 px-4">
-                <p className="text-xs text-muted-foreground mb-1">{images.length} image{images.length !== 1 ? "s" : ""} added</p>
+                <p className="text-xs text-muted-foreground mb-1">{t("productForm.imagesAddedCount", { count: images.length, plural: images.length !== 1 ? "s" : "" })}</p>
                 {!isExistingProduct && autoSaved && (
                   <p className="text-[11px] text-green-600 mb-2 flex items-center gap-1">
-                    <Check className="h-3 w-3" /> Draft auto-saved {autoSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    <Check className="h-3 w-3" /> {t("productForm.draftAutoSaved", { time: autoSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
                   </p>
                 )}
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {product ? "Update Product" : "Create Product"}
+                  {product ? t("productForm.updateProduct") : t("productForm.createProduct")}
                 </Button>
                 <Button type="button" variant="ghost" size="sm" onClick={() => router.back()} className="w-full mt-2">
-                  Cancel
+                  {t("productForm.cancel")}
                 </Button>
               </CardContent>
             </Card>
