@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Loader2, CreditCard, Smartphone, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
+import { useT } from "@/lib/i18n/language-provider";
 
 export interface CheckoutPlan {
   id: string;
@@ -22,7 +23,6 @@ export interface CheckoutPlan {
 }
 
 type BillingCycle = "monthly" | "yearly";
-const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: "Monthly", yearly: "Yearly" };
 const CYCLE_SUFFIX: Record<BillingCycle, string> = { monthly: "/mo", yearly: "/yr" };
 
 export interface PaymentConfig {
@@ -45,6 +45,8 @@ export function CheckoutDialog({
   plans: CheckoutPlan[];
   paymentConfig: PaymentConfig;
 }) {
+  const t = useT();
+  const CYCLE_LABELS: Record<BillingCycle, string> = { monthly: t("checkout.monthly"), yearly: t("checkout.yearly") };
   const [method, setMethod] = useState<Method>("dodo");
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [txnRef, setTxnRef] = useState("");
@@ -84,7 +86,10 @@ export function CheckoutDialog({
 
   function openWhatsApp() {
     const text = encodeURIComponent(
-      `Hi! I'd like to subscribe to Passive Coder *${planToUse.name}* plan (${CYCLE_LABELS[activeCycle]}) — ${amountFormatted}${CYCLE_SUFFIX[activeCycle]}. Please assist with payment.`
+      t("checkout.whatsappMessage", {
+        plan: planToUse.name, cycle: CYCLE_LABELS[activeCycle],
+        amount: amountFormatted, suffix: CYCLE_SUFFIX[activeCycle],
+      })
     );
     window.open(`https://wa.me/${waNumber}?text=${text}`, "_blank");
   }
@@ -100,41 +105,41 @@ export function CheckoutDialog({
         body: JSON.stringify({ tenantId, planId: planToUse.id, method, billingCycle: activeCycle, txnRef, senderNumber }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Checkout failed");
+      if (!res.ok) throw new Error(data.error ?? t("checkout.checkoutFailed"));
 
       if ((data.mode === "shurjopay" || data.mode === "dodo") && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
         return;
       }
-      toast.success("Payment submitted. We'll activate your plan once verified.");
+      toast.success(t("checkout.paymentSubmitted"));
       onOpenChange(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Checkout failed");
+      toast.error(e instanceof Error ? e.message : t("checkout.checkoutFailed"));
     } finally {
       setLoading(false);
     }
   }
 
   const methods: { id: Method; label: string; icon: React.ReactNode; badge?: string }[] = [
-    { id: "dodo",      label: "Card / PayPal",    icon: <CreditCard className="w-4 h-4" />,    badge: "Intl" },
-    { id: "shurjopay", label: "shurjoPay (BD)",   icon: <CreditCard className="w-4 h-4" /> },
-    { id: "bkash",     label: "bKash",             icon: <Smartphone className="w-4 h-4" /> },
-    { id: "nagad",     label: "Nagad",             icon: <Smartphone className="w-4 h-4" /> },
-    { id: "whatsapp",  label: "WhatsApp",          icon: <MessageCircle className="w-4 h-4" />, badge: "Manual" },
+    { id: "dodo",      label: t("checkout.methodCard"),      icon: <CreditCard className="w-4 h-4" />,    badge: t("checkout.badgeIntl") },
+    { id: "shurjopay", label: t("checkout.methodShurjopay"), icon: <CreditCard className="w-4 h-4" /> },
+    { id: "bkash",     label: t("checkout.methodBkash"),     icon: <Smartphone className="w-4 h-4" /> },
+    { id: "nagad",     label: t("checkout.methodNagad"),     icon: <Smartphone className="w-4 h-4" /> },
+    { id: "whatsapp",  label: t("checkout.methodWhatsapp"),  icon: <MessageCircle className="w-4 h-4" />, badge: t("checkout.badgeManual") },
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Subscribe</DialogTitle>
+          <DialogTitle>{t("checkout.subscribe")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Plan switcher */}
           {plans.length > 1 && (
             <div className="space-y-2">
-              <Label>Plan</Label>
+              <Label>{t("checkout.plan")}</Label>
               <div className="grid grid-cols-2 gap-2">
                 {plans.map(p => {
                   const pUsd = (activeCycle === "monthly" ? (p.price_monthly ?? 0) : p.price_yearly) / 100;
@@ -163,7 +168,7 @@ export function CheckoutDialog({
 
           {availableCycles.length > 1 && (
             <div className="space-y-2">
-              <Label>Billing cycle</Label>
+              <Label>{t("checkout.billingCycle")}</Label>
               <div className="grid grid-cols-2 gap-2">
                 {availableCycles.map(c => (
                   <button
@@ -189,13 +194,11 @@ export function CheckoutDialog({
           </div>
 
           <p className="text-[11px] text-muted-foreground -mt-2">
-            {currency === "USD"
-              ? "Charged in USD via international card / PayPal."
-              : "Charged in BDT (Bangladeshi Taka) via the selected local method."}
+            {currency === "USD" ? t("checkout.chargedUsd") : t("checkout.chargedBdt")}
           </p>
 
           <div className="space-y-2">
-            <Label>Payment method</Label>
+            <Label>{t("checkout.paymentMethod")}</Label>
             <div className="grid grid-cols-2 gap-2">
               {methods.map((m) => (
                 <button
@@ -221,32 +224,32 @@ export function CheckoutDialog({
             <div className="space-y-3 rounded-lg border bg-amber-50 dark:bg-amber-950/20 p-3">
               <p className="text-xs text-amber-800 dark:text-amber-300">
                 {manualNumber
-                  ? <>Send <strong>{amountFormatted}</strong> to <strong>{method}</strong> number <strong>{manualNumber}</strong>, then enter the transaction details below.</>
-                  : `${method} number not configured — use WhatsApp for manual payment.`}
+                  ? t("checkout.sendPaymentInstructions", { amount: amountFormatted, method, number: manualNumber })
+                  : t("checkout.numberNotConfigured", { method })}
               </p>
               {paymentConfig.manual_payment_instructions && (
                 <p className="text-xs text-muted-foreground">{paymentConfig.manual_payment_instructions}</p>
               )}
               <div className="space-y-1.5">
-                <Label className="text-xs">Your {method} number</Label>
-                <Input value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="01XXXXXXXXX" />
+                <Label className="text-xs">{t("checkout.yourNumber", { method })}</Label>
+                <Input value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder={t("checkout.numberPlaceholder")} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Transaction ID / reference</Label>
-                <Input value={txnRef} onChange={(e) => setTxnRef(e.target.value)} placeholder="e.g. TRX12345" />
+                <Label className="text-xs">{t("checkout.transactionId")}</Label>
+                <Input value={txnRef} onChange={(e) => setTxnRef(e.target.value)} placeholder={t("checkout.transactionIdPlaceholder")} />
               </div>
             </div>
           )}
 
           {method === "whatsapp" && (
             <div className="rounded-lg border bg-green-50 dark:bg-green-950/20 p-3 text-xs text-green-800 dark:text-green-300">
-              Opens WhatsApp with a pre-filled message. We&apos;ll confirm payment and activate your plan manually.
+              {t("checkout.whatsappHint")}
             </div>
           )}
 
           {method === "dodo" && (
             <p className="text-xs text-muted-foreground text-center">
-              Secure international card payments via Dodo Payments. Supports Visa, Mastercard, PayPal & more.
+              {t("checkout.dodoHint")}
             </p>
           )}
 
@@ -256,10 +259,10 @@ export function CheckoutDialog({
             className={cn("w-full", method === "whatsapp" ? "bg-green-600 hover:bg-green-700 text-white" : "")}
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {method === "dodo"      && <><CreditCard className="w-4 h-4 mr-2" /> Pay with Card / PayPal</>}
-            {method === "shurjopay" && <><CreditCard className="w-4 h-4 mr-2" /> Pay with shurjoPay</>}
-            {method === "whatsapp"  && <><MessageCircle className="w-4 h-4 mr-2" /> Chat on WhatsApp</>}
-            {isManualEntry          && <><CreditCard className="w-4 h-4 mr-2" /> Submit payment</>}
+            {method === "dodo"      && <><CreditCard className="w-4 h-4 mr-2" /> {t("checkout.payWithCard")}</>}
+            {method === "shurjopay" && <><CreditCard className="w-4 h-4 mr-2" /> {t("checkout.payWithShurjopay")}</>}
+            {method === "whatsapp"  && <><MessageCircle className="w-4 h-4 mr-2" /> {t("checkout.chatOnWhatsapp")}</>}
+            {isManualEntry          && <><CreditCard className="w-4 h-4 mr-2" /> {t("checkout.submitPayment")}</>}
           </Button>
         </div>
       </DialogContent>

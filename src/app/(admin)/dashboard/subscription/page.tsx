@@ -12,6 +12,7 @@ import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { ENMOptInCard } from "@/components/enm/enm-optin-card";
 import { enmTierForPlan } from "@/lib/enm-tier";
 import { useCurrencyRate, formatPrice, type Currency } from "@/lib/hooks/use-currency";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Subscription {
   id: string;
@@ -51,17 +52,25 @@ interface Staff {
   status: string;
 }
 
-const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
-  onboarded: { color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",   icon: <Clock className="w-3.5 h-3.5" />, label: "Onboarded" },
-  pending:   { color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Pending Payment" },
-  active:    { color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: "Active" },
-  past_due:  { color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400",         icon: <AlertCircle className="w-3.5 h-3.5" />, label: "Past Due" },
-  suspended: { color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400", icon: <AlertCircle className="w-3.5 h-3.5" />, label: "Suspended" },
-  cancelled: { color: "text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400",       icon: null, label: "Cancelled" },
-  expired:   { color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400", icon: <Clock className="w-3.5 h-3.5" />, label: "Expired" },
-};
+type TFn = ReturnType<typeof useT>;
+
+// A module-level constant can't call the t() hook, so this is a function
+// taking t as a param, called once per render inside components that need
+// it — same shape used for statusLabel/priorityLabel in pages/page-row.tsx.
+function statusConfig(t: TFn): Record<string, { color: string; icon: React.ReactNode; label: string }> {
+  return {
+    onboarded: { color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",   icon: <Clock className="w-3.5 h-3.5" />, label: t("sub.statusOnboarded") },
+    pending:   { color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", icon: <Clock className="w-3.5 h-3.5" />, label: t("sub.statusPending") },
+    active:    { color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: t("sub.statusActive") },
+    past_due:  { color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400",         icon: <AlertCircle className="w-3.5 h-3.5" />, label: t("sub.statusPastDue") },
+    suspended: { color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400", icon: <AlertCircle className="w-3.5 h-3.5" />, label: t("sub.statusSuspended") },
+    cancelled: { color: "text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400",       icon: null, label: t("sub.statusCancelled") },
+    expired:   { color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400", icon: <Clock className="w-3.5 h-3.5" />, label: t("sub.statusExpired") },
+  };
+}
 
 export default function SubscriptionPage() {
+  const t = useT();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [agent, setAgent] = useState<Staff | null>(null);
@@ -78,9 +87,10 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("suspended")) setIsSuspended(true);
-    if (params.get("paid")) toast.success("Payment successful — your plan is now active!");
-    else if (params.get("cancelled")) toast.info("Payment cancelled.");
-    else if (params.get("error")) toast.error(`Payment issue: ${params.get("error")}`);
+    if (params.get("paid")) toast.success(t("sub.paymentSuccess"));
+    else if (params.get("cancelled")) toast.info(t("sub.paymentCancelled"));
+    else if (params.get("error")) toast.error(t("sub.paymentIssue", { error: params.get("error") ?? "" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -131,18 +141,18 @@ export default function SubscriptionPage() {
         <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
           <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-red-700 dark:text-red-400">Your site has been suspended</p>
-            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">Your site has been suspended. Choose a plan below to reactivate.</p>
+            <p className="font-semibold text-red-700 dark:text-red-400">{t("sub.siteSuspended")}</p>
+            <p className="text-sm text-red-600 dark:text-red-500 mt-0.5">{t("sub.siteSuspendedHint")}</p>
           </div>
         </div>
       )}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Subscription</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage your site plan and billing.</p>
+          <h1 className="text-2xl font-bold">{t("sub.title")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("sub.subtitle")}</p>
         </div>
         <Link href="/onboarding">
-          <Button className="flex items-center gap-2"><Plus className="w-4 h-4" /> Add Site</Button>
+          <Button className="flex items-center gap-2"><Plus className="w-4 h-4" /> {t("sub.addSite")}</Button>
         </Link>
       </div>
 
@@ -155,20 +165,20 @@ export default function SubscriptionPage() {
           <div className="flex-1">
             {isSuperAdmin && !agent && (
               <>
-                <p className="font-bold text-sm">Super Admin Account</p>
-                <p className="text-xs text-muted-foreground mt-0.5">You have full platform access. Your site subscription is managed separately.</p>
+                <p className="font-bold text-sm">{t("sub.superAdminAccount")}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("sub.superAdminHint")}</p>
               </>
             )}
             {agent && (
               <>
-                <p className="font-bold text-sm">Staff Account</p>
+                <p className="font-bold text-sm">{t("sub.staffAccount")}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Your referral code: <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{agent.referral_code}</span>
+                  {t("sub.referralCode")} <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{agent.referral_code}</span>
                 </p>
                 {discountPct > 0 && (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 font-medium">
                     <BadgePercent className="w-3.5 h-3.5" />
-                    You get <strong>{discountPct}% recurring discount</strong> on your own site subscriptions — same as your commission rate.
+                    {t("sub.staffDiscount", { pct: discountPct })}
                   </div>
                 )}
               </>
@@ -220,9 +230,9 @@ export default function SubscriptionPage() {
 
       <div className="rounded-xl border border-dashed p-6 text-center space-y-3">
         <Plus className="w-8 h-8 text-muted-foreground mx-auto" />
-        <p className="font-semibold">Add another site</p>
-        <p className="text-sm text-muted-foreground">Each site gets its own subscription.</p>
-        <Link href="/onboarding"><Button variant="outline">Start Onboarding</Button></Link>
+        <p className="font-semibold">{t("sub.addAnotherSite")}</p>
+        <p className="text-sm text-muted-foreground">{t("sub.addAnotherSiteHint")}</p>
+        <Link href="/onboarding"><Button variant="outline">{t("sub.startOnboarding")}</Button></Link>
       </div>
     </div>
   );
@@ -236,6 +246,7 @@ export default function SubscriptionPage() {
  * edit), which happens case by case on request, not by default.
  */
 function TrialCountdown({ trialEndsAt }: { trialEndsAt: string }) {
+  const t = useT();
   const end = new Date(trialEndsAt).getTime();
   const now = Date.now();
   const msLeft = end - now;
@@ -245,7 +256,7 @@ function TrialCountdown({ trialEndsAt }: { trialEndsAt: string }) {
     return (
       <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-400 flex items-start gap-2">
         <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        <span>Your trial has ended. Pay now to keep your site live — it will be suspended shortly if unpaid.</span>
+        <span>{t("sub.trialEnded")}</span>
       </div>
     );
   }
@@ -260,14 +271,18 @@ function TrialCountdown({ trialEndsAt }: { trialEndsAt: string }) {
     )}>
       <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
       <span>
-        <strong>{daysLeft} day{daysLeft === 1 ? "" : "s"} left</strong> in your free trial — pay before{" "}
-        {new Date(trialEndsAt).toLocaleDateString()} to keep your site active with no interruption.
+        {t("sub.trialDaysLeft", {
+          days: daysLeft,
+          plural: daysLeft === 1 ? "" : "s",
+          date: new Date(trialEndsAt).toLocaleDateString(),
+        })}
       </span>
     </div>
   );
 }
 
 function CancelTrialButton({ tenantId }: { tenantId: string }) {
+  const t = useT();
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -280,11 +295,11 @@ function CancelTrialButton({ tenantId }: { tenantId: string }) {
         body: JSON.stringify({ tenantId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not cancel");
-      toast.success("Cancelled. You won't be charged.");
+      if (!res.ok) throw new Error(data.error ?? t("sub.cancelTrialFailed"));
+      toast.success(t("sub.cancelTrialSuccess"));
       window.location.reload();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not cancel");
+      toast.error(e instanceof Error ? e.message : t("sub.cancelTrialFailed"));
     } finally {
       setLoading(false);
     }
@@ -293,25 +308,26 @@ function CancelTrialButton({ tenantId }: { tenantId: string }) {
   if (!confirming) {
     return (
       <button onClick={() => setConfirming(true)} className="text-xs text-muted-foreground hover:text-red-500 underline underline-offset-2">
-        Cancel trial
+        {t("sub.cancelTrial")}
       </button>
     );
   }
   return (
     <span className="text-xs flex items-center gap-2">
-      <span className="text-muted-foreground">Cancel and pay nothing?</span>
+      <span className="text-muted-foreground">{t("sub.cancelTrialConfirm")}</span>
       <button onClick={cancel} disabled={loading} className="text-red-600 font-semibold hover:underline disabled:opacity-50">
-        {loading ? "Cancelling…" : "Yes, cancel"}
+        {loading ? t("sub.cancelTrialCancelling") : t("sub.cancelTrialYes")}
       </button>
       <button onClick={() => setConfirming(false)} disabled={loading} className="text-muted-foreground hover:underline">
-        Never mind
+        {t("sub.cancelTrialNeverMind")}
       </button>
     </span>
   );
 }
 
 function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; profileComplete: boolean; onChoose: (plan: CheckoutPlan) => void }) {
-  const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.cancelled;
+  const t = useT();
+  const cfg = statusConfig(t)[sub.status] ?? statusConfig(t).cancelled;
   const tenant = sub.tenants;
   const renewDate = sub.current_period_end ?? sub.trial_ends_at;
   const plan = plans.find(p => p.id === sub.plan_id || p.name.toLowerCase() === sub.plan_id);
@@ -332,7 +348,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
             <CreditCard className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="font-bold">{tenant?.name ?? "Unnamed Site"}</p>
+            <p className="font-bold">{tenant?.name ?? t("sub.unnamedSite")}</p>
             <p className="text-xs text-muted-foreground">{tenant?.slug}.passivecoder.com</p>
           </div>
         </div>
@@ -343,38 +359,38 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
         <div>
-          <p className="text-xs text-muted-foreground">Plan</p>
-          <p className="font-medium capitalize">{plan?.name ?? sub.plan_id ?? "Unset"}</p>
+          <p className="text-xs text-muted-foreground">{t("sub.plan")}</p>
+          <p className="font-medium">{plan?.name ?? sub.plan_id ?? t("sub.unset")}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Amount</p>
+          <p className="text-xs text-muted-foreground">{t("sub.amount")}</p>
           <div>
             {amountStr ? (
               <>
                 <p className="font-medium">{amountStr}{cycleSuffix}</p>
                 {discountPct > 0 && (
-                  <p className="text-xs text-green-600 dark:text-green-400">−{discountPct}% staff discount</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">{t("sub.staffDiscountLabel", { pct: discountPct })}</p>
                 )}
               </>
             ) : (
-              <p className="font-medium text-muted-foreground">Unset</p>
+              <p className="font-medium text-muted-foreground">{t("sub.unset")}</p>
             )}
           </div>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">{sub.status === "onboarded" || sub.status === "pending" ? "Due" : "Renews"}</p>
+          <p className="text-xs text-muted-foreground">{sub.status === "onboarded" || sub.status === "pending" ? t("sub.due") : t("sub.renews")}</p>
           <p className="font-medium">{renewDate ? new Date(renewDate).toLocaleDateString() : "—"}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Provider</p>
-          <p className="font-medium capitalize">{sub.payment_provider ?? "Manual"}</p>
+          <p className="text-xs text-muted-foreground">{t("sub.provider")}</p>
+          <p className="font-medium capitalize">{sub.payment_provider ?? t("sub.manual")}</p>
         </div>
       </div>
 
       {/* Plan features */}
       {plan?.features && plan.features.length > 0 && (
         <div className="rounded-lg bg-muted/40 p-3 space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{plan.name} Plan includes</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("sub.planIncludes", { plan: plan.name })}</p>
           <div className="grid grid-cols-2 gap-1">
             {plan.features.slice(0, 6).map((f, i) => (
               <p key={i} className="text-xs text-muted-foreground flex items-center gap-1">
@@ -389,7 +405,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
       {!plan && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-700 dark:text-amber-400">
           <AlertCircle className="w-3.5 h-3.5 inline mr-1" />
-          No plan set for this site. Contact support or upgrade to activate a plan.
+          {t("sub.noPlanSet")}
         </div>
       )}
 
@@ -398,7 +414,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
       ) : (sub.status === "onboarded" || sub.status === "pending") && renewDate && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
           <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-          Payment pending — your site stays active. Add payment by {new Date(renewDate).toLocaleDateString()} to keep it live.
+          {t("sub.paymentPendingHint", { date: new Date(renewDate).toLocaleDateString() })}
         </div>
       )}
 
@@ -406,9 +422,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
         <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-400 flex items-start gap-2">
           <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>
-            We couldn&apos;t take your last payment — usually an expired or replaced card.
-            Nothing has been deleted. Update payment below to clear it, or message us if
-            something has changed.
+            {t("sub.pastDueHint")}
           </span>
         </div>
       )}
@@ -427,13 +441,13 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
         {tenant?.slug && (
           <a href={`https://${tenant.slug}.passivecoder.com`} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="flex items-center gap-1.5">
-              <ExternalLink className="w-3.5 h-3.5" /> Visit Site
+              <ExternalLink className="w-3.5 h-3.5" /> {t("sub.visitSite")}
             </Button>
           </a>
         )}
         {sub.status === "pending" && (
           <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" /> Payment awaiting verification
+            <Clock className="w-3.5 h-3.5" /> {t("sub.paymentAwaitingVerification")}
           </span>
         )}
         {/* Only shown when a manually-granted trial actually exists — no
@@ -447,7 +461,7 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
       {sub.status !== "active" && plans.length > 0 && (
         <div className="pt-2 border-t">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            {sub.status === "pending" ? "Change plan or pay" : "Choose a plan to activate"}
+            {sub.status === "pending" ? t("sub.changePlanOrPay") : t("sub.chooseAPlan")}
           </p>
           <PlanGrid
             plans={plans}
@@ -475,6 +489,7 @@ interface ReceiptRow {
 }
 
 function ClientPaymentsBlock({ subscriptionId, tenantId }: { subscriptionId: string; tenantId: string }) {
+  const t = useT();
   const [receipts, setReceipts] = useState<ReceiptRow[]>([]);
   const [totals, setTotals] = useState<{ billed: number; paid: number; due: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -497,18 +512,18 @@ function ClientPaymentsBlock({ subscriptionId, tenantId }: { subscriptionId: str
 
   return (
     <div className="pt-2 border-t space-y-3">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payments &amp; Receipts</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("sub.paymentsAndReceipts")}</p>
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg bg-muted/40 p-3">
-          <p className="text-[10px] text-muted-foreground uppercase">Total Billed</p>
+          <p className="text-[10px] text-muted-foreground uppercase">{t("sub.totalBilled")}</p>
           <p className="text-sm font-semibold">${(totals.billed / 100).toFixed(2)}</p>
         </div>
         <div className="rounded-lg bg-muted/40 p-3">
-          <p className="text-[10px] text-muted-foreground uppercase">Paid</p>
+          <p className="text-[10px] text-muted-foreground uppercase">{t("sub.paid")}</p>
           <p className="text-sm font-semibold text-green-600 dark:text-green-400">${(totals.paid / 100).toFixed(2)}</p>
         </div>
         <div className="rounded-lg bg-muted/40 p-3">
-          <p className="text-[10px] text-muted-foreground uppercase">Balance Due</p>
+          <p className="text-[10px] text-muted-foreground uppercase">{t("sub.balanceDue")}</p>
           <p className={cn("text-sm font-semibold", totals.due > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
             ${(totals.due / 100).toFixed(2)}
           </p>
@@ -520,14 +535,14 @@ function ClientPaymentsBlock({ subscriptionId, tenantId }: { subscriptionId: str
             <div key={r.id} className="flex items-center justify-between text-xs bg-muted/30 rounded-lg px-3 py-2">
               <span>
                 {r.receipt_number}
-                {r.is_advance && <span className="ml-1.5 text-[9px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full">ADVANCE</span>}
+                {r.is_advance && <span className="ml-1.5 text-[9px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full">{t("sub.advance")}</span>}
                 <span className="text-muted-foreground ml-2">
                   {r.currency === "BDT" ? `৳${r.orig_amount_minor.toLocaleString("en-BD")} (≈ $${(r.amount_cents / 100).toFixed(2)})` : `$${(r.amount_cents / 100).toFixed(2)}`}
                   {" · "}{new Date(r.paid_at).toLocaleDateString()}
                 </span>
               </span>
               <a href={`/api/receipts/${r.id}/pdf`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                Download
+                {t("sub.download")}
               </a>
             </div>
           ))}
@@ -545,6 +560,7 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
   bdtRate: number;
   onChoose?: (plan: CheckoutPlan) => void;
 }) {
+  const t = useT();
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   const paid = plans.filter(p => (p.price_yearly ?? 0) > 0);
   const cycleSuffix = cycle === "monthly" ? "/mo" : "/yr";
@@ -568,11 +584,12 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
             type="button"
             onClick={() => setCycle(c)}
             className={cn(
-              "px-3 py-1.5 rounded-md font-medium transition-colors capitalize",
+              "px-3 py-1.5 rounded-md font-medium transition-colors",
               cycle === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {c}{c === "yearly" && yearlyPctOff > 0 && <span className="ml-1 text-[10px] opacity-80">save {yearlyPctOff}%</span>}
+            {c === "monthly" ? t("sub.monthly") : t("sub.yearly")}
+            {c === "yearly" && yearlyPctOff > 0 && <span className="ml-1 text-[10px] opacity-80">{t("sub.save", { pct: yearlyPctOff })}</span>}
           </button>
         ))}
       </div>
@@ -591,11 +608,11 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
               )}
             >
               {p.is_popular && (
-                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">Popular</span>
+                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">{t("sub.popular")}</span>
               )}
               <div className="flex items-center justify-between">
                 <p className="font-bold">{p.name}</p>
-                {isCurrent && <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Current</span>}
+                {isCurrent && <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{t("sub.current")}</span>}
               </div>
               <p className="text-2xl font-black">
                 {formatPrice(usd, bdt, currency, bdtRate)}
@@ -613,7 +630,7 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
                 disabled={!onChoose}
                 onClick={() => onChoose?.({ id: p.id, name: p.name, price_yearly: p.price_yearly, price_monthly: p.price_monthly, price_yearly_bdt: p.price_yearly_bdt, price_monthly_bdt: p.price_monthly_bdt, currency: p.currency })}
               >
-                <CreditCard className="w-3.5 h-3.5 mr-1.5" /> Choose {p.name}
+                <CreditCard className="w-3.5 h-3.5 mr-1.5" /> {t("sub.choosePlan", { plan: p.name })}
               </Button>
             </div>
           );
@@ -625,15 +642,16 @@ function PlanGrid({ plans, currentPlanId, discountPct, currency, bdtRate, onChoo
 }
 
 function NoSubscription({ plans, discountPct, currency, bdtRate, onChoose }: { plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; onChoose?: (plan: CheckoutPlan) => void }) {
+  const t = useT();
   return (
     <div className="space-y-4">
       <div className="rounded-xl border bg-muted/30 p-8 text-center space-y-3">
         <CreditCard className="w-10 h-10 text-muted-foreground mx-auto" />
-        <p className="font-semibold">No active subscription</p>
-        <p className="text-sm text-muted-foreground">No active subscription yet. Choose a plan to activate your site.</p>
+        <p className="font-semibold">{t("sub.noActiveSubscription")}</p>
+        <p className="text-sm text-muted-foreground">{t("sub.noActiveSubscriptionHint")}</p>
         {discountPct > 0 && (
           <p className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center justify-center gap-1">
-            <BadgePercent className="w-4 h-4" /> As staff, you get {discountPct}% off any plan
+            <BadgePercent className="w-4 h-4" /> {t("sub.staffOffDiscount", { pct: discountPct })}
           </p>
         )}
       </div>
