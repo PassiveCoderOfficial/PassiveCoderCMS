@@ -292,6 +292,14 @@ export const en = {
   "checkout.checkoutFailed": "Checkout failed",
   "checkout.paymentSubmitted": "Payment submitted. We'll activate your plan once verified.",
   "checkout.whatsappMessage": "Hi! I'd like to subscribe to Passive Coder *{plan}* plan ({cycle}) — {amount}{suffix}. Please assist with payment.",
+
+  // ── Posts list (mirrors pages.* — see pages-header.tsx) ────────────────
+  "posts.title": "Blog Posts",
+  "posts.count": "{count} posts",
+  "posts.newPost": "New Post",
+  "posts.trashEmpty": "Trash is empty",
+  "posts.noPostsYet": "No posts yet",
+  "posts.createFirstPost": "Create your first blog post",
 } as const;
 
 export type TranslationKey = keyof typeof en;

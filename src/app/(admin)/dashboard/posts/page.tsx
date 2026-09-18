@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
-import { Plus, FileText } from "lucide-react";
 import { PageRow } from "../pages/page-row";
 import { StatusTabs } from "../pages/status-tabs";
+import { PagesTableHead } from "../pages/pages-header";
+import { PostsHeader, PostsEmptyState } from "./posts-header";
 
 const TABS = ["all", "published", "draft", "scheduled", "trash"] as const;
 type Tab = (typeof TABS)[number];
@@ -38,29 +37,14 @@ export default async function PostsPage({
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">Blog Posts</h1>
-          <p className="text-muted-foreground text-sm mt-1">{posts?.length ?? 0} posts</p>
-        </div>
-        <Button asChild size="sm">
-          <Link href="/dashboard/posts/new"><Plus className="h-4 w-4 mr-2" /> New Post</Link>
-        </Button>
-      </div>
+      <PostsHeader count={posts?.length ?? 0} />
 
       <StatusTabs basePath="/dashboard/posts" active={tab} />
 
       {!posts?.length ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="h-10 w-10 text-muted-foreground mb-3" />
-            <p className="font-medium">{tab === "trash" ? "Trash is empty" : "No posts yet"}</p>
-            {tab !== "trash" && (
-              <>
-                <p className="text-sm text-muted-foreground mb-4">Create your first blog post</p>
-                <Button asChild size="sm"><Link href="/dashboard/posts/new">New Post</Link></Button>
-              </>
-            )}
+          <CardContent>
+            <PostsEmptyState inTrash={tab === "trash"} />
           </CardContent>
         </Card>
       ) : (
@@ -68,13 +52,7 @@ export default async function PostsPage({
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full min-w-[300px]">
               <thead>
-                <tr className="border-b text-xs text-muted-foreground">
-                  <th className="px-4 py-3 text-left font-medium">Title</th>
-                  <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">Slug</th>
-                  <th className="px-4 py-3 text-left font-medium hidden md:table-cell">Status</th>
-                  <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Updated</th>
-                  <th className="px-4 py-3 text-right font-medium">Actions</th>
-                </tr>
+                <PagesTableHead />
               </thead>
               <tbody className="divide-y">
                 {posts.map((post) => (

@@ -298,4 +298,12 @@ export const bn = {
   "checkout.checkoutFailed": "চেকআউট ফেইল হয়েছে",
   "checkout.paymentSubmitted": "পেমেন্ট সাবমিট করা হয়েছে। ভেরিফাই হওয়ার পর আমরা আপনার প্ল্যান অ্যাক্টিভেট করব।",
   "checkout.whatsappMessage": "হাই! আমি Passive Coder-এর *{plan}* প্ল্যানে ({cycle}) সাবস্ক্রাইব করতে চাই — {amount}{suffix}। পেমেন্টে সাহায্য করুন।",
+
+  // ── Posts list (mirrors pages.* — see pages-header.tsx) ────────────────
+  "posts.title": "ব্লগ পোস্ট",
+  "posts.count": "{count}টি পোস্ট",
+  "posts.newPost": "নতুন পোস্ট",
+  "posts.trashEmpty": "ট্র্যাশ খালি আছে",
+  "posts.noPostsYet": "এখনও কোনো পোস্ট নেই",
+  "posts.createFirstPost": "আপনার প্রথম ব্লগ পোস্টটি তৈরি করুন",
 } satisfies Record<TranslationKey, string>;
