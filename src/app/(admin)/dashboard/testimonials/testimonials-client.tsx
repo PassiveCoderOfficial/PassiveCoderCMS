@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, Star as StarIcon, Eye, EyeOff, Copy } from "lucide-react";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface Testimonial {
   id: string;
@@ -59,6 +61,7 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   item: Partial<Testimonial>; groupId: string;
   onSave: (item: Testimonial, isNew: boolean) => void; onCancel: () => void;
 }) {
+  const t = useT();
   const [item, setItem] = useState<Partial<Testimonial>>({ source: "custom", published: true, rating: 5, ...initial });
   const [saving, setSaving] = useState(false);
   const isNew = !item.id;
@@ -79,57 +82,57 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
     <div className="border border-indigo-500/30 rounded-lg p-4 space-y-3 bg-indigo-950/20">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Name *</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.name")}</label>
           <input value={item.name ?? ""} onChange={e => set("name", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Source</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.source")}</label>
           <select value={item.source ?? "custom"} onChange={e => set("source", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
-            <option value="custom">Custom</option>
-            <option value="google">Google</option>
-            <option value="trustpilot">Trustpilot</option>
-            <option value="facebook">Facebook</option>
+            <option value="custom">{t("testimonialsPage.sourceCustom")}</option>
+            <option value="google">{t("testimonialsPage.sourceGoogle")}</option>
+            <option value="trustpilot">{t("testimonialsPage.sourceTrustpilot")}</option>
+            <option value="facebook">{t("testimonialsPage.sourceFacebook")}</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Role / Title</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.roleTitle")}</label>
           <input value={item.role ?? ""} onChange={e => set("role", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="CEO" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Company</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.company")}</label>
           <input value={item.company ?? ""} onChange={e => set("company", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
         </div>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Review *</label>
+        <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.review")}</label>
         <textarea rows={3} value={item.content ?? ""} onChange={e => set("content", e.target.value)}
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
       </div>
       <div className="flex items-center gap-4">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Rating</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.rating")}</label>
           <StarRating value={item.rating ?? 5} onChange={v => set("rating", v)} />
         </div>
         <div className="w-48">
-          <label className="block text-xs text-gray-400 mb-1">Avatar</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.avatar")}</label>
           <MediaPickerInput compact value={item.avatar ?? ""} onChange={v => set("avatar", v)} />
         </div>
         <label className="flex items-center gap-2 mt-4 cursor-pointer">
           <input type="checkbox" checked={item.published ?? true} onChange={e => set("published", e.target.checked)} className="w-4 h-4 rounded" />
-          <span className="text-sm text-gray-300">Published</span>
+          <span className="text-sm text-gray-300">{t("testimonialsPage.published")}</span>
         </label>
       </div>
       <div className="flex gap-2">
         <button onClick={save} disabled={saving || !item.name?.trim() || !item.content?.trim()}
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
-          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Save
+          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("testimonialsPage.save")}
         </button>
         <button onClick={onCancel} className="flex items-center gap-1.5 bg-gray-700 text-white text-xs px-3 py-1.5 rounded">
-          <X className="w-3 h-3" /> Cancel
+          <X className="w-3 h-3" /> {t("testimonialsPage.cancel")}
         </button>
       </div>
     </div>
@@ -139,6 +142,7 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
 function GroupCard({ group, onUpdate, onDelete }: {
   group: TestimonialGroup; onUpdate: (g: TestimonialGroup) => void; onDelete: (id: string) => void;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(group.name);
@@ -165,7 +169,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
   async function duplicateItem(item: Testimonial) {
     const res = await api("POST", {
       _type: "item", group_id: group.id,
-      source: item.source, name: item.name + " (copy)", role: item.role,
+      source: item.source, name: item.name + t("testimonialsPage.copySuffix"), role: item.role,
       company: item.company, avatar: item.avatar, content: item.content,
       rating: item.rating, published: false, sort_order: group.testimonials.length,
     });
@@ -183,9 +187,13 @@ function GroupCard({ group, onUpdate, onDelete }: {
     else { onUpdate({ ...group, testimonials: group.testimonials.map(t => t.id === item.id ? item : t) }); setEditingItem(null); }
   }
 
+  const SOURCE_LABEL_KEY: Record<string, TranslationKey> = {
+    custom: "testimonialsPage.sourceCustom", google: "testimonialsPage.sourceGoogle",
+    trustpilot: "testimonialsPage.sourceTrustpilot", facebook: "testimonialsPage.sourceFacebook",
+  };
   const sourceBadge = (source: string) => {
     const colors: Record<string, string> = { custom: "bg-indigo-900/50 text-indigo-300", google: "bg-blue-900/50 text-blue-300", trustpilot: "bg-green-900/50 text-green-300", facebook: "bg-blue-800/50 text-blue-200" };
-    return <span className={`text-xs px-1.5 py-0.5 rounded capitalize ${colors[source] ?? "bg-gray-800 text-gray-400"}`}>{source}</span>;
+    return <span className={`text-xs px-1.5 py-0.5 rounded ${colors[source] ?? "bg-gray-800 text-gray-400"}`}>{SOURCE_LABEL_KEY[source] ? t(SOURCE_LABEL_KEY[source]) : source}</span>;
   };
 
   return (
@@ -208,16 +216,16 @@ function GroupCard({ group, onUpdate, onDelete }: {
           </div>
         )}
         <button onClick={() => setShowPlatform(s => !s)} className="text-xs text-gray-400 hover:text-white border border-gray-700 rounded px-2 py-1">
-          Platform Settings
+          {t("testimonialsPage.platformSettings")}
         </button>
-        <span className="text-xs text-gray-500">{group.testimonials.length} reviews</span>
-        <button onClick={() => { if (confirm(`Delete group "${group.name}"?`)) { api("DELETE", undefined, { type: "group", id: group.id }); onDelete(group.id); } }}
+        <span className="text-xs text-gray-500">{t("testimonialsPage.reviewsCount", { count: group.testimonials.length })}</span>
+        <button onClick={() => { if (confirm(t("testimonialsPage.deleteGroupConfirm", { name: group.name }))) { api("DELETE", undefined, { type: "group", id: group.id }); onDelete(group.id); } }}
           className="text-gray-600 hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
       </div>
 
       {showPlatform && (
         <div className="px-4 pb-4 border-t border-gray-800 pt-4 space-y-3">
-          <p className="text-xs text-gray-400 font-medium">Platform Integrations</p>
+          <p className="text-xs text-gray-400 font-medium">{t("testimonialsPage.platformIntegrations")}</p>
           <div className="grid grid-cols-2 gap-3">
             {(["custom", "google", "trustpilot", "facebook"] as const).map(p => (
               <label key={p} className="flex items-center gap-2 cursor-pointer">
@@ -225,27 +233,27 @@ function GroupCard({ group, onUpdate, onDelete }: {
                   checked={group[`show_${p}` as keyof TestimonialGroup] as boolean}
                   onChange={e => savePlatformSettings({ [`show_${p}`]: e.target.checked })}
                   className="w-4 h-4 rounded" />
-                <span className="text-sm text-gray-300 capitalize">Show {p}</span>
+                <span className="text-sm text-gray-300">{t("testimonialsPage.showPlatform", { platform: t(SOURCE_LABEL_KEY[p]) })}</span>
               </label>
             ))}
           </div>
           {group.show_google && (
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Google Place ID</label>
+              <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.googlePlaceId")}</label>
               <input defaultValue={group.google_place_id ?? ""} onBlur={e => savePlatformSettings({ google_place_id: e.target.value || null })}
                 className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
             </div>
           )}
           {group.show_trustpilot && (
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Trustpilot Domain</label>
+              <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.trustpilotDomain")}</label>
               <input defaultValue={group.trustpilot_domain ?? ""} onBlur={e => savePlatformSettings({ trustpilot_domain: e.target.value || null })}
                 className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="yourbusiness.com" />
             </div>
           )}
           {group.show_facebook && (
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Facebook Page ID</label>
+              <label className="block text-xs text-gray-400 mb-1">{t("testimonialsPage.facebookPageId")}</label>
               <input defaultValue={group.facebook_page_id ?? ""} onBlur={e => savePlatformSettings({ facebook_page_id: e.target.value || null })}
                 className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
             </div>
@@ -281,7 +289,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                       {item.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                     </button>
                     <button onClick={() => setEditingItem(item.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => duplicateItem(item)} className="text-gray-400 hover:text-green-400 p-1" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => duplicateItem(item)} className="text-gray-400 hover:text-green-400 p-1" title={t("testimonialsPage.duplicate")}><Copy className="w-3.5 h-3.5" /></button>
                     <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
@@ -295,7 +303,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
           ) : (
             <button onClick={() => setAddingItem(true)}
               className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
-              <Plus className="w-4 h-4" /> Add Review
+              <Plus className="w-4 h-4" /> {t("testimonialsPage.addReview")}
             </button>
           )}
         </div>
@@ -305,6 +313,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
 }
 
 export default function TestimonialsClient({ initialGroups }: { initialGroups: TestimonialGroup[] }) {
+  const t = useT();
   const [groups, setGroups] = useState(initialGroups);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -329,12 +338,12 @@ export default function TestimonialsClient({ initialGroups }: { initialGroups: T
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <StarIcon className="w-6 h-6 text-yellow-400" /> Testimonials
+            <StarIcon className="w-6 h-6 text-yellow-400" /> {t("testimonialsPage.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">Customer reviews and ratings. Supports Google, Trustpilot, and Facebook platform reviews.</p>
+          <p className="text-sm text-gray-400 mt-1">{t("testimonialsPage.subtitle")}</p>
         </div>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
-          <Plus className="w-4 h-4" /> New Group
+          <Plus className="w-4 h-4" /> {t("testimonialsPage.newGroup")}
         </button>
       </div>
 
@@ -342,11 +351,11 @@ export default function TestimonialsClient({ initialGroups }: { initialGroups: T
         <div className="bg-gray-900 border border-indigo-500/40 rounded-xl p-4 flex items-center gap-3">
           <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") createGroup(); if (e.key === "Escape") setCreating(false); }}
-            placeholder="Group name (e.g. Customer Reviews)"
+            placeholder={t("testimonialsPage.groupNamePlaceholder")}
             className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           <button onClick={createGroup} disabled={saving || !newName.trim()}
             className="flex items-center gap-1.5 bg-indigo-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Create
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("testimonialsPage.create")}
           </button>
           <button onClick={() => setCreating(false)} className="text-gray-400"><X className="w-5 h-5" /></button>
         </div>
@@ -355,7 +364,7 @@ export default function TestimonialsClient({ initialGroups }: { initialGroups: T
       {groups.length === 0 && !creating ? (
         <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
           <StarIcon className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No testimonial groups yet.</p>
+          <p className="text-gray-400 text-sm">{t("testimonialsPage.noGroupsYet")}</p>
         </div>
       ) : (
         <div className="space-y-4">
