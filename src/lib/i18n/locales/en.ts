@@ -1063,6 +1063,27 @@ export const en = {
   "features.addFeatureItem": "Add Feature Item",
   "features.deleteGroupConfirm": "Delete group \"{name}\"?",
   "features.copySuffix": " (copy)",
+
+  // ── Header Builder ───────────────────────────────────────────────────────
+  "headerBuilder.header": "Header",
+  "headerBuilder.footer": "Footer",
+  "headerBuilder.savedLive": "{label} saved — live on every page",
+  "headerBuilder.saveFailed": "Failed to save — your changes are still here, try again",
+  "headerBuilder.editingSite": "Editing your site {label} — it appears on every page.",
+  "headerBuilder.saveAndReturn": "Save & return to page",
+  "headerBuilder.returnToPage": "Return to page",
+  "headerBuilder.backToPage": "Back to your page",
+  "headerBuilder.backToNavigation": "Back to navigation",
+  "headerBuilder.siteLabel": "Site {label}",
+  "headerBuilder.shownOnEveryPage": "Shown on every page of your site",
+  "headerBuilder.saving": "Saving…",
+  "headerBuilder.unsavedChanges": "Unsaved changes",
+  "headerBuilder.allChangesSaved": "All changes saved",
+  "headerBuilder.save": "Save",
+  "headerBuilder.labelSaved": "{label} saved",
+  "headerBuilder.liveOnEveryPage": "Your site {label} is live on every page. Head back to the page you were editing, or stay here and keep working on it.",
+  "headerBuilder.stayHere": "Stay here",
+  "headerBuilder.appearsOnEveryPage": "This {label} appears on every page. Changes save automatically.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

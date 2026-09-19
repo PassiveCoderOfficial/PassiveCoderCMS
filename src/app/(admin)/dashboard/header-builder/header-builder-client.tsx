@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Loader2, Undo2, Redo2, PanelLeft, CornerUpLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
+import { useT } from "@/lib/i18n/language-provider";
 
 export type HeaderTarget = "header" | "footer";
 
@@ -41,6 +42,7 @@ export default function HeaderBuilderClient({
    *  validated server-side; null when they came in via the normal nav. */
   returnTo?: string | null;
 }) {
+  const t = useT();
   const { blocks, isDirty, setBlocks, setTenantId, setDirty, undo, redo, canUndo, canRedo } = useBuilderStore();
   const [saving, setSaving] = useState(false);
   const [showBlocks, setShowBlocks] = useState(true);
@@ -77,16 +79,16 @@ export default function HeaderBuilderClient({
       if (!res.ok) throw new Error("Save failed");
       if (useBuilderStore.getState().blocks === current) setDirty(false);
       if (!auto) {
-        toast.success(`${target === "header" ? "Header" : "Footer"} saved — live on every page`);
+        toast.success(t("headerBuilder.savedLive", { label: target === "header" ? t("headerBuilder.header") : t("headerBuilder.footer") }));
         if (returnTo) setOfferReturn(true);
       }
     } catch {
-      toast.error("Failed to save — your changes are still here, try again");
+      toast.error(t("headerBuilder.saveFailed"));
     } finally {
       savingRef.current = false;
       setSaving(false);
     }
-  }, [target, setDirty, returnTo]);
+  }, [target, setDirty, returnTo, t]);
 
   // Autosave 2.5s after the last change, matching the page builder so the two
   // don't behave differently for no reason.
@@ -105,7 +107,7 @@ export default function HeaderBuilderClient({
     return () => window.removeEventListener("keydown", handler);
   }, [handleSave]);
 
-  const label = target === "header" ? "Header" : "Footer";
+  const label = target === "header" ? t("headerBuilder.header") : t("headerBuilder.footer");
 
   // Overlay headers (nav scrollAware / transparent) draw light text and no
   // background of their own, expecting a dark hero underneath. Previewed on
@@ -134,7 +136,7 @@ export default function HeaderBuilderClient({
         <div className="flex items-center gap-2 border-b bg-primary/5 px-3 py-1.5 shrink-0">
           <CornerUpLeft className="h-3.5 w-3.5 text-primary shrink-0" />
           <p className="text-[11px] text-muted-foreground min-w-0 truncate">
-            Editing your site {label.toLowerCase()} — it appears on every page.
+            {t("headerBuilder.editingSite", { label: label.toLowerCase() })}
           </p>
           <Button
             size="sm" variant="outline"
@@ -143,7 +145,7 @@ export default function HeaderBuilderClient({
             disabled={saving}
           >
             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-            {isDirty || saving ? "Save & return to page" : "Return to page"}
+            {isDirty || saving ? t("headerBuilder.saveAndReturn") : t("headerBuilder.returnToPage")}
           </Button>
         </div>
       )}
@@ -151,7 +153,7 @@ export default function HeaderBuilderClient({
       <div className="flex items-center gap-2 border-b bg-background px-3 py-2 shrink-0">
         <Button
           variant="ghost" size="icon" className="h-8 w-8" asChild
-          title={returnTo ? "Back to your page" : "Back to navigation"}
+          title={returnTo ? t("headerBuilder.backToPage") : t("headerBuilder.backToNavigation")}
         >
           <Link href={returnTo ?? "/dashboard/navigation"}><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
@@ -164,9 +166,9 @@ export default function HeaderBuilderClient({
         </Button>
 
         <div className="ml-1">
-          <p className="text-sm font-semibold leading-tight">Site {label}</p>
+          <p className="text-sm font-semibold leading-tight">{t("headerBuilder.siteLabel", { label })}</p>
           <p className="text-[11px] text-muted-foreground leading-tight">
-            Shown on every page of your site
+            {t("headerBuilder.shownOnEveryPage")}
           </p>
         </div>
 
@@ -178,11 +180,11 @@ export default function HeaderBuilderClient({
             <Redo2 className="h-4 w-4" />
           </Button>
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {saving ? "Saving…" : isDirty ? "Unsaved changes" : "All changes saved"}
+            {saving ? t("headerBuilder.saving") : isDirty ? t("headerBuilder.unsavedChanges") : t("headerBuilder.allChangesSaved")}
           </span>
           <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-8 gap-1.5">
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            {saving ? "Saving…" : "Save"}
+            {saving ? t("headerBuilder.saving") : t("headerBuilder.save")}
           </Button>
         </div>
       </div>
@@ -190,16 +192,15 @@ export default function HeaderBuilderClient({
       <AlertDialog open={offerReturn} onOpenChange={setOfferReturn}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{label} saved</AlertDialogTitle>
+            <AlertDialogTitle>{t("headerBuilder.labelSaved", { label })}</AlertDialogTitle>
             <AlertDialogDescription>
-              Your site {label.toLowerCase()} is live on every page. Head back to
-              the page you were editing, or stay here and keep working on it.
+              {t("headerBuilder.liveOnEveryPage", { label: label.toLowerCase() })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Stay here</AlertDialogCancel>
+            <AlertDialogCancel>{t("headerBuilder.stayHere")}</AlertDialogCancel>
             <AlertDialogAction onClick={() => returnTo && router.push(returnTo)}>
-              Return to page
+              {t("headerBuilder.returnToPage")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -233,7 +234,7 @@ export default function HeaderBuilderClient({
               <BuilderCanvas surfaceClassName={previewOnDark ? "bg-neutral-800" : "bg-card"} />
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">
-              This {label.toLowerCase()} appears on every page. Changes save automatically.
+              {t("headerBuilder.appearsOnEveryPage", { label: label.toLowerCase() })}
             </p>
           </div>
         </div>
