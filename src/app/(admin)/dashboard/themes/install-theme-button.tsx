@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { BuiltInTheme } from "@/modules/themes/built-in-themes";
+import { useT } from "@/lib/i18n/language-provider";
 
 export function InstallThemeButton({ theme }: { theme: BuiltInTheme }) {
+  const t = useT();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -25,8 +27,8 @@ export function InstallThemeButton({ theme }: { theme: BuiltInTheme }) {
       settings: theme.settings,
       is_active: false,
     });
-    if (error) { toast.error("Failed to install theme"); setLoading(false); return; }
-    toast.success(`${theme.name} installed`);
+    if (error) { toast.error(t("themes.failedToInstall")); setLoading(false); return; }
+    toast.success(t("themes.installedName", { name: theme.name }));
     setLoading(false);
     router.refresh();
   };
@@ -34,7 +36,7 @@ export function InstallThemeButton({ theme }: { theme: BuiltInTheme }) {
   return (
     <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={handleInstall} disabled={loading}>
       {loading && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-      Install
+      {t("themes.install")}
     </Button>
   );
 }

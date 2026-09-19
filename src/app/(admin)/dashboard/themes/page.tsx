@@ -4,6 +4,7 @@ import { dbTemplateToBrowserItem } from "@/modules/templates/to-browser-item";
 import type { SiteTemplate } from "@/modules/templates/types";
 import { TemplateBrowser } from "./template-browser";
 import { CheckCircle } from "lucide-react";
+import { ThemesHeader, ActiveTemplateBadge } from "./themes-header";
 
 export default async function ThemesPage() {
   // Was read straight from the x-tenant-id header, which middleware only sets
@@ -51,17 +52,9 @@ export default async function ThemesPage() {
 
   return (
     <div className="p-6 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Templates</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {activeTemplateSlug
-            ? `Active template: ${templates.find(t => t.slug === activeTemplateSlug)?.name ?? activeTemplateSlug}`
-            : "No template active — pick one below to transform your site instantly."}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Switching template changes your site&apos;s colors, fonts, layout variants, real images, services, and all content.
-        </p>
-      </div>
+      <ThemesHeader
+        activeTemplateName={activeTemplateSlug ? (templates.find(t => t.slug === activeTemplateSlug)?.name ?? activeTemplateSlug) : null}
+      />
 
       {/* Active template hero card */}
       {activeTemplateSlug && (() => {
@@ -85,7 +78,7 @@ export default async function ThemesPage() {
               <div className="text-white">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-400" />
-                  <span className="text-green-400 text-sm font-semibold">Active Template</span>
+                  <ActiveTemplateBadge />
                 </div>
                 <h2 className="text-2xl font-bold mb-1">{active.name}</h2>
                 <p className="text-white/70 text-sm max-w-md">{active.description}</p>

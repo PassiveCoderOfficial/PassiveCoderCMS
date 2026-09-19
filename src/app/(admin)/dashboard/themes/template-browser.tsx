@@ -5,6 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplateApplyButton } from "./template-apply-button";
 import type { BrowserTemplateItem } from "@/modules/templates/to-browser-item";
+import { useT } from "@/lib/i18n/language-provider";
 
 type Template = BrowserTemplateItem;
 
@@ -19,31 +20,32 @@ export function TemplateBrowser({
   tenantId: string;
   siteName: string | null;
 }) {
+  const t = useT();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
   const categories = useMemo(
-    () => ["All", ...Array.from(new Set(templates.map((t) => t.category))).sort()],
+    () => ["All", ...Array.from(new Set(templates.map((tpl) => tpl.category))).sort()],
     [templates],
   );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return templates.filter((t) => {
-      const matchCat = category === "All" || t.category === category;
+    return templates.filter((tpl) => {
+      const matchCat = category === "All" || tpl.category === category;
       const matchSearch =
         !q ||
-        t.name.toLowerCase().includes(q) ||
-        t.category.toLowerCase().includes(q) ||
-        t.tags.some((tag) => tag.toLowerCase().includes(q));
+        tpl.name.toLowerCase().includes(q) ||
+        tpl.category.toLowerCase().includes(q) ||
+        tpl.tags.some((tag) => tag.toLowerCase().includes(q));
       return matchCat && matchSearch;
     });
   }, [templates, search, category]);
 
   const byCategory = useMemo(() => {
     const grouped: Record<string, Template[]> = {};
-    for (const t of filtered) {
-      (grouped[t.category] ??= []).push(t);
+    for (const tpl of filtered) {
+      (grouped[tpl.category] ??= []).push(tpl);
     }
     return grouped;
   }, [filtered]);
@@ -53,7 +55,7 @@ export function TemplateBrowser({
       <div className="flex flex-col sm:flex-row gap-3">
         <input
           className="border rounded-lg px-3 py-2 text-sm bg-background flex-1"
-          placeholder="Search by industry, style or feature…"
+          placeholder={t("themes.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -77,7 +79,7 @@ export function TemplateBrowser({
 
       {filtered.length === 0 && (
         <div className="text-center py-16 text-muted-foreground text-sm">
-          No templates found for &quot;{search}&quot;
+          {t("themes.noTemplatesFound", { query: search })}
         </div>
       )}
 
@@ -115,7 +117,7 @@ export function TemplateBrowser({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     {isActive && (
                       <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 font-semibold">
-                        <CheckCircle className="h-3 w-3" /> Active
+                        <CheckCircle className="h-3 w-3" /> {t("themes.active")}
                       </div>
                     )}
                     <div className="absolute bottom-2 left-2 flex gap-1">
@@ -143,13 +145,13 @@ export function TemplateBrowser({
 
                     <div className="grid grid-cols-3 gap-1 text-[9px] text-muted-foreground">
                       <div className="bg-muted/50 rounded px-1.5 py-1 text-center truncate" title={template.variants.hero}>
-                        Hero: {template.variants.hero.split("-")[0]}
+                        {t("themes.hero", { variant: template.variants.hero.split("-")[0] })}
                       </div>
                       <div className="bg-muted/50 rounded px-1.5 py-1 text-center truncate" title={template.variants.services}>
-                        Services: {template.variants.services.split("-")[0]}
+                        {t("themes.services", { variant: template.variants.services.split("-")[0] })}
                       </div>
                       <div className="bg-muted/50 rounded px-1.5 py-1 text-center truncate" title={template.variants.testimonials}>
-                        Reviews: {template.variants.testimonials.split("-")[0]}
+                        {t("themes.reviews", { variant: template.variants.testimonials.split("-")[0] })}
                       </div>
                     </div>
 
@@ -167,7 +169,7 @@ export function TemplateBrowser({
                       rel="noopener noreferrer"
                       className="block text-center text-[10px] text-muted-foreground hover:text-foreground underline underline-offset-2"
                     >
-                      Preview full demo
+                      {t("themes.previewFullDemo")}
                     </a>
 
                     <TemplateApplyButton
