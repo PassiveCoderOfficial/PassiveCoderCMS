@@ -1247,6 +1247,30 @@ export const en = {
   "marketing.statusSent": "sent",
   "marketing.statusFailed": "failed",
   "marketing.statusCancelled": "cancelled",
+
+  // ── Marketplace: Requests ────────────────────────────────────────────────
+  "mpRequests.title": "Service Requests",
+  "mpRequests.subtitle": "Open jobs buyers posted without picking a vendor. Urgent ones auto-notify nearby vendors every 10 minutes until claimed.",
+  "mpRequests.filterOpen": "open",
+  "mpRequests.filterClaimed": "claimed",
+  "mpRequests.filterFulfilled": "fulfilled",
+  "mpRequests.filterCancelled": "cancelled",
+  "mpRequests.filterAll": "all",
+  "mpRequests.statusOpen": "Open",
+  "mpRequests.statusClaimed": "Claimed",
+  "mpRequests.statusFulfilled": "Fulfilled",
+  "mpRequests.statusCancelled": "Cancelled",
+  "mpRequests.statusArchived": "Archived",
+  "mpRequests.noRequestsHere": "No requests here.",
+  "mpRequests.urgent": "Urgent",
+  "mpRequests.notifiedCount": "{count} notified",
+  "mpRequests.service": "Service",
+  "mpRequests.whatsappBuyer": "WhatsApp buyer",
+  "mpRequests.call": "Call",
+  "mpRequests.unclaimed": "Unclaimed",
+  "mpRequests.messageVendor": "Message vendor",
+  "mpRequests.fulfilled": "Fulfilled",
+  "mpRequests.cancel": "Cancel",
 } as const;
 
 export type TranslationKey = keyof typeof en;
