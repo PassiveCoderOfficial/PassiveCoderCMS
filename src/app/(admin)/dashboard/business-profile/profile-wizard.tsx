@@ -10,6 +10,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Plus, X, Sparkles, ExternalLink } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
 
 export interface BusinessProfile {
   business_name: string | null;
@@ -29,8 +30,6 @@ export interface BusinessProfile {
   completed_at: string | null;
 }
 
-const STEPS = ["Business", "Contact", "Track record"];
-
 /** Comma/enter-separated list editor. Used for services and service areas. */
 function ListField({
   label, hint, value, onChange, placeholder,
@@ -38,6 +37,7 @@ function ListField({
   label: string; hint?: string;
   value: string[]; onChange: (v: string[]) => void; placeholder: string;
 }) {
+  const t = useT();
   const [draft, setDraft] = useState("");
 
   function add() {
@@ -72,7 +72,7 @@ function ListField({
                 type="button"
                 onClick={() => onChange(value.filter(x => x !== v))}
                 className="rounded-full hover:bg-background p-0.5"
-                aria-label={`Remove ${v}`}
+                aria-label={t("bizProfile.remove", { value: v })}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -85,6 +85,8 @@ function ListField({
 }
 
 export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: BusinessProfile | null; initialEnmProfileLink?: string | null }) {
+  const t = useT();
+  const STEPS = [t("bizProfile.stepBusiness"), t("bizProfile.stepContact"), t("bizProfile.stepTrackRecord")];
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -140,12 +142,12 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not save");
+      if (!res.ok) throw new Error(data.error ?? t("bizProfile.couldNotSave"));
       if (data.enmProfileLink) setEnmProfileLink(data.enmProfileLink);
-      if (!opts.silent) toast.success(opts.completed ? "Business profile complete" : "Saved");
+      if (!opts.silent) toast.success(opts.completed ? t("bizProfile.profileComplete") : t("bizProfile.saved"));
       return true;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save");
+      toast.error(err instanceof Error ? err.message : t("bizProfile.couldNotSave"));
       return false;
     } finally {
       setSaving(false);
@@ -154,7 +156,7 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
 
   async function next() {
     if (step === 0 && !businessName.trim()) {
-      toast.error("Business name is required");
+      toast.error(t("bizProfile.businessNameRequired"));
       return;
     }
     if (!await save({ silent: true })) return;
@@ -167,7 +169,7 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
 
   async function generateAbout() {
     if (!businessName.trim()) {
-      toast.error("Fill in the business name and services first — there's nothing to write from yet.");
+      toast.error(t("bizProfile.fillBusinessNameFirst"));
       return;
     }
     // Uses whatever's currently on the form, not just what's saved — write it
@@ -178,11 +180,11 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
     try {
       const res = await fetch("/api/business-profile/generate-about", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not generate");
+      if (!res.ok) throw new Error(data.error ?? t("bizProfile.couldNotGenerate"));
       setAbout(data.about);
-      toast.success("Generated — review and edit before saving");
+      toast.success(t("bizProfile.generatedReview"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not generate");
+      toast.error(err instanceof Error ? err.message : t("bizProfile.couldNotGenerate"));
     } finally {
       setGeneratingAbout(false);
     }
@@ -213,27 +215,27 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
       {step === 0 && (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Business name <span className="text-destructive">*</span></Label>
-            <Input value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="Al Noor Trading LLC" className="h-10" autoFocus />
+            <Label>{t("bizProfile.businessName")} <span className="text-destructive">*</span></Label>
+            <Input value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder={t("bizProfile.businessNamePlaceholder")} className="h-10" autoFocus />
           </div>
           <div className="space-y-1.5">
-            <Label>What you mainly do</Label>
-            <Input value={primaryService} onChange={e => setPrimaryService(e.target.value)} placeholder="Electrical and plumbing contracting" className="h-10" />
+            <Label>{t("bizProfile.whatYouDo")}</Label>
+            <Input value={primaryService} onChange={e => setPrimaryService(e.target.value)} placeholder={t("bizProfile.whatYouDoPlaceholder")} className="h-10" />
           </div>
           <ListField
-            label="Services you offer"
-            hint="Add each one separately. These become your services page."
+            label={t("bizProfile.servicesOffered")}
+            hint={t("bizProfile.servicesOfferedHint")}
             value={services}
             onChange={setServices}
-            placeholder="Wiring installation"
+            placeholder={t("bizProfile.servicePlaceholder")}
           />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Owner / contact person</Label>
-              <Input value={ownerName} onChange={e => setOwnerName(e.target.value)} placeholder="Md. Rahman" className="h-10" />
+              <Label>{t("bizProfile.ownerContact")}</Label>
+              <Input value={ownerName} onChange={e => setOwnerName(e.target.value)} placeholder={t("bizProfile.ownerContactPlaceholder")} className="h-10" />
             </div>
             <div className="space-y-1.5">
-              <Label>Years in operation</Label>
+              <Label>{t("bizProfile.yearsOperating")}</Label>
               <Input value={yearsOperating} onChange={e => setYearsOperating(e.target.value)} placeholder="8" inputMode="numeric" className="h-10" />
             </div>
           </div>
@@ -243,29 +245,29 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
       {step === 1 && (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>WhatsApp number</Label>
+            <Label>{t("bizProfile.whatsappNumber")}</Label>
             <PhoneInput value={whatsapp} onChange={setWhatsapp} inputClassName="h-10" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Phone</Label>
+              <Label>{t("bizProfile.phone")}</Label>
               <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+880 1700 000000" className="h-10" />
             </div>
             <div className="space-y-1.5">
-              <Label>Business email</Label>
-              <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="info@yourbusiness.com" className="h-10" />
+              <Label>{t("bizProfile.businessEmail")}</Label>
+              <Input value={email} onChange={e => setEmail(e.target.value)} placeholder={t("bizProfile.emailPlaceholder")} className="h-10" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Office address</Label>
-            <Textarea value={officeAddress} onChange={e => setOfficeAddress(e.target.value)} placeholder="Shop 12, Building 4, Deira, Dubai" rows={2} />
+            <Label>{t("bizProfile.officeAddress")}</Label>
+            <Textarea value={officeAddress} onChange={e => setOfficeAddress(e.target.value)} placeholder={t("bizProfile.officeAddressPlaceholder")} rows={2} />
           </div>
           <ListField
-            label="Areas you serve"
-            hint="Cities or neighbourhoods where you take work."
+            label={t("bizProfile.areasServed")}
+            hint={t("bizProfile.areasServedHint")}
             value={serviceAreas}
             onChange={setServiceAreas}
-            placeholder="Dubai"
+            placeholder={t("bizProfile.areaPlaceholder")}
           />
         </div>
       )}
@@ -273,47 +275,46 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
       {step === 2 && (
         <div className="space-y-4">
           <div className="rounded-xl bg-muted/40 border border-border p-3 text-xs text-muted-foreground">
-            These are optional. We only put a number on your website if you give
-            us a real one — leave a field blank rather than estimating.
+            {t("bizProfile.trackRecordHint")}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Customers served</Label>
+              <Label>{t("bizProfile.customersServed")}</Label>
               <Input value={customersServed} onChange={e => setCustomersServed(e.target.value)} placeholder="250" inputMode="numeric" className="h-10" />
             </div>
             <div className="space-y-1.5">
-              <Label>Projects completed</Label>
+              <Label>{t("bizProfile.projectsCompleted")}</Label>
               <Input value={projectsCompleted} onChange={e => setProjectsCompleted(e.target.value)} placeholder="180" inputMode="numeric" className="h-10" />
             </div>
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label>About your business</Label>
+              <Label>{t("bizProfile.aboutBusiness")}</Label>
               <Button
                 type="button" variant="outline" size="sm"
                 onClick={generateAbout} disabled={generatingAbout || saving}
                 className="h-7 text-xs gap-1.5"
               >
                 {generatingAbout ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                {about.trim() ? "Regenerate" : "Write it for me"}
+                {about.trim() ? t("bizProfile.regenerate") : t("bizProfile.writeForMe")}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Written from the business name, services and track record above — review and edit before saving.
+              {t("bizProfile.aboutHint")}
             </p>
             <Textarea value={about} onChange={e => setAbout(e.target.value)} rows={5}
-              placeholder="What you do, who you do it for, and what makes you different. A few sentences is enough." />
+              placeholder={t("bizProfile.aboutPlaceholder")} />
           </div>
 
           {enmProfileLink && (
             <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">Your ExpertNear.Me listing is live</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Built from this profile — check how it looks.</p>
+                <p className="text-sm font-medium">{t("bizProfile.enmListingLive")}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("bizProfile.enmListingHint")}</p>
               </div>
               <Button variant="outline" size="sm" asChild className="shrink-0">
                 <a href={enmProfileLink} target="_blank" rel="noopener noreferrer">
-                  Preview listing <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                  {t("bizProfile.previewListing")} <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                 </a>
               </Button>
             </div>
@@ -324,22 +325,22 @@ export function ProfileWizard({ initial, initialEnmProfileLink }: { initial: Bus
       <div className="flex items-center gap-2 pt-2">
         {step > 0 && (
           <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={saving}>
-            <ArrowLeft className="w-4 h-4 mr-1.5" /> Back
+            <ArrowLeft className="w-4 h-4 mr-1.5" /> {t("bizProfile.back")}
           </Button>
         )}
         {step < STEPS.length - 1 ? (
           <Button onClick={next} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : null}
-            Continue <ArrowRight className="w-4 h-4 ml-1.5" />
+            {t("bizProfile.continue")} <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         ) : (
           <Button onClick={finish} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
-            Save profile
+            {t("bizProfile.saveProfile")}
           </Button>
         )}
         <Button variant="ghost" onClick={() => save()} disabled={saving} className="ml-auto text-muted-foreground">
-          Save for later
+          {t("bizProfile.saveForLater")}
         </Button>
       </div>
     </div>
