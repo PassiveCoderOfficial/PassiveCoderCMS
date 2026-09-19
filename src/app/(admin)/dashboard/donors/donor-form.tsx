@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { Loader2, ArrowLeft, Droplet } from "lucide-react";
 import { BLOOD_GROUPS, BD_DISTRICTS, BD_LOCATIONS, RELIGIONS, GENDERS } from "@/lib/donors/bd-locations";
 import { SocialLinksEditor } from "@/components/donors/social-links";
+import { useT } from "@/lib/i18n/language-provider";
 
 const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
 
@@ -22,6 +23,7 @@ async function api(path: string, method: string, body?: unknown) {
 }
 
 export function DonorDashboardForm({ donorId }: { donorId?: string }) {
+  const t = useT();
   const router = useRouter();
   const [ready, setReady] = useState(!donorId);
   const [f, setF] = useState({
@@ -82,7 +84,7 @@ export function DonorDashboardForm({ donorId }: { donorId?: string }) {
       ? await api("/api/donors/admin", "PATCH", { id: donorId, ...payload })
       : await api("/api/donors/admin", "POST", payload);
     setBusy(false);
-    if (!r.ok) { setError(r.data.error ?? "Failed"); return; }
+    if (!r.ok) { setError(r.data.error ?? t("donors.failed")); return; }
     router.push("/dashboard/donors");
   }
 
@@ -93,93 +95,93 @@ export function DonorDashboardForm({ donorId }: { donorId?: string }) {
   return (
     <div className="p-6 max-w-2xl space-y-4">
       <Link href="/dashboard/donors" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
-        <ArrowLeft className="w-4 h-4" /> Back to donors
+        <ArrowLeft className="w-4 h-4" /> {t("donors.backToDonors")}
       </Link>
       <h1 className="text-xl font-bold text-white flex items-center gap-2">
-        <Droplet className="w-5 h-5 text-red-500" fill="currentColor" /> {donorId ? `Edit ${f.name}` : "New donor"}
+        <Droplet className="w-5 h-5 text-red-500" fill="currentColor" /> {donorId ? t("donors.editDonor", { name: f.name }) : t("donors.newDonor")}
       </h1>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
-        <div><label className={labelCls}>Name *</label><input className={inputCls} value={f.name} onChange={e => set("name", e.target.value)} /></div>
+        <div><label className={labelCls}>{t("donors.name")}</label><input className={inputCls} value={f.name} onChange={e => set("name", e.target.value)} /></div>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Phone *</label><input className={inputCls} placeholder="01XXXXXXXXX" value={f.phone} onChange={e => set("phone", e.target.value)} /></div>
-          <div><label className={labelCls}>WhatsApp</label><input className={inputCls} placeholder="01XXXXXXXXX" value={f.whatsapp} onChange={e => set("whatsapp", e.target.value)} /></div>
+          <div><label className={labelCls}>{t("donors.phone")}</label><input className={inputCls} placeholder="01XXXXXXXXX" value={f.phone} onChange={e => set("phone", e.target.value)} /></div>
+          <div><label className={labelCls}>{t("donors.whatsapp")}</label><input className={inputCls} placeholder="01XXXXXXXXX" value={f.whatsapp} onChange={e => set("whatsapp", e.target.value)} /></div>
         </div>
-        <div><label className={labelCls}>Blood group *</label>
+        <div><label className={labelCls}>{t("donors.bloodGroup")}</label>
           <select className={inputCls} value={f.blood_group} onChange={e => set("blood_group", e.target.value)}>
             {BLOOD_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
           </select>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Gender</label>
+          <div><label className={labelCls}>{t("donors.gender")}</label>
             <select className={inputCls} value={f.gender} onChange={e => set("gender", e.target.value)}>
               <option value="">—</option>{GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
-          <div><label className={labelCls}>Religion</label>
+          <div><label className={labelCls}>{t("donors.religion")}</label>
             <select className={inputCls} value={f.religion} onChange={e => set("religion", e.target.value)}>
               <option value="">—</option>{RELIGIONS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>District</label>
+          <div><label className={labelCls}>{t("donors.district")}</label>
             <select className={inputCls} value={f.district} onChange={e => { set("district", e.target.value); set("police_station", ""); set("area", ""); }}>
               <option value="">—</option>{BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
-          <div><label className={labelCls}>Thana</label>
+          <div><label className={labelCls}>{t("donors.thana")}</label>
             <select className={inputCls} value={f.police_station} onChange={e => { set("police_station", e.target.value); set("area", ""); }} disabled={!f.district}>
-              <option value="">—</option>{thanas.map(t => <option key={t} value={t}>{t}</option>)}
+              <option value="">—</option>{thanas.map(tv => <option key={tv} value={tv}>{tv}</option>)}
             </select>
           </div>
         </div>
-        <div><label className={labelCls}>Area</label>
+        <div><label className={labelCls}>{t("donors.area")}</label>
           <input className={inputCls} list="dash-areas" value={f.area} onChange={e => set("area", e.target.value)}
             disabled={!f.district || !f.police_station}
-            placeholder={f.district && f.police_station ? "e.g. Mirpur DOHS" : "Pick district & thana first"} />
+            placeholder={f.district && f.police_station ? t("donors.areaPlaceholder") : t("donors.pickDistrictThanaFirst")} />
           {f.district && f.police_station && <datalist id="dash-areas">{areas.map(a => <option key={a} value={a} />)}</datalist>}
         </div>
         <div>
-          <label className={labelCls}>Pin location on map</label>
+          <label className={labelCls}>{t("donors.pinLocationOnMap")}</label>
           <MapPicker value={geo} onChange={setGeo} height={220} autoGps={!geo} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Age</label><input className={inputCls} type="number" value={f.age_years} onChange={e => set("age_years", e.target.value)} /></div>
-          <div><label className={labelCls}>Birth date</label><input className={inputCls} type="date" value={f.birthdate} onChange={e => set("birthdate", e.target.value)} /></div>
+          <div><label className={labelCls}>{t("donors.age")}</label><input className={inputCls} type="number" value={f.age_years} onChange={e => set("age_years", e.target.value)} /></div>
+          <div><label className={labelCls}>{t("donors.birthDate")}</label><input className={inputCls} type="date" value={f.birthdate} onChange={e => set("birthdate", e.target.value)} /></div>
         </div>
         <div>
-          <label className={labelCls}>Last donated date</label>
+          <label className={labelCls}>{t("donors.lastDonatedDate")}</label>
           <input className={inputCls} type="date" disabled={f.never_donated || f.date_unknown}
             value={f.last_donated_on} onChange={e => set("last_donated_on", e.target.value)} />
           <div className="flex flex-col gap-1.5 mt-2">
             <label className="flex items-center gap-2 text-sm text-gray-400">
               <input type="checkbox" checked={f.never_donated} onChange={e => { set("never_donated", e.target.checked); if (e.target.checked) set("date_unknown", false); }} className="accent-green-600" />
-              Never donated <span className="text-[11px] text-green-400">(green)</span>
+              {t("donors.neverDonated")} <span className="text-[11px] text-green-400">{t("donors.green")}</span>
             </label>
             <label className="flex items-center gap-2 text-sm text-gray-400">
               <input type="checkbox" checked={f.date_unknown} onChange={e => { set("date_unknown", e.target.checked); if (e.target.checked) set("never_donated", false); }} className="accent-yellow-500" />
-              Date unknown <span className="text-[11px] text-yellow-400">(yellow)</span>
+              {t("donors.dateUnknown")} <span className="text-[11px] text-yellow-400">{t("donors.yellow")}</span>
             </label>
           </div>
         </div>
-        <div><label className={labelCls}>Social / contact links</label><SocialLinksEditor socials={socials} onChange={setSocials} /></div>
+        <div><label className={labelCls}>{t("donors.socialContactLinks")}</label><SocialLinksEditor socials={socials} onChange={setSocials} /></div>
 
         <div className="border-t border-gray-800 pt-3 space-y-3">
           <div className="flex items-center gap-5 flex-wrap text-sm text-gray-400">
-            <label className="flex items-center gap-2"><input type="checkbox" checked={f.is_active} onChange={e => set("is_active", e.target.checked)} className="accent-red-600" /> Active (visible)</label>
-            <label className="flex items-center gap-2"><input type="checkbox" checked={f.is_admin} onChange={e => set("is_admin", e.target.checked)} className="accent-red-600" /> Admin</label>
-            <label className="flex items-center gap-2"><input type="checkbox" checked={!f.is_available} onChange={e => set("is_available", !e.target.checked)} className="accent-gray-500" /> Temporarily unavailable</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={f.is_active} onChange={e => set("is_active", e.target.checked)} className="accent-red-600" /> {t("donors.activeVisible")}</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={f.is_admin} onChange={e => set("is_admin", e.target.checked)} className="accent-red-600" /> {t("donors.admin")}</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={!f.is_available} onChange={e => set("is_available", !e.target.checked)} className="accent-gray-500" /> {t("donors.temporarilyUnavailable")}</label>
           </div>
           {donorId && (
-            <div><label className={labelCls}>Reset password (blank = keep)</label><input className={inputCls} value={f.new_password} onChange={e => set("new_password", e.target.value)} placeholder="New password" /></div>
+            <div><label className={labelCls}>{t("donors.resetPasswordHint")}</label><input className={inputCls} value={f.new_password} onChange={e => set("new_password", e.target.value)} placeholder={t("donors.newPasswordPlaceholder")} /></div>
           )}
         </div>
 
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button onClick={save} disabled={busy}
           className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
-          {busy && <Loader2 className="w-4 h-4 animate-spin" />} {donorId ? "Save changes" : "Create donor"}
+          {busy && <Loader2 className="w-4 h-4 animate-spin" />} {donorId ? t("donors.saveChanges") : t("donors.createDonor")}
         </button>
       </div>
     </div>
