@@ -18,6 +18,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface MediaItem {
   id: string;
@@ -87,6 +88,7 @@ interface UploadZoneProps {
 }
 
 function UploadZone({ onUpload, uploading, progress, errors, onClearErrors }: UploadZoneProps) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -95,7 +97,7 @@ function UploadZone({ onUpload, uploading, progress, errors, onClearErrors }: Up
     const rejected: UploadError[] = [];
     for (const file of Array.from(files)) {
       if (file.size > MAX_FILE_SIZE) {
-        rejected.push({ name: file.name, reason: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB — max 50 MB)` });
+        rejected.push({ name: file.name, reason: t("media.tooLarge", { size: (file.size / 1024 / 1024).toFixed(1) }) });
       } else {
         valid.push(file);
       }
@@ -160,8 +162,8 @@ function UploadZone({ onUpload, uploading, progress, errors, onClearErrors }: Up
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Uploading files…</p>
-              <p className="text-xs text-muted-foreground">{doneCount} of {totalCount} complete</p>
+              <p className="text-sm font-medium text-foreground">{t("media.uploadingFiles")}</p>
+              <p className="text-xs text-muted-foreground">{t("media.completeOf", { done: doneCount, total: totalCount })}</p>
             </div>
             {/* Per-file progress list */}
             {progress.length > 0 && (
@@ -193,10 +195,10 @@ function UploadZone({ onUpload, uploading, progress, errors, onClearErrors }: Up
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">
-                {dragging ? "Drop files to upload" : "Drag & drop or click to browse"}
+                {dragging ? t("media.dropToUpload") : t("media.dragDropHint")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Images · Videos · Audio · PDFs · Documents — max <strong>50 MB</strong> per file
+                {t("media.acceptedTypesHint", { max: "50 MB" })}
               </p>
             </div>
           </div>
@@ -209,13 +211,13 @@ function UploadZone({ onUpload, uploading, progress, errors, onClearErrors }: Up
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-destructive/20">
             <div className="flex items-center gap-2 text-destructive">
               <span className="h-5 w-5 rounded-full bg-destructive/15 flex items-center justify-center text-xs font-bold">!</span>
-              <span className="text-sm font-medium">{errors.length} file{errors.length > 1 ? "s" : ""} failed to upload</span>
+              <span className="text-sm font-medium">{t("media.filesFailedToUpload", { count: errors.length, plural: errors.length > 1 ? "s" : "" })}</span>
             </div>
             <button
               onClick={onClearErrors}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             >
-              <X className="h-3.5 w-3.5" /> Clear
+              <X className="h-3.5 w-3.5" /> {t("media.clear")}
             </button>
           </div>
           <ul className="divide-y divide-destructive/10">
@@ -245,6 +247,7 @@ interface MediaDetailProps {
 }
 
 function MediaDetail({ item, onClose, onDelete, onAltSaved }: MediaDetailProps) {
+  const t = useT();
   const [alt, setAlt] = useState(item.alt ?? "");
   const [saving, startSaving] = useTransition();
   const [copied, setCopied] = useState(false);
@@ -259,7 +262,7 @@ function MediaDetail({ item, onClose, onDelete, onAltSaved }: MediaDetailProps) 
     startSaving(async () => {
       const result = await updateMediaAlt(item.id, alt);
       if (result.error) toast.error(result.error);
-      else { toast.success("Alt text saved"); onAltSaved(item.id, alt); }
+      else { toast.success(t("media.altTextSaved")); onAltSaved(item.id, alt); }
     });
   };
 
@@ -276,25 +279,25 @@ function MediaDetail({ item, onClose, onDelete, onAltSaved }: MediaDetailProps) 
         {/* Info */}
         <div className="space-y-4">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Details</p>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t("media.details")}</p>
             <div className="text-sm space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Type</span>
+                <span className="text-muted-foreground">{t("media.type")}</span>
                 <span>{item.mime_type}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Size</span>
+                <span className="text-muted-foreground">{t("media.size")}</span>
                 <span>{formatBytes(item.size)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Uploaded</span>
+                <span className="text-muted-foreground">{t("media.uploaded")}</span>
                 <span>{new Date(item.created_at).toLocaleDateString()}</span>
               </div>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">File URL</Label>
+            <Label className="text-xs">{t("media.fileUrl")}</Label>
             <div className="flex gap-1.5">
               <Input value={item.url} readOnly className="text-xs h-8 font-mono" />
               <Button size="icon" variant="outline" className="h-8 w-8 shrink-0" onClick={copyUrl}>
@@ -304,16 +307,16 @@ function MediaDetail({ item, onClose, onDelete, onAltSaved }: MediaDetailProps) 
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Alt Text</Label>
+            <Label className="text-xs">{t("media.altText")}</Label>
             <Input
               value={alt}
               onChange={(e) => setAlt(e.target.value)}
-              placeholder="Describe the image..."
+              placeholder={t("media.altTextPlaceholder")}
               className="text-xs h-8"
             />
             <Button size="sm" variant="outline" onClick={saveAlt} disabled={saving}>
               {saving && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
-              Save Alt
+              {t("media.saveAlt")}
             </Button>
           </div>
         </div>
@@ -321,9 +324,9 @@ function MediaDetail({ item, onClose, onDelete, onAltSaved }: MediaDetailProps) 
       <DialogFooter className="gap-2">
         <Button variant="destructive" size="sm" onClick={() => onDelete(item)}>
           <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-          Delete
+          {t("media.delete")}
         </Button>
-        <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+        <Button variant="outline" size="sm" onClick={onClose}>{t("media.close")}</Button>
       </DialogFooter>
     </DialogContent>
   );
@@ -334,6 +337,7 @@ interface Props {
 }
 
 export function MediaManager({ initialMedia }: Props) {
+  const t = useT();
   const [media, setMedia] = useState<MediaItem[]>(initialMedia);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [search, setSearch] = useState("");
@@ -353,7 +357,7 @@ export function MediaManager({ initialMedia }: Props) {
     const valid: File[] = [];
     for (const f of files) {
       if (f.size > MAX_FILE_SIZE) {
-        oversized.push({ name: f.name, reason: `Too large (${(f.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed is 50 MB.` });
+        oversized.push({ name: f.name, reason: t("media.tooLargeMax", { size: (f.size / 1024 / 1024).toFixed(1) }) });
       } else {
         valid.push(f);
       }
@@ -390,7 +394,7 @@ export function MediaManager({ initialMedia }: Props) {
 
     if (newErrors.length) setUploadErrors((prev) => [...prev, ...newErrors]);
     if (succeeded) {
-      toast.success(`${succeeded} file${succeeded > 1 ? "s" : ""} uploaded successfully`);
+      toast.success(t("media.uploadedSuccess", { count: succeeded, plural: succeeded > 1 ? "s" : "" }));
       const res = await fetch("/api/media");
       if (res.ok) setMedia(await res.json());
     }
@@ -413,7 +417,7 @@ export function MediaManager({ initialMedia }: Props) {
       const result = await deleteMediaFile(toDelete.id, toDelete.storage_path ?? "");
       if (result.error) toast.error(result.error);
       else {
-        toast.success("File deleted");
+        toast.success(t("media.fileDeleted"));
         setMedia((m) => m.filter((x) => x.id !== toDelete.id));
       }
       setToDelete(null);
