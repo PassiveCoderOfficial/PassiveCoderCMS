@@ -1779,6 +1779,33 @@ export const en = {
   "testimonialsPage.duplicate": "Duplicate",
   "testimonialsPage.addReview": "Add Review",
   "testimonialsPage.copySuffix": " (copy)",
+
+  // ── Users ────────────────────────────────────────────────────────────────
+  "usersPage.title": "Team Members",
+  "usersPage.subtitle": "Manage staff access to your site dashboard.",
+  "usersPage.inviteTeamMember": "Invite Team Member",
+  "usersPage.emailAddress": "Email address",
+  "usersPage.role": "Role",
+  "usersPage.roleAdminFull": "Admin — full access",
+  "usersPage.roleEditorContent": "Editor — content only",
+  "usersPage.roleAuthorPosts": "Author — posts only",
+  "usersPage.sendInvite": "Send Invite",
+  "usersPage.inviteHint": "They'll receive an email to set up their account. You can change their role anytime.",
+  "usersPage.roleAdmin": "admin",
+  "usersPage.roleEditor": "editor",
+  "usersPage.roleAuthor": "author",
+  "usersPage.roleAdminDesc": "Full dashboard access. Can manage team, settings, and all content.",
+  "usersPage.roleEditorDesc": "Can edit all content sections. Cannot manage team or settings.",
+  "usersPage.roleAuthorDesc": "Can create and edit posts only.",
+  "usersPage.currentMembers": "Current Members ({count})",
+  "usersPage.noTeamMembersYet": "No team members yet.",
+  "usersPage.joined": "Joined {date}",
+  "usersPage.invitedEmail": "Invited {email}",
+  "usersPage.inviteFailed": "Invite failed",
+  "usersPage.failed": "Failed",
+  "usersPage.roleUpdated": "Role updated",
+  "usersPage.removeConfirm": "Remove this team member?",
+  "usersPage.memberRemoved": "Member removed",
 } as const;
 
 export type TranslationKey = keyof typeof en;
