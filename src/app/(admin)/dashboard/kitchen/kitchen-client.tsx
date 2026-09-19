@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { ChefHat, Clock, CheckCircle2, UtensilsCrossed, Bike, UserPlus, Link2, Check, MapPin } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface OrderItem { name: string; quantity: number }
 interface KitchenOrder {
@@ -25,11 +27,11 @@ interface Rider {
   last_lat: number | null; last_lng: number | null; last_location_at: string | null;
 }
 
-function minutesAgo(iso: string): string {
+function minutesAgo(iso: string, t: (k: TranslationKey, vars?: Record<string, string | number>) => string): string {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins === 1) return "1 min";
-  return `${mins} min`;
+  if (mins < 1) return t("kitchen.justNow");
+  if (mins === 1) return t("kitchen.oneMin");
+  return t("kitchen.minsAgo", { mins });
 }
 // A location older than 5 minutes is treated as stale — the rider's PWA
 // posts roughly every 20s while a delivery is active (rider-app.tsx), so a
@@ -39,20 +41,20 @@ function isStaleLocation(iso: string | null): boolean {
   return Date.now() - new Date(iso).getTime() > 5 * 60 * 1000;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Pending",
-  cooking: "Cooking",
-  ready: "Ready",
-  ready_to_pick: "Ready to Pick",
-  served: "Served on Table",
-  picked_up: "Picked Up",
-  completed: "Completed",
+const STATUS_LABEL_KEY: Record<string, TranslationKey> = {
+  pending: "kitchen.statusPending",
+  cooking: "kitchen.statusCooking",
+  ready: "kitchen.statusReady",
+  ready_to_pick: "kitchen.statusReadyToPick",
+  served: "kitchen.statusServed",
+  picked_up: "kitchen.statusPickedUp",
+  completed: "kitchen.statusCompleted",
 };
 
-const DELIVERY_LABEL: Record<string, string> = {
-  assigned: "Assigned",
-  picked_up: "Picked up",
-  delivered: "Delivered",
+const DELIVERY_LABEL_KEY: Record<string, TranslationKey> = {
+  assigned: "kitchen.deliveryAssigned",
+  picked_up: "kitchen.deliveryPickedUp",
+  delivered: "kitchen.deliveryDelivered",
 };
 function nextDeliveryStatus(current: string): string | null {
   if (current === "assigned") return "picked_up";
@@ -73,10 +75,10 @@ function nextDeliveryStatus(current: string): string | null {
 // fulfillment types at once — e.g. "Ready" holds a dine-in order truly at
 // "ready" AND a pickup/delivery order at "ready_to_pick" side by side.
 const COLUMNS = [
-  { key: "pending", label: "Pending", icon: Clock },
-  { key: "cooking", label: "Cooking", icon: ChefHat },
-  { key: "ready", label: "Ready / Ready to Pick", icon: CheckCircle2 },
-  { key: "served", label: "Served / Picked Up", icon: Bike },
+  { key: "pending", labelKey: "kitchen.colPending" as TranslationKey, icon: Clock },
+  { key: "cooking", labelKey: "kitchen.colCooking" as TranslationKey, icon: ChefHat },
+  { key: "ready", labelKey: "kitchen.colReady" as TranslationKey, icon: CheckCircle2 },
+  { key: "served", labelKey: "kitchen.colServed" as TranslationKey, icon: Bike },
 ] as const;
 
 /** Which real kitchen_status value a given fulfillment type's 3rd/4th column represents. */
@@ -144,11 +146,11 @@ function playNewOrderChime() {
  * this. Flagged rather than silently built, since it changes what "the
  * kitchen gets notified" can promise.
  */
-function notifyNewOrder(order: KitchenOrder) {
+function notifyNewOrder(order: KitchenOrder, t: (k: TranslationKey, vars?: Record<string, string | number>) => string) {
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
   try {
-    new Notification("New order — " + order.order_number, {
-      body: `${order.customer_name} · ${tableLabel(order)}`,
+    new Notification(t("kitchen.newOrderTitle", { number: order.order_number }), {
+      body: `${order.customer_name} · ${tableLabel(order, t)}`,
       tag: order.id, // replaces rather than stacks if the same order somehow fires twice
     });
   } catch {
@@ -158,15 +160,16 @@ function notifyNewOrder(order: KitchenOrder) {
   }
 }
 
-function tableLabel(order: KitchenOrder): string {
-  const t = Array.isArray(order.restaurant_tables) ? order.restaurant_tables[0] : order.restaurant_tables;
-  if (t) return `Table ${t.table_number}`;
-  return order.fulfillment_type === "pickup" ? "Pickup" : order.fulfillment_type === "delivery" ? "Delivery" : "Dine In";
+function tableLabel(order: KitchenOrder, t: (k: TranslationKey, vars?: Record<string, string | number>) => string): string {
+  const tbl = Array.isArray(order.restaurant_tables) ? order.restaurant_tables[0] : order.restaurant_tables;
+  if (tbl) return t("kitchen.tableLabel", { number: tbl.table_number });
+  return order.fulfillment_type === "pickup" ? t("kitchen.tablePickup") : order.fulfillment_type === "delivery" ? t("kitchen.tableDelivery") : t("kitchen.tableDineIn");
 }
 
 export default function KitchenClient({ branches, orders: initial, tables = [], riders = [], siteUrl }: {
   branches: Branch[]; orders: KitchenOrder[]; tables?: TableRow[]; riders?: Rider[]; siteUrl: string;
 }) {
+  const t = useT();
   const [orders, setOrders] = useState(initial);
   const [branchFilter, setBranchFilter] = useState<string>("all");
   const [busy, setBusy] = useState<string | null>(null);
@@ -224,7 +227,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
         if (newOrders.length) {
           playNewOrderChime();
           document.title = "🔔 New order — " + originalTitle.current;
-          newOrders.forEach(notifyNewOrder);
+          newOrders.forEach(o => notifyNewOrder(o, t));
         }
       } catch {
         // A dropped poll just tries again next interval — nothing to
@@ -330,12 +333,12 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <ChefHat className="w-6 h-6 text-indigo-400" /> Kitchen
+          <ChefHat className="w-6 h-6 text-indigo-400" /> {t("kitchen.title")}
         </h1>
         {branches.length > 1 && (
           <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
-            <option value="all">All branches</option>
+            <option value="all">{t("kitchen.allBranches")}</option>
             {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         )}
@@ -344,24 +347,24 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
       {notifPermission === "default" && (
         <button onClick={requestNotifPermission}
           className="w-full flex items-center justify-between gap-3 bg-indigo-500/10 border border-indigo-600/40 rounded-lg px-4 py-2.5 text-sm text-indigo-300 hover:bg-indigo-500/20 transition-colors">
-          <span>Turn on notifications to hear new orders even when this tab isn't in front.</span>
-          <span className="text-xs font-medium underline shrink-0">Enable</span>
+          <span>{t("kitchen.enableNotifHint")}</span>
+          <span className="text-xs font-medium underline shrink-0">{t("kitchen.enable")}</span>
         </button>
       )}
       {notifPermission === "denied" && (
         <p className="text-xs text-amber-400">
-          Notifications are blocked for this site — enable them in your browser's site settings to get alerted on new orders.
+          {t("kitchen.notifBlockedHint")}
         </p>
       )}
 
       {shownTables.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {shownTables.map(t => (
-            <div key={t.id}
+          {shownTables.map(tbl => (
+            <div key={tbl.id}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                t.occupied ? "bg-amber-500/10 border-amber-600/40 text-amber-400" : "bg-gray-900 border-gray-800 text-gray-500"
+                tbl.occupied ? "bg-amber-500/10 border-amber-600/40 text-amber-400" : "bg-gray-900 border-gray-800 text-gray-500"
               }`}>
-              Table {t.table_number} · {t.occupied ? "Occupied" : "Free"}
+              {t("kitchen.tableLabel", { number: tbl.table_number })} · {tbl.occupied ? t("kitchen.occupied") : t("kitchen.free")}
             </div>
           ))}
         </div>
@@ -375,7 +378,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
               {/* The rider's own no-login link into /rider/[token] — see
                   migration 094. Copy it and send over WhatsApp/SMS, same as
                   how a rider gets told their shift already. */}
-              <button onClick={() => copyRiderLink(r)} title="Copy rider link"
+              <button onClick={() => copyRiderLink(r)} title={t("kitchen.copyRiderLink")}
                 className="p-1 text-gray-600 hover:text-indigo-400 rounded">
                 {copiedRiderId === r.id ? <Check className="w-3 h-3 text-green-400" /> : <Link2 className="w-3 h-3" />}
               </button>
@@ -387,7 +390,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
                 <a
                   href={`https://www.google.com/maps?q=${r.last_lat},${r.last_lng}`}
                   target="_blank" rel="noopener noreferrer"
-                  title={r.last_location_at ? `Last seen ${minutesAgo(r.last_location_at)} ago` : "View last known location"}
+                  title={r.last_location_at ? t("kitchen.lastSeenAgo", { mins: minutesAgo(r.last_location_at, t) }) : t("kitchen.viewLastKnownLocation")}
                   className={`p-1 rounded ${isStaleLocation(r.last_location_at) ? "text-gray-700 hover:text-gray-400" : "text-green-500 hover:text-green-400"}`}
                 >
                   <MapPin className="w-3 h-3" />
@@ -397,7 +400,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
           ))}
           <button onClick={() => setShowAddRider(v => !v)}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border border-dashed border-gray-700 text-gray-500 hover:text-white hover:border-gray-500 transition-colors">
-            <UserPlus className="w-3 h-3" /> Add rider
+            <UserPlus className="w-3 h-3" /> {t("kitchen.addRider")}
           </button>
         </div>
       )}
@@ -410,14 +413,14 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
               {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           )}
-          <input placeholder="Rider name" value={newRider.name}
+          <input placeholder={t("kitchen.riderNamePlaceholder")} value={newRider.name}
             onChange={(e) => setNewRider(r => ({ ...r, name: e.target.value }))}
             className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white placeholder-gray-500" />
-          <input placeholder="Phone (optional)" value={newRider.phone}
+          <input placeholder={t("kitchen.phoneOptionalPlaceholder")} value={newRider.phone}
             onChange={(e) => setNewRider(r => ({ ...r, phone: e.target.value }))}
             className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white placeholder-gray-500" />
           <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-md px-3 py-1.5 text-xs font-medium transition-colors">
-            Add
+            {t("kitchen.add")}
           </button>
         </form>
       )}
@@ -425,7 +428,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
       {branches.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No branches set up yet. Add one to start taking dine-in and pickup orders.</p>
+          <p className="text-sm">{t("kitchen.noBranchesYet")}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -444,7 +447,7 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
             return (
               <div key={column.key} className="bg-gray-900 border border-gray-800 rounded-xl p-3 space-y-2 min-h-[200px]">
                 <div className="flex items-center gap-2 text-sm font-semibold text-white px-1">
-                  <Icon className="w-4 h-4 text-indigo-400" /> {column.label}
+                  <Icon className="w-4 h-4 text-indigo-400" /> {t(column.labelKey)}
                   <span className="text-gray-600 font-normal">({inStage.length})</span>
                 </div>
                 {inStage.map(order => {
@@ -457,17 +460,17 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
                     <>
                       <div className="flex justify-between items-start gap-2">
                         <span className="text-xs font-mono text-gray-500">{order.order_number}</span>
-                        <span className="text-xs text-indigo-400 shrink-0">{tableLabel(order)}</span>
+                        <span className="text-xs text-indigo-400 shrink-0">{tableLabel(order, t)}</span>
                       </div>
                       <div className="text-[10px] uppercase tracking-wide text-gray-600 mt-0.5">
-                        {STATUS_LABEL[order.kitchen_status] ?? order.kitchen_status}
+                        {STATUS_LABEL_KEY[order.kitchen_status] ? t(STATUS_LABEL_KEY[order.kitchen_status]) : order.kitchen_status}
                       </div>
                       <div className="text-sm text-white mt-1">{order.customer_name}</div>
                       <ul className="text-xs text-gray-400 mt-1.5 space-y-0.5">
                         {order.items.slice(0, 4).map((it, i) => (
                           <li key={i}>{it.quantity}× {it.name}</li>
                         ))}
-                        {order.items.length > 4 && <li className="text-gray-600">+{order.items.length - 4} more</li>}
+                        {order.items.length > 4 && <li className="text-gray-600">{t("kitchen.moreItems", { count: order.items.length - 4 })}</li>}
                       </ul>
                     </>
                   );
@@ -490,23 +493,23 @@ export default function KitchenClient({ branches, orders: initial, tables = [], 
                             <select disabled={busy === order.id} defaultValue=""
                               onChange={(e) => e.target.value && assignRider(order, e.target.value)}
                               className="w-full bg-gray-900 border border-gray-700 rounded-md px-2 py-1.5 text-xs text-white">
-                              <option value="" disabled>Assign rider…</option>
+                              <option value="" disabled>{t("kitchen.assignRiderPlaceholder")}</option>
                               {branchRiders.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                             </select>
                           ) : (
-                            <p className="text-[11px] text-amber-400">No riders — add one in Rider settings</p>
+                            <p className="text-[11px] text-amber-400">{t("kitchen.noRidersHint")}</p>
                           )
                         ) : (
                           <button onClick={() => advanceDelivery(order)} disabled={busy === order.id}
                             className="w-full flex items-center justify-center gap-1.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 rounded-md px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50">
-                            <Bike className="w-3 h-3" /> {DELIVERY_LABEL[order.delivery_status ?? "assigned"]} — tap to advance
+                            <Bike className="w-3 h-3" /> {t(DELIVERY_LABEL_KEY[order.delivery_status ?? "assigned"])}{t("kitchen.tapToAdvance")}
                           </button>
                         )}
                       </div>
                     </div>
                   );
                 })}
-                {inStage.length === 0 && <p className="text-xs text-gray-700 text-center py-6">Empty</p>}
+                {inStage.length === 0 && <p className="text-xs text-gray-700 text-center py-6">{t("kitchen.empty")}</p>}
               </div>
             );
           })}
