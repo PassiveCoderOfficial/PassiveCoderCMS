@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { BarChart3 } from "lucide-react";
+import { ReportHeading, T } from "../accounting-header";
 
 export const metadata = { title: "P&L Report — Dashboard" };
 
@@ -63,20 +64,20 @@ export default async function ReportPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <BarChart3 className="w-6 h-6 text-indigo-400" /> Profit &amp; Loss — last 12 months
+        <BarChart3 className="w-6 h-6 text-indigo-400" /> <ReportHeading />
       </h1>
 
       <div className="grid sm:grid-cols-3 gap-4 max-w-2xl">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Income</p>
+          <p className="text-xs text-gray-500 mb-1"><T k="report.income" /></p>
           <p className="text-xl font-bold text-green-400">{money(totalIncome)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Expenses</p>
+          <p className="text-xs text-gray-500 mb-1"><T k="report.expenses" /></p>
           <p className="text-xl font-bold text-red-400">{money(totalExpense)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Net profit</p>
+          <p className="text-xs text-gray-500 mb-1"><T k="report.netProfit" /></p>
           <p className={`text-xl font-bold ${net >= 0 ? "text-white" : "text-red-400"}`}>{money(net)}</p>
         </div>
       </div>
@@ -85,10 +86,10 @@ export default async function ReportPage() {
         <table className="w-full text-sm min-w-[540px]">
           <thead>
             <tr className="text-left text-xs uppercase text-gray-500 border-b border-gray-800">
-              <th className="py-2 pr-4">Month</th>
-              <th className="py-2 pr-4">Income</th>
-              <th className="py-2 pr-4">Expenses</th>
-              <th className="py-2 pr-4">Net</th>
+              <th className="py-2 pr-4"><T k="report.colMonth" /></th>
+              <th className="py-2 pr-4"><T k="report.colIncome" /></th>
+              <th className="py-2 pr-4"><T k="report.colExpenses" /></th>
+              <th className="py-2 pr-4"><T k="report.colNet" /></th>
               <th className="py-2 w-1/3" />
             </tr>
           </thead>
@@ -118,13 +119,13 @@ export default async function ReportPage() {
 
       {byCategory.size > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 max-w-2xl">
-          <h2 className="text-sm font-semibold text-white mb-3">By category</h2>
+          <h2 className="text-sm font-semibold text-white mb-3"><T k="report.byCategory" /></h2>
           <div className="space-y-2">
             {[...byCategory.entries()]
               .sort((a, b) => (b[1].income + b[1].expense) - (a[1].income + a[1].expense))
               .map(([cat, v]) => (
                 <div key={cat} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 capitalize">{cat}</span>
+                  <span className="text-gray-400 capitalize">{cat === "uncategorized" ? <T k="report.uncategorized" /> : cat}</span>
                   <span>
                     {v.income > 0 && <span className="text-green-400 mr-3">+{money(v.income)}</span>}
                     {v.expense > 0 && <span className="text-red-400">−{money(v.expense)}</span>}
@@ -136,7 +137,7 @@ export default async function ReportPage() {
       )}
 
       <p className="text-xs text-gray-600">
-        Built from completed transactions in Accounting. POS sales and completed jobs post here automatically.
+        <T k="report.builtFromHint" />
       </p>
     </div>
   );

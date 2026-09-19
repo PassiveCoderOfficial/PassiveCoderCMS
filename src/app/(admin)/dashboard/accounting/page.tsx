@@ -2,12 +2,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { requireModule } from "@/lib/modules/resolve-modules";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getSiteCurrency } from "@/lib/currency/currency-server";
 import { formatMoney } from "@/lib/currency/currencies";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AccountingDashHeader, AccountingStatCards, AccountingRecentTxHeader, NoTransactionsMessage, TxTypeLabel } from "./accounting-header";
 
 export default async function AccountingDashboard() {
   const tenantId = await getCurrentTenantId();
@@ -36,56 +34,29 @@ export default async function AccountingDashboard() {
 
   const todayIncome = todayTx?.filter((t) => t.type !== "expense").reduce((s, t) => s + Number(t.amount), 0) ?? 0;
 
-  const stats = [
-    { label: "Monthly Income", value: fmt(totalIncome), icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Monthly Expenses", value: fmt(totalExpenses), icon: TrendingDown, color: "text-red-600", bg: "bg-red-50" },
-    { label: "Net Profit", value: fmt(profit), icon: DollarSign, color: profit >= 0 ? "text-blue-600" : "text-red-600", bg: "bg-blue-50" },
-    { label: "Today's Revenue", value: fmt(todayIncome), icon: ArrowUpRight, color: "text-purple-600", bg: "bg-purple-50" },
-  ];
-
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Accounting</h1>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm"><Link href="/dashboard/accounting/transactions">All Transactions</Link></Button>
-          <Button asChild size="sm"><Link href="/dashboard/accounting/transactions/new">Add Transaction</Link></Button>
-        </div>
-      </div>
+      <AccountingDashHeader />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-4">
-              <div className={`inline-flex p-2 rounded-lg ${stat.bg} mb-3`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <AccountingStatCards
+        values={[fmt(totalIncome), fmt(totalExpenses), fmt(profit), fmt(todayIncome)]}
+        profitPositive={profit >= 0}
+      />
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold">Recent Transactions</CardTitle>
-            <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-              <Link href="/dashboard/accounting/transactions">View all</Link>
-            </Button>
-          </div>
+          <AccountingRecentTxHeader />
         </CardHeader>
         <CardContent className="p-0">
           {!recentTx?.length ? (
-            <p className="text-sm text-center text-muted-foreground py-8">No transactions yet</p>
+            <NoTransactionsMessage variant="dashboard" />
           ) : (
             <div className="divide-y">
               {recentTx.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between px-6 py-3">
                   <div>
                     <p className="text-sm font-medium">{tx.description}</p>
-                    <p className="text-xs text-muted-foreground">{tx.type} · {tx.date} {tx.customer_name ? `· ${tx.customer_name}` : ""}</p>
+                    <p className="text-xs text-muted-foreground"><TxTypeLabel type={tx.type} /> · {tx.date} {tx.customer_name ? `· ${tx.customer_name}` : ""}</p>
                     {tx.message && <p className="text-xs text-muted-foreground italic mt-0.5">&quot;{tx.message}&quot;</p>}
                   </div>
                   <div className="text-right">
