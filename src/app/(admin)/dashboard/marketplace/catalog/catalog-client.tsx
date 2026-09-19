@@ -6,6 +6,7 @@ import { Tag, Plus, Trash2, Loader2, Shapes, ChevronDown, ChevronRight, Check, P
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Subcategory { id: string; name: string; sort_order: number; }
 interface Category {
@@ -35,6 +36,7 @@ function slugify(s: string) {
 }
 
 export default function CatalogClient({ initialCategories }: { initialCategories: Category[] }) {
+  const t = useT();
   const [categories, setCategories] = useState(initialCategories);
   const [newCat, setNewCat] = useState("");
   const [newSub, setNewSub] = useState<Record<string, string>>({});
@@ -58,7 +60,7 @@ export default function CatalogClient({ initialCategories }: { initialCategories
       // immediately, rather than looking like a bare name-only row.
       setExpanded(p => [...p, d.id]);
     } else {
-      toast.error("Failed to add category");
+      toast.error(t("mpCatalog.failedAddCategory"));
     }
     setSaving(false);
   }
@@ -75,12 +77,12 @@ export default function CatalogClient({ initialCategories }: { initialCategories
       setCategories(l => l.map(c => c.id === categoryId ? { ...c, service_subcategories: [...c.service_subcategories, d] } : c));
       setNewSub(p => ({ ...p, [categoryId]: "" }));
     } else {
-      toast.error("Failed to add service");
+      toast.error(t("mpCatalog.failedAddService"));
     }
   }
 
   async function delCategory(c: Category) {
-    if (!confirm(`Delete category "${c.name}" and all its services?`)) return;
+    if (!confirm(t("mpCatalog.deleteCategoryConfirm", { name: c.name }))) return;
     await fetch(`/api/marketplace/catalog?type=category&id=${c.id}`, { method: "DELETE" });
     setCategories(l => l.filter(x => x.id !== c.id));
   }
@@ -99,26 +101,25 @@ export default function CatalogClient({ initialCategories }: { initialCategories
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ _type: "category", id: c.id, ...patch }),
     });
-    if (!res.ok) toast.error("Failed to save category");
+    if (!res.ok) toast.error(t("mpCatalog.failedSaveCategory"));
   }
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Tag className="w-6 h-6 text-primary" /> Service Catalog
+          <Tag className="w-6 h-6 text-primary" /> {t("mpCatalog.title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Categories and the services vendors can offer under them — e.g. &ldquo;Aircon&rdquo; → &ldquo;Gas top up&rdquo;,
-          &ldquo;Chemical wash&rdquo;. A category&apos;s image and description are what customers see on your site.
+          {t("mpCatalog.subtitle")}
         </p>
       </div>
 
       <div className="flex gap-2">
-        <input className={`${inputCls} flex-1`} placeholder="New category name (e.g. Electrician)" value={newCat}
+        <input className={`${inputCls} flex-1`} placeholder={t("mpCatalog.newCategoryPlaceholder")} value={newCat}
           onChange={(e) => setNewCat(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCategory()} />
         <button onClick={addCategory} disabled={saving} className={btnPrimary}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add category
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} {t("mpCatalog.addCategory")}
         </button>
       </div>
 
@@ -172,13 +173,13 @@ export default function CatalogClient({ initialCategories }: { initialCategories
                         <button
                           onClick={() => { setRenaming(c.id); setRenameValue(c.name); }}
                           className="text-muted-foreground hover:text-foreground shrink-0"
-                          title="Rename"
+                          title={t("mpCatalog.rename")}
                         >
                           <Pencil className="w-3 h-3" />
                         </button>
                       </div>
                       <p className="text-[11px] text-muted-foreground truncate">
-                        /{c.slug} · {c.service_subcategories.length} service{c.service_subcategories.length === 1 ? "" : "s"}
+                        {t("mpCatalog.serviceCount", { slug: c.slug, count: c.service_subcategories.length })}
                       </p>
                     </>
                   )}
@@ -189,7 +190,7 @@ export default function CatalogClient({ initialCategories }: { initialCategories
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground shrink-0"
                 >
                   {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  Edit
+                  {t("mpCatalog.edit")}
                 </button>
                 <button onClick={() => delCategory(c)} className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg shrink-0">
                   <Trash2 className="w-4 h-4" />
@@ -201,36 +202,36 @@ export default function CatalogClient({ initialCategories }: { initialCategories
                   {/* Presentation */}
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="block text-xs font-medium mb-1.5">Thumbnail image</label>
+                      <label className="block text-xs font-medium mb-1.5">{t("mpCatalog.thumbnailImage")}</label>
                       <MediaPickerInput
                         value={c.image_url ?? ""}
                         onChange={(url) => void patchCategory(c, { image_url: url || null })}
-                        placeholder="Upload or paste an image URL"
+                        placeholder={t("mpCatalog.uploadOrPasteUrl")}
                       />
                       <p className="mt-1 text-[10px] text-muted-foreground">
-                        Shown on category cards across your site. Falls back to the icon when unset.
+                        {t("mpCatalog.thumbnailHint")}
                       </p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1.5">Icon</label>
+                      <label className="block text-xs font-medium mb-1.5">{t("mpCatalog.icon")}</label>
                       <input
                         className={`${inputCls} w-full py-1.5 text-xs`}
-                        placeholder="Lucide icon name (e.g. Wind, Zap)"
+                        placeholder={t("mpCatalog.iconPlaceholder")}
                         defaultValue={c.icon ?? ""}
                         onBlur={(e) => void patchCategory(c, { icon: e.target.value.trim() || null })}
                       />
                       <p className="mt-1 text-[10px] text-muted-foreground">
-                        Used when there&apos;s no image. Names from lucide.dev/icons.
+                        {t("mpCatalog.iconHint")}
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium mb-1.5">Description</label>
+                    <label className="block text-xs font-medium mb-1.5">{t("mpCatalog.description")}</label>
                     <textarea
                       className={`${inputCls} w-full resize-y text-xs`}
                       rows={2}
-                      placeholder="One line describing what this category covers"
+                      placeholder={t("mpCatalog.descriptionPlaceholder")}
                       defaultValue={c.description ?? ""}
                       onBlur={(e) => void patchCategory(c, { description: e.target.value.trim() || null })}
                     />
@@ -239,7 +240,7 @@ export default function CatalogClient({ initialCategories }: { initialCategories
                   {/* Services */}
                   <div>
                     <label className="block text-xs font-medium mb-1.5">
-                      Services in this category ({c.service_subcategories.length})
+                      {t("mpCatalog.servicesInCategory", { count: c.service_subcategories.length })}
                     </label>
                     <div className="space-y-1">
                       {c.service_subcategories.map((s) => (
@@ -251,15 +252,15 @@ export default function CatalogClient({ initialCategories }: { initialCategories
                         </div>
                       ))}
                       {c.service_subcategories.length === 0 && (
-                        <p className="text-xs text-muted-foreground py-1.5">No services yet.</p>
+                        <p className="text-xs text-muted-foreground py-1.5">{t("mpCatalog.noServicesYet")}</p>
                       )}
                     </div>
                     <div className="flex gap-2 pt-2">
-                      <input className={`${inputCls} flex-1 py-1.5 text-xs`} placeholder="New service (e.g. Gas top up)"
+                      <input className={`${inputCls} flex-1 py-1.5 text-xs`} placeholder={t("mpCatalog.newServicePlaceholder")}
                         value={newSub[c.id] ?? ""} onChange={(e) => setNewSub(p => ({ ...p, [c.id]: e.target.value }))}
                         onKeyDown={(e) => e.key === "Enter" && addSubcategory(c.id)} />
                       <button onClick={() => addSubcategory(c.id)} className="text-xs font-medium text-primary hover:opacity-80 px-2">
-                        Add
+                        {t("mpCatalog.add")}
                       </button>
                     </div>
                   </div>
@@ -271,7 +272,7 @@ export default function CatalogClient({ initialCategories }: { initialCategories
 
         {categories.length === 0 && (
           <div className={cn("border border-dashed rounded-xl text-center py-16 text-muted-foreground text-sm")}>
-            No categories yet — add your first one above.
+            {t("mpCatalog.noCategoriesYet")}
           </div>
         )}
       </div>

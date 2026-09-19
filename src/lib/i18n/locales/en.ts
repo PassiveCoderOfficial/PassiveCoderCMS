@@ -1352,6 +1352,32 @@ export const en = {
   "mpVendors.saveHoursSettings": "Save hours & settings",
   "mpVendors.blockedDatesHeading": "Blocked dates (holidays, days off)",
   "mpVendors.add": "Add",
+
+  // ── Marketplace: Catalog ─────────────────────────────────────────────────
+  "mpCatalog.title": "Service Catalog",
+  "mpCatalog.subtitle": "Categories and the services vendors can offer under them — e.g. “Aircon” → “Gas top up”, “Chemical wash”. A category's image and description are what customers see on your site.",
+  "mpCatalog.newCategoryPlaceholder": "New category name (e.g. Electrician)",
+  "mpCatalog.addCategory": "Add category",
+  "mpCatalog.failedAddCategory": "Failed to add category",
+  "mpCatalog.failedAddService": "Failed to add service",
+  "mpCatalog.failedSaveCategory": "Failed to save category",
+  "mpCatalog.deleteCategoryConfirm": "Delete category \"{name}\" and all its services?",
+  "mpCatalog.rename": "Rename",
+  "mpCatalog.serviceCount": "/{slug} · {count} service{plural}",
+  "mpCatalog.edit": "Edit",
+  "mpCatalog.thumbnailImage": "Thumbnail image",
+  "mpCatalog.uploadOrPasteUrl": "Upload or paste an image URL",
+  "mpCatalog.thumbnailHint": "Shown on category cards across your site. Falls back to the icon when unset.",
+  "mpCatalog.icon": "Icon",
+  "mpCatalog.iconPlaceholder": "Lucide icon name (e.g. Wind, Zap)",
+  "mpCatalog.iconHint": "Used when there's no image. Names from lucide.dev/icons.",
+  "mpCatalog.description": "Description",
+  "mpCatalog.descriptionPlaceholder": "One line describing what this category covers",
+  "mpCatalog.servicesInCategory": "Services in this category ({count})",
+  "mpCatalog.noServicesYet": "No services yet.",
+  "mpCatalog.newServicePlaceholder": "New service (e.g. Gas top up)",
+  "mpCatalog.add": "Add",
+  "mpCatalog.noCategoriesYet": "No categories yet — add your first one above.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
