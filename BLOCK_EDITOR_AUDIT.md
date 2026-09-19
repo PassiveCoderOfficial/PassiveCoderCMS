@@ -29,8 +29,35 @@ All follow the existing team-settings.tsx list-editor pattern for consistency.
 ColorPicker from @/components/ui/color-picker used throughout (found as the
 real shared component, not the guessed @/components/admin/color-input).
 
-### Phase 2 — Render-time crash risk sweep
-(pending)
+### Phase 2 — Render-time crash risk sweep — DONE
+Checked every block type declaring a required nested-object or array field
+against real production data, for the same class of bug found earlier this
+session (text-block.tsx crashing on missing `typography`).
+
+- [x] **hero-block.tsx `HeroLegacy` — real gap, fixed.** `typography` is
+      declared required in HeroBlockProps but destructured unguarded in the
+      legacy (no-templateVariant) render path — every other variant already
+      used `data.typography?.field` safely. 12 real pages have a hero with no
+      typography object, all currently safe only because they also have
+      `templateVariant: "fullscreen-overlay"` set (a different, already-safe
+      render path) — zero live crashes today, but this was one content edit
+      away from crashing if templateVariant were ever cleared. Fixed with a
+      typed fallback object, matching the safe pattern used everywhere else
+      in the file.
+- [x] Checked `data.items`/`data.members` unguarded `.map()` across
+      features/services/stats/team/testimonials — 0 real rows missing these
+      arrays; not a live risk.
+- [x] Checked `m.social.map()` (optional field) in team-block.tsx — already
+      correctly gated behind `m.social && m.social.length > 0` at all 3 call
+      sites. Safe.
+- [x] Checked `col.links.map()` in footer-block.tsx — required field, 0 real
+      rows missing it. Safe.
+- [x] Checked `data.fields.map()` in contact-block.tsx — required field, 0
+      real rows missing it. Safe.
+
+Conclusion: the typography bug class was real but contained — one other
+genuine instance found and fixed (hero), everything else checked came back
+clean against real production data.
 
 ### Phase 3 — Live Playwright verification
 (pending)

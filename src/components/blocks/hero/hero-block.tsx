@@ -353,7 +353,12 @@ function HeroCorporate({ block }: HeroBlockComponentProps) {
 // ─── Legacy layouts (used when no templateVariant) ────────────────────────────
 function HeroLegacy({ block }: HeroBlockComponentProps) {
   const { data } = block;
-  const { layout, badge, title, subtitle, description, imageUrl, imageAlt, typography } = data;
+  const { layout, badge, title, subtitle, description, imageUrl, imageAlt } = data;
+  // Every other variant already reads data.typography? safely — this legacy
+  // fallback (rendered when a hero has no templateVariant) destructured it
+  // unguarded and crashed on any hero predating this field. Found live: 12
+  // real pages have a hero block with no typography object at all.
+  const typography = data.typography ?? { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" };
   const titleSize = titleSizeMap[typography.titleSize] ?? "text-5xl md:text-6xl";
 
   const textContent = (

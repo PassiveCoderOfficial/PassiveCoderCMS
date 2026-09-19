@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { CHILD_SOURCE_LABELS } from "@/modules/navigation/dynamic-children";
 import type { NavItem, NavChildSource } from "@/types/cms";
 import type { LinkTarget } from "@/app/api/navigation/link-targets/route";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 export type NavMenuRow = {
   id: string;
@@ -28,21 +30,25 @@ export type ImportableNav = {
   items: NavItem[];
 };
 
-const LOCATIONS: { value: string; label: string; hint: string }[] = [
-  { value: "none", label: "Not assigned", hint: "Draft — not shown anywhere yet." },
-  { value: "header", label: "Header", hint: "The main navigation bar." },
-  { value: "footer", label: "Footer", hint: "Primary footer links." },
-  { value: "footer_secondary", label: "Footer (secondary)", hint: "A second footer column." },
-  { value: "mobile", label: "Mobile", hint: "Overrides the header menu on small screens." },
-  { value: "sidebar", label: "Sidebar", hint: "For layouts with a side nav." },
-  { value: "legal", label: "Legal", hint: "Privacy, terms, cookie policy." },
-];
+function locations(t: (k: TranslationKey) => string): { value: string; label: string; hint: string }[] {
+  return [
+    { value: "none", label: t("navPage.locNotAssigned"), hint: t("navPage.locNotAssignedHint") },
+    { value: "header", label: t("navPage.locHeader"), hint: t("navPage.locHeaderHint") },
+    { value: "footer", label: t("navPage.locFooter"), hint: t("navPage.locFooterHint") },
+    { value: "footer_secondary", label: t("navPage.locFooterSecondary"), hint: t("navPage.locFooterSecondaryHint") },
+    { value: "mobile", label: t("navPage.locMobile"), hint: t("navPage.locMobileHint") },
+    { value: "sidebar", label: t("navPage.locSidebar"), hint: t("navPage.locSidebarHint") },
+    { value: "legal", label: t("navPage.locLegal"), hint: t("navPage.locLegalHint") },
+  ];
+}
 
-function newItem(): NavItem {
-  return { id: `nav-${Math.random().toString(36).slice(2, 9)}`, label: "New link", url: "/", children: [] };
+function newItem(label: string): NavItem {
+  return { id: `nav-${Math.random().toString(36).slice(2, 9)}`, label, url: "/", children: [] };
 }
 
 export default function NavigationClient({ initialMenus, importable }: { initialMenus: NavMenuRow[]; importable: ImportableNav[] }) {
+  const t = useT();
+  const LOCATIONS = locations(t);
   const [menus, setMenus] = useState<NavMenuRow[]>(initialMenus);
   const [pendingImport, setPendingImport] = useState<ImportableNav[]>(importable);
   const [activeId, setActiveId] = useState<string | null>(initialMenus[0]?.id ?? null);
@@ -61,13 +67,13 @@ export default function NavigationClient({ initialMenus, importable }: { initial
         body: JSON.stringify({ location }),
       });
       const data = await res.json() as { error?: string; menu?: NavMenuRow };
-      if (!res.ok || !data.menu) throw new Error(data.error ?? "Import failed");
+      if (!res.ok || !data.menu) throw new Error(data.error ?? t("navPage.importFailed"));
       setMenus((prev) => [...prev, data.menu!]);
       setPendingImport((prev) => prev.filter((p) => p.location !== location));
       setActiveId(data.menu.id);
-      toast.success(`Imported your ${location} menu — it's now the live source for your ${location}`);
+      toast.success(t("navPage.importedMenu", { location }));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Import failed");
+      toast.error(err instanceof Error ? err.message : t("navPage.importFailed"));
     } finally {
       setImportingLocation(null);
     }
@@ -98,16 +104,16 @@ export default function NavigationClient({ initialMenus, importable }: { initial
         body: JSON.stringify({ id: active.id, name: active.name, location: active.location, items: active.items }),
       });
       const data = await res.json() as { error?: string; menu?: NavMenuRow };
-      if (!res.ok) throw new Error(data.error ?? "Failed to save menu");
+      if (!res.ok) throw new Error(data.error ?? t("navPage.failedToSaveMenu"));
       // A location move can unassign another menu server-side; refetch so the
       // list reflects that rather than showing two menus in one slot.
       const listRes = await fetch("/api/navigation");
       const listData = await listRes.json() as { menus?: NavMenuRow[] };
       if (listData.menus) setMenus(listData.menus);
       setDirty(false);
-      toast.success("Menu saved");
+      toast.success(t("navPage.menuSaved"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save menu");
+      toast.error(err instanceof Error ? err.message : t("navPage.failedToSaveMenu"));
     } finally {
       setSaving(false);
     }
@@ -122,27 +128,27 @@ export default function NavigationClient({ initialMenus, importable }: { initial
         body: JSON.stringify({ name: "New menu", location: "none", items: [] }),
       });
       const data = await res.json() as { error?: string; menu?: NavMenuRow };
-      if (!res.ok || !data.menu) throw new Error(data.error ?? "Failed to create menu");
+      if (!res.ok || !data.menu) throw new Error(data.error ?? t("navPage.failedToCreateMenu"));
       setMenus((prev) => [...prev, data.menu!]);
       setActiveId(data.menu.id);
-      toast.success("Menu created");
+      toast.success(t("navPage.menuCreated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create menu");
+      toast.error(err instanceof Error ? err.message : t("navPage.failedToCreateMenu"));
     } finally {
       setCreating(false);
     }
   }
 
   async function deleteMenu(id: string) {
-    if (!confirm("Delete this menu? Anywhere it's assigned will fall back to no navigation.")) return;
+    if (!confirm(t("navPage.deleteMenuConfirm"))) return;
     try {
       const res = await fetch(`/api/navigation?id=${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete menu");
+      if (!res.ok) throw new Error(t("navPage.failedToDeleteMenu"));
       setMenus((prev) => prev.filter((m) => m.id !== id));
       if (activeId === id) setActiveId(null);
-      toast.success("Menu deleted");
+      toast.success(t("navPage.menuDeleted"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete menu");
+      toast.error(err instanceof Error ? err.message : t("navPage.failedToDeleteMenu"));
     }
   }
 
@@ -154,10 +160,9 @@ export default function NavigationClient({ initialMenus, importable }: { initial
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Navigation</h1>
+          <h1 className="text-2xl font-bold">{t("navPage.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Build menus once, then assign them to the header, footer or anywhere else.
-            Sub-menus can pull live from your services or product categories.
+            {t("navPage.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -167,7 +172,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium hover:border-primary disabled:opacity-50"
           >
             {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            New menu
+            {t("navPage.newMenu")}
           </button>
           <button
             onClick={() => void save()}
@@ -179,7 +184,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
             )}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {dirty ? "Save changes" : "Saved"}
+            {dirty ? t("navPage.saveChanges") : t("navPage.saved")}
           </button>
         </div>
       </div>
@@ -191,11 +196,10 @@ export default function NavigationClient({ initialMenus, importable }: { initial
               <Download className="h-4 w-4 shrink-0 text-primary" />
               <div className="flex-1 min-w-[240px]">
                 <p className="text-sm font-semibold">
-                  Your {p.location} already has a menu — it's just not managed here yet
+                  {t("navPage.alreadyHasMenu", { location: p.location })}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {p.items.length} link{p.items.length === 1 ? "" : "s"}, built in the {p.location === "header" ? "Header" : "Footer"} Builder.
-                  Import it to edit sub-menus, reorder items, or reuse it in another location.
+                  {t("navPage.linksBuiltIn", { count: p.items.length, plural: p.items.length === 1 ? "" : "s", builder: p.location === "header" ? t("navPage.locHeader") : t("navPage.locFooter") })}
                 </p>
               </div>
               <button
@@ -204,7 +208,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
               >
                 {importingLocation === p.location ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                Import this menu
+                {t("navPage.importThisMenu")}
               </button>
             </div>
           ))}
@@ -215,8 +219,8 @@ export default function NavigationClient({ initialMenus, importable }: { initial
         <div className="rounded-xl border border-dashed py-16 text-center">
           <p className="text-sm text-muted-foreground">
             {pendingImport.length > 0
-              ? "Import the menu above, or create a new one from scratch."
-              : "No menus yet. Create one and assign it to your header to get started."}
+              ? t("navPage.importOrCreate")
+              : t("navPage.noMenusYet")}
           </p>
         </div>
       ) : (
@@ -238,7 +242,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                   <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     {loc?.label ?? m.location}
-                    <span className="ml-auto">{m.items.length} item{m.items.length === 1 ? "" : "s"}</span>
+                    <span className="ml-auto">{t("navPage.itemsCount", { count: m.items.length, plural: m.items.length === 1 ? "" : "s" })}</span>
                   </p>
                 </button>
               );
@@ -250,7 +254,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
             <div className="space-y-5">
               <div className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium">Menu name</label>
+                  <label className="mb-1.5 block text-xs font-medium">{t("navPage.menuName")}</label>
                   <input
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                     value={active.name}
@@ -258,7 +262,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium">Shown in</label>
+                  <label className="mb-1.5 block text-xs font-medium">{t("navPage.shownIn")}</label>
                   <select
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                     value={active.location}
@@ -277,8 +281,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                   <div className="sm:col-span-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
                     <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                      <strong>{assignedElsewhere.name}</strong> is currently in that slot. Saving will move it to
-                      &ldquo;Not assigned&rdquo; — only one menu can occupy a location.
+                      {t("navPage.assignedElsewhereWarning", { name: assignedElsewhere.name })}
                     </p>
                   </div>
                 )}
@@ -294,7 +297,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                 onClick={() => deleteMenu(active.id)}
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-3 w-3" /> Delete this menu
+                <Trash2 className="h-3 w-3" /> {t("navPage.deleteThisMenu")}
               </button>
             </div>
           )}
@@ -311,6 +314,7 @@ function ItemTree({ items, targets, onChange }: {
   targets: LinkTarget[];
   onChange: (items: NavItem[]) => void;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState<string[]>([]);
 
   function update(id: string, patch: Partial<NavItem>) {
@@ -335,18 +339,18 @@ function ItemTree({ items, targets, onChange }: {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">Menu items</p>
+        <p className="text-sm font-semibold">{t("navPage.menuItems")}</p>
         <button
-          onClick={() => onChange([...items, newItem()])}
+          onClick={() => onChange([...items, newItem(t("navPage.newLinkLabel"))])}
           className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:border-primary"
         >
-          <Plus className="h-3 w-3" /> Add item
+          <Plus className="h-3 w-3" /> {t("navPage.addItem")}
         </button>
       </div>
 
       {items.length === 0 ? (
         <div className="rounded-lg border border-dashed py-10 text-center">
-          <p className="text-xs text-muted-foreground">No items yet — add your first link.</p>
+          <p className="text-xs text-muted-foreground">{t("navPage.noItemsYet")}</p>
         </div>
       ) : (
         items.map((item, i) => {
@@ -367,7 +371,7 @@ function ItemTree({ items, targets, onChange }: {
                   className="w-36 shrink-0 rounded border bg-background px-2 py-1.5 text-sm"
                   value={item.label}
                   onChange={(e) => update(item.id, { label: e.target.value })}
-                  placeholder="Label"
+                  placeholder={t("navPage.labelPlaceholder")}
                 />
 
                 <LinkField
@@ -389,8 +393,8 @@ function ItemTree({ items, targets, onChange }: {
                   {source !== "manual"
                     ? CHILD_SOURCE_LABELS[source]
                     : (item.children?.length ?? 0) > 0
-                      ? `${item.children!.length} sub-item${item.children!.length === 1 ? "" : "s"}`
-                      : "Sub-menu"}
+                      ? t("navPage.subItemsCount", { count: item.children!.length, plural: item.children!.length === 1 ? "" : "s" })
+                      : t("navPage.subMenu")}
                 </button>
 
                 <button onClick={() => remove(item.id)}
@@ -409,21 +413,21 @@ function ItemTree({ items, targets, onChange }: {
                         checked={item.megaMenu ?? (item.children ?? []).some((c) => (c.children?.length ?? 0) > 0)}
                         onChange={(e) => update(item.id, { megaMenu: e.target.checked })}
                       />
-                      Show as mega menu
+                      {t("navPage.showAsMegaMenu")}
                     </label>
                     <p className="mt-1 text-[10px] text-muted-foreground">
-                      A full-width panel across the nav bar instead of a narrow dropdown.
+                      {t("navPage.megaMenuHint")}
                     </p>
                     {(item.megaMenu ?? (item.children ?? []).some((c) => (c.children?.length ?? 0) > 0)) && (
                       <div className="mt-2">
-                        <label className="mb-1 block text-[11px] font-medium">Columns</label>
+                        <label className="mb-1 block text-[11px] font-medium">{t("navPage.columns")}</label>
                         <select
                           className="w-full rounded border bg-background px-2 py-1.5 text-xs"
                           value={String(item.megaColumns ?? 5)}
                           onChange={(e) => update(item.id, { megaColumns: Number(e.target.value) as 2 | 3 | 4 | 5 })}
                         >
                           {[2, 3, 4, 5].map((n) => (
-                            <option key={n} value={n}>{n} columns</option>
+                            <option key={n} value={n}>{t("navPage.columnsCount", { count: n })}</option>
                           ))}
                         </select>
                       </div>
@@ -431,7 +435,7 @@ function ItemTree({ items, targets, onChange }: {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-[11px] font-medium">Sub-menu contents</label>
+                    <label className="mb-1 block text-[11px] font-medium">{t("navPage.subMenuContents")}</label>
                     <select
                       className="w-full rounded border bg-background px-2 py-1.5 text-xs"
                       value={source}
@@ -444,8 +448,8 @@ function ItemTree({ items, targets, onChange }: {
                     <p className="mt-1 flex items-start gap-1 text-[10px] text-muted-foreground">
                       <Sparkles className="mt-0.5 h-2.5 w-2.5 shrink-0" />
                       {source === "manual"
-                        ? "You choose each sub-item below."
-                        : "Filled in automatically from your live data — new entries appear here without editing the menu."}
+                        ? t("navPage.manualHint")
+                        : t("navPage.dynamicHint")}
                     </p>
                   </div>
 
@@ -457,7 +461,7 @@ function ItemTree({ items, targets, onChange }: {
                             className="w-32 shrink-0 rounded border bg-background px-2 py-1 text-xs"
                             value={child.label}
                             onChange={(e) => updateChild(item.id, child.id, { label: e.target.value })}
-                            placeholder="Label"
+                            placeholder={t("navPage.labelPlaceholder")}
                           />
                           <LinkField
                             value={child.url}
@@ -474,15 +478,15 @@ function ItemTree({ items, targets, onChange }: {
                         </div>
                       ))}
                       <button
-                        onClick={() => update(item.id, { children: [...(item.children ?? []), newItem()] })}
+                        onClick={() => update(item.id, { children: [...(item.children ?? []), newItem(t("navPage.newLinkLabel"))] })}
                         className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
                       >
-                        <Plus className="h-3 w-3" /> Add sub-item
+                        <Plus className="h-3 w-3" /> {t("navPage.addSubItem")}
                       </button>
                     </div>
                   ) : (
                     <div>
-                      <label className="mb-1 block text-[11px] font-medium">Maximum items shown</label>
+                      <label className="mb-1 block text-[11px] font-medium">{t("navPage.maxItemsShown")}</label>
                       <input
                         type="number"
                         min={1}
@@ -492,7 +496,7 @@ function ItemTree({ items, targets, onChange }: {
                         onChange={(e) => update(item.id, { childLimit: Number(e.target.value) || 12 })}
                       />
                       <p className="mt-1 text-[10px] text-muted-foreground">
-                        Keeps a long catalogue from rendering an unusable dropdown.
+                        {t("navPage.maxItemsHint")}
                       </p>
                     </div>
                   )}
@@ -514,8 +518,9 @@ function LinkField({ value, targets, onChange, small }: {
   onChange: (url: string) => void;
   small?: boolean;
 }) {
-  const known = targets.some((t) => t.url === value);
-  const groups = Array.from(new Set(targets.map((t) => t.group)));
+  const t = useT();
+  const known = targets.some((tg) => tg.url === value);
+  const groups = Array.from(new Set(targets.map((tg) => tg.group)));
 
   return (
     <div className={cn("flex min-w-0 flex-1 items-center gap-1.5")}>
@@ -526,12 +531,12 @@ function LinkField({ value, targets, onChange, small }: {
       >
         {groups.map((g) => (
           <optgroup key={g} label={g}>
-            {targets.filter((t) => t.group === g).map((t) => (
-              <option key={t.url} value={t.url}>{t.label}</option>
+            {targets.filter((tg) => tg.group === g).map((tg) => (
+              <option key={tg.url} value={tg.url}>{tg.label}</option>
             ))}
           </optgroup>
         ))}
-        <option value="__custom__">Custom URL…</option>
+        <option value="__custom__">{t("navPage.customUrl")}</option>
       </select>
       {!known && (
         <div className="flex min-w-0 flex-1 items-center gap-1">
@@ -540,7 +545,7 @@ function LinkField({ value, targets, onChange, small }: {
             className={cn("min-w-0 flex-1 rounded border bg-background px-2 font-mono text-xs", small ? "py-1" : "py-1.5")}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="https://… or /page"
+            placeholder={t("navPage.urlPlaceholder")}
           />
         </div>
       )}
