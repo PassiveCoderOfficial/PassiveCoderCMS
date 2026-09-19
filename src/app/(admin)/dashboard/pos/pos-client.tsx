@@ -7,6 +7,7 @@ import {
 import { PrinterNotice } from "@/components/admin/printer-notice";
 import { enqueueSale, getQueue, syncQueue } from "@/lib/pos/offline-queue";
 import { printReceipt } from "@/lib/pos/printer";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Product {
   id: string; name: string; sku: string | null; price: number;
@@ -24,6 +25,7 @@ interface AvailabilityRow { branch_id: string; product_id: string; in_stock: boo
 export default function PosClient({ products, currency, branches = [], availability = [], siteName = "Receipt" }: {
   products: Product[]; currency: string; branches?: Branch[]; availability?: AvailabilityRow[]; siteName?: string;
 }) {
+  const t = useT();
   // Only a restaurant tenant has any branches at all — this whole block of
   // state stays inert (branchId/tableId always null) for a plain retail POS.
   const [branchId, setBranchId] = useState<string>(branches[0]?.id ?? "");
@@ -129,8 +131,8 @@ export default function PosClient({ products, currency, branches = [], availabil
 
   function currentTableLabel(): string | null {
     if (!tableId) return null;
-    const t = activeTables.find(x => x.id === tableId);
-    return t ? `Table ${t.table_number}` : null;
+    const tbl = activeTables.find(x => x.id === tableId);
+    return tbl ? t("pos.tableLabel", { number: tbl.table_number }) : null;
   }
 
   async function checkout() {
@@ -156,13 +158,13 @@ export default function PosClient({ products, currency, branches = [], availabil
       const entry = enqueueSale(payload);
       setQueuedCount(getQueue().length);
       setIsOnline(false);
-      setReceipt({ orderNumber: `Queued — will sync as ${entry.id.slice(0, 8)}…`, total, queued: true, ...receiptDetail });
+      setReceipt({ orderNumber: t("pos.queuedOrderNumber", { id: entry.id.slice(0, 8) }), total, queued: true, ...receiptDetail });
       setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId("");
       return;
     }
     const d = await res.json();
     setSaving(false);
-    if (!res.ok) { alert(d.error ?? "Sale failed"); return; }
+    if (!res.ok) { alert(d.error ?? t("pos.saleFailed")); return; }
     setReceipt({ orderNumber: d.orderNumber, total: d.total, ...receiptDetail });
     setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId("");
   }
@@ -196,7 +198,7 @@ export default function PosClient({ products, currency, branches = [], availabil
    *  hand if that's not what they meant. */
   async function checkoutSplit() {
     const nonEmptySeats = Array.from({ length: seatCount }, (_, i) => i).filter(seat => seatLines(seat).length > 0);
-    if (nonEmptySeats.length < 2) { alert("Assign items to at least 2 seats to split the bill."); return; }
+    if (nonEmptySeats.length < 2) { alert(t("pos.assignTwoSeatsError")); return; }
 
     setSplitting(true);
     const groupId = crypto.randomUUID();
@@ -208,7 +210,7 @@ export default function PosClient({ products, currency, branches = [], availabil
       const seat = nonEmptySeats[i];
       const lines = seatLines(seat);
       const seatDiscount = i === 0 ? discount : 0;
-      const label = `Seat ${seat + 1} of ${nonEmptySeats.length}`;
+      const label = t("pos.seatLabel", { seat: seat + 1, total: nonEmptySeats.length });
       const res = await fetch("/api/ecommerce/pos", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -239,12 +241,12 @@ export default function PosClient({ products, currency, branches = [], availabil
 
     setSplitting(false);
     if (anyFailed) {
-      alert("One of the split bills failed to save — check Orders before re-ringing anything, some seats may have already gone through.");
+      alert(t("pos.splitFailedError"));
       return;
     }
     setShowSplit(false);
     setReceipt({
-      orderNumber: `${nonEmptySeats.length} split bills (last: ${lastOrderNumber})`, total: lastTotal,
+      orderNumber: t("pos.splitBillsSummary", { count: nonEmptySeats.length, orderNumber: lastOrderNumber }), total: lastTotal,
       lines: [], subtotal: 0, discount: 0, tableLabel: currentTableLabel(), paymentMethod: method,
     });
     setCart([]); setDiscount(0); setCustomer({ customer_name: "", customer_phone: "" }); setTableId(""); setSeatOf({});
@@ -256,7 +258,7 @@ export default function PosClient({ products, currency, branches = [], availabil
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <ShoppingCart className="w-6 h-6 text-indigo-400" /> Point of Sale
+        <ShoppingCart className="w-6 h-6 text-indigo-400" /> {t("pos.title")}
       </h1>
 
       {branches.length > 0 && <PrinterNotice />}
@@ -272,8 +274,8 @@ export default function PosClient({ products, currency, branches = [], availabil
           {isOnline ? <RefreshCw className={`w-4 h-4 text-amber-400 shrink-0 ${syncing ? "animate-spin" : ""}`} /> : <WifiOff className="w-4 h-4 text-red-400 shrink-0" />}
           <p className="text-xs flex-1">
             {!isOnline
-              ? `No connection — sales will keep ringing up and sync automatically once you're back online.${queuedCount > 0 ? ` ${queuedCount} waiting to sync.` : ""}`
-              : `Syncing ${queuedCount} sale${queuedCount === 1 ? "" : "s"} made while offline…`}
+              ? t("pos.offlineHint", { waiting: queuedCount > 0 ? t("pos.waitingToSync", { count: queuedCount }) : "" })
+              : t("pos.syncingHint", { count: queuedCount, plural: queuedCount === 1 ? "" : "s" })}
           </p>
         </div>
       )}
@@ -283,7 +285,7 @@ export default function PosClient({ products, currency, branches = [], availabil
         <div className="space-y-4">
           <div className="relative">
             <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input className={`${inputCls} w-full pl-9`} placeholder="Search products…"
+            <input className={`${inputCls} w-full pl-9`} placeholder={t("pos.searchProducts")}
               value={q} onChange={(e) => setQ(e.target.value)} autoFocus />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -301,14 +303,14 @@ export default function PosClient({ products, currency, branches = [], availabil
                     <div className="text-xs text-gray-500 mt-0.5">{money(Number(p.price))}</div>
                     {(p.track_inventory || branchId) && (
                       <div className={`text-[11px] mt-1 ${out ? "text-red-400" : "text-gray-600"}`}>
-                        {branchOut ? "86'd" : stockOut ? "Out of stock" : p.track_inventory ? `${p.stock_quantity} in stock` : ""}
+                        {branchOut ? t("pos.eightySixed") : stockOut ? t("pos.outOfStock") : p.track_inventory ? t("pos.inStock", { count: p.stock_quantity ?? 0 }) : ""}
                       </div>
                     )}
                   </button>
                   {branchId && !stockOut && (
                     <button
                       onClick={() => toggle86(p.id, !branchOut)}
-                      title={branchOut ? "Bring back on menu" : "86 this item"}
+                      title={branchOut ? t("pos.bringBackOnMenu") : t("pos.eightySixThisItem")}
                       className={`absolute top-1.5 right-1.5 p-1 rounded-md transition-colors ${
                         branchOut ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-600 opacity-0 group-hover:opacity-100 hover:text-red-400"
                       }`}>
@@ -318,13 +320,13 @@ export default function PosClient({ products, currency, branches = [], availabil
                 </div>
               );
             })}
-            {!shown.length && <p className="text-sm text-gray-500 col-span-full py-8 text-center">No products found.</p>}
+            {!shown.length && <p className="text-sm text-gray-500 col-span-full py-8 text-center">{t("pos.noProductsFound")}</p>}
           </div>
         </div>
 
         {/* Cart */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3 lg:sticky lg:top-4">
-          <h2 className="text-sm font-semibold text-white">Current sale</h2>
+          <h2 className="text-sm font-semibold text-white">{t("pos.currentSale")}</h2>
           {branches.length > 0 && (
             <div className="grid grid-cols-2 gap-2">
               <select value={branchId} onChange={(e) => { setBranchId(e.target.value); setTableId(""); }}
@@ -332,20 +334,20 @@ export default function PosClient({ products, currency, branches = [], availabil
                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
               <select value={tableId} onChange={(e) => setTableId(e.target.value)} className={inputCls}>
-                <option value="">Takeaway / pickup</option>
-                {activeTables.map(t => <option key={t.id} value={t.id}>Table {t.table_number}</option>)}
+                <option value="">{t("pos.takeawayPickup")}</option>
+                {activeTables.map(tbl => <option key={tbl.id} value={tbl.id}>{t("pos.tableLabel", { number: tbl.table_number })}</option>)}
               </select>
             </div>
           )}
           {cart.length === 0 ? (
-            <p className="text-sm text-gray-600 py-6 text-center">Tap products to add them.</p>
+            <p className="text-sm text-gray-600 py-6 text-center">{t("pos.tapProductsToAdd")}</p>
           ) : (
             <div className="space-y-2">
               {cart.map((l) => (
                 <div key={l.product_id} className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm text-white truncate">{l.name}</div>
-                    <div className="text-xs text-gray-500">{money(l.price)} each</div>
+                    <div className="text-xs text-gray-500">{money(l.price)}{t("pos.each")}</div>
                   </div>
                   <button onClick={() => setQty(l.product_id, l.quantity - 1)}
                     className="p-1 text-gray-400 hover:text-white rounded hover:bg-gray-800"><Minus className="w-3.5 h-3.5" /></button>
@@ -361,13 +363,13 @@ export default function PosClient({ products, currency, branches = [], availabil
 
           <div className="border-t border-gray-800 pt-3 space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              <input className={inputCls} placeholder="Customer (optional)" value={customer.customer_name}
+              <input className={inputCls} placeholder={t("pos.customerOptional")} value={customer.customer_name}
                 onChange={(e) => setCustomer(c => ({ ...c, customer_name: e.target.value }))} />
-              <input className={inputCls} placeholder="Phone (optional)" value={customer.customer_phone}
+              <input className={inputCls} placeholder={t("pos.phoneOptional")} value={customer.customer_phone}
                 onChange={(e) => setCustomer(c => ({ ...c, customer_phone: e.target.value }))} />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-500 shrink-0">Discount</label>
+              <label className="text-xs text-gray-500 shrink-0">{t("pos.discount")}</label>
               <input className={`${inputCls} flex-1`} type="number" min={0} step="0.01" value={discount}
                 onChange={(e) => setDiscount(Number(e.target.value) || 0)} />
             </div>
@@ -380,15 +382,15 @@ export default function PosClient({ products, currency, branches = [], availabil
               ))}
             </div>
             <div className="flex justify-between text-sm text-gray-400 pt-1">
-              <span>Subtotal</span><span>{money(subtotal)}</span>
+              <span>{t("pos.subtotal")}</span><span>{money(subtotal)}</span>
             </div>
             <div className="flex justify-between font-bold text-white">
-              <span>Total</span><span>{money(total)}</span>
+              <span>{t("pos.total")}</span><span>{money(total)}</span>
             </div>
             <button onClick={checkout} disabled={!cart.length || saving}
               className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
-              Complete sale
+              {t("pos.completeSale")}
             </button>
             {/* Split-bill only makes sense for a dine-in table with more
                 than one item — a takeaway or single-item sale has nothing
@@ -396,7 +398,7 @@ export default function PosClient({ products, currency, branches = [], availabil
             {tableId && cart.length > 1 && (
               <button onClick={openSplit}
                 className="w-full flex items-center justify-center gap-2 border border-gray-700 hover:border-gray-600 text-gray-300 px-4 py-2 rounded-lg text-xs font-medium transition-colors">
-                <Split className="w-3.5 h-3.5" /> Split bill
+                <Split className="w-3.5 h-3.5" /> {t("pos.splitBill")}
               </button>
             )}
           </div>
@@ -408,18 +410,18 @@ export default function PosClient({ products, currency, branches = [], availabil
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowSplit(false)} />
           <div className="relative bg-gray-950 border border-gray-800 rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2"><Split className="w-5 h-5 text-indigo-400" /> Split bill</h3>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2"><Split className="w-5 h-5 text-indigo-400" /> {t("pos.splitBill")}</h3>
               <button onClick={() => setShowSplit(false)} className="p-1 text-gray-500 hover:text-white"><X className="w-4 h-4" /></button>
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-500">Seats</label>
+              <label className="text-xs text-gray-500">{t("pos.seats")}</label>
               <button onClick={() => setSeatCount(n => Math.max(2, n - 1))}
                 className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-white"><Minus className="w-3.5 h-3.5" /></button>
               <span className="text-sm text-white w-6 text-center">{seatCount}</span>
               <button onClick={() => setSeatCount(n => Math.min(8, n + 1))}
                 className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-white"><Plus className="w-3.5 h-3.5" /></button>
-              <span className="text-xs text-gray-600 ml-2">Tap a seat number next to each item to move it</span>
+              <span className="text-xs text-gray-600 ml-2">{t("pos.tapSeatHint")}</span>
             </div>
 
             <div className="space-y-2">
@@ -449,7 +451,7 @@ export default function PosClient({ products, currency, branches = [], availabil
               {Array.from({ length: seatCount }, (_, seat) => (
                 seatLines(seat).length > 0 && (
                   <div key={seat} className="flex justify-between text-sm text-gray-300">
-                    <span>Seat {seat + 1} ({seatLines(seat).length} item{seatLines(seat).length === 1 ? "" : "s"})</span>
+                    <span>{t("pos.seatItemsCount", { seat: seat + 1, count: seatLines(seat).length, plural: seatLines(seat).length === 1 ? "" : "s" })}</span>
                     <span>{money(seatTotal(seat))}</span>
                   </div>
                 )
@@ -459,7 +461,7 @@ export default function PosClient({ products, currency, branches = [], availabil
             <button onClick={checkoutSplit} disabled={splitting}
               className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors">
               {splitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
-              {splitting ? "Charging seats…" : "Charge all seats"}
+              {splitting ? t("pos.chargingSeats") : t("pos.chargeAllSeats")}
             </button>
           </div>
         </div>
@@ -474,15 +476,15 @@ export default function PosClient({ products, currency, branches = [], availabil
             ) : (
               <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
             )}
-            <p className="text-lg font-bold text-white">{receipt.queued ? "Sale saved — offline" : "Sale complete"}</p>
+            <p className="text-lg font-bold text-white">{receipt.queued ? t("pos.saleQueuedOffline") : t("pos.saleComplete")}</p>
             <p className="text-sm text-gray-400">{receipt.orderNumber} · {money(receipt.total)}</p>
             <p className="text-xs text-gray-500">
               {receipt.queued
-                ? "No connection right now — this will sync (and update stock/accounting) automatically once you're back online. Don't ring it up again."
-                : "Recorded in Orders and Accounting. Stock updated."}
+                ? t("pos.queuedSyncHint")
+                : t("pos.recordedHint")}
             </p>
             {printResult === "failed" && (
-              <p className="text-xs text-amber-500">Couldn't print — pop-up blocked or no printer found. Try again, or check the popup blocker.</p>
+              <p className="text-xs text-amber-500">{t("pos.printFailedHint")}</p>
             )}
             <div className="flex gap-2">
               {/* Split bills already printed one ticket per seat as they
@@ -500,12 +502,12 @@ export default function PosClient({ products, currency, branches = [], availabil
                     setPrintResult(ok ? "ok" : "failed");
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 border border-gray-700 hover:border-gray-600 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                  <Printer className="w-4 h-4" /> Print receipt
+                  <Printer className="w-4 h-4" /> {t("pos.printReceipt")}
                 </button>
               )}
               <button onClick={() => { setReceipt(null); setPrintResult(null); }}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                New sale
+                {t("pos.newSale")}
               </button>
             </div>
           </div>
