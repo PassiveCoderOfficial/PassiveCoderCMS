@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   FileText, Plus, X, Loader2, Send, Check, Trash2, ExternalLink, Copy,
 } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface InvoiceItem { description: string; quantity: number; unit_price: number }
 interface Invoice {
@@ -39,6 +41,7 @@ function money(n: number, currency: string) {
 function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
   baseCurrency: string; onClose: () => void; onCreated: (inv: Invoice) => void;
 }) {
+  const t = useT();
   const [customer, setCustomer] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
   const [items, setItems] = useState<InvoiceItem[]>([{ description: "", quantity: 1, unit_price: 0 }]);
   const [discount, setDiscount] = useState(0);
@@ -66,7 +69,7 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
     });
     const d = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(d.error ?? "Failed"); return; }
+    if (!res.ok) { setError(d.error ?? t("invoices.failed")); return; }
     onCreated(d); onClose();
   }
 
@@ -75,26 +78,26 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">New invoice</h2>
+          <h2 className="text-lg font-bold text-white">{t("invoices.newInvoice")}</h2>
           <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
         </div>
 
         <div className="grid sm:grid-cols-3 gap-3">
-          <input className={inputCls} placeholder="Customer name *" value={customer.customer_name}
+          <input className={inputCls} placeholder={t("invoices.customerNamePlaceholder")} value={customer.customer_name}
             onChange={(e) => setCustomer(c => ({ ...c, customer_name: e.target.value }))} />
-          <input className={inputCls} placeholder="Email" value={customer.customer_email}
+          <input className={inputCls} placeholder={t("invoices.email")} value={customer.customer_email}
             onChange={(e) => setCustomer(c => ({ ...c, customer_email: e.target.value }))} />
-          <input className={inputCls} placeholder="Phone" value={customer.customer_phone}
+          <input className={inputCls} placeholder={t("invoices.phone")} value={customer.customer_phone}
             onChange={(e) => setCustomer(c => ({ ...c, customer_phone: e.target.value }))} />
         </div>
 
         <div className="space-y-2">
           <div className="grid grid-cols-[1fr_70px_100px_32px] gap-2 text-xs text-gray-500 px-1">
-            <span>Description</span><span>Qty</span><span>Unit price</span><span />
+            <span>{t("invoices.colDescription")}</span><span>{t("invoices.colQty")}</span><span>{t("invoices.colUnitPrice")}</span><span />
           </div>
           {items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_70px_100px_32px] gap-2">
-              <input className={inputCls} placeholder="Service or product" value={item.description}
+              <input className={inputCls} placeholder={t("invoices.serviceOrProduct")} value={item.description}
                 onChange={(e) => setItem(i, { description: e.target.value })} />
               <input className={inputCls} type="number" min={1} value={item.quantity}
                 onChange={(e) => setItem(i, { quantity: Number(e.target.value) })} />
@@ -106,36 +109,36 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
             </div>
           ))}
           <button onClick={() => setItems(l => [...l, { description: "", quantity: 1, unit_price: 0 }])}
-            className={btnGhost}><Plus className="w-4 h-4" /> Line item</button>
+            className={btnGhost}><Plus className="w-4 h-4" /> {t("invoices.lineItem")}</button>
         </div>
 
         <div className="grid sm:grid-cols-4 gap-3">
           <div>
-            <label className="text-xs text-gray-500">Discount</label>
+            <label className="text-xs text-gray-500">{t("invoices.discount")}</label>
             <input className={inputCls} type="number" min={0} step="0.01" value={discount} onChange={(e) => setDiscount(Number(e.target.value) || 0)} />
           </div>
           <div>
-            <label className="text-xs text-gray-500">Tax</label>
+            <label className="text-xs text-gray-500">{t("invoices.tax")}</label>
             <input className={inputCls} type="number" min={0} step="0.01" value={tax} onChange={(e) => setTax(Number(e.target.value) || 0)} />
           </div>
           <div>
-            <label className="text-xs text-gray-500">Currency</label>
+            <label className="text-xs text-gray-500">{t("invoices.currency")}</label>
             <input className={inputCls} value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
           </div>
           <div>
-            <label className="text-xs text-gray-500">Due date</label>
+            <label className="text-xs text-gray-500">{t("invoices.dueDate")}</label>
             <input className={inputCls} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
         </div>
 
-        <textarea className={inputCls} rows={2} placeholder="Notes (payment terms, thank-you…)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        <textarea className={inputCls} rows={2} placeholder={t("invoices.notesPlaceholder")} value={notes} onChange={(e) => setNotes(e.target.value)} />
 
         <div className="flex items-center justify-between pt-2 border-t border-gray-800">
-          <span className="text-sm text-gray-400">Total: <span className="text-white font-bold">{money(total, currency)}</span></span>
+          <span className="text-sm text-gray-400">{t("invoices.total")} <span className="text-white font-bold">{money(total, currency)}</span></span>
           <div className="flex items-center gap-3">
             {error && <p className="text-sm text-red-400">{error}</p>}
             <button onClick={save} disabled={saving} className={btnPrimary}>
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} Create invoice
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} {t("invoices.createInvoice")}
             </button>
           </div>
         </div>
@@ -144,9 +147,15 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
   );
 }
 
+const STATUS_KEY: Record<string, TranslationKey> = {
+  all: "invoices.statusAll", draft: "invoices.statusDraft", sent: "invoices.statusSent",
+  paid: "invoices.statusPaid", overdue: "invoices.statusOverdue", cancelled: "invoices.statusCancelled",
+};
+
 export default function InvoicesClient({ initialInvoices, baseCurrency }: {
   initialInvoices: Invoice[]; baseCurrency: string;
 }) {
+  const t = useT();
   const [invoices, setInvoices] = useState(initialInvoices);
   const [filter, setFilter] = useState<string>("all");
   const [showNew, setShowNew] = useState(false);
@@ -161,12 +170,12 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
       method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
     });
     if (res.ok) patchLocal(await res.json());
-    else alert((await res.json()).error ?? "Failed");
+    else alert((await res.json()).error ?? t("invoices.failed"));
     setBusy(null);
   }
 
   async function del(inv: Invoice) {
-    if (!confirm(`Delete invoice ${inv.invoice_number}?`)) return;
+    if (!confirm(t("invoices.deleteConfirm", { number: inv.invoice_number }))) return;
     const res = await fetch(`/api/invoices/${inv.id}`, { method: "DELETE" });
     if (res.ok) setInvoices(l => l.filter(i => i.id !== inv.id));
   }
@@ -189,34 +198,34 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <FileText className="w-6 h-6 text-indigo-400" /> Invoices
+          <FileText className="w-6 h-6 text-indigo-400" /> {t("invoices.title")}
         </h1>
-        <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> New invoice</button>
+        <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("invoices.newInvoice")}</button>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4 max-w-lg">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Outstanding</p>
+          <p className="text-xs text-gray-500 mb-1">{t("invoices.outstanding")}</p>
           <p className="text-xl font-bold text-white">{money(outstanding, baseCurrency)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Paid this month</p>
+          <p className="text-xs text-gray-500 mb-1">{t("invoices.paidThisMonth")}</p>
           <p className="text-xl font-bold text-green-400">{money(paidThisMonth, baseCurrency)}</p>
         </div>
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {["all", "draft", "sent", "paid", "overdue", "cancelled"].map(s => (
+        {(["all", "draft", "sent", "paid", "overdue", "cancelled"] as const).map(s => (
           <button key={s} onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
               filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400 hover:border-gray-500"
-            }`}>{s}</button>
+            }`}>{t(STATUS_KEY[s])}</button>
         ))}
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         {shown.length === 0 ? (
-          <div className="text-center py-16 text-gray-500 text-sm">No invoices here yet.</div>
+          <div className="text-center py-16 text-gray-500 text-sm">{t("invoices.noInvoicesYet")}</div>
         ) : (
           <div className="divide-y divide-gray-800">
             {shown.map((inv) => (
@@ -224,10 +233,10 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-white">{inv.invoice_number}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border capitalize ${STATUS_COLORS[inv.status]}`}>{inv.status}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[inv.status]}`}>{t(STATUS_KEY[inv.status] ?? "invoices.statusDraft")}</span>
                   </div>
                   <div className="text-xs text-gray-500 truncate">
-                    {inv.customer_name}{inv.due_date ? ` · due ${inv.due_date}` : ""}
+                    {inv.customer_name}{inv.due_date ? t("invoices.dueDateInline", { date: inv.due_date }) : ""}
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-white shrink-0">{money(inv.total, inv.currency)}</span>
@@ -235,29 +244,29 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
                   {inv.status !== "paid" && inv.status !== "cancelled" && (
                     <>
                       {inv.customer_email && (
-                        <button title={inv.sent_at ? "Resend" : "Send to customer"} disabled={busy === inv.id}
+                        <button title={inv.sent_at ? t("invoices.resend") : t("invoices.sendToCustomer")} disabled={busy === inv.id}
                           onClick={() => action(inv, { action: "send" })}
                           className="p-2 text-gray-500 hover:text-indigo-400 rounded-lg hover:bg-gray-800">
                           {busy === inv.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </button>
                       )}
-                      <button title="Mark paid" disabled={busy === inv.id}
+                      <button title={t("invoices.markPaid")} disabled={busy === inv.id}
                         onClick={() => action(inv, { status: "paid" })}
                         className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-800">
                         <Check className="w-4 h-4" />
                       </button>
                     </>
                   )}
-                  <button title={copied === inv.id ? "Copied!" : "Copy public link"}
+                  <button title={copied === inv.id ? t("invoices.copied") : t("invoices.copyPublicLink")}
                     onClick={() => copyLink(inv)}
                     className={`p-2 rounded-lg hover:bg-gray-800 ${copied === inv.id ? "text-green-400" : "text-gray-500 hover:text-white"}`}>
                     <Copy className="w-4 h-4" />
                   </button>
-                  <a title="Open public view" href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer"
+                  <a title={t("invoices.openPublicView")} href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer"
                     className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-800">
                     <ExternalLink className="w-4 h-4" />
                   </a>
-                  <button title="Delete" onClick={() => del(inv)}
+                  <button title={t("invoices.delete")} onClick={() => del(inv)}
                     className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-gray-800">
                     <Trash2 className="w-4 h-4" />
                   </button>
