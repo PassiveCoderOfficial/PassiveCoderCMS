@@ -1690,6 +1690,31 @@ export const en = {
   "profile.passwordsDontMatch": "Passwords don't match",
   "profile.passwordMin8": "Password must be at least 8 characters",
   "profile.passwordUpdated": "Password updated",
+
+  // ── Services ─────────────────────────────────────────────────────────────
+  "servicesPage.title": "Services",
+  "servicesPage.subtitle": "Service groups shown in Services blocks on your pages.",
+  "servicesPage.newGroup": "New Group",
+  "servicesPage.groupNamePlaceholder": "Group name (e.g. Main Services)",
+  "servicesPage.create": "Create",
+  "servicesPage.noGroupsYet": "No service groups yet.",
+  "servicesPage.itemTitle": "Title *",
+  "servicesPage.iconType": "Icon Type",
+  "servicesPage.lucideIcon": "Lucide Icon",
+  "servicesPage.emoji": "Emoji",
+  "servicesPage.imageUrl": "Image URL",
+  "servicesPage.icon": "Icon",
+  "servicesPage.description": "Description",
+  "servicesPage.linkUrl": "Link URL",
+  "servicesPage.linkLabel": "Link Label",
+  "servicesPage.save": "Save",
+  "servicesPage.cancel": "Cancel",
+  "servicesPage.image": "Image",
+  "servicesPage.itemsCount": "{count} item{plural}",
+  "servicesPage.duplicate": "Duplicate",
+  "servicesPage.addServiceItem": "Add Service Item",
+  "servicesPage.deleteGroupConfirm": "Delete group \"{name}\"?",
+  "servicesPage.copySuffix": " (copy)",
 } as const;
 
 export type TranslationKey = keyof typeof en;
