@@ -1571,6 +1571,27 @@ export const en = {
   "navPage.maxItemsHint": "Keeps a long catalogue from rendering an unusable dropdown.",
   "navPage.customUrl": "Custom URL…",
   "navPage.urlPlaceholder": "https://… or /page",
+
+  // ── Portfolio ────────────────────────────────────────────────────────────
+  "portfolio.title": "Portfolio",
+  "portfolio.subtitle": "Gallery groups for your portfolio and past work.",
+  "portfolio.newGallery": "New Gallery",
+  "portfolio.galleryNamePlaceholder": "Gallery name (e.g. Recent Projects)",
+  "portfolio.create": "Create",
+  "portfolio.noGalleriesYet": "No galleries yet.",
+  "portfolio.itemTitle": "Title *",
+  "portfolio.image": "Image *",
+  "portfolio.description": "Description",
+  "portfolio.linkUrl": "Link URL",
+  "portfolio.tagsCommaSeparated": "Tags (comma separated)",
+  "portfolio.tagsPlaceholder": "web, design, branding",
+  "portfolio.save": "Save",
+  "portfolio.cancel": "Cancel",
+  "portfolio.itemsCount": "{count} items",
+  "portfolio.duplicate": "Duplicate",
+  "portfolio.addPortfolioItem": "Add Portfolio Item",
+  "portfolio.deleteGalleryConfirm": "Delete gallery \"{name}\"?",
+  "portfolio.copySuffix": " (copy)",
 } as const;
 
 export type TranslationKey = keyof typeof en;
