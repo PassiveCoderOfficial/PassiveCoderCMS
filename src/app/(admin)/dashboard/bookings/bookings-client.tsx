@@ -6,6 +6,8 @@ import {
   Check, X, Loader2, Save, CheckCircle, Plus, Trash2,
   ChevronLeft, ChevronRight, Settings
 } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface BookingSettings {
   id?: string;
@@ -73,6 +75,7 @@ function SettingsTab({ settings: initial, onSave }: {
   settings: BookingSettings | null;
   onSave: (s: BookingSettings) => void;
 }) {
+  const t = useT();
   const [s, setS] = useState<BookingSettings>(initial ?? {
     enabled: false, service_name: "Appointment",
     slot_duration_mins: 60, buffer_mins: 15, advance_days: 30,
@@ -99,63 +102,63 @@ function SettingsTab({ settings: initial, onSave }: {
             <input type="checkbox" className="sr-only peer" checked={s.enabled} onChange={e => set("enabled", e.target.checked)} />
             <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600" />
           </label>
-          <span className="text-sm text-white font-medium">Booking System {s.enabled ? "Enabled" : "Disabled"}</span>
+          <span className="text-sm text-white font-medium">{s.enabled ? t("bookings.bookingSystemEnabled") : t("bookings.bookingSystemDisabled")}</span>
         </div>
         <button onClick={save} disabled={saving}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          {saved ? "Saved!" : "Save Settings"}
+          {saved ? t("bookings.saved") : t("bookings.saveSettings")}
         </button>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Service Name</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.serviceName")}</label>
             <input value={s.service_name} onChange={e => set("service_name", e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Notification Email</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.notificationEmail")}</label>
             <input value={s.notify_email ?? ""} onChange={e => set("notify_email", e.target.value || null)}
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="you@example.com" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Slot Duration (mins)</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.slotDuration")}</label>
             <input type="number" value={s.slot_duration_mins} onChange={e => set("slot_duration_mins", Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Buffer Between Slots (mins)</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.bufferBetweenSlots")}</label>
             <input type="number" value={s.buffer_mins} onChange={e => set("buffer_mins", Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Book Up To (days ahead)</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.bookUpTo")}</label>
             <input type="number" value={s.advance_days} onChange={e => set("advance_days", Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Min Notice (hours before slot)</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.minNotice")}</label>
             <input type="number" value={s.min_notice_hours} onChange={e => set("min_notice_hours", Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Confirmation Mode</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("bookings.confirmationMode")}</label>
           <div className="flex gap-3">
             {(["auto", "manual"] as const).map(mode => (
               <label key={mode} className="flex items-center gap-2 cursor-pointer">
                 <input type="radio" value={mode} checked={s.confirmation_mode === mode} onChange={() => set("confirmation_mode", mode)} className="w-4 h-4" />
-                <span className="text-sm text-gray-300 capitalize">{mode} — {mode === "auto" ? "instantly confirmed" : "admin must approve"}</span>
+                <span className="text-sm text-gray-300">{mode === "auto" ? t("bookings.modeAuto") : t("bookings.modeManual")} — {mode === "auto" ? t("bookings.modeAutoHint") : t("bookings.modeManualHint")}</span>
               </label>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Success Message</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("bookings.successMessage")}</label>
           <textarea rows={2} value={s.success_message} onChange={e => set("success_message", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
         </div>
@@ -168,6 +171,7 @@ function AvailabilityTab({ availability: initial, blocked: initialBlocked }: {
   availability: Availability[];
   blocked: BlockedDate[];
 }) {
+  const t = useT();
   const merged = DAYS.map((_, i) => initial.find(a => a.day_of_week === i) ?? DEFAULT_AVAILABILITY[i]);
   const [rows, setRows] = useState<Availability[]>(merged);
   const [blocked, setBlocked] = useState(initialBlocked);
@@ -205,11 +209,11 @@ function AvailabilityTab({ availability: initial, blocked: initialBlocked }: {
     <div className="space-y-6 max-w-2xl">
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-white">Weekly Schedule</h3>
+          <h3 className="font-medium text-white">{t("bookings.weeklySchedule")}</h3>
           <button onClick={saveAvailability} disabled={saving}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {saved ? "Saved!" : "Save Schedule"}
+            {saved ? t("bookings.saved") : t("bookings.saveSchedule")}
           </button>
         </div>
         <div className="space-y-3">
@@ -226,27 +230,27 @@ function AvailabilityTab({ availability: initial, blocked: initialBlocked }: {
               <input type="time" value={row.close_time} onChange={e => setRow(i, "close_time", e.target.value)}
                 disabled={!row.is_open}
                 className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed" />
-              {!row.is_open && <span className="text-xs text-gray-600">Closed</span>}
+              {!row.is_open && <span className="text-xs text-gray-600">{t("bookings.closed")}</span>}
             </div>
           ))}
         </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <h3 className="font-medium text-white mb-4">Blocked Dates</h3>
+        <h3 className="font-medium text-white mb-4">{t("bookings.blockedDates")}</h3>
         <div className="flex items-center gap-3 mb-4">
           <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           <input value={newReason} onChange={e => setNewReason(e.target.value)}
-            placeholder="Reason (optional)"
+            placeholder={t("bookings.reasonOptional")}
             className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           <button onClick={blockDate} disabled={!newDate}
             className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
-            <Plus className="w-4 h-4" /> Block
+            <Plus className="w-4 h-4" /> {t("bookings.block")}
           </button>
         </div>
         {blocked.length === 0 ? (
-          <p className="text-sm text-gray-500">No blocked dates.</p>
+          <p className="text-sm text-gray-500">{t("bookings.noBlockedDates")}</p>
         ) : (
           <div className="space-y-2">
             {blocked.map(b => (
@@ -265,7 +269,13 @@ function AvailabilityTab({ availability: initial, blocked: initialBlocked }: {
   );
 }
 
+const APPT_STATUS_KEY: Record<Appointment["status"], TranslationKey> = {
+  pending: "bookings.statusPending", confirmed: "bookings.statusConfirmed",
+  completed: "bookings.statusCompleted", cancelled: "bookings.statusCancelled", no_show: "bookings.statusNoShow",
+};
+
 function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: Appointment) => void }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState(appt.admin_note ?? "");
   const [saving, setSaving] = useState(false);
@@ -283,8 +293,8 @@ function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: 
   }
 
   const nextStatus: Record<string, string> = {
-    pending: "Confirm",
-    confirmed: "Mark Complete",
+    pending: t("bookings.confirm"),
+    confirmed: t("bookings.markComplete"),
     completed: "",
     cancelled: "",
     no_show: "",
@@ -302,7 +312,7 @@ function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-white">{appt.customer_name}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full border capitalize ${STATUS_COLORS[appt.status]}`}>{appt.status}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[appt.status]}`}>{t(APPT_STATUS_KEY[appt.status])}</span>
             </div>
             <div className="flex items-center gap-3 mt-1 text-xs text-gray-400 flex-wrap">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(appt.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
@@ -319,13 +329,13 @@ function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: 
         <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
           {appt.message && (
             <div>
-              <p className="text-xs text-gray-400 mb-1">Message from customer</p>
+              <p className="text-xs text-gray-400 mb-1">{t("bookings.messageFromCustomer")}</p>
               <p className="text-sm text-white bg-black/20 rounded-lg p-3">{appt.message}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Admin Note</label>
+            <label className="block text-xs text-gray-400 mb-1">{t("bookings.adminNote")}</label>
             <div className="flex gap-2">
               <textarea rows={2} value={note} onChange={e => setNote(e.target.value)}
                 className="flex-1 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
@@ -344,13 +354,13 @@ function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: 
             {appt.status !== "cancelled" && appt.status !== "completed" && (
               <button onClick={() => updateStatus("cancelled")} disabled={saving}
                 className="flex items-center gap-1.5 bg-red-800 hover:bg-red-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
-                <X className="w-3 h-3" /> Cancel
+                <X className="w-3 h-3" /> {t("bookings.cancel")}
               </button>
             )}
             {appt.status === "confirmed" && (
               <button onClick={() => updateStatus("no_show")} disabled={saving}
                 className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
-                No Show
+                {t("bookings.noShow")}
               </button>
             )}
           </div>
@@ -360,7 +370,13 @@ function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: 
   );
 }
 
+const FILTER_KEY: Record<"all" | Appointment["status"], TranslationKey> = {
+  all: "bookings.statusAll", pending: "bookings.statusPending", confirmed: "bookings.statusConfirmed",
+  completed: "bookings.statusCompleted", cancelled: "bookings.statusCancelled", no_show: "bookings.statusNoShow",
+};
+
 function AppointmentsTab({ appointments: initial }: { appointments: Appointment[] }) {
+  const t = useT();
   const [appointments, setAppointments] = useState(initial);
   const [filter, setFilter] = useState<"all" | Appointment["status"]>("all");
 
@@ -372,8 +388,8 @@ function AppointmentsTab({ appointments: initial }: { appointments: Appointment[
       <div className="flex gap-2 flex-wrap">
         {(["all", "pending", "confirmed", "completed", "cancelled", "no_show"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${filter === f ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}>
-            {f}{f === "pending" && pending > 0 ? ` (${pending})` : ""}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === f ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}>
+            {t(FILTER_KEY[f])}{f === "pending" && pending > 0 ? ` (${pending})` : ""}
           </button>
         ))}
       </div>
@@ -381,7 +397,7 @@ function AppointmentsTab({ appointments: initial }: { appointments: Appointment[
       {filtered.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-gray-800 rounded-xl">
           <Calendar className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No appointments{filter !== "all" ? ` with status "${filter}"` : ""} yet.</p>
+          <p className="text-gray-400 text-sm">{t("bookings.noAppointments", { filter: filter !== "all" ? t("bookings.withStatus", { status: t(FILTER_KEY[filter]) }) : "" })}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -401,25 +417,30 @@ export default function BookingsClient({ initialSettings, initialAvailability, i
   initialBlocked: BlockedDate[];
   initialAppointments: Appointment[];
 }) {
+  const t = useT();
   const [settings, setSettings] = useState(initialSettings);
   const [tab, setTab] = useState<"appointments" | "availability" | "settings">("appointments");
   const pending = initialAppointments.filter(a => a.status === "pending").length;
+
+  const TAB_KEY: Record<typeof tab, TranslationKey> = {
+    appointments: "bookings.tabAppointments", availability: "bookings.tabAvailability", settings: "bookings.tabSettings",
+  };
 
   return (
     <div className="p-6 max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-indigo-400" /> Bookings
+          <Calendar className="w-6 h-6 text-indigo-400" /> {t("bookings.title")}
         </h1>
-        <p className="text-sm text-gray-400 mt-1">Manage appointment settings, availability, and incoming bookings.</p>
+        <p className="text-sm text-gray-400 mt-1">{t("bookings.subtitle")}</p>
       </div>
 
       <div className="flex gap-1 border-b border-gray-800">
-        {(["appointments", "availability", "settings"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${tab === t ? "text-indigo-400 border-b-2 border-indigo-400" : "text-gray-400 hover:text-white"}`}>
-            {t}
-            {t === "appointments" && pending > 0 && (
+        {(["appointments", "availability", "settings"] as const).map(tb => (
+          <button key={tb} onClick={() => setTab(tb)}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${tab === tb ? "text-indigo-400 border-b-2 border-indigo-400" : "text-gray-400 hover:text-white"}`}>
+            {t(TAB_KEY[tb])}
+            {tb === "appointments" && pending > 0 && (
               <span className="ml-1.5 bg-yellow-500 text-black text-xs px-1.5 py-0.5 rounded-full font-bold">{pending}</span>
             )}
           </button>
