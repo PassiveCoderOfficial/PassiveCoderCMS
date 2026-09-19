@@ -1507,4 +1507,15 @@ export const bn = {
   "sidebar.openMenu": "মেনু খুলুন",
   "sidebar.expandSidebar": "সাইডবার বড় করুন",
   "sidebar.collapseSidebar": "সাইডবার ছোট করুন",
+
+  // ── Modules ──────────────────────────────────────────────────────────────
+  "modulesPage.title": "মডিউলস",
+  "modulesPage.subtitle": "ড্যাশবোর্ড সেকশন অন বা অফ করুন। শুধু আপনার প্ল্যানে থাকা মডিউল এখানে দেখানো হয় — আরও যোগ করতে আপনার প্রোভাইডারকে বলুন।",
+  "modulesPage.noOptionalModules": "আপনার বর্তমান প্ল্যানে কোনো ঐচ্ছিক মডিউল নেই।",
+  "modulesPage.active": "অ্যাক্টিভ",
+  "modulesPage.off": "অফ",
+  "modulesPage.enabled": "{name} এনাবল হয়েছে",
+  "modulesPage.disabled": "{name} ডিজাবল হয়েছে",
+  "modulesPage.failedToUpdate": "আপডেট করা যায়নি",
+  "modulesPage.failedToUpdateModule": "মডিউল আপডেট করা যায়নি",
 } satisfies Record<TranslationKey, string>;

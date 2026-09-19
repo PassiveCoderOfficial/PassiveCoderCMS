@@ -45,6 +45,14 @@ import { BlockLayoutSettings } from "./block-layout-settings";
 import { ContainerSettings } from "./container-settings";
 import { SettingsBreadcrumb } from "./settings-breadcrumb";
 import { VariantPicker } from "./variant-picker";
+import { TestimonialsSettings } from "./testimonials-settings";
+import { DividerSettings } from "./divider-settings";
+import { CustomHtmlSettings } from "./custom-html-settings";
+import { EcommerceCartSettings } from "./ecommerce-cart-settings";
+import { CountryGridSettings } from "./country-grid-settings";
+import { EligibilityCheckerSettings } from "./eligibility-checker-settings";
+import { StatusTrackerSettings } from "./status-tracker-settings";
+import { DonorRequestsSettings } from "./donor-requests-settings";
 import { Layers } from "lucide-react";
 import type { Block } from "@/types/cms";
 
@@ -139,6 +147,14 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "enm_lead_form": return <EnmLeadFormSettings block={block} />;
     case "enm_booking_widget": return <EnmBookingWidgetSettings block={block} />;
     case "container": return <ContainerSettings block={block} />;
+    case "testimonials": return <TestimonialsSettings block={block} />;
+    case "divider": return <DividerSettings block={block} />;
+    case "custom_html": return <CustomHtmlSettings block={block} />;
+    case "ecommerce_cart": return <EcommerceCartSettings block={block} />;
+    case "country_grid": return <CountryGridSettings block={block} />;
+    case "eligibility_checker": return <EligibilityCheckerSettings block={block} />;
+    case "status_tracker": return <StatusTrackerSettings block={block} />;
+    case "donor_requests": return <DonorRequestsSettings block={block} />;
     default:
       return <p className="text-xs text-muted-foreground">No settings for this block type.</p>;
   }

@@ -1501,6 +1501,17 @@ export const en = {
   "sidebar.openMenu": "Open menu",
   "sidebar.expandSidebar": "Expand sidebar",
   "sidebar.collapseSidebar": "Collapse sidebar",
+
+  // ── Modules ──────────────────────────────────────────────────────────────
+  "modulesPage.title": "Modules",
+  "modulesPage.subtitle": "Turn dashboard sections on or off. Only modules included in your plan are shown here — ask your provider to add more.",
+  "modulesPage.noOptionalModules": "Your current plan doesn't include any optional modules.",
+  "modulesPage.active": "Active",
+  "modulesPage.off": "Off",
+  "modulesPage.enabled": "{name} enabled",
+  "modulesPage.disabled": "{name} disabled",
+  "modulesPage.failedToUpdate": "Failed to update",
+  "modulesPage.failedToUpdateModule": "Failed to update module",
 } as const;
 
 export type TranslationKey = keyof typeof en;

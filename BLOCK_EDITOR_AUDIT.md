@@ -13,18 +13,21 @@ industry standard."
 
 ## Findings log
 
-### Phase 1 — Missing settings panel (zero UI, hits "No settings for this block type")
-Found via type-vs-switch diff. Confirmed real, not aliased elsewhere:
-- [ ] `country_grid`
-- [ ] `custom_html`
-- [ ] `divider`
-- [ ] `donor_requests`
-- [ ] `ecommerce_cart`
-- [ ] `eligibility_checker`
-- [ ] `status_tracker`
-- [ ] `testimonials`
+### Phase 1 — Missing settings panel (zero UI, hits "No settings for this block type") — DONE
+Found via type-vs-switch diff. All 8 confirmed real (render components exist,
+only the settings panel was missing). Built + wired, tsc clean:
+- [x] `country_grid` — country-grid-settings.tsx (title/subtitle/columns/groupByRegion/accentColor + item list editor)
+- [x] `custom_html` — custom-html-settings.tsx (html/css textareas, trust warning)
+- [x] `divider` — divider-settings.tsx (style/width/thickness/color)
+- [x] `donor_requests` — donor-requests-settings.tsx (title/subtitle only — smallest shape)
+- [x] `ecommerce_cart` — ecommerce-cart-settings.tsx (title/layout/showOrderSummary/showCouponField — noted the block itself renders nothing on-page, configures the global cart drawer instead)
+- [x] `eligibility_checker` — eligibility-checker-settings.tsx (title/subtitle/submitLabel/successMessage/recipientEmail/accentColor + destinations list editor)
+- [x] `status_tracker` — status-tracker-settings.tsx (title/subtitle/placeholder/helpText/submitLabel/accentColor)
+- [x] `testimonials` — testimonials-settings.tsx (title/layout + item list editor with star rating picker)
 
-(status updated as each is fixed)
+All follow the existing team-settings.tsx list-editor pattern for consistency.
+ColorPicker from @/components/ui/color-picker used throughout (found as the
+real shared component, not the guessed @/components/admin/color-input).
 
 ### Phase 2 — Render-time crash risk sweep
 (pending)

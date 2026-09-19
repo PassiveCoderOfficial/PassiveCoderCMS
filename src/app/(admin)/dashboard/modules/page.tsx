@@ -6,6 +6,7 @@ import { Puzzle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MODULE_LABELS, MODULE_DESCRIPTIONS, type ModuleKey } from "@/components/admin/sidebar/nav-items";
 import { Switch } from "@/components/ui/switch";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface ModuleRow {
   key: ModuleKey;
@@ -13,6 +14,7 @@ interface ModuleRow {
 }
 
 export default function ModulesPage() {
+  const t = useT();
   const [modules, setModules] = useState<ModuleRow[] | null>(null);
   const [saving, setSaving] = useState<ModuleKey | null>(null);
   const router = useRouter();
@@ -33,15 +35,15 @@ export default function ModulesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, enabled }),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to update");
+      if (!res.ok) throw new Error((await res.json()).error ?? t("modulesPage.failedToUpdate"));
       // The sidebar's module list is computed in the server layout, so without
       // this the nav keeps showing the old set until a full page reload —
       // toggling appeared to do nothing.
       router.refresh();
-      toast.success(`${MODULE_LABELS[key]} ${enabled ? "enabled" : "disabled"}`);
+      toast.success(t(enabled ? "modulesPage.enabled" : "modulesPage.disabled", { name: MODULE_LABELS[key] }));
     } catch (err) {
       setModules((prev) => (prev ?? []).map((m) => (m.key === key ? { ...m, enabled: !enabled } : m)));
-      toast.error(err instanceof Error ? err.message : "Failed to update module");
+      toast.error(err instanceof Error ? err.message : t("modulesPage.failedToUpdateModule"));
     } finally {
       setSaving(null);
     }
@@ -50,9 +52,9 @@ export default function ModulesPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Puzzle className="h-6 w-6" /> Modules</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Puzzle className="h-6 w-6" /> {t("modulesPage.title")}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Turn dashboard sections on or off. Only modules included in your plan are shown here — ask your provider to add more.
+          {t("modulesPage.subtitle")}
         </p>
       </div>
 
@@ -62,7 +64,7 @@ export default function ModulesPage() {
         </div>
       ) : !modules.length ? (
         <p className="text-sm text-muted-foreground py-10 text-center">
-          Your current plan doesn&apos;t include any optional modules.
+          {t("modulesPage.noOptionalModules")}
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -72,7 +74,7 @@ export default function ModulesPage() {
                 <div>
                   <p className="font-semibold text-sm">{MODULE_LABELS[m.key]}</p>
                   <p className={`text-xs mt-0.5 ${m.enabled ? "text-green-600" : "text-muted-foreground"}`}>
-                    {m.enabled ? "Active" : "Off"}
+                    {m.enabled ? t("modulesPage.active") : t("modulesPage.off")}
                   </p>
                 </div>
                 <Switch
