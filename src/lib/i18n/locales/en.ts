@@ -1038,6 +1038,31 @@ export const en = {
   "donors.newPasswordPlaceholder": "New password",
   "donors.saveChanges": "Save changes",
   "donors.createDonor": "Create donor",
+
+  // ── Features ─────────────────────────────────────────────────────────────
+  "features.title": "Features",
+  "features.subtitle": "Feature blurb groups shown in Features blocks on your pages.",
+  "features.newGroup": "New Group",
+  "features.groupNamePlaceholder": "Group name (e.g. Why Choose Us)",
+  "features.create": "Create",
+  "features.noGroupsYet": "No feature groups yet.",
+  "features.itemTitle": "Title *",
+  "features.iconType": "Icon Type",
+  "features.lucideIcon": "Lucide Icon",
+  "features.emoji": "Emoji",
+  "features.imageUrl": "Image URL",
+  "features.icon": "Icon",
+  "features.description": "Description",
+  "features.linkUrl": "Link URL",
+  "features.linkLabel": "Link Label",
+  "features.save": "Save",
+  "features.cancel": "Cancel",
+  "features.image": "Image",
+  "features.itemsCount": "{count} item{plural}",
+  "features.duplicate": "Duplicate",
+  "features.addFeatureItem": "Add Feature Item",
+  "features.deleteGroupConfirm": "Delete group \"{name}\"?",
+  "features.copySuffix": " (copy)",
 } as const;
 
 export type TranslationKey = keyof typeof en;

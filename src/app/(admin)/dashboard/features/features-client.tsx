@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, GripVertical, Pencil, Check, X, Loader2, Sparkles, Copy } from "lucide-react";
 import { IconPicker } from "@/components/ui/icon-picker";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { useT } from "@/lib/i18n/language-provider";
 
 type IconType = "lucide" | "image" | "emoji";
 
@@ -45,6 +46,7 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   item: Partial<FeatureItem>; groupId: string;
   onSave: (item: FeatureItem, isNew: boolean) => void; onCancel: () => void;
 }) {
+  const t = useT();
   const [item, setItem] = useState<Partial<FeatureItem>>({ icon_type: "lucide", ...initial });
   const [saving, setSaving] = useState(false);
   const set = (k: keyof FeatureItem, v: string) => setItem(p => ({ ...p, [k]: v }));
@@ -65,51 +67,51 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
     <div className="border border-indigo-500/30 rounded-lg p-4 space-y-3 bg-indigo-950/20">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Title *</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.itemTitle")}</label>
           <input value={item.title ?? ""} onChange={e => set("title", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Icon Type</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.iconType")}</label>
           <select value={item.icon_type ?? "lucide"} onChange={e => set("icon_type", e.target.value as IconType)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
-            <option value="lucide">Lucide Icon</option>
-            <option value="emoji">Emoji</option>
-            <option value="image">Image URL</option>
+            <option value="lucide">{t("features.lucideIcon")}</option>
+            <option value="emoji">{t("features.emoji")}</option>
+            <option value="image">{t("features.imageUrl")}</option>
           </select>
         </div>
       </div>
       {item.icon_type === "lucide" ? (
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Icon</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.icon")}</label>
           <IconPicker value={item.icon ?? ""} onChange={v => set("icon", v)} />
         </div>
       ) : item.icon_type === "emoji" ? (
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Emoji</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.emoji")}</label>
           <input value={item.icon ?? ""} onChange={e => set("icon", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
             placeholder="✨" />
         </div>
       ) : (
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Image</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.image")}</label>
           <MediaPickerInput compact value={item.image_url ?? ""} onChange={v => set("image_url", v)} />
         </div>
       )}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Description</label>
+        <label className="block text-xs text-gray-400 mb-1">{t("features.description")}</label>
         <textarea rows={2} value={item.description ?? ""} onChange={e => set("description", e.target.value)}
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Link URL</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.linkUrl")}</label>
           <input value={item.link ?? ""} onChange={e => set("link", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Link Label</label>
+          <label className="block text-xs text-gray-400 mb-1">{t("features.linkLabel")}</label>
           <input value={item.link_label ?? ""} onChange={e => set("link_label", e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
         </div>
@@ -117,10 +119,10 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
       <div className="flex gap-2">
         <button onClick={save} disabled={saving || !item.title?.trim()}
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
-          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Save
+          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("features.save")}
         </button>
         <button onClick={onCancel} className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded">
-          <X className="w-3 h-3" /> Cancel
+          <X className="w-3 h-3" /> {t("features.cancel")}
         </button>
       </div>
     </div>
@@ -132,6 +134,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
   onUpdate: (g: FeatureGroup) => void;
   onDelete: (id: string) => void;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(group.name);
@@ -145,7 +148,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
   }
 
   async function deleteGroup() {
-    if (!confirm(`Delete group "${group.name}"?`)) return;
+    if (!confirm(t("features.deleteGroupConfirm", { name: group.name }))) return;
     await api("DELETE", undefined, { type: "group", id: group.id });
     onDelete(group.id);
   }
@@ -159,7 +162,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
     const res = await api("POST", {
       _type: "item",
       group_id: group.id,
-      title: item.title + " (copy)",
+      title: item.title + t("features.copySuffix"),
       description: item.description,
       icon_type: item.icon_type,
       icon: item.icon,
@@ -203,7 +206,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
             <button onClick={() => setEditingName(true)} className="ml-1 text-gray-500 hover:text-gray-300"><Pencil className="w-3 h-3" /></button>
           </div>
         )}
-        <span className="text-xs text-gray-500">{group.feature_items.length} item{group.feature_items.length !== 1 ? "s" : ""}</span>
+        <span className="text-xs text-gray-500">{t("features.itemsCount", { count: group.feature_items.length, plural: group.feature_items.length !== 1 ? "s" : "" })}</span>
         <button onClick={deleteGroup} className="text-gray-600 hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
       </div>
 
@@ -226,7 +229,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                   <button onClick={() => setEditingItem(item.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => duplicateItem(item)} className="text-gray-400 hover:text-green-400 p-1" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => duplicateItem(item)} className="text-gray-400 hover:text-green-400 p-1" title={t("features.duplicate")}><Copy className="w-3.5 h-3.5" /></button>
                   <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
@@ -238,7 +241,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
           ) : (
             <button onClick={() => setAddingItem(true)}
               className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
-              <Plus className="w-4 h-4" /> Add Feature Item
+              <Plus className="w-4 h-4" /> {t("features.addFeatureItem")}
             </button>
           )}
         </div>
@@ -248,6 +251,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
 }
 
 export default function FeaturesClient({ initialGroups }: { initialGroups: FeatureGroup[] }) {
+  const t = useT();
   const [groups, setGroups] = useState<FeatureGroup[]>(initialGroups);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -268,12 +272,12 @@ export default function FeaturesClient({ initialGroups }: { initialGroups: Featu
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-indigo-400" /> Features
+            <Sparkles className="w-6 h-6 text-indigo-400" /> {t("features.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">Feature blurb groups shown in Features blocks on your pages.</p>
+          <p className="text-sm text-gray-400 mt-1">{t("features.subtitle")}</p>
         </div>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
-          <Plus className="w-4 h-4" /> New Group
+          <Plus className="w-4 h-4" /> {t("features.newGroup")}
         </button>
       </div>
 
@@ -281,11 +285,11 @@ export default function FeaturesClient({ initialGroups }: { initialGroups: Featu
         <div className="bg-gray-900 border border-indigo-500/40 rounded-xl p-4 flex items-center gap-3">
           <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") createGroup(); if (e.key === "Escape") setCreating(false); }}
-            placeholder="Group name (e.g. Why Choose Us)"
+            placeholder={t("features.groupNamePlaceholder")}
             className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
           <button onClick={createGroup} disabled={saving || !newName.trim()}
             className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Create
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("features.create")}
           </button>
           <button onClick={() => setCreating(false)} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
@@ -294,7 +298,7 @@ export default function FeaturesClient({ initialGroups }: { initialGroups: Featu
       {groups.length === 0 && !creating ? (
         <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
           <Sparkles className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">No feature groups yet.</p>
+          <p className="text-gray-400 text-sm">{t("features.noGroupsYet")}</p>
         </div>
       ) : (
         <div className="space-y-4">
