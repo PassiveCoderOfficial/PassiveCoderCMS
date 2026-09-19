@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Wallet, Loader2, Send, CheckCircle2, AlertCircle, Store, Clock } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface Eligible {
   vendor_id: string;
@@ -38,10 +40,15 @@ const STATUS_CLS: Record<Payout["status"], string> = {
   paid: "bg-green-900/50 text-green-300 border-green-700/50",
   failed: "bg-red-900/50 text-red-300 border-red-700/50",
 };
+const STATUS_LABEL_KEY: Record<Payout["status"], TranslationKey> = {
+  pending: "payouts.statusPending", processing: "payouts.statusProcessing",
+  paid: "payouts.statusPaid", failed: "payouts.statusFailed",
+};
 
 const tk = (n: number) => `৳${Number(n).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
 export default function PayoutsClient() {
+  const t = useT();
   const [eligible, setEligible] = useState<Eligible[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,10 +100,10 @@ export default function PayoutsClient() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Wallet className="w-6 h-6 text-indigo-400" /> Seller payouts
+          <Wallet className="w-6 h-6 text-indigo-400" /> {t("payouts.title")}
         </h1>
         <p className="text-sm text-gray-400 mt-1">
-          Delivered orders become payable once each seller&apos;s return-hold window has passed.
+          {t("payouts.subtitle")}
         </p>
       </div>
 
@@ -109,18 +116,18 @@ export default function PayoutsClient() {
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
-                Ready to pay
+                {t("payouts.readyToPay")}
               </h2>
               {eligible.length > 0 && (
                 <p className="text-sm text-gray-400">
-                  Total due <span className="text-white font-semibold">{tk(totalDue)}</span>
+                  {t("payouts.totalDue", { amount: tk(totalDue) })}
                 </p>
               )}
             </div>
 
             {eligible.length === 0 ? (
               <div className="border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">
-                Nothing is payable yet. Orders appear here after delivery plus the hold period.
+                {t("payouts.nothingPayableYet")}
               </div>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
@@ -132,17 +139,17 @@ export default function PayoutsClient() {
                           <Store className="w-4 h-4 text-gray-500 shrink-0" /> {e.vendor_name}
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          {e.sub_order_count} order{e.sub_order_count === 1 ? "" : "s"}
-                          {e.bkash_number ? ` · bKash ${e.bkash_number}` : " · no bKash number set"}
+                          {t("payouts.orderCount", { count: e.sub_order_count, plural: e.sub_order_count === 1 ? "" : "s" })}
+                          {e.bkash_number ? ` ${t("payouts.bkashNumber", { number: e.bkash_number })}` : ` ${t("payouts.noBkashSet")}`}
                         </p>
                       </div>
                       <p className="text-lg font-bold text-white shrink-0">{tk(e.net)}</p>
                     </div>
 
                     <div className="text-xs text-gray-400 space-y-0.5">
-                      <p>Gross {tk(e.gross)}</p>
-                      <p>Commission −{tk(e.commission)}</p>
-                      {e.deductions > 0 && <p>COD &amp; other fees −{tk(e.deductions)}</p>}
+                      <p>{t("payouts.gross", { amount: tk(e.gross) })}</p>
+                      <p>{t("payouts.commission", { amount: tk(e.commission) })}</p>
+                      {e.deductions > 0 && <p>{t("payouts.codFees", { amount: tk(e.deductions) })}</p>}
                     </div>
 
                     <button
@@ -155,7 +162,7 @@ export default function PayoutsClient() {
                       ) : (
                         <Send className="w-4 h-4" />
                       )}
-                      Create payout
+                      {t("payouts.createPayout")}
                     </button>
                   </div>
                 ))}
@@ -165,11 +172,11 @@ export default function PayoutsClient() {
 
           <section className="space-y-3">
             <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
-              Payout history
+              {t("payouts.payoutHistory")}
             </h2>
             {payouts.length === 0 ? (
               <div className="border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">
-                No payouts created yet.
+                {t("payouts.noPayoutsYet")}
               </div>
             ) : (
               <div className="border border-gray-800 rounded-xl overflow-hidden">
@@ -177,12 +184,12 @@ export default function PayoutsClient() {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-900/60 text-gray-400">
                       <tr>
-                        <th className="text-left font-medium px-4 py-2.5">Seller</th>
-                        <th className="text-left font-medium px-4 py-2.5">Period</th>
-                        <th className="text-right font-medium px-4 py-2.5">Gross</th>
-                        <th className="text-right font-medium px-4 py-2.5">Commission</th>
-                        <th className="text-right font-medium px-4 py-2.5">Net</th>
-                        <th className="text-left font-medium px-4 py-2.5">Status</th>
+                        <th className="text-left font-medium px-4 py-2.5">{t("payouts.colSeller")}</th>
+                        <th className="text-left font-medium px-4 py-2.5">{t("payouts.colPeriod")}</th>
+                        <th className="text-right font-medium px-4 py-2.5">{t("payouts.colGross")}</th>
+                        <th className="text-right font-medium px-4 py-2.5">{t("payouts.colCommission")}</th>
+                        <th className="text-right font-medium px-4 py-2.5">{t("payouts.colNet")}</th>
+                        <th className="text-left font-medium px-4 py-2.5">{t("payouts.colStatus")}</th>
                         <th className="px-4 py-2.5" />
                       </tr>
                     </thead>
@@ -192,7 +199,7 @@ export default function PayoutsClient() {
                           <td className="px-4 py-2.5">
                             <span className="text-white">{p.vendors?.name ?? "—"}</span>
                             {p.reference && (
-                              <span className="block text-xs text-gray-500">Ref {p.reference}</span>
+                              <span className="block text-xs text-gray-500">{t("payouts.refLabel", { reference: p.reference })}</span>
                             )}
                           </td>
                           <td className="px-4 py-2.5 text-gray-400 whitespace-nowrap">
@@ -203,7 +210,7 @@ export default function PayoutsClient() {
                           <td className="px-4 py-2.5 text-right font-semibold text-white">{tk(p.net)}</td>
                           <td className="px-4 py-2.5">
                             <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_CLS[p.status]}`}>
-                              {p.status}
+                              {t(STATUS_LABEL_KEY[p.status])}
                             </span>
                           </td>
                           <td className="px-4 py-2.5 text-right">
@@ -212,7 +219,7 @@ export default function PayoutsClient() {
                                 onClick={() => { setPaying(p); setReference(""); }}
                                 className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-green-900/40 border border-green-700/50 text-green-300 hover:bg-green-900/60"
                               >
-                                <CheckCircle2 className="w-3.5 h-3.5" /> Mark paid
+                                <CheckCircle2 className="w-3.5 h-3.5" /> {t("payouts.markPaid")}
                               </button>
                             )}
                             {p.status === "paid" && p.paid_at && (
@@ -237,19 +244,17 @@ export default function PayoutsClient() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setPaying(null)} />
           <div className="relative w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
-            <h2 className="text-lg font-semibold text-white">Mark payout paid</h2>
+            <h2 className="text-lg font-semibold text-white">{t("payouts.markPayoutPaidTitle")}</h2>
             <div className="flex items-start gap-2 text-sm text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-lg p-3">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <p>
-                Confirm the bKash transfer of {tk(paying.net)} to{" "}
-                {paying.vendors?.name ?? "this seller"} has actually been sent. This posts the
-                debit to their ledger.
+                {t("payouts.confirmPaidHint", { amount: tk(paying.net), seller: paying.vendors?.name ?? t("payouts.thisSeller") })}
               </p>
             </div>
             <input
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              placeholder="bKash transaction ID"
+              placeholder={t("payouts.transactionIdPlaceholder")}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
             <div className="flex justify-end gap-2">
@@ -257,7 +262,7 @@ export default function PayoutsClient() {
                 onClick={() => setPaying(null)}
                 className="inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm"
               >
-                Cancel
+                {t("payouts.cancel")}
               </button>
               <button
                 onClick={markPaid}
@@ -265,7 +270,7 @@ export default function PayoutsClient() {
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
               >
                 {busy === paying.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                Confirm paid
+                {t("payouts.confirmPaid")}
               </button>
             </div>
           </div>

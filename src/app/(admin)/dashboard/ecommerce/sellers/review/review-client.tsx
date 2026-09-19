@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { BadgeCheck, Loader2, X, Check, Store, ImageOff } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface ReviewProduct {
   id: string;
@@ -20,17 +22,18 @@ interface ReviewProduct {
   vendors: { id: string; name: string; slug: string | null } | null;
 }
 
-const TABS = [
-  { key: "pending", label: "Awaiting review" },
-  { key: "rejected", label: "Rejected" },
-  { key: "approved", label: "Approved" },
-] as const;
+const TABS: { key: "pending" | "rejected" | "approved"; labelKey: TranslationKey }[] = [
+  { key: "pending", labelKey: "review.tabPending" },
+  { key: "rejected", labelKey: "review.tabRejected" },
+  { key: "approved", labelKey: "review.tabApproved" },
+];
 
 const btnGhost =
   "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
 
 export default function ReviewClient() {
-  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("pending");
+  const t = useT();
+  const [tab, setTab] = useState<"pending" | "rejected" | "approved">("pending");
   const [items, setItems] = useState<ReviewProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -78,25 +81,25 @@ export default function ReviewClient() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <BadgeCheck className="w-6 h-6 text-indigo-400" /> Listing review
+          <BadgeCheck className="w-6 h-6 text-indigo-400" /> {t("review.title")}
         </h1>
         <p className="text-sm text-gray-400 mt-1">
-          Seller listings stay out of the catalogue until approved here.
+          {t("review.subtitle")}
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {TABS.map((t) => (
+        {TABS.map((tabItem) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={tabItem.key}
+            onClick={() => setTab(tabItem.key)}
             className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-              tab === t.key
+              tab === tabItem.key
                 ? "bg-indigo-600 border-indigo-500 text-white"
                 : "border-gray-700 text-gray-400 hover:bg-gray-800"
             }`}
           >
-            {t.label}
+            {t(tabItem.labelKey)}
           </button>
         ))}
         {selected.size > 0 && tab === "pending" && (
@@ -104,7 +107,7 @@ export default function ReviewClient() {
             onClick={() => act([...selected], "approve")}
             className="ml-auto inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
           >
-            <Check className="w-4 h-4" /> Approve {selected.size} selected
+            <Check className="w-4 h-4" /> {t("review.approveSelected", { count: selected.size })}
           </button>
         )}
       </div>
@@ -115,7 +118,7 @@ export default function ReviewClient() {
         </div>
       ) : items.length === 0 ? (
         <div className="border border-gray-800 rounded-xl p-10 text-center text-gray-500">
-          Nothing in this queue.
+          {t("review.nothingInQueue")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -146,12 +149,12 @@ export default function ReviewClient() {
                       <h3 className="font-semibold text-white truncate">{p.name}</h3>
                       <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5">
                         <Store className="w-3.5 h-3.5" />
-                        {p.vendors?.name ?? "Unknown seller"}
+                        {p.vendors?.name ?? t("review.unknownSeller")}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-white font-semibold">৳{Number(p.price).toLocaleString()}</p>
-                      <p className="text-xs text-gray-500">{p.stock_quantity} in stock</p>
+                      <p className="text-xs text-gray-500">{t("review.inStock", { count: p.stock_quantity })}</p>
                     </div>
                   </div>
 
@@ -162,7 +165,7 @@ export default function ReviewClient() {
                   )}
 
                   {p.rejection_reason && (
-                    <p className="text-sm text-red-400 mt-2">Rejected: {p.rejection_reason}</p>
+                    <p className="text-sm text-red-400 mt-2">{t("review.rejectedReason", { reason: p.rejection_reason })}</p>
                   )}
 
                   {tab !== "approved" && (
@@ -172,14 +175,14 @@ export default function ReviewClient() {
                         disabled={busy === p.id}
                         className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-green-900/40 border border-green-700/50 text-green-300 hover:bg-green-900/60 disabled:opacity-50"
                       >
-                        <Check className="w-3.5 h-3.5" /> Approve
+                        <Check className="w-3.5 h-3.5" /> {t("review.approve")}
                       </button>
                       {tab === "pending" && (
                         <button
                           onClick={() => { setRejecting(p); setReason(""); }}
                           className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50 text-red-300 hover:bg-red-900/60"
                         >
-                          <X className="w-3.5 h-3.5" /> Reject
+                          <X className="w-3.5 h-3.5" /> {t("review.reject")}
                         </button>
                       )}
                     </div>
@@ -195,24 +198,24 @@ export default function ReviewClient() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setRejecting(null)} />
           <div className="relative w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
-            <h2 className="text-lg font-semibold text-white">Reject listing</h2>
+            <h2 className="text-lg font-semibold text-white">{t("review.rejectListingTitle")}</h2>
             <p className="text-sm text-gray-400">
-              The seller sees this reason and can edit the listing to resubmit it.
+              {t("review.rejectListingHint")}
             </p>
             <textarea
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Photos are unclear, add a real product image"
+              placeholder={t("review.rejectReasonPlaceholder")}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setRejecting(null)} className={btnGhost}>Cancel</button>
+              <button onClick={() => setRejecting(null)} className={btnGhost}>{t("review.cancel")}</button>
               <button
                 onClick={() => act([rejecting.id], "reject", reason)}
                 className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
               >
-                Reject listing
+                {t("review.rejectListing")}
               </button>
             </div>
           </div>

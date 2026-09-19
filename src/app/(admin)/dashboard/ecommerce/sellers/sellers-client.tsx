@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Store, Plus, X, Loader2, Phone, Mail, CheckCircle2, Ban, Clock, Percent, MapPin, Search,
 } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
 
 export interface Seller {
   id: string;
@@ -24,11 +25,14 @@ export interface Seller {
   created_at: string;
 }
 
-const STATUS_META: Record<Seller["status"], { label: string; cls: string }> = {
-  pending: { label: "Pending", cls: "bg-yellow-900/50 text-yellow-300 border-yellow-700/50" },
-  approved: { label: "Approved", cls: "bg-green-900/50 text-green-300 border-green-700/50" },
-  suspended: { label: "Suspended", cls: "bg-red-900/50 text-red-300 border-red-700/50" },
-};
+type TFn = ReturnType<typeof useT>;
+function statusMeta(t: TFn): Record<Seller["status"], { label: string; cls: string }> {
+  return {
+    pending: { label: t("sellers.statusPending"), cls: "bg-yellow-900/50 text-yellow-300 border-yellow-700/50" },
+    approved: { label: t("sellers.statusApproved"), cls: "bg-green-900/50 text-green-300 border-green-700/50" },
+    suspended: { label: t("sellers.statusSuspended"), cls: "bg-red-900/50 text-red-300 border-red-700/50" },
+  };
+}
 
 const inputCls =
   "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
@@ -44,6 +48,7 @@ function NewSellerModal({
   onClose: () => void;
   onCreated: (s: Seller) => void;
 }) {
+  const t = useT();
   const [f, setF] = useState({
     name: "", contact_name: "", phone: "", email: "", description: "",
     pickup_address: "", pickup_area: "Dhaka", bkash_number: "", trade_license: "",
@@ -53,7 +58,7 @@ function NewSellerModal({
   const [error, setError] = useState<string | null>(null);
 
   async function save() {
-    if (!f.name.trim()) { setError("Shop name required"); return; }
+    if (!f.name.trim()) { setError(t("sellers.shopNameRequired")); return; }
     setSaving(true); setError(null);
     const res = await fetch("/api/marketplace-ecom/vendors", {
       method: "POST",
@@ -62,7 +67,7 @@ function NewSellerModal({
     });
     const d = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(d.error ?? "Failed to create seller"); return; }
+    if (!res.ok) { setError(d.error ?? t("sellers.failedToCreate")); return; }
     onCreated(d);
     onClose();
   }
@@ -72,45 +77,45 @@ function NewSellerModal({
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Add seller</h2>
+          <h2 className="text-lg font-semibold text-white">{t("sellers.newSellerTitle")}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <input className={inputCls} placeholder="Shop name *"
+        <input className={inputCls} placeholder={t("sellers.shopNamePlaceholder")}
           value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
         <div className="grid grid-cols-2 gap-2">
-          <input className={inputCls} placeholder="Owner name"
+          <input className={inputCls} placeholder={t("sellers.ownerNamePlaceholder")}
             value={f.contact_name} onChange={(e) => setF({ ...f, contact_name: e.target.value })} />
-          <input className={inputCls} placeholder="Phone (01XXXXXXXXX)"
+          <input className={inputCls} placeholder={t("sellers.phonePlaceholder")}
             value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
         </div>
-        <input className={inputCls} placeholder="Email"
+        <input className={inputCls} placeholder={t("sellers.emailPlaceholder")}
           value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
-        <textarea className={inputCls} rows={2} placeholder="Shop description"
+        <textarea className={inputCls} rows={2} placeholder={t("sellers.descriptionPlaceholder")}
           value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
-        <input className={inputCls} placeholder="Pickup address"
+        <input className={inputCls} placeholder={t("sellers.pickupAddressPlaceholder")}
           value={f.pickup_address} onChange={(e) => setF({ ...f, pickup_address: e.target.value })} />
         <div className="grid grid-cols-2 gap-2">
-          <input className={inputCls} placeholder="Pickup area (Dhaka)"
+          <input className={inputCls} placeholder={t("sellers.pickupAreaPlaceholder")}
             value={f.pickup_area} onChange={(e) => setF({ ...f, pickup_area: e.target.value })} />
-          <input className={inputCls} placeholder="bKash number for payouts"
+          <input className={inputCls} placeholder={t("sellers.bkashPlaceholder")}
             value={f.bkash_number} onChange={(e) => setF({ ...f, bkash_number: e.target.value })} />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <input className={inputCls} placeholder="Trade licence no."
+          <input className={inputCls} placeholder={t("sellers.tradeLicensePlaceholder")}
             value={f.trade_license} onChange={(e) => setF({ ...f, trade_license: e.target.value })} />
-          <input className={inputCls} type="number" placeholder="Commission %"
+          <input className={inputCls} type="number" placeholder={t("sellers.commissionPlaceholder")}
             value={f.commission_rate} onChange={(e) => setF({ ...f, commission_rate: e.target.value })} />
         </div>
 
         {error && <p className="text-sm text-red-400">{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className={btnGhost}>Cancel</button>
+          <button onClick={onClose} className={btnGhost}>{t("sellers.cancel")}</button>
           <button onClick={save} disabled={saving} className={btnPrimary}>
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Create seller
+            {t("sellers.createSeller")}
           </button>
         </div>
       </div>
@@ -119,6 +124,7 @@ function NewSellerModal({
 }
 
 export default function SellersClient({ initialSellers }: { initialSellers: Seller[] }) {
+  const t = useT();
   const [sellers, setSellers] = useState<Seller[]>(initialSellers);
   const [showNew, setShowNew] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -160,36 +166,39 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Store className="w-6 h-6 text-indigo-400" /> Sellers
+            <Store className="w-6 h-6 text-indigo-400" /> {t("sellers.title")}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Shops selling on the marketplace. Only approved sellers can list products or receive orders.
+            {t("sellers.subtitle")}
           </p>
         </div>
         <button onClick={() => setShowNew(true)} className={btnPrimary}>
-          <Plus className="w-4 h-4" /> Add seller
+          <Plus className="w-4 h-4" /> {t("sellers.addSeller")}
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {(["all", "pending", "approved", "suspended"] as const).map((k) => (
-          <button
-            key={k}
-            onClick={() => setFilter(k)}
-            className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-              filter === k
-                ? "bg-indigo-600 border-indigo-500 text-white"
-                : "border-gray-700 text-gray-400 hover:bg-gray-800"
-            }`}
-          >
-            {k[0].toUpperCase() + k.slice(1)} ({counts[k]})
-          </button>
-        ))}
+        {(["all", "pending", "approved", "suspended"] as const).map((k) => {
+          const label = k === "all" ? t("sellers.filterAll") : statusMeta(t)[k].label;
+          return (
+            <button
+              key={k}
+              onClick={() => setFilter(k)}
+              className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                filter === k
+                  ? "bg-indigo-600 border-indigo-500 text-white"
+                  : "border-gray-700 text-gray-400 hover:bg-gray-800"
+              }`}
+            >
+              {label} ({counts[k]})
+            </button>
+          );
+        })}
         <div className="relative ml-auto">
           <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             className={`${inputCls} pl-9 w-64`}
-            placeholder="Search name or phone"
+            placeholder={t("sellers.searchPlaceholder")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -198,12 +207,12 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
 
       {shown.length === 0 ? (
         <div className="border border-gray-800 rounded-xl p-10 text-center text-gray-500">
-          No sellers here yet.
+          {t("sellers.noSellersYet")}
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((s) => {
-            const meta = STATUS_META[s.status];
+            const meta = statusMeta(t)[s.status];
             return (
               <div key={s.id} className="border border-gray-800 rounded-xl p-4 bg-gray-900/40 space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -238,9 +247,9 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                     </p>
                   )}
                   <p className="flex items-center gap-2">
-                    <Percent className="w-3.5 h-3.5 shrink-0" /> {Number(s.commission_rate)}% commission
+                    <Percent className="w-3.5 h-3.5 shrink-0" /> {Number(s.commission_rate)}{t("sellers.commissionSuffix")}
                     <span className="text-gray-600">·</span>
-                    <Clock className="w-3.5 h-3.5 shrink-0" /> {s.payout_hold_days}d hold
+                    <Clock className="w-3.5 h-3.5 shrink-0" /> {s.payout_hold_days}{t("sellers.holdSuffix")}
                   </p>
                 </div>
 
@@ -251,7 +260,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                       disabled={busy === s.id}
                       className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-green-900/40 border border-green-700/50 text-green-300 hover:bg-green-900/60 disabled:opacity-50"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                      <CheckCircle2 className="w-3.5 h-3.5" /> {t("sellers.approve")}
                     </button>
                   )}
                   {s.status !== "suspended" && (
@@ -260,11 +269,11 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                       disabled={busy === s.id}
                       className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50 text-red-300 hover:bg-red-900/60 disabled:opacity-50"
                     >
-                      <Ban className="w-3.5 h-3.5" /> Suspend
+                      <Ban className="w-3.5 h-3.5" /> {t("sellers.suspend")}
                     </button>
                   )}
                   <label className="inline-flex items-center gap-1.5 text-xs text-gray-500 ml-auto">
-                    Commission
+                    {t("sellers.commissionLabel")}
                     <input
                       type="number"
                       defaultValue={Number(s.commission_rate)}
