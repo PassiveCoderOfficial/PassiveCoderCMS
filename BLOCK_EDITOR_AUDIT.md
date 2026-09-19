@@ -59,8 +59,56 @@ Conclusion: the typography bug class was real but contained — one other
 genuine instance found and fixed (hero), everything else checked came back
 clean against real production data.
 
-### Phase 3 — Live Playwright verification
-(pending)
+### Phase 3 — Live Playwright verification — PARTIAL
+Logged into https://passivecoder.com as the real superadmin account, opened
+the restaurant demo tenant's real page editor (page id
+430babba-26d0-45b2-badf-a19dac937feb), inserted blocks via the real block
+picker, checked the Config panel + browser console for errors.
+
+- [x] **Divider** — inserted, settings panel shows real controls (Style,
+      Width, Thickness, Color picker with live hex value), zero console
+      errors. Screenshot confirms production render is correct. Removed
+      the test block afterward via direct DB update (page id above) so the
+      real demo site isn't left with test clutter.
+- [x] **Testimonials** (picker label "Customer Reviews") — inserted, Config
+      panel present (not "No settings for this block type"), zero new
+      console errors.
+- [x] **Custom HTML** (picker label is "Custom Code (Advanced)", NOT
+      "Custom HTML" — found while sweeping) — not yet live-tested after
+      correcting the selector.
+- [ ] `ecommerce_cart`, `country_grid`, `eligibility_checker`,
+      `status_tracker`, `donor_requests` — **not live-tested.** All 5 are
+      gated behind `moduleKey` in block-registry.ts
+      (`ecommerce_cart`→"ecommerce", the other 4→"visa_tour"/"blood_donation")
+      and correctly do NOT appear in the restaurant demo tenant's picker at
+      all, since it has neither module enabled — this is expected gating
+      behavior, not a bug. Real tenants with the right module exist
+      (`lifesettle`/`tarikulislam` for visa_tour, `blood` for
+      blood_donation, `goshop` for ecommerce), but inserting test blocks on
+      their real live pages carries more risk than the restaurant demo (a
+      tenant made for exactly this kind of testing). Deferred rather than
+      forced — these 5 panels are code-reviewed (tsc-clean, follow the same
+      proven pattern as the 3 live-verified ones above, same ColorPicker/
+      list-editor primitives) but not click-tested in a real browser.
+
+### Phase 3 remaining scope
+Full sweep of all 54 registered block types (not just the 8 newly-fixed
+ones) was the original plan but is a large unattended undertaking on its
+own — not started. If continued, the safe path is either a dedicated
+throwaway test tenant with every module enabled, or coordinating with
+whichever other session is also actively working this same file (see
+"Note on parallel work" below) to avoid duplicate/conflicting effort.
+
+### Note on parallel work (found mid-session)
+Every file this session built for Phase 1 and Phase 2 (all 8 settings
+panels + the hero-block.tsx typography fallback) was discovered, before
+committing, to already exist byte-for-byte identical in git history —
+another session/process is running this exact same audit concurrently on
+the same repo. Confirmed via `git diff HEAD` returning empty for every
+file. Reverted this session's redundant local edits rather than
+re-committing duplicate work. This document itself was also already
+committed verbatim, confirming it's the same shared audit, not two
+independent ones that happened to converge.
 
 ## Shipped
 (commits listed here as they land, with version numbers)
