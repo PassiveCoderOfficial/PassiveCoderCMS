@@ -849,6 +849,27 @@ export const en = {
   "bookings.statusNoShow": "no_show",
   "bookings.noAppointments": "No appointments{filter} yet.",
   "bookings.withStatus": " with status \"{status}\"",
+
+  // ── Reservations ─────────────────────────────────────────────────────────
+  "reservations.title": "Reservations",
+  "reservations.newReservation": "New reservation",
+  "reservations.customerName": "Customer name",
+  "reservations.phone": "Phone",
+  "reservations.partySize": "Party size",
+  "reservations.notesOptional": "Notes (optional)",
+  "reservations.saving": "Saving…",
+  "reservations.save": "Save",
+  "reservations.noBranchesYet": "No branches yet — add one first in Branches.",
+  "reservations.noReservations": "No reservations in the next 30 days.",
+  "reservations.confirm": "Confirm",
+  "reservations.cancel": "Cancel",
+  "reservations.createFailed": "Could not create reservation",
+  "reservations.today": "Today",
+  "reservations.statusPending": "pending",
+  "reservations.statusConfirmed": "confirmed",
+  "reservations.statusCompleted": "completed",
+  "reservations.statusCancelled": "cancelled",
+  "reservations.statusNoShow": "no show",
 } as const;
 
 export type TranslationKey = keyof typeof en;
