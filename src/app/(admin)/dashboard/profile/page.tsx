@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, User, Lock } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
 
 interface Profile {
   id: string;
@@ -17,6 +18,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
+  const t = useT();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,16 +60,16 @@ export default function ProfilePage() {
       .eq("id", profile.id);
     setSaving(false);
     if (error) toast.error(error.message);
-    else toast.success("Profile saved");
+    else toast.success(t("profile.profileSaved"));
   }
 
   async function changePassword() {
     if (!newPassword || newPassword !== confirmPassword) {
-      toast.error("Passwords don't match");
+      toast.error(t("profile.passwordsDontMatch"));
       return;
     }
     if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
+      toast.error(t("profile.passwordMin8"));
       return;
     }
     setChangingPassword(true);
@@ -75,7 +77,7 @@ export default function ProfilePage() {
     setChangingPassword(false);
     if (error) toast.error(error.message);
     else {
-      toast.success("Password updated");
+      toast.success(t("profile.passwordUpdated"));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -85,46 +87,46 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="p-6 flex items-center gap-2 text-muted-foreground text-sm">
-        <Loader2 className="w-4 h-4 animate-spin" /> Loading...
+        <Loader2 className="w-4 h-4 animate-spin" /> {t("profile.loading")}
       </div>
     );
   }
 
   if (!profile) {
-    return <div className="p-6 text-sm text-muted-foreground">Could not load profile.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{t("profile.couldNotLoad")}</div>;
   }
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">My Profile</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your account details and password.</p>
+        <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t("profile.subtitle")}</p>
       </div>
 
       {/* Profile info */}
       <div className="rounded-xl border bg-card p-5 space-y-5">
         <div className="flex items-center gap-3 pb-1">
           <User className="w-4 h-4 text-muted-foreground" />
-          <h2 className="font-semibold text-sm">Account Information</h2>
+          <h2 className="font-semibold text-sm">{t("profile.accountInformation")}</h2>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Email</Label>
+          <Label>{t("profile.email")}</Label>
           <Input value={profile.email} disabled className="opacity-60" />
-          <p className="text-xs text-muted-foreground">Email cannot be changed here.</p>
+          <p className="text-xs text-muted-foreground">{t("profile.emailCannotBeChanged")}</p>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Full Name</Label>
+          <Label>{t("profile.fullName")}</Label>
           <Input
             value={fullName}
             onChange={e => setFullName(e.target.value)}
-            placeholder="Your name"
+            placeholder={t("profile.fullNamePlaceholder")}
           />
         </div>
 
         <div className="space-y-1.5">
-          <Label>Avatar URL <span className="text-muted-foreground text-xs">(optional)</span></Label>
+          <Label>{t("profile.avatarUrl")} <span className="text-muted-foreground text-xs">{t("profile.optional")}</span></Label>
           <Input
             value={avatarUrl}
             onChange={e => setAvatarUrl(e.target.value)}
@@ -137,13 +139,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Role</Label>
+          <Label>{t("profile.role")}</Label>
           <Input value={profile.role} disabled className="opacity-60 capitalize" />
         </div>
 
         <Button onClick={saveProfile} disabled={saving}>
           {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-          Save Changes
+          {t("profile.saveChanges")}
         </Button>
       </div>
 
@@ -151,32 +153,32 @@ export default function ProfilePage() {
       <div className="rounded-xl border bg-card p-5 space-y-5">
         <div className="flex items-center gap-3 pb-1">
           <Lock className="w-4 h-4 text-muted-foreground" />
-          <h2 className="font-semibold text-sm">Change Password</h2>
+          <h2 className="font-semibold text-sm">{t("profile.changePassword")}</h2>
         </div>
 
         <div className="space-y-1.5">
-          <Label>New Password</Label>
+          <Label>{t("profile.newPassword")}</Label>
           <Input
             type="password"
             value={newPassword}
             onChange={e => setNewPassword(e.target.value)}
-            placeholder="Min 8 characters"
+            placeholder={t("profile.min8Chars")}
           />
         </div>
 
         <div className="space-y-1.5">
-          <Label>Confirm New Password</Label>
+          <Label>{t("profile.confirmNewPassword")}</Label>
           <Input
             type="password"
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
-            placeholder="Repeat new password"
+            placeholder={t("profile.repeatNewPassword")}
           />
         </div>
 
         <Button onClick={changePassword} disabled={changingPassword} variant="outline">
           {changingPassword && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-          Update Password
+          {t("profile.updatePassword")}
         </Button>
       </div>
     </div>

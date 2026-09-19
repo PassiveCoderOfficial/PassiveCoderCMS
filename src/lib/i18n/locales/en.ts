@@ -1665,6 +1665,31 @@ export const en = {
   "pricingMgr.deleteTableConfirm": "Delete pricing table \"{name}\"?",
   "pricingMgr.moreFeatures": "+{count} more",
   "pricingMgr.addPlan": "Add Plan",
+
+  // ── Profile ──────────────────────────────────────────────────────────────
+  "profile.loading": "Loading...",
+  "profile.couldNotLoad": "Could not load profile.",
+  "profile.title": "My Profile",
+  "profile.subtitle": "Manage your account details and password.",
+  "profile.accountInformation": "Account Information",
+  "profile.email": "Email",
+  "profile.emailCannotBeChanged": "Email cannot be changed here.",
+  "profile.fullName": "Full Name",
+  "profile.fullNamePlaceholder": "Your name",
+  "profile.avatarUrl": "Avatar URL",
+  "profile.optional": "(optional)",
+  "profile.role": "Role",
+  "profile.saveChanges": "Save Changes",
+  "profile.changePassword": "Change Password",
+  "profile.newPassword": "New Password",
+  "profile.min8Chars": "Min 8 characters",
+  "profile.confirmNewPassword": "Confirm New Password",
+  "profile.repeatNewPassword": "Repeat new password",
+  "profile.updatePassword": "Update Password",
+  "profile.profileSaved": "Profile saved",
+  "profile.passwordsDontMatch": "Passwords don't match",
+  "profile.passwordMin8": "Password must be at least 8 characters",
+  "profile.passwordUpdated": "Password updated",
 } as const;
 
 export type TranslationKey = keyof typeof en;
