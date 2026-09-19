@@ -8,10 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, ExternalLink, Menu, Plus, X } from "lucide-react";
 import type { ShellNavItem, ShellNavSection, ShellTheme } from "./types";
 import { LanguageSwitcher } from "./language-switcher";
+import { useT } from "@/lib/i18n/language-provider";
 
 function NavRow({ item, pathname, onClose, dark, brand }: {
   item: ShellNavItem; pathname: string; onClose?: () => void; dark: boolean; brand: boolean;
 }) {
+  const t = useT();
   const hasChildren = (item.children?.length ?? 0) > 0;
   const onChildRoute = (item.children ?? []).some(
     (c) => pathname === c.href || pathname.startsWith(c.href + "/"),
@@ -85,7 +87,7 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
                     <span className="flex-1">{child.label}</span>
                   </Link>
                   {child.add && (
-                    <Link href={child.add} onClick={onClose} title="Add new"
+                    <Link href={child.add} onClick={onClose} title={t("sidebar.addNew")}
                       className={cn("p-1 rounded shrink-0", dark ? "text-gray-600 hover:bg-white/10 hover:text-gray-300" : "text-muted-foreground/60 hover:bg-accent hover:text-foreground")}>
                       <Plus className="h-3 w-3" />
                     </Link>
@@ -122,7 +124,7 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
           )}
         </Link>
         {item.add && (
-          <Link href={item.add} onClick={onClose} title="Add new"
+          <Link href={item.add} onClick={onClose} title={t("sidebar.addNew")}
             className={cn("p-1.5 rounded shrink-0", dark ? "text-gray-600 hover:bg-white/10 hover:text-gray-300" : "text-muted-foreground/60 hover:bg-accent hover:text-foreground")}>
             <Plus className="h-3.5 w-3.5" />
           </Link>
@@ -200,6 +202,7 @@ export function Shell(props: {
   width?: string;
 }) {
   const { sections, theme, header, footer, filterItem, defaultCollapsed = false, width = "w-60" } = props;
+  const t = useT();
   const dark = theme === "dark";
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -221,7 +224,7 @@ export function Shell(props: {
           "lg:hidden fixed top-3.5 left-3 z-40 p-2 rounded-md border shadow-sm",
           dark ? "bg-gray-900 border-gray-700" : "bg-background",
         )}
-        aria-label="Open menu"
+        aria-label={t("sidebar.openMenu")}
       >
         <Menu className={cn("w-5 h-5", dark && "text-gray-300")} />
       </button>
@@ -257,8 +260,8 @@ export function Shell(props: {
             "absolute top-1/2 -translate-y-1/2 -right-3 z-10 flex items-center justify-center w-6 h-6 rounded-full border shadow-sm transition-colors",
             dark ? "bg-gray-900 border-gray-700 hover:bg-gray-800" : "bg-background hover:bg-accent",
           )}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")}
+          title={collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")}
         >
           <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", dark && "text-gray-300", collapsed ? "-rotate-90" : "rotate-90")} />
         </button>
