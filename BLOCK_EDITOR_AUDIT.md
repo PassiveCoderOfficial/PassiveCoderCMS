@@ -59,37 +59,47 @@ Conclusion: the typography bug class was real but contained — one other
 genuine instance found and fixed (hero), everything else checked came back
 clean against real production data.
 
-### Phase 3 — Live Playwright verification — PARTIAL
-Logged into https://passivecoder.com as the real superadmin account, opened
-the restaurant demo tenant's real page editor (page id
-430babba-26d0-45b2-badf-a19dac937feb), inserted blocks via the real block
-picker, checked the Config panel + browser console for errors.
+### Phase 3 — Live Playwright verification of the 8 new settings panels — DONE
+Logged into https://passivecoder.com as the real superadmin account. All 8
+newly-built settings panels confirmed live: real Config-tab controls render
+(never "No settings for this block type"), zero new browser console errors
+on insert.
 
-- [x] **Divider** — inserted, settings panel shows real controls (Style,
-      Width, Thickness, Color picker with live hex value), zero console
-      errors. Screenshot confirms production render is correct. Removed
-      the test block afterward via direct DB update (page id above) so the
-      real demo site isn't left with test clutter.
-- [x] **Testimonials** (picker label "Customer Reviews") — inserted, Config
-      panel present (not "No settings for this block type"), zero new
-      console errors.
-- [x] **Custom HTML** (picker label is "Custom Code (Advanced)", NOT
-      "Custom HTML" — found while sweeping) — not yet live-tested after
-      correcting the selector.
-- [ ] `ecommerce_cart`, `country_grid`, `eligibility_checker`,
-      `status_tracker`, `donor_requests` — **not live-tested.** All 5 are
-      gated behind `moduleKey` in block-registry.ts
-      (`ecommerce_cart`→"ecommerce", the other 4→"visa_tour"/"blood_donation")
-      and correctly do NOT appear in the restaurant demo tenant's picker at
-      all, since it has neither module enabled — this is expected gating
-      behavior, not a bug. Real tenants with the right module exist
-      (`lifesettle`/`tarikulislam` for visa_tour, `blood` for
-      blood_donation, `goshop` for ecommerce), but inserting test blocks on
-      their real live pages carries more risk than the restaurant demo (a
-      tenant made for exactly this kind of testing). Deferred rather than
-      forced — these 5 panels are code-reviewed (tsc-clean, follow the same
-      proven pattern as the 3 live-verified ones above, same ColorPicker/
-      list-editor primitives) but not click-tested in a real browser.
+- [x] **Divider** — restaurant demo tenant, real page (id
+      430babba-26d0-45b2-badf-a19dac937feb). Shows Style/Width/Thickness/
+      Color controls with a live hex value. Test insert removed via direct
+      DB update afterward.
+- [x] **Testimonials** (picker label "Customer Reviews") — restaurant demo
+      tenant, same page.
+- [x] **Custom HTML** (picker label is "Custom Code (Advanced)", not
+      "Custom HTML" — found while sweeping labels) — restaurant demo
+      tenant, same page.
+- [x] **ecommerce_cart, country_grid, eligibility_checker, status_tracker,
+      donor_requests** — all 5 are `moduleKey`-gated in block-registry.ts
+      (`ecommerce_cart`→"ecommerce", 3×→"visa_tour", 1×→"blood_donation")
+      and correctly don't appear in the restaurant demo's picker (no
+      matching modules enabled there) — not a bug. Verified on real tenants
+      that do have each module (`lifesettle` for visa_tour, `blood` for
+      blood_donation, `goshop` for ecommerce), via a disposable draft page
+      created and deleted on each (title "Block Editor Test (delete me)",
+      status "draft" so never publicly visible) rather than risking their
+      real live pages.
+
+  **Real methodology bug found and fixed along the way**: the first sweep
+  attempt navigated to `passivecoder.com/dashboard/pages/<id>` (root
+  domain) for these tenants, which resolves tenant/module context to the
+  logged-in superadmin's OWN tenant, not the page's actual tenant — so
+  every visa_tour/blood_donation-gated block appeared to be missing from
+  the picker even on a tenant that genuinely has the module enabled. Fixed
+  by navigating to the tenant's own subdomain
+  (`<slug>.passivecoder.com/dashboard/pages/<id>`) instead, which correctly
+  sets the x-tenant-id used for module resolution. All 5 then confirmed
+  clean. This was a test-script gap, not a product bug — a real staff
+  member reaches another tenant's editor via the site switcher or that
+  tenant's own subdomain, both of which set tenant context correctly.
+
+All 3 disposable test pages deleted after verification; nothing left on
+any real tenant's site.
 
 ### Phase 3 remaining scope
 Full sweep of all 54 registered block types (not just the 8 newly-fixed
