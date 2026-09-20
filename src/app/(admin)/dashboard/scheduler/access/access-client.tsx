@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { ACCESS_LEVELS, ACCESS_LEVEL_LABELS, type AccessLevel } from "@/lib/scheduler/types";
 import { searchTenantUsers, grantAccess, revokeAccess } from "../actions";
+import { useT } from "@/lib/i18n/language-provider";
 
 type Row = {
   user_id: string;
@@ -26,6 +27,7 @@ type SearchResult = {
 };
 
 export default function AccessClient({ rows }: { rows: Row[] }) {
+  const t = useT();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -42,13 +44,13 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
     if (!q.trim()) { setResults([]); setSearching(false); return; }
     setSearching(true);
     const mine = ++seq.current;
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       const res = await searchTenantUsers(q.trim());
       if (mine !== seq.current) return;
       setResults(res.results ?? []);
       setSearching(false);
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [q]);
 
   const grant = (userId: string) =>
@@ -67,10 +69,9 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
   return (
     <div className="p-4 md:p-6 space-y-5">
       <div>
-        <h1 className="text-xl font-semibold">Scheduler access</h1>
+        <h1 className="text-xl font-semibold">{t("scheduler.accessTitle")}</h1>
         <p className="text-sm text-muted-foreground">
-          Give team members access to the content scheduler for this site. Only
-          people listed here see it in their dashboard.
+          {t("scheduler.accessSubtitle")}
         </p>
       </div>
 
@@ -81,7 +82,7 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search team members by name or email…"
+              placeholder={t("scheduler.searchMembersPlaceholder")}
               className="h-9 pl-7"
             />
             {searching && (
@@ -100,8 +101,7 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
 
         {q.trim() && !searching && results.length === 0 && (
           <p className="text-xs text-muted-foreground">
-            No matching members on this site. Invite them under Users first — access
-            can only be given to people who already belong to this site.
+            {t("scheduler.noMatchingMembers")}
           </p>
         )}
 
@@ -116,10 +116,10 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
                   </p>
                 </div>
                 {r.has_access ? (
-                  <Badge variant="secondary" className="text-[10px]">Has access</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{t("scheduler.hasAccess")}</Badge>
                 ) : (
                   <Button size="sm" className="h-7 text-xs" onClick={() => grant(r.user_id)}>
-                    Give access
+                    {t("scheduler.giveAccess")}
                   </Button>
                 )}
               </div>
@@ -129,11 +129,11 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold">People with access</h2>
+        <h2 className="mb-2 text-sm font-semibold">{t("scheduler.peopleWithAccess")}</h2>
         <div className="divide-y rounded-lg border bg-card">
           {rows.length === 0 && (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Nobody yet.
+              {t("scheduler.nobodyYet")}
             </p>
           )}
           {rows.map((r) => (
@@ -146,7 +146,7 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
               {r.implicit ? (
                 <Badge variant="secondary" className="gap-1 text-[10px]">
                   <ShieldCheck className="h-3 w-3" />
-                  Site {r.implicit}
+                  {t("scheduler.siteRole", { role: r.implicit })}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-[10px]">
@@ -158,7 +158,7 @@ export default function AccessClient({ rows }: { rows: Row[] }) {
                   there's no grant row to remove, so no revoke control. */}
               {!r.implicit && (
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground"
-                  title="Remove access" onClick={() => revoke(r.user_id)}>
+                  title={t("scheduler.removeAccess")} onClick={() => revoke(r.user_id)}>
                   <X className="h-3.5 w-3.5" />
                 </Button>
               )}

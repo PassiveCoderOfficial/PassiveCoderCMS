@@ -17,9 +17,12 @@ import {
   type BrandChannel, type BrandKind, type BrandProfile, type Platform,
 } from "@/lib/scheduler/types";
 import { saveBrand, deleteBrand } from "../actions";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
-const KIND_LABELS: Record<string, string> = {
-  company: "Company", personal: "Personal brand", product: "Product", other: "Other",
+const KIND_LABEL_KEY: Record<string, TranslationKey> = {
+  company: "scheduler.kindCompany", personal: "scheduler.kindPersonal",
+  product: "scheduler.kindProduct", other: "scheduler.kindOther",
 };
 
 /** Common IANA zones for the markets Passive Coder works in; free text would
@@ -35,6 +38,7 @@ const slugify = (s: string) =>
 export default function BrandsClient({
   brands, channels,
 }: { brands: BrandProfile[]; channels: BrandChannel[] }) {
+  const t = useT();
   const router = useRouter();
   const [editing, setEditing] = useState<BrandProfile | null>(null);
   const [creating, setCreating] = useState(false);
@@ -43,20 +47,20 @@ export default function BrandsClient({
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Brands</h1>
+          <h1 className="text-xl font-semibold">{t("scheduler.brandsTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            Each brand has its own channels, colour and posting timezone.
+            {t("scheduler.brandsSubtitle")}
           </p>
         </div>
         <Button onClick={() => { setEditing(null); setCreating(true); }} className="gap-1.5">
-          <Plus className="h-4 w-4" /> New brand
+          <Plus className="h-4 w-4" /> {t("scheduler.newBrand")}
         </Button>
       </div>
 
       {brands.length === 0 ? (
         <div className="rounded-lg border border-dashed py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            No brands yet. Add one to start scheduling content.
+            {t("scheduler.noBrandsYet")}
           </p>
         </div>
       ) : (
@@ -71,7 +75,7 @@ export default function BrandsClient({
                     <div>
                       <p className="text-sm font-medium">{b.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {KIND_LABELS[b.kind]} · {b.timezone}
+                        {t(KIND_LABEL_KEY[b.kind])} · {b.timezone}
                       </p>
                     </div>
                   </div>
@@ -92,7 +96,7 @@ export default function BrandsClient({
                     </span>
                   ))}
                   {own.length === 0 && (
-                    <span className="text-[11px] text-muted-foreground">No channels yet</span>
+                    <span className="text-[11px] text-muted-foreground">{t("scheduler.noChannelsYetShort")}</span>
                   )}
                 </div>
               </div>
@@ -121,6 +125,7 @@ function BrandSheet({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useT();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -136,7 +141,7 @@ function BrandSheet({
 
   const save = () => {
     setError(null);
-    if (!name.trim()) return setError("Name is required.");
+    if (!name.trim()) return setError(t("scheduler.nameRequired"));
     startTransition(async () => {
       const res = await saveBrand({
         id: brand?.id,
@@ -157,12 +162,12 @@ function BrandSheet({
     <SidePanel
       open
       onOpenChange={(o) => !o && onClose()}
-      title={brand ? "Edit brand" : "New brand"}
+      title={brand ? t("scheduler.editBrand") : t("scheduler.newBrandTitle")}
       widthClass="sm:max-w-md"
       footer={
         <>
           {brand && (
-            <Button variant="outline" size="icon" title="Delete brand"
+            <Button variant="outline" size="icon" title={t("scheduler.deleteBrand")}
               className="text-red-600 hover:text-red-700"
               onClick={() => startTransition(async () => {
                 await deleteBrand(brand.id); onSaved();
@@ -171,10 +176,10 @@ function BrandSheet({
             </Button>
           )}
           <div className="ml-auto flex gap-2">
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>{t("scheduler.cancel2")}</Button>
             <Button onClick={save} disabled={pending}>
               {pending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-              Save
+              {t("scheduler.save2")}
             </Button>
           </div>
         </>
@@ -182,41 +187,41 @@ function BrandSheet({
     >
         <div className="space-y-4 px-4 py-3">
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Name</Label>
+            <Label className="text-xs font-medium">{t("scheduler.name")}</Label>
             <Input value={name}
               onChange={(e) => {
                 setName(e.target.value);
                 if (!brand) setSlug(slugify(e.target.value));
               }}
-              placeholder="Passive Coder" />
+              placeholder={t("scheduler.namePlaceholder")} />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Slug</Label>
+            <Label className="text-xs font-medium">{t("scheduler.slug")}</Label>
             <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))}
-              placeholder="passive-coder" />
+              placeholder={t("scheduler.slugPlaceholder")} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Kind</Label>
+              <Label className="text-xs font-medium">{t("scheduler.kind")}</Label>
               <Select value={kind} onValueChange={(v) => setKind(v as BrandKind)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {BRAND_KINDS.map((k) => (
-                    <SelectItem key={k} value={k}>{KIND_LABELS[k]}</SelectItem>
+                    <SelectItem key={k} value={k}>{t(KIND_LABEL_KEY[k])}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Timezone</Label>
+              <Label className="text-xs font-medium">{t("scheduler.timezone")}</Label>
               <Select value={timezone} onValueChange={setTimezone}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {TIMEZONES.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -224,7 +229,7 @@ function BrandSheet({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Colour</Label>
+            <Label className="text-xs font-medium">{t("scheduler.colour")}</Label>
             <div className="flex items-center gap-2">
               <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
                 className="h-8 w-12 cursor-pointer rounded border bg-transparent" />
@@ -233,14 +238,14 @@ function BrandSheet({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Description</Label>
+            <Label className="text-xs font-medium">{t("scheduler.description2")}</Label>
             <Textarea rows={2} value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What this brand posts about" />
+              placeholder={t("scheduler.descriptionPlaceholder")} />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Channels</Label>
+            <Label className="text-xs font-medium">{t("scheduler.channels")}</Label>
             <div className="flex flex-wrap gap-1.5">
               {PLATFORMS.filter((p) => p !== "other").map((p) => {
                 const on = platforms.includes(p);
@@ -259,8 +264,7 @@ function BrandSheet({
               })}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Removing a channel deletes it from this brand; scheduled posts already
-              targeting it keep their record.
+              {t("scheduler.removingChannelHint")}
             </p>
           </div>
 
