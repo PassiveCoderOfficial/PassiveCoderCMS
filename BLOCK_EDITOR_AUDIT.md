@@ -128,12 +128,13 @@ artifacts rather than product bugs:
   CartProvider, so cart actions on a legacy navigation block's cart icon
   are safely no-ops with a diagnostic message, not a crash. Not a new bug.
 
-One mislabeled entry found while building the sweep: `cta`'s real picker
-label is "Action Banner" (not "Get Started", which is just its default
-button text) — collides with `header_cta`'s own "Action Banner" label,
-both types share that display name in the picker. Cosmetic, not
-functionally broken (description/icon differ), not fixed here — flagged
-for whoever next touches block-registry.ts labels.
+**Correction (checked again before "fixing" it):** the earlier note above
+about `cta`/`header_cta` sharing the "Action Banner" label was wrong —
+`header_cta`'s real picker label is "Button" ("A single call-to-action
+button, e.g. \"Book Now\""), not "Action Banner". Only `cta` uses that
+label. No collision exists; nothing to fix. The false read came from my
+own sweep script's target list, which had mapped `header_cta` to the
+wrong search string.
 
 Gated blocks already fully covered above (13 types across
 ecommerce/services/testimonials/accounting/pricing/bookings/marketplace/
