@@ -12,6 +12,8 @@ import {
   Database, FolderArchive, PackageCheck, Settings2,
 } from "lucide-react";
 import type { BackupRun, BackupSettings } from "./page";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface Props {
   runs: BackupRun[];
@@ -34,22 +36,26 @@ function formatSize(bytes?: number | null) {
 }
 
 function StatusBadge({ status }: { status: BackupRun["status"] }) {
-  if (status === "complete") return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"><CheckCircle className="w-3 h-3 mr-1" />Complete</Badge>;
-  if (status === "failed") return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>;
-  return <Badge variant="secondary"><Loader2 className="w-3 h-3 mr-1 animate-spin" />Running</Badge>;
+  const t = useT();
+  if (status === "complete") return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"><CheckCircle className="w-3 h-3 mr-1" />{t("backups.statusComplete")}</Badge>;
+  if (status === "failed") return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />{t("backups.statusFailed")}</Badge>;
+  return <Badge variant="secondary"><Loader2 className="w-3 h-3 mr-1 animate-spin" />{t("backups.statusRunning")}</Badge>;
 }
 
 function TypeBadge({ type }: { type: BackupRun["backup_type"] }) {
-  if (type === "db") return <Badge variant="outline" className="gap-1"><Database className="w-3 h-3" />Database</Badge>;
-  if (type === "files") return <Badge variant="outline" className="gap-1"><FolderArchive className="w-3 h-3" />Files</Badge>;
-  return <Badge variant="outline" className="gap-1"><PackageCheck className="w-3 h-3" />Full</Badge>;
+  const t = useT();
+  if (type === "db") return <Badge variant="outline" className="gap-1"><Database className="w-3 h-3" />{t("backups.typeDatabase")}</Badge>;
+  if (type === "files") return <Badge variant="outline" className="gap-1"><FolderArchive className="w-3 h-3" />{t("backups.typeFiles")}</Badge>;
+  return <Badge variant="outline" className="gap-1"><PackageCheck className="w-3 h-3" />{t("backups.typeFull")}</Badge>;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly (Sundays)" },
-  { value: "monthly", label: "Monthly (1st)" },
-];
+function frequencyOptions(t: (k: TranslationKey) => string) {
+  return [
+    { value: "daily", label: t("backups.frequencyDaily") },
+    { value: "weekly", label: t("backups.frequencyWeekly") },
+    { value: "monthly", label: t("backups.frequencyMonthly") },
+  ];
+}
 
 function BackupTypeConfigCard({
   title, icon: Icon, enabled, frequency, retention, retentionMax, onSave,
@@ -62,6 +68,8 @@ function BackupTypeConfigCard({
   retentionMax: number;
   onSave: (v: { enabled: boolean; frequency: string; retention: number }) => Promise<void>;
 }) {
+  const t = useT();
+  const FREQUENCY_OPTIONS = frequencyOptions(t);
   const [localEnabled, setLocalEnabled] = useState(enabled);
   const [localFreq, setLocalFreq] = useState(frequency);
   const [localRetention, setLocalRetention] = useState(retention);
@@ -73,9 +81,9 @@ function BackupTypeConfigCard({
     setSaving(true);
     try {
       await onSave({ enabled: localEnabled, frequency: localFreq, retention: localRetention });
-      toast.success(`${title} backup settings saved`);
+      toast.success(t("backups.settingsSaved", { title }));
     } catch {
-      toast.error("Failed to save settings");
+      toast.error(t("backups.failedToSaveSettings"));
     } finally {
       setSaving(false);
     }
@@ -84,15 +92,15 @@ function BackupTypeConfigCard({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2"><Icon className="w-4 h-4" /> {title} Backups</CardTitle>
+        <CardTitle className="text-sm flex items-center gap-2"><Icon className="w-4 h-4" /> {title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Auto backup enabled</span>
+          <span className="text-sm text-muted-foreground">{t("backups.autoBackupEnabled")}</span>
           <Switch checked={localEnabled} onCheckedChange={setLocalEnabled} />
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm text-muted-foreground">Frequency</label>
+          <label className="text-sm text-muted-foreground">{t("backups.frequency")}</label>
           <Select value={localFreq} onValueChange={setLocalFreq} disabled={!localEnabled}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -101,7 +109,7 @@ function BackupTypeConfigCard({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm text-muted-foreground">Keep last N backups</label>
+          <label className="text-sm text-muted-foreground">{t("backups.keepLastN")}</label>
           <Select value={String(localRetention)} onValueChange={(v) => setLocalRetention(Number(v))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -114,7 +122,7 @@ function BackupTypeConfigCard({
         {dirty && (
           <Button size="sm" onClick={save} disabled={saving} className="w-full">
             {saving && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
-            Save
+            {t("backups.save")}
           </Button>
         )}
       </CardContent>
@@ -123,6 +131,7 @@ function BackupTypeConfigCard({
 }
 
 export default function BackupsClient({ runs: initialRuns, tenantId, initialSettings }: Props) {
+  const t = useT();
   const [runs, setRuns] = useState<BackupRun[]>(initialRuns);
   const [settings, setSettings] = useState<BackupSettings>(initialSettings ?? {
     db_enabled: true, db_frequency: "daily", db_retention_count: 7,
@@ -148,11 +157,11 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
         body: JSON.stringify({ tenantId, type }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Backup failed");
+      if (!res.ok) throw new Error(data.error ?? t("backups.backupFailed"));
       await refreshRuns();
-      toast.success(`${type === "db" ? "Database" : type === "files" ? "Files" : "Full"} backup complete`);
+      toast.success(t("backups.backupComplete", { type: type === "db" ? t("backups.typeDatabase") : type === "files" ? t("backups.typeFiles") : t("backups.typeFull") }));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
+      const msg = err instanceof Error ? err.message : t("backups.unknownError");
       setError(msg);
       toast.error(msg);
     } finally {
@@ -171,7 +180,7 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error("Failed");
+    if (!res.ok) throw new Error(t("backups.failed"));
     setSettings(s => ({ ...s, ...payload } as BackupSettings));
   }
 
@@ -188,27 +197,27 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Archive className="w-6 h-6" /> Backups
+            <Archive className="w-6 h-6" /> {t("backups.title")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Database and media files are backed up separately, each on their own schedule.
+            {t("backups.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => setShowSettings(v => !v)}>
-            <Settings2 className="w-4 h-4 mr-1.5" /> Configure
+            <Settings2 className="w-4 h-4 mr-1.5" /> {t("backups.configure")}
           </Button>
           <Button size="sm" onClick={() => triggerBackup("db")} disabled={running !== null}>
             {running === "db" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Database className="w-4 h-4 mr-1.5" />}
-            Backup DB Now
+            {t("backups.backupDbNow")}
           </Button>
           <Button size="sm" onClick={() => triggerBackup("files")} disabled={running !== null}>
             {running === "files" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <FolderArchive className="w-4 h-4 mr-1.5" />}
-            Backup Files Now
+            {t("backups.backupFilesNow")}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => triggerBackup("full")} disabled={running !== null}>
             {running === "full" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1.5" />}
-            Full Backup Now
+            {t("backups.fullBackupNow")}
           </Button>
         </div>
       </div>
@@ -223,13 +232,13 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
       {showSettings && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BackupTypeConfigCard
-            title="Database" icon={Database}
+            title={t("backups.databaseBackups")} icon={Database}
             enabled={settings.db_enabled} frequency={settings.db_frequency} retention={settings.db_retention_count}
             retentionMax={30}
             onSave={(v) => saveTypeSettings("db", v)}
           />
           <BackupTypeConfigCard
-            title="Files" icon={FolderArchive}
+            title={t("backups.filesBackups")} icon={FolderArchive}
             enabled={settings.files_enabled} frequency={settings.files_frequency} retention={settings.files_retention_count}
             retentionMax={10}
             onSave={(v) => saveTypeSettings("files", v)}
@@ -243,7 +252,7 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
           <CardContent className="pt-5">
             <div className="text-2xl font-bold">{dbRuns.length}</div>
             <div className="text-sm text-muted-foreground">
-              DB backups kept ({settings.db_enabled ? settings.db_frequency : "auto off"})
+              {t("backups.dbBackupsKept", { freq: settings.db_enabled ? settings.db_frequency : t("backups.autoOff") })}
             </div>
           </CardContent>
         </Card>
@@ -251,7 +260,7 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
           <CardContent className="pt-5">
             <div className="text-2xl font-bold">{filesRuns.length}</div>
             <div className="text-sm text-muted-foreground">
-              Files backups kept ({settings.files_enabled ? settings.files_frequency : "auto off"})
+              {t("backups.filesBackupsKept", { freq: settings.files_enabled ? settings.files_frequency : t("backups.autoOff") })}
             </div>
           </CardContent>
         </Card>
@@ -262,8 +271,8 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
         <Card>
           <CardContent className="py-12 text-center">
             <Archive className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="font-medium">No backups yet</p>
-            <p className="text-sm text-muted-foreground mt-1">Run a manual backup above, or wait for the next scheduled one.</p>
+            <p className="font-medium">{t("backups.noBackupsYet")}</p>
+            <p className="text-sm text-muted-foreground mt-1">{t("backups.runManualHint")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -283,14 +292,14 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
                       {(run.backup_type === "db" || run.backup_type === "full") && (
                         <a href={downloadUrl(run.storage_path, "db.zip")}>
                           <Button size="sm" variant="outline" className="gap-1.5">
-                            <Download className="w-3.5 h-3.5" /> DB
+                            <Download className="w-3.5 h-3.5" /> {t("backups.db")}
                           </Button>
                         </a>
                       )}
                       {(run.backup_type === "files" || run.backup_type === "full") && (
                         <a href={downloadUrl(run.storage_path, "files.zip")}>
                           <Button size="sm" variant="outline" className="gap-1.5">
-                            <Download className="w-3.5 h-3.5" /> Files
+                            <Download className="w-3.5 h-3.5" /> {t("backups.files")}
                           </Button>
                         </a>
                       )}
@@ -306,11 +315,9 @@ export default function BackupsClient({ runs: initialRuns, tenantId, initialSett
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">How this works</CardTitle>
+          <CardTitle className="text-sm">{t("backups.howThisWorks")}</CardTitle>
           <CardDescription>
-            Database backups bundle all your content (pages, posts, products, orders, settings) as JSON/CSV/PDF/WordPress-export into one zip.
-            Files backups bundle your actual media library (images, uploads) into a separate zip. Each type runs on its own schedule and
-            retention — configure above. Manual backups can be run any time regardless of schedule.
+            {t("backups.howThisWorksDesc")}
           </CardDescription>
         </CardHeader>
       </Card>
