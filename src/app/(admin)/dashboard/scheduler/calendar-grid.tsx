@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { rescheduleItem } from "./actions";
 import { dayKeyInTz, timeInTz, wallClockToUtc } from "@/lib/scheduler/tz";
 import type { BrandProfile, ContentItem } from "@/lib/scheduler/types";
+import { useT } from "@/lib/i18n/language-provider";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -18,6 +19,7 @@ export function CalendarGrid({
   timezone: string;
   onSelect: (item: ContentItem) => void;
 }) {
+  const t = useT();
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
     return { year: now.getUTCFullYear(), month: now.getUTCMonth() };
@@ -100,7 +102,7 @@ export function CalendarGrid({
               const n = new Date();
               setCursor({ year: n.getUTCFullYear(), month: n.getUTCMonth() });
             }}>
-            Today
+            {t("scheduler.today")}
           </Button>
           <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => shift(1)}>
             <ChevronRight className="h-4 w-4" />
@@ -165,7 +167,7 @@ export function CalendarGrid({
                     })}
                     {dayItems.length > 4 && (
                       <p className="px-1 text-[10px] text-muted-foreground">
-                        +{dayItems.length - 4} more
+                        {t("scheduler.moreItems", { count: dayItems.length - 4 })}
                       </p>
                     )}
                   </div>

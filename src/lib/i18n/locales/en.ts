@@ -1852,6 +1852,18 @@ export const en = {
   "themes.pagesArchivedInline": ", {count} archived",
   "themes.appliedSuccess": "\"{name}\" applied!{detail}",
   "themes.failedToApply": "Failed to apply template",
+
+  // ── Content Scheduler ────────────────────────────────────────────────────
+  "scheduler.allBrands": "All brands",
+  "scheduler.brands": "Brands",
+  "scheduler.platform": "Platform",
+  "scheduler.status": "Status",
+  "scheduler.type": "Type",
+  "scheduler.mine": "Mine",
+  "scheduler.searchContent": "Search content…",
+  "scheduler.clear": "Clear",
+  "scheduler.today": "Today",
+  "scheduler.moreItems": "+{count} more",
 } as const;
 
 export type TranslationKey = keyof typeof en;

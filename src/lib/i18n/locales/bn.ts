@@ -1858,4 +1858,16 @@ export const bn = {
   "themes.pagesArchivedInline": ", {count}টি আর্কাইভড",
   "themes.appliedSuccess": "\"{name}\" অ্যাপ্লাই হয়েছে!{detail}",
   "themes.failedToApply": "টেমপ্লেট অ্যাপ্লাই করা যায়নি",
+
+  // ── Content Scheduler ────────────────────────────────────────────────────
+  "scheduler.allBrands": "সব ব্র্যান্ড",
+  "scheduler.brands": "ব্র্যান্ডস",
+  "scheduler.platform": "প্ল্যাটফর্ম",
+  "scheduler.status": "স্ট্যাটাস",
+  "scheduler.type": "টাইপ",
+  "scheduler.mine": "আমার",
+  "scheduler.searchContent": "কনটেন্ট খুঁজুন…",
+  "scheduler.clear": "মুছে ফেলুন",
+  "scheduler.today": "আজ",
+  "scheduler.moreItems": "+{count} আরও",
 } satisfies Record<TranslationKey, string>;

@@ -13,6 +13,7 @@ import {
   type BrandProfile, type SchedulerFilters, type Platform,
   type ContentStatus, type ContentType,
 } from "@/lib/scheduler/types";
+import { useT } from "@/lib/i18n/language-provider";
 
 /** Up to this many brands render as inline pills; beyond it they collapse into
  *  a dropdown. Small tenants get one-click brand switching, big ones don't get
@@ -27,6 +28,7 @@ export function FilterBar({
   onChange: (f: SchedulerFilters) => void;
   hasUser: boolean;
 }) {
+  const t = useT();
   const set = <K extends keyof SchedulerFilters>(key: K, value: SchedulerFilters[K]) =>
     onChange({ ...filters, [key]: value });
 
@@ -51,7 +53,7 @@ export function FilterBar({
                 : "hover:bg-muted",
             )}
           >
-            All brands
+            {t("scheduler.allBrands")}
           </button>
           {brands.map((b) => {
             const active = filters.brandIds.includes(b.id);
@@ -72,7 +74,7 @@ export function FilterBar({
         </div>
       ) : (
         <MultiSelect
-          label="Brands"
+          label={t("scheduler.brands")}
           options={brands.map((b) => ({ value: b.id, label: b.name }))}
           selected={filters.brandIds}
           onToggle={(v) => set("brandIds", toggle(filters.brandIds, v))}
@@ -80,22 +82,22 @@ export function FilterBar({
       )}
 
       <MultiSelect
-        label="Platform"
+        label={t("scheduler.platform")}
         options={PLATFORMS.map((p) => ({ value: p, label: PLATFORM_LABELS[p] }))}
         selected={filters.platforms}
         onToggle={(v) => set("platforms", toggle(filters.platforms, v as Platform))}
       />
 
       <MultiSelect
-        label="Status"
+        label={t("scheduler.status")}
         options={STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))}
         selected={filters.statuses}
         onToggle={(v) => set("statuses", toggle(filters.statuses, v as ContentStatus))}
       />
 
       <MultiSelect
-        label="Type"
-        options={CONTENT_TYPES.map((t) => ({ value: t, label: CONTENT_TYPE_LABELS[t] }))}
+        label={t("scheduler.type")}
+        options={CONTENT_TYPES.map((ct) => ({ value: ct, label: CONTENT_TYPE_LABELS[ct] }))}
         selected={filters.types}
         onToggle={(v) => set("types", toggle(filters.types, v as ContentType))}
       />
@@ -107,7 +109,7 @@ export function FilterBar({
           className="h-8 gap-1.5"
           onClick={() => set("mineOnly", !filters.mineOnly)}
         >
-          <User className="h-3.5 w-3.5" /> Mine
+          <User className="h-3.5 w-3.5" /> {t("scheduler.mine")}
         </Button>
       )}
 
@@ -116,7 +118,7 @@ export function FilterBar({
         <Input
           value={filters.q}
           onChange={(e) => set("q", e.target.value)}
-          placeholder="Search content…"
+          placeholder={t("scheduler.searchContent")}
           className="h-8 pl-7 text-sm"
         />
       </div>
@@ -124,7 +126,7 @@ export function FilterBar({
       {dirty ? (
         <Button variant="ghost" size="sm" className="h-8 gap-1"
           onClick={() => onChange(EMPTY_FILTERS)}>
-          <X className="h-3.5 w-3.5" /> Clear
+          <X className="h-3.5 w-3.5" /> {t("scheduler.clear")}
         </Button>
       ) : null}
     </div>
