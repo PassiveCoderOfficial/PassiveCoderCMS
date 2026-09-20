@@ -13,10 +13,12 @@ import {
   type Bucket, type BrandChannel, type BrandProfile, type ContentItem,
   type SchedulerFilters, type Platform, type ContentStatus,
 } from "@/lib/scheduler/types";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 import { dayKeyInTz, timeInTz } from "@/lib/scheduler/tz";
 import { ItemSheet } from "./item-sheet";
 import { CalendarGrid } from "./calendar-grid";
 import { FilterBar } from "./filter-bar";
+import { useT } from "@/lib/i18n/language-provider";
 
 const BUCKET_ICONS = {
   upcoming: ListChecks,
@@ -28,7 +30,7 @@ const BUCKET_ICONS = {
 
 /** Day headings read as "Today / Tomorrow / weekday" rather than raw dates —
  *  the daily queue is scanned, not read. */
-function dayLabel(iso: string, tz: string) {
+function dayLabel(iso: string, tz: string, t: (k: TranslationKey) => string) {
   const d = new Date(iso);
   const fmt = (opts: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat("en-GB", { ...opts, timeZone: tz }).format(d);
@@ -39,8 +41,8 @@ function dayLabel(iso: string, tz: string) {
     .format(new Date(Date.now() + 86400000));
 
   const date = fmt({ weekday: "short", day: "numeric", month: "short" });
-  if (target === today) return `Today · ${date}`;
-  if (target === tomorrow) return `Tomorrow · ${date}`;
+  if (target === today) return `${t("scheduler.today2")} · ${date}`;
+  if (target === tomorrow) return `${t("scheduler.tomorrow")} · ${date}`;
   return date;
 }
 
@@ -58,6 +60,7 @@ export default function SchedulerClient({
   channels: BrandChannel[];
   currentUserId: string | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [filters, setFilters] = useState<SchedulerFilters>(EMPTY_FILTERS);
@@ -81,7 +84,7 @@ export default function SchedulerClient({
       if (filters.types.length && !filters.types.includes(item.content_type)) return false;
       if (filters.mineOnly && item.assignee_id !== currentUserId) return false;
       if (filters.platforms.length) {
-        const platforms = (item.content_targets ?? []).map((t) => t.platform);
+        const platforms = (item.content_targets ?? []).map((tgt) => tgt.platform);
         if (!platforms.some((p) => filters.platforms.includes(p))) return false;
       }
       if (filters.q) {
@@ -113,13 +116,13 @@ export default function SchedulerClient({
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Content Scheduler</h1>
+          <h1 className="text-xl font-semibold">{t("scheduler.pageTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            Plan, schedule and track social content across every brand.
+            {t("scheduler.pageSubtitle")}
           </p>
         </div>
         <Button onClick={() => { setEditing(null); setCreating(true); }} className="gap-1.5">
-          <Plus className="h-4 w-4" /> New content
+          <Plus className="h-4 w-4" /> {t("scheduler.newContentBtn")}
         </Button>
       </div>
 
@@ -176,15 +179,15 @@ export default function SchedulerClient({
         <div className="rounded-lg border border-dashed py-16 text-center">
           <p className="text-sm text-muted-foreground">
             {bucket === "attention"
-              ? "Nothing overdue or failed. All clear."
+              ? t("scheduler.allClear")
               : bucket === "backlog"
-                ? "No ideas parked yet — add one and schedule it later."
-                : "Nothing here yet."}
+                ? t("scheduler.noIdeasParked")
+                : t("scheduler.nothingHereYet")}
           </p>
           {brands.length === 0 && (
             <Button variant="outline" size="sm" className="mt-3"
               onClick={() => router.push("/dashboard/scheduler/brands")}>
-              Set up your first brand
+              {t("scheduler.setUpFirstBrand")}
             </Button>
           )}
         </div>
@@ -194,7 +197,7 @@ export default function SchedulerClient({
             <div key={day || "all"}>
               {day && day !== "undated" && (
                 <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {dayLabel(dayItems[0].scheduled_at ?? dayItems[0].published_at ?? "", tz)}
+                  {dayLabel(dayItems[0].scheduled_at ?? dayItems[0].published_at ?? "", tz, t)}
                 </h2>
               )}
               <div className="rounded-lg border divide-y bg-card">
@@ -226,14 +229,14 @@ export default function SchedulerClient({
                       </span>
 
                       <span className="hidden shrink-0 items-center gap-1 sm:flex">
-                        {targets.slice(0, 5).map((t) => (
+                        {targets.slice(0, 5).map((tgt) => (
                           <span
-                            key={t.id}
+                            key={tgt.id}
                             className="rounded px-1 py-0.5 text-[10px] font-semibold text-white"
-                            style={{ background: PLATFORM_COLORS[t.platform as Platform] }}
-                            title={t.platform}
+                            style={{ background: PLATFORM_COLORS[tgt.platform as Platform] }}
+                            title={tgt.platform}
                           >
-                            {PLATFORM_SHORT[t.platform as Platform]}
+                            {PLATFORM_SHORT[tgt.platform as Platform]}
                           </span>
                         ))}
                       </span>

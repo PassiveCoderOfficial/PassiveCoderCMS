@@ -21,6 +21,7 @@ import { wallClockToUtc, utcToWallClock } from "@/lib/scheduler/tz";
 import {
   saveContentItem, deleteContentItem, duplicateContentItem, markTargetPublished,
 } from "./actions";
+import { useT } from "@/lib/i18n/language-provider";
 
 export function ItemSheet({
   item, brands, channels, open, onClose, onSaved,
@@ -32,6 +33,7 @@ export function ItemSheet({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useT();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +50,7 @@ export function ItemSheet({
   const [status, setStatus] = useState<ContentStatus>(item?.status ?? "idea");
   const [when, setWhen] = useState(utcToWallClock(item?.scheduled_at ?? null, tz));
   const [platforms, setPlatforms] = useState<Platform[]>(
-    (item?.content_targets ?? []).map((t) => t.platform as Platform),
+    (item?.content_targets ?? []).map((tgt) => tgt.platform as Platform),
   );
 
   // Only platforms the selected brand actually runs are offerable.
@@ -58,8 +60,8 @@ export function ItemSheet({
 
   const save = () => {
     setError(null);
-    if (!title.trim()) return setError("Title is required.");
-    if (!brandId) return setError("Pick a brand.");
+    if (!title.trim()) return setError(t("scheduler.titleRequired"));
+    if (!brandId) return setError(t("scheduler.pickBrand"));
 
     startTransition(async () => {
       const res = await saveContentItem({
@@ -84,19 +86,19 @@ export function ItemSheet({
     <SidePanel
       open={open}
       onOpenChange={(o) => !o && onClose()}
-      title={item ? "Edit content" : "New content"}
-      description={brand ? `${brand.name} · ${tz}` : undefined}
+      title={item ? t("scheduler.editContent") : t("scheduler.newContent")}
+      description={brand ? t("scheduler.brandTz", { brand: brand.name, tz }) : undefined}
       footer={
         <>
           {item && (
             <>
-              <Button variant="outline" size="icon" title="Duplicate"
+              <Button variant="outline" size="icon" title={t("scheduler.duplicate")}
                 onClick={() => startTransition(async () => {
                   await duplicateContentItem(item.id); onSaved();
                 })}>
                 <Copy className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" title="Delete"
+              <Button variant="outline" size="icon" title={t("scheduler.delete")}
                 className="text-red-600 hover:text-red-700"
                 onClick={() => startTransition(async () => {
                   await deleteContentItem(item.id); onSaved();
@@ -106,10 +108,10 @@ export function ItemSheet({
             </>
           )}
           <div className="ml-auto flex gap-2">
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>{t("scheduler.cancel")}</Button>
             <Button onClick={save} disabled={pending}>
               {pending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-              Save
+              {t("scheduler.save")}
             </Button>
           </div>
         </>
@@ -117,9 +119,9 @@ export function ItemSheet({
     >
         <div className="space-y-4 px-4 py-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Brand">
+            <Field label={t("scheduler.brand")}>
               <Select value={brandId} onValueChange={setBrandId}>
-                <SelectTrigger><SelectValue placeholder="Select brand" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("scheduler.selectBrand")} /></SelectTrigger>
                 <SelectContent>
                   {brands.map((b) => (
                     <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
@@ -128,40 +130,40 @@ export function ItemSheet({
               </Select>
             </Field>
 
-            <Field label="Type">
+            <Field label={t("scheduler.type2")}>
               <Select value={type} onValueChange={(v) => setType(v as ContentType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CONTENT_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{CONTENT_TYPE_LABELS[t]}</SelectItem>
+                  {CONTENT_TYPES.map((ct) => (
+                    <SelectItem key={ct} value={ct}>{CONTENT_TYPE_LABELS[ct]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Field>
           </div>
 
-          <Field label="Title">
+          <Field label={t("scheduler.title")}>
             <Input value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="What is this piece about?" />
+              placeholder={t("scheduler.titlePlaceholder")} />
           </Field>
 
-          <Field label="Hook" hint="Opening line or thumbnail text">
+          <Field label={t("scheduler.hook")} hint={t("scheduler.hookHint")}>
             <Input value={hook} onChange={(e) => setHook(e.target.value)}
-              placeholder="The first three seconds" />
+              placeholder={t("scheduler.hookPlaceholder")} />
           </Field>
 
-          <Field label="Script / Caption">
+          <Field label={t("scheduler.scriptCaption")}>
             <Textarea rows={6} value={body} onChange={(e) => setBody(e.target.value)}
-              placeholder="Talking points, script or the full caption…" />
+              placeholder={t("scheduler.scriptPlaceholder")} />
           </Field>
 
-          <Field label="Call to action">
+          <Field label={t("scheduler.callToAction")}>
             <Input value={cta} onChange={(e) => setCta(e.target.value)}
-              placeholder="e.g. DM 'SITE' for a free audit" />
+              placeholder={t("scheduler.ctaPlaceholder")} />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Pillar">
+            <Field label={t("scheduler.pillar")}>
               <Select value={pillar} onValueChange={(v) => setPillar(v as Pillar)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -172,7 +174,7 @@ export function ItemSheet({
               </Select>
             </Field>
 
-            <Field label="Status">
+            <Field label={t("scheduler.status2")}>
               <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -184,15 +186,15 @@ export function ItemSheet({
             </Field>
           </div>
 
-          <Field label="Scheduled for" hint={`Brand timezone — ${tz}`}>
+          <Field label={t("scheduler.scheduledFor")} hint={t("scheduler.brandTimezoneHint", { tz })}>
             <Input type="datetime-local" value={when}
               onChange={(e) => setWhen(e.target.value)} />
           </Field>
 
-          <Field label="Publish to">
+          <Field label={t("scheduler.publishTo")}>
             {available.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                This brand has no channels yet — add them under Brands.
+                {t("scheduler.noChannelsHint")}
               </p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
@@ -221,11 +223,11 @@ export function ItemSheet({
           {/* Manual publishing: mark each platform done and keep the live URL
               for later reference. API adapters will replace this block. */}
           {item && (item.content_targets ?? []).length > 0 && (
-            <Field label="Publish status">
+            <Field label={t("scheduler.publishStatus")}>
               <div className="space-y-1.5">
-                {(item.content_targets ?? []).map((t) => (
-                  <TargetRow key={t.id} targetId={t.id} platform={t.platform as Platform}
-                    status={t.status} url={t.external_post_url} onDone={onSaved} />
+                {(item.content_targets ?? []).map((tgt) => (
+                  <TargetRow key={tgt.id} targetId={tgt.id} platform={tgt.platform as Platform}
+                    status={tgt.status} url={tgt.external_post_url} onDone={onSaved} />
                 ))}
               </div>
             </Field>
@@ -243,6 +245,7 @@ function TargetRow({
   targetId: string; platform: Platform; status: string;
   url: string | null; onDone: () => void;
 }) {
+  const t = useT();
   const [value, setValue] = useState(url ?? "");
   const [pending, startTransition] = useTransition();
   const done = status === "published";
@@ -255,7 +258,7 @@ function TargetRow({
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={done ? "Post URL" : "Paste the post URL after publishing"}
+        placeholder={done ? t("scheduler.postUrl") : t("scheduler.pastePostUrl")}
         className="h-8 text-xs"
       />
       {done && value ? (
@@ -269,7 +272,7 @@ function TargetRow({
           onClick={() => startTransition(async () => {
             await markTargetPublished(targetId, value || null); onDone();
           })}>
-          {done ? "Saved" : "Mark done"}
+          {done ? t("scheduler.saved") : t("scheduler.markDone")}
         </Button>
       )}
     </div>

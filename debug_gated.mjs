@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const OUT = process.argv[2];
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 } });
+const page = await ctx.newPage();
+
+await page.goto('https://passivecoder.com/login', { waitUntil: 'networkidle' });
+await page.fill('input[type="email"]', 'walibdpro@gmail.com');
+await page.fill('input[type="password"]', 'Itsn0t@p@ssw0rd');
+await page.click('button[type="submit"]');
+await page.waitForTimeout(3000);
+
+await page.goto('https://passivecoder.com/dashboard/pages/1e393fc6-031c-4681-a37b-e022d972f256', { waitUntil: 'networkidle', timeout: 30000 });
+await page.waitForTimeout(2000);
+console.log('url:', page.url());
+await page.screenshot({ path: `${OUT}/debug-country-page.png` });
+await b.close();
