@@ -5,6 +5,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { BlockRenderer } from "./block-renderer";
+import { BlockErrorBoundary } from "./block-error-boundary";
 import { BlockToolbar } from "./block-toolbar";
 import { BlockContextMenu } from "./block-context-menu";
 import { cn } from "@/lib/utils";
@@ -138,7 +139,9 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
             Hidden
           </span>
         )}
-        <BlockRenderer block={block} isPreview={!isEditing} path={path} />
+        <BlockErrorBoundary blockId={block.id} blockType={block.type}>
+          <BlockRenderer block={block} isPreview={!isEditing} path={path} />
+        </BlockErrorBoundary>
       </div>
     </BlockContextMenu>
   );

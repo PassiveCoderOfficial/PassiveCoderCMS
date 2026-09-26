@@ -7,6 +7,8 @@ import { PageRenderer } from "@/components/site/page-renderer";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
 import { fetchGlobalLayout, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { isSaaS } from "@/lib/flags";
+import { resolveTenant } from "@/lib/tenant/resolve";
+import { publicUrl } from "@/lib/tenant/site-urls";
 import type { Block, Page } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -61,8 +63,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...(seo?.keywords ? { keywords: seo.keywords } : {}),
     openGraph: og,
     ...(seo?.no_index ? { robots: { index: false } } : {}),
-    ...(seo?.canonical ? { alternates: { canonical: seo.canonical } } : {}),
+    ...(await resolveCanonical(seo?.canonical, tenantId, pageSlug)),
   };
+}
+
+/**
+ * A page only got a canonical tag if a client had manually typed one into
+ * their SEO settings — nobody does, so almost every published page had
+ * none at all. Without one, a tenant whose .passivecoder.com subdomain
+ * still resolves alongside an attached custom domain (the normal state —
+ * attaching a custom domain never stops the subdomain from working) has no
+ * signal telling search engines which host is authoritative, and can be
+ * indexed as duplicate content under both. Defaults to this page's own
+ * real address (custom domain if attached, else the subdomain) via the
+ * same publicUrl() the dashboard's Visit Site links use — the one place
+ * "what is this tenant's real address" is decided. A manually-set
+ * seo.canonical always wins; this only fills the gap when there isn't one.
+ */
+async function resolveCanonical(
+  manualCanonical: string | null | undefined,
+  tenantId: string | null,
+  pageSlug: string,
+): Promise<Pick<Metadata, "alternates">> {
+  if (manualCanonical) return { alternates: { canonical: manualCanonical } };
+  if (!tenantId) return {};
+
+  const reqHeaders = await headers();
+  const tenant = await resolveTenant(reqHeaders.get("host") ?? "");
+  if (!tenant) return {};
+
+  const path = pageSlug === "home" ? "/" : `/${pageSlug}`;
+  return { alternates: { canonical: publicUrl({ slug: tenant.slug, custom_domain: tenant.custom_domain }, path) } };
 }
 
 export default async function SitePage({ params }: Props) {

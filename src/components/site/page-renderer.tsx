@@ -79,7 +79,26 @@ interface PageBlockProps {
 // hand (section > row > column > card is already 3) with room to spare.
 const MAX_CONTAINER_DEPTH = 4;
 
-async function ServerBlock({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
+/**
+ * One block crashing must never take the rest of the page down with it — a
+ * client's whole site 500ing because one section has bad/legacy data is a
+ * real production outage, not a cosmetic gap. Confirmed live: a `features`
+ * block with `items: null` 500'd the entire page, including a good text
+ * block both above and below it. This wrapper is the only thing standing
+ * between "one broken section" and "the whole site is down" — every render
+ * path (top-level PageRenderer below, and container's own nested children)
+ * must go through this, not the raw renderer.
+ */
+async function ServerBlock(props: PageBlockProps) {
+  try {
+    return await ServerBlockUnsafe(props);
+  } catch (err) {
+    console.error(`[page-renderer] block "${props.block.id}" (${props.block.type}) failed to render:`, err);
+    return null;
+  }
+}
+
+async function ServerBlockUnsafe({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
   const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding?.top,

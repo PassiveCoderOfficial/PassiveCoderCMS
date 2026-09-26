@@ -21,9 +21,35 @@ import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
+import { publicUrl } from "@/lib/tenant/site-urls";
 import type { Block } from "@/types/cms";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * A tenant's "/" is served by this page, not (site)/[...slug] (Next's
+ * static-segment-before-catch-all precedence — see this file's own comment
+ * below), so it never picked up that route's canonical fix. Homepages were
+ * the one page on every tenant site with zero canonical tag at all. Reuses
+ * the tenant's real address (custom domain if attached, else subdomain) —
+ * same publicUrl() the dashboard's Visit Site links and every other page's
+ * canonical use.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const reqHeaders = await headers();
+  const tenantSlug = reqHeaders.get("x-tenant-slug");
+  if (!tenantSlug) return {};
+
+  const admin = await createAdminClient();
+  const { data: tenant } = await admin
+    .from("tenants")
+    .select("custom_domain")
+    .eq("slug", tenantSlug)
+    .maybeSingle();
+
+  return { alternates: { canonical: publicUrl({ slug: tenantSlug, custom_domain: tenant?.custom_domain }, "/") } };
+}
 
 export default async function MarketingHomePage() {
   const reqHeaders = await headers();
