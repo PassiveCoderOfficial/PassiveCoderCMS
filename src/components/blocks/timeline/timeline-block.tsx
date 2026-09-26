@@ -3,6 +3,7 @@ import type { TimelineBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
 import { Circle } from "lucide-react";
+import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
   if (!name) return null;
@@ -83,7 +84,7 @@ export function TimelineBlock({ block }: { block: TimelineBlockProps }) {
                   {item.date && <p className="text-xs text-muted-foreground mb-1">{item.date}</p>}
                   <h3 className="font-semibold text-lg">{item.title}</h3>
                   {item.description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.description}</p>}
-                  {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="mt-3 rounded-lg w-full max-w-sm object-cover" />}
+                  {item.imageUrl && <SiteImage src={item.imageUrl} alt={item.title} sizes="384px" widths={[384, 768]} className="mt-3 rounded-lg w-full max-w-sm object-cover" />}
                 </div>
               </div>
             ))}

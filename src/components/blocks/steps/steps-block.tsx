@@ -2,6 +2,7 @@ import React from "react";
 import type { StepsBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
+import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
   if (!name) return null;
@@ -34,7 +35,7 @@ function StepsTimelineConnected({ block }: { block: StepsBlockProps }) {
               <div className="flex-1 pt-1.5">
                 <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
                 {item.description && <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.description}</p>}
-                {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="mt-3 rounded-lg w-full max-w-xs object-cover" />}
+                {item.imageUrl && <SiteImage src={item.imageUrl} alt={item.title} sizes="320px" widths={[320, 640]} className="mt-3 rounded-lg w-full max-w-xs object-cover" />}
               </div>
             </div>
           ))}
@@ -236,7 +237,7 @@ function StepsSplitMedia({ block }: { block: StepsBlockProps }) {
           <div key={item.id} className={cn("flex flex-col gap-6 sm:flex-row sm:items-center", i % 2 === 1 && "sm:flex-row-reverse")}>
             {item.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.imageUrl} alt={item.title} className="w-full sm:w-2/5 h-52 object-cover rounded-xl" loading="lazy" />
+              <SiteImage src={item.imageUrl} alt={item.title} sizes="(min-width: 640px) 40vw, 100vw" className="w-full sm:w-2/5 h-52 object-cover rounded-xl" />
             ) : (
               <div className="w-full sm:w-2/5 h-52 rounded-xl bg-primary/5 flex items-center justify-center">
                 <span className="text-5xl font-black text-primary/20">{stepNumber(item, i)}</span>
@@ -311,7 +312,7 @@ export function StepsBlock({ block }: { block: StepsBlockProps }) {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
                 {item.description && <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{item.description}</p>}
-                {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="mt-3 rounded-lg w-full max-w-xs object-cover" />}
+                {item.imageUrl && <SiteImage src={item.imageUrl} alt={item.title} sizes="320px" widths={[320, 640]} className="mt-3 rounded-lg w-full max-w-xs object-cover" />}
               </div>
             </div>
           ))}

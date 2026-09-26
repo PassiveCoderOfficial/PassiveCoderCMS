@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import type { TestimonialsBlockProps } from "@/types/cms";
 import { Star, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 type Item = TestimonialsBlockProps["data"]["items"][number];
 
@@ -20,7 +21,7 @@ function Stars({ rating }: { rating?: number }) {
 
 function Avatar({ item }: { item: Item }) {
   if (item.avatar) {
-    return <img src={item.avatar} alt={item.name} className="w-10 h-10 rounded-full object-cover shrink-0" />;
+    return <SiteImage src={item.avatar} alt={item.name} sizes="40px" widths={[80, 120]} className="w-10 h-10 rounded-full object-cover shrink-0" />;
   }
   return (
     <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">

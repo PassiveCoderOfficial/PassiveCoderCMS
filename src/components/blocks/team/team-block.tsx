@@ -2,6 +2,7 @@ import React from "react";
 import type { TeamBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { Mail, Globe } from "lucide-react";
+import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   email: Mail, website: Globe,
@@ -41,7 +42,7 @@ function TeamAvatarCardsPro({ data }: { data: TeamBlockProps["data"] }) {
           >
             <div className="w-24 h-24 rounded-full overflow-hidden bg-primary/10 shrink-0 mb-4">
               {m.avatar ? (
-                <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+                <SiteImage src={m.avatar} alt={m.name} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" widths={[320, 640, 960]} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary">
                   {initialsOf(m.name)}
@@ -89,7 +90,7 @@ function TeamMinimalList({ data }: { data: TeamBlockProps["data"] }) {
           <div key={m.id} className="flex items-center gap-4 py-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 shrink-0">
               {m.avatar ? (
-                <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+                <SiteImage src={m.avatar} alt={m.name} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" widths={[320, 640, 960]} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm font-bold text-primary">
                   {initialsOf(m.name)}
@@ -129,7 +130,7 @@ function Avatar({ member, className, rounded = "full" }: {
   const roundedCls = { full: "rounded-full", xl: "rounded-2xl", none: "" }[rounded];
   if (member.avatar) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={member.avatar} alt={member.name} className={cn("object-cover", roundedCls, className)} loading="lazy" />;
+    return <SiteImage src={member.avatar} alt={member.name} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" widths={[160, 320, 640, 960]} className={cn("object-cover", roundedCls, className)} />;
   }
   return (
     <div className={cn("flex items-center justify-center bg-primary/10 text-primary font-semibold", roundedCls, className)}>
@@ -321,7 +322,7 @@ export function TeamBlock({ block }: { block: TeamBlockProps }) {
               layout === "list" ? "w-16 h-16" : "w-24 h-24 mb-4",
             )}>
               {m.avatar ? (
-                <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+                <SiteImage src={m.avatar} alt={m.name} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" widths={[320, 640, 960]} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary">
                   {m.name.charAt(0)}

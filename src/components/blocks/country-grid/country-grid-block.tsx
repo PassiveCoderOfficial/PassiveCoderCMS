@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { CountryGridBlockProps, CountryGridItem } from "@/types/cms";
 import { cn } from "@/lib/utils";
+import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 function CountryCard({ item, accent }: { item: CountryGridItem; accent: string }) {
   const inner = (
@@ -9,7 +10,7 @@ function CountryCard({ item, accent }: { item: CountryGridItem; accent: string }
       {item.image && (
         <div className="relative h-36 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.image} alt={item.country} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <SiteImage src={item.image} alt={item.country} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           {item.flagEmoji && (
             <span className="absolute top-3 left-3 text-2xl drop-shadow">{item.flagEmoji}</span>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { SiteImage } from "./site-image";
 
 /**
  * Shared design primitives consumed by every block. Built once here so the
@@ -98,7 +99,7 @@ export function Avatar({
     .toUpperCase();
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name ?? ""} width={size} height={size} className={cn("rounded-full object-cover shrink-0", className)} style={{ width: size, height: size }} />;
+    return <SiteImage src={src} alt={name ?? ""} width={size} height={size} sizes={`${size}px`} widths={[size * 2, size * 3]} className={cn("rounded-full object-cover shrink-0", className)} style={{ width: size, height: size }} />;
   }
   return (
     <span

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
 import { Check } from "lucide-react";
 import Image from "next/image";
+import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
   if (!name) return null;
@@ -169,7 +170,7 @@ function FeaturesAlternatingMedia({ data }: { data: FeaturesBlockProps["data"] }
           <div key={item.id} className={cn("flex flex-col gap-8 sm:flex-row sm:items-center", i % 2 === 1 && "sm:flex-row-reverse")}>
             {item.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.imageUrl} alt={item.title} className="w-full sm:w-1/2 h-60 object-cover rounded-2xl" loading="lazy" />
+              <SiteImage src={item.imageUrl} alt={item.title} sizes="(min-width: 640px) 50vw, 100vw" className="w-full sm:w-1/2 h-60 object-cover rounded-2xl" />
             ) : (
               <div className="w-full sm:w-1/2 h-60 rounded-2xl bg-primary/5 flex items-center justify-center">
                 <DynIcon name={item.icon} className="h-12 w-12 text-primary/40" />
@@ -310,7 +311,7 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
         {items.map((item, i) => (
           <div key={item.id} className={cn("flex flex-col md:flex-row items-center gap-10", i % 2 !== 0 && "md:flex-row-reverse")}>
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt={item.title} className="w-full md:w-1/2 rounded-xl object-cover aspect-video" />
+              <SiteImage src={item.imageUrl} alt={item.title} sizes="(min-width: 768px) 50vw, 100vw" className="w-full md:w-1/2 rounded-xl object-cover aspect-video" />
             ) : (
               <div className="w-full md:w-1/2 rounded-xl bg-muted aspect-video flex items-center justify-center">
                 <DynIcon name={item.icon} className="w-12 h-12 text-primary" />
