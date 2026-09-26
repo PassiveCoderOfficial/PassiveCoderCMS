@@ -38,5 +38,5 @@ where tenant_id is not null
   and (ga_oauth_refresh_token is not null or ga_oauth_connected_email is not null)
 on conflict (tenant_id) do nothing;
 
--- Column drop is in 102, run only after the code reading tenant_integrations
+-- Column drop is in 103, run only after the code reading tenant_integrations
 -- is deployed — dropping first would break the live GA connection mid-deploy.
