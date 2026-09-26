@@ -49,6 +49,10 @@ export async function POST(req: NextRequest) {
       tenant_id: tenantId,
       contact_id: contactId,
       staff_id: body.staff_id || null,
+      project_id: body.project_id || null,
+      parent_job_id: body.parent_job_id || null,
+      is_milestone: !!body.is_milestone,
+      priority: body.priority || "medium",
       title: body.title.trim(),
       description: body.description?.trim() || null,
       address: body.address?.trim() || null,
@@ -77,7 +81,8 @@ export async function PATCH(req: NextRequest) {
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of ["title", "description", "address", "customer_name", "customer_phone",
-                     "scheduled_date", "scheduled_time", "price", "notes"] as const) {
+                     "scheduled_date", "scheduled_time", "price", "notes", "project_id",
+                     "parent_job_id", "is_milestone", "priority", "position"] as const) {
     if (key in fields) patch[key] = fields[key];
   }
   if ("staff_id" in fields) {

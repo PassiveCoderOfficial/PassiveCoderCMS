@@ -8,14 +8,16 @@ export default async function JobsPage() {
   const tid = await getCurrentTenantId();
   const supabase = await createClient();
 
-  const [{ data: jobs }, { data: staff }] = await Promise.all([
+  const [{ data: jobs }, { data: staff }, { data: projects }] = await Promise.all([
     supabase.from("jobs").select("*, staff:tenant_team(id, name, phone)")
-      .eq("tenant_id", tid)
+      .eq("tenant_id", tid).is("project_id", null)
       .order("scheduled_date", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false })
       .limit(300),
     supabase.from("tenant_team").select("*").eq("tenant_id", tid).order("created_at"),
+    supabase.from("projects").select("*, contacts(id, first_name, last_name, company)")
+      .eq("tenant_id", tid).order("created_at", { ascending: false }),
   ]);
 
-  return <JobsClient initialJobs={jobs ?? []} initialStaff={staff ?? []} />;
+  return <JobsClient initialJobs={jobs ?? []} initialStaff={staff ?? []} initialProjects={projects ?? []} />;
 }

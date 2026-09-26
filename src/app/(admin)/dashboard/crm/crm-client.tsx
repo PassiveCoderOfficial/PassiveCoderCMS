@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Users, KanbanSquare, CheckSquare, Settings2, Search, Plus, X,
   Loader2, Mail, Phone, MessageCircle, Trash2, Check, ChevronLeft,
   ChevronRight, StickyNote, Clock, GripVertical, Pencil,
+  Briefcase, FolderKanban, FileText, Copy, ExternalLink,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/language-provider";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
@@ -30,6 +32,9 @@ interface Task {
   status: "open" | "done" | "cancelled"; remind_via: string;
   contacts?: { id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; whatsapp: string | null } | null;
 }
+interface LinkedJob { id: string; title: string; status: string; price: number | null; project_id: string | null }
+interface LinkedProject { id: string; name: string; status: string }
+interface LinkedInvoice { id: string; invoice_number: string; status: string; total: number; currency: string; public_token: string }
 
 type TFn = ReturnType<typeof useT>;
 
@@ -49,6 +54,13 @@ function contactName(c: { first_name?: string | null; last_name?: string | null;
 }
 function waLink(num: string | null | undefined) {
   return num ? `https://wa.me/${num.replace(/\D/g, "")}` : null;
+}
+function money(n: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(Number(n));
+  } catch {
+    return `${currency} ${Number(n).toFixed(2)}`;
+  }
 }
 function timeAgo(iso: string, t: TFn) {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -74,6 +86,10 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
   const [contact, setContact] = useState<Contact | null>(null);
   const [events, setEvents] = useState<ContactEvent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [jobs, setJobs] = useState<LinkedJob[]>([]);
+  const [linkedProjects, setLinkedProjects] = useState<LinkedProject[]>([]);
+  const [invoices, setInvoices] = useState<LinkedInvoice[]>([]);
+  const [copiedInvoice, setCopiedInvoice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [note, setNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
@@ -88,6 +104,7 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
     if (res.ok) {
       const d = await res.json();
       setContact(d.contact); setEvents(d.events); setTasks(d.tasks);
+      setJobs(d.jobs ?? []); setLinkedProjects(d.projects ?? []); setInvoices(d.invoices ?? []);
       setForm(d.contact);
     }
     setLoading(false);
@@ -156,6 +173,12 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
   }
 
   const wa = waLink(contact?.whatsapp ?? contact?.phone);
+
+  function copyInvoiceLink(inv: LinkedInvoice) {
+    navigator.clipboard.writeText(`${window.location.origin}/invoice/${inv.public_token}`);
+    setCopiedInvoice(inv.id);
+    setTimeout(() => setCopiedInvoice(null), 1500);
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -264,6 +287,45 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
                 <button onClick={addTask} className={btnGhost}><Plus className="w-4 h-4" /></button>
               </div>
             </div>
+
+            {/* Jobs & projects */}
+            {(jobs.length > 0 || linkedProjects.length > 0) && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-2">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2"><Briefcase className="w-4 h-4 text-indigo-400" /> {t("crm.workTitle")}</h3>
+                {linkedProjects.map((p) => (
+                  <Link key={p.id} href="/dashboard/jobs" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white">
+                    <FolderKanban className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                    <span className="truncate">{p.name}</span>
+                    <span className="ml-auto text-xs text-gray-500 shrink-0">{p.status}</span>
+                  </Link>
+                ))}
+                {jobs.filter(j => !j.project_id).map((j) => (
+                  <Link key={j.id} href="/dashboard/jobs" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white">
+                    <Briefcase className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                    <span className="truncate">{j.title}</span>
+                    <span className="ml-auto text-xs text-gray-500 shrink-0">{j.status}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Invoices */}
+            {invoices.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-2">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2"><FileText className="w-4 h-4 text-indigo-400" /> {t("crm.invoicesTitle")}</h3>
+                {invoices.map((inv) => (
+                  <div key={inv.id} className="flex items-center gap-2 text-sm text-gray-300">
+                    <span className="truncate">{inv.invoice_number}</span>
+                    <span className="text-xs text-gray-500">{inv.status}</span>
+                    <span className="ml-auto text-xs text-gray-400 shrink-0">{money(inv.total, inv.currency)}</span>
+                    <button onClick={() => copyInvoiceLink(inv)} className="p-1 text-gray-500 hover:text-white shrink-0">
+                      {copiedInvoice === inv.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                    <a href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-500 hover:text-white shrink-0"><ExternalLink className="w-3.5 h-3.5" /></a>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Note composer + timeline */}
             <div className="space-y-3">

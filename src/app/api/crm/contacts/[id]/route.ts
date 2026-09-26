@@ -9,7 +9,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [{ data: contact }, { data: events }, { data: tasks }] = await Promise.all([
+  const [{ data: contact }, { data: events }, { data: tasks }, { data: jobs }, { data: projects }, { data: invoices }] = await Promise.all([
     supabase.from("contacts").select("*, crm_stages(id, name, color)")
       .eq("id", id).eq("tenant_id", tenantId).maybeSingle(),
     supabase.from("contact_events").select("*")
@@ -18,10 +18,22 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     supabase.from("crm_tasks").select("*")
       .eq("contact_id", id).eq("tenant_id", tenantId)
       .order("due_at").limit(50),
+    supabase.from("jobs").select("id, title, status, price, project_id")
+      .eq("contact_id", id).eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false }).limit(50),
+    supabase.from("projects").select("id, name, status")
+      .eq("contact_id", id).eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false }).limit(50),
+    supabase.from("invoices").select("id, invoice_number, status, total, currency, public_token")
+      .eq("contact_id", id).eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false }).limit(50),
   ]);
 
   if (!contact) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ contact, events: events ?? [], tasks: tasks ?? [] });
+  return NextResponse.json({
+    contact, events: events ?? [], tasks: tasks ?? [],
+    jobs: jobs ?? [], projects: projects ?? [], invoices: invoices ?? [],
+  });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -45,10 +57,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if ("stage_id" in body) {
     patch.stage_id = body.stage_id || null;
     const { data: prev } = await supabase.from("contacts")
-      .select("stage_id, crm_stages(name)").eq("id", id).eq("tenant_id", tenantId).maybeSingle();
+      .select("stage_id, first_name, last_name, company, crm_stages(name)")
+      .eq("id", id).eq("tenant_id", tenantId).maybeSingle();
     if (prev && prev.stage_id !== body.stage_id) {
       const { data: newStage } = body.stage_id
-        ? await supabase.from("crm_stages").select("name").eq("id", body.stage_id).maybeSingle()
+        ? await supabase.from("crm_stages").select("name, is_won").eq("id", body.stage_id).maybeSingle()
         : { data: null };
       const { data: { user } } = await supabase.auth.getUser();
       await supabase.from("contact_events").insert({
@@ -59,6 +72,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         meta: { from_stage: prev.stage_id, to_stage: body.stage_id },
         actor_user_id: user?.id ?? null,
       });
+
+      // Deal won → kick off delivery with a project, unless one already exists
+      if (newStage?.is_won) {
+        const { data: existingProject } = await supabase.from("projects")
+          .select("id").eq("contact_id", id).eq("tenant_id", tenantId).limit(1).maybeSingle();
+        if (!existingProject) {
+          const clientLabel = prev.company || [prev.first_name, prev.last_name].filter(Boolean).join(" ") || "Client";
+          const { data: project } = await supabase.from("projects")
+            .insert({ tenant_id: tenantId, contact_id: id, name: `${clientLabel} — Project` })
+            .select("id, name").single();
+          if (project) {
+            await supabase.from("contact_events").insert({
+              tenant_id: tenantId,
+              contact_id: id,
+              type: "system",
+              title: `Project created: ${project.name}`,
+              actor_user_id: user?.id ?? null,
+            });
+          }
+        }
+      }
     }
   }
 
