@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { Block } from "@/types/cms";
 import { cn } from "@/lib/utils";
+import { BlockErrorBoundary } from "./block-error-boundary";
 import { HeroBlock } from "@/components/blocks/hero/hero-block";
 import { SliderBlock } from "@/components/blocks/slider/slider-block";
 import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
@@ -79,26 +80,7 @@ interface PageBlockProps {
 // hand (section > row > column > card is already 3) with room to spare.
 const MAX_CONTAINER_DEPTH = 4;
 
-/**
- * One block crashing must never take the rest of the page down with it — a
- * client's whole site 500ing because one section has bad/legacy data is a
- * real production outage, not a cosmetic gap. Confirmed live: a `features`
- * block with `items: null` 500'd the entire page, including a good text
- * block both above and below it. This wrapper is the only thing standing
- * between "one broken section" and "the whole site is down" — every render
- * path (top-level PageRenderer below, and container's own nested children)
- * must go through this, not the raw renderer.
- */
-async function ServerBlock(props: PageBlockProps) {
-  try {
-    return await ServerBlockUnsafe(props);
-  } catch (err) {
-    console.error(`[page-renderer] block "${props.block.id}" (${props.block.type}) failed to render:`, err);
-    return null;
-  }
-}
-
-async function ServerBlockUnsafe({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
+async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
   const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
   const paddingStyle = {
     paddingTop: block.padding?.top,
@@ -207,6 +189,32 @@ async function ServerBlockUnsafe({ block, identityLogo, identityLogoDark, nested
     <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", bgClassName, hideOnClasses(block.hideOn))}>
       <div className={nested ? "w-full" : getContainerClass(block.width)}>{content}</div>
     </div>
+  );
+}
+
+/**
+ * One block crashing must never take the rest of the page down with it — a
+ * client's whole site 500ing because one section has bad/legacy data is a
+ * real production outage, not a cosmetic gap. Confirmed live: a `features`
+ * block with `items: null` 500'd the entire page, including a good text
+ * block both above and below it.
+ *
+ * See block-error-boundary.tsx for why this needs both a Suspense boundary
+ * AND a client Error Boundary, and why a plain try/catch around this
+ * function does not work (most blocks are non-async function components
+ * rendered as JSX, whose body only actually runs when React later walks the
+ * returned element — outside any try/catch's synchronous extent, even in
+ * an `async` function). This wrapper is the only thing standing between
+ * "one broken section" and "the whole site is down" — every render path
+ * (top-level PageRenderer, and a container's own nested children) goes
+ * through this same function, so wrapping here covers both without
+ * touching either call site.
+ */
+async function ServerBlock(props: PageBlockProps) {
+  return (
+    <BlockErrorBoundary>
+      <ServerBlockInner {...props} />
+    </BlockErrorBoundary>
   );
 }
 
