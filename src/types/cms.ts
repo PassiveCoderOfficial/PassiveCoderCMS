@@ -1050,7 +1050,14 @@ export type Page = {
   slug: string;
   type: PageType;
   status: PageStatus;
+  /** What the public site renders. On a published page, editor autosaves
+   *  go to draft_blocks instead, until Publish (see migration 105). */
   blocks: Block[];
+  /** Unpublished edits to a live page; null when there are none. */
+  draft_blocks?: Block[] | null;
+  /** Bumped on every change to blocks/draft_blocks by any writer — the
+   *  editor's conflict check (two tabs/people editing the same page). */
+  draft_rev?: number;
   template_id?: string;
   parent_id?: string;
   featured_image?: string;

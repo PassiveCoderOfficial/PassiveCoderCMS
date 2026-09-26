@@ -44,7 +44,10 @@ export function PageHistoryDrawer({ pageId, open, onClose }: { pageId: string; o
       toast.error(d.error ?? "Failed to restore");
       return;
     }
-    toast.success("Page restored — reloading editor");
+    const d = await res.json().catch(() => ({}));
+    toast.success(d.asDraft
+      ? "Restored into your draft — publish to make it live"
+      : "Page restored — reloading editor");
     onClose();
     // Full reload rather than a store update — the builder's undo/redo stack
     // and dirty state were built around the page it loaded, not a

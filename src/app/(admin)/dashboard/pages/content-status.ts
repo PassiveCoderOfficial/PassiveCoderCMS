@@ -50,7 +50,15 @@ export async function duplicatePage(id: string): Promise<{ id: string | null; er
   const newSlug = `${page.slug}-copy-${generateId(4)}`;
   const { data: inserted, error } = await supabase
     .from("pages")
-    .insert({ ...page, id: undefined, title: `${page.title} (Copy)`, slug: newSlug, status: "draft", deleted_at: null, created_at: undefined, updated_at: undefined })
+    .insert({
+      ...page, id: undefined, title: `${page.title} (Copy)`, slug: newSlug, status: "draft", deleted_at: null, created_at: undefined, updated_at: undefined,
+      // Copy what the editor shows — unpublished edits if there are any —
+      // as the new page's plain content. The copy starts unpublished, and
+      // drafts only apply to live pages (migration 105).
+      blocks: page.draft_blocks ?? page.blocks,
+      draft_blocks: null,
+      draft_rev: 0,
+    })
     .select("id")
     .single();
   if (error) return { id: null, error: error.message };

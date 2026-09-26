@@ -320,18 +320,16 @@ export const AGENT_TOOLS: AgentTool[] = [
         const block = mergeContentIntoBlock(blockType, content);
         await resolveBlockImages(block, content);
 
+        // Hand the block to the open editor instead of writing the page
+        // here. This tool only runs in the editor, and writing behind the
+        // editor's back lost the block: the editor loads blocks once per
+        // page, never saw it, and its next autosave overwrote it — after
+        // the tenant had already paid a generation for it. The editor adds
+        // it to its own state and saves it through the normal path (a draft,
+        // on a live page).
         const existingBlocks = Array.isArray(page.blocks) ? (page.blocks as Block[]) : [];
         const newBlock = { ...block, order: existingBlocks.length };
-        const nextBlocks = [...existingBlocks, newBlock];
-
-        const { error: updateError } = await ctx.supabase
-          .from("pages")
-          .update({ blocks: nextBlocks, updated_at: new Date().toISOString() })
-          .eq("id", pageId)
-          .eq("tenant_id", ctx.tenantId);
-        if (updateError) throw new Error(updateError.message);
-
-        return { block: newBlock };
+        return { block: newBlock, pageId };
       } catch (err) {
         await refundGeneration(ctx.tenantId, quotaSource).catch(() => {});
         if (err instanceof AiCoderError) throw new Error(err.message);

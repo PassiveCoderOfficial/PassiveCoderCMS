@@ -10,18 +10,18 @@ import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { PageSettingsDrawer } from "@/components/admin/page-settings/page-settings-drawer";
 import {
-  ChevronLeft, Undo2, Redo2, Save, Loader2, Plus, Layers, SlidersHorizontal, Eye, Edit3, Settings,
+  ChevronLeft, Undo2, Redo2, Save, Loader2, Plus, Layers, SlidersHorizontal, Eye, Edit3, Settings, Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Page } from "@/types/cms";
-import type { BuilderControls } from "./builder-interface";
+import { ConflictBanner, saveStatusText, type BuilderControls } from "./builder-interface";
 
 export function MobileBuilderShell({ page, controls }: { page: Page; controls: BuilderControls }) {
   const {
     mode, setMode, mobileSheet, setMobileSheet, selectedBlockId,
     undo, redo, canUndo, canRedo,
   } = useBuilderStore();
-  const { saving, isDirty, handleSave } = controls;
+  const { saving, isDirty, lastSavedAt, handleSave, hasDraft, isLive, publishing, handlePublish, handleDiscard, conflict, resolveConflict } = controls;
   const [pageSettingsOpen, setPageSettingsOpen] = React.useState(false);
 
   const isPreview = mode === "preview";
@@ -51,11 +51,30 @@ export function MobileBuilderShell({ page, controls }: { page: Page; controls: B
         <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={redo} disabled={!canRedo()}>
           <Redo2 className="h-4 w-4" />
         </Button>
-        <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-9 gap-1.5 shrink-0">
+        <Button size="sm" variant={isLive ? "outline" : "default"} onClick={() => void handleSave()} disabled={saving || !isDirty || conflict} className="h-9 gap-1.5 shrink-0">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save
         </Button>
+        {isLive && (hasDraft || isDirty) && (
+          <Button size="sm" onClick={() => void handlePublish()} disabled={saving || publishing || conflict} className="h-9 gap-1.5 shrink-0" aria-label="Publish">
+            {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+            Publish
+          </Button>
+        )}
       </div>
+
+      {/* On a live page, say plainly whether saved edits are on the public site yet. */}
+      {isLive && (hasDraft || isDirty) && (
+        <div className="flex items-center gap-2 px-3 py-1.5 border-b bg-background text-xs text-muted-foreground shrink-0">
+          <span className="flex-1 truncate">{saveStatusText({ saving, isDirty, lastSavedAt, hasDraft, isLive })}</span>
+          {hasDraft && (
+            <button type="button" onClick={() => void handleDiscard()} disabled={saving || publishing || conflict} className="underline underline-offset-2 disabled:opacity-50">
+              Discard
+            </button>
+          )}
+        </div>
+      )}
+      {conflict && <ConflictBanner onResolve={resolveConflict} />}
 
       {/* Canvas — full width; the phone is the mobile preview */}
       <div className="flex-1 overflow-auto cms-canvas-light">

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Check, X } from "lucide-react";
+import { useBuilderStore } from "@/lib/store/builder";
+import type { Block } from "@/types/cms";
 
 export interface PendingActionData {
   id: string;
@@ -29,6 +31,7 @@ export function AgentPendingActionCard({
         body: JSON.stringify({ actionId: action.id }),
       });
       if (!res.ok) throw new Error();
+      if (kind === "confirm") applyToOpenEditor(action.tool_name, await res.json().catch(() => null));
       onResolved(action.id, kind === "confirm" ? "confirmed" : "cancelled");
     } catch {
       // best-effort UI; leave the card in place so the user can retry
@@ -60,4 +63,17 @@ export function AgentPendingActionCard({
       </div>
     </div>
   );
+}
+
+/** Tools that produce page content return it rather than writing the page
+ *  (see generate_page_content in lib/ai-agent/tools.ts) — drop it into the
+ *  open editor, which saves it through its normal draft/publish path. Only
+ *  if the editor is showing that same page. */
+function applyToOpenEditor(toolName: string, body: unknown) {
+  if (toolName !== "generate_page_content") return;
+  const result = (body as { result?: { block?: Block; pageId?: string } } | null)?.result;
+  if (!result?.block) return;
+  const store = useBuilderStore.getState();
+  if (result.pageId && store.pageId !== result.pageId) return;
+  store.addBlock(result.block);
 }

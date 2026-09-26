@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Monitor, Tablet, Smartphone, Eye, Edit3, Undo2, Redo2,
-  Save, PanelLeft, Loader2, Sparkles
+  Save, PanelLeft, Loader2, Sparkles, Globe, AlertTriangle
 } from "lucide-react";
 import { AiCoderDialog } from "./aicoder-dialog";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,31 @@ export interface BuilderControls {
   isDirty: boolean;
   lastSavedAt: Date | null;
   handleSave: (auto?: boolean) => Promise<void>;
+  /** The page has saved edits that are not live yet (published pages only). */
+  hasDraft: boolean;
+  /** Page is published — edits land in a draft until Publish. */
+  isLive: boolean;
+  publishing: boolean;
+  handlePublish: () => Promise<void>;
+  handleDiscard: () => Promise<void>;
+  /** Someone/something else changed the page since this editor loaded it.
+   *  Autosave is paused until the user reloads or chooses to overwrite. */
+  conflict: boolean;
+  resolveConflict: (choice: "reload" | "overwrite") => Promise<void>;
+}
+
+/**
+ * Editor saves go through save_page_blocks / publish_page (migration 105):
+ * on a LIVE page, autosave writes a draft the public never sees until
+ * Publish — it used to write straight into the live page every 2.5s, so
+ * visitors saw half-finished edits. Every save carries the revision this
+ * editor last saw; if anything else changed the page in between (another
+ * tab, a teammate, the AI assistant, a history restore), the save is
+ * rejected instead of silently wiping their work.
+ */
+function isConflict(err: unknown): boolean {
+  const msg = (err as { message?: string } | null)?.message ?? "";
+  return msg.includes("page_conflict");
 }
 
 export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterfaceProps) {
@@ -46,9 +71,18 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
     undo, redo,
   } = useBuilderStore();
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [hasDraft, setHasDraft] = useState(!!page.draft_blocks);
+  const [conflict, setConflict] = useState(false);
+  const revRef = useRef<number>(page.draft_rev ?? 0);
   const isMobile = useIsMobile();
   const router = useRouter();
   const { setEditorContext, clearEditorContext } = useAgentContext();
+  // A saved draft only ever exists on a live page (save_page_blocks decides
+  // that server-side from the row's real status), so hasDraft also implies
+  // live — keeps Publish reachable even if the status prop is momentarily
+  // stale after a status change elsewhere.
+  const isLive = (page.status === "published" && !page.template_id) || hasDraft;
 
   useEffect(() => {
     setEditorContext({ pageId: page.id });
@@ -61,9 +95,10 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
     // Scope tenant-aware settings panels to the page's own tenant, which is not
     // the viewer's tenant when a super admin edits another tenant's page.
     setTenantId(page.tenant_id ?? undefined);
+    // Resume unpublished edits if there are any — otherwise the live content.
     // isInitialLoad: seeds undo history with the pristine page and leaves it
     // clean, so the user's first edit is undoable.
-    setBlocks(page.blocks ?? [], true);
+    setBlocks(page.draft_blocks ?? page.blocks ?? [], true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page.id]);
 
@@ -78,37 +113,114 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
   const savingRef = useRef(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
-  const handleSave = useCallback(async (auto = false) => {
+  const handleSave = useCallback(async (auto = false, force = false) => {
     if (savingRef.current) return;
     savingRef.current = true;
     setSaving(true);
     const currentBlocks = useBuilderStore.getState().blocks;
     try {
       const supabase = createClient();
-      const { error } = await supabase
-        .from("pages")
-        .update({ blocks: currentBlocks, updated_at: new Date().toISOString() })
-        .eq("id", page.id);
+      const { data, error } = await supabase.rpc("save_page_blocks", {
+        p_id: page.id,
+        p_blocks: currentBlocks,
+        p_expected_rev: force ? null : revRef.current,
+      });
       if (error) throw error;
+      const row = (Array.isArray(data) ? data[0] : data) as { rev: number; has_draft: boolean } | null;
+      if (row) {
+        revRef.current = row.rev;
+        setHasDraft(row.has_draft);
+      }
+      setConflict(false);
       // Only clear dirty if nothing changed while the request was in flight
       if (useBuilderStore.getState().blocks === currentBlocks) setDirty(false);
       setLastSavedAt(new Date());
-      if (!auto) toast.success("Page saved");
+      if (!auto) toast.success(row?.has_draft ? "Draft saved — publish to make it live" : "Page saved");
     } catch (err) {
-      toast.error("Failed to save page — your changes are still here, try again");
-      console.error(err);
+      if (isConflict(err)) {
+        setConflict(true);
+      } else {
+        toast.error("Failed to save page — your changes are still here, try again");
+        console.error(err);
+      }
     } finally {
       savingRef.current = false;
       setSaving(false);
     }
   }, [page.id, setDirty]);
 
-  // Autosave: 2.5s after the last change
+  const handlePublish = useCallback(async () => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setPublishing(true);
+    const currentBlocks = useBuilderStore.getState().blocks;
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("publish_page", {
+        p_id: page.id,
+        p_blocks: currentBlocks,
+        p_expected_rev: revRef.current,
+      });
+      if (error) throw error;
+      const row = (Array.isArray(data) ? data[0] : data) as { rev: number } | null;
+      if (row) revRef.current = row.rev;
+      setHasDraft(false);
+      if (useBuilderStore.getState().blocks === currentBlocks) setDirty(false);
+      setLastSavedAt(new Date());
+      toast.success("Published — your changes are live");
+    } catch (err) {
+      if (isConflict(err)) setConflict(true);
+      else {
+        toast.error("Failed to publish — your changes are still here, try again");
+        console.error(err);
+      }
+    } finally {
+      savingRef.current = false;
+      setPublishing(false);
+    }
+  }, [page.id, setDirty]);
+
+  const handleDiscard = useCallback(async () => {
+    if (!window.confirm("Discard all unpublished changes and go back to the live version? This can't be undone.")) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("discard_page_draft", { p_id: page.id });
+      if (error) throw error;
+      const row = (Array.isArray(data) ? data[0] : data) as { rev: number; blocks: Page["blocks"] } | null;
+      if (row) {
+        revRef.current = row.rev;
+        setBlocks(row.blocks ?? [], true);
+      }
+      setHasDraft(false);
+      setConflict(false);
+      toast.success("Unpublished changes discarded");
+    } catch (err) {
+      toast.error("Failed to discard changes");
+      console.error(err);
+    } finally {
+      savingRef.current = false;
+    }
+  }, [page.id, setBlocks]);
+
+  const resolveConflict = useCallback(async (choice: "reload" | "overwrite") => {
+    if (choice === "reload") {
+      // Drop local unsaved state on purpose — the user chose theirs.
+      setDirty(false);
+      window.location.reload();
+      return;
+    }
+    await handleSave(false, true);
+  }, [handleSave, setDirty]);
+
+  // Autosave: 2.5s after the last change — paused while in conflict, so it
+  // doesn't keep retrying a save that will be rejected while the user decides.
   useEffect(() => {
-    if (!isDirty) return;
+    if (!isDirty || conflict) return;
     const t = setTimeout(() => void handleSave(true), 2500);
     return () => clearTimeout(t);
-  }, [blocks, isDirty, handleSave]);
+  }, [blocks, isDirty, conflict, handleSave]);
 
   // Keyboard shortcuts: Ctrl+S save, Ctrl+Z undo, Ctrl+Y / Ctrl+Shift+Z redo
   useEffect(() => {
@@ -132,7 +244,11 @@ export function BuilderInterface({ page, aiCoderEnabled = false }: BuilderInterf
     return () => window.removeEventListener("keydown", handler);
   }, [handleSave, undo, redo]);
 
-  const controls: BuilderControls = { saving, isDirty, lastSavedAt, handleSave };
+  const controls: BuilderControls = {
+    saving, isDirty, lastSavedAt, handleSave,
+    hasDraft, isLive, publishing, handlePublish, handleDiscard,
+    conflict, resolveConflict,
+  };
 
   /**
    * Leaves for the header/footer builder from a navigation or footer block.
@@ -170,7 +286,7 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
     mode, breakpoint, setMode, setBreakpoint,
     undo, redo, canUndo, canRedo,
   } = useBuilderStore();
-  const { saving, isDirty, lastSavedAt, handleSave } = controls;
+  const { saving, isDirty, lastSavedAt, handleSave, hasDraft, isLive, publishing, handlePublish, handleDiscard, conflict, resolveConflict } = controls;
   const [showBlocks, setShowBlocks] = useState(true);
   const [aiCoderOpen, setAiCoderOpen] = useState(false);
 
@@ -259,15 +375,30 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
                 <Sparkles className="h-3.5 w-3.5 text-primary" /> AiCoder
               </Button>
             )}
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              {saving ? "Saving…" : isDirty ? "Unsaved changes" : lastSavedAt ? "All changes saved" : ""}
+            <span className="text-xs text-muted-foreground hidden sm:inline" data-testid="toolbar-save-status">
+              {saveStatusText({ saving, isDirty, lastSavedAt, hasDraft, isLive })}
             </span>
-            <Button size="sm" onClick={() => void handleSave()} disabled={saving || !isDirty} className="h-8 gap-1.5" data-testid="toolbar-save">
+            <Button size="sm" variant={isLive ? "outline" : "default"} onClick={() => void handleSave()} disabled={saving || !isDirty || conflict} className="h-8 gap-1.5" data-testid="toolbar-save">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-              {saving ? "Saving..." : "Save"}
+              {saving ? "Saving..." : isLive ? "Save draft" : "Save"}
             </Button>
+            {isLive && (hasDraft || isDirty) && (
+              <>
+                {hasDraft && (
+                  <Button size="sm" variant="ghost" onClick={() => void handleDiscard()} disabled={saving || publishing || conflict} className="h-8 text-muted-foreground" data-testid="toolbar-discard">
+                    Discard
+                  </Button>
+                )}
+                <Button size="sm" onClick={() => void handlePublish()} disabled={saving || publishing || conflict} className="h-8 gap-1.5" data-testid="toolbar-publish">
+                  {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Globe className="h-3.5 w-3.5" />}
+                  {publishing ? "Publishing..." : "Publish"}
+                </Button>
+              </>
+            )}
           </div>
         </div>
+
+        {conflict && <ConflictBanner onResolve={resolveConflict} />}
 
         {/* Main */}
         <div className="flex flex-1 overflow-hidden relative">
@@ -308,5 +439,38 @@ function DesktopBuilderShell({ controls, aiCoderEnabled, pageId }: { controls: B
 
       <AiCoderDialog open={aiCoderOpen} onClose={() => setAiCoderOpen(false)} pageId={pageId} />
     </TooltipProvider>
+  );
+}
+
+/** One line of save state, shared by the desktop and mobile shells. On a
+ *  live page it spells out that saved edits are NOT on the public site yet —
+ *  the whole point of the draft split is that nobody should have to guess. */
+export function saveStatusText({ saving, isDirty, lastSavedAt, hasDraft, isLive }: {
+  saving: boolean; isDirty: boolean; lastSavedAt: Date | null; hasDraft: boolean; isLive: boolean;
+}): string {
+  if (saving) return "Saving…";
+  if (isDirty) return "Unsaved changes";
+  if (isLive && hasDraft) return "Draft saved · not live yet";
+  if (isLive) return "Live · up to date";
+  return lastSavedAt ? "All changes saved" : "";
+}
+
+/** Shown when a save was rejected because the page changed elsewhere
+ *  (another tab, a teammate, the AI assistant, a history restore). */
+export function ConflictBanner({ onResolve }: { onResolve: (choice: "reload" | "overwrite") => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 border-b bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-sm shrink-0" role="alert" data-testid="editor-conflict-banner">
+      <AlertTriangle className="h-4 w-4 shrink-0" />
+      <span className="flex-1 min-w-[16rem]">
+        This page was changed somewhere else (another tab, a teammate, or the AI assistant). Autosave is paused so nothing gets overwritten.
+      </span>
+      <Button size="sm" variant="outline" className="h-7" disabled={busy} onClick={() => { setBusy(true); void onResolve("reload"); }}>
+        Load their version
+      </Button>
+      <Button size="sm" variant="ghost" className="h-7" disabled={busy} onClick={async () => { setBusy(true); await onResolve("overwrite"); setBusy(false); }}>
+        Keep mine
+      </Button>
+    </div>
   );
 }
