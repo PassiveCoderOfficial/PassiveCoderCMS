@@ -15,17 +15,18 @@ export async function POST() {
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = await createAdminClient();
+  // Secrets live in tenant_integrations (see migration 101); the picked
+  // property id lives in site_settings. Clear both.
   const { error } = await admin
-    .from("site_settings")
-    .update({
-      ga_oauth_refresh_token: null,
-      ga_oauth_access_token: null,
-      ga_oauth_expires_at: null,
-      ga_oauth_connected_email: null,
-      ga_property_id: null,
-    })
+    .from("tenant_integrations")
+    .delete()
     .eq("tenant_id", tenantId);
-
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  const { error: settingsError } = await admin
+    .from("site_settings")
+    .update({ ga_property_id: null })
+    .eq("tenant_id", tenantId);
+  if (settingsError) return NextResponse.json({ error: settingsError.message }, { status: 400 });
   return NextResponse.json({ ok: true });
 }

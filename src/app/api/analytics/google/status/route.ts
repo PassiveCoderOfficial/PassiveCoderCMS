@@ -16,11 +16,23 @@ export async function GET() {
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = await createAdminClient();
-  const { data: settings } = await admin
-    .from("site_settings")
-    .select("ga_oauth_refresh_token, ga_oauth_connected_email, ga_property_id")
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
+  // OAuth secrets live in tenant_integrations (service-role only); the
+  // non-secret property id stays in site_settings. See migration 101.
+  const [{ data: integration }, { data: siteSettings }] = await Promise.all([
+    admin
+      .from("tenant_integrations")
+      .select("ga_oauth_refresh_token, ga_oauth_connected_email")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
+    admin
+      .from("site_settings")
+      .select("ga_property_id")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
+  ]);
+  const settings = integration
+    ? { ...integration, ga_property_id: siteSettings?.ga_property_id ?? null }
+    : null;
 
   if (!settings?.ga_oauth_refresh_token) {
     return NextResponse.json({ connected: false });

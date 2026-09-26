@@ -87,22 +87,32 @@ export async function GET(req: Request) {
 
   const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
-  // upsert, not update — an older tenant predating the 025 upsert-on-signup
-  // pattern might not have a site_settings row yet.
+  // OAuth secrets go to tenant_integrations (service-role only) — never
+  // site_settings, which is public-read. See migration 101.
   const { error: dbError } = await admin
-    .from("site_settings")
+    .from("tenant_integrations")
     .upsert({
       tenant_id: state.tenantId,
       ga_oauth_refresh_token: refresh_token,
       ga_oauth_access_token: access_token,
       ga_oauth_expires_at: expiresAt,
       ga_oauth_connected_email: connectedEmail,
-      // A fresh connect always clears any previously-picked property — the
-      // account that's now connected may not even have the old one.
-      ga_property_id: null,
+      updated_at: new Date().toISOString(),
     }, { onConflict: "tenant_id" });
 
   if (dbError) {
+    return backToAnalytics(root, proto, tenantHost, "ga_error=save_failed");
+  }
+
+  // A fresh connect always clears any previously-picked property — the
+  // account that's now connected may not even have the old one. upsert, not
+  // update — an older tenant predating the 025 upsert-on-signup pattern
+  // might not have a site_settings row yet.
+  const { error: settingsError } = await admin
+    .from("site_settings")
+    .upsert({ tenant_id: state.tenantId, ga_property_id: null }, { onConflict: "tenant_id" });
+
+  if (settingsError) {
     return backToAnalytics(root, proto, tenantHost, "ga_error=save_failed");
   }
 

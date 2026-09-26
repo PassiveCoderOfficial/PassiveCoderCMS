@@ -7,8 +7,11 @@ import { createAdminClient } from "@/lib/supabase/server";
  *  itself fails (revoked grant, deleted Cloud project, etc). */
 export async function getValidGoogleAccessToken(tenantId: string): Promise<string | null> {
   const admin = await createAdminClient();
+  // tenant_integrations, not site_settings — site_settings is public-read
+  // (every page renders from it), so OAuth secrets stored there were
+  // readable by anyone with the anon key. See migration 101.
   const { data: settings } = await admin
-    .from("site_settings")
+    .from("tenant_integrations")
     .select("ga_oauth_refresh_token, ga_oauth_access_token, ga_oauth_expires_at")
     .eq("tenant_id", tenantId)
     .maybeSingle();
@@ -45,7 +48,7 @@ export async function getValidGoogleAccessToken(tenantId: string): Promise<strin
   }
 
   await admin
-    .from("site_settings")
+    .from("tenant_integrations")
     .update({
       ga_oauth_access_token: json.access_token,
       ga_oauth_expires_at: new Date(Date.now() + json.expires_in * 1000).toISOString(),

@@ -51,23 +51,29 @@ export default async function AnalyticsPage() {
     { data: recentOrders },
     { data: recentTransactions },
     { count: branchCount },
+    { data: gaIntegration },
   ] = await Promise.all([
     admin.from("page_view_stats").select("day, path, referrer_domain, device_type, country, views").eq("tenant_id", tenantId).gte("day", sinceStr),
-    // GA OAuth connection status + which property is picked. Tokens
-    // themselves are never sent to the client — same reasoning as any other
-    // write-only secret field.
-    admin.from("site_settings").select("ga_measurement_id, ga_oauth_connected_email, ga_property_id").eq("tenant_id", tenantId).maybeSingle(),
+    // Non-secret GA fields (measurement id, picked property) live in
+    // site_settings; the connected email + tokens live in
+    // tenant_integrations (service-role only, see migration 101). Tokens
+    // themselves are never selected here or sent to the client.
+    admin.from("site_settings").select("ga_measurement_id, ga_property_id").eq("tenant_id", tenantId).maybeSingle(),
     supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "page").eq("tenant_id", tenantId),
     supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "post").eq("tenant_id", tenantId),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
     supabase.from("products").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
     supabase.from("tenant_members").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
     supabase.from("orders").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
-    supabase.from("transactions").select("*").order("created_at", { ascending: false }).limit(5),
+    // tenant_id filter is required, not just RLS: RLS lets super admins read
+    // every tenant, so without it an SA viewing one tenant's dashboard saw
+    // the whole platform's latest transactions mixed in.
+    supabase.from("transactions").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
     // Restaurant sales analytics section only makes sense for a tenant
     // actually running the restaurant stack — same "does this tenant have
     // any branches" signal used elsewhere (kitchen/page.tsx's empty state).
     supabase.from("restaurant_branches").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("is_active", true),
+    admin.from("tenant_integrations").select("ga_oauth_connected_email").eq("tenant_id", tenantId).maybeSingle(),
   ]);
 
   return (
@@ -77,7 +83,7 @@ export default async function AnalyticsPage() {
       initialRange={30}
       gaConnected={!!gaSettings?.ga_measurement_id}
       gaMeasurementId={gaSettings?.ga_measurement_id ?? null}
-      gaOAuthEmail={gaSettings?.ga_oauth_connected_email ?? null}
+      gaOAuthEmail={gaIntegration?.ga_oauth_connected_email ?? null}
       gaPropertyId={gaSettings?.ga_property_id ?? null}
       showProSiteBanner={showProSiteBanner}
       dashboardStats={{
