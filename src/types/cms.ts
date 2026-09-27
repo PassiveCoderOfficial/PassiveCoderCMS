@@ -647,6 +647,12 @@ export type ContactBlockProps = BlockBase & {
     phone?: string;
     email?: string;
     address?: string;
+    /** WhatsApp number; shown as a chat button. */
+    whatsapp?: string;
+    /** Free text, e.g. "Sat–Thu, 10am–8pm". */
+    hours?: string;
+    /** Short reassurance under the details, e.g. "We reply within an hour". */
+    note?: string;
   };
 };
 

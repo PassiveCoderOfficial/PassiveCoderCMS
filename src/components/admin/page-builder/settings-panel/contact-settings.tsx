@@ -73,6 +73,9 @@ export function ContactSettings({ block }: { block: ContactBlockProps }) {
           <div><Label className="text-xs">Email</Label><Input value={block.data.email ?? ""} onChange={e => update("email", e.target.value)} className="h-8 text-xs mt-1" /></div>
           <div><Label className="text-xs">Phone</Label><PhoneInput value={block.data.phone ?? ""} onChange={v => update("phone", v)} className="mt-1" inputClassName="h-8 text-xs" /></div>
           <div><Label className="text-xs">Address</Label><Input value={block.data.address ?? ""} onChange={e => update("address", e.target.value)} className="h-8 text-xs mt-1" /></div>
+          <div><Label className="text-xs">WhatsApp</Label><PhoneInput value={block.data.whatsapp ?? ""} onChange={v => update("whatsapp", v)} className="mt-1" inputClassName="h-8 text-xs" /></div>
+          <div><Label className="text-xs">Opening hours</Label><Input value={block.data.hours ?? ""} onChange={e => update("hours", e.target.value)} placeholder="Sat–Thu, 10am–8pm" className="h-8 text-xs mt-1" /></div>
+          <div><Label className="text-xs">Reply note</Label><Input value={block.data.note ?? ""} onChange={e => update("note", e.target.value)} placeholder="We reply within one business day" className="h-8 text-xs mt-1" /></div>
           <Button type="button" variant="outline" size="sm" onClick={fillFromProfile} disabled={filling} className="w-full h-8 text-xs">
             <Briefcase className="w-3 h-3 mr-1.5" />
             {filling ? "Loading…" : "Fill from business profile"}
