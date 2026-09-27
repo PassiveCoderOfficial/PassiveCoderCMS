@@ -1,7 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
-import { DEFAULT_PALETTE, DEFAULT_TYPOGRAPHY } from "@/modules/themes/default-palette";
+// Same fallback the live site renders with (not DEFAULT_PALETTE), so a
+// site with no template edits the colours it actually shows.
+import { SITE_FALLBACK_PALETTE, SITE_FALLBACK_TYPOGRAPHY } from "@/modules/themes/site-theme";
 import type { SiteDesign, TemplatePalette } from "@/modules/themes/template-types";
 import { ColorsClient } from "./colors-client";
 import { DesignClient } from "./design-client";
@@ -31,8 +33,8 @@ export default async function ColorsDesignPage() {
   // The palette being customised is the active template's. A site with no
   // template yet still gets a usable editor, layered over neutral defaults.
   const templateIdentity = templateId ? await resolveDbTemplateIdentity(templateId) : null;
-  const basePalette = templateIdentity?.palette ?? DEFAULT_PALETTE;
-  const baseTypography = templateIdentity?.typography ?? DEFAULT_TYPOGRAPHY;
+  const basePalette = templateIdentity?.palette ?? SITE_FALLBACK_PALETTE;
+  const baseTypography = templateIdentity?.typography ?? SITE_FALLBACK_TYPOGRAPHY;
 
   return (
     <div className="p-6 max-w-2xl">
