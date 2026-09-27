@@ -354,7 +354,7 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
       ) : (
         <div className={cn("grid grid-cols-1 gap-6", colMap)}>
           {items.map((item) => (
-            <div key={item.id} className={cn(cardClass, "flex flex-col", item.imageUrl && "overflow-hidden p-0 group")}>
+            <div key={item.id} className={cn(cardClass, "relative flex flex-col", item.imageUrl && "overflow-hidden p-0 group", item.link && "cursor-pointer transition-shadow hover:shadow-xl")}>
               {/* A photo, when supplied, carries a service far better than a
                   generic glyph — fall back to the icon only when there is
                   none, so icon-only tenants are unaffected. */}
@@ -369,7 +369,9 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
               <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
               <p className="text-muted-foreground text-sm flex-1 whitespace-pre-line">{item.description}</p>
               {item.link && (
-                <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary mt-4 hover:underline font-medium">
+                // after:inset-0 stretches this link over the whole card so the
+                // entire card is clickable without nesting anchors.
+                <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary mt-4 hover:underline font-medium after:absolute after:inset-0 after:content-['']">
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
