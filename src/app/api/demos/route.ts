@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { demoCaller as caller } from "@/modules/demo/auth";
-import { createDemoSite, parseServices, normalizeWhatsapp, DEMO_DAYS } from "@/modules/demo/build-demo";
+import { createDemoSite, parseServices, normalizeWhatsapp, DEMO_HOURS } from "@/modules/demo/build-demo";
 
 /**
  * Demo site builder API. Open to active pc_staff and super admins/managers.
@@ -71,7 +71,7 @@ export async function PATCH(req: Request) {
 
   if (action === "extend") {
     const base = Math.max(Date.now(), new Date(t.demo_expires_at).getTime());
-    const next = new Date(base + DEMO_DAYS * 86400_000).toISOString();
+    const next = new Date(base + DEMO_HOURS * 3600_000).toISOString();
     await c.admin.from("tenants").update({ demo_expires_at: next }).eq("id", id);
     return NextResponse.json({ ok: true, demo_expires_at: next });
   }

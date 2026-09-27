@@ -5,7 +5,7 @@
  * while chatting with them, and get back a live personalised site to send in
  * the same WhatsApp thread. The prospect pays manually (bank / bKash) and the
  * demo goes live; until then it carries a "demo" banner and pauses after
- * DEMO_DAYS. Nothing is ever deleted.
+ * DEMO_HOURS. Nothing is ever deleted.
  *
  * Deliberately NOT the AI build: that takes minutes per page. This applies a
  * category template for the look (theme mode only) and writes one honest home
@@ -17,9 +17,9 @@ import type { Block } from "@/types/cms";
 import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
 import { findStockImage } from "@/lib/aicoder/images";
 import { ROOT_DOMAIN } from "@/lib/flags";
-import { normalizeWhatsapp, waLink } from "./links";
+import { normalizeWhatsapp, waLink, DEMO_HOURS } from "./links";
 
-export const DEMO_DAYS = 14;
+export { DEMO_HOURS } from "./links";
 export { DEMO_SALES_WHATSAPP, normalizeWhatsapp, waLink } from "./links";
 
 export interface DemoInput {
@@ -209,7 +209,7 @@ export async function createDemoSite(
   input: DemoInput,
   creator: { userId: string; staffId: string | null },
 ): Promise<{ id: string; url: string; expiresAt: string }> {
-  const expiresAt = new Date(Date.now() + DEMO_DAYS * 86400_000).toISOString();
+  const expiresAt = new Date(Date.now() + DEMO_HOURS * 3600_000).toISOString();
 
   const { data: tpl } = await admin
     .from("templates").select("category").eq("slug", input.templateSlug).maybeSingle();

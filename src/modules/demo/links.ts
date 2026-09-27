@@ -9,3 +9,11 @@ export function waLink(number: string, text?: string) {
   const n = normalizeWhatsapp(number);
   return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 }
+
+/** Demo preview window. Short on purpose: prospects given two weeks wait two
+ *  weeks. Paused (never deleted) after this; staff can extend by the same. */
+export const DEMO_HOURS = 72;
+
+export function hoursLeft(iso: string): number {
+  return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 3600_000));
+}

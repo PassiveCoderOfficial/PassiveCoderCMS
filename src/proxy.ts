@@ -65,7 +65,7 @@ export async function proxy(request: NextRequest) {
     return res;
   }
 
-  // Staff-built demo past its 14 days: pause (never delete) until paid.
+  // Staff-built demo past its preview window (72h): pause (never delete) until paid.
   const isDemo = !!tenant.demo_expires_at;
   if (isDemo && new Date(tenant.demo_expires_at!).getTime() < Date.now()) {
     const url = request.nextUrl.clone();

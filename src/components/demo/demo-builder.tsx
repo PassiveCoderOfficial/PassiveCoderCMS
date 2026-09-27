@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, Copy, ExternalLink, Check, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { createSiteSlug } from "@/lib/utils";
+import { hoursLeft } from "@/modules/demo/links";
 
 interface TemplateOpt { slug: string; name: string; category: string }
 interface Demo { id: string; name: string; slug: string; demo_expires_at: string; demo_whatsapp: string | null; created_at: string }
@@ -13,12 +14,9 @@ const PROTO = ROOT.includes("localhost") ? "http" : "https";
 const siteUrl = (slug: string) => `${PROTO}://${slug}.${ROOT}`;
 
 function prospectMessage(name: string, url: string) {
-  return `আসসালামু আলাইকুম! ${name} এর জন্য আমরা একটা demo website বানিয়েছি, দেখে নিন:\n${url}\n\nপছন্দ হলে আমাদের জানান, payment (bank transfer বা bKash) হলেই আপনার নিজের domain এ live করে দেব। Demo টা ১৪ দিন দেখা যাবে।`;
+  return `আসসালামু আলাইকুম! ${name} এর জন্য আমরা একটা demo website বানিয়েছি, দেখে নিন:\n${url}\n\nপছন্দ হলে আমাদের জানান, payment (bank transfer বা bKash) হলেই আপনার নিজের domain এ live করে দেব। Demo টা শুধু ৭২ ঘণ্টা দেখা যাবে, তার মধ্যে জানালে ভালো হয়।`;
 }
 
-function daysLeft(iso: string) {
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400_000);
-}
 
 export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
   const [name, setName] = useState("");
@@ -85,7 +83,7 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
     if (action === "golive" && !confirm("Payment received? This removes the demo banner and expiry.")) return;
     const r = await fetch("/api/demos", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action }) });
     if (!r.ok) return toast.error("Failed");
-    toast.success(action === "extend" ? "Extended 14 days" : "Site is live");
+    toast.success(action === "extend" ? "Extended 72 hours" : "Site is live");
     load();
   }
 
@@ -102,7 +100,7 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
       <div>
         <h1 className="text-2xl font-bold">Demo Site Builder</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Build a personalised demo in a minute and send it in the WhatsApp chat. Demos show a &quot;make it live&quot; banner, pause after 14 days, never get deleted, and leads on them notify nobody.
+          Build a personalised demo in a minute and send it in the WhatsApp chat. Demos show a &quot;make it live&quot; banner, pause after 72 hours, never get deleted, and leads on them notify nobody.
         </p>
       </div>
 
@@ -181,7 +179,7 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
         {demos.length === 0 && <p className="text-sm text-muted-foreground">No demos yet.</p>}
         <div className="rounded-xl border divide-y">
           {demos.map(d => {
-            const left = daysLeft(d.demo_expires_at);
+            const left = hoursLeft(d.demo_expires_at);
             const url = siteUrl(d.slug);
             return (
               <div key={d.id} className="p-3 sm:p-4 flex flex-wrap items-center gap-3 justify-between">
@@ -191,10 +189,10 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${left > 0 ? "bg-amber-500/10 text-amber-600" : "bg-red-500/10 text-red-600"}`}>
-                    {left > 0 ? `${left}d left` : "Paused"}
+                    {left > 0 ? `${left}h left` : "Paused"}
                   </span>
                   <button onClick={() => copy(prospectMessage(d.name, url))} className="text-xs px-2.5 py-1.5 rounded-lg border hover:bg-muted">Copy message</button>
-                  <button onClick={() => act(d.id, "extend")} className="text-xs px-2.5 py-1.5 rounded-lg border hover:bg-muted">Extend 14 days</button>
+                  <button onClick={() => act(d.id, "extend")} className="text-xs px-2.5 py-1.5 rounded-lg border hover:bg-muted">Extend 72 hours</button>
                   <button onClick={() => act(d.id, "golive")} className="text-xs px-2.5 py-1.5 rounded-lg bg-green-600 text-white font-semibold">Paid, go live</button>
                 </div>
               </div>
