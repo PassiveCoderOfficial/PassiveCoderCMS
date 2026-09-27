@@ -12,5 +12,13 @@ export default async function DemosPage() {
     .eq("status", "published")
     .neq("category", "Marketplace")
     .order("category");
-  return <DemoBuilder templates={(data ?? []) as { slug: string; name: string; category: string }[]} />;
+  // Plan is a required choice per demo — it decides which features and
+  // dashboard pages the demo shows, so it must never default silently.
+  const { data: plans } = await admin.from("plans").select("id, name").eq("is_active", true).order("sort_order");
+  return (
+    <DemoBuilder
+      templates={(data ?? []) as { slug: string; name: string; category: string }[]}
+      plans={(plans ?? []) as { id: string; name: string }[]}
+    />
+  );
 }

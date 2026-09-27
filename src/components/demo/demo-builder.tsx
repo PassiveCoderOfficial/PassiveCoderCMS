@@ -18,7 +18,7 @@ function prospectMessage(name: string, url: string) {
 }
 
 
-export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
+export function DemoBuilder({ templates, plans }: { templates: TemplateOpt[]; plans: { id: string; name: string }[] }) {
   const [name, setName] = useState("");
   const [manualSlug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -26,7 +26,9 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
   const [whatsapp, setWhatsapp] = useState("");
   const [services, setServices] = useState("");
   const [address, setAddress] = useState("");
-  const [templateSlug, setTemplateSlug] = useState(templates.find(t => t.slug === "shield-guard")?.slug ?? templates[0]?.slug ?? "");
+  const [templateSlug, setTemplateSlug] = useState(templates.find(t => t.slug === "security-services")?.slug ?? templates[0]?.slug ?? "");
+  // No default on purpose: the plan is a required, deliberate choice.
+  const [plan, setPlan] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -69,7 +71,7 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
     const r = await fetch("/api/demos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, slug, whatsapp, services, address, templateSlug, logoUrl }),
+      body: JSON.stringify({ name, slug, whatsapp, services, address, templateSlug, logoUrl, plan }),
     });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
@@ -144,6 +146,13 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
             ))}
           </select>
         </div>
+        <div>
+          <label className={label}>Plan * <span className="text-muted-foreground font-normal">(what this demo is being sold on)</span></label>
+          <select className={input} value={plan} onChange={e => setPlan(e.target.value)} required>
+            <option value="" disabled>Choose a plan…</option>
+            {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </div>
         <div className="sm:col-span-2">
           <label className={label}>Services * <span className="text-muted-foreground font-normal">(one per line or comma separated, max 9)</span></label>
           <textarea className={input} rows={4} value={services} onChange={e => setServices(e.target.value)} required placeholder={"Aircon servicing\nAircon installation\nChemical wash"} />
@@ -168,7 +177,7 @@ export function DemoBuilder({ templates }: { templates: TemplateOpt[] }) {
           )}
         </div>
         <div className="sm:col-span-2 flex justify-end">
-          <button type="submit" disabled={busy || uploading || slugOk === false} className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-lg disabled:opacity-50">
+          <button type="submit" disabled={busy || uploading || slugOk === false || !plan} className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-lg disabled:opacity-50">
             {busy && <Loader2 className="w-4 h-4 animate-spin" />} {busy ? "Building..." : "Build demo"}
           </button>
         </div>

@@ -30,12 +30,18 @@ export async function POST(req: Request) {
   const slug = String(body.slug ?? "").trim().toLowerCase();
   const whatsapp = normalizeWhatsapp(String(body.whatsapp ?? ""));
   const services = parseServices(body.services ?? "");
-  const templateSlug = String(body.templateSlug ?? "shield-guard");
+  const templateSlug = String(body.templateSlug ?? "security-services");
+  const plan = String(body.plan ?? "").trim();
 
   if (!name) return NextResponse.json({ error: "Company name is required" }, { status: 400 });
   if (!/^[a-z0-9](?:[a-z0-9-]{1,40}[a-z0-9])$/.test(slug)) return NextResponse.json({ error: "Invalid subdomain" }, { status: 400 });
   if (whatsapp.length < 8) return NextResponse.json({ error: "Valid WhatsApp number (with country code) is required" }, { status: 400 });
   if (!services.length) return NextResponse.json({ error: "Add at least one service" }, { status: 400 });
+  // Required: the plan decides which features / gated dashboard pages the demo
+  // shows, so it is always an explicit choice and must be a real, active plan.
+  if (!plan) return NextResponse.json({ error: "Choose the plan this demo is for" }, { status: 400 });
+  const { data: planRow } = await c.admin.from("plans").select("id").eq("id", plan).eq("is_active", true).maybeSingle();
+  if (!planRow) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
   const { data: taken } = await c.admin.from("tenants").select("id").eq("slug", slug).maybeSingle();
   if (taken) return NextResponse.json({ error: "Subdomain already taken" }, { status: 409 });
@@ -44,7 +50,7 @@ export async function POST(req: Request) {
     const result = await createDemoSite(
       c.admin,
       {
-        name, slug, whatsapp, services, templateSlug,
+        name, slug, whatsapp, services, templateSlug, plan,
         logoUrl: body.logoUrl ? String(body.logoUrl) : null,
         address: body.address ? String(body.address).trim() : null,
         tagline: body.tagline ? String(body.tagline).trim() : null,

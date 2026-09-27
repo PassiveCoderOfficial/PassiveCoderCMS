@@ -26,6 +26,8 @@ export interface DemoInput {
   name: string;
   slug: string;
   templateSlug: string;
+  /** plans.id — required; decides the demo's features and gated pages. */
+  plan: string;
   whatsapp: string;
   services: string[];
   logoUrl?: string | null;
@@ -219,7 +221,7 @@ export async function createDemoSite(
     .insert({
       name: input.name,
       slug: input.slug,
-      plan: "basic",
+      plan: input.plan,
       status: "onboarded",
       owner_id: creator.userId,
       onboarding_completed: true,
@@ -283,7 +285,7 @@ export async function createDemoSite(
       sort_order: 0,
     }),
     admin.from("subscriptions").upsert(
-      { tenant_id: tenantId, plan_id: "basic", status: "onboarded", billing_cycle: "monthly", payment_method: "manual" },
+      { tenant_id: tenantId, plan_id: input.plan, status: "onboarded", billing_cycle: "monthly", payment_method: "manual" },
       { onConflict: "tenant_id" },
     ),
   ]);
