@@ -13,6 +13,16 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
   const admin = await createAdminClient();
 
+  // Writes go through the admin client, so re-check edit rights explicitly
+  // rather than relying on RLS — previously any tenant member, including
+  // view-only roles, could roll a page back. Same rule as business-profile.
+  const [{ data: member }, { data: sa }] = await Promise.all([
+    admin.from("tenant_members").select("role").eq("tenant_id", tenantId).eq("user_id", user.id).maybeSingle(),
+    admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
+  ]);
+  const canEdit = !!sa || ["owner", "admin", "editor"].includes(member?.role ?? "");
+  if (!canEdit) return NextResponse.json({ error: "You don't have permission to restore this page" }, { status: 403 });
+
   const { data: page } = await admin.from("pages").select("id, blocks, draft_blocks, title").eq("id", pageId).eq("tenant_id", tenantId).maybeSingle();
   if (!page) return NextResponse.json({ error: "Page not found" }, { status: 404 });
 
