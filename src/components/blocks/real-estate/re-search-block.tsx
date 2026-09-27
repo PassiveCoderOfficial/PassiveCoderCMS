@@ -57,7 +57,7 @@ export function ReSearchBlock({ block }: { block: ReSearchBlockProps }) {
             {data.subtitle && <p className="mt-5 text-lg text-white/75 max-w-2xl mx-auto">{data.subtitle}</p>}
         </div>
         <div className={`max-w-7xl mx-auto grid lg:grid-cols-2 items-end gap-6 lg:gap-10 px-4 ${left ? "" : "lg:[&>*:first-child]:order-2"}`}>
-          <div className="relative h-[440px] sm:h-[520px] lg:h-[560px] order-2 lg:order-none">
+          <div className="relative h-[380px] sm:h-[480px] lg:h-[560px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={data.portraitImage} alt={data.portraitAlt ?? ""}
               className={`absolute bottom-0 h-full w-auto max-w-none object-contain object-bottom ${left ? "left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0" : "left-1/2 -translate-x-1/2 lg:left-0 lg:translate-x-0"}`}
