@@ -5,7 +5,8 @@ import { after } from "next/server";
 import { countVisit } from "@/lib/usage/count-visit";
 import type { Metadata } from "next";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
-import { buildTemplateCSSVars, buildTemplateBodyScript } from "@/modules/themes/template-css";
+import { buildTemplateBodyScript } from "@/modules/themes/template-css";
+import { buildSiteTheme } from "@/modules/themes/site-theme";
 import Script from "next/script";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { CartProvider } from "@/lib/cart/cart-context";
@@ -72,7 +73,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     tenantId
       ? createAdminClient().then(admin =>
           admin.from("site_identity")
-            .select("active_template_slug, template_id, logo_url, logo_dark_url, site_name, tagline, global_header, global_footer, color_overrides")
+            .select("active_template_slug, template_id, logo_url, logo_dark_url, site_name, tagline, global_header, global_footer, color_overrides, design_overrides")
             .eq("tenant_id", tenantId)
             .single()
         )
@@ -90,6 +91,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     global_header?: Block[] | null;
     global_footer?: Block[] | null;
     color_overrides?: Partial<import("@/modules/themes/template-types").TemplatePalette> | null;
+    design_overrides?: import("@/modules/themes/template-types").SiteDesign | null;
   } | null;
 
   // A tenant's visual identity comes from the templates table via
@@ -152,32 +154,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       ? `document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';document.documentElement.dataset.themeLocked='dark';`
       : `document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';document.documentElement.dataset.themeLocked='light';`;
 
-  // Roughly half the tenants have never had a template applied. Those used to
-  // inherit whatever colour the block components hardcoded; now that blocks are
-  // token-driven they'd fall through to the base shadcn slate, which renders
-  // CTAs as a near-black gradient. Give palette-less sites a neutral branded
-  // default (and still honour any color_overrides they've set) so a site
-  // without a template still looks like a site, not an unstyled shell.
-  const FALLBACK_PALETTE = {
-    primary: "#2563EB", primaryFg: "#ffffff",
-    secondary: "#0F172A", accent: "#38BDF8",
-    background: "#FFFFFF", foreground: "#0F172A",
-    muted: "#F1F5F9", mutedFg: "#64748B",
-    card: "#FFFFFF", border: "#E2E8F0", ring: "#2563EB",
-    borderRadius: "0.75rem",
-  };
-  const FALLBACK_TYPOGRAPHY = {
-    headingFont: "Inter", bodyFont: "Inter",
-    headingWeight: "700", letterSpacing: "-0.02em",
-  };
-
-  const mergedPalette = templateIdentity
-    ? { ...templateIdentity.palette, ...(identity?.color_overrides ?? {}) }
-    : { ...FALLBACK_PALETTE, ...(identity?.color_overrides ?? {}) };
-  const templateCSSVars = buildTemplateCSSVars(
-    mergedPalette,
-    templateIdentity?.typography ?? FALLBACK_TYPOGRAPHY,
-  );
+  // Palette + overrides + design settings, merged the same way on every
+  // surface (see modules/themes/site-theme.ts). Sites with no template get a
+  // neutral branded fallback there rather than the bare shadcn slate.
+  const { css: templateCSSVars } = buildSiteTheme(identity, templateIdentity);
   const templateBodyScript = templateIdentity
     ? buildTemplateBodyScript(templateIdentity.slug)
     : null;

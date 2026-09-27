@@ -2,9 +2,8 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { fetchGlobalLayout, toBlocks, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
-import { buildTemplateCSSVars } from "@/modules/themes/template-css";
+import { buildSiteTheme, type SiteThemeInput } from "@/modules/themes/site-theme";
 import type { Block } from "@/types/cms";
-import type { TemplatePalette } from "@/modules/themes/template-types";
 
 /**
  * Renders a tenant's DB page (by slug) wrapped in the global header + footer.
@@ -27,7 +26,7 @@ export async function TenantPageWithChrome({ tenantId, slug }: { tenantId: strin
     supabase.from("pages").select("*").eq("slug", slug).eq("status", "published").eq("tenant_id", tenantId).maybeSingle(),
     fetchGlobalLayout(tenantId),
     admin.from("site_identity")
-      .select("template_id, color_overrides")
+      .select("template_id, color_overrides, design_overrides")
       .eq("tenant_id", tenantId)
       .maybeSingle(),
   ]);
@@ -36,27 +35,7 @@ export async function TenantPageWithChrome({ tenantId, slug }: { tenantId: strin
     ? await resolveDbTemplateIdentity(identity.template_id)
     : null;
 
-  // Roughly half of tenants have never had a template applied — give them the
-  // same neutral branded default (identical to the (site) layout's fallback)
-  // instead of falling through to the bare shadcn slate palette.
-  const FALLBACK_PALETTE: TemplatePalette = {
-    primary: "#2563EB", primaryFg: "#ffffff",
-    secondary: "#0F172A", accent: "#38BDF8",
-    background: "#FFFFFF", foreground: "#0F172A",
-    muted: "#F1F5F9", mutedFg: "#64748B",
-    card: "#FFFFFF", border: "#E2E8F0", ring: "#2563EB",
-    borderRadius: "0.75rem",
-  };
-  const FALLBACK_TYPOGRAPHY = {
-    headingFont: "Inter", bodyFont: "Inter",
-    headingWeight: "700", letterSpacing: "-0.02em",
-  };
-
-  const colorOverrides = (identity?.color_overrides ?? null) as Partial<TemplatePalette> | null;
-  const mergedPalette = templateIdentity
-    ? { ...templateIdentity.palette, ...(colorOverrides ?? {}) }
-    : { ...FALLBACK_PALETTE, ...(colorOverrides ?? {}) };
-  const templateCSSVars = buildTemplateCSSVars(mergedPalette, templateIdentity?.typography ?? FALLBACK_TYPOGRAPHY);
+  const { css: templateCSSVars } = buildSiteTheme(identity as SiteThemeInput | null, templateIdentity);
   const templateCustomCss = templateIdentity?.customCss ?? null;
 
   const rawBlocks: Block[] = toBlocks(page?.blocks);

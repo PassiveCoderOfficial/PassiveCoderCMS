@@ -3,7 +3,7 @@ import { getCurrentTenantId } from "@/lib/tenant/current";
 import { toBlocks } from "@/lib/site/global-blocks";
 import { safeReturnTo } from "@/lib/site/return-to";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
-import { buildTemplateCSSVars } from "@/modules/themes/template-css";
+import { buildSiteTheme, type SiteThemeInput } from "@/modules/themes/site-theme";
 import HeaderBuilderClient, { type HeaderTarget } from "./header-builder-client";
 
 export default async function HeaderBuilderPage({
@@ -28,7 +28,7 @@ export default async function HeaderBuilderPage({
   const admin = await createAdminClient();
   const { data } = await admin
     .from("site_identity")
-    .select("global_header, global_footer, template_id, color_overrides")
+    .select("global_header, global_footer, template_id, color_overrides, design_overrides")
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
@@ -46,27 +46,7 @@ export default async function HeaderBuilderPage({
   const templateIdentity = data?.template_id
     ? await resolveDbTemplateIdentity(data.template_id)
     : null;
-  const colorOverrides = (data?.color_overrides ?? null) as Partial<import("@/modules/themes/template-types").TemplatePalette> | null;
-  const FALLBACK_PALETTE = {
-    primary: "#2563EB", primaryFg: "#ffffff",
-    secondary: "#0F172A", accent: "#38BDF8",
-    background: "#FFFFFF", foreground: "#0F172A",
-    muted: "#F1F5F9", mutedFg: "#64748B",
-    card: "#FFFFFF", border: "#E2E8F0", ring: "#2563EB",
-    borderRadius: "0.75rem",
-  };
-  const FALLBACK_TYPOGRAPHY = {
-    headingFont: "Inter", bodyFont: "Inter",
-    headingWeight: "700", letterSpacing: "-0.02em",
-  };
-  const mergedPalette = templateIdentity
-    ? { ...templateIdentity.palette, ...(colorOverrides ?? {}) }
-    : { ...FALLBACK_PALETTE, ...(colorOverrides ?? {}) };
-  const templateCSSVars = buildTemplateCSSVars(
-    mergedPalette,
-    templateIdentity?.typography ?? FALLBACK_TYPOGRAPHY,
-    ".cms-canvas-light",
-  );
+  const { css: templateCSSVars } = buildSiteTheme(data as SiteThemeInput | null, templateIdentity, ".cms-canvas-light");
   const templateCustomCss = templateIdentity?.customCss ?? null;
 
   return (

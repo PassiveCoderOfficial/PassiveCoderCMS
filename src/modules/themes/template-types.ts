@@ -121,3 +121,19 @@ export type TemplateNavItem = {
   label: string;
   url: string;
 };
+
+/**
+ * Site-wide design choices a site owner layers over their template
+ * (site_identity.design_overrides). Every field is optional: unset means
+ * "keep what the template says". Fonts/weight/letterSpacing override the
+ * template's typography; roundness and shadow rescale the tokens every
+ * block already reads (Tailwind rounded-* and shadow-* utilities).
+ */
+export type SiteDesign = {
+  headingFont?: string;
+  bodyFont?: string;
+  headingWeight?: string;
+  letterSpacing?: string;
+  roundness?: "sharp" | "soft" | "rounded" | "extra";
+  shadow?: "none" | "subtle" | "normal" | "bold";
+};

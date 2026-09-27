@@ -1,5 +1,6 @@
 import type { Block, BlockBackground } from "@/types/cms";
 import { hexToRgba } from "@/lib/utils";
+import { hexToHSL } from "@/modules/themes/template-css";
 
 /**
  * A block's custom color/gradient background is a literal value the editor
@@ -88,4 +89,71 @@ export function getContainerClass(width: string): string {
     narrow: "max-w-3xl mx-auto px-6",
   };
   return map[width] ?? "w-full";
+}
+
+/**
+ * The block's section wrapper styling: padding/margin plus the shared Style
+ * panel (text colour, border, radius, shadow, min height, per-device
+ * padding). One function for both the live site wrapper (page-renderer) and
+ * the editor canvas wrapper (block-renderer), so the two can't drift.
+ *
+ * Per-device padding needs media queries, which inline styles can't do: when
+ * any tablet/mobile override is set, padding moves to CSS vars read by the
+ * `pc-rpad` class in globals.css (breakpoints match hideOn: 640 / 1024px).
+ */
+export function getBlockWrapperStyle(block: Block): { style: React.CSSProperties; className: string } {
+  const pad = block.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  const margin = block.margin ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  const st = block.style ?? {};
+  const classes: string[] = [];
+  const style: Record<string, string | number | undefined> = {
+    paddingRight: pad.right,
+    paddingLeft: pad.left,
+    marginTop: margin.top,
+    marginBottom: margin.bottom,
+  };
+
+  const t = st.paddingTablet, m = st.paddingMobile;
+  const responsive = [t?.top, t?.bottom, m?.top, m?.bottom].some((v) => typeof v === "number");
+  if (responsive) {
+    const tTop = t?.top ?? pad.top, tBottom = t?.bottom ?? pad.bottom;
+    Object.assign(style, {
+      "--pc-pt": `${pad.top}px`, "--pc-pb": `${pad.bottom}px`,
+      "--pc-pt-t": `${tTop}px`, "--pc-pb-t": `${tBottom}px`,
+      "--pc-pt-m": `${m?.top ?? tTop}px`, "--pc-pb-m": `${m?.bottom ?? tBottom}px`,
+    });
+    classes.push("pc-rpad");
+  } else {
+    style.paddingTop = pad.top;
+    style.paddingBottom = pad.bottom;
+  }
+
+  if (st.textColor) {
+    style.color = st.textColor;
+    // Blocks colour most text via theme tokens (text-foreground, text-card-
+    // foreground), not inheritance — re-point those tokens for this section.
+    if (/^#[0-9a-f]{6}$/i.test(st.textColor)) {
+      const hsl = hexToHSL(st.textColor);
+      style["--foreground"] = hsl;
+      style["--card-foreground"] = hsl;
+    }
+  }
+  if (st.borderWidth) {
+    style.borderWidth = st.borderWidth;
+    style.borderStyle = "solid";
+    style.borderColor = st.borderColor || "hsl(var(--border))";
+  }
+  if (st.radius) {
+    style.borderRadius = st.radius;
+    style.overflow = "hidden";
+  }
+  if (st.shadow && st.shadow !== "none") style.boxShadow = `var(--shadow-${st.shadow})`;
+  if (st.minHeight) {
+    style.minHeight = `${Math.min(100, Math.max(0, st.minHeight))}vh`;
+    style.display = "flex";
+    style.flexDirection = "column";
+    style.justifyContent = st.verticalAlign === "bottom" ? "flex-end" : st.verticalAlign === "top" ? "flex-start" : "center";
+  }
+
+  return { style: style as React.CSSProperties, className: classes.join(" ") };
 }

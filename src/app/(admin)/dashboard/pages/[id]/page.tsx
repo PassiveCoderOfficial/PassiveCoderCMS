@@ -4,6 +4,7 @@ import { BuilderInterface } from "@/components/admin/page-builder/builder-interf
 import { PageEditorHeader } from "./page-editor-header";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildTemplateCSSVars } from "@/modules/themes/template-css";
+import { buildSiteTheme, type SiteThemeInput } from "@/modules/themes/site-theme";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 import type { Page } from "@/types/cms";
 import type { Metadata } from "next";
@@ -51,16 +52,17 @@ export default async function PageEditorPage({ params }: Props) {
     aiCoderEnabled = (await resolveEnabledModules(page.tenant_id)).ai_coder ?? false;
     const admin = await createAdminClient();
     const [{ data: identity }, { data: tenant }] = await Promise.all([
-      admin.from("site_identity").select("template_id").eq("tenant_id", page.tenant_id).maybeSingle(),
+      admin.from("site_identity").select("template_id, color_overrides, design_overrides").eq("tenant_id", page.tenant_id).maybeSingle(),
       admin.from("tenants").select("slug, custom_domain").eq("id", page.tenant_id).maybeSingle(),
     ]);
     const templateIdentity = identity?.template_id
       ? await resolveDbTemplateIdentity(identity.template_id)
       : null;
-    if (templateIdentity) {
-      templateCSSVars = buildTemplateCSSVars(templateIdentity.palette, templateIdentity.typography, ".cms-canvas-light");
-      templateCustomCss = templateIdentity.customCss ?? null;
-    }
+    // Same merge as the live site (colour overrides + design settings
+    // included), so the canvas matches what gets published.
+    const theme = buildSiteTheme(identity as SiteThemeInput | null, templateIdentity, ".cms-canvas-light");
+    templateCSSVars = theme.css;
+    templateCustomCss = theme.customCss;
     tenantSlug = tenant?.slug ?? null;
     tenantCustomDomain = tenant?.custom_domain ?? null;
   } else if (page.template_id) {

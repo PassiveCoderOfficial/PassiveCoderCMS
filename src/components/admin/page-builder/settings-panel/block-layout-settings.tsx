@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { ColorPicker } from "@/components/ui/color-picker";
-import type { Block, BlockBackground } from "@/types/cms";
+import type { Block, BlockBackground, BlockStyle } from "@/types/cms";
 
 interface LayoutSettingsProps {
   block: Block;
@@ -26,6 +26,13 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
 
   const updateMargin = (side: "top" | "bottom", value: number) => {
     updateBlock(block.id, { margin: { ...block.margin, [side]: value } });
+  };
+
+  const st: BlockStyle = block.style ?? {};
+  const updateStyle = (patch: Partial<BlockStyle>) => {
+    const next: BlockStyle = { ...st, ...patch };
+    for (const k of Object.keys(next) as (keyof BlockStyle)[]) if (next[k] === undefined) delete next[k];
+    updateBlock(block.id, { style: Object.keys(next).length ? next : undefined });
   };
 
   const updateBg = (field: keyof BlockBackground, value: unknown) => {
@@ -154,12 +161,141 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
           </div>
         )}
         {block.background.type === "image" && (
-          <MediaPickerInput
-            compact
-            value={block.background.imageUrl ?? ""}
-            onChange={(url) => updateBg("imageUrl", url)}
-          />
+          <div className="space-y-2">
+            <MediaPickerInput
+              compact
+              value={block.background.imageUrl ?? ""}
+              onChange={(url) => updateBg("imageUrl", url)}
+            />
+            {/* The renderer has always supported a colour wash over the image;
+                it just had no control, so text over busy photos was unreadable. */}
+            <div className="grid grid-cols-2 gap-2 items-end">
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Overlay colour</Label>
+                <ColorPicker value={block.background.imageOverlay ?? "#000000"} onChange={(v) => updateBg("imageOverlay", v)} allowAlpha={false} className="mt-0.5" />
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">
+                  Overlay ({Math.round((block.background.imageOverlay ? block.background.imageOverlayOpacity ?? 0.5 : 0) * 100)}%)
+                </Label>
+                <Input
+                  type="range" min={0} max={90} step={5}
+                  value={Math.round((block.background.imageOverlay ? block.background.imageOverlayOpacity ?? 0.5 : 0) * 100)}
+                  onChange={(e) => {
+                    const pct = Number(e.target.value);
+                    updateBlock(block.id, {
+                      background: pct === 0
+                        ? { ...block.background, imageOverlay: undefined, imageOverlayTo: undefined }
+                        : { ...block.background, imageOverlay: block.background.imageOverlay ?? "#000000", imageOverlayOpacity: pct / 100 },
+                    });
+                  }}
+                  className="h-8"
+                />
+              </div>
+            </div>
+          </div>
         )}
+      </div>
+
+      {/* Style — shared by every block type, rendered by getBlockWrapperStyle */}
+      <div className="space-y-3 border-t pt-4">
+        <Label className="text-xs font-semibold">Style</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-[11px] text-muted-foreground">Text colour</Label>
+          <div className="flex items-center gap-1.5">
+            {st.textColor && (
+              <button type="button" className="text-[10px] text-muted-foreground underline" onClick={() => updateStyle({ textColor: undefined })}>reset</button>
+            )}
+            <ColorPicker value={st.textColor ?? "#111827"} onChange={(v) => updateStyle({ textColor: v })} allowAlpha={false} className="w-28" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Corner radius (px)</Label>
+            <Input type="number" min={0} max={80} value={st.radius ?? 0} onChange={(e) => updateStyle({ radius: Number(e.target.value) || undefined })} className="h-7 text-xs" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Shadow</Label>
+            <Select value={st.shadow ?? "none"} onValueChange={(v) => updateStyle({ shadow: v === "none" ? undefined : v as BlockStyle["shadow"] })}>
+              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {[["none", "None"], ["sm", "Small"], ["md", "Medium"], ["lg", "Large"], ["xl", "Extra large"]].map(([v, l]) => (
+                  <SelectItem key={v} value={v} className="text-xs">{l}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Border (px)</Label>
+            <Input type="number" min={0} max={20} value={st.borderWidth ?? 0} onChange={(e) => updateStyle({ borderWidth: Number(e.target.value) || undefined })} className="h-7 text-xs" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Border colour</Label>
+            <ColorPicker value={st.borderColor ?? "#e5e7eb"} onChange={(v) => updateStyle({ borderColor: v })} className="mt-0.5" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Min height (% of screen)</Label>
+            <Input type="number" min={0} max={100} value={st.minHeight ?? 0} onChange={(e) => updateStyle({ minHeight: Math.min(100, Number(e.target.value)) || undefined })} className="h-7 text-xs" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Content position</Label>
+            <Select value={st.verticalAlign ?? "center"} onValueChange={(v) => updateStyle({ verticalAlign: v as BlockStyle["verticalAlign"] })} disabled={!st.minHeight}>
+              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["top", "center", "bottom"].map((v) => (
+                  <SelectItem key={v} value={v} className="text-xs capitalize">{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Per-device — padding overrides + hide switches */}
+      <div className="space-y-3 border-t pt-4">
+        <Label className="text-xs font-semibold">Tablet &amp; mobile</Label>
+        {(["paddingTablet", "paddingMobile"] as const).map((key) => (
+          <div key={key}>
+            <Label className="text-[10px] text-muted-foreground">
+              {key === "paddingTablet" ? "Tablet" : "Mobile"} padding (px) — blank = same as {key === "paddingTablet" ? "desktop" : "tablet"}
+            </Label>
+            <div className="grid grid-cols-2 gap-2 mt-0.5">
+              {(["top", "bottom"] as const).map((side) => (
+                <Input
+                  key={side}
+                  type="number" min={0} placeholder={side}
+                  value={st[key]?.[side] ?? ""}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    const next = { ...(st[key] ?? {}), [side]: raw === "" ? undefined : Number(raw) };
+                    updateStyle({ [key]: next.top === undefined && next.bottom === undefined ? undefined : next });
+                  }}
+                  className="h-7 text-xs"
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Hide on</Label>
+          <div className="flex gap-3 mt-1">
+            {(["desktop", "tablet", "mobile"] as const).map((d) => (
+              <label key={d} className="flex items-center gap-1.5 text-xs capitalize cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={block.hideOn?.includes(d) ?? false}
+                  onChange={() => {
+                    const cur = block.hideOn ?? [];
+                    const hideOn = cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d];
+                    // Same rule as the layers panel: hidden on all three = not visible.
+                    updateBlock(block.id, { hideOn, visible: hideOn.length < 3 });
+                  }}
+                />
+                {d}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Animation */}

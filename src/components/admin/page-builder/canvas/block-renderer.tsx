@@ -49,7 +49,7 @@ import { HeaderNavBlock } from "@/components/blocks/header-nav/header-nav-block"
 import { HeaderCtaBlock } from "@/components/blocks/header-cta/header-cta-block";
 import { HeaderCartBlock } from "@/components/blocks/header-cart/header-cart-block";
 import { HeaderAccountBlock } from "@/components/blocks/header-account/header-account-block";
-import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
+import { getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
 import type { ContainerPath } from "@/lib/store/builder";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
@@ -76,22 +76,9 @@ function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType
 
 export function BlockRenderer({ block, isPreview = false, path }: BlockRendererProps) {
   const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
-  // block.padding/margin are typed as always present, but a real block can
-  // reach here with either as null — seen on an icon_grid block created by an
-  // older write path (predating one of these fields being required) — and
-  // reading .top off null crashed the whole editor with no recovery, taking
-  // out every other block on the page along with it. Falling back to zero
-  // keeps that one block visually tight rather than losing the page.
-  const padding = block.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
-  const margin = block.margin ?? { top: 0, right: 0, bottom: 0, left: 0 };
-  const paddingStyle = {
-    paddingTop: padding.top,
-    paddingRight: padding.right,
-    paddingBottom: padding.bottom,
-    paddingLeft: padding.left,
-    marginTop: margin.top,
-    marginBottom: margin.bottom,
-  };
+  // Same wrapper styling as the live site (padding, margin, Style panel).
+  // Tolerates null padding/margin — seen on blocks from older write paths.
+  const { style: wrapStyle, className: wrapClassName } = getBlockWrapperStyle(block);
 
   const renderBlock = () => {
     switch (block.type) {
@@ -162,8 +149,8 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
   };
 
   return (
-    <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", bgClassName)}>
-      <div className={getContainerClass(block.width)}>{renderBlock()}</div>
+    <div style={{ ...bgStyle, ...wrapStyle }} className={cn("w-full", bgClassName, wrapClassName)}>
+      <div className={cn("w-full", getContainerClass(block.width))}>{renderBlock()}</div>
     </div>
   );
 }

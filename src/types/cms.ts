@@ -99,8 +99,28 @@ export type BlockBase = {
   background: BlockBackground;
   className?: string;
   animation?: "none" | "fade" | "slide-up" | "slide-left" | "zoom";
+  /** Shared section styling every block type gets from the Style panel. */
+  style?: BlockStyle;
   // Template identity — controls which visual variant renders
   templateVariant?: string;
+};
+
+export type BlockStyle = {
+  /** Text colour for everything in the section (hex). Also re-points the
+   *  --foreground token so theme-coloured text inside follows it. */
+  textColor?: string;
+  borderWidth?: number;
+  borderColor?: string;
+  /** Corner radius of the section box, px. */
+  radius?: number;
+  shadow?: "none" | "sm" | "md" | "lg" | "xl";
+  /** Minimum section height in vh (0-100). */
+  minHeight?: number;
+  /** Where content sits when minHeight makes the section taller than it. */
+  verticalAlign?: "top" | "center" | "bottom";
+  /** Vertical padding overrides for smaller screens (px). Unset = desktop value. */
+  paddingTablet?: { top?: number; bottom?: number };
+  paddingMobile?: { top?: number; bottom?: number };
 };
 
 export type BlockBackground = {

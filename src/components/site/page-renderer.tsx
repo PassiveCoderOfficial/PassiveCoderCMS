@@ -53,7 +53,7 @@ import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { ContainerBlock } from "@/components/blocks/container/container-block";
-import { getBlockBackground, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
+import { getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 
 interface PageBlockProps {
@@ -82,14 +82,7 @@ const MAX_CONTAINER_DEPTH = 4;
 
 async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
   const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
-  const paddingStyle = {
-    paddingTop: block.padding?.top,
-    paddingRight: block.padding?.right,
-    paddingBottom: block.padding?.bottom,
-    paddingLeft: block.padding?.left,
-    marginTop: block.margin?.top,
-    marginBottom: block.margin?.bottom,
-  };
+  const { style: wrapStyle, className: wrapClassName } = getBlockWrapperStyle(block);
 
   let content: React.ReactNode;
   switch (block.type) {
@@ -186,8 +179,8 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
   if (!content) return null;
 
   return (
-    <div style={{ ...bgStyle, ...paddingStyle }} className={cn("w-full", bgClassName, hideOnClasses(block.hideOn))}>
-      <div className={nested ? "w-full" : getContainerClass(block.width)}>{content}</div>
+    <div style={{ ...bgStyle, ...wrapStyle }} className={cn("w-full", bgClassName, wrapClassName, hideOnClasses(block.hideOn))}>
+      <div className={nested ? "w-full" : cn("w-full", getContainerClass(block.width))}>{content}</div>
     </div>
   );
 }

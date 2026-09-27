@@ -15,7 +15,13 @@
  * and tenants on older templates still render exactly as before.
  */
 
-import type { TemplatePalette, TemplateTypography } from "./template-types";
+import type { TemplatePalette, TemplateTypography, SiteDesign } from "./template-types";
+import { googleFontsHref } from "./fonts";
+
+/** Tailwind v4 default radius scale, multiplied by the roundness choice. */
+const RADIUS_BASE: Record<string, number> = { xs: 0.125, sm: 0.25, md: 0.375, lg: 0.5, xl: 0.75, "2xl": 1, "3xl": 1.5 };
+const ROUNDNESS_SCALE: Record<NonNullable<SiteDesign["roundness"]>, number> = { sharp: 0, soft: 0.5, rounded: 1, extra: 1.75 };
+const SHADOW_SCALE: Record<NonNullable<SiteDesign["shadow"]>, number> = { none: 0, subtle: 0.5, normal: 1, bold: 1.9 };
 
 function hexToHSLParts(hex: string): { h: number; s: number; l: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
@@ -38,7 +44,7 @@ function hexToHSLParts(hex: string): { h: number; s: number; l: number } {
   return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
-function hexToHSL(hex: string): string {
+export function hexToHSL(hex: string): string {
   const { h, s, l } = hexToHSLParts(hex);
   return `${h} ${s}% ${l}%`;
 }
@@ -74,8 +80,20 @@ export function buildTemplateCSSVars(
    * in globals.css already assumes it will be.
    */
   scopeSelector = ":root",
+  /** Site owner's design settings (site_identity.design_overrides). */
+  design?: SiteDesign | null,
 ): string {
   const p = (hex: string) => hexToHSL(hex);
+  typography = {
+    ...typography,
+    ...(design?.headingFont ? { headingFont: design.headingFont } : {}),
+    ...(design?.bodyFont ? { bodyFont: design.bodyFont } : {}),
+    ...(design?.headingWeight ? { headingWeight: design.headingWeight } : {}),
+    ...(design?.letterSpacing ? { letterSpacing: design.letterSpacing } : {}),
+  };
+  const k = design?.shadow ? SHADOW_SCALE[design.shadow] ?? 1 : 1;
+  // Shadow alpha, scaled by the site's shadow choice; "none" drops them.
+  const a = (x: number) => +(x * k).toFixed(3);
   // Wrap single font names in quotes, but pass through font stacks / CSS var() refs as-is.
   const fontVal = (f: string) =>
     /var\(|,/.test(f) ? f : `'${f}'`;
@@ -89,8 +107,18 @@ export function buildTemplateCSSVars(
   const primarySoft = shiftL(palette.primary, darkBg ? -18 : 40);
   const accentSoft = shiftL(palette.accent, darkBg ? -18 : 38);
 
+  const fontsHref = googleFontsHref([typography.headingFont, typography.bodyFont]);
+  const scale = design?.roundness ? ROUNDNESS_SCALE[design.roundness] ?? 1 : null;
+  const radiusVars = scale == null ? "" : Object.entries(RADIUS_BASE)
+    .map(([n, v]) => `  --radius-${n}: ${+(v * scale).toFixed(3)}rem;`)
+    .concat(`  --radius: ${+(0.5 * scale).toFixed(3)}rem;`)
+    .join("\n");
+  // Body text element: on the live site that's <body>; in the editor the
+  // vars are scoped to the canvas wrapper, so the wrapper carries it.
+  const bodySel = scopeSelector === ":root" ? "body" : scopeSelector;
+
   return `
-${scopeSelector} {
+${fontsHref ? `@import url("${fontsHref}");\n` : ""}${scopeSelector} {
   --background: ${p(palette.background)};
   --foreground: ${p(palette.foreground)};
   --card: ${p(palette.card)};
@@ -128,12 +156,12 @@ ${scopeSelector} {
   --brand-gradient-soft: linear-gradient(135deg, hsl(${primarySoft}) 0%, hsl(${accentSoft}) 100%);
 
   /* Shadow ladder — warm, brand-neutral, tuned for elevation not just drop */
-  --shadow-xs: 0 1px 2px 0 hsl(${p(palette.foreground)} / 0.05);
-  --shadow-sm: 0 1px 3px 0 hsl(${p(palette.foreground)} / 0.08), 0 1px 2px -1px hsl(${p(palette.foreground)} / 0.06);
-  --shadow-md: 0 4px 12px -2px hsl(${p(palette.foreground)} / 0.10), 0 2px 6px -2px hsl(${p(palette.foreground)} / 0.06);
-  --shadow-lg: 0 12px 28px -6px hsl(${p(palette.foreground)} / 0.14), 0 6px 12px -6px hsl(${p(palette.foreground)} / 0.08);
-  --shadow-xl: 0 24px 48px -12px hsl(${p(palette.foreground)} / 0.20);
-  --shadow-primary: 0 8px 24px -6px hsl(${p(palette.primary)} / 0.35);
+  --shadow-xs: 0 1px 2px 0 hsl(${p(palette.foreground)} / ${a(0.05)});
+  --shadow-sm: 0 1px 3px 0 hsl(${p(palette.foreground)} / ${a(0.08)}), 0 1px 2px -1px hsl(${p(palette.foreground)} / ${a(0.06)});
+  --shadow-md: 0 4px 12px -2px hsl(${p(palette.foreground)} / ${a(0.10)}), 0 2px 6px -2px hsl(${p(palette.foreground)} / ${a(0.06)});
+  --shadow-lg: 0 12px 28px -6px hsl(${p(palette.foreground)} / ${a(0.14)}), 0 6px 12px -6px hsl(${p(palette.foreground)} / ${a(0.08)});
+  --shadow-xl: 0 24px 48px -12px hsl(${p(palette.foreground)} / ${a(0.20)});
+  --shadow-primary: 0 8px 24px -6px hsl(${p(palette.primary)} / ${a(0.35)});
 
   /* Spacing rhythm — consistent vertical section cadence */
   --section-py-sm: 3rem;
@@ -145,6 +173,15 @@ ${scopeSelector} {
   --dur-fast: 150ms;
   --dur: 240ms;
   --dur-slow: 400ms;
+${radiusVars}
+}
+/* Site typography. Families are unlayered so they win over Tailwind's
+   font-sans on <body>; a block's own inline font choice still wins. Weight
+   and tracking sit in the base layer so a block's utility classes win. */
+${bodySel} { font-family: var(--body-font); }
+${bodySel} :is(h1,h2,h3,h4,h5,h6) { font-family: var(--heading-font); }
+@layer base {
+  ${bodySel} :is(h1,h2,h3,h4,h5,h6) { font-weight: var(--heading-weight); letter-spacing: var(--letter-spacing-heading); }
 }
 `.trim();
 }
