@@ -1,3 +1,4 @@
+import { applySectionRhythm } from "./rhythm";
 import type { Block } from "@/types/cms";
 import type { BusinessFacts } from "./brief";
 import type { PageSection } from "./plan";
@@ -106,9 +107,11 @@ export async function buildPageFromPlan(
     }
   }
 
-  const blocks = results
-    .filter((r): r is BuiltSection & { block: Block } => !!r.block)
-    .map((r, order) => ({ ...r.block, order }));
+  const blocks = applySectionRhythm(
+    results
+      .filter((r): r is BuiltSection & { block: Block } => !!r.block)
+      .map((r) => r.block),
+  ).map((b, order) => ({ ...b, order }));
 
   return {
     blocks,
