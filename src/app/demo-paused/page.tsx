@@ -22,7 +22,7 @@ export default async function DemoPausedPage({ searchParams }: { searchParams: P
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center bg-[#25D366] hover:brightness-110 text-white font-bold px-6 py-3.5 rounded-xl"
         >
-          Get This Website on WhatsApp
+          Pay and Confirm
         </a>
         <p className="text-xs text-gray-600">Built by Passive Coder</p>
       </div>
