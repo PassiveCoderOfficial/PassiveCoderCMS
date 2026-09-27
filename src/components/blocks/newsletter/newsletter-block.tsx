@@ -58,8 +58,10 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
       {data.title && <h2 className={cn("text-2xl font-bold mb-2", data.layout !== "inline" && "text-center")}>{data.title}</h2>}
       {data.description && <p className={cn("text-muted-foreground mb-6", data.layout !== "inline" && "text-center")}>{data.description}</p>}
       <form onSubmit={handleSubmit} className={cn(
-        "flex gap-2",
-        data.layout === "stacked" && "flex-col",
+        // Row from sm up; on phones field and button stack so the button
+        // can't push the page wider than the screen.
+        "flex flex-col gap-2",
+        data.layout !== "stacked" && "sm:flex-row",
       )}>
         <input
           type="email"
@@ -67,7 +69,7 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
           value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder={data.placeholder || "Enter your email…"}
-          className="flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="flex-1 min-w-0 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <button
           type="submit"
