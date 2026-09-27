@@ -240,3 +240,6 @@ html {
 /* Section text colour (Style panel) — light surfaces inside the section keep
    their own card text colour instead of inheriting the section's. */
 .pc-tc :is(.bg-card, .bg-white, .bg-background) { color: hsl(var(--card-foreground)); }
+
+/* Stat values: never push the page sideways, whatever the owner typed. */
+.stat-value { overflow-wrap: anywhere; min-width: 0; }

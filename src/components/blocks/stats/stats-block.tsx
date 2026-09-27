@@ -3,6 +3,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { StatsBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
+
+/** Stat values are usually short numbers ("500+"), but owners also write
+ *  words ("Islandwide"). At the numeric display size a word is wider than a
+ *  phone and pushes the page sideways — seen live. Long values step down. */
+function statValueFit(display: unknown): string {
+  const len = String(display ?? "").length;
+  return len > 9 ? "text-2xl! sm:text-3xl! md:text-4xl!" : len > 6 ? "text-3xl! sm:text-4xl!" : "";
+}
 import * as LucideIcons from "lucide-react";
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
@@ -70,7 +78,7 @@ function StatsColoredRow({ data }: { data: StatsBlockProps["data"] }) {
             return (
               <div key={item.id} className="stat-value-wrap bg-card/95 backdrop-blur-sm rounded-2xl flex flex-col items-center text-center p-6 sm:p-7 shadow-sm">
                 {item.icon && <DynIcon name={item.icon} className="w-6 h-6 mb-2 text-primary" />}
-                <p className="stat-value text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight" style={{ fontFamily: "var(--heading-font, inherit)" }}>{display}</p>
+                <p className={cn("stat-value text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight", statValueFit(display))} style={{ fontFamily: "var(--heading-font, inherit)" }}>{display}</p>
                 <p className="text-sm mt-1.5 text-foreground/70 font-medium">{item.label}</p>
               </div>
             );
@@ -93,7 +101,7 @@ function StatsPlainDark({ data }: { data: StatsBlockProps["data"] }) {
           const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="flex flex-col items-center text-center">
-              <p className="stat-value text-5xl font-light text-primary">{display}</p>
+              <p className={cn("stat-value text-5xl font-light text-primary", statValueFit(display))}>{display}</p>
               <div className="w-8 h-px bg-primary/40 my-3" />
               <p className="text-xs tracking-[0.15em] uppercase text-muted-foreground">{item.label}</p>
             </div>
@@ -116,7 +124,7 @@ function StatsNavyRow({ data }: { data: StatsBlockProps["data"] }) {
           const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="text-center">
-              <p className="stat-value text-4xl md:text-5xl font-bold text-primary">{display}</p>
+              <p className={cn("stat-value text-4xl md:text-5xl font-bold text-primary", statValueFit(display))}>{display}</p>
               <p className="text-sm mt-2 text-muted-foreground">{item.label}</p>
             </div>
           );
@@ -143,7 +151,7 @@ function StatsGradientNumbers({ data }: { data: StatsBlockProps["data"] }) {
                   <DynIcon name={item.icon} className="w-5 h-5 text-primary" />
                 </div>
               )}
-              <p className="stat-value text-4xl md:text-5xl font-black text-primary">{display}</p>
+              <p className={cn("stat-value text-4xl md:text-5xl font-black text-primary", statValueFit(display))}>{display}</p>
               <p className="text-xs mt-2 text-muted-foreground uppercase tracking-widest font-medium">{item.label}</p>
             </div>
           );
@@ -165,7 +173,7 @@ function StatsBoldDarkRow({ data }: { data: StatsBlockProps["data"] }) {
           const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="bg-card flex flex-col items-center text-center p-8">
-              <p className="stat-value text-5xl font-black text-primary">{display}</p>
+              <p className={cn("stat-value text-5xl font-black text-primary", statValueFit(display))}>{display}</p>
               <p className="text-xs mt-2 uppercase tracking-[0.15em] text-muted-foreground font-semibold">{item.label}</p>
             </div>
           );
@@ -187,7 +195,7 @@ function StatsWarmRow({ data }: { data: StatsBlockProps["data"] }) {
           const display = useStatDisplay(item, data.animate);
           return (
             <div key={item.id} className="text-center">
-              <p className="stat-value text-4xl md:text-5xl font-bold text-primary italic">{display}</p>
+              <p className={cn("stat-value text-4xl md:text-5xl font-bold text-primary italic", statValueFit(display))}>{display}</p>
               <div className="w-12 h-0.5 bg-primary/30 mx-auto my-3" />
               <p className="text-sm text-muted-foreground">{item.label}</p>
             </div>
@@ -217,7 +225,7 @@ function StatsDarkBand({ data }: { data: StatsBlockProps["data"] }) {
                 i < data.items.length - 1 && "border-r",
               )}
             >
-              <p className="stat-value text-3xl font-black text-primary-foreground">{display}</p>
+              <p className={cn("stat-value text-3xl font-black text-primary-foreground", statValueFit(display))}>{display}</p>
               <p className="text-primary-foreground/60 text-xs mt-1.5 font-medium uppercase tracking-wider">{item.label}</p>
             </div>
           );
