@@ -239,6 +239,8 @@ export type NavigationBlockProps = BlockBase & {
     /** Render the coded SVG icon+wordmark BrandLogo instead of plain text
      *  when no uploaded logo image is set. */
     useBrandMark?: boolean;
+    /** Small icon image shown before the text logo (when no full logo image is set). */
+    logoIconUrl?: string;
     /** Small caption rendered beside the logo (e.g. a business registration
      *  number). Purely cosmetic — omit for the old logo-only look. */
     logoCaption?: string;

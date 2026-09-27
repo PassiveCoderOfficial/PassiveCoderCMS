@@ -38,6 +38,7 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
   return (
     <div className="space-y-3">
       <div><Label className="text-xs">Logo Text</Label><Input value={block.data.logoText ?? ""} onChange={(e) => update("logoText", e.target.value)} className="h-8 text-xs mt-1" /></div>
+      <div><Label className="text-xs">Logo Icon (before text)</Label><div className="mt-1"><MediaPickerInput compact value={block.data.logoIconUrl ?? ""} onChange={(v) => update("logoIconUrl", v)} /></div></div>
       <div><Label className="text-xs">Logo Image</Label><MediaPickerInput compact value={block.data.logo ?? ""} onChange={(url) => update("logo", url)} className="mt-1" /></div>
       <div><Label className="text-xs">Logo Height (px)</Label><Input type="number" min={24} max={80} value={block.data.logoHeight ?? 40} onChange={(e) => update("logoHeight", parseInt(e.target.value, 10) || 40)} className="h-8 text-xs mt-1" /></div>
       <div>

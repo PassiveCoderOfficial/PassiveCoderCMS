@@ -123,9 +123,15 @@ export function NavigationBlock({ block, identityLogo }: {
                 {...(activeColor ? { color: activeColor } : {})}
               />
             ) : (
+              <>
+              {data.logoIconUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={data.logoIconUrl} alt="" style={{ height: logoH, width: logoH }} className="rounded-lg shrink-0" />
+              )}
               <span className="text-[1.15rem] font-extrabold tracking-tight" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>
                 {logoText ?? "Brand"}
               </span>
+              </>
             )}
             {logoCaption && (
               <span className="hidden sm:inline text-[0.68rem] leading-tight opacity-60 border-l pl-2 ml-0.5" style={{ color: fg, borderColor: fg }}>
