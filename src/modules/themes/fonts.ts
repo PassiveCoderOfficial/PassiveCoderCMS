@@ -18,6 +18,8 @@ export const FONT_OPTIONS: { name: string; category: "sans" | "serif" | "display
   { name: "Open Sans", category: "sans" },
   { name: "Roboto", category: "sans" },
   { name: "Hind Siliguri", category: "sans" },
+  { name: "Raleway", category: "sans" },
+  { name: "Source Sans 3", category: "sans" },
   { name: "Playfair Display", category: "serif" },
   { name: "Fraunces", category: "serif" },
   { name: "Lora", category: "serif" },

@@ -1,4 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { FONT_OPTIONS } from "@/modules/themes/fonts";
+import type { SiteDesign } from "@/modules/themes/template-types";
 
 export interface ThemeSettings {
   primaryColor: string;
@@ -69,5 +71,39 @@ export async function applyThemeSuggestion(
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  // The themes row above is history only — the live site, homepage and
+  // editor all theme from site_identity (modules/themes/site-theme.ts), so a
+  // palette written only to `themes` never showed up anywhere. Write it where
+  // it's actually read: colours as color_overrides, fonts/roundness as
+  // design_overrides.
+  const s = settings as Record<string, string>;
+  const knownFont = (f: string) => FONT_OPTIONS.some((o) => o.name === f) ? f : undefined;
+  const px = /rem$/.test(s.borderRadius) ? parseFloat(s.borderRadius) * 16 : parseFloat(s.borderRadius);
+  const roundness: SiteDesign["roundness"] = !Number.isFinite(px) ? undefined
+    : px <= 1 ? "sharp" : px <= 6 ? "soft" : px <= 12 ? "rounded" : "extra";
+  const design: SiteDesign = {
+    ...(knownFont(s.headingFont) ? { headingFont: s.headingFont } : {}),
+    ...(knownFont(s.bodyFont) ? { bodyFont: s.bodyFont } : {}),
+    ...(roundness ? { roundness } : {}),
+  };
+  const { error: idError } = await admin.from("site_identity").upsert(
+    {
+      tenant_id: tenantId,
+      color_overrides: {
+        primary: s.primaryColor,
+        secondary: s.secondaryColor,
+        accent: s.accentColor,
+        ring: s.primaryColor,
+        background: s.backgroundColor,
+        foreground: s.textColor,
+      },
+      design_overrides: Object.keys(design).length ? design : null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "tenant_id" },
+  );
+  if (idError) return { ok: false, error: idError.message };
+
   return { ok: true, themeId: created.id };
 }

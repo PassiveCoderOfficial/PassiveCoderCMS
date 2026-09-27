@@ -1,3 +1,4 @@
+import { FONT_OPTIONS } from "@/modules/themes/fonts";
 import { z } from "zod";
 import { CONTENT_SCHEMA_BY_TYPE, BLOCK_PURPOSE, type SupportedBlockType } from "./schemas";
 import { BLOCK_VARIANTS } from "@/modules/page-builder/block-variants";
@@ -231,11 +232,9 @@ export async function suggestTheme(facts: BusinessFacts) {
 
 /** Fonts the site renderer actually loads — a model-invented family would
  *  silently fall back to a system default. */
-const ALLOWED_FONTS = [
-  "Inter", "Poppins", "Montserrat", "Roboto", "Open Sans", "Lato",
-  "Raleway", "Playfair Display", "Merriweather", "Fraunces", "DM Sans",
-  "Work Sans", "Nunito", "Source Sans 3", "Oswald",
-] as const;
+// Same list the site's font picker offers and knows how to load — a font the
+// AI picks from anywhere else would silently fall back to the default.
+const ALLOWED_FONTS = FONT_OPTIONS.map((f) => f.name) as [string, ...string[]];
 
 function hexColor() {
   return z.string().regex(/^#[0-9a-fA-F]{6}$/, "must be a 6-digit hex colour");
