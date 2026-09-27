@@ -29,6 +29,8 @@ import { resolveNavItems } from "@/modules/navigation/resolve-links";
  * can never mangle unrelated text that happens to share a word with the
  * template name.
  */
+export const TEMPLATE_BRAND_PLACEHOLDER = "Your Business";
+
 function rebrand<T>(value: T, templateName: string, siteName: string): T {
   if (!templateName || templateName === siteName) return value;
   if (typeof value === "string") {
@@ -104,9 +106,14 @@ export async function applyDbTemplate(
     .eq("id", tenantId)
     .maybeSingle();
   const siteName = tenantRow?.name?.trim();
-  // Falls back to the template's own name (a no-op rebrand) when the tenant
-  // has no name yet — happens mid-onboarding, before the business name step.
-  const rb = <T,>(v: T): T => rebrand(v, tpl.name, siteName || tpl.name);
+  // Template copy carries the neutral placeholder "Your Business" (templates
+  // are named by industry, never like a real company — migration 112), so
+  // that's what gets swapped for the client's name. The template-name swap is
+  // kept for any template authored the older way. With no tenant name yet
+  // (mid-onboarding) the placeholder simply stays.
+  const rb = <T,>(v: T): T => siteName
+    ? rebrand(rebrand(v, TEMPLATE_BRAND_PLACEHOLDER, siteName), tpl.name, siteName)
+    : v;
 
   // ── 1. Visual identity ──────────────────────────────────────────────────
   // template_id is what (site)/layout.tsx resolves the palette from, so

@@ -653,7 +653,7 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
                       value={brief}
                       onChange={(e) => setBrief(e.target.value)}
                       rows={12}
-                      placeholder={"e.g.\n\nBUSINESS: Free Bird SG, electrical services in Singapore.\n\nSERVICES: Electrical, plumbing, handyman, CCTV, data cabling...\n\nGOAL: Get quotation enquiries from homeowners and businesses.\n\nDO NOT claim licensed, certified, 24/7 or years of experience."}
+                      placeholder={"e.g.\n\nBUSINESS: [Your business name], electrical services in [your city].\n\nSERVICES: Electrical, plumbing, handyman, CCTV, data cabling...\n\nGOAL: Get quotation enquiries from homeowners and businesses.\n\nDO NOT claim licensed, certified, 24/7 or years of experience."}
                       className="text-sm font-mono"
                     />
                   </div>
@@ -852,7 +852,7 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
                       value={brief}
                       onChange={(e) => setBrief(e.target.value)}
                       rows={12}
-                      placeholder={"e.g.\n\nBUSINESS: Free Bird SG, electrical services in Singapore.\n\nSERVICES: Electrical, plumbing, handyman, CCTV, data cabling...\n\nGOAL: Get quotation enquiries from homeowners and businesses.\n\nDO NOT claim licensed, certified, 24/7 or years of experience."}
+                      placeholder={"e.g.\n\nBUSINESS: [Your business name], electrical services in [your city].\n\nSERVICES: Electrical, plumbing, handyman, CCTV, data cabling...\n\nGOAL: Get quotation enquiries from homeowners and businesses.\n\nDO NOT claim licensed, certified, 24/7 or years of experience."}
                       className="text-sm font-mono"
                     />
                   </div>
