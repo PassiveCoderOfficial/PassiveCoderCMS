@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { ShoppingCart } from "lucide-react";
 import { useEcommerceCurrency } from "@/lib/hooks/use-ecommerce-currency";
 import { useCart } from "@/lib/cart/cart-context";

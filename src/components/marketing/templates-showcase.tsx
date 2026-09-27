@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import Link from "next/link";
 import { Eye, Zap, ChevronRight, Sparkles, Star } from "lucide-react";
 import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";

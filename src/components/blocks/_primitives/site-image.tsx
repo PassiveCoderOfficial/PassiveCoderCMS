@@ -3,10 +3,10 @@ import React from "react";
 /**
  * The one image element for public-site blocks.
  *
- * Why not next/image everywhere: next.config.ts allows every remote host
- * (clients paste image URLs from anywhere), which makes Vercel's optimizer
- * an open, billed resize proxy — every extra next/image call site adds
- * optimization volume. Most images on client sites don't need it: 2,403 of
+ * Why not next/image here: Vercel's optimizer is a metered quota, and this
+ * primitive's images are mostly Unsplash/Pexels, which resize themselves for
+ * free (next/image call sites go through components/ui/smart-image.tsx,
+ * which applies the same routing). Most images on client sites: 2,403 of
  * ~2,730 image URLs across published pages (checked 2026-09-26) are on
  * images.unsplash.com, which resizes itself from URL params for free, and
  * Pexels does the same.

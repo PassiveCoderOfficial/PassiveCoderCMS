@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { createClient } from "@/lib/supabase/server";
 import { AccountNav } from "../account-nav";
 import { WishlistRemoveButton } from "./wishlist-remove-button";

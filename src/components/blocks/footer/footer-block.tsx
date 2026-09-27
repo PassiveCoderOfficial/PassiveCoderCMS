@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import type { FooterBlockProps } from "@/types/cms";
 import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/site/brand-logo";

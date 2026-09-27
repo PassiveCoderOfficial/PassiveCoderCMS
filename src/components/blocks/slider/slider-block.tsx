@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import type { SliderBlockProps } from "@/types/cms";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";

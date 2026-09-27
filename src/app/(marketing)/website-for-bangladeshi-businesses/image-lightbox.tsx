@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 
 // Click-to-zoom wrapper: renders the thumbnail as passed via children, and on
 // click opens a fullscreen modal with the same image at full size.

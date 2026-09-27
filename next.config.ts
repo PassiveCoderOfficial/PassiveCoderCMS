@@ -13,14 +13,18 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Only our own storage bucket goes through Vercel's (metered) optimizer.
+    // This used to allow every host, which made /_next/image an open resize
+    // proxy anyone could burn the quota through. Every <Image> now goes via
+    // components/ui/smart-image.tsx, which sends Unsplash/Pexels to their own
+    // free CDN resizing and serves any other host unoptimized — so nothing
+    // legitimate needs another host here. Local /public files are always
+    // allowed.
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
-      },
-      {
-        protocol: "http",
-        hostname: "**",
+        hostname: "mljchiaabgvdzdsfobxs.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
     dangerouslyAllowSVG: true,

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import type { GalleryBlockProps } from "@/types/cms";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 

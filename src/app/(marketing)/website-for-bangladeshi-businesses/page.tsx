@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BdLeadForm } from "@/components/marketing/bd-lead-form";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { Hind_Siliguri } from "next/font/google";
 import { LightboxImage } from "./image-lightbox";
 

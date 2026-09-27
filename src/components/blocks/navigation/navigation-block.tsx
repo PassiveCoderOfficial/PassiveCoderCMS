@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import type { NavigationBlockProps } from "@/types/cms";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { Menu, X, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart/cart-context";

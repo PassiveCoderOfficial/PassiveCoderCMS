@@ -1,7 +1,7 @@
 import React from "react";
 import type { ItemBoxBlockProps, ItemBoxItem } from "@/types/cms";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import * as LucideIcons from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";

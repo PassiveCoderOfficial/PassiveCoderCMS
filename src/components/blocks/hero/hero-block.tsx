@@ -1,6 +1,6 @@
 import React from "react";
 import type { HeroBlockProps } from "@/types/cms";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { InlineText } from "../inline-text";

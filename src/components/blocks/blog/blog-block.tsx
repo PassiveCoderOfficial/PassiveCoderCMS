@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import type { BlogBlockProps } from "@/types/cms";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { Calendar, User, ArrowRight } from "lucide-react";
 import { formatDate, truncate } from "@/lib/utils";
 import { cn } from "@/lib/utils";

@@ -3,7 +3,7 @@ import type { FeaturesBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
 import { Check } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/smart-image";
 import { SiteImage } from "@/components/blocks/_primitives/site-image";
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
