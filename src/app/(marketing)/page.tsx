@@ -20,6 +20,7 @@ import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home"
 import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
 import { resolveSiteTheme } from "@/modules/themes/site-theme";
+import { buildTemplateBodyScript } from "@/modules/themes/template-css";
 import { publicUrl } from "@/lib/tenant/site-urls";
 import type { Block } from "@/types/cms";
 import type { Metadata } from "next";
@@ -78,7 +79,7 @@ export default async function MarketingHomePage() {
     // page, but the catch-all can't match "/" so the homepage renders here —
     // and was the one page on the whole site with no brand colours. Same
     // resolve + build the layout uses, so "/" and "/services" theme alike.
-    const { css: templateCSSVars, customCss: templateCustomCss } = await resolveSiteTheme(tenantId);
+    const { css: templateCSSVars, customCss: templateCustomCss, templateSlug } = await resolveSiteTheme(tenantId);
 
     const rawBlocks: Block[] = Array.isArray(tenantPage?.blocks) ? tenantPage!.blocks as Block[] : [];
 
@@ -112,6 +113,13 @@ export default async function MarketingHomePage() {
           )}
           {templateCustomCss && (
             <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />
+          )}
+          {/* Template custom CSS is scoped to html.template-<slug>. The (site)
+              layout adds that class on every other page; the homepage never
+              did, so template styling silently never applied on "/". */}
+          {templateSlug && (
+            // eslint-disable-next-line @next/next/no-sync-scripts
+            <script dangerouslySetInnerHTML={{ __html: buildTemplateBodyScript(templateSlug) }} />
           )}
           {isBloodSite ? (
             <>
