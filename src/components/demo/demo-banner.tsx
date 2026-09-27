@@ -36,7 +36,7 @@ export async function DemoBanner({ tenantId }: { tenantId: string | null }) {
             rel="noopener noreferrer"
             style={{ background: "#25D366", color: "#fff", fontWeight: 700, fontSize: 14, padding: "10px 16px", borderRadius: 999, textDecoration: "none", whiteSpace: "nowrap" }}
           >
-            Make it live on WhatsApp
+            Get This Website on WhatsApp
           </a>
         </div>
       </div>
