@@ -566,6 +566,17 @@ export function AiCoderDialog({ open, onClose, pageId }: { open: boolean; onClos
                       </Button>
                     </div>
                   ))}
+                  {/* Card checkout above is USD via Dodo; many BD clients pay by
+                      bKash or bank instead — a super admin then adds the
+                      generations from the site's page in the SA panel. */}
+                  <a
+                    href="https://wa.me/8801678669699?text=Hi%2C%20I%27d%20like%20to%20buy%20AiCoder%20generations%20and%20pay%20by%20bKash%20or%20bank%20transfer."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-muted-foreground hover:text-foreground pt-0.5"
+                  >
+                    Pay by bKash or bank? <span className="text-primary underline underline-offset-2">Message us on WhatsApp</span>
+                  </a>
                 </div>
               )}
             </div>

@@ -23,19 +23,15 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
 
 export async function requireSuperAdmin() {
   const supabase = await createClient();
-  // getSession() reads from cookie — no network call, always fast.
-  // We verify the user is actually in super_admins (service-role DB check)
-  // so spoofing the cookie doesn't help an attacker.
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) {
-    // Fallback: try network call in case session cookie is missing but token is valid
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const ok = await isSuperAdmin(user.id);
-    return ok ? user : null;
-  }
-  const ok = await isSuperAdmin(session.user.id);
-  return ok ? session.user : null;
+  // getUser(), not getSession(): getSession() returns whatever user the
+  // session cookie claims without verifying the token with Supabase Auth,
+  // so the super_admins lookup below would be checking an unverified id.
+  // getUser() validates the token server-side first. Same call
+  // requireManagerOrSuperAdmin already used. Fixed 2026-09-27.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const ok = await isSuperAdmin(user.id);
+  return ok ? user : null;
 }
 
 /** Manager = a pc_staff row with is_manager = true. Gets SA-panel access

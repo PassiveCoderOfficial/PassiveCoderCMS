@@ -9,6 +9,7 @@ import AssignAgent from "./assign-agent";
 import AssignOwner from "./assign-owner";
 import { TransferSiteDialog } from "@/components/admin/transfer-site-dialog";
 import DeleteSiteButton from "./delete-site-button";
+import AiCreditsCard from "./ai-credits-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -167,6 +168,8 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
           </CardContent>
         </Card>
       )}
+
+      <AiCreditsCard siteId={site.id} />
 
       {/* Assigned Staff */}
       <Card>

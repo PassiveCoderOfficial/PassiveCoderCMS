@@ -44,15 +44,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
 
-  // getUser() makes a network call — if Supabase is slow it returns null and triggers
-  // a redirect loop (middleware lets session through, layout bounces back). Fall back to
-  // getSession() (cookie-local, no network) if getUser() fails so navigation stays stable.
-  let { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) redirect("/login");
-    user = session.user;
-  }
+  // Only a verified user gets in. This used to fall back to getSession() when
+  // getUser() failed, but getSession() returns whatever user the cookie
+  // claims without verifying the token — so everything below (profile,
+  // tenant membership, super-admin check) could run for an unverified id.
+  // The fallback existed to stop a redirect loop (middleware sees a session
+  // cookie and bounces /login back to /dashboard); the `?error=` param
+  // disables that bounce in middleware, so no loop and no trust in the
+  // cookie. Fixed 2026-09-27.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?error=session");
 
   // Accounts created during a site handover can be flagged to pick their own
   // password before doing anything else — otherwise whoever typed the initial

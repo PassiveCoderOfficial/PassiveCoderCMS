@@ -44,12 +44,22 @@ export async function POST(req: Request) {
     if (payment.metadata?.type === "ai_topup" && tenantId) {
       const generations = parseInt(payment.metadata.generations as string, 10) || 0;
       if (generations > 0) {
-        const { data: tenant } = await admin.from("tenants").select("ai_generations_purchased").eq("id", tenantId).maybeSingle();
-        if (tenant) {
-          await admin.from("tenants")
-            .update({ ai_generations_purchased: tenant.ai_generations_purchased + generations })
-            .eq("id", tenantId);
-        }
+        // Idempotent + atomic (migration 107): keyed by Dodo's payment_id,
+        // so a retried delivery of the same payment.succeeded — Dodo retries
+        // on timeouts/non-2xx — can't credit the purchase twice. The old
+        // read-then-write here did exactly that.
+        const { error } = await admin.rpc("credit_ai_generations", {
+          p_reference: `dodo:${payment.payment_id}`,
+          p_tenant: tenantId,
+          p_generations: generations,
+          p_source: "dodo",
+          p_amount_cents: payment.total_amount ?? null,
+          p_currency: payment.currency ?? null,
+          p_note: payment.metadata?.package_id ? `package ${payment.metadata.package_id}` : null,
+        });
+        // Non-2xx makes Dodo retry — which is safe now, and what we want if
+        // the credit genuinely failed.
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       }
       return NextResponse.json({ ok: true });
     }
