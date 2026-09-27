@@ -47,19 +47,18 @@ export function ReSearchBlock({ block }: { block: ReSearchBlockProps }) {
     const left = data.portraitSide !== "right";
     const bg = data.backdropColor || "#1b1c20";
     const glow = data.glowColor || "#4b4f57";
-    const fade = left ? "to right" : "to left";
     const field = "h-12 w-full rounded-xl border border-white/10 bg-white/[0.06] px-3.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30 [&>option]:text-black";
     return (
       <section className="relative isolate overflow-hidden text-white" style={{ background: bg }}>
         <div className="absolute inset-0 -z-10" style={{ background: `radial-gradient(ellipse 55% 75% at ${left ? "28%" : "72%"} 45%, ${glow} 0%, ${bg} 70%)` }} />
-        <div className={`max-w-7xl mx-auto grid lg:grid-cols-2 items-end gap-6 px-4 ${left ? "" : "lg:[&>*:first-child]:order-2"}`}>
-          <div className="relative h-[420px] sm:h-[560px] lg:h-[680px] order-2 lg:order-none">
+        <div className={`max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.05fr] items-stretch gap-6 px-4 ${left ? "" : "lg:[&>*:first-child]:order-2"}`}>
+          <div className="relative h-[440px] sm:h-[560px] lg:h-auto lg:min-h-[640px] order-2 lg:order-none">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={data.portraitImage} alt={data.portraitAlt ?? ""}
               className={`absolute bottom-0 h-full w-auto max-w-none object-contain object-bottom ${left ? "left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0" : "left-1/2 -translate-x-1/2 lg:left-0 lg:translate-x-0"}`}
               style={{
-                WebkitMaskImage: `linear-gradient(${fade}, #000 62%, transparent 98%), linear-gradient(to top, transparent 0%, #000 16%, #000 86%, transparent 100%)`,
-                WebkitMaskComposite: "source-in", maskImage: `linear-gradient(${fade}, #000 62%, transparent 98%), linear-gradient(to top, transparent 0%, #000 16%, #000 86%, transparent 100%)`, maskComposite: "intersect",
+                WebkitMaskImage: `linear-gradient(to right, transparent 0%, #000 22%, #000 70%, transparent 98%), linear-gradient(to top, transparent 0%, #000 16%, #000 86%, transparent 100%)`,
+                WebkitMaskComposite: "source-in", maskImage: `linear-gradient(to right, transparent 0%, #000 22%, #000 70%, transparent 98%), linear-gradient(to top, transparent 0%, #000 16%, #000 86%, transparent 100%)`, maskComposite: "intersect",
               }} />
             {data.portraitCaption && (
               <div className={`absolute bottom-8 ${left ? "left-4" : "right-4"} px-4 py-2.5 rounded-2xl bg-black/40 backdrop-blur border border-white/10`}>
@@ -69,9 +68,9 @@ export function ReSearchBlock({ block }: { block: ReSearchBlockProps }) {
             )}
           </div>
 
-          <div className="py-14 lg:py-24">
+          <div className="py-14 lg:py-20 self-center">
             {data.eyebrow && <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-4">{data.eyebrow}</p>}
-            {data.title && <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.05]">{data.title}</h1>}
+            {data.title && <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.08]">{data.title}</h1>}
             {data.subtitle && <p className="mt-5 text-lg text-white/75 max-w-xl">{data.subtitle}</p>}
 
             <form onSubmit={go} className="mt-9 rounded-3xl border border-white/10 bg-white/[0.07] backdrop-blur-xl p-5 sm:p-6 shadow-2xl max-w-xl">
