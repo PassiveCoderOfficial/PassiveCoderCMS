@@ -369,7 +369,7 @@ export const blockRegistry: BlockDefinition[] = [
         items: [
           { id: generateId(), name: "Jane Doe", role: "CEO", company: "Acme Inc.", content: "This product completely transformed our workflow. Highly recommended!", rating: 5 },
           { id: generateId(), name: "John Smith", role: "Developer", company: "Tech Co.", content: "Excellent service and great customer support. Would use again.", rating: 5 },
-          { id: generateId(), name: "Alice Lee", role: "Designer", company: "Creative Studio", content: "The best tool we have used. It saves us hours every week.", rating: 5 },
+          { id: generateId(), name: "Alice Lee", role: "Designer", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&q=70&auto=format&fit=crop&crop=faces", company: "Creative Studio", content: "The best tool we have used. It saves us hours every week.", rating: 5 },
         ],
       },
     }),
@@ -493,8 +493,8 @@ export const blockRegistry: BlockDefinition[] = [
         showBio: true,
         showSocial: true,
         members: [
-          { id: generateId(), name: "Jane Doe", role: "CEO & Founder", bio: "Passionate leader with 10+ years of experience." },
-          { id: generateId(), name: "John Smith", role: "Lead Developer", bio: "Full-stack engineer who loves clean code." },
+          { id: generateId(), name: "Jane Doe", role: "CEO & Founder", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&q=70&auto=format&fit=crop&crop=faces", bio: "Passionate leader with 10+ years of experience." },
+          { id: generateId(), name: "John Smith", role: "Lead Developer", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&q=70&auto=format&fit=crop&crop=faces", bio: "Full-stack engineer who loves clean code." },
           { id: generateId(), name: "Alice Lee", role: "Designer", bio: "Creative mind shaping beautiful experiences." },
         ],
       },
