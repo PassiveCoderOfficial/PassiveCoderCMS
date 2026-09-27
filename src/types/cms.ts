@@ -62,6 +62,12 @@ export type BlockType =
   | "marketplace_booking"
   | "marketplace_request"
   | "marketplace_vendor_directory"
+  | "re_search"
+  | "re_listings"
+  | "re_communities"
+  | "re_developers"
+  | "re_calculator"
+  | "re_lead_form"
   | "donor_group_cards"
   | "donor_list"
   | "donor_map"
@@ -928,6 +934,12 @@ export type Block =
   | MarketplaceBookingBlockProps
   | MarketplaceRequestBlockProps
   | MarketplaceVendorDirectoryBlockProps
+  | ReSearchBlockProps
+  | ReListingsBlockProps
+  | ReCommunitiesBlockProps
+  | ReDevelopersBlockProps
+  | ReCalculatorBlockProps
+  | ReLeadFormBlockProps
   | DonorGroupCardsBlockProps
   | DonorListBlockProps
   | DonorMapBlockProps
@@ -1401,4 +1413,79 @@ export type BuilderState = {
   historyIndex: number;
   isDirty: boolean;
   mobileSheet: MobileSheet;
+};
+
+// ─── Real estate module blocks ───────────────────────────────────────────────
+// Data lives in re_properties / re_communities / re_developers (migration 112);
+// these blocks only carry presentation + preset filters.
+
+export type ReListingType = "sale" | "rent" | "offplan";
+
+export type ReSearchBlockProps = BlockBase & {
+  type: "re_search";
+  data: {
+    title?: string;
+    subtitle?: string;
+    /** Listing page the search submits to, with filters as query params. */
+    resultsPath?: string;
+    tabs?: ReListingType[];
+    backgroundImage?: string;
+  };
+};
+
+export type ReListingsBlockProps = BlockBase & {
+  type: "re_listings";
+  data: {
+    title?: string;
+    subtitle?: string;
+    /** Preset filter. Empty = all listing types (buyer can switch). */
+    listingType?: ReListingType | "";
+    communitySlug?: string;
+    developerSlug?: string;
+    featuredOnly?: boolean;
+    showFilters?: boolean;
+    /** Read filters from / write them to the page URL. */
+    syncUrl?: boolean;
+    limit?: number;
+    columns?: 2 | 3 | 4;
+    viewAllUrl?: string;
+  };
+};
+
+export type ReCommunitiesBlockProps = BlockBase & {
+  type: "re_communities";
+  data: { title?: string; subtitle?: string; featuredOnly?: boolean; limit?: number; country?: string };
+};
+
+export type ReDevelopersBlockProps = BlockBase & {
+  type: "re_developers";
+  data: { title?: string; subtitle?: string; style?: "logos" | "cards" };
+};
+
+export type ReCalculatorBlockProps = BlockBase & {
+  type: "re_calculator";
+  data: {
+    title?: string;
+    subtitle?: string;
+    mode?: "mortgage" | "roi" | "both";
+    currency?: string;
+    defaultPrice?: number;
+    defaultRate?: number;
+    defaultDownPct?: number;
+    defaultYears?: number;
+  };
+};
+
+export type ReLeadFormBlockProps = BlockBase & {
+  type: "re_lead_form";
+  data: {
+    title?: string;
+    subtitle?: string;
+    kind?: "consultation" | "valuation" | "viewing" | "enquiry";
+    submitLabel?: string;
+    successMessage?: string;
+    showBudget?: boolean;
+    image?: string;
+    bullets?: string[];
+  };
 };

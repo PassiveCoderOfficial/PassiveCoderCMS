@@ -41,6 +41,11 @@
   ChefHat,
   Wallet,
   AlertTriangle,
+  Building2,
+  MapPin,
+  Landmark,
+  Inbox,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 
@@ -64,7 +69,7 @@ export type NavItem = {
 export const MODULE_KEYS = [
   "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
   "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
-  "visa_tour", "blood_donation", "marketplace", "content_scheduler", "ai_coder", "ai_agent",
+  "visa_tour", "blood_donation", "marketplace", "content_scheduler", "ai_coder", "ai_agent", "real_estate",
 ] as const;
 export type ModuleKey = typeof MODULE_KEYS[number];
 
@@ -90,6 +95,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   content_scheduler: "Content Scheduler",
   ai_coder: "AiCoder",
   ai_agent: "AI Agent",
+  real_estate: "Real Estate",
 };
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
@@ -114,6 +120,7 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
   content_scheduler: "Plan and schedule social content across brands and platforms",
   ai_coder: "AI-assisted page content — generate section copy in the page builder",
   ai_agent: "Floating AI assistant for site management, leads, and page content",
+  real_estate: "Property listings, off-plan projects, area guides, developers and property leads",
 };
 
 export type NavSection = {
@@ -180,6 +187,16 @@ export const navSections: NavSection[] = [
           { label: "Site Identity", href: "/dashboard/templates/header-footer", icon: Layers },
         ],
       },
+    ],
+  },
+  {
+    label: "Real Estate",
+    items: [
+      { label: "Properties", href: "/dashboard/real-estate/properties", icon: Building2, moduleKey: "real_estate" },
+      { label: "Communities", href: "/dashboard/real-estate/communities", icon: MapPin, moduleKey: "real_estate" },
+      { label: "Developers", href: "/dashboard/real-estate/developers", icon: Landmark, moduleKey: "real_estate" },
+      { label: "Property Leads", href: "/dashboard/real-estate/leads", icon: Inbox, moduleKey: "real_estate" },
+      { label: "Agent Settings", href: "/dashboard/real-estate/settings", icon: UserCog, moduleKey: "real_estate" },
     ],
   },
   {

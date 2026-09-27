@@ -12,6 +12,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyDbTemplate, isDbTemplate, type ApplyMode, type ApplyResult } from "./apply";
 import { seedStarterSite } from "./starter-site";
+import { seedRealEstateSample } from "@/modules/real-estate/sample-data";
 
 export async function applyTemplateBySlug(
   supabase: SupabaseClient,
@@ -36,5 +37,13 @@ export async function applyTemplateBySlug(
   const result = await applyDbTemplate(supabase, tenantId, templateId, mode, {
     archiveExistingPages: options.archiveExistingPages ?? false,
   });
+
+  // Real estate templates are built from listing blocks that read the
+  // tenant's own catalogue, so without data they render empty. Seed the
+  // sample catalogue (a no-op once the tenant has any properties).
+  if (mode === "full") {
+    const { data: tpl } = await supabase.from("templates").select("category").eq("id", templateId).maybeSingle();
+    if (tpl?.category === "Real Estate") await seedRealEstateSample(supabase, tenantId).catch(() => null);
+  }
   return { ...result, source: "db" };
 }
