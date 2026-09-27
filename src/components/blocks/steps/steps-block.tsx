@@ -279,7 +279,9 @@ export function StepsBlock({ block }: { block: StepsBlockProps }) {
       )}
 
       {layout === "horizontal" ? (
-        <div className="flex flex-col sm:flex-row items-start gap-0">
+        // Stretch on mobile: with items-start each step shrank to its own
+        // content width and hugged the left edge instead of centring.
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-8 sm:gap-0">
           {items.map((item, i) => (
             <div key={item.id} className="flex-1 flex flex-col items-center text-center relative">
               {style === "connected" && i < items.length - 1 && (
