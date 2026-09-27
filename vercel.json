@@ -2,6 +2,10 @@
   "framework": "nextjs",
   "crons": [
     {
+      "path": "/api/cron/dunning",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/cron/verify-domains",
       "schedule": "0 13 * * *"
     },

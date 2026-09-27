@@ -13,8 +13,13 @@ export const maxDuration = 300;
  * duplicate run in the same day sends nothing twice.
  */
 async function handle(req: Request) {
-  const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.INTERNAL_CRON_SECRET) {
+  // Vercel Cron -> GET with Authorization: Bearer CRON_SECRET (same as the
+  // other crons); manual -> POST with x-cron-secret. Until the GET path and
+  // the vercel.json entry existed this job never ran on a schedule at all.
+  const bearer = req.headers.get("authorization");
+  const viaCron = !!process.env.CRON_SECRET && bearer === `Bearer ${process.env.CRON_SECRET}`;
+  const viaManual = !!process.env.INTERNAL_CRON_SECRET && req.headers.get("x-cron-secret") === process.env.INTERNAL_CRON_SECRET;
+  if (!viaCron && !viaManual) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -32,4 +37,5 @@ async function handle(req: Request) {
   }
 }
 
+export const GET = handle;
 export const POST = handle;

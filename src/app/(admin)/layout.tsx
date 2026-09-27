@@ -1,3 +1,4 @@
+import { SuspendedGate } from "@/components/admin/suspended-gate";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -171,28 +172,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
           }
           redirect("/login?error=unauthorized");
-        }
-      }
-    }
-  }
-
-  // Enforce suspended subscriptions for regular tenants (not SA, not staff)
-  if (!sa && profile.role !== "pc_staff" && hasTenantAccess) {
-    const reqHeaders = await headers();
-    const pathname = reqHeaders.get("x-invoke-path") ?? reqHeaders.get("x-pathname") ?? "";
-    if (!pathname.startsWith("/dashboard/subscription")) {
-      const primaryTenantId = (memberships ?? []).find(m => m.is_primary)?.tenant_id
-        ?? (memberships ?? [])[0]?.tenant_id;
-      if (primaryTenantId) {
-        const { data: sub } = await adminClient
-          .from("subscriptions")
-          .select("status")
-          .eq("tenant_id", primaryTenantId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (sub?.status === "suspended") {
-          redirect("/dashboard/subscription?suspended=1");
         }
       }
     }
@@ -437,6 +416,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const hasBusinessProfile =
     aiCoderEnabled ? await tenantHasProfileBrief() : false;
 
+  // Paused site (subscription ended, or dunning ran out): the owner's
+  // dashboard is blurred behind renew / ticket / WhatsApp options — see
+  // SuspendedGate. Read from tenants.status, which is what dunning and
+  // expiry actually set. (This replaced a check on subscriptions.status ===
+  // 'suspended', a value nothing ever writes, which redirected on an empty
+  // pathname and so could never have worked.) SA and staff are never gated.
+  let siteSuspended = false;
+  let suspendedSiteName: string | null = null;
+  if (!sa && profile.role !== "pc_staff" && dashboardTenantId) {
+    const { data: t } = await adminClient.from("tenants").select("status, name").eq("id", dashboardTenantId).maybeSingle();
+    siteSuspended = t?.status === "suspended";
+    suspendedSiteName = t?.name ?? null;
+  }
+
   return (
     <LanguageProvider>
     <AgentContextProvider>
@@ -455,6 +448,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {staffViewingTenantId && staffViewingTenantName && (
           <StaffBanner tenantName={staffViewingTenantName} />
         )}
+        <SuspendedGate suspended={siteSuspended} siteName={suspendedSiteName}>
         <div className="flex flex-1 overflow-hidden">
           <AdminSidebar
             isSuperAdmin={!!sa}
@@ -470,6 +464,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </main>
           </div>
         </div>
+        </SuspendedGate>
         <AiLauncher
           agentEnabled={agentEnabled}
           aiCoderEnabled={aiCoderEnabled}

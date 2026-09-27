@@ -91,6 +91,25 @@ export async function runDunning(admin: SupabaseClient, rootDomain: string) {
   const today = new Date();
   const summary = { checked: 0, notified: 0, suspended: 0, resolved: 0, errors: 0 };
 
+  // Ended subscriptions (cancelled, or expired at the provider) keep working
+  // until the period they paid for runs out, then the site is paused — plan
+  // and content kept, so renewing restores it exactly (activateSubscription
+  // / the Dodo webhook set the tenant back to active). Previously nothing
+  // happened at all: a cancelled customer kept every paid feature forever.
+  const { data: ended } = await admin
+    .from("subscriptions")
+    .select("tenant_id, current_period_end")
+    .in("status", ["cancelled", "expired"])
+    .lt("current_period_end", today.toISOString());
+  for (const e of ended ?? []) {
+    const { data: paused } = await admin.from("tenants")
+      .update({ status: "suspended" })
+      .eq("id", e.tenant_id)
+      .in("status", ["active", "onboarded"])
+      .select("id");
+    if (paused?.length) summary.suspended++;
+  }
+
   const { data: subs, error } = await admin
     .from("subscriptions")
     .select("id, tenant_id, status, amount_cents, currency, current_period_end, next_payment_due")

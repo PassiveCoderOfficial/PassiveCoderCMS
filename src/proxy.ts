@@ -51,11 +51,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // Suspended (trial expired) — redirect to upgrade page
-  if (tenant.status === "suspended") {
+  // Paused (subscription ended / unpaid): visitors get a neutral "temporarily
+  // unavailable" page with 503 so search engines keep the site indexed. The
+  // owner's routes stay open — this used to rewrite EVERY path, /login and
+  // /dashboard included, so the owner couldn't even sign in to pay.
+  const OWNER_PATHS = ["/login", "/auth", "/dashboard", "/api", "/forgot-password", "/reset-password", "/signup", "/register"];
+  if (tenant.status === "suspended" && !OWNER_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     const url = request.nextUrl.clone();
-    url.pathname = "/trial-expired";
-    return NextResponse.rewrite(url);
+    url.pathname = "/site-paused";
+    url.search = `?name=${encodeURIComponent(tenant.name)}`;
+    const res = NextResponse.rewrite(url, { status: 503 });
+    res.headers.set("Retry-After", "86400");
+    return res;
   }
 
   // Staff-built demo past its 14 days: pause (never delete) until paid.
