@@ -262,7 +262,19 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
   const gradientDir = isCentered ? "bg-gradient-to-t" : isRight ? "bg-gradient-to-l" : "bg-gradient-to-r";
 
   return (
-    <div className="relative min-h-[80vh] flex items-center overflow-hidden">
+    <div
+      className="relative min-h-[80vh] flex items-center overflow-hidden"
+      // Without a photo this variant used to render on the page's plain
+      // (usually white) ground — nothing "dark gradient" about it. Give it
+      // its own deep gradient and light text tokens in that case; with a
+      // photo it keeps fading from the site's background as before.
+      style={data.imageUrl ? undefined : {
+        backgroundImage: "linear-gradient(120deg, #0b1120 0%, #111c33 55%, hsl(var(--primary) / 0.55) 130%)",
+        ["--foreground" as string]: "210 40% 98%",
+        ["--muted-foreground" as string]: "215 25% 72%",
+        color: "hsl(210 40% 98%)",
+      }}
+    >
       {data.imageUrl && (
         <>
           <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
@@ -344,7 +356,7 @@ function HeroCorporate({ block }: HeroBlockComponentProps) {
             <InlineText blockId={block.id} field="description" value={data.description} />
           </p>
         )}
-        <HeroButtons data={data} centered />
+        <HeroButtons data={data} centered onDark />
       </div>
     </div>
   );

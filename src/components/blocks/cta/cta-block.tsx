@@ -110,7 +110,9 @@ function CTAWarmBanner({ data, blockId }: { data: CTABlockProps["data"]; blockId
   const isSplit = data.layout === "left" || data.layout === "split";
   return (
     <div className={cn(
-      "max-w-4xl mx-auto bg-primary/10 border border-primary/20 rounded-xl px-8 py-12",
+      // Solid card + tint (not a see-through tint): the card has to stay
+      // readable when the section behind it is dark, e.g. the CTA default.
+      "max-w-4xl mx-auto bg-card text-card-foreground bg-[linear-gradient(hsl(var(--primary)/0.10),hsl(var(--primary)/0.10))] border border-primary/20 rounded-xl px-8 py-12",
       isSplit ? "flex flex-col md:flex-row items-center justify-between gap-8" : "text-center",
     )}>
       <div className={isSplit ? "max-w-xl" : undefined}>
