@@ -863,6 +863,7 @@ const designedPresets: SectionPreset[] = [
       width: "full",
       padding: pad(0),
       background: { type: "gradient", gradient: DEEP_GRADIENT },
+      style: { textColor: "#f8fafc" },
     }),
   },
   {
