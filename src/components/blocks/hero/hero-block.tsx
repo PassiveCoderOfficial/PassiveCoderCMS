@@ -134,14 +134,14 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
     <div className={cn("max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[70vh] py-8")}>
       {imageFirst && data.imageUrl && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4] order-first lg:order-none">
-          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
       )}
       {textContent}
       {!imageFirst && data.imageUrl && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4]">
-          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
       )}
@@ -178,7 +178,7 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
   return (
     <div className={cn("relative flex items-center overflow-hidden", heightCls, isPinned ? (isLeft ? "justify-start" : "justify-end") : "justify-center")}>
       {!wrapperPaintsImage && data.imageUrl && (
-        <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+        <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />
       )}
       <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${overlayFrom}, ${overlayTo})` }} />
       {/* Subtle bottom-anchored gradient for text legibility without muddying
@@ -242,7 +242,7 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
       <HeroButtons data={data} centered />
       {data.imageUrl && (
         <div className="relative w-full mt-8 rounded-xl overflow-hidden shadow-2xl aspect-video">
-          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />
         </div>
       )}
     </div>
@@ -277,7 +277,7 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
     >
       {data.imageUrl && (
         <>
-          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+          <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />
           <div className={cn("absolute inset-0 from-background via-background/95 to-background/10", gradientDir)} />
         </>
       )}
@@ -327,7 +327,7 @@ function HeroCorporate({ block }: HeroBlockComponentProps) {
   return (
     <div className="relative overflow-hidden min-h-[520px] flex items-center justify-center">
       {data.imageUrl && (
-        <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" priority />
+        <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />
       )}
       <div
         className="absolute inset-0"
@@ -395,7 +395,7 @@ function HeroLegacy({ block }: HeroBlockComponentProps) {
         {textContent}
         {imageUrl && (
           <div className="relative mt-10 rounded-xl overflow-hidden shadow-2xl aspect-video">
-            <Image src={imageUrl} alt={imageAlt ?? title} fill className="object-cover" />
+            <Image src={imageUrl} alt={imageAlt ?? title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} />
           </div>
         )}
       </div>
@@ -407,7 +407,7 @@ function HeroLegacy({ block }: HeroBlockComponentProps) {
         <div>{textContent}</div>
         {imageUrl && (
           <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl">
-            <Image src={imageUrl} alt={imageAlt ?? title} fill className="object-cover" />
+            <Image src={imageUrl} alt={imageAlt ?? title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} />
           </div>
         )}
       </div>
@@ -418,7 +418,7 @@ function HeroLegacy({ block }: HeroBlockComponentProps) {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         {imageUrl && (
           <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl order-first md:order-none">
-            <Image src={imageUrl} alt={imageAlt ?? title} fill className="object-cover" />
+            <Image src={imageUrl} alt={imageAlt ?? title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} />
           </div>
         )}
         <div>{textContent}</div>

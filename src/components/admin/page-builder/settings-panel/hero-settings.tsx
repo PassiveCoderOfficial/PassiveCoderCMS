@@ -79,6 +79,13 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
 
       <FieldGroup label="Image">
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={updateImage} />
+        {block.data.imageUrl && (
+          <select value={block.data.imagePosition ?? "center"} onChange={(e) => update("imagePosition", e.target.value)} className="w-full h-8 text-xs mt-2 rounded-md border bg-background px-2">
+            <option value="top">Focus: top (portraits)</option>
+            <option value="center">Focus: center</option>
+            <option value="bottom">Focus: bottom</option>
+          </select>
+        )}
       </FieldGroup>
 
       <div className="pt-2 border-t space-y-3">

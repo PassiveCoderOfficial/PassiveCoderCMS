@@ -155,6 +155,8 @@ export type HeroBlockProps = BlockBase & {
     secondaryButton?: { label: string; url: string; variant: "primary" | "secondary" | "outline"; bgColor?: string; textColor?: string };
     imageUrl?: string;
     imageAlt?: string;
+    /** Focal point for cropped hero images, e.g. "top" keeps a portrait's face in frame. */
+    imagePosition?: "top" | "center" | "bottom";
     videoUrl?: string;
     overlayOpacity?: number;
     overlayColor?: string;       // base color for the fullscreen-overlay gradient (default black)
