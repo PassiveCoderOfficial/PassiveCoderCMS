@@ -1434,6 +1434,18 @@ export type ReSearchBlockProps = BlockBase & {
     resultsPath?: string;
     tabs?: ReListingType[];
     backgroundImage?: string;
+    /** Max-price dropdown options (listing currency). Empty = built-in steps. */
+    salePriceSteps?: number[];
+    rentPriceSteps?: number[];
+    /** Split layout: agent portrait beside the search card on a matched backdrop. */
+    portraitImage?: string;
+    portraitAlt?: string;
+    portraitSide?: "left" | "right";
+    portraitCaption?: string;
+    portraitSubcaption?: string;
+    eyebrow?: string;
+    backdropColor?: string;
+    glowColor?: string;
   };
 };
 

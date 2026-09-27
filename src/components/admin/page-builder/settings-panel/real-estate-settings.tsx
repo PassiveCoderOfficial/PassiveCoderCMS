@@ -49,6 +49,22 @@ export function RealEstateSettings({ block }: { block: ReBlock }) {
         <>
           {text("resultsPath", "Results page path")}
           <div><Label className="text-xs">Background image</Label><MediaPickerInput compact value={String(d.backgroundImage ?? "")} onChange={(v) => set("backgroundImage", v)} className="mt-1" /></div>
+          <div><Label className="text-xs">Portrait (split layout)</Label><MediaPickerInput compact value={String(d.portraitImage ?? "")} onChange={(v) => set("portraitImage", v)} className="mt-1" /></div>
+          {Boolean(d.portraitImage) && (
+            <>
+              {select("portraitSide", "Portrait side", [["left", "Left"], ["right", "Right"]])}
+              {text("eyebrow", "Eyebrow text")}
+              {text("portraitCaption", "Portrait name tag")}
+              {text("portraitSubcaption", "Portrait title")}
+              {text("backdropColor", "Backdrop colour (hex)")}
+              {text("glowColor", "Glow colour behind portrait (hex)")}
+            </>
+          )}
+          {(["salePriceSteps", "rentPriceSteps"] as const).map((k) => (
+            <div key={k}><Label className="text-xs">{k === "salePriceSteps" ? "Buy / off-plan max prices" : "Rent max prices"} (comma separated)</Label>
+              <Input value={((d[k] as number[]) ?? []).join(", ")} placeholder="Default steps" onChange={(e) => set(k, e.target.value.split(",").map((x) => Number(x.replace(/[^d]/g, ""))).filter((n) => n > 0))} className="h-8 text-xs mt-1" />
+            </div>
+          ))}
         </>
       )}
 
