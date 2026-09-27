@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   LayoutDashboard, Globe, CreditCard, Users, TicketIcon,
   Settings, Settings2, Edit3, LogOut, ShieldCheck, Zap, FileText, Receipt,
-  LayoutTemplate, Sparkles, X,
+  LayoutTemplate, Sparkles, X, Wand2,
 } from "lucide-react";
 import { Shell } from "@/components/admin-shell/sidebar";
 import type { ShellNavSection } from "@/components/admin-shell/types";
@@ -15,6 +15,7 @@ const SA_SECTIONS: ShellNavSection[] = [
     items: [
       { label: "Overview", href: "/super-admin", icon: LayoutDashboard, exact: true },
       { label: "All Sites", href: "/super-admin/sites", icon: Globe, add: "/super-admin/sites/new" },
+      { label: "Demo Builder", href: "/super-admin/demos", icon: Wand2 },
       { label: "Subscriptions", href: "/super-admin/subscriptions", icon: CreditCard, add: "/super-admin/subscriptions/new" },
       { label: "Billing", href: "/super-admin/billing", icon: Receipt },
       {

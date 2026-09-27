@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { upsertContact, extractIdentity } from "@/lib/crm/upsertContact";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +14,17 @@ export async function POST(req: NextRequest) {
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
 
-    if (recipient) {
+    const tenantId = req.headers.get("x-tenant-id");
+
+    // Demo sites: store the lead, email nobody.
+    let isDemo = false;
+    if (tenantId) {
+      const admin = await createAdminClient();
+      const { data: t } = await admin.from("tenants").select("demo_expires_at").eq("id", tenantId).maybeSingle();
+      isDemo = !!t?.demo_expires_at;
+    }
+
+    if (recipient && !isDemo) {
       await sendEmail({
         to: recipient,
         subject: "New contact form submission",
@@ -23,7 +34,6 @@ export async function POST(req: NextRequest) {
 
     // Feed the CRM — tenant comes from the subdomain-injected header on
     // public sites. Failure here must never break the visitor-facing submit.
-    const tenantId = req.headers.get("x-tenant-id");
     if (tenantId) {
       const { email, phone, name } = extractIdentity(fields as Record<string, string>);
       await upsertContact({

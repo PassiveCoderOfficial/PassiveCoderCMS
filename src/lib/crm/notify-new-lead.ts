@@ -17,10 +17,12 @@ export async function notifyTenantNewLead(input: {
 
   const { data: tenant } = await admin
     .from("tenants")
-    .select("name, owner_id")
+    .select("name, owner_id, demo_expires_at")
     .eq("id", input.tenantId)
     .maybeSingle();
-  if (!tenant) return;
+  // Demo sites are owned by the staff member who built them; leads there are
+  // stored for the prospect but must not ping staff phones.
+  if (!tenant || tenant.demo_expires_at) return;
 
   const recipientIds = new Set<string>();
   if (tenant.owner_id) recipientIds.add(tenant.owner_id);

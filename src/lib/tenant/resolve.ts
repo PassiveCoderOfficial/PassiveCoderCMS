@@ -10,6 +10,8 @@ export interface Tenant {
   custom_domain: string | null;
   domain_status: string;
   onboarding_completed: boolean;
+  /** Non-null = staff-built demo; public site pauses after this. */
+  demo_expires_at: string | null;
 }
 
 const CACHE_TTL_MS = 30_000;
@@ -32,7 +34,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
     if (slug) {
       const { data } = await supabase
         .from("tenants")
-        .select("id,slug,name,plan,status,custom_domain,domain_status,onboarding_completed")
+        .select("id,slug,name,plan,status,custom_domain,domain_status,onboarding_completed,demo_expires_at")
         .eq("slug", slug)
         .in("status", ["active", "onboarded", "pending", "suspended", "enm_pending"])
         .maybeSingle();
@@ -42,7 +44,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
     // Custom domain
     const { data } = await supabase
       .from("tenants")
-      .select("id,slug,name,plan,status,custom_domain,domain_status,onboarding_completed")
+      .select("id,slug,name,plan,status,custom_domain,domain_status,onboarding_completed,demo_expires_at")
       .eq("custom_domain", hostname)
       .eq("domain_status", "active")
       .in("status", ["active", "onboarded", "pending", "suspended", "enm_pending"])

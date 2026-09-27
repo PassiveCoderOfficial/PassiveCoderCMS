@@ -1,3 +1,4 @@
+import { DemoBanner } from "@/components/demo/demo-banner";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildSiteMetadata } from "@/lib/site/site-metadata";
 import { headers } from "next/headers";
@@ -282,6 +283,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <ScrollReveal />
 
       {tenantId === WHATSAPP_TENANT_ID && <FloatingWhatsApp />}
+      <DemoBanner tenantId={tenantId} />
 
       <DineInBadge />
 

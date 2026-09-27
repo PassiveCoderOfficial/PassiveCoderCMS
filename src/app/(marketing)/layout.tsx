@@ -1,3 +1,4 @@
+import { DemoBanner } from "@/components/demo/demo-banner";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { after } from "next/server";
@@ -174,6 +175,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         </>
       )}
       {!tenantId && <WhatsAppButton />}
+      <DemoBanner tenantId={tenantId} />
     </>
   );
 }

@@ -58,6 +58,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // Staff-built demo past its 14 days: pause (never delete) until paid.
+  const isDemo = !!tenant.demo_expires_at;
+  if (isDemo && new Date(tenant.demo_expires_at!).getTime() < Date.now()) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/demo-paused";
+    url.search = `?name=${encodeURIComponent(tenant.name)}`;
+    const res = NextResponse.rewrite(url);
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
+
   // Inject tenant headers so server components can read them
   const headers = new Headers(request.headers);
   headers.set("x-tenant-id", tenant.id);
@@ -69,7 +80,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/onboarding", request.url));
   }
 
-  return updateSession(request, headers);
+  const res = await updateSession(request, headers);
+  // Demos are previews for one prospect, not something to get indexed.
+  if (isDemo) res.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return res;
 }
 
 export const config = {

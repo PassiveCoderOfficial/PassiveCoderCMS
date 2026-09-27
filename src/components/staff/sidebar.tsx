@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, ExternalLink, ChevronDown, LayoutTemplate,
+  LayoutDashboard, Globe, DollarSign, Settings, LogOut, Zap, ExternalLink, ChevronDown, LayoutTemplate, Wand2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -24,6 +24,7 @@ const STAFF_SECTIONS: ShellNavSection[] = [
     items: [
       { label: "Overview", href: "/staff", icon: LayoutDashboard, exact: true },
       { label: "My Sites", href: "/staff/sites", icon: Globe },
+      { label: "Demo Builder", href: "/staff/demos", icon: Wand2 },
       { label: "My Templates", href: "/staff/my-templates", icon: LayoutTemplate },
       { label: "Commissions", href: "/staff/commissions", icon: DollarSign },
       { label: "Profile", href: "/staff/profile", icon: Settings },
