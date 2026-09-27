@@ -40,7 +40,7 @@ function uid(prefix: string) {
 const BASE = {
   visible: true as const,
   width: "full" as const,
-  padding: { top: 80, right: 0, bottom: 80, left: 0 },
+  padding: { top: 80, right: 24, bottom: 80, left: 24 },
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
   background: { type: "none" as const },
 };
@@ -49,7 +49,11 @@ const BASE = {
 /** Splits a free-text services field (lines or commas) into clean titles. */
 export function parseServices(raw: string | string[]): string[] {
   const list = Array.isArray(raw) ? raw : raw.split(/[\n,]+/);
-  return list.map((s) => s.trim()).filter(Boolean).slice(0, 9);
+  // Strip list markers pasted from chat/docs ("- ", "• ", "1. ", "2) ").
+  return list
+    .map((s) => s.trim().replace(/^(?:[-*•·–—]+|\d+[.)])\s*/, "").trim())
+    .filter(Boolean)
+    .slice(0, 9);
 }
 
 function joinNice(items: string[]) {
@@ -80,6 +84,8 @@ export async function buildDemoBlocks(input: DemoInput, category: string): Promi
       logoText: input.name,
       items: [],
       sticky: true, transparent: false, style: "default", showCta: true, ctaLabel: "WhatsApp Us", ctaUrl: wa,
+      // Demos have no shop; the default cart icon is noise here.
+      showCart: false, logoHeight: 40,
     },
   } as unknown as Block);
 
@@ -96,13 +102,18 @@ export async function buildDemoBlocks(input: DemoInput, category: string): Promi
       description: "",
       imageAlt: heroImg?.alt ?? "",
       primaryButton: { label: "Chat on WhatsApp", url: wa, variant: "primary" },
-      typography: { titleSize: "6xl", titleColor: "", subtitleColor: "", descColor: "" },
+      // Over a darkened photo the template's heading colour (often dark) is
+      // unreadable, so force light text whenever there is an image.
+      typography: heroImg
+        ? { titleSize: "5xl", titleColor: "#ffffff", subtitleColor: "rgba(255,255,255,0.88)", descColor: "" }
+        : { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" },
     },
   } as unknown as Block);
 
   blocks.push({
     ...BASE, id: uid("services"), type: "services", order: o++,
-    templateVariant: "icon-cards-grid",
+    // Default renderer shows each service's stock photo; icon-cards-grid would
+    // drop them and render an empty icon placeholder instead.
     data: {
       title: "Our Services",
       subtitle: "Message us on WhatsApp for a free quote",
@@ -111,7 +122,7 @@ export async function buildDemoBlocks(input: DemoInput, category: string): Promi
       items: input.services.map((s, i) => ({
         id: uid("svc"),
         title: s,
-        description: `Professional ${s.toLowerCase()} by ${input.name}. Tell us what you need and get a clear quote.`,
+        description: `${s} by ${input.name}. Tell us what you need and get a clear quote.`,
         iconType: "emoji", icon: "",
         imageUrl: serviceImgs[i]?.url ?? "",
         link: waLink(input.whatsapp, `Hi, I need ${s}. Can I get a quote?`),
@@ -137,7 +148,7 @@ export async function buildDemoBlocks(input: DemoInput, category: string): Promi
     ...BASE, id: uid("cta"), type: "cta", order: o++,
     templateVariant: "gradient-banner",
     data: {
-      title: `Need ${input.services[0]?.toLowerCase() ?? "help"}?`,
+      title: input.services[0] ? `Need ${input.services[0]}?` : "Need a hand?",
       description: "Message us now. We usually reply within minutes.",
       layout: "centered",
       primaryButton: { label: "Chat on WhatsApp", url: wa },
@@ -162,6 +173,35 @@ export async function buildDemoBlocks(input: DemoInput, category: string): Promi
   } as unknown as Block);
 
   return blocks;
+}
+
+/** Minimal footer so the page doesn't end abruptly at the contact form. */
+export function buildDemoFooter(input: DemoInput): Block[] {
+  const phone = normalizeWhatsapp(input.whatsapp);
+  return [{
+    ...BASE, id: uid("footer"), type: "footer", order: 0,
+    padding: { top: 56, right: 24, bottom: 32, left: 24 },
+    data: {
+      style: "dark",
+      logoText: input.name,
+      tagline: input.tagline?.trim() || `${joinNice(input.services)}${input.address ? ` in ${input.address}` : ""}.`,
+      columns: [
+        {
+          id: "fc1", heading: "Services",
+          links: input.services.slice(0, 5).map((s, i) => ({ id: `fs${i}`, label: s, url: waLink(input.whatsapp, `Hi, I need ${s}. Can I get a quote?`) })),
+        },
+        {
+          id: "fc2", heading: "Contact",
+          links: [
+            { id: "fl1", label: "WhatsApp us", url: waLink(input.whatsapp, `Hi ${input.name}, I would like a quote.`) },
+            { id: "fl2", label: `Call +${phone}`, url: `tel:+${phone}` },
+          ],
+        },
+      ],
+      copyrightText: `© ${new Date().getFullYear()} ${input.name}. All rights reserved.`,
+      copyrightYear: true,
+    },
+  } as unknown as Block];
 }
 
 export async function createDemoSite(
@@ -214,7 +254,7 @@ export async function createDemoSite(
         logo_url: input.logoUrl || null,
         logo_type: input.logoUrl ? "image" : "text",
         global_header: null,
-        global_footer: null,
+        global_footer: buildDemoFooter(input),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "tenant_id" },
