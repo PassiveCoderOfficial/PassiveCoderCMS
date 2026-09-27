@@ -1,3 +1,4 @@
+import { recordCheckout } from "@/lib/billing/activate";
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { makePayment, resolveSpConfig } from "@/lib/billing/shurjopay";
@@ -101,20 +102,15 @@ export async function POST(req: Request) {
       .single();
     if (ticketErr) return NextResponse.json({ error: ticketErr.message }, { status: 500 });
 
-    const { error: subErr } = await admin.from("subscriptions").upsert(
-      {
-        tenant_id: tenantId,
-        plan_id: planId,
-        status: "pending",
-        payment_provider: "manual",
-        billing_cycle: billingCycle,
-        manual_ticket_id: ticket.id,
-        amount_cents: amountBdt,
-        currency: "BDT",
-      },
-      { onConflict: "tenant_id" },
-    );
-    if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
+    const { error: subErr } = await recordCheckout(admin, tenantId, {
+      plan_id: planId,
+      payment_provider: "manual",
+      billing_cycle: billingCycle,
+      manual_ticket_id: ticket.id,
+      amount_cents: amountBdt,
+      currency: "BDT",
+    });
+    if (subErr) return NextResponse.json({ error: subErr }, { status: 500 });
 
     return NextResponse.json({ ok: true, mode: "manual", ticketId: ticket.id });
   }
@@ -142,20 +138,15 @@ export async function POST(req: Request) {
         config: spConfig,
       });
 
-      const { error: subErr } = await admin.from("subscriptions").upsert(
-        {
-          tenant_id: tenantId,
-          plan_id: planId,
-          status: "pending",
-          payment_provider: "shurjopay",
-          billing_cycle: billingCycle,
-          shurjopay_order_id: spOrderId,
-          amount_cents: amountBdt,
-          currency: "BDT",
-        },
-        { onConflict: "tenant_id" },
-      );
-      if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
+      const { error: subErr } = await recordCheckout(admin, tenantId, {
+        plan_id: planId,
+        payment_provider: "shurjopay",
+        billing_cycle: billingCycle,
+        shurjopay_order_id: spOrderId,
+        amount_cents: amountBdt,
+        currency: "BDT",
+      });
+      if (subErr) return NextResponse.json({ error: subErr }, { status: 500 });
 
       return NextResponse.json({ ok: true, mode: "shurjopay", checkoutUrl });
     } catch (e) {
@@ -191,19 +182,14 @@ export async function POST(req: Request) {
         feature_flags: { redirect_immediately: true },
       });
 
-      const { error: subErr } = await admin.from("subscriptions").upsert(
-        {
-          tenant_id: tenantId,
-          plan_id: planId,
-          status: "pending",
-          payment_provider: "dodo",
-          billing_cycle: billingCycle,
-          amount_cents: amountCents,
-          currency: "USD",
-        },
-        { onConflict: "tenant_id" },
-      );
-      if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
+      const { error: subErr } = await recordCheckout(admin, tenantId, {
+        plan_id: planId,
+        payment_provider: "dodo",
+        billing_cycle: billingCycle,
+        amount_cents: amountCents,
+        currency: "USD",
+      });
+      if (subErr) return NextResponse.json({ error: subErr }, { status: 500 });
 
       return NextResponse.json({ ok: true, mode: "dodo", checkoutUrl: session.checkout_url });
     } catch (e) {

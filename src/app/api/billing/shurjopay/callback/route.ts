@@ -1,3 +1,4 @@
+import { activateSubscription } from "@/lib/billing/activate";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPayment, resolveSpConfig } from "@/lib/billing/shurjopay";
@@ -29,17 +30,10 @@ async function handle(req: Request, orderId: string | null) {
   const { ok } = await verifyPayment(orderId, spConfig);
   if (!ok) return fail("payment_not_verified");
 
-  const now = new Date();
-  const periodEnd = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-
-  await admin.from("subscriptions").update({
-    status: "active",
-    trial_converted: true,
-    current_period_start: now.toISOString(),
-    current_period_end: periodEnd.toISOString(),
-  }).eq("id", sub.id);
-
-  await admin.from("tenants").update({ status: "active", plan: sub.plan_id }).eq("id", sub.tenant_id);
+  // Promotes a parked upgrade, sizes the period to the billing cycle (was a
+  // flat 365 days, even for monthly) and puts the plan on the tenant.
+  const activated = await activateSubscription(admin, sub.id);
+  if (activated) { sub.plan_id = activated.planId; if (activated.amountCents != null) sub.amount_cents = activated.amountCents; }
 
   // Payment landed: close any open dunning so the chase stops immediately.
   await admin.from("subscription_dunning")

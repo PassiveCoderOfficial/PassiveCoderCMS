@@ -80,11 +80,23 @@ export async function POST(req: Request) {
         payment_provider: "dodo",
         billing_cycle: cycle ?? "yearly",
         amount_cents: payment.total_amount,
-        currency: "USD",
+        // Dodo can charge in local currency (the one live payment so far was
+        // BDT) — record what was actually charged.
+        currency: (payment.currency as string | undefined) ?? "USD",
+        current_period_start: new Date().toISOString(),
         current_period_end: periodEnd.toISOString(),
+        pending_plan_id: null,
+        pending_billing_cycle: null,
+        pending_amount_cents: null,
+        pending_currency: null,
       },
       { onConflict: "tenant_id" },
     );
+
+    // tenants.plan is what feature gating reads. This handler used to only
+    // mark the subscription active, so a card payment never actually
+    // unlocked the plan the customer paid for.
+    await admin.from("tenants").update({ plan: planId }).eq("id", tenantId);
 
     // ENM Pro rides on CMS Pro — grant it on the same event that activates the
     // subscription, or the customer pays for a bundle they never receive.
