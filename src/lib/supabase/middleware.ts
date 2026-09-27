@@ -6,6 +6,16 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
   // Next 16: request headers MUST be forwarded as `{ request: { headers } }`.
   // Passing the whole NextRequest strips all request headers downstream.
   const headers = requestHeaders ?? new Headers(request.headers);
+  // Internal headers are only ever set here/in the proxy. Anything a browser
+  // sent under these names is dropped (root-domain requests used to pass
+  // them through untouched), then x-pathname is set from the real URL — the
+  // dashboard layout's plan guard reads it, and without it that guard never
+  // matched a path, so plan-gated pages were reachable by typing the URL.
+  if (!requestHeaders) {
+    for (const h of ["x-tenant-id", "x-tenant-slug", "x-tenant-plan"]) headers.delete(h);
+  }
+  headers.delete("x-invoke-path");
+  headers.set("x-pathname", request.nextUrl.pathname);
   let supabaseResponse = NextResponse.next({ request: { headers } });
   // The host this specific request actually arrived on — a tenant's custom
   // domain must get a host-only cookie, never one scoped to the platform's
