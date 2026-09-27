@@ -1,4 +1,4 @@
--- Follow-up to 112: sample emails on real-looking domains and short forms of
+-- Follow-up to 114: sample emails on real-looking domains and short forms of
 -- the old brand names that the exact-name swap didn't catch.
 create or replace function pg_temp.neutral(s text) returns text language sql as $$
   select replace(replace(replace(replace(replace(replace(

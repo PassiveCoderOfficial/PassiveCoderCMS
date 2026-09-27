@@ -107,7 +107,7 @@ export async function applyDbTemplate(
     .maybeSingle();
   const siteName = tenantRow?.name?.trim();
   // Template copy carries the neutral placeholder "Your Business" (templates
-  // are named by industry, never like a real company — migration 112), so
+  // are named by industry, never like a real company — migration 114), so
   // that's what gets swapped for the client's name. The template-name swap is
   // kept for any template authored the older way. With no tenant name yet
   // (mid-onboarding) the placeholder simply stays.
