@@ -9,9 +9,10 @@ import type { PresetThumbKind } from "@/components/admin/page-builder/blocks-pan
  * so a non-technical user can add it and only swap the words that differ.
  */
 
-export type PresetCategory = "top" | "services" | "trust" | "info" | "action" | "media";
+export type PresetCategory = "designed" | "top" | "services" | "trust" | "info" | "action" | "media";
 
 export const presetCategoryLabels: Record<PresetCategory, string> = {
+  designed: "Designed Sections",
   top: "Top of Page",
   services: "Services & Prices",
   trust: "Build Trust",
@@ -815,6 +816,211 @@ export const sectionPresets: SectionPreset[] = [
       ),
   },
 ];
+
+/* ─── Designed sections ────────────────────────────────────────────────────
+ * Finished-looking sections: real backgrounds, overlays, depth and spacing
+ * via the shared Style panel fields, on top of the block's richer variants.
+ * Gradients use theme tokens (hsl(var(--primary)) etc.) so each one picks
+ * up the site's own brand colours.
+ */
+const U = (id: string) => `https://images.unsplash.com/${id}?w=1920&q=70&auto=format&fit=crop`;
+const DEEP_GRADIENT = "linear-gradient(160deg, #0b1120 0%, #1e293b 60%, hsl(var(--primary)) 140%)";
+const pad = (top: number, bottom = top) => ({ top, right: 0, bottom, left: 0 });
+
+const designedPresets: SectionPreset[] = [
+  {
+    id: "designed-hero-photo-full",
+    label: "Full-screen photo welcome",
+    description: "Big photo filling the screen with a dark wash and bold headline",
+    icon: "🌆", category: "designed", blockType: "hero", thumb: "hero-fullscreen",
+    create: () => preset("hero", {
+      badge: "Now booking this month",
+      title: "Made with care. Served with pride.",
+      subtitle: "The neighbourhood favourite for over a decade",
+      primaryButton: { label: "Book a Table", url: "#contact", variant: "primary" },
+      secondaryButton: { label: "See the Menu", url: "#menu", variant: "outline" },
+    }, {
+      templateVariant: "fullscreen-overlay",
+      // The variant sizes itself to the screen and draws its own wash.
+      width: "full",
+      padding: pad(0),
+      background: { type: "image", imageUrl: U("photo-1414235077428-338989a2e8c0"), imageOverlay: "#0b1120", imageOverlayOpacity: 0.55 },
+    }),
+  },
+  {
+    id: "designed-hero-deep-gradient",
+    label: "Deep gradient welcome",
+    description: "Dark, rich gradient with your promise and two buttons",
+    icon: "🌌", category: "designed", blockType: "hero", thumb: "hero-dark-split",
+    create: () => preset("hero", {
+      badge: "Trusted by 2,000+ local customers",
+      title: "Work that speaks for itself",
+      subtitle: "Honest pricing, fast turnaround, guaranteed results",
+      primaryButton: { label: "Get a Free Quote", url: "#contact", variant: "primary" },
+      secondaryButton: { label: "Our Work", url: "#gallery", variant: "outline" },
+    }, {
+      templateVariant: "dark-gradient-left",
+      width: "full",
+      padding: pad(0),
+      background: { type: "gradient", gradient: DEEP_GRADIENT },
+    }),
+  },
+  {
+    id: "designed-hero-floating-card",
+    label: "Floating card welcome",
+    description: "Rounded card with a soft shadow, sitting on the page",
+    icon: "🪟", category: "designed", blockType: "hero", thumb: "hero-centered",
+    create: () => preset("hero", {
+      title: "Everything you need, one friendly team",
+      subtitle: "Call, message or book online. We reply within the hour.",
+      primaryButton: { label: "Book Now", url: "#contact", variant: "primary" },
+      secondaryButton: { label: "WhatsApp Us", url: "https://wa.me/", variant: "outline" },
+    }, {
+      templateVariant: "centered-bold",
+      width: "normal",
+      padding: pad(72),
+      margin: { top: 40, bottom: 40 },
+      background: { type: "color", color: "#ffffff" },
+      style: { radius: 28, shadow: "xl", borderWidth: 1, borderColor: "#e5e7eb", paddingMobile: { top: 40, bottom: 40 } },
+    }),
+  },
+  {
+    id: "designed-stats-brand",
+    label: "Big brand numbers",
+    description: "Large gradient numbers on a soft brand tint for instant credibility",
+    icon: "📈", category: "designed", blockType: "stats", thumb: "stats-row",
+    create: () => preset("stats", { title: "" }, {
+      templateVariant: "gradient-numbers",
+      width: "wide",
+      padding: pad(64),
+      background: { type: "gradient", gradient: "linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.12) 100%)" },
+      style: { paddingMobile: { top: 40, bottom: 40 } },
+    }),
+  },
+  {
+    id: "designed-stats-dark-band",
+    label: "Dark stats band",
+    description: "Slim dark strip of key numbers between sections",
+    icon: "🎚️", category: "designed", blockType: "stats", thumb: "stats-row",
+    create: () => preset("stats", { title: "" }, {
+      templateVariant: "dark-band",
+      width: "wide",
+      padding: pad(48),
+      background: { type: "color", color: "#0f172a" },
+      style: { textColor: "#f1f5f9" },
+    }),
+  },
+  {
+    id: "designed-features-bento",
+    label: "Bento grid highlights",
+    description: "Modern mixed-size tiles for your top reasons to choose you",
+    icon: "🧱", category: "designed", blockType: "features", thumb: "bento-grid",
+    create: () => preset("features", {
+      title: "Why customers stay with us",
+      subtitle: "The little things we never skip",
+    }, {
+      templateVariant: "bento-grid",
+      width: "wide",
+      padding: pad(96),
+      background: { type: "color", color: "#f8fafc" },
+      style: { paddingMobile: { top: 56, bottom: 56 } },
+    }),
+  },
+  {
+    id: "designed-services-dark",
+    label: "Dark service cards",
+    description: "Services on dark cards: premium, high-contrast look",
+    icon: "🖤", category: "designed", blockType: "services", thumb: "cards-3",
+    create: () => preset("services", {
+      title: "What we do best",
+      subtitle: "Pick a service and we handle the rest",
+    }, {
+      templateVariant: "dark-grid-cards",
+      width: "wide",
+      padding: pad(96),
+      background: { type: "gradient", gradient: DEEP_GRADIENT },
+      style: { textColor: "#f8fafc", paddingMobile: { top: 56, bottom: 56 } },
+    }),
+  },
+  {
+    id: "designed-steps-connected",
+    label: "How it works, connected",
+    description: "Three steps joined by a line, on a soft tinted band",
+    icon: "🔗", category: "designed", blockType: "steps", thumb: "steps-row",
+    create: () => preset("steps", {
+      title: "Booked in three easy steps",
+      subtitle: "No forms to fight with, no waiting on hold",
+    }, {
+      templateVariant: "timeline-connected",
+      width: "wide",
+      padding: pad(96),
+      background: { type: "gradient", gradient: "linear-gradient(180deg, hsl(var(--primary) / 0.07) 0%, transparent 100%)" },
+      style: { paddingMobile: { top: 56, bottom: 56 } },
+    }),
+  },
+  {
+    id: "designed-testimonials-dark",
+    label: "Reviews on dark",
+    description: "Customer quotes on dark cards, stands out between light sections",
+    icon: "💬", category: "designed", blockType: "testimonials", thumb: "quote-cards",
+    create: () => preset("testimonials", { title: "What our customers say" }, {
+      templateVariant: "dark-quote-cards",
+      width: "wide",
+      padding: pad(96),
+      background: { type: "color", color: "#0f172a" },
+      style: { textColor: "#f8fafc", paddingMobile: { top: 56, bottom: 56 } },
+    }),
+  },
+  {
+    id: "designed-pricing-highlight",
+    label: "Pricing with a favourite",
+    description: "Price cards with the popular plan lifted out",
+    icon: "🏷️", category: "designed", blockType: "pricing", thumb: "pricing-cards",
+    create: () => preset("pricing", {
+      title: "Simple, honest pricing",
+      subtitle: "No hidden fees. Cancel any time.",
+    }, {
+      templateVariant: "highlighted-cards",
+      width: "wide",
+      padding: pad(96),
+      background: { type: "color", color: "#f8fafc" },
+      style: { paddingMobile: { top: 56, bottom: 56 } },
+    }),
+  },
+  {
+    id: "designed-cta-photo-card",
+    label: "Photo call-to-action card",
+    description: "Rounded photo card with a dark wash and one clear button",
+    icon: "📣", category: "designed", blockType: "cta", thumb: "cta-banner",
+    create: () => preset("cta", {
+      title: "Ready when you are",
+      description: "Tell us what you need today and hear back within the hour.",
+      primaryButton: { label: "Get Started", url: "#contact" },
+    }, {
+      width: "wide",
+      padding: pad(80),
+      margin: { top: 48, bottom: 48 },
+      background: { type: "image", imageUrl: U("photo-1521737604893-d14cc237f11d"), imageOverlay: "#0b1120", imageOverlayOpacity: 0.65 },
+      style: { textColor: "#ffffff", radius: 28, shadow: "xl", paddingMobile: { top: 48, bottom: 48 } },
+    }),
+  },
+  {
+    id: "designed-faq-split",
+    label: "FAQ with side heading",
+    description: "Heading on the left, questions on the right: clean and calm",
+    icon: "❓", category: "designed", blockType: "faq", thumb: "faq-accordion",
+    create: () => preset("faq", {
+      title: "Questions, answered",
+      subtitle: "Can't find yours? Message us any time.",
+    }, {
+      templateVariant: "split-heading",
+      width: "wide",
+      padding: pad(96),
+      style: { paddingMobile: { top: 56, bottom: 56 } },
+    }),
+  },
+];
+sectionPresets.unshift(...designedPresets);
 
 export const presetsByCategory = (Object.keys(presetCategoryLabels) as PresetCategory[]).map(
   (cat) => ({

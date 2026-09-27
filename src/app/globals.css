@@ -236,3 +236,7 @@ html {
 .pc-rpad { padding-top: var(--pc-pt-m); padding-bottom: var(--pc-pb-m); }
 @media (min-width: 640px) { .pc-rpad { padding-top: var(--pc-pt-t); padding-bottom: var(--pc-pb-t); } }
 @media (min-width: 1024px) { .pc-rpad { padding-top: var(--pc-pt); padding-bottom: var(--pc-pb); } }
+
+/* Section text colour (Style panel) — light surfaces inside the section keep
+   their own card text colour instead of inheriting the section's. */
+.pc-tc :is(.bg-card, .bg-white, .bg-background) { color: hsl(var(--card-foreground)); }

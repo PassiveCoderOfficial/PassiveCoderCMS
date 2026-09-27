@@ -130,13 +130,15 @@ export function getBlockWrapperStyle(block: Block): { style: React.CSSProperties
 
   if (st.textColor) {
     style.color = st.textColor;
-    // Blocks colour most text via theme tokens (text-foreground, text-card-
-    // foreground), not inheritance — re-point those tokens for this section.
+    // Blocks colour most section text via the --foreground token rather
+    // than inheritance, so re-point it for this section too.
     if (/^#[0-9a-f]{6}$/i.test(st.textColor)) {
       const hsl = hexToHSL(st.textColor);
       style["--foreground"] = hsl;
-      style["--card-foreground"] = hsl;
     }
+    // Cards inside keep their own readable text (see .pc-tc in globals.css):
+    // white text on a dark section must not turn white-card titles invisible.
+    classes.push("pc-tc");
   }
   if (st.borderWidth) {
     style.borderWidth = st.borderWidth;
