@@ -36,7 +36,7 @@ export function HeaderLogoBlock({
   const height = data.height ?? 34;
 
   return (
-    <Link href={data.linkUrl || "/"} className="flex items-center shrink-0" aria-label="Home">
+    <Link href={data.linkUrl || "/"} className="flex items-center min-w-0" aria-label="Home">
       {logo ? (
         <>
           {/* Light/dark logo pair, same approach the nav block uses: both

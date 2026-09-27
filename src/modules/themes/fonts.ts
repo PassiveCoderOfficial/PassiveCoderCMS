@@ -34,11 +34,13 @@ export const FONT_OPTIONS: { name: string; category: "sans" | "serif" | "display
   { name: "Archivo Black", category: "display" },
 ];
 
-/** Plain family name from a template font value, or null when it's a stack
- *  / CSS var reference (already loaded some other way, e.g. next/font). */
+/** First named family in a template font value. var() refs are dropped
+ *  (e.g. "var(--font-poppins), Poppins" -> "Poppins"): they don't resolve
+ *  where theme tokens live, so the named font must be loaded instead. */
 function familyName(f: string | undefined): string | null {
-  if (!f || /var\(|,/.test(f)) return null;
-  return f.replace(/['"]/g, "").trim() || null;
+  if (!f) return null;
+  const first = f.replace(/var\([^)]*\)\s*,?\s*/g, "").split(",")[0];
+  return first?.replace(/['"]/g, "").trim() || null;
 }
 
 /** Google Fonts stylesheet URL for the given families, or null if none need

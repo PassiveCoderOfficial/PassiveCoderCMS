@@ -73,7 +73,9 @@ export function ContainerBlock({
             // logo/CTA don't need, same as the legacy nav's own <ul> did
             // with its ml-4 flex-1 — without this the mobile hamburger sits
             // right after the logo instead of pinned to the far right.
-            isHeader && (i === 1 && columns.length > 1 ? "flex-row items-center flex-1" : "flex-row items-center shrink-0"),
+            // Logo column may shrink (a long brand name truncates instead of pushing
+            // the header past the screen on phones); the action icons never do.
+            isHeader && (i === 1 && columns.length > 1 ? "flex-row items-center flex-1" : i === 0 ? "flex-row items-center min-w-0 shrink" : "flex-row items-center shrink-0"),
           )}
           // flexBasis carries the author's width split on ordinary content
           // rows. A header's columns hold single small sub-blocks (a logo,

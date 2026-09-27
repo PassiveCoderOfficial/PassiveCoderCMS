@@ -95,8 +95,16 @@ export function buildTemplateCSSVars(
   // Shadow alpha, scaled by the site's shadow choice; "none" drops them.
   const a = (x: number) => +(x * k).toFixed(3);
   // Wrap single font names in quotes, but pass through font stacks / CSS var() refs as-is.
-  const fontVal = (f: string) =>
-    /var\(|,/.test(f) ? f : `'${f}'`;
+  // Some templates store a stack like "var(--font-poppins), Poppins". That var
+  // is defined on <body> by next/font, not on :root where these tokens live,
+  // so it resolves to nothing here and invalidates the whole stack (text fell
+  // back to the system UI font). Drop var() refs and keep the named family,
+  // which googleFontsHref then loads.
+  const fontVal = (f: string) => {
+    const clean = f.replace(/var\([^)]*\)\s*,?\s*/g, "").trim().replace(/,$/, "");
+    if (!clean) return "inherit";
+    return /,/.test(clean) ? clean : `'${clean.replace(/['"]/g, "")}'`;
+  };
 
   const darkBg = isDark(palette.background);
   // Surface ladder: subtle elevation steps derived from the card color so

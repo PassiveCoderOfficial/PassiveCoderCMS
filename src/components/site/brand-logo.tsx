@@ -28,8 +28,8 @@ export function BrandLogo({
   className?: string;
 }) {
   return (
-    <span className={className} style={{ display: "inline-flex", alignItems: "center", gap: size * 0.28 }}>
-      <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <span className={className} style={{ display: "inline-flex", alignItems: "center", gap: size * 0.28, minWidth: 0, maxWidth: "100%" }}>
+      <svg style={{ flexShrink: 0 }} width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         {/* Soft rounded-square badge — friendlier than a sharp rect */}
         <rect width="40" height="40" rx="14" fill={color} />
         {/* Home glyph, simplified & rounded */}
@@ -47,7 +47,7 @@ export function BrandLogo({
         </g>
       </svg>
       {showText && (
-        <span style={{ fontWeight: 600, fontSize: size * 0.5, letterSpacing: "-0.01em", color: textColor, whiteSpace: "nowrap", fontFamily: "var(--heading-font, inherit)" }}>
+        <span style={{ fontWeight: 600, fontSize: size * 0.5, letterSpacing: "-0.01em", color: textColor, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, fontFamily: "var(--heading-font, inherit)" }}>
           {text}
         </span>
       )}
