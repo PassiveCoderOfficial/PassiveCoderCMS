@@ -3,6 +3,7 @@ import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
+import { View, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "../lib/auth";
 import { RoleProvider, useRole } from "../lib/role";
@@ -43,6 +44,7 @@ function useDeeplinkNotifications() {
 function Gate({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { loading: roleLoading } = useRole();
+  const { palette } = useTheme();
   const ready = !authLoading && !roleLoading;
   const segments = useSegments();
 
@@ -66,8 +68,19 @@ function Gate({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   }, [ready, user, segments]);
 
-  if (!ready) return <LoadingSpinner />;
-  return <>{children}</>;
+  // The navigator must stay mounted. Returning a bare spinner in place of the
+  // Stack made expo-router reset its root tree, which remounted every
+  // provider above (Auth, Role...) and looped forever on web. Overlay instead.
+  return (
+    <View style={{ flex: 1 }}>
+      {children}
+      {!ready && (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.bg }]}>
+          <LoadingSpinner />
+        </View>
+      )}
+    </View>
+  );
 }
 
 // The Stack and StatusBar need useTheme(), which is only available *inside*

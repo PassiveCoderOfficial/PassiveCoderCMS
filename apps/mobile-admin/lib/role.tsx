@@ -35,14 +35,20 @@ export const useRole = () => useContext(Ctx);
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  // Keyed on the id string, not the User object: any new object identity
+  // (token refresh, session re-read) must not re-run the whole resolution.
+  const userId = user?.id ?? null;
   const [role, setRole] = useState<ResolvedRole>(null);
   const [isManager, setIsManager] = useState(false);
   const [memberships, setMemberships] = useState<TenantMembership[]>([]);
   const [loading, setLoading] = useState(true);
   const cancelledRef = useRef(false);
+  const resolvedOnceRef = useRef(false);
 
   const resolve = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
+      // Next login is a fresh first resolution and should show the spinner.
+      resolvedOnceRef.current = false;
       setRole(null);
       setIsManager(false);
       setMemberships([]);
@@ -50,13 +56,18 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    setLoading(true);
+    // Only the FIRST resolution blanks the app. Gate swaps the whole Stack for
+    // a spinner while loading, so flipping it back on for a re-resolve
+    // unmounted every screen, their remount re-queried, and the app sat on a
+    // spinner in a loop (seen live on web). Later runs update in place.
+    if (!resolvedOnceRef.current) setLoading(true);
+    resolvedOnceRef.current = true;
 
     // 1. Super admin.
     const { data: sa } = await supabase
       .from("super_admins")
       .select("user_id")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle();
     if (cancelledRef.current) return;
     if (sa) {
@@ -70,7 +81,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       // destinations regardless of selection state") — an SA landing on
       // them via the bottom tab bar, not just (admin)/tenants, needs
       // their own sites populated same as anyone else.
-      const built = await fetchMemberships(user.id);
+      const built = await fetchMemberships(userId);
       if (cancelledRef.current) return;
       setRole("super_admin");
       setIsManager(false);
@@ -83,7 +94,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     const { data: staff } = await supabase
       .from("pc_staff")
       .select("user_id, status, is_manager")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle();
     if (cancelledRef.current) return;
@@ -98,7 +109,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       // so a non-manager staffer landed there and hit an unrecoverable
       // 401 with nowhere else to go. Fetch memberships for staff too, same
       // query as step 3 below.
-      const built = await fetchMemberships(user.id);
+      const built = await fetchMemberships(userId);
       if (cancelledRef.current) return;
       setRole("pc_staff");
       setIsManager(Boolean(staff.is_manager));
@@ -108,7 +119,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     }
 
     // 3. Tenant membership.
-    let built = await fetchMemberships(user.id);
+    let built = await fetchMemberships(userId);
     if (cancelledRef.current) return;
 
     // 4. Fallback: tenants owned directly with no membership row (shouldn't
@@ -118,7 +129,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       const { data: owned } = await supabase
         .from("tenants")
         .select("id, slug, name, owner_id, plan, status, custom_domain, domain_status, trial_ends_at, enabled_modules")
-        .eq("owner_id", user.id);
+        .eq("owner_id", userId);
       if (cancelledRef.current) return;
       built = (owned ?? []).map((t) => ({ tenantId: t.id, role: "owner" as const, tenant: t as Tenant }));
     }
@@ -127,7 +138,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     setIsManager(false);
     setMemberships(built);
     setLoading(false);
-  }, [user]);
+  }, [userId]);
 
   async function fetchMemberships(userId: string): Promise<TenantMembership[]> {
     const { data: rows } = await supabase

@@ -91,7 +91,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // `user` is derived, so it must be memoised on the session — RoleProvider's
   // effect keys off `user`, and a fresh object each render would re-run the
   // whole role/membership resolution on every unrelated state change.
-  const user = useMemo(() => session?.user ?? null, [session]);
+  //
+  // Keyed on session.user.id, NOT the session object itself: Supabase hands
+  // back a new session object on every getSession()/onAuthStateChange call
+  // even when nothing actually changed (e.g. its internal auto-refresh
+  // tick), so memoising on `session` identity still produced a new `user`
+  // reference each time — which retriggered role.tsx's resolve() effect in
+  // an unbounded loop (confirmed live: dozens of duplicate super_admins/
+  // pc_staff/tenant_members requests firing back-to-back, the /sites screen
+  // stuck on its loading spinner forever since `loading` never got a chance
+  // to settle before the next resolve() started).
+  const userId = session?.user?.id ?? null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const user = useMemo(() => session?.user ?? null, [userId]);
 
   const value = useMemo(
     () => ({ session, user, loading, login, signup, logout }),
