@@ -174,6 +174,7 @@ export const bn = {
   "pages.statusPublished": "পাবলিশড",
   "pages.statusScheduled": "শিডিউলড",
   "pages.statusArchived": "আর্কাইভড",
+  "pages.unpublishedChanges": "অপ্রকাশিত পরিবর্তন",
   "pages.tabAll": "সব",
   "pages.tabTrash": "ট্র্যাশ",
   "pages.markedStatus": "{status} মার্ক করা হয়েছে",

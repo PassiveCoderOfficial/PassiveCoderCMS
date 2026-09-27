@@ -168,6 +168,7 @@ export const en = {
   "pages.statusPublished": "Published",
   "pages.statusScheduled": "Scheduled",
   "pages.statusArchived": "Archived",
+  "pages.unpublishedChanges": "Unpublished changes",
   "pages.tabAll": "All",
   "pages.tabTrash": "Trash",
   "pages.markedStatus": "Marked {status}",

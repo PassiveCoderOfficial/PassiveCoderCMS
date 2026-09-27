@@ -21,7 +21,7 @@ export default async function PostsPage({
   const supabase = await createClient();
   let query = supabase
     .from("pages")
-    .select("id, title, slug, type, status, created_at, updated_at, published_at, scheduled_at, deleted_at")
+    .select("id, title, slug, type, status, created_at, updated_at, published_at, scheduled_at, deleted_at, has_draft")
     .eq("type", "post")
     .eq("tenant_id", tenantId)
     .order("updated_at", { ascending: false });

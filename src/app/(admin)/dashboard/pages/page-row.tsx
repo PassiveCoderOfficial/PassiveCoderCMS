@@ -22,12 +22,15 @@ interface PageRowProps {
     updated_at: string;
     scheduled_at?: string | null;
     deleted_at?: string | null;
+    /** Live page with saved edits that aren't published yet (migration 105/106). */
+    has_draft?: boolean | null;
   };
   inTrash?: boolean;
 }
 
 export function PageRow({ page, inTrash }: PageRowProps) {
   const router = useRouter();
+  const t = useT();
 
   return (
     <tr
@@ -36,6 +39,12 @@ export function PageRow({ page, inTrash }: PageRowProps) {
     >
       <td className="px-4 py-3 max-w-[140px] sm:max-w-none">
         <span className="font-medium text-sm block truncate">{page.title}</span>
+        {page.has_draft && page.status === "published" && !inTrash && (
+          <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+            {t("pages.unpublishedChanges")}
+          </span>
+        )}
       </td>
       <td className="px-4 py-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
         <a
