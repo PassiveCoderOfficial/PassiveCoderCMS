@@ -114,7 +114,34 @@ export async function MarketplaceHome({
       image: c.image_url,
       tone: tones[k % tones.length],
     }));
-  const topDeal = deals[0];
+  // A live flash-sale campaign takes over the rail; otherwise the day's
+  // biggest discounts do.
+  const now = new Date().toISOString();
+  const { data: liveSale } = await admin
+    .from("flash_sales")
+    .select("title, ends_at, flash_sale_items(sale_price, quantity_limit, sold, sort_order, products!inner(id, name, slug, price, compare_price, images, stock_quantity, track_inventory, featured, status, approval_status, vendors!inner(id, name, slug, status)))")
+    .eq("tenant_id", tenantId)
+    .eq("status", "active")
+    .lte("starts_at", now)
+    .gt("ends_at", now)
+    .order("ends_at")
+    .limit(1)
+    .maybeSingle();
+  type LiveItem = { sale_price: number; quantity_limit: number | null; sold: number; sort_order: number; products: CardProduct & { status: string; approval_status: string } };
+  const flashItems = ((liveSale?.flash_sale_items ?? []) as unknown as LiveItem[])
+    .filter((it) => it.products.status === "active" && it.products.approval_status === "approved" && (it.quantity_limit == null || it.sold < it.quantity_limit))
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((it) => ({
+      ...it.products,
+      price: Number(it.sale_price),
+      compare_price: Math.max(Number(it.products.price), Number(it.products.compare_price ?? 0)),
+      flash_sold: it.sold,
+      flash_limit: it.quantity_limit,
+    }));
+  const railItems = flashItems.length ? flashItems : deals;
+  const campaign = flashItems.length && liveSale ? { title: liveSale.title as string, ends_at: liveSale.ends_at as string } : null;
+
+  const topDeal = railItems[0];
   const slides: HeroSlide[] = [
     ...(topDeal
       ? [{
@@ -195,7 +222,7 @@ export async function MarketplaceHome({
           ))}
         </div>
 
-        <FlashSale products={deals} />
+        <FlashSale products={railItems} campaign={campaign} />
 
         {/* ── Categories: Shopee-style two-row scrolling grid ──────── */}
         {cats.length > 0 && (

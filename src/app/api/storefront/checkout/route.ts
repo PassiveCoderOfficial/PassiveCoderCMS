@@ -13,7 +13,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const isPickup = body.fulfillment_type === "pickup";
-    const { result, rate } = await splitCart(tenantId, body.items ?? [], body.area, isPickup);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const { result, rate } = await splitCart(tenantId, body.items ?? [], body.area, isPickup, {
+      vouchers: Array.isArray(body.vouchers) ? body.vouchers : [],
+      customerId: user?.id ?? null,
+      phone: typeof body.phone === "string" ? body.phone : null,
+    });
     return NextResponse.json({
       ...result,
       shipping_rate: rate ? { name: rate.name, rate: rate.rate, free_above: rate.free_above } : null,
@@ -49,6 +55,7 @@ export async function PUT(req: NextRequest) {
       notes: body.notes,
       fulfillmentType: body.fulfillment_type === "pickup" ? "pickup" : "delivery",
       pickupTime: body.pickup_time,
+      vouchers: Array.isArray(body.vouchers) ? body.vouchers : [],
     });
 
     return NextResponse.json(result);

@@ -235,6 +235,7 @@ export const navSections: NavSection[] = [
           { label: "Payouts", href: "/dashboard/ecommerce/sellers/payouts", icon: Wallet },
         ],
       },
+      { label: "Promotions", href: "/dashboard/ecommerce/promotions", icon: Tag, moduleKey: "ecommerce" },
       { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard, moduleKey: "ecommerce" },
       { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck, moduleKey: "ecommerce" },
     ],

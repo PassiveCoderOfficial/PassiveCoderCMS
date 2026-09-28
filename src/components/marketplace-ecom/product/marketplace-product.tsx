@@ -5,7 +5,10 @@ import {
 import { createAdminClient } from "@/lib/supabase/server";
 import { WishlistButton } from "@/app/(site)/products/[slug]/wishlist-button";
 import { ProductGallery } from "./gallery";
-import { BuyBox } from "./buy-box";
+import { BuyBox, type VariantOpt } from "./buy-box";
+import { activeFlashPrices, listPublicVouchers } from "@/lib/marketplace-ecom/pricing";
+import { FlashCountdown } from "./flash-countdown";
+import { VoucherChips } from "./voucher-chips";
 import { ProductReviews } from "./product-reviews";
 import { ChatNowButton } from "../chat/chat-now-button";
 import { FeedCard } from "../feed-card";
@@ -95,6 +98,22 @@ export async function MarketplaceProduct({
     ...others.filter((x) => !(firstCat && x.category_ids?.includes(firstCat))),
   ].slice(0, 12);
 
+  const [{ data: variantRows }, flashMap, vouchers] = await Promise.all([
+    admin
+      .from("product_variants")
+      .select("id, name, price, stock_quantity, image")
+      .eq("product_id", p.id)
+      .neq("is_active", false)
+      .order("sort_order"),
+    activeFlashPrices(admin, p.tenant_id, [p.id]),
+    listPublicVouchers(admin, p.tenant_id, [p.vendor_id]),
+  ]);
+  const variants = (variantRows ?? []) as VariantOpt[];
+  const flash = variants.length ? undefined : flashMap.get(p.id);
+  const vPrices = variants.map((v) => Number(v.price ?? p.price));
+  const minP = vPrices.length ? Math.min(...vPrices) : Number(p.price);
+  const maxP = vPrices.length ? Math.max(...vPrices) : Number(p.price);
+
   const images = Array.isArray(p.images) ? p.images : [];
   const off = p.compare_price && p.compare_price > p.price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : 0;
   const stock = p.track_inventory ? p.stock_quantity : null;
@@ -145,15 +164,43 @@ export async function MarketplaceProduct({
               <span className="text-[#667085] border-l border-[#EAECF0] pl-3">{compact(p.sold_count)} Sold</span>
             </div>
 
-            <div className="rounded-xl bg-gradient-to-r from-[#FFF1EB] to-[#FFF8F4] px-4 py-3 flex items-baseline gap-3 flex-wrap">
-              <span className="text-3xl sm:text-4xl font-extrabold text-[#FF5A1F]">{tk(p.price)}</span>
+            {flash && (
+              <div className="rounded-t-xl -mb-4 bg-gradient-to-r from-[#FF5A1F] to-[#FF8A3D] text-white px-4 py-2 flex items-center gap-2">
+                <span className="font-extrabold italic uppercase tracking-wide">Flash Sale</span>
+                <span className="ml-auto text-xs uppercase">Ends in</span>
+                <FlashCountdown endsAt={flash.ends_at} />
+              </div>
+            )}
+            <div className={`${flash ? "rounded-b-xl" : "rounded-xl"} bg-gradient-to-r from-[#FFF1EB] to-[#FFF8F4] px-4 py-3 flex items-baseline gap-3 flex-wrap`}>
+              {flash ? (
+                <>
+                  <span className="text-3xl sm:text-4xl font-extrabold text-[#FF5A1F]">{tk(flash.sale_price)}</span>
+                  <span className="text-base text-[#98A2B3] line-through">{tk(Math.max(Number(p.price), Number(p.compare_price ?? 0)))}</span>
+                  <span className="text-xs font-bold text-white bg-[#FF5A1F] rounded px-1.5 py-0.5">
+                    -{Math.round((1 - flash.sale_price / Math.max(Number(p.price), Number(p.compare_price ?? 0))) * 100)}%
+                  </span>
+                  {flash.quantity_limit != null && (
+                    <span className="w-full text-xs text-[#FF5A1F] font-semibold">
+                      {flash.quantity_limit - flash.sold} left at this price
+                    </span>
+                  )}
+                </>
+              ) : (
+              <>
+              <span className="text-3xl sm:text-4xl font-extrabold text-[#FF5A1F]">
+                {minP !== maxP ? `${tk(minP)} – ${tk(maxP)}` : tk(minP)}
+              </span>
               {off > 0 && (
                 <>
                   <span className="text-base text-[#98A2B3] line-through">{tk(p.compare_price!)}</span>
                   <span className="text-xs font-bold text-white bg-[#FF5A1F] rounded px-1.5 py-0.5">-{off}%</span>
                 </>
               )}
+              </>
+              )}
             </div>
+
+            {vouchers.length > 0 && <VoucherChips vouchers={vouchers as never} />}
 
             {p.short_description && <p className="text-sm text-[#475467]">{p.short_description}</p>}
 
@@ -193,11 +240,12 @@ export async function MarketplaceProduct({
                 id: p.id,
                 name: p.name,
                 slug: p.slug,
-                price: Number(p.price),
+                price: flash ? flash.sale_price : Number(p.price),
                 image: images[0] ?? null,
                 stock,
                 vendorId: p.vendor_id,
               }}
+              variants={variants}
             />
           </div>
         </div>

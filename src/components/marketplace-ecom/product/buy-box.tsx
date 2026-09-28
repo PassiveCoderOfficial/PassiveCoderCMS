@@ -17,25 +17,46 @@ interface P {
   vendorId: string;
 }
 
+export interface VariantOpt {
+  id: string;
+  name: string;
+  price: number | null;
+  stock_quantity: number;
+  image: string | null;
+}
+
+const tk = (n: number) => `৳${Number(n).toLocaleString()}`;
+
 /**
  * Quantity + Add to cart + Buy now, plus the Shopee-style sticky bottom bar
  * (Chat | Add to cart | Buy now) on phones.
  */
-export function BuyBox({ product }: { product: P }) {
+export function BuyBox({ product, variants = [] }: { product: P; variants?: VariantOpt[] }) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const [qty, setQty] = useState(1);
-  const out = product.stock !== null && product.stock <= 0;
-  const max = product.stock ?? 99;
+  const [vid, setVid] = useState<string | null>(null);
+  const [needPick, setNeedPick] = useState(false);
+  const v = variants.find((x) => x.id === vid) ?? null;
+  const stock = v ? v.stock_quantity : product.stock;
+  const price = v?.price ?? product.price;
+  const out = variants.length ? variants.every((x) => x.stock_quantity <= 0) || (v !== null && v.stock_quantity <= 0) : product.stock !== null && product.stock <= 0;
+  const max = stock ?? 99;
 
   function add(buyNow = false) {
+    if (variants.length && !v) {
+      setNeedPick(true);
+      document.getElementById("options")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     addItem({
-      id: product.id,
+      id: v ? `${product.id}:${v.id}` : product.id,
       product_id: product.id,
-      name: product.name,
+      variant_id: v?.id,
+      name: v ? `${product.name} (${v.name})` : product.name,
       slug: product.slug,
-      price: product.price,
-      image: product.image ?? undefined,
+      price,
+      image: (v?.image || product.image) ?? undefined,
       quantity: qty,
     });
     if (buyNow) router.push("/checkout");
@@ -44,6 +65,37 @@ export function BuyBox({ product }: { product: P }) {
 
   return (
     <>
+      {variants.length > 0 && (
+        <div id="options" className={`flex gap-4 rounded-xl ${needPick && !v ? "ring-2 ring-[#FF5A1F]/40 p-2 -m-2" : ""}`}>
+          <span className="text-sm text-[#667085] w-20 shrink-0 pt-2">Options</span>
+          <div className="flex-1">
+            <div className="flex flex-wrap gap-2">
+              {variants.map((x) => {
+                const soldOut = x.stock_quantity <= 0;
+                const on = x.id === vid;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    disabled={soldOut}
+                    onClick={() => { setVid(on ? null : x.id); setQty(1); setNeedPick(false); }}
+                    className={`relative flex items-center gap-2 text-sm px-3 py-2 rounded-lg border transition-colors ${on ? "border-[#FF5A1F] text-[#FF5A1F] bg-[#FFF6F2]" : "border-[#D0D5DD] text-[#1A1330] hover:border-[#FF5A1F]"} disabled:opacity-40 disabled:line-through`}
+                  >
+                    {x.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={x.image} alt="" className="w-6 h-6 rounded object-cover" />
+                    )}
+                    {x.name}
+                  </button>
+                );
+              })}
+            </div>
+            {v && <p className="mt-2 text-sm text-[#1A1330]">Selected: <b>{v.name}</b> · <span className="text-[#FF5A1F] font-bold">{tk(price)}</span></p>}
+            {needPick && !v && <p className="mt-2 text-sm text-[#FF5A1F] font-medium">Please choose an option first</p>}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         <span className="text-sm text-[#667085] w-20">Quantity</span>
         <div className="flex items-center border border-[#D0D5DD] rounded-lg overflow-hidden">
@@ -55,9 +107,9 @@ export function BuyBox({ product }: { product: P }) {
             <Plus className="w-4 h-4" />
           </button>
         </div>
-        {product.stock !== null && (
-          <span className={`text-sm ${out ? "text-red-600 font-semibold" : product.stock <= 5 ? "text-[#FF5A1F] font-semibold" : "text-[#667085]"}`}>
-            {out ? "Out of stock" : `${product.stock} available`}
+        {stock !== null && (!variants.length || v) && (
+          <span className={`text-sm ${out ? "text-red-600 font-semibold" : stock <= 5 ? "text-[#FF5A1F] font-semibold" : "text-[#667085]"}`}>
+            {out ? "Out of stock" : `${stock} available`}
           </span>
         )}
       </div>

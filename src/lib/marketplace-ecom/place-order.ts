@@ -29,6 +29,8 @@ export interface PlaceOrderInput {
   /** When fulfillmentType is "pickup", when the customer said they'd come
    *  by. Ignored for delivery. */
   pickupTime?: string;
+  /** Voucher codes the buyer applied (platform and/or shop). */
+  vouchers?: string[];
 }
 
 export interface PlaceOrderResult {
@@ -62,10 +64,40 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   // not by subtracting it back out afterward — rateForArea falls back to
   // the tenant's default rate whenever area is absent, so passing no area
   // alone does NOT suppress shipping; it has to be told explicitly.
-  const { result, products, rate } = await splitCart(tenantId, items, address.area, isPickup);
+  const { result, products, rate } = await splitCart(tenantId, items, address.area, isPickup, {
+    vouchers: input.vouchers,
+    customerId,
+    phone: address.phone?.trim(),
+  });
   if (!result.groups.length) throw new Error("Cart is empty");
+  // A code the buyer typed that no longer applies must not silently vanish
+  // from a total they already agreed to.
+  if (input.vouchers?.length && result.voucher_errors.length) {
+    throw new Error(`Voucher problem: ${result.voucher_errors.join("; ")}`);
+  }
 
   const admin = await createAdminClient();
+
+  // Claim flash-sale quantity atomically before committing anything; release
+  // what we claimed if a later step fails.
+  const claimed: { item: string; qty: number }[] = [];
+  const releaseClaims = async () => {
+    for (const c of claimed) {
+      const { data } = await admin.from("flash_sale_items").select("sold").eq("id", c.item).maybeSingle();
+      if (data) await admin.from("flash_sale_items").update({ sold: Math.max(0, data.sold - c.qty) }).eq("id", c.item);
+    }
+  };
+  for (const g of result.groups) {
+    for (const it of g.items) {
+      if (!it.flash_item_id) continue;
+      const { data: ok } = await admin.rpc("claim_flash_quantity", { item: it.flash_item_id, qty: it.quantity });
+      if (!ok) {
+        await releaseClaims();
+        throw new Error(`The flash deal on ${it.name} just sold out — please refresh your cart`);
+      }
+      claimed.push({ item: it.flash_item_id, qty: it.quantity });
+    }
+  }
   const orderNumber = `SK-${Date.now().toString(36).toUpperCase()}`;
   const isCod = paymentMethod === "cod";
 
@@ -96,7 +128,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       billing_address: shippingAddress,
       shipping_address: shippingAddress,
       subtotal: result.subtotal,
-      discount: result.discount_total,
+      discount: money(result.discount_total + result.platform_discount_total),
+      voucher_codes: result.vouchers.map((v) => v.code),
       // Already correctly 0 for pickup — splitCart was called with
       // noShipping=true above, so result.shipping_total (and every group's
       // own shipping_cost/total) never had a rate applied in the first
@@ -114,7 +147,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     .select("id, order_number")
     .single();
 
-  if (orderErr || !order) throw new Error(orderErr?.message ?? "Could not create order");
+  if (orderErr || !order) {
+    await releaseClaims();
+    throw new Error(orderErr?.message ?? "Could not create order");
+  }
 
   const subRows = result.groups.map((g) => ({
     tenant_id: tenantId,
@@ -126,6 +162,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     subtotal: g.subtotal,
     shipping_cost: g.shipping_cost,
     discount: g.discount,
+    platform_discount: g.platform_discount,
     total: g.total,
     commission_rate: g.commission_rate,
     commission_amount: g.commission_amount,
@@ -143,7 +180,22 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     // Without sub-orders the parent order is unfulfillable — no vendor would
     // ever see it. Roll it back rather than leaving an orphan in the list.
     await admin.from("orders").delete().eq("id", order.id);
+    await releaseClaims();
     throw new Error(`Could not create vendor orders: ${subErr.message}`);
+  }
+
+  // Voucher usage.
+  for (const v of result.vouchers) {
+    await admin.from("voucher_redemptions").insert({
+      voucher_id: v.voucher_id,
+      tenant_id: tenantId,
+      order_id: order.id,
+      customer_id: customerId ?? null,
+      phone: address.phone.trim(),
+      amount: v.amount,
+    });
+    const { data: cur } = await admin.from("vouchers").select("used_count").eq("id", v.voucher_id).maybeSingle();
+    await admin.from("vouchers").update({ used_count: (cur?.used_count ?? 0) + 1 }).eq("id", v.voucher_id);
   }
 
   // Reserve stock once the order is committed.
@@ -151,6 +203,14 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     for (const item of g.items) {
       const p = products.find((x) => x.id === item.product_id);
       if (!p?.track_inventory) continue;
+      if (item.variant_id) {
+        const { data: v } = await admin.from("product_variants").select("stock_quantity").eq("id", item.variant_id).maybeSingle();
+        await admin
+          .from("product_variants")
+          .update({ stock_quantity: Math.max(0, (v?.stock_quantity ?? 0) - item.quantity) })
+          .eq("id", item.variant_id);
+        continue;
+      }
       await admin
         .from("products")
         .update({

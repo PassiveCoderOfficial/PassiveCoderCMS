@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, Store, MessageCircle, Star, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Store, MessageCircle, Star, ExternalLink, Ticket } from "lucide-react";
 import { getMarketplaceChrome } from "@/lib/marketplace-ecom/chrome";
 import { MARKETPLACE_TOKENS_CSS } from "@/lib/marketplace-ecom/brand-tokens";
 import { currentVendor, vendorApplicationStatus } from "@/lib/marketplace-ecom/vendor-auth";
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/vendor/orders", label: "Orders", icon: ShoppingBag },
   { href: "/vendor/messages", label: "Messages", icon: MessageCircle },
   { href: "/vendor/reviews", label: "Reviews", icon: Star },
+  { href: "/vendor/vouchers", label: "Vouchers", icon: Ticket },
   { href: "/vendor/earnings", label: "Earnings", icon: Wallet },
 ];
 

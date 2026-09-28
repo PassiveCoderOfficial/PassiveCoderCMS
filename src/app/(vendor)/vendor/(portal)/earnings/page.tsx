@@ -115,7 +115,7 @@ export default async function EarningsPage() {
                           {new Date(e.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-2.5">
-                          <span className="text-gray-200">{TYPE_LABEL[e.type] ?? e.type}</span>
+                          <span className="text-[#1A1330] font-medium">{TYPE_LABEL[e.type] ?? e.type}</span>
                           {e.note && <span className="block text-xs text-[#98A2B3]">{e.note}</span>}
                         </td>
                         <td className={`px-4 py-2.5 text-right whitespace-nowrap ${credit ? "text-green-400" : "text-[#667085]"}`}>

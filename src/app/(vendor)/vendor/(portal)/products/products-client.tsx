@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { VariantsEditor } from "./variants-editor";
 import { Loader2, Plus, X, Package, ImageOff, Clock, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 
 interface Product {
@@ -184,6 +185,7 @@ export default function VendorProductsClient({ categories }: { categories: Categ
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [optionsFor, setOptionsFor] = useState<Product | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -274,6 +276,12 @@ export default function VendorProductsClient({ categories }: { categories: Categ
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
+                    onClick={() => setOptionsFor(p)}
+                    className="text-xs border border-[#FFD2BF] bg-[#FFF6F2] text-[#FF5A1F] px-2.5 py-1.5 rounded-lg font-medium"
+                  >
+                    Options
+                  </button>
+                  <button
                     onClick={() => { setEditing(p); setShowForm(true); }}
                     className="text-xs border border-[#EAECF0] hover:bg-[#F9FAFB] text-[#475467] px-2.5 py-1.5 rounded-lg"
                   >
@@ -291,6 +299,16 @@ export default function VendorProductsClient({ categories }: { categories: Categ
             );
           })}
         </div>
+      )}
+
+      {optionsFor && (
+        <VariantsEditor
+          productId={optionsFor.id}
+          productName={optionsFor.name}
+          basePrice={Number(optionsFor.price)}
+          onClose={() => setOptionsFor(null)}
+          onSaved={load}
+        />
       )}
 
       {showForm && (

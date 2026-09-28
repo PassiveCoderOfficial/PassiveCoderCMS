@@ -199,7 +199,7 @@ export default function VendorOrdersClient() {
                       {(o.items ?? []).map((it, i) => (
                         <li key={i} className="flex items-center gap-2 text-sm">
                           <Package className="w-3.5 h-3.5 text-[#D0D5DD] shrink-0" />
-                          <span className="text-gray-200 truncate">{it.name}</span>
+                          <span className="text-[#1A1330] font-medium truncate">{it.name}</span>
                           <span className="text-[#98A2B3]">× {it.quantity}</span>
                           <span className="ml-auto text-[#667085]">{tk(it.price * it.quantity)}</span>
                         </li>
@@ -208,7 +208,7 @@ export default function VendorOrdersClient() {
 
                     {!isPickup && addr && (
                       <div className="text-sm text-[#667085] space-y-1 border-t border-[#EAECF0] pt-3">
-                        <p className="text-gray-200">{addr.name}</p>
+                        <p className="text-[#1A1330] font-medium">{addr.name}</p>
                         {addr.phone && (
                           <p className="flex items-center gap-1.5">
                             <Phone className="w-3.5 h-3.5" />
@@ -237,7 +237,7 @@ export default function VendorOrdersClient() {
                         <span>Delivery</span><span>{tk(o.shipping_cost)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-[#98A2B3]">
+                    <div className="flex justify-between text-[#667085]">
                       <span>Commission</span><span>−{tk(o.commission_amount)}</span>
                     </div>
                     <div className="flex justify-between font-semibold text-[#1A1330] border-t border-[#EAECF0] pt-2">

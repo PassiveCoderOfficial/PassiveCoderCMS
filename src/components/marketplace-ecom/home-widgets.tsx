@@ -123,13 +123,14 @@ function msToDhakaMidnight() {
   return next - now;
 }
 
-function Countdown() {
+function Countdown({ endsAt }: { endsAt?: string }) {
   const [ms, setMs] = useState<number | null>(null);
   useEffect(() => {
-    setMs(msToDhakaMidnight());
-    const t = setInterval(() => setMs(msToDhakaMidnight()), 1000);
+    const calc = () => (endsAt ? Math.max(0, new Date(endsAt).getTime() - Date.now()) : msToDhakaMidnight());
+    setMs(calc());
+    const t = setInterval(() => setMs(calc()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [endsAt]);
   // Render placeholder until mounted so server and client HTML match.
   const s = ms === null ? 0 : Math.floor(ms / 1000);
   const parts = [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((v) =>
@@ -150,15 +151,24 @@ function Countdown() {
 }
 
 /** Flash-sale strip: countdown + horizontal deal rail with a stock bar. */
-export function FlashSale({ products }: { products: CardProduct[] }) {
+/** `campaign` = a live flash-sale campaign (its own title/end time, and per
+ *  item quantity claimed so far). Without one the rail shows the day's
+ *  biggest discounts with a countdown to midnight. */
+export function FlashSale({
+  products,
+  campaign,
+}: {
+  products: (CardProduct & { flash_sold?: number; flash_limit?: number | null })[];
+  campaign?: { title: string; ends_at: string } | null;
+}) {
   if (products.length === 0) return null;
   return (
     <section className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5">
       <div className="flex items-center gap-3 mb-3">
         <h2 className="flex items-center gap-1 text-lg sm:text-xl font-extrabold italic text-[#FF5A1F] uppercase">
-          <Zap className="w-5 h-5 fill-[#FF5A1F]" /> Flash Deals
+          <Zap className="w-5 h-5 fill-[#FF5A1F]" /> {campaign?.title ?? "Flash Deals"}
         </h2>
-        <Countdown />
+        <Countdown endsAt={campaign?.ends_at} />
         <Link href="/shop?sort=discount" className="ml-auto text-sm font-semibold text-[#FF5A1F] flex items-center">
           See all <ChevronRight className="w-4 h-4" />
         </Link>
@@ -167,8 +177,12 @@ export function FlashSale({ products }: { products: CardProduct[] }) {
         {products.map((p) => {
           const img = Array.isArray(p.images) ? p.images[0] : undefined;
           const off = p.compare_price ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100) : 0;
-          const left = p.track_inventory ? p.stock_quantity : null;
-          const pct = left === null ? 70 : Math.max(8, Math.min(95, 100 - left * 4));
+          const campaignLeft = p.flash_limit != null ? p.flash_limit - (p.flash_sold ?? 0) : null;
+          const left = campaignLeft ?? (p.track_inventory ? p.stock_quantity : null);
+          const pct =
+            p.flash_limit != null
+              ? Math.max(8, Math.min(95, ((p.flash_sold ?? 0) / p.flash_limit) * 100))
+              : left === null ? 70 : Math.max(8, Math.min(95, 100 - left * 4));
           return (
             <Link
               key={p.id}

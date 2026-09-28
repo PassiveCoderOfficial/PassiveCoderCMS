@@ -117,8 +117,13 @@ export async function PATCH(req: NextRequest) {
   // Returning stock on a cancelled parcel keeps the catalogue honest — the
   // items never left the vendor.
   if (patch.status === "cancelled" || patch.status === "returned") {
-    const items = (sub.items ?? []) as { product_id: string; quantity: number }[];
+    const items = (sub.items ?? []) as { product_id: string; variant_id?: string; quantity: number }[];
     for (const item of items) {
+      if (item.variant_id) {
+        const { data: v } = await admin.from("product_variants").select("stock_quantity").eq("id", item.variant_id).maybeSingle();
+        if (v) await admin.from("product_variants").update({ stock_quantity: (v.stock_quantity ?? 0) + item.quantity }).eq("id", item.variant_id);
+        continue;
+      }
       const { data: p } = await admin
         .from("products")
         .select("id, stock_quantity, track_inventory")
