@@ -7,13 +7,14 @@ import { ProductCard, type CardProduct } from "@/components/marketplace-ecom/pro
 export const metadata = { title: "Shop all products" };
 
 interface Props {
-  searchParams: Promise<{ q?: string; category?: string; vendor?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; vendor?: string; sort?: string; max?: string }>;
 }
 
 const SORTS = [
   { key: "", label: "Newest" },
   { key: "price_asc", label: "Price: low to high" },
   { key: "price_desc", label: "Price: high to low" },
+  { key: "discount", label: "Biggest deals" },
 ];
 
 export default async function ShopPage({ searchParams }: Props) {
@@ -37,12 +38,15 @@ export default async function ShopPage({ searchParams }: Props) {
   if (sp.q) query = query.ilike("name", `%${sp.q}%`);
   if (sp.vendor) query = query.eq("vendors.slug", sp.vendor);
   if (sp.category) query = query.contains("category_ids", JSON.stringify([sp.category]));
+  if (sp.max && Number(sp.max) > 0) query = query.lte("price", Number(sp.max));
   query =
     sp.sort === "price_asc"
       ? query.order("price", { ascending: true })
       : sp.sort === "price_desc"
         ? query.order("price", { ascending: false })
-        : query.order("created_at", { ascending: false });
+        : sp.sort === "discount"
+          ? query.not("compare_price", "is", null).order("compare_price", { ascending: false })
+          : query.order("created_at", { ascending: false });
 
   const [{ data: products }, { data: categories }, { data: sellers }] = await Promise.all([
     query,
@@ -80,7 +84,7 @@ export default async function ShopPage({ searchParams }: Props) {
   // picking a sort doesn't silently drop the category the shopper chose.
   const buildHref = (patch: Record<string, string | undefined>) => {
     const next = new URLSearchParams();
-    const merged = { q: sp.q, category: sp.category, vendor: sp.vendor, sort: sp.sort, ...patch };
+    const merged = { q: sp.q, category: sp.category, vendor: sp.vendor, sort: sp.sort, max: sp.max, ...patch };
     for (const [k, v] of Object.entries(merged)) if (v) next.set(k, v);
     const qs = next.toString();
     return qs ? `/shop?${qs}` : "/shop";
@@ -105,6 +109,7 @@ export default async function ShopPage({ searchParams }: Props) {
         <form action="/shop" className="flex flex-wrap gap-2 items-center">
           {sp.category && <input type="hidden" name="category" value={sp.category} />}
           {sp.vendor && <input type="hidden" name="vendor" value={sp.vendor} />}
+          {sp.max && <input type="hidden" name="max" value={sp.max} />}
           <div className="relative flex-1 min-w-[220px]">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#667085]" />
             <input

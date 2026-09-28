@@ -39,6 +39,10 @@ export async function GET(req: NextRequest) {
 
   if (sort === "price_asc") query = query.order("price", { ascending: true });
   else if (sort === "price_desc") query = query.order("price", { ascending: false });
+  else if (sort === "discount")
+    query = query.not("compare_price", "is", null).order("compare_price", { ascending: false });
+  else if (sort === "popular")
+    query = query.order("featured", { ascending: false }).order("created_at", { ascending: false });
   else query = query.order("created_at", { ascending: false });
 
   const from = (page - 1) * PAGE_SIZE;
