@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, ShieldCheck, Zap, Globe2 } from "lucide-react";
+import Image from "@/components/ui/smart-image";
+import { ArrowRight, ShieldCheck, Zap, Headphones, MessageCircle, CalendarCheck } from "lucide-react";
 
 interface Settings {
   hero_headline?: string;
@@ -12,152 +13,125 @@ interface Settings {
   stat_uptime?: string;
 }
 
-const REGIONS = ["UAE", "Saudi Arabia", "Qatar", "Oman", "Malaysia", "Singapore", "Bangladesh"];
+const WHATSAPP = "https://wa.me/8801678669699?text=" + encodeURIComponent("Hi Passive Coder, I want a website for my business.");
+// Royalty-free (Unsplash licence): a shop owner at her counter — the customer
+// this page is for, not a stock "tech" image.
+const HERO_PHOTO = "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=1400&q=75&auto=format&fit=crop";
 
+/**
+ * Homepage hero. Outcome-first for local service businesses: what they get
+ * (customers from Google and WhatsApp), who does the work (we do), and proof
+ * next to it — a real client site on the phone. Copy is editable from
+ * Super Admin > Homepage (homepage_settings); these are fallbacks.
+ */
 export default function HeroSection({ settings }: { settings: Settings | null }) {
   const s = settings ?? {};
   return (
-    <section className="relative overflow-hidden bg-[#05060a] pt-16 pb-0 sm:pt-24">
-      {/* Gradient mesh background — the visual signal for "modern platform"
-          rather than "agency site": layered radial glows instead of a flat
-          brand-color wash. */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 left-1/4 w-[700px] h-[700px] bg-orange-600/20 rounded-full blur-[120px]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rose-600/15 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-            backgroundSize: "56px 56px",
-          }}
-        />
+    <section className="relative overflow-hidden bg-[#05060a]">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-40 -left-20 w-[640px] h-[640px] bg-orange-600/20 rounded-full blur-[130px]" />
+        <div className="absolute top-20 right-0 w-[520px] h-[520px] bg-rose-600/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Top badge */}
-        <div className="flex justify-center mb-8">
-          <span className="inline-flex items-center gap-2 bg-white/[0.06] text-orange-300 text-xs font-semibold px-4 py-2 rounded-full border border-white/[0.08] backdrop-blur-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            AI-assisted build pipeline · {s.stat_sites ?? "17+"} sites shipped across {s.stat_businesses ?? "8"} countries
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-16 sm:pt-20 lg:pt-24 lg:pb-24 grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
+        {/* Copy */}
+        <div>
+          <span className="inline-flex items-center gap-2 bg-white/[0.06] text-orange-300 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-white/[0.08]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Websites for local service businesses
           </span>
-        </div>
 
-        {/* Headline */}
-        <h1 className="text-center text-4xl sm:text-5xl lg:text-[4.25rem] font-bold text-white leading-[1.08] tracking-tight max-w-4xl mx-auto">
-          {s.hero_headline ? (
-            <span>{s.hero_headline}</span>
-          ) : (
-            <>
-              The Platform Behind Websites{" "}
-              <span className="bg-gradient-to-r from-orange-400 via-rose-400 to-amber-400 bg-clip-text text-transparent">
-                That Actually Convert
-              </span>
-            </>
-          )}
-        </h1>
+          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-[3.6rem] font-bold text-white leading-[1.06] tracking-tight">
+            {s.hero_headline ? (
+              s.hero_headline
+            ) : (
+              <>
+                More customers from Google and WhatsApp.{" "}
+                <span className="bg-gradient-to-r from-orange-400 via-rose-400 to-amber-300 bg-clip-text text-transparent">
+                  Your website, done for you.
+                </span>
+              </>
+            )}
+          </h1>
 
-        <p className="text-center mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          {s.hero_subheadline ?? "Passive Coder is the infrastructure local service businesses run on — AI-drafted content, a real page builder, built-in commerce and CRM, and a team that ships in hours, not weeks."}
-        </p>
+          <p className="mt-6 text-lg text-slate-300/90 leading-relaxed max-w-xl">
+            {s.hero_subheadline ??
+              "We build and run a professional website for your business, with WhatsApp enquiries, online booking and a shop built in. You serve customers. We handle the tech."}
+          </p>
 
-        {/* CTA buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
-          <Link
-            href={s.hero_cta_url ?? "/onboarding"}
-            className="group inline-flex items-center gap-2 bg-white text-slate-950 font-semibold px-8 py-4 rounded-xl shadow-2xl shadow-orange-950/50 transition-all hover:scale-[1.02] hover:shadow-orange-500/20 text-base"
-          >
-            {s.hero_cta_text ?? "Get Started"}
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-          <Link
-            href="/#pricing"
-            className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.1] text-slate-300 font-medium px-8 py-4 rounded-xl hover:border-white/20 hover:bg-white/[0.07] hover:text-white transition-all text-base"
-          >
-            {s.hero_secondary_cta ?? "See Pricing"}
-          </Link>
-        </div>
+          <div className="mt-9 flex flex-col sm:flex-row gap-3">
+            <Link
+              href={s.hero_cta_url ?? "/onboarding"}
+              className="group inline-flex items-center justify-center gap-2 bg-white text-slate-950 font-semibold px-7 py-4 rounded-xl shadow-2xl shadow-orange-950/40 transition-transform hover:-translate-y-0.5"
+            >
+              {s.hero_cta_text ?? "Get my website"}
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+            <a
+              href={WHATSAPP}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold px-7 py-4 rounded-xl transition-transform hover:-translate-y-0.5"
+            >
+              <MessageCircle className="w-5 h-5" />
+              {s.hero_secondary_cta && s.hero_secondary_cta !== "See Pricing" ? s.hero_secondary_cta : "Talk to us on WhatsApp"}
+            </a>
+          </div>
 
-        {/* Trust line */}
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-7 text-sm text-slate-500">
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Card, bKash &amp; Nagad accepted</span>
-          <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-emerald-500" /> Live in hours, not weeks</span>
-          <span className="flex items-center gap-1.5"><Globe2 className="w-4 h-4 text-emerald-500" /> A real team on support</span>
-        </div>
+          <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-emerald-400" /> Live in hours, not weeks</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> Card, bKash &amp; Nagad accepted</span>
+            <span className="flex items-center gap-1.5"><Headphones className="w-4 h-4 text-emerald-400" /> Real people on support</span>
+          </div>
 
-        {/* Stats strip */}
-        <div className="mt-14 grid grid-cols-3 gap-3 sm:gap-4 max-w-xl mx-auto">
-          {[
-            { value: s.stat_sites ?? "17+", label: "Sites shipped" },
-            { value: s.stat_businesses ?? "8", label: "Countries served" },
-            { value: s.stat_uptime ?? "99.9%", label: "Platform uptime" },
-          ].map(({ value, label }) => (
-            <div key={label} className="text-center py-5 px-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
-              <div className="text-2xl sm:text-3xl font-bold text-white tabular-nums">{value}</div>
-              <div className="text-xs text-slate-500 mt-1">{label}</div>
+          <div className="mt-10 flex items-center gap-6 border-t border-white/[0.08] pt-6">
+            <div>
+              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_sites ?? "17+"}</div>
+              <div className="text-xs text-slate-500">live client websites</div>
             </div>
-          ))}
+            <div className="w-px h-10 bg-white/10" />
+            <div>
+              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_businesses ?? "8"}</div>
+              <div className="text-xs text-slate-500">countries</div>
+            </div>
+            <div className="w-px h-10 bg-white/10" />
+            <div>
+              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_uptime ?? "99.9%"}</div>
+              <div className="text-xs text-slate-500">uptime</div>
+            </div>
+          </div>
         </div>
 
-        {/* Regions */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-10 pb-14">
-          <span className="text-[11px] text-slate-600 uppercase tracking-widest font-semibold mr-1">Live in</span>
-          {REGIONS.map((label) => (
-            <span key={label} className="bg-white/[0.03] border border-white/[0.07] px-3 py-1.5 rounded-full text-xs text-slate-400">
-              {label}
+        {/* Visual: real customer photo + a real client site on the phone */}
+        <div className="relative mx-auto w-full max-w-[560px] lg:max-w-none">
+          <div className="relative aspect-[4/5] sm:aspect-[5/5] rounded-[28px] overflow-hidden ring-1 ring-white/10 shadow-2xl shadow-black/60">
+            <Image src={HERO_PHOTO} alt="Small business owner serving a customer" fill priority sizes="(min-width:1024px) 45vw, 90vw" className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          </div>
+
+          {/* Phone with a real client site */}
+          <div className="absolute -left-4 sm:-left-10 bottom-[-28px] w-[138px] sm:w-[170px] rounded-[26px] bg-black p-1.5 ring-1 ring-white/15 shadow-2xl shadow-black/70">
+            <div className="relative aspect-[9/19] rounded-[20px] overflow-hidden bg-white">
+              <Image src="/images/clients/emiratescurtain.com-m.jpg" alt="A client website built on Passive Coder, on a phone" fill sizes="170px" className="object-cover object-top" />
+            </div>
+          </div>
+
+          {/* WhatsApp enquiry */}
+          <div className="absolute right-3 sm:-right-6 top-6 w-[230px] rounded-2xl bg-white p-3.5 shadow-xl shadow-black/40">
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-600">
+              <MessageCircle className="w-3.5 h-3.5" /> New WhatsApp enquiry
+            </div>
+            <p className="mt-1.5 text-sm text-slate-800 leading-snug">&ldquo;Hi, saw your website. Can you come for a quote tomorrow?&rdquo;</p>
+          </div>
+
+          {/* Booking */}
+          <div className="absolute right-3 sm:-right-4 bottom-8 flex items-center gap-3 rounded-2xl bg-white/95 backdrop-blur px-4 py-3 shadow-xl shadow-black/40">
+            <span className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center">
+              <CalendarCheck className="w-5 h-5" />
             </span>
-          ))}
-        </div>
-
-        {/* Product mockup — a live dashboard glimpse instead of a template
-            preview, matching the platform (not agency-brochure) framing. */}
-        <div className="relative mt-4 -mx-4 sm:mx-0">
-          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#05060a] to-transparent z-10 pointer-events-none" />
-          <div className="max-w-4xl mx-auto">
-            <div className="rounded-t-2xl border border-white/10 overflow-hidden shadow-2xl shadow-black/60 bg-[#0a0b12]">
-              <div className="bg-white/[0.03] px-4 py-3 flex items-center gap-2 border-b border-white/[0.06]">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-white/10" />
-                  <div className="w-3 h-3 rounded-full bg-white/10" />
-                  <div className="w-3 h-3 rounded-full bg-white/10" />
-                </div>
-                <div className="flex-1 bg-white/[0.04] rounded-md px-3 py-1 text-xs text-slate-500 text-center border border-white/[0.05] font-mono">
-                  dashboard.passivecoder.com
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-[220px_1fr]">
-                <div className="hidden sm:block bg-white/[0.02] border-r border-white/[0.06] p-4 space-y-1">
-                  {["Overview", "Pages", "Products", "Orders", "CRM", "Analytics", "Settings"].map((item, i) => (
-                    <div
-                      key={item}
-                      className={`text-xs px-3 py-2 rounded-lg ${i === 0 ? "bg-orange-500/10 text-orange-300 font-medium" : "text-slate-500"}`}
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: "Visitors", value: "4,218", delta: "+12%" },
-                      { label: "Orders", value: "86", delta: "+8%" },
-                      { label: "Revenue", value: "$3,140", delta: "+21%" },
-                    ].map((m) => (
-                      <div key={m.label} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wide">{m.label}</div>
-                        <div className="text-lg font-bold text-white mt-1">{m.value}</div>
-                        <div className="text-[10px] text-emerald-400 mt-0.5">{m.delta} this week</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 h-28 flex items-end gap-1.5">
-                    {[40, 65, 45, 80, 60, 90, 70, 95, 75, 100, 85, 92].map((h, i) => (
-                      <div key={i} className="flex-1 bg-gradient-to-t from-orange-500/40 to-rose-400/60 rounded-sm" style={{ height: `${h}%` }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-900">Booking confirmed</div>
+              <div className="text-xs text-slate-500">Tomorrow, 10:30 AM</div>
             </div>
           </div>
         </div>

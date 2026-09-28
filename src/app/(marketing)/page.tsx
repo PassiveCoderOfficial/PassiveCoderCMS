@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import MarketingNav from "@/components/marketing/nav";
 import HeroSection from "@/components/marketing/hero";
+import IndustriesSection from "@/components/marketing/industries";
 import FeaturesSection from "@/components/marketing/features";
 import TemplatesShowcase from "@/components/marketing/templates-showcase";
 import HowItWorksSection from "@/components/marketing/how-it-works";
@@ -251,11 +252,14 @@ export default async function MarketingHomePage() {
       )}
       <MarketingNav />
       <main>
+        {/* Conversion order: promise, proof, "this is for me", how it works,
+            then detail. Real client sites sit straight under the hero. */}
         <HeroSection settings={settings} />
+        <ClientsSection />
+        <IndustriesSection />
+        <HowItWorksSection />
         <FeaturesSection />
         <TemplatesShowcase extraTemplates={showcaseTemplates} />
-        <HowItWorksSection />
-        <ClientsSection />
         <PricingSection plans={plans ?? []} />
         <TestimonialsSection testimonials={settings?.testimonials ?? []} />
         <FaqSection faq={settings?.faq ?? []} />
