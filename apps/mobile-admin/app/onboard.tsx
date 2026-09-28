@@ -9,6 +9,7 @@
 // never shown as a trial button here.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLanguage } from "../lib/languageContext";
 import { ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useAuth } from "../lib/auth";
@@ -34,6 +35,7 @@ function slugify(s: string): string {
 
 export default function OnboardScreen() {
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { user, signup, login } = useAuth();
   const { refresh: refreshRole } = useRole();
   const { error: toastError } = useToast();
@@ -109,7 +111,7 @@ export default function OnboardScreen() {
       ? await signup(email.trim(), password, whatsapp.trim())
       : await login(email.trim(), password);
     setAuthBusy(false);
-    if (!result.ok) { setAuthError(result.error ?? "Something went wrong"); return; }
+    if (!result.ok) { setAuthError(result.error ?? t("onb.genericError")); return; }
     setStep(1);
   }
 
@@ -137,17 +139,17 @@ export default function OnboardScreen() {
             // Site exists either way (create-tenant already ran) — same as
             // web, an abandoned checkout still leaves a billable, working
             // site rather than losing the signup entirely.
-            toastError("Checkout cancelled — you can pay any time from Billing.");
+            toastError(t("onb.checkoutCancelled"));
           }
         } else if (!checkout.ok) {
-          toastError(checkout.error ?? "Checkout couldn't start — you can pay from Billing later.");
+          toastError(checkout.error ?? t("onb.checkoutNoStart"));
         }
       }
 
       await refreshRole();
       router.replace(`/(tenant)/sites/${created.tenantId}/pages`);
     } catch (e) {
-      setLaunchError(e instanceof Error ? e.message : "Something went wrong");
+      setLaunchError(e instanceof Error ? e.message : t("onb.genericError"));
     } finally {
       setLaunching(false);
     }
@@ -158,29 +160,29 @@ export default function OnboardScreen() {
     return (
       <Screen keyboardAvoiding>
         <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>
-          {authMode === "signup" ? "Create your account" : "Log in"}
+          {authMode === "signup" ? t("onb.createAccount") : t("onb.logIn")}
         </Text>
         <Card style={{ gap: spacing.md }}>
-          <Field label="Email" required>
+          <Field label={t("login.email")} required>
             <TextField value={email} onChangeText={setEmail} placeholder="you@example.com" autoCapitalize="none" keyboardType="email-address" />
           </Field>
-          <Field label="Password" required>
+          <Field label={t("login.password")} required>
             <TextField value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
           </Field>
           {authMode === "signup" && (
-            <Field label="WhatsApp number" required>
+            <Field label={t("onb.whatsapp")} required>
               <TextField value={whatsapp} onChangeText={setWhatsapp} placeholder="+1 555 000 0000" keyboardType="phone-pad" />
             </Field>
           )}
           <ErrorText>{authError}</ErrorText>
           <Button
-            title={authMode === "signup" ? "Sign up" : "Log in"}
+            title={authMode === "signup" ? t("onb.signUp") : t("onb.logIn")}
             onPress={submitAuth}
             loading={authBusy}
             disabled={!email.trim() || !password || (authMode === "signup" && !whatsapp.trim())}
           />
           <Button
-            title={authMode === "signup" ? "Already have an account? Log in" : "New here? Sign up"}
+            title={authMode === "signup" ? t("onb.haveAccount") : t("onb.newHere")}
             variant="ghost"
             size="sm"
             onPress={() => { setAuthMode((m) => m === "signup" ? "login" : "signup"); setAuthError(null); }}
@@ -195,7 +197,7 @@ export default function OnboardScreen() {
   if (step === 1) {
     return (
       <Screen>
-        <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>Choose a plan</Text>
+        <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>{t("plans.choose")}</Text>
         {plans.length === 0 ? <SkeletonList count={3} /> : (
           <>
             <View style={{ gap: spacing.sm }}>
@@ -211,7 +213,7 @@ export default function OnboardScreen() {
                     >
                       {p.name}
                     </Text>
-                    {planId === p.id && <Badge label="Selected" />}
+                    {planId === p.id && <Badge label={t("plans.selected")} />}
                   </View>
                   <Text
                     style={[type.caption, { color: palette.textMuted, marginTop: 4 }]}
@@ -237,16 +239,16 @@ export default function OnboardScreen() {
                     },
                   ]}
                 >
-                  {c === "monthly" ? "Monthly" : "Yearly (4 months free)"}
+                  {c === "monthly" ? t("plans.monthly") : t("plans.yearly")}
                 </Text>
               ))}
             </View>
 
-            <Text style={[type.caption, { color: palette.textMuted, marginTop: spacing.lg, marginBottom: spacing.sm }]}>Payment method</Text>
+            <Text style={[type.caption, { color: palette.textMuted, marginTop: spacing.lg, marginBottom: spacing.sm }]}>{t("plans.paymentMethod")}</Text>
             <View style={{ gap: spacing.sm }}>
               {PAY_METHODS.map((m) => (
                 <Card key={m.id} style={{ borderColor: payMethod === m.id ? palette.primary600 : palette.border, borderWidth: 1 }}>
-                  <Text style={[type.body, { color: palette.text }]} onPress={() => setPayMethod(m.id)}>{m.label}</Text>
+                  <Text style={[type.body, { color: palette.text }]} onPress={() => setPayMethod(m.id)}>{m.id === "dodo" ? t("plans.card") : m.label}</Text>
                   <Text style={[type.caption, { color: palette.textMuted }]}>{m.sub}</Text>
                 </Card>
               ))}
@@ -254,11 +256,11 @@ export default function OnboardScreen() {
                 onPress={() => setPayMethod("manual")}
                 style={[type.caption, { color: payMethod === "manual" ? palette.primary600 : palette.textMuted, textAlign: "center", marginTop: spacing.xs }]}
               >
-                Or Contact Us — we'll arrange payment on WhatsApp
+                {t("plans.contactUsOr")}
               </Text>
             </View>
 
-            <Button title="Continue" onPress={() => setStep(2)} style={{ marginTop: spacing.lg }} disabled={!planId} />
+            <Button title={t("onb.continue")} onPress={() => setStep(2)} style={{ marginTop: spacing.lg }} disabled={!planId} />
           </>
         )}
       </Screen>
@@ -269,15 +271,15 @@ export default function OnboardScreen() {
   if (step === 2) {
     return (
       <Screen keyboardAvoiding>
-        <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>Tell us about your business</Text>
+        <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>{t("onb.aboutBusiness")}</Text>
         <Card style={{ gap: spacing.md }}>
-          <Field label="Business name" required>
-            <TextField value={siteName} onChangeText={setSiteName} placeholder="e.g. Passive Bites" />
+          <Field label={t("onb.businessName")} required>
+            <TextField value={siteName} onChangeText={setSiteName} placeholder={t("onb.businessNamePh")} />
           </Field>
-          <Field label="What do you do?">
-            <TextField value={siteWhat} onChangeText={setSiteWhat} placeholder="e.g. Restaurant, contractor, salon…" />
+          <Field label={t("onb.whatDo")}>
+            <TextField value={siteWhat} onChangeText={setSiteWhat} placeholder={t("onb.whatDoPh")} />
           </Field>
-          <Button title="Continue" onPress={() => setStep(3)} disabled={!siteName.trim()} />
+          <Button title={t("onb.continue")} onPress={() => setStep(3)} disabled={!siteName.trim()} />
         </Card>
       </Screen>
     );
@@ -287,16 +289,16 @@ export default function OnboardScreen() {
   if (step === 3) {
     return (
       <Screen keyboardAvoiding>
-        <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>Pick your address</Text>
+        <Text style={[type.title, { color: palette.text, marginBottom: spacing.md }]}>{t("onb.pickAddress")}</Text>
         <Card style={{ gap: spacing.sm }}>
-          <Field label="Subdomain" required>
+          <Field label={t("onb.subdomain")} required>
             <TextField value={slug} onChangeText={(t) => setSlug(slugify(t))} placeholder="yourbusiness" autoCapitalize="none" />
           </Field>
           <Text style={[type.caption, { color: palette.textMuted }]}>{slug || "yourbusiness"}.passivecoder.com</Text>
-          {slugStatus === "checking" && <Text style={[type.caption, { color: palette.textMuted }]}>Checking…</Text>}
-          {slugStatus === "available" && <Text style={[type.caption, { color: palette.green600 }]}>Available</Text>}
-          {slugStatus === "taken" && <Text style={[type.caption, { color: palette.red600 }]}>{slugReason ?? "Not available"}</Text>}
-          <Button title="Continue" onPress={() => setStep(4)} disabled={slugStatus !== "available"} />
+          {slugStatus === "checking" && <Text style={[type.caption, { color: palette.textMuted }]}>{t("onb.checking")}</Text>}
+          {slugStatus === "available" && <Text style={[type.caption, { color: palette.green600 }]}>{t("onb.available")}</Text>}
+          {slugStatus === "taken" && <Text style={[type.caption, { color: palette.red600 }]}>{slugReason ?? t("onb.notAvailable")}</Text>}
+          <Button title={t("onb.continue")} onPress={() => setStep(4)} disabled={slugStatus !== "available"} />
         </Card>
       </Screen>
     );
@@ -306,17 +308,17 @@ export default function OnboardScreen() {
   if (step === 4) {
     return (
       <Screen scroll={false}>
-        <Text style={[type.title, { color: palette.text, padding: spacing.lg, paddingBottom: 0 }]}>Pick a starting template</Text>
+        <Text style={[type.title, { color: palette.text, padding: spacing.lg, paddingBottom: 0 }]}>{t("onb.pickTemplate")}</Text>
         <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.sm }}>
           <Card style={{ borderColor: templateId === null ? palette.primary600 : palette.border, borderWidth: 1 }}>
-            <Text style={[type.bodyStrong, { color: palette.text }]} onPress={() => setTemplateId(null)}>Blank starter</Text>
+            <Text style={[type.bodyStrong, { color: palette.text }]} onPress={() => setTemplateId(null)}>{t("onb.blank")}</Text>
           </Card>
           {visibleTemplates.map((t) => (
             <Card key={t.id} style={{ borderColor: templateId === t.id ? palette.primary600 : palette.border, borderWidth: 1 }}>
               <Text style={[type.bodyStrong, { color: palette.text }]} onPress={() => setTemplateId(t.id)}>{t.name}</Text>
             </Card>
           ))}
-          <Button title="Launch my site" onPress={launch} loading={launching} style={{ marginTop: spacing.md }} />
+          <Button title={t("onb.launch")} onPress={launch} loading={launching} style={{ marginTop: spacing.md }} />
           <ErrorText>{launchError}</ErrorText>
         </ScrollView>
       </Screen>

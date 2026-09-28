@@ -6,6 +6,7 @@
 // packaging.md "automatic trial removed", never show trial copy here).
 
 import { useState } from "react";
+import { useLanguage } from "../lib/languageContext";
 import { Modal, Pressable, ScrollView, Text, View, StyleSheet, Linking } from "react-native";
 import type { Plan } from "../lib/queries/subscription";
 import { startCheckout, type PaymentMethod } from "../lib/queries/billing";
@@ -32,6 +33,7 @@ export function PlanPickerSheet({
   onDone: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
   const [planId, setPlanId] = useState(currentPlanId ?? plans[0]?.id ?? "");
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
@@ -52,21 +54,21 @@ export function PlanPickerSheet({
         planId, method, billingCycle: cycle,
         returnUrl: checkoutReturnUrl(), cancelUrl: checkoutCancelUrl(),
       });
-      if (!res.ok) { toastError(res.error ?? "Checkout failed"); return; }
+      if (!res.ok) { toastError(res.error ?? t("plans.checkoutFailed")); return; }
 
       if (res.mode === "manual") {
-        success("Request sent — our team will follow up on WhatsApp.");
+        success(t("plans.requestSent"));
         onDone();
         return;
       }
 
-      if (!res.checkoutUrl) { toastError("No checkout link returned"); return; }
+      if (!res.checkoutUrl) { toastError(t("plans.noCheckoutLink")); return; }
       const outcome = await openCheckout(res.checkoutUrl);
       if (outcome === "paid") {
-        success("Payment complete");
+        success(t("plans.paid"));
         onDone();
       } else if (outcome === "cancelled") {
-        toastError("Checkout cancelled");
+        toastError(t("plans.checkoutCancelled"));
       } else {
         // Dismissed without a clear redirect — a webhook may still land
         // shortly after, so re-check rather than assuming nothing happened.
@@ -79,14 +81,14 @@ export function PlanPickerSheet({
 
   function contactUs() {
     const rootDomain = process.env.EXPO_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
-    Linking.openURL(`https://wa.me/?text=${encodeURIComponent(`Hi, I'd like to talk about the ${plan?.name ?? planId} plan for my site on ${rootDomain}.`)}`);
+    Linking.openURL(`https://wa.me/8801678669699?text=${encodeURIComponent(t("plans.waMessage", { plan: plan?.name ?? planId ?? "", domain: rootDomain }))}`);
   }
 
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={onClose}>
         <Pressable style={[styles.sheet, { backgroundColor: palette.bgElevated }]} onPress={() => {}}>
-          <Text style={[type.heading, { color: palette.text, marginBottom: spacing.md }]}>Choose a plan</Text>
+          <Text style={[type.heading, { color: palette.text, marginBottom: spacing.md }]}>{t("plans.choose")}</Text>
 
           <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false}>
             <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -102,7 +104,7 @@ export function PlanPickerSheet({
                 >
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                     <Text style={[type.bodyStrong, { color: palette.text }]}>{p.name}</Text>
-                    {p.id === currentPlanId && <Badge label="Current" />}
+                    {p.id === currentPlanId && <Badge label={t("plans.current")} />}
                   </View>
                 </Pressable>
               ))}
@@ -120,13 +122,13 @@ export function PlanPickerSheet({
                   }}
                 >
                   <Text style={{ color: cycle === c ? palette.onPrimary : palette.textMuted, fontWeight: "700", fontSize: 13 }}>
-                    {c === "monthly" ? "Monthly" : "Yearly (4 months free)"}
+                    {c === "monthly" ? t("plans.monthly") : t("plans.yearly")}
                   </Text>
                 </Pressable>
               ))}
             </View>
 
-            <Text style={[type.caption, { color: palette.textMuted, marginBottom: spacing.sm }]}>Payment method</Text>
+            <Text style={[type.caption, { color: palette.textMuted, marginBottom: spacing.sm }]}>{t("plans.paymentMethod")}</Text>
             <View style={{ gap: spacing.sm, marginBottom: spacing.md }}>
               {PAY_METHODS.map((m) => (
                 <Pressable
@@ -138,7 +140,7 @@ export function PlanPickerSheet({
                     borderColor: method === m.id ? palette.primary600 : palette.border,
                   }}
                 >
-                  <Text style={[type.body, { color: palette.text }]}>{m.label}</Text>
+                  <Text style={[type.body, { color: palette.text }]}>{m.id === "dodo" ? t("plans.cardDodo") : m.label}</Text>
                   <Text style={[type.caption, { color: palette.textMuted }]}>{m.currency}</Text>
                 </Pressable>
               ))}
@@ -150,8 +152,8 @@ export function PlanPickerSheet({
               </Text>
             )}
 
-            <Button title="Continue to payment" onPress={confirm} loading={submitting} disabled={!planId} />
-            <Button title="Contact us instead" variant="ghost" size="sm" onPress={contactUs} style={{ marginTop: spacing.sm }} />
+            <Button title={t("plans.continueToPayment")} onPress={confirm} loading={submitting} disabled={!planId} />
+            <Button title={t("plans.contactInstead")} variant="ghost" size="sm" onPress={contactUs} style={{ marginTop: spacing.sm }} />
           </ScrollView>
         </Pressable>
       </Pressable>
