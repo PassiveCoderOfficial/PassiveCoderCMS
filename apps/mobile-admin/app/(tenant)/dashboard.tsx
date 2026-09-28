@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useRole } from "../../lib/role";
 import { useSelectedTenant } from "../../lib/tenant";
@@ -26,6 +26,8 @@ import { useTheme } from "../../lib/themeContext";
 import { useToast } from "../../lib/toast";
 import { tapFeedback } from "../../lib/haptics";
 import { hasRestaurantAccess } from "../../lib/restaurant";
+import { Icon } from "../../components/Icon";
+import { publicHost, publicUrl } from "../../lib/siteUrls";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -123,18 +125,27 @@ export default function DashboardScreen() {
         <Badge label={stats?.status ?? tenant.status} />
       </View>
 
+      {/* --------------------------------------------------- Quick actions */}
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <QuickAction icon="open-outline" label="View site" onPress={() => Linking.openURL(publicUrl(tenant))} />
+        <QuickAction icon="document-text-outline" label="Pages" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)} />
+        <QuickAction icon="people-outline" label="Leads" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)} />
+      </View>
+
       {/* ----------------------------------------------------------- Stats */}
       <View style={{ flexDirection: "row", gap: 12 }}>
         <StatCard
           loading={loading}
           value={stats?.publishedPages}
           label="Published"
+          icon="checkmark-circle-outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
         />
         <StatCard
           loading={loading}
           value={stats?.draftPages}
           label="Drafts"
+          icon="create-outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
         />
       </View>
@@ -143,12 +154,14 @@ export default function DashboardScreen() {
           loading={loading}
           value={stats?.totalLeads}
           label="Total leads"
+          icon="people-outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)}
         />
         <StatCard
           loading={loading}
           value={stats?.newLeadsThisWeek}
           label="New this week"
+          icon="sparkles-outline"
           highlight
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)}
         />
@@ -164,7 +177,7 @@ export default function DashboardScreen() {
           </View>
         ) : leads.length === 0 ? (
           <View style={{ paddingVertical: spacing.xl, paddingHorizontal: spacing.lg, alignItems: "center", gap: 4 }}>
-            <Text style={{ fontSize: 28 }}>📭</Text>
+            <Icon name="mail-open-outline" size={28} color={palette.textFaint} />
             <Text style={[type.bodyStrong, { color: palette.text }]}>No leads yet</Text>
             <Text style={[type.caption, { color: palette.textMuted, textAlign: "center" }]}>
               New enquiries from your site will show up here.
@@ -194,11 +207,18 @@ export default function DashboardScreen() {
       <SectionHeader title="Site" />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
         <View style={{ padding: spacing.lg, gap: 6 }}>
-          <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
-            {stats?.customDomain ?? tenant.custom_domain ?? "No custom domain"}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Icon name="globe-outline" size={16} />
+            <Text style={[type.bodyStrong, { color: palette.text, flex: 1 }]} numberOfLines={1}>
+              {stats?.customDomain ?? publicHost(tenant)}
+            </Text>
+          </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm, flexWrap: "wrap" }}>
-            <Badge label={humanize(stats?.domainStatus ?? tenant.domain_status)} />
+            {(stats?.customDomain ?? tenant.custom_domain) ? (
+              <Badge label={humanize(stats?.domainStatus ?? tenant.domain_status)} />
+            ) : (
+              <Badge label="Free subdomain" tone="neutral" />
+            )}
             <Text style={[type.caption, { color: palette.textMuted }]}>
               {humanize(stats?.plan ?? tenant.plan)} plan
             </Text>
@@ -251,12 +271,14 @@ export default function DashboardScreen() {
 function StatCard({
   value,
   label,
+  icon,
   loading,
   highlight,
   onPress,
 }: {
   value: number | undefined;
   label: string;
+  icon: string;
   loading: boolean;
   highlight?: boolean;
   onPress: () => void;
@@ -291,12 +313,55 @@ function StatCard({
         </>
       ) : (
         <>
-          <Text style={[type.display, { color: highlight ? palette.primary700 : palette.text }]}>
+          <Icon name={icon} size={18} color={highlight ? palette.primary600 : palette.textFaint} />
+          <Text style={[type.display, { color: highlight ? palette.primary700 : palette.text, marginTop: 2 }]}>
             {value ?? 0}
           </Text>
           <Text style={[type.caption, { color: palette.textMuted }]}>{label}</Text>
         </>
       )}
+    </Pressable>
+  );
+}
+
+/* ------------------------------------------------------------- QuickAction */
+
+function QuickAction({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
+  const { palette } = useTheme();
+  return (
+    <Pressable
+      onPress={() => {
+        tapFeedback();
+        onPress();
+      }}
+      style={({ pressed }) => [
+        {
+          flex: 1,
+          alignItems: "center",
+          gap: 6,
+          paddingVertical: spacing.md,
+          borderRadius: radius.lg,
+          backgroundColor: palette.card,
+          borderWidth: 1,
+          borderColor: palette.border,
+          opacity: pressed ? 0.75 : 1,
+        },
+        shadow.card,
+      ]}
+    >
+      <View
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: 19,
+          backgroundColor: palette.primary50,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon name={icon} size={20} color={palette.primary600} />
+      </View>
+      <Text style={[type.label, { color: palette.text }]}>{label}</Text>
     </Pressable>
   );
 }

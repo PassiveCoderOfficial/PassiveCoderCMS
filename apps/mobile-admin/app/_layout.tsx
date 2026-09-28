@@ -75,7 +75,7 @@ function Gate({ children }: { children: React.ReactNode }) {
     <View style={{ flex: 1 }}>
       {children}
       {!ready && (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.bg }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.bg, justifyContent: "center" }]}>
           <LoadingSpinner />
         </View>
       )}

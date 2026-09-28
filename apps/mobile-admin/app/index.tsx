@@ -42,9 +42,11 @@ export default function Index() {
     // their sites the same way a plain tenant user does — (admin)/tenants
     // would just 401 them, it's gated manager-only server-side.
     if (role === "tenant" || (role === "pc_staff" && !isManager)) {
-      router.replace("/(tenant)/sites");
+      // One site: open straight on its dashboard (the home tab) rather than
+      // deep inside its pages list. Several: let them pick.
+      router.replace(memberships.length === 1 ? "/(tenant)/dashboard" : "/(tenant)/sites");
     }
-  }, [user, role, isManager, ready, stranded]);
+  }, [user, role, isManager, ready, stranded, memberships.length]);
 
   if (stranded) {
     // Previously this redirected to /login, which was a trap: Gate only
