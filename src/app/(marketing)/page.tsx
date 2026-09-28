@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import MarketingNav from "@/components/marketing/nav";
 import HeroSection from "@/components/marketing/hero";
 import IndustriesSection from "@/components/marketing/industries";
+import MidCtaSection from "@/components/marketing/mid-cta";
+import GuaranteeSection from "@/components/marketing/guarantee";
 import FeaturesSection from "@/components/marketing/features";
 import TemplatesShowcase from "@/components/marketing/templates-showcase";
 import HowItWorksSection from "@/components/marketing/how-it-works";
@@ -257,10 +259,12 @@ export default async function MarketingHomePage() {
         <HeroSection settings={settings} />
         <ClientsSection />
         <IndustriesSection />
+        <MidCtaSection />
         <HowItWorksSection />
         <FeaturesSection />
         <TemplatesShowcase extraTemplates={showcaseTemplates} />
         <PricingSection plans={plans ?? []} />
+        <GuaranteeSection />
         <TestimonialsSection testimonials={settings?.testimonials ?? []} />
         <FaqSection faq={settings?.faq ?? []} />
         <CtaSection settings={settings} />
