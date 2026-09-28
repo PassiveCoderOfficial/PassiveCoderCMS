@@ -66,11 +66,11 @@ const IMG = {
 
 // ─── Real Google reviews (from the GMB, Sep 2026) ───────────────────────────
 const REVIEWS = [
-  { name: "Mohd Ashraf", when: "4 months ago", content: "Excellent service. Good price, always happy." },
-  { name: "hamsa pa", when: "4 months ago", content: "Bein Sports Riyadh, this is the best shop in Riyadh city. Service really good, price is always good." },
-  { name: "SaBWSO Smsm", when: "5 months ago", content: "Very good service, best shop in Riyadh." },
-  { name: "Shahbaz Wanli", when: "6 months ago", content: "This shop really good." },
-  { name: "rezaul karim", when: "4 months ago", content: "Best shop in Riyadh. Good service all the time." },
+  { name: "Mohd Ashraf", when: "4 months ago", whenAr: "قبل 4 أشهر", content: "Excellent service. Good price, always happy." },
+  { name: "hamsa pa", when: "4 months ago", whenAr: "قبل 4 أشهر", content: "Bein Sports Riyadh, this is the best shop in Riyadh city. Service really good, price is always good." },
+  { name: "SaBWSO Smsm", when: "5 months ago", whenAr: "قبل 5 أشهر", content: "Very good service, best shop in Riyadh." },
+  { name: "Shahbaz Wanli", when: "6 months ago", whenAr: "قبل 6 أشهر", content: "This shop really good." },
+  { name: "rezaul karim", when: "4 months ago", whenAr: "قبل 4 أشهر", content: "Best shop in Riyadh. Good service all the time." },
 ].map((r, i) => ({ ...r, avatar: `${STORAGE}/review-${i + 1}.jpg` }));
 
 // ─── Copy ───────────────────────────────────────────────────────────────────
@@ -464,7 +464,7 @@ function reviews(L, bg = LAVENDER) {
       templateVariant: "quote-cards",
       data: {
         title: L.reviews.title, subtitle: L.reviews.subtitle, layout: "grid",
-        items: REVIEWS.map((r) => ({ id: uid("t"), name: r.name, role: L.reviews.role, company: r.when, content: r.content, rating: 5, avatar: r.avatar })),
+        items: REVIEWS.map((r) => ({ id: uid("t"), name: r.name, role: L.reviews.role, company: L.lang ? r.whenAr : r.when, content: r.content, rating: 5, avatar: r.avatar })),
       },
     },
     {

@@ -464,6 +464,7 @@ export type TestimonialsBlockProps = BlockBase & {
   type: "testimonials";
   data: {
     title?: string;
+    subtitle?: string;
     layout: "grid" | "carousel" | "masonry";
     items: Array<{
       id: string;

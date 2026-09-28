@@ -37,7 +37,7 @@ function TestimonialsQuoteCards({ data }: { data: TestimonialsBlockProps["data"]
     <div className="max-w-7xl mx-auto">
       {data.title && (
         <div className="text-center mb-12">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-2">What people say</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-2">{data.subtitle ?? "What people say"}</p>
           <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--heading-font, inherit)" }}>{data.title}</h2>
         </div>
       )}

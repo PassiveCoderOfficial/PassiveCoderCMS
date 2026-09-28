@@ -68,14 +68,14 @@ type VariantData = Omit<PricingBlockProps["data"], "plans"> & { plans: Plan[] };
 
 function PricingHighlightedCards({ data }: { data: VariantData }) {
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className={cn("mx-auto", data.plans.length >= 4 ? "max-w-7xl" : "max-w-6xl")}>
       {(data.title || data.subtitle) && (
         <div className="text-center mb-12">
           {data.title && <h2 className="text-3xl font-bold mb-3">{data.title}</h2>}
           {data.subtitle && <p className="text-lg text-muted-foreground">{data.subtitle}</p>}
         </div>
       )}
-      <div className={cn("grid gap-8", data.plans.length === 2 && "sm:grid-cols-2", data.plans.length >= 3 && "sm:grid-cols-3")}>
+      <div className={cn("grid", data.plans.length >= 4 ? "gap-6 sm:grid-cols-2 lg:grid-cols-4" : "gap-8", data.plans.length === 2 && "sm:grid-cols-2", data.plans.length === 3 && "sm:grid-cols-3")}>
         {data.plans.map(plan => (
           <div key={plan.id} className={cn(
             "relative flex flex-col rounded-2xl border p-8 transition-all",
@@ -100,7 +100,7 @@ function PricingHighlightedCards({ data }: { data: VariantData }) {
             {plan.ctaLabel && (
               <a href={plan.ctaUrl ?? "#"} className={cn(
                 "block text-center py-3 rounded-lg font-semibold text-sm transition-colors",
-                plan.highlighted ? "bg-card text-primary hover:bg-card/90" : "bg-primary text-primary-foreground hover:opacity-90",
+                plan.highlighted ? "bg-background text-foreground hover:bg-background/90" : "bg-primary text-primary-foreground hover:opacity-90",
               )}>{plan.ctaLabel}</a>
             )}
           </div>
