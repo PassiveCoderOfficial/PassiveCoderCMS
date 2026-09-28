@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import { radius, shadow, spacing, type } from "../lib/theme";
 import { useTheme } from "../lib/themeContext";
@@ -7,6 +7,7 @@ import { tapFeedback } from "../lib/haptics";
 import { initials, leadDisplayName, relativeTime } from "../lib/format";
 import { Avatar } from "./ui";
 import { StageBadge } from "./StageBadge";
+import { Icon } from "./Icon";
 import type { LeadListItem as LeadListItemType, CrmStage } from "../lib/queries/leads";
 
 export function LeadListItem({
@@ -56,7 +57,61 @@ export function LeadListItem({
           {lead.last_activity_at ? relativeTime(lead.last_activity_at) : "No activity yet"}
         </Text>
       </View>
-      <StageBadge stage={stage} />
+      <View style={{ alignItems: "flex-end", gap: 8 }}>
+        <StageBadge stage={stage} />
+        {lead.phone ? (
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            <QuickContact icon="call-outline" label="Call" onPress={() => Linking.openURL(`tel:${lead.phone}`)} />
+            <QuickContact
+              icon="logo-whatsapp"
+              label="WhatsApp"
+              tint="#25D366"
+              onPress={() => Linking.openURL(`https://wa.me/${String(lead.phone).replace(/[^\d]/g, "")}`)}
+            />
+          </View>
+        ) : null}
+      </View>
+    </Pressable>
+  );
+}
+
+/** Small round action on a lead row — its own press target, so tapping it
+ *  contacts the lead without also opening the lead detail. */
+function QuickContact({
+  icon,
+  label,
+  tint,
+  onPress,
+}: {
+  icon: string;
+  label: string;
+  tint?: string;
+  onPress: () => void;
+}) {
+  const { palette } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      hitSlop={6}
+      onPress={(e) => {
+        e.stopPropagation?.();
+        tapFeedback();
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: palette.bg,
+        borderWidth: 1,
+        borderColor: palette.border,
+        opacity: pressed ? 0.6 : 1,
+      })}
+    >
+      <Icon name={icon} size={17} color={tint ?? palette.primary600} />
     </Pressable>
   );
 }

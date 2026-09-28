@@ -2,7 +2,7 @@
 // in whether a membership list is shown, so the appearance control, sign-out
 // and version footer live here once rather than drifting apart in two files.
 
-import { Alert, Text, View } from "react-native";
+import { Alert, Linking, Platform, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { useAuth } from "../lib/auth";
 import { useRole } from "../lib/role";
@@ -14,6 +14,10 @@ import { useTheme, type ThemePreference } from "../lib/themeContext";
 import { useLanguage } from "../lib/languageContext";
 import { useToast } from "../lib/toast";
 import { tapFeedback, warningFeedback } from "../lib/haptics";
+import { Icon } from "./Icon";
+
+/** Passive Coder support line (same number the web sidebar uses). */
+const SUPPORT_WHATSAPP = "8801678669699";
 
 const ROLE_LABEL: Record<string, string> = {
   super_admin: "Super Admin",
@@ -41,6 +45,13 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
 
   function confirmLogout() {
     warningFeedback();
+    const doLogout = () => logout().catch(() => toast.error("Couldn't log out — try again"));
+    // Alert.alert is a no-op on react-native-web, which left the web preview
+    // with a logout button that did nothing.
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.confirm("Log out? You'll need to sign in again.")) doLogout();
+      return;
+    }
     Alert.alert("Log out?", "You'll need to sign in again to manage your sites.", [
       { text: "Cancel", style: "cancel" },
       {
@@ -104,7 +115,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
                     <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
                       <Tag label={m.role} />
                       {m.tenantId === selectedTenantId && (
-                        <Text style={{ color: palette.primary600, fontSize: 16 }}>✓</Text>
+                        <Icon name="checkmark-circle" size={20} color={palette.primary600} />
                       )}
                     </View>
                   }
@@ -119,7 +130,17 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
         </>
       )}
 
-      <Button title={t("profile.logOut")} variant="danger" onPress={confirmLogout} />
+      <SectionHeader title="Help" />
+      <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
+        <Row
+          icon="logo-whatsapp"
+          title="Chat with Passive Coder"
+          subtitle="Questions, changes or payment help"
+          onPress={() => Linking.openURL(`https://wa.me/${SUPPORT_WHATSAPP}`)}
+        />
+      </Card>
+
+      <Button title={t("profile.logOut")} icon="log-out-outline" variant="outline" onPress={confirmLogout} style={{ marginTop: spacing.sm }} />
 
       {!!version && (
         <Text style={[type.caption, { color: palette.textFaint, textAlign: "center" }]}>
