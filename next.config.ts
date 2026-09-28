@@ -32,6 +32,16 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Exact /dashboard -> analytics as a plain HTTP redirect, before any
+      // render. The page-level redirect() it replaces fired mid-stream after
+      // the dashboard shell had started rendering, which turned it into a
+      // client-side navigation — a second request that, when it failed right
+      // after login, left users on /dashboard with an error screen.
+      {
+        source: "/dashboard",
+        destination: "/dashboard/analytics",
+        permanent: false,
+      },
       {
         source: "/admin",
         destination: "/dashboard",

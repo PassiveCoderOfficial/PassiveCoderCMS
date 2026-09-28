@@ -47,11 +47,15 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
       ? "bg-white/10 text-white"
       : "bg-accent/50 text-foreground";
 
+  // prefetch={false}: the menu has ~40 links, and each prefetch runs the full
+  // dashboard layout on the server. Prefetching all of them on every
+  // dashboard load (especially the first one after login) was a flood of
+  // server work; pages still load on click, and hover prefetch is not needed.
   if (hasChildren) {
     return (
       <li>
         <div className="flex items-center gap-1">
-          <Link
+          <Link prefetch={false}
             href={item.href}
             onClick={onClose}
             className={cn(
@@ -75,7 +79,7 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
               const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
               return (
                 <li key={child.href} className="flex items-center gap-1">
-                  <Link
+                  <Link prefetch={false}
                     href={child.href}
                     onClick={onClose}
                     className={cn(
@@ -87,7 +91,7 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
                     <span className="flex-1">{child.label}</span>
                   </Link>
                   {child.add && (
-                    <Link href={child.add} onClick={onClose} title={t("sidebar.addNew")}
+                    <Link prefetch={false} href={child.add} onClick={onClose} title={t("sidebar.addNew")}
                       className={cn("p-1 rounded shrink-0", dark ? "text-gray-600 hover:bg-white/10 hover:text-gray-300" : "text-muted-foreground/60 hover:bg-accent hover:text-foreground")}>
                       <Plus className="h-3 w-3" />
                     </Link>
@@ -104,7 +108,7 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
   return (
     <li>
       <div className="flex items-center gap-1">
-        <Link
+        <Link prefetch={false}
           href={item.href}
           target={item.external ? "_blank" : undefined}
           rel={item.external ? "noopener noreferrer" : undefined}
@@ -124,7 +128,7 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
           )}
         </Link>
         {item.add && (
-          <Link href={item.add} onClick={onClose} title={t("sidebar.addNew")}
+          <Link prefetch={false} href={item.add} onClick={onClose} title={t("sidebar.addNew")}
             className={cn("p-1.5 rounded shrink-0", dark ? "text-gray-600 hover:bg-white/10 hover:text-gray-300" : "text-muted-foreground/60 hover:bg-accent hover:text-foreground")}>
             <Plus className="h-3.5 w-3.5" />
           </Link>

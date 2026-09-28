@@ -108,7 +108,8 @@ export function LoginForm() {
 
     // Hard navigation — middleware picks up browser-set session cookies on next request.
     // SA users with no owned tenant are redirected to /super-admin by getCurrentTenantId().
-    window.location.href = redirectTo;
+    // Straight to the real landing page — /dashboard only redirects there.
+    window.location.href = redirectTo === "/dashboard" ? "/dashboard/analytics" : redirectTo;
   };
 
   const onReset = async (values: ResetValues) => {
