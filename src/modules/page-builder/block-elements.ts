@@ -10,6 +10,15 @@ import type { BlockType } from "@/types/cms";
  *  beside the text), so it can be hidden but not moved. */
 export type BlockElementDef = { key: string; label: string; fixed?: boolean };
 
+
+// Section header for list-style blocks: hide-only (every layout already skips
+// an empty title/subtitle — see applyHiddenElements), so no move arrows.
+const SECTION_HEADER: BlockElementDef[] = [
+  { key: "title", label: "Section title", fixed: true },
+  { key: "subtitle", label: "Section subtitle", fixed: true },
+];
+const SECTION_TITLE: BlockElementDef[] = [SECTION_HEADER[0]];
+
 export const BLOCK_ELEMENTS: Partial<Record<BlockType, BlockElementDef[]>> = {
   hero: [
     { key: "badge", label: "Badge" },
@@ -23,4 +32,16 @@ export const BLOCK_ELEMENTS: Partial<Record<BlockType, BlockElementDef[]>> = {
     { key: "description", label: "Description" },
     { key: "buttons", label: "Buttons", fixed: true },
   ],
+  services: SECTION_HEADER,
+  features: SECTION_HEADER,
+  testimonials: SECTION_TITLE,
+  pricing: SECTION_HEADER,
+  faq: SECTION_HEADER,
+  team: SECTION_HEADER,
+  steps: SECTION_HEADER,
+  gallery: SECTION_TITLE,
+  icon_grid: SECTION_TITLE,
+  stats: SECTION_TITLE,
+  blog: SECTION_HEADER,
+  timeline: SECTION_TITLE,
 };

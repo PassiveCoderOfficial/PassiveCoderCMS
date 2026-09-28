@@ -55,7 +55,7 @@ import { HeaderNavBlock } from "@/components/blocks/header-nav/header-nav-block"
 import { HeaderCtaBlock } from "@/components/blocks/header-cta/header-cta-block";
 import { HeaderCartBlock } from "@/components/blocks/header-cart/header-cart-block";
 import { HeaderAccountBlock } from "@/components/blocks/header-account/header-account-block";
-import { getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
+import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
 import type { ContainerPath } from "@/lib/store/builder";
 import { BookOpen, ShoppingBag, Heart } from "lucide-react";
@@ -81,6 +81,8 @@ function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType
 }
 
 export function BlockRenderer({ block, isPreview = false, path }: BlockRendererProps) {
+  // Hidden elements (Style panel) blanked on a render-only copy, as on the live site.
+  block = applyHiddenElements(block);
   const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
   // Same wrapper styling as the live site (padding, margin, Style panel).
   // Tolerates null padding/margin — seen on blocks from older write paths.

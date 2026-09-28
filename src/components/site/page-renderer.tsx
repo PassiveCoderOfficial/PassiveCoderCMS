@@ -59,7 +59,7 @@ import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { ContainerBlock } from "@/components/blocks/container/container-block";
-import { getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
+import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 
 interface PageBlockProps {
@@ -87,6 +87,8 @@ interface PageBlockProps {
 const MAX_CONTAINER_DEPTH = 4;
 
 async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested, depth = 0 }: PageBlockProps) {
+  // Hidden elements (Style panel) blanked on a render-only copy.
+  block = applyHiddenElements(block);
   const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
   const { style: wrapStyle, className: wrapClassName } = getBlockWrapperStyle(block);
 

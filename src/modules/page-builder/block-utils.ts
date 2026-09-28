@@ -159,3 +159,22 @@ export function getBlockWrapperStyle(block: Block): { style: React.CSSProperties
 
   return { style: style as React.CSSProperties, className: classes.join(" ") };
 }
+
+/**
+ * Hide-only elements for block types whose layouts skip an empty field (the
+ * section title/subtitle on services, features, pricing…): the hidden fields
+ * are blanked on a render-only copy, so every layout honours it without
+ * per-layout changes and the saved text comes back when shown again. Used by
+ * both the live renderer and the editor canvas.
+ */
+export function applyHiddenElements<T extends Block>(block: T): T {
+  const hidden = block.elements?.hidden;
+  const data = (block as { data?: Record<string, unknown> }).data;
+  if (!hidden?.length || !data) return block;
+  const next = { ...data };
+  let changed = false;
+  for (const k of hidden) {
+    if (typeof next[k] === "string" && next[k]) { next[k] = ""; changed = true; }
+  }
+  return changed ? ({ ...block, data: next } as T) : block;
+}
