@@ -1124,6 +1124,12 @@ export type PageSEO = {
   og_image?: string;
   no_index?: boolean;
   canonical?: string;
+  /** Set on a translated copy of a page (e.g. "ar"). The page then renders
+   *  with its own navigation/footer blocks in place of the global chrome,
+   *  right-to-left when the language needs it. */
+  lang?: string;
+  /** hreflang alternates: language code -> path, e.g. { en: "/", ar: "/ar" }. */
+  alternates?: Record<string, string>;
 };
 
 export type PageSettings = {

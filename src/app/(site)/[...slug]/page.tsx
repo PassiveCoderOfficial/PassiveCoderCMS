@@ -63,9 +63,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...(seo?.keywords ? { keywords: seo.keywords } : {}),
     openGraph: og,
     ...(seo?.no_index ? { robots: { index: false } } : {}),
-    ...(await resolveCanonical(seo?.canonical, tenantId, pageSlug)),
+    ...(await withLanguageAlternates(resolveCanonical(seo?.canonical, tenantId, pageSlug), seo?.alternates)),
   };
 }
+
+async function withLanguageAlternates(
+  canonical: ReturnType<typeof resolveCanonical>,
+  languages: Record<string, string> | undefined,
+): Promise<Partial<Metadata>> {
+  const base = await canonical;
+  if (!languages || Object.keys(languages).length === 0) return base;
+  return { ...base, alternates: { ...(base.alternates ?? {}), languages } };
+}
+
+const RTL_LANGS = new Set(["ar", "he", "fa", "ur"]);
 
 /**
  * A page only got a canonical tag if a client had manually typed one into
@@ -203,8 +214,12 @@ export default async function SitePage({ params }: Props) {
   // site_identity.global_header / global_footer. When those exist, strip any
   // per-page navigation/footer blocks so they don't render twice.
   const { header, footer, prefooter } = await fetchGlobalLayout(tenantId);
-  const hasGlobalHeader = header.length > 0;
-  const hasGlobalFooter = footer.length > 0;
+  // A translated page brings its own localized navigation/footer, so it keeps
+  // them and the layout's global (default-language) chrome is hidden instead.
+  const lang = (page.seo as Page["seo"] | null)?.lang?.trim().toLowerCase() || null;
+  const dir = lang && RTL_LANGS.has(lang.split("-")[0]) ? "rtl" : "ltr";
+  const hasGlobalHeader = header.length > 0 && !lang;
+  const hasGlobalFooter = footer.length > 0 && !lang;
   const blocks: Block[] = rawBlocks.filter((b) => {
     if (hasGlobalHeader && isChromeBlock(b, "header")) return false;
     if (hasGlobalFooter && isChromeBlock(b, "footer")) return false;
@@ -213,9 +228,18 @@ export default async function SitePage({ params }: Props) {
 
   // Global pre-footer (CTA + contact) — injected once site-wide, skipped on pages
   // that already have their own contact block.
-  const finalBlocks = prefooter.length > 0 && shouldInjectPrefooter(blocks)
+  const finalBlocks = !lang && prefooter.length > 0 && shouldInjectPrefooter(blocks)
     ? [...blocks, ...prefooter]
     : blocks;
+
+  if (lang) {
+    return (
+      <div className="min-h-screen" lang={lang} dir={dir}>
+        <style dangerouslySetInnerHTML={{ __html: "[data-site-chrome]{display:none!important}" }} />
+        <PageRenderer blocks={finalBlocks} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

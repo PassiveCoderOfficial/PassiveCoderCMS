@@ -258,7 +258,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           supportPhone={marketplaceChrome.contact?.phone}
         />
       ) : globalHeader.length > 0 ? (
-        <PageRenderer blocks={globalHeader} />
+        // display:contents keeps a sticky nav sticky; the attribute lets a
+        // translated page (seo.lang) swap in its own localized chrome.
+        <div data-site-chrome="header" style={{ display: "contents" }}>
+          <PageRenderer blocks={globalHeader} />
+        </div>
       ) : null}
 
       {/* Page content */}
@@ -273,7 +277,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           contact={marketplaceChrome.contact}
         />
       ) : globalFooter.length > 0 ? (
-        <PageRenderer blocks={globalFooter} />
+        <div data-site-chrome="footer" style={{ display: "contents" }}>
+          <PageRenderer blocks={globalFooter} />
+        </div>
       ) : null}
 
       {/* Floating cart drawer — always mounted, toggled by cart icon */}
