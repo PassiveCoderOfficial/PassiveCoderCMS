@@ -5,7 +5,7 @@ const STEPS = [
     icon: MousePointerClick,
     step: "01",
     title: "Pick your plan & template",
-    desc: "Choose Standard or Premium and pick from 50+ industry-specific templates built for your exact business type.",
+    desc: "Choose Basic, Pro or Biz and pick from 25+ templates made for your type of business.",
     detail: "Takes under 2 minutes",
     color: "from-orange-500 to-rose-500",
   },
