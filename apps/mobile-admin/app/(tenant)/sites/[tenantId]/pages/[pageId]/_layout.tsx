@@ -15,7 +15,7 @@ export default function PageEditStackLayout() {
     <PageEditProvider pageId={pageId}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: palette.primary600 },
+          headerStyle: { backgroundColor: palette.header },
           headerTintColor: palette.white,
           headerTitleStyle: { fontWeight: "800" },
           contentStyle: { backgroundColor: palette.bg },

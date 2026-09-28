@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
+import { IconTile } from "../../../../../../../components/Icon";
 import { useLocalSearchParams, router } from "expo-router";
 import { usePageEdit } from "../../../../../../../lib/pageEditContext";
 import { getBlockCatalogEntry } from "../../../../../../../lib/blockCatalog";
@@ -80,7 +81,7 @@ export default function BlockDetailScreen() {
       <SectionHeader title="Block settings" />
       <Card style={{ gap: spacing.lg }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
-          <Text style={{ fontSize: 24 }}>{entry?.icon ?? "🧱"}</Text>
+          <IconTile name={entry?.icon ?? "layers-outline"} size={44} />
           <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
             <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
               {entry?.label ?? local.type}

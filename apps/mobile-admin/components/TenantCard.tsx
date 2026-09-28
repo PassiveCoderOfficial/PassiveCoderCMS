@@ -5,6 +5,7 @@ import { useTheme } from "../lib/themeContext";
 import { tapFeedback } from "../lib/haptics";
 import { humanize } from "../lib/format";
 import { Badge, Tag } from "./ui";
+import { publicHost } from "../lib/siteUrls";
 import type { Tenant, TenantMemberRole } from "../lib/types";
 
 export function TenantCard({
@@ -40,6 +41,20 @@ export function TenantCard({
         shadow.card,
       ]}
     >
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: radius.md,
+          backgroundColor: palette.primary50,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ fontSize: 18, fontWeight: "800", color: palette.primary600 }}>
+          {(tenant.name.trim()[0] ?? "?").toUpperCase()}
+        </Text>
+      </View>
       <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
           <Text style={[type.heading, { color: palette.text, flexShrink: 1 }]} numberOfLines={1}>
@@ -48,10 +63,10 @@ export function TenantCard({
           {role ? <Tag label={role} /> : null}
         </View>
         <Text style={[type.caption, { color: palette.textMuted }]} numberOfLines={1}>
-          /{tenant.slug} · {humanize(tenant.plan)} plan
+          {publicHost(tenant)}
         </Text>
         <Text style={[type.caption, { color: palette.textFaint }]} numberOfLines={1}>
-          {tenant.custom_domain ?? "No custom domain"}
+          {humanize(tenant.plan)} plan
         </Text>
       </View>
       <Badge label={tenant.status} />

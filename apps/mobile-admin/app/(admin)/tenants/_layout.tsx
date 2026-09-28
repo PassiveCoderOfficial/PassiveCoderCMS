@@ -11,7 +11,7 @@ export default function TenantsStackLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: palette.primary600 },
+        headerStyle: { backgroundColor: palette.header },
         headerTintColor: palette.white,
         headerTitleStyle: { fontWeight: "800" },
         headerRight: () => <LanguageSwitcher />,

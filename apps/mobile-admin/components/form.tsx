@@ -313,7 +313,7 @@ export function Select({
                       {o.label}
                     </Text>
                     {selected && (
-                      <Text style={{ color: palette.primary600, fontWeight: "700" }}>✓</Text>
+                      <Icon name="checkmark" size={18} color={palette.primary600} />
                     )}
                   </Pressable>
                 );

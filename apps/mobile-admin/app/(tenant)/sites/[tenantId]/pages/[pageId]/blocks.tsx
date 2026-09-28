@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Chevron } from "../../../../../../components/Icon";
+import { Chevron, Icon, IconTile } from "../../../../../../components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { usePageEdit } from "../../../../../../lib/pageEditContext";
@@ -361,7 +361,7 @@ function BlockRow({
         }}
         style={({ pressed }) => [styles.rowMain, { opacity: pressed ? 0.7 : 1 }]}
       >
-        <Text style={styles.icon}>{icon ?? "🧱"}</Text>
+        <IconTile name={icon ?? "layers-outline"} />
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
           <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
             {label ?? block.type}
@@ -417,7 +417,7 @@ function IconAction({
         pressed && !disabled && { opacity: 0.6 },
       ]}
     >
-      <Text style={{ fontSize: 16, color: danger ? palette.red600 : palette.text }}>{glyph}</Text>
+      <Icon name={glyph} size={18} color={danger ? palette.red600 : palette.text} />
     </Pressable>
   );
 }

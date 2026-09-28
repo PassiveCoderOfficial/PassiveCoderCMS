@@ -44,6 +44,9 @@ export interface Palette {
   textMuted: string;
   textFaint: string;
   onPrimary: string;
+  /** App bar colour. Same brand orange in both schemes: the lighter dark-mode
+   *  primary made white header text hard to read. */
+  header: string;
 }
 
 export const lightPalette: Palette = {
@@ -78,6 +81,7 @@ export const lightPalette: Palette = {
   textMuted: "#64748b",    // slate-500
   textFaint: "#94a3b8",    // slate-400
   onPrimary: "#ffffff",
+  header: "#f2610c",
 };
 
 export const darkPalette: Palette = {
@@ -114,6 +118,7 @@ export const darkPalette: Palette = {
   textMuted: "#94a3b8",
   textFaint: "#64748b",
   onPrimary: "#1a0d04",
+  header: "#e8590c",
 };
 
 /** Static light palette. Prefer useTheme() inside components. */

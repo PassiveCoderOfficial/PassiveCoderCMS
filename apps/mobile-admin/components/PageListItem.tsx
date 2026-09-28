@@ -6,6 +6,7 @@ import { useTheme } from "../lib/themeContext";
 import { tapFeedback } from "../lib/haptics";
 import { relativeTime } from "../lib/format";
 import { Badge } from "./ui";
+import { IconTile } from "./Icon";
 import type { PageListItem as PageListItemType } from "../lib/queries/pages";
 
 export function PageListItem({ tenantId, page }: { tenantId: string; page: PageListItemType }) {
@@ -34,6 +35,10 @@ export function PageListItem({ tenantId, page }: { tenantId: string; page: PageL
         shadow.card,
       ]}
     >
+      <IconTile
+        name={page.slug === "home" || page.slug === "" ? "home-outline" : "document-text-outline"}
+        tone={page.status === "published" ? "brand" : "neutral"}
+      />
       <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
         <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
           {page.title}

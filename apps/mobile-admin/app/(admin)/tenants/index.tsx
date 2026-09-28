@@ -76,7 +76,7 @@ function AdminTenantRow({
         </View>
         {tenant.custom_domain ? (
           <Text style={[type.caption, { color: palette.textFaint }]} numberOfLines={1}>
-            🌐 {tenant.custom_domain}
+            {tenant.custom_domain}
           </Text>
         ) : null}
       </Card>

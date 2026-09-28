@@ -6,6 +6,7 @@
 // it reachable from the header everywhere instead of one screen deep.
 
 import { useState } from "react";
+import { Icon } from "./Icon";
 import { Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useRole } from "../lib/role";
@@ -87,7 +88,7 @@ export function TenantSwitcherSheet({ visible, onClose }: { visible: boolean; on
                     >
                       <Text style={{ color: palette.textFaint, fontSize: 15 }}>↗</Text>
                     </Pressable>
-                    {m.tenantId === selectedTenantId && <Text style={{ color: palette.primary600, fontSize: 16 }}>✓</Text>}
+                    {m.tenantId === selectedTenantId && <Icon name="checkmark-circle" size={20} color={palette.primary600} />}
                   </View>
                 }
                 onPress={() => switchTo(m.tenantId, m.tenant.name)}

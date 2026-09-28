@@ -93,11 +93,11 @@ function ThemedRoot() {
     <>
       {/* The header stays brand orange in both schemes, and orange is dark
           enough that light status-bar text is the legible choice either way. */}
-      <StatusBar style="light" backgroundColor={palette.primary600} />
+      <StatusBar style="light" backgroundColor={palette.header} />
       <Gate>
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: palette.primary600 },
+            headerStyle: { backgroundColor: palette.header },
             headerTintColor: palette.white,
             headerTitleStyle: { fontWeight: "800" },
             contentStyle: { backgroundColor: palette.bg },
