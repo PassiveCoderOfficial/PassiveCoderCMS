@@ -38,7 +38,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl sm:rounded-2xl aspect-[2.2/1] sm:aspect-[3/1] bg-[#1A1330]"
+      className="relative overflow-hidden rounded-xl sm:rounded-2xl aspect-[16/9] sm:aspect-[2.4/1] lg:aspect-auto lg:h-[360px] bg-[#1A1330]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
@@ -73,7 +73,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               <p className="text-white/80 text-[11px] sm:text-sm font-semibold uppercase tracking-wider">
                 {s.subtitle}
               </p>
-              <h2 className="mt-1 sm:mt-2 text-white text-lg sm:text-4xl font-extrabold leading-tight line-clamp-2">
+              <h2 className="mt-1 sm:mt-2 text-white text-xl sm:text-4xl lg:text-5xl font-extrabold leading-tight line-clamp-2">
                 {s.title}
               </h2>
               <span className="inline-block mt-2 sm:mt-5 bg-white text-[#1A1330] text-xs sm:text-sm font-bold px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full">
@@ -238,7 +238,7 @@ export function JustForYou({ initial, initialHasMore }: { initial: CardProduct[]
 
   return (
     <section>
-      <div className="sticky top-[64px] sm:top-[96px] z-10 bg-[#F5F5F7] py-2">
+      <div className="py-3">
         <h2 className="text-center text-sm font-bold uppercase tracking-wider text-[#FF5A1F] border-b-2 border-[#FF5A1F] w-fit mx-auto px-4 pb-1">
           Just for you
         </h2>

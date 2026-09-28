@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Search, ShoppingCart, Menu, X, Store, ChevronDown, Package, Headset,
+  Search, ShoppingCart, Menu, X, Store, ChevronDown, Package, Headset, MessageCircle, User,
 } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
 
@@ -41,6 +41,25 @@ export function MarketplaceHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const catRef = useRef<HTMLDivElement>(null);
+  const [unread, setUnread] = useState<{ signed_in: boolean; buyer: number; vendor: number; is_seller?: boolean } | null>(null);
+
+  // Unread chat badge — refreshed on navigation and every 30s.
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch("/api/chat/unread")
+        .then((r) => r.json())
+        .then((j) => alive && setUnread(j))
+        .catch(() => {});
+    load();
+    const t = setInterval(load, 30000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [pathname]);
+  const unreadTotal = (unread?.buyer ?? 0) + (unread?.vendor ?? 0);
+  const chatHref = unread?.vendor && !unread?.buyer ? "/vendor/messages" : "/account/messages";
 
   // Route changes close every menu — otherwise tapping a category on mobile
   // navigates behind a panel that stays open over the new page.
@@ -162,6 +181,25 @@ export function MarketplaceHeader({
             className="hidden md:inline-flex text-sm font-medium text-[#1A1330] hover:text-[#FF5A1F] px-3 py-2 transition-colors"
           >
             All products
+          </Link>
+          <Link
+            href={unread?.signed_in ? chatHref : "/account/login?next=/account/messages"}
+            className="relative p-2.5 rounded-full hover:bg-[#FFF6F2] transition-colors"
+            aria-label={`Messages${unreadTotal ? `, ${unreadTotal} unread` : ""}`}
+          >
+            <MessageCircle className="w-5 h-5 text-[#1A1330]" />
+            {unreadTotal > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF5A1F] text-white text-[11px] font-bold flex items-center justify-center">
+                {unreadTotal > 99 ? "99+" : unreadTotal}
+              </span>
+            )}
+          </Link>
+          <Link
+            href={unread?.signed_in ? "/account/orders" : "/account/login"}
+            className="hidden sm:inline-flex p-2.5 rounded-full hover:bg-[#FFF6F2] transition-colors"
+            aria-label="My account"
+          >
+            <User className="w-5 h-5 text-[#1A1330]" />
           </Link>
           <button
             onClick={openCart}

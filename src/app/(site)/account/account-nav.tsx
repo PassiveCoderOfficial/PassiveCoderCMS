@@ -7,6 +7,7 @@ import { customerLogoutAction } from "./actions";
 
 const TABS = [
   { href: "/account/orders", label: "Orders" },
+  { href: "/account/messages", label: "Messages" },
   { href: "/account/profile", label: "Profile" },
   { href: "/account/wishlist", label: "Wishlist" },
 ] as const;

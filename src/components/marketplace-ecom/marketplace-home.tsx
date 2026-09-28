@@ -159,7 +159,7 @@ export async function MarketplaceHome({
           <div className="lg:col-span-2 min-w-0">
             <HeroCarousel slides={slides} />
           </div>
-          <div className="hidden lg:grid grid-rows-2 gap-3">
+          <div className="hidden lg:grid grid-rows-2 gap-3 lg:h-[360px]">
             <Link href="/vendor" className="rounded-2xl bg-gradient-to-br from-[#1A1330] to-[#3B2470] p-5 text-white flex flex-col justify-center hover:opacity-95">
               <Store className="w-6 h-6 text-[#FF8A3D]" />
               <p className="mt-2 font-extrabold text-lg">Sell on {siteName}</p>
@@ -205,7 +205,7 @@ export async function MarketplaceHome({
                 All <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="grid grid-flow-col grid-rows-2 auto-cols-[76px] sm:auto-cols-[104px] gap-y-3 gap-x-1 overflow-x-auto pb-1 [scrollbar-width:none]">
+            <div className="grid grid-flow-col grid-rows-2 auto-cols-[76px] sm:auto-cols-[104px] lg:grid-flow-row lg:grid-rows-none lg:grid-cols-8 gap-y-4 gap-x-1 overflow-x-auto pb-1 [scrollbar-width:none]">
               {cats.map((c) => (
                 <Link key={c.id} href={`/shop?category=${c.id}`} className="group flex flex-col items-center gap-1.5 text-center">
                   <span className="w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-[#FFF1EB] ring-1 ring-[#EAECF0] group-hover:ring-[#FF5A1F] transition">
@@ -230,9 +230,9 @@ export async function MarketplaceHome({
                 <BadgeCheck className="w-3 h-3" /> Verified
               </span>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]">
+            <div className="flex lg:grid lg:grid-cols-6 gap-3 overflow-x-auto pb-1 [scrollbar-width:none]">
               {shops.map((s) => (
-                <Link key={s.id} href={`/shop?vendor=${s.slug}`} className="group shrink-0 w-[108px] sm:w-[140px] rounded-xl border border-[#EAECF0] p-3 text-center hover:border-[#FF5A1F] hover:shadow-md transition">
+                <Link key={s.id} href={`/shop?vendor=${s.slug}`} className="group shrink-0 w-[108px] sm:w-[140px] lg:w-auto rounded-xl border border-[#EAECF0] p-3 text-center hover:border-[#FF5A1F] hover:shadow-md transition">
                   <span className="mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-[#FFF1EB] flex items-center justify-center">
                     {s.logo ? (
                       // eslint-disable-next-line @next/next/no-img-element

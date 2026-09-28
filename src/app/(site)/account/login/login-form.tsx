@@ -9,7 +9,7 @@ import { customerLoginAction, customerSignupAction } from "../actions";
  * matches how most storefronts present this (Shopify, WooCommerce accounts
  * both do a single "sign in or create an account" screen).
  */
-export function CustomerLoginForm() {
+export function CustomerLoginForm({ next = "/account/orders" }: { next?: string }) {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ export function CustomerLoginForm() {
       if (mode === "login") {
         const result = await customerLoginAction(email, password);
         if (result.error) { setError(result.error); return; }
-        router.push("/account/orders");
+        router.push(next);
         router.refresh();
       } else {
         const result = await customerSignupAction(email, password, name);

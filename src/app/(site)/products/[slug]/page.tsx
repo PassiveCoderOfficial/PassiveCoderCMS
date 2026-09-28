@@ -4,10 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import { AddToCartSection } from "./add-to-cart-section";
 import { WishlistButton } from "./wishlist-button";
+import { MarketplaceProduct, type MarketplaceProductRow } from "@/components/marketplace-ecom/product/marketplace-product";
 import { getCurrencyConfig, formatWithConfig } from "@/lib/ecommerce/currency-server";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ review?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -47,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ProductPage({ params }: Props) {
+export default async function ProductPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const reqHeaders = await headers();
   const tenantId = reqHeaders.get("x-tenant-id");
@@ -72,6 +74,20 @@ export default async function ProductPage({ params }: Props) {
       .eq("product_id", product.id)
       .maybeSingle();
     wishlisted = !!existing;
+  }
+
+  // Marketplace listings get the full Shopee/Daraz-style page (seller card,
+  // chat, reviews); single-store products keep the simple layout below.
+  if (product.vendor_id) {
+    const sp = (await searchParams) ?? {};
+    return (
+      <MarketplaceProduct
+        product={product as MarketplaceProductRow}
+        wishlisted={wishlisted}
+        signedIn={!!user}
+        openReview={sp.review === "1"}
+      />
+    );
   }
 
   const images: string[] = Array.isArray(product.images) ? product.images : [];

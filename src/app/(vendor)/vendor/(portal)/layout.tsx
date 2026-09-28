@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, Store } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Store, MessageCircle, Star } from "lucide-react";
 import { currentVendor, vendorApplicationStatus } from "@/lib/marketplace-ecom/vendor-auth";
 
 export const metadata = { title: "Seller Centre" };
@@ -9,6 +9,8 @@ const NAV = [
   { href: "/vendor/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/vendor/products", label: "My Products", icon: Package },
   { href: "/vendor/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/vendor/messages", label: "Messages", icon: MessageCircle },
+  { href: "/vendor/reviews", label: "Reviews", icon: Star },
   { href: "/vendor/earnings", label: "Earnings", icon: Wallet },
 ];
 

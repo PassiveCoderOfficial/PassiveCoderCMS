@@ -1,3 +1,4 @@
+import { afterDelivered } from "@/lib/marketplace-ecom/on-delivered";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { currentVendor } from "@/lib/marketplace-ecom/vendor-auth";
@@ -51,7 +52,7 @@ export async function PATCH(req: NextRequest) {
   const { data: sub } = await admin
     .from("sub_orders")
     .select(
-      "id, tenant_id, vendor_id, sub_order_number, status, subtotal, discount, commission_amount, cod_amount, items",
+      "id, tenant_id, order_id, vendor_id, sub_order_number, status, subtotal, discount, commission_amount, cod_amount, items",
     )
     .eq("id", id)
     .eq("vendor_id", vendor.vendor_id)
@@ -108,6 +109,9 @@ export async function PATCH(req: NextRequest) {
       },
       Number(rate?.cod_fee_pct ?? 0),
     );
+    const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+    const proto = req.headers.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
+    await afterDelivered(admin, sub, `${proto}://${host}`);
   }
 
   // Returning stock on a cancelled parcel keeps the catalogue honest — the
