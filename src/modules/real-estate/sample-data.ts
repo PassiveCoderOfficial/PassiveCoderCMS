@@ -130,7 +130,7 @@ export async function seedRealEstateSample(admin: SupabaseClient, tenantId: stri
     reference: `SAMPLE-${String(i + 1).padStart(3, "0")}`,
     sort_order: i,
     status: "available",
-    description: p.description ?? `${p.summary}\n\nThis is a sample listing to show how the site works. Replace it with real inventory from Dashboard → Real Estate → Properties.`,
+    description: p.description ?? (p.summary as string),
   }));
   const { error } = await admin.from("re_properties").insert(rows);
   if (error) throw new Error(error.message);
