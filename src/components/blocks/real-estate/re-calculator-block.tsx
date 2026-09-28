@@ -60,7 +60,7 @@ export function ReCalculatorBlock({ block }: { block: ReCalculatorBlockProps }) 
   const payback = effectiveRent - costs > 0 ? price / (effectiveRent - costs) : 0;
 
   return (
-    <section className="py-16 sm:py-20 px-4">
+    <section className="px-4">
       <div className="max-w-5xl mx-auto">
         <SectionHeading title={data.title} subtitle={data.subtitle} />
         {mode === "both" && (

@@ -822,6 +822,8 @@ export type FooterSocial = {
 export type FooterBlockProps = BlockBase & {
   type: "footer";
   data: {
+    /** Small icon image shown before the text logo when no logo image is set. */
+    logoIconUrl?: string;
     logo?: string;
     logoText?: string;
     tagline?: string;

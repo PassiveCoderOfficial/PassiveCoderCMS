@@ -24,7 +24,7 @@ export function ReCommunitiesBlock({ block }: { block: ReCommunitiesBlockProps }
   const list = (items ?? []).slice(0, data.limit ?? 6);
 
   return (
-    <section className="py-16 sm:py-20 px-4">
+    <section className="px-4">
       <div className="max-w-7xl mx-auto">
         <SectionHeading title={data.title} subtitle={data.subtitle} />
         {items === null ? (

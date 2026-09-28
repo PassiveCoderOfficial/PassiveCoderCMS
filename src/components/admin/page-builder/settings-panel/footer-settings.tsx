@@ -71,6 +71,10 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
         <Input value={block.data.logoText ?? ""} onChange={(e) => update("logoText", e.target.value)} className="h-8 text-xs" />
       </div>
       <div className="space-y-1.5">
+        <Label className="text-xs">Logo Icon (before text)</Label>
+        <MediaPickerInput compact value={block.data.logoIconUrl ?? ""} onChange={(v) => update("logoIconUrl", v)} />
+      </div>
+      <div className="space-y-1.5">
         <Label className="text-xs">Logo Image (optional override)</Label>
         <MediaPickerInput compact value={block.data.logo ?? ""} onChange={(url) => update("logo", url)} />
       </div>

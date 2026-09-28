@@ -13,7 +13,7 @@ export function ReLeadFormBlock({ block }: { block: ReLeadFormBlockProps }) {
   const hasSide = !!data.image || bullets.length > 0;
 
   return (
-    <section className="py-16 sm:py-20 px-4">
+    <section className="px-4">
       <div className={`max-w-6xl mx-auto grid gap-10 items-center ${hasSide ? "lg:grid-cols-2" : "max-w-2xl"}`}>
         {hasSide && (
           <div>

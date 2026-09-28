@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const base = {
   order: 0, visible: true, width: "full" as const,
-  padding: { top: 0, right: 0, bottom: 0, left: 0 }, margin: { top: 0, right: 0, bottom: 0, left: 0 }, background: { type: "none" as const },
+  padding: { top: 72, right: 24, bottom: 72, left: 24 }, margin: { top: 0, right: 0, bottom: 0, left: 0 }, background: { type: "none" as const },
 };
 
 export default async function CommunityPage({ params }: Props) {
@@ -68,8 +68,8 @@ export default async function CommunityPage({ params }: Props) {
         </section>
       )}
 
-      <ReListingsBlock block={listings} />
-      <div className="bg-muted/40"><ReLeadFormBlock block={lead} /></div>
+      <div className="py-16 sm:py-20"><ReListingsBlock block={listings} /></div>
+      <div className="bg-muted/40 py-16 sm:py-20"><ReLeadFormBlock block={lead} /></div>
     </div>
   );
 }

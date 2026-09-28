@@ -51,12 +51,12 @@ export function ReSearchBlock({ block }: { block: ReSearchBlockProps }) {
     return (
       <section className="relative isolate overflow-hidden text-white" style={{ background: bg }}>
         <div className="absolute inset-0 -z-10" style={{ background: `radial-gradient(ellipse 55% 75% at ${left ? "30%" : "70%"} 70%, ${glow} 0%, ${bg} 70%)` }} />
-        <div className="max-w-4xl mx-auto px-4 pt-16 lg:pt-20 pb-8 lg:pb-4 text-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-16 lg:pt-20 pb-8 lg:pb-6 text-center">
             {data.eyebrow && <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-4">{data.eyebrow}</p>}
-            {data.title && <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08]">{data.title}</h1>}
+            {data.title && <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] text-balance">{data.title}</h1>}
             {data.subtitle && <p className="mt-5 text-lg text-white/75 max-w-2xl mx-auto">{data.subtitle}</p>}
         </div>
-        <div className={`max-w-7xl mx-auto grid lg:grid-cols-2 items-end gap-6 lg:gap-10 px-4 ${left ? "" : "lg:[&>*:first-child]:order-2"}`}>
+        <div className={`max-w-5xl mx-auto grid lg:grid-cols-2 items-end gap-6 lg:gap-10 px-4 sm:px-6 ${left ? "" : "lg:[&>*:first-child]:order-2"}`}>
           <div className="relative h-[380px] sm:h-[480px] lg:h-[560px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={data.portraitImage} alt={data.portraitAlt ?? ""}

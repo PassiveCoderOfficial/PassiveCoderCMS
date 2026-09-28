@@ -179,7 +179,7 @@ export function LeadForm({ kind, propertyId, submitLabel, successMessage, showBu
     <form onSubmit={submit} className="space-y-3">
       <div className={compact ? "space-y-3" : "grid sm:grid-cols-2 gap-3"}>
         <input className={input} placeholder="Full name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <input className={input} placeholder="WhatsApp / phone (with country code)" required type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        <input className={input} placeholder="WhatsApp number" required type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
       </div>
       <input className={input} placeholder="Email (optional)" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
       {showBudget && (

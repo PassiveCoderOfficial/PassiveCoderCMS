@@ -95,7 +95,7 @@ export function ReListingsBlock({ block }: { block: ReListingsBlockProps }) {
   }));
 
   return (
-    <section className="py-16 sm:py-20 px-4">
+    <section className="px-4">
       <div className="max-w-7xl mx-auto">
         <SectionHeading title={data.title} subtitle={data.subtitle} />
 

@@ -24,7 +24,7 @@ export function ReDevelopersBlock({ block }: { block: ReDevelopersBlockProps }) 
     : <span className="text-lg font-bold tracking-tight">{d.name}</span>;
 
   return (
-    <section className="py-14 sm:py-16 px-4">
+    <section className="px-4">
       <div className="max-w-7xl mx-auto">
         <SectionHeading title={data.title} subtitle={data.subtitle} />
         {data.style === "cards" ? (

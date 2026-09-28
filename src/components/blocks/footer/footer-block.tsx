@@ -36,6 +36,10 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
   const bg = backgroundColor ?? (isDark ? "hsl(var(--secondary))" : "hsl(var(--muted))");
   const fg = textColor ?? (isDark ? "rgba(255,255,255,0.85)" : "hsl(var(--foreground))");
   const accent = accentColor ?? "hsl(var(--primary))";
+  // Column headings on a dark footer: the theme primary is often itself dark
+  // (navy, forest), which vanished against the dark background. Fall back to
+  // the footer text colour there unless an explicit accent is set.
+  const headingColor = accentColor ?? (isDark ? fg : "hsl(var(--primary))");
 
   // The Header/Footer Builder writes its Background control to the block-level
   // `background` prop (type color/gradient/image), NOT to data.backgroundColor.
@@ -118,6 +122,12 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
               {logo ? (
                 <Image src={logo} alt={logoText ?? "Logo"} width={280} height={96} className="h-20 w-auto object-contain" />
+              ) : data.logoIconUrl ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={data.logoIconUrl} alt="" className="w-9 h-9 rounded-lg" />
+                  <span className="text-lg font-semibold" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>{logoText ?? "Brand"}</span>
+                </>
               ) : (
                 <BrandLogo size={32} color={accent} textColor={fg} text={logoText ?? "Brand"} />
               )}
@@ -150,7 +160,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
           {/* Link columns */}
           {columns.map((col) => (
             <div key={col.id}>
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: accent }}>
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: headingColor }}>
                 {col.heading}
               </h3>
               <ul className="space-y-2.5">
