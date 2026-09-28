@@ -3,6 +3,7 @@ import {
   Store, Sparkles, Truck, Zap, BadgeCheck, Banknote, Tag, ShieldCheck, RotateCcw, ChevronRight,
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/server";
+import { MARKETPLACE_TOKENS_CSS } from "@/lib/marketplace-ecom/brand-tokens";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { CartDrawer } from "@/components/site/cart-drawer";
 import type { CardProduct } from "./product-card";
@@ -258,6 +259,7 @@ export async function MarketplaceHome({
 
   return (
     <CartProvider>
+      <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: MARKETPLACE_TOKENS_CSS }} />
       <MarketplaceHeader
         logoUrl={identity?.logo_url ?? null}
         siteName={siteName}
