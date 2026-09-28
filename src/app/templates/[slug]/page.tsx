@@ -1,3 +1,5 @@
+import { CartProvider } from "@/lib/cart/cart-context";
+import { CartDrawer } from "@/components/site/cart-drawer";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Layout, Zap } from "lucide-react";
@@ -53,7 +55,10 @@ export default async function TemplatePreviewPage({
   const blocks = template.blocks;
   const cssVars = buildTemplateCSSVars(template.palette, template.typography);
 
+  // CartProvider like a live site: shop blocks in a preview (cart icon,
+  // add-to-cart) were outside any provider and logged an error per render.
   return (
+    <CartProvider>
     <div className={`min-h-screen template-${template.slug}`}>
       <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: cssVars }} />
       {template.customCss && <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: template.customCss }} />}
@@ -118,5 +123,7 @@ export default async function TemplatePreviewPage({
         <PageRenderer blocks={blocks} />
       </div>
     </div>
+    <CartDrawer />
+    </CartProvider>
   );
 }
