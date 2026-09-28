@@ -110,7 +110,7 @@ export default function HeroSection({ settings }: { settings: Settings | null })
           </div>
 
           {/* Phone with a real client site */}
-          <div className="absolute -left-4 sm:-left-10 bottom-[-28px] w-[138px] sm:w-[170px] rounded-[26px] bg-black p-1.5 ring-1 ring-white/15 shadow-2xl shadow-black/70">
+          <div className="absolute left-2 sm:-left-10 bottom-[-28px] w-[138px] sm:w-[170px] rounded-[26px] bg-black p-1.5 ring-1 ring-white/15 shadow-2xl shadow-black/70">
             <div className="relative aspect-[9/19] rounded-[20px] overflow-hidden bg-white">
               <Image src="/images/clients/emiratescurtain.com-m.jpg" alt="A client website built on Passive Coder, on a phone" fill sizes="170px" className="object-cover object-top" />
             </div>

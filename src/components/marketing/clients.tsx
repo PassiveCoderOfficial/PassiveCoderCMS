@@ -117,7 +117,11 @@ const COUNTRIES = ["All", ...Array.from(new Set(SHOWN.map((c) => c.flag)))];
 
 export default function ClientsSection() {
   const [filter, setFilter] = useState("All");
-  const filtered = filter === "All" ? SHOWN : SHOWN.filter((c) => c.flag === filter);
+  const [showAll, setShowAll] = useState(false);
+  const matching = filter === "All" ? SHOWN : SHOWN.filter((c) => c.flag === filter);
+  // Six is enough proof above the fold of this section; the rest on request
+  // keeps the page short, which matters most on phones.
+  const filtered = showAll ? matching : matching.slice(0, 6);
 
   return (
     <section id="clients" className="py-24 bg-[#05060a] border-t border-white/[0.05]">
@@ -185,6 +189,17 @@ export default function ClientsSection() {
             </a>
           ))}
         </div>
+        {matching.length > filtered.length && (
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.04] px-6 py-3 text-sm font-medium text-white hover:bg-white/[0.08]"
+            >
+              See all {matching.length} client websites
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
