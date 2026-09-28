@@ -1799,6 +1799,7 @@ export const bn = {
   "usersPage.sendInvite": "ইনভাইট পাঠান",
   "usersPage.inviteHint": "তারা অ্যাকাউন্ট সেটআপ করার জন্য একটি ইমেইল পাবে। আপনি যেকোনো সময় তাদের রোল পরিবর্তন করতে পারবেন।",
   "usersPage.roleAdmin": "অ্যাডমিন",
+  "usersPage.roleOwner": "মালিক",
   "usersPage.roleEditor": "এডিটর",
   "usersPage.roleAuthor": "অথর",
   "usersPage.roleAdminDesc": "ফুল ড্যাশবোর্ড অ্যাক্সেস। টিম, সেটিংস, ও সব কনটেন্ট ম্যানেজ করতে পারবে।",

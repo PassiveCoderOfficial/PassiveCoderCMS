@@ -233,6 +233,13 @@ export default function UsersPage() {
                       <button onClick={() => updateRole(m.user_id, editRole)} className="text-green-600 hover:text-green-700"><Check className="w-4 h-4" /></button>
                       <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
                     </div>
+                  ) : (m.role as string) === "owner" ? (
+                    // The site owner: shown as such (it used to fall through to
+                    // the "editor" label), and not editable or removable here —
+                    // ownership only changes through "Transfer to client".
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                      {t("usersPage.roleOwner")}
+                    </span>
                   ) : (
                     <div className="flex items-center gap-3">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[m.role as Role] ?? ""}`}>

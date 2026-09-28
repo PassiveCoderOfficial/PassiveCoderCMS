@@ -1793,6 +1793,7 @@ export const en = {
   "usersPage.sendInvite": "Send Invite",
   "usersPage.inviteHint": "They'll receive an email to set up their account. You can change their role anytime.",
   "usersPage.roleAdmin": "admin",
+  "usersPage.roleOwner": "owner",
   "usersPage.roleEditor": "editor",
   "usersPage.roleAuthor": "author",
   "usersPage.roleAdminDesc": "Full dashboard access. Can manage team, settings, and all content.",
