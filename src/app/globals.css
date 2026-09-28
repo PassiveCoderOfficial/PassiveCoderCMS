@@ -243,3 +243,14 @@ html {
 
 /* Stat values: never push the page sideways, whatever the owner typed. */
 .stat-value { overflow-wrap: anywhere; min-width: 0; }
+
+/* Dark image fade tinted with the site's own primary colour. Replaces the old
+   fade-to-card (which washed photos out to white on light themes). */
+.theme-image-fade {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, hsl(var(--primary)) 55%, #05070f) 0%,
+    color-mix(in srgb, hsl(var(--primary)) 35%, rgb(5 7 15 / 0.35)) 38%,
+    transparent 72%
+  );
+}

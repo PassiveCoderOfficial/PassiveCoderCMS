@@ -112,7 +112,7 @@ function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) 
             {item.imageUrl && (
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image src={item.imageUrl} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
+                <div className="absolute inset-0 theme-image-fade" />
               </div>
             )}
             <div className="p-5">
@@ -252,7 +252,7 @@ function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }
             {item.imageUrl && (
               <div className="relative aspect-[16/9] overflow-hidden">
                 <Image src={item.imageUrl} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-card/90 to-transparent" />
+                <div className="absolute inset-0 theme-image-fade" />
               </div>
             )}
             <div className="p-5">

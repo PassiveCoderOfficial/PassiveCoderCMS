@@ -26,6 +26,8 @@ const SITE_NAME = "Bein Sports Riyadh";
 const SITE_NAME_AR = "بين سبورت الرياض";
 const PHONE = "+966503469371";
 const PHONE_DISPLAY = "+966 50 346 9371";
+// Isolated left-to-right so the number reads correctly inside Arabic (RTL) text.
+const PHONE_AR = "⁦+966 50 346 9371⁩";
 const WA_NUMBER = "966503469371";
 const ADDRESS = "PRH9+GX An Nasim Al Gharbi, Riyadh 14231, Saudi Arabia";
 const ADDRESS_AR = "النسيم الغربي، الرياض 14231، المملكة العربية السعودية";
@@ -34,10 +36,13 @@ const MAP_EMBED = "https://maps.google.com/maps?q=24.7287728,46.8198856&z=17&out
 const waText = (t) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
 
 const PURPLE = "#6A2C9E";
-const PURPLE_DEEP = "#2A0E4A";
-const PURPLE_DARK = "#1C0833";
+const PURPLE_DEEP = "#081330";
+const PURPLE_DARK = "#050B1E";
 const GOLD = "#FFC21A";
-const LAVENDER = "#F6F1FB";
+const NAVY = "#0A1633";      // page background
+const LAVENDER = "#0F1F45";  // alternate section band (kept name for call sites)
+const NAVY_CARD = "#13254F";
+const NAVY_DEEP = "#060E24";
 
 const STORAGE = `${SUPABASE_URL}/storage/v1/object/public/media/uploads/beinriyadh`;
 const LOGO_LIGHT = `${STORAGE}/logo-light.png`;
@@ -273,8 +278,8 @@ const T = {
     contactPage: {
       heroBadge: "تواصل معنا", heroTitle: "زورنا في المحل\nأو راسلنا", heroDesc: "مفتوحين 24 ساعة في النسيم الغربي، الرياض.",
       cards: [
-        ["MessageCircle", "واتساب", `${PHONE_DISPLAY}\nأسرع طريقة للطلب أو الاستفسار.`],
-        ["PhoneCall", "اتصل بنا", `${PHONE_DISPLAY}\nكلمنا مباشرة في أي وقت.`],
+        ["MessageCircle", "واتساب", `${PHONE_AR}\nأسرع طريقة للطلب أو الاستفسار.`],
+        ["PhoneCall", "اتصل بنا", `${PHONE_AR}\nكلمنا مباشرة في أي وقت.`],
         ["MapPin", "زورنا في المحل", "النسيم الغربي، الرياض\nمفتوح 24 ساعة يوميًا."],
       ],
       cardsTitle: "تواصل معنا بالطريقة اللي تناسبك",
@@ -356,7 +361,7 @@ function footer(L) {
     padding: ZERO, margin: ZERO, background: { type: "none" },
     data: {
       logo: LOGO_LIGHT, logoText: L.siteName, tagline: L.footer.tagline, logoCaption: "",
-      style: "dark", backgroundColor: PURPLE_DARK, accentColor: GOLD, textColor: "#d9cfe6",
+      style: "dark", backgroundColor: PURPLE_DARK, accentColor: GOLD, textColor: "#B8C4E0",
       copyrightText: L.footer.copyright, copyrightYear: true, showNewsletter: false,
       socials: [{ platform: "whatsapp", url: L.wa }],
       columns: [
@@ -379,14 +384,14 @@ function hero(L, { badge, title, subtitle, description, img, compact }) {
   return {
     ...BASE, id: uid("hero"), type: "hero", padding: ZERO,
     templateVariant: "fullscreen-overlay",
-    background: { type: "image", imageUrl: img, imageOverlay: PURPLE_DARK, imageOverlayOpacity: 0.72 },
+    background: { type: "image", imageUrl: img, imageOverlay: PURPLE_DARK, imageOverlayOpacity: 0.6 },
     data: {
       layout: "centered", badge, title, subtitle, description, compact: !!compact,
       badgeBgColor: GOLD, badgeTextColor: PURPLE_DARK,
       primaryButton: { label: L.whatsapp, url: L.wa, variant: "primary" },
-      secondaryButton: { label: L.lang ? `${L.call} ${PHONE_DISPLAY}` : L.call, url: `tel:${PHONE}`, variant: "outline" },
+      secondaryButton: { label: L.lang ? `${L.call} ${L.lang ? PHONE_AR : PHONE_DISPLAY}` : L.call, url: `tel:${PHONE}`, variant: "outline" },
       imageUrl: img,
-      typography: { titleSize: compact ? "5xl" : "6xl", titleColor: "#ffffff", subtitleColor: GOLD, descColor: "#ece4f5" },
+      typography: { titleSize: compact ? "5xl" : "6xl", titleColor: "#ffffff", subtitleColor: GOLD, descColor: "#DCE4F7" },
     },
   };
 }
@@ -404,7 +409,7 @@ function stats(L) {
 
 const SERVICE_IMAGES = [IMG.fans, IMG.stadiumAerial, IMG.fans2, IMG.dishes, IMG.fans3, IMG.repair];
 
-function servicesGrid(L, bg = "#ffffff") {
+function servicesGrid(L, bg = NAVY) {
   return {
     ...BASE, id: uid("svc"), type: "services", background: bgColor(bg),
     templateVariant: "program-cards-dark",
@@ -419,7 +424,7 @@ function servicesGrid(L, bg = "#ffffff") {
   };
 }
 
-function aboutSplit(L, bg = "#ffffff", img = IMG.fans2) {
+function aboutSplit(L, bg = NAVY, img = IMG.fans2) {
   return {
     ...BASE, id: uid("feat"), type: "features", background: bgColor(bg),
     templateVariant: "alternating-images",
@@ -436,12 +441,12 @@ function whyUs(L, bg = LAVENDER) {
     templateVariant: "outlined-cards",
     data: {
       title: L.why.title, subtitle: L.why.subtitle, columns: 3, iconSize: "md",
-      items: L.why.items.map(([icon, label, description]) => ({ id: uid("i"), icon, color: PURPLE, label, description })),
+      items: L.why.items.map(([icon, label, description]) => ({ id: uid("i"), icon, color: GOLD, label, description })),
     },
   };
 }
 
-function steps(L, bg = "#ffffff") {
+function steps(L, bg = NAVY) {
   return {
     ...BASE, id: uid("steps"), type: "steps", background: bgColor(bg),
     data: {
@@ -473,7 +478,7 @@ function reviews(L, bg = LAVENDER) {
   ];
 }
 
-function faq(L, items, bg = "#ffffff") {
+function faq(L, items, bg = NAVY) {
   return {
     ...BASE, id: uid("faq"), type: "faq", background: bgColor(bg),
     templateVariant: "accordion-bordered",
@@ -484,7 +489,7 @@ function faq(L, items, bg = "#ffffff") {
   };
 }
 
-function gallery(title, urls, bg = "#ffffff") {
+function gallery(title, urls, bg = NAVY) {
   return {
     ...BASE, id: uid("gal"), type: "gallery", background: bgColor(bg),
     data: {
@@ -521,17 +526,17 @@ function note(text, bg) {
 function cta(L) {
   return {
     ...BASE, id: uid("cta"), type: "cta",
-    background: { type: "gradient", gradient: `linear-gradient(135deg, ${PURPLE} 0%, ${PURPLE_DEEP} 100%)` },
+    background: { type: "gradient", gradient: `linear-gradient(135deg, #4B1F86 0%, ${NAVY_DEEP} 100%)` },
     templateVariant: "gradient-banner",
     data: {
       title: L.cta.title, description: L.cta.desc, layout: "centered",
       primaryButton: { label: L.whatsapp, url: L.wa },
-      secondaryButton: { label: L.lang ? `${L.call} ${PHONE_DISPLAY}` : L.call, url: `tel:${PHONE}` },
+      secondaryButton: { label: L.lang ? `${L.call} ${L.lang ? PHONE_AR : PHONE_DISPLAY}` : L.call, url: `tel:${PHONE}` },
     },
   };
 }
 
-function contact(L, bg = "#ffffff") {
+function contact(L, bg = NAVY) {
   const [fName, fPhone, fNeed, fMsg] = L.contact.fields;
   return {
     ...BASE, id: uid("contact"), type: "contact", background: bgColor(bg),
@@ -555,14 +560,14 @@ function homePage(L) {
   return [
     hero(L, { ...L.hero, img: IMG.stadium }),
     stats(L),
-    servicesGrid(L, "#ffffff"),
+    servicesGrid(L, NAVY),
     pricing(L, L.packages.subsTitle, L.packages.subsSubtitle, L.packages.plans, LAVENDER),
     note(L.packages.note, LAVENDER),
-    aboutSplit(L, "#ffffff"),
+    aboutSplit(L, NAVY),
     whyUs(L, LAVENDER),
-    steps(L, "#ffffff"),
+    steps(L, NAVY),
     ...reviews(L, LAVENDER),
-    faq(L, L.faq.slice(0, 4), "#ffffff"),
+    faq(L, L.faq.slice(0, 4), NAVY),
     cta(L),
     contact(L, LAVENDER),
   ];
@@ -572,10 +577,10 @@ function packagesPage(L) {
   const p = L.packages;
   return [
     hero(L, { badge: p.heroBadge, title: p.heroTitle, subtitle: L.siteName, description: p.heroDesc, img: IMG.stadium2, compact: true }),
-    pricing(L, p.subsTitle, p.subsSubtitle, p.plans, "#ffffff"),
+    pricing(L, p.subsTitle, p.subsSubtitle, p.plans, NAVY),
     pricing(L, p.hwTitle, p.hwSubtitle, p.hardware, LAVENDER),
     note(p.note, LAVENDER),
-    faq(L, L.faq.slice(0, 4), "#ffffff"),
+    faq(L, L.faq.slice(0, 4), NAVY),
     cta(L),
   ];
 }
@@ -584,9 +589,9 @@ function servicesPage(L) {
   const s = L.servicesPage;
   return [
     hero(L, { badge: s.heroBadge, title: s.heroTitle, subtitle: L.siteName, description: s.heroDesc, img: IMG.dishes, compact: true }),
-    servicesGrid(L, "#ffffff"),
+    servicesGrid(L, NAVY),
     steps(L, LAVENDER),
-    whyUs(L, "#ffffff"),
+    whyUs(L, NAVY),
     cta(L),
   ];
 }
@@ -595,10 +600,10 @@ function aboutPage(L) {
   const a = L.aboutPage;
   return [
     hero(L, { badge: a.heroBadge, title: a.heroTitle, subtitle: L.siteName, description: a.heroDesc, img: IMG.fans3, compact: true }),
-    aboutSplit(L, "#ffffff", IMG.fans),
+    aboutSplit(L, NAVY, IMG.fans),
     stats(L),
     whyUs(L, LAVENDER),
-    gallery(L.lang ? "من أجواء المشاهدة" : "Made for Match Day", [IMG.stadium2, IMG.fans2, IMG.stadiumAerial, IMG.dishBalcony, IMG.fans, IMG.stadiumDay], "#ffffff"),
+    gallery(L.lang ? "من أجواء المشاهدة" : "Made for Match Day", [IMG.stadium2, IMG.fans2, IMG.stadiumAerial, IMG.dishBalcony, IMG.fans, IMG.stadiumDay], NAVY),
     ...reviews(L, LAVENDER),
   ];
 }
@@ -607,7 +612,7 @@ function faqPage(L) {
   const f = L.faqPage;
   return [
     hero(L, { badge: f.heroBadge, title: f.heroTitle, subtitle: L.siteName, description: f.heroDesc, img: IMG.stadiumDay, compact: true }),
-    faq(L, L.faq, "#ffffff"),
+    faq(L, L.faq, NAVY),
     cta(L),
   ];
 }
@@ -616,16 +621,16 @@ function contactPage(L) {
   const c = L.contactPage;
   const links = [L.wa, `tel:${PHONE}`, GMB_URL];
   return [
-    hero(L, { badge: c.heroBadge, title: c.heroTitle, subtitle: `${PHONE_DISPLAY} · ${L.open}`, description: c.heroDesc, img: IMG.dishBalcony, compact: true }),
+    hero(L, { badge: c.heroBadge, title: c.heroTitle, subtitle: `${L.lang ? PHONE_AR : PHONE_DISPLAY} · ${L.open}`, description: c.heroDesc, img: IMG.dishBalcony, compact: true }),
     {
       ...BASE, id: uid("ig"), type: "icon_grid", background: bgColor(LAVENDER),
       templateVariant: "outlined-cards",
       data: {
         title: c.cardsTitle, subtitle: "", columns: 3, iconSize: "md",
-        items: c.cards.map(([icon, label, description], i) => ({ id: uid("i"), icon, color: PURPLE, label, description, url: links[i] })),
+        items: c.cards.map(([icon, label, description], i) => ({ id: uid("i"), icon, color: GOLD, label, description, url: links[i] })),
       },
     },
-    contact(L, "#ffffff"),
+    contact(L, NAVY),
   ];
 }
 
@@ -696,9 +701,9 @@ async function run() {
     favicon_url: FAVICON_URL,
     primary_color: PURPLE, secondary_color: PURPLE_DEEP,
     color_overrides: {
-      primary: PURPLE, primaryFg: "#ffffff", secondary: PURPLE_DEEP, accent: GOLD, ring: PURPLE,
-      background: "#ffffff", foreground: "#1d1026", card: "#ffffff", muted: LAVENDER, mutedFg: "#5d4f6b",
-      border: "#e6dcf0", borderRadius: "0.75rem",
+      primary: "#7B3FC4", primaryFg: "#ffffff", secondary: NAVY_CARD, accent: GOLD, ring: GOLD,
+      background: NAVY, foreground: "#EAF0FF", card: NAVY_CARD, muted: LAVENDER, mutedFg: "#A9B6D6",
+      border: "#22386B", borderRadius: "0.75rem",
     },
     design_overrides: { headingFont: "Cairo", bodyFont: "Cairo", headingWeight: "800", roundness: "soft", shadow: "normal" },
     global_header: header(T.en), global_footer: footer(T.en), global_prefooter: [],
@@ -713,7 +718,7 @@ async function run() {
   const { error: ssErr } = await sb.from("site_settings").upsert({
     tenant_id: tenantId, site_name: SITE_NAME,
     site_description: T.en.seo.home[1],
-    site_url: `https://${SLUG}.passivecoder.com`, timezone: "Asia/Riyadh", language: "en", maintenance_mode: false,
+    site_url: `https://${SLUG}.passivecoder.com`, timezone: "Asia/Riyadh", language: "en", maintenance_mode: false, site_theme: "light",
   }, { onConflict: "tenant_id" });
   if (ssErr) console.log("✗ site_settings:", ssErr.message);
 
