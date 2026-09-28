@@ -98,9 +98,10 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Te
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Phones: one swipeable row instead of a tall stack. */}
+        <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 pb-2 sm:pb-0">
           {items.map((t, i) => (
-            <div key={i} className="bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03] transition-all relative">
+            <div key={i} className="snap-start shrink-0 w-[85%] sm:w-auto bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.03] transition-all relative">
               <Quote className="w-5 h-5 text-orange-400/40 mb-4" />
 
               <div className="flex gap-0.5 mb-3">

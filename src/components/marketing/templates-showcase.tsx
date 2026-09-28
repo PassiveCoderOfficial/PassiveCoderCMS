@@ -123,6 +123,7 @@ function TemplateCard({ template }: { template: Template }) {
 }
 
 const ITEMS_PER_PAGE = 12;
+const MOBILE_ITEMS = 4;
 
 /**
  * @param extraTemplates the published templates to show, mapped from the
@@ -208,13 +209,19 @@ export default function TemplatesShowcase({ extraTemplates = [] }: { extraTempla
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {displayed.map(t => <TemplateCard key={t.id} template={t} />)}
+            {/* Phones show 4 until "Show all": each card is a full screen tall
+                there, so 12 made this one section ~6,800px. */}
+            {displayed.map((t, i) => (
+              <div key={t.id} className={!showAll && i >= MOBILE_ITEMS ? "hidden sm:block" : undefined}>
+                <TemplateCard template={t} />
+              </div>
+            ))}
           </div>
         )}
 
         {/* Load more */}
-        {hasMore && (
-          <div className="text-center mt-12">
+        {(hasMore || (!showAll && filtered.length > MOBILE_ITEMS)) && (
+          <div className={`text-center mt-12 ${hasMore ? "" : "sm:hidden"}`}>
             <button
               onClick={() => setShowAll(true)}
               className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.1] hover:border-white/[0.2] text-slate-300 hover:text-white font-semibold px-8 py-3.5 rounded-xl transition-all"

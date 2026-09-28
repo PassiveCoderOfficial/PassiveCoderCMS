@@ -103,23 +103,24 @@ export default function FeaturesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
+        {/* Phones: 2-up, icon + title only (12 full cards were ~4,000px there). */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mt-12">
           {FEATURES.map(({ icon: Icon, title, desc, highlight }) => (
             <div
               key={title}
-              className={`group p-6 rounded-2xl border transition-all ${
+              className={`group p-4 sm:p-6 rounded-2xl border transition-all ${
                 highlight
                   ? "border-orange-400/20 bg-gradient-to-br from-orange-500/[0.08] to-rose-500/[0.05] hover:border-orange-400/30"
                   : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.03]"
               }`}
             >
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors ${
+              <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center mb-3 sm:mb-4 transition-colors ${
                 highlight ? "bg-gradient-to-br from-orange-500 to-rose-500 shadow-lg shadow-orange-950/50" : "bg-white/[0.05] group-hover:bg-white/[0.08]"
               }`}>
                 <Icon className={`w-5 h-5 ${highlight ? "text-white" : "text-orange-300"}`} />
               </div>
-              <h3 className="font-semibold text-white mb-2">{title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+              <h3 className="text-sm sm:text-base font-semibold text-white leading-snug sm:mb-2">{title}</h3>
+              <p className="hidden sm:block text-sm text-slate-400 leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>

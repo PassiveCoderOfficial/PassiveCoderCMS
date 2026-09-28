@@ -155,7 +155,7 @@ export default function ClientsSection() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
           {filtered.map((client) => (
             <a
               key={client.domain}
@@ -179,10 +179,10 @@ export default function ClientsSection() {
                   className="object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
                 />
               </div>
-              <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+              <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3.5">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-white text-sm truncate group-hover:text-orange-300 transition-colors">{client.name}</h3>
-                  <p className="text-xs text-slate-500">{client.category} · {client.flag}</p>
+                  <p className="text-xs text-slate-500 truncate">{client.category} · {client.flag}</p>
                 </div>
                 <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-orange-400 transition-colors shrink-0" />
               </div>
