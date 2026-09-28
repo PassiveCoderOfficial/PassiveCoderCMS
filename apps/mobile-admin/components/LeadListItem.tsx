@@ -1,5 +1,6 @@
 import React from "react";
 import { Linking, Pressable, Text, View } from "react-native";
+import { useLanguage } from "../lib/languageContext";
 import { router } from "expo-router";
 import { radius, shadow, spacing, type } from "../lib/theme";
 import { useTheme } from "../lib/themeContext";
@@ -20,7 +21,8 @@ export function LeadListItem({
   stage: CrmStage | null | undefined;
 }) {
   const { palette } = useTheme();
-  const subtitle = lead.company || lead.phone || lead.email || "No contact info";
+  const { t } = useLanguage();
+  const subtitle = lead.company || lead.phone || lead.email || t("lead.noContact");
 
   return (
     <Pressable
@@ -54,17 +56,17 @@ export function LeadListItem({
           {subtitle}
         </Text>
         <Text style={[type.caption, { color: palette.textFaint }]}>
-          {lead.last_activity_at ? relativeTime(lead.last_activity_at) : "No activity yet"}
+          {lead.last_activity_at ? relativeTime(lead.last_activity_at) : t("lead.noActivity")}
         </Text>
       </View>
       <View style={{ alignItems: "flex-end", gap: 8 }}>
         <StageBadge stage={stage} />
         {lead.phone ? (
           <View style={{ flexDirection: "row", gap: 6 }}>
-            <QuickContact icon="call-outline" label="Call" onPress={() => Linking.openURL(`tel:${lead.phone}`)} />
+            <QuickContact icon="call-outline" label={t("lead.call")} onPress={() => Linking.openURL(`tel:${lead.phone}`)} />
             <QuickContact
               icon="logo-whatsapp"
-              label="WhatsApp"
+              label={t("lead.whatsapp")}
               tint="#25D366"
               onPress={() => Linking.openURL(`https://wa.me/${String(lead.phone).replace(/[^\d]/g, "")}`)}
             />

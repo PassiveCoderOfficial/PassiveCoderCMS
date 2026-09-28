@@ -2,6 +2,7 @@
 // only in the one case with nowhere to send them.
 
 import { useEffect } from "react";
+import { useLanguage } from "../lib/languageContext";
 import { router } from "expo-router";
 import { Alert, Pressable, Text } from "react-native";
 import { useAuth } from "../lib/auth";
@@ -11,6 +12,7 @@ import { EmptyState, LoadingSpinner, Screen } from "../components/ui";
 export default function Index() {
   const { user, loading: authLoading, logout } = useAuth();
   const { role, isManager, memberships, loading: roleLoading } = useRole();
+  const { t } = useLanguage();
 
   const ready = !authLoading && !roleLoading;
   // A non-manager staffer with no real site memberships has nowhere to go
@@ -67,24 +69,24 @@ export default function Index() {
       <Screen>
         <EmptyState
           icon="🚀"
-          title="No sites yet"
+          title={t("home.noSites")}
           subtitle={
             staffWithNoSites
-              ? "You're not assigned to any sites yet. Ask a manager to add you as a member on a site, or make you a manager."
-              : "Create your first site to get started, or ask an administrator to add you to an existing one."
+              ? t("home.staffNoSites")
+              : t("home.createFirst")
           }
-          action={staffWithNoSites ? undefined : { label: "Create a site", onPress: () => router.replace("/onboard") }}
+          action={staffWithNoSites ? undefined : { label: t("login.createSite"), onPress: () => router.replace("/onboard") }}
         />
         <Pressable
           onPress={() => {
-            Alert.alert("Sign out?", "You'll need to sign in again.", [
-              { text: "Cancel", style: "cancel" },
-              { text: "Sign out", style: "destructive", onPress: () => { logout().catch(() => {}); } },
+            Alert.alert(t("home.signOutConfirm"), t("home.signInAgain"), [
+              { text: t("common.cancel"), style: "cancel" },
+              { text: t("home.signOut"), style: "destructive", onPress: () => { logout().catch(() => {}); } },
             ]);
           }}
           style={{ alignSelf: "center", marginTop: 16 }}
         >
-          <Text style={{ color: "#888", fontSize: 13 }}>Sign out</Text>
+          <Text style={{ color: "#888", fontSize: 13 }}>{t("home.signOut")}</Text>
         </Pressable>
       </Screen>
     );

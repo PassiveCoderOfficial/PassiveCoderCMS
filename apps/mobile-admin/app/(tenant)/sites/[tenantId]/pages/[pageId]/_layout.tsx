@@ -1,5 +1,6 @@
 import { Pressable } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
+import { useLanguage } from "../../../../../../lib/languageContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTheme } from "../../../../../../lib/themeContext";
 import { PageEditProvider } from "../../../../../../lib/pageEditContext";
@@ -12,6 +13,7 @@ import { PageEditProvider } from "../../../../../../lib/pageEditContext";
 export default function PageEditStackLayout() {
   const { pageId } = useLocalSearchParams<{ pageId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <PageEditProvider pageId={pageId}>
@@ -26,7 +28,7 @@ export default function PageEditStackLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: "Page",
+            title: t("screen.page"),
             // First screen of this inner Stack gets no automatic back button;
             // the outer header that used to provide one is now hidden.
             headerLeft: () => (
@@ -42,8 +44,8 @@ export default function PageEditStackLayout() {
             ),
           }}
         />
-        <Stack.Screen name="blocks" options={{ title: "Blocks" }} />
-        <Stack.Screen name="blocks/[blockId]" options={{ title: "Edit block" }} />
+        <Stack.Screen name="blocks" options={{ title: t("screen.blocks") }} />
+        <Stack.Screen name="blocks/[blockId]" options={{ title: t("screen.editBlock") }} />
       </Stack>
     </PageEditProvider>
   );

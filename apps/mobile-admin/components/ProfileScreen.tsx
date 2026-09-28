@@ -19,11 +19,11 @@ import { Icon } from "./Icon";
 /** Passive Coder support line (same number the web sidebar uses). */
 const SUPPORT_WHATSAPP = "8801678669699";
 
-const ROLE_LABEL: Record<string, string> = {
-  super_admin: "Super Admin",
-  pc_staff: "Passive Coder Staff",
-  tenant: "Site member",
-};
+const ROLE_KEY = {
+  super_admin: "profile.roleSuperAdmin",
+  pc_staff: "profile.roleStaff",
+  tenant: "profile.roleMember",
+} as const;
 
 export function ProfileScreen({ showMemberships }: { showMemberships: boolean }) {
   const { user, logout } = useAuth();
@@ -40,25 +40,25 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
   ];
 
   const email = user?.email ?? "";
-  const roleLabel = (role ? ROLE_LABEL[role] : undefined) ?? "Member";
+  const roleLabel = t(role ? ROLE_KEY[role] : "profile.roleMember");
   const version = Constants.expoConfig?.version;
 
   function confirmLogout() {
     warningFeedback();
-    const doLogout = () => logout().catch(() => toast.error("Couldn't log out — try again"));
+    const doLogout = () => logout().catch(() => toast.error(t("profile.logoutFailed")));
     // Alert.alert is a no-op on react-native-web, which left the web preview
     // with a logout button that did nothing.
     if (Platform.OS === "web") {
-      if (typeof window !== "undefined" && window.confirm("Log out? You'll need to sign in again.")) doLogout();
+      if (typeof window !== "undefined" && window.confirm(`${t("profile.logoutConfirm")} ${t("profile.logoutHint")}`)) doLogout();
       return;
     }
-    Alert.alert("Log out?", "You'll need to sign in again to manage your sites.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("profile.logoutConfirm"), t("profile.logoutHint"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
         text: t("profile.logOut"),
         style: "destructive",
         onPress: () => {
-          logout().catch(() => toast.error("Couldn't log out — try again"));
+          logout().catch(() => toast.error(t("profile.logoutFailed")));
         },
       },
     ]);
@@ -69,18 +69,18 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
       <Card style={{ alignItems: "center", gap: spacing.sm, paddingVertical: spacing.xl }}>
         <Avatar text={email.slice(0, 2).toUpperCase() || "?"} size={64} />
         <Text style={[type.heading, { color: palette.text, textAlign: "center" }]} numberOfLines={1}>
-          {email || "Signed in"}
+          {email || t("profile.signedIn")}
         </Text>
         <View style={{ flexDirection: "row", gap: spacing.sm, flexWrap: "wrap", justifyContent: "center" }}>
           <Badge label={roleLabel} tone="brand" />
-          {isManager && <Tag label="Manager" />}
+          {isManager && <Tag label={t("profile.manager")} />}
         </View>
       </Card>
 
       <SectionHeader title={t("profile.appearance")} />
       <Card style={{ gap: spacing.md }}>
         <Text style={[type.caption, { color: palette.textMuted }]}>
-          System follows your device's light or dark setting.
+          {t("profile.systemHint")}
         </Text>
         <View style={{ flexDirection: "row", gap: spacing.sm }}>
           {APPEARANCE_OPTIONS.map((opt) => (
@@ -103,7 +103,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
           <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
             {memberships.length === 0 ? (
               <View style={{ padding: spacing.lg }}>
-                <Text style={[type.caption, { color: palette.textMuted }]}>No site memberships.</Text>
+                <Text style={[type.caption, { color: palette.textMuted }]}>{t("profile.noMemberships")}</Text>
               </View>
             ) : (
               memberships.map((m) => (
@@ -121,7 +121,7 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
                   }
                   onPress={() => {
                     setSelectedTenantId(m.tenantId);
-                    toast.success(`Switched to ${m.tenant.name}`);
+                    toast.success(t("profile.switchedTo", { name: m.tenant.name }));
                   }}
                 />
               ))
@@ -130,12 +130,12 @@ export function ProfileScreen({ showMemberships }: { showMemberships: boolean })
         </>
       )}
 
-      <SectionHeader title="Help" />
+      <SectionHeader title={t("profile.help")} />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
         <Row
           icon="logo-whatsapp"
-          title="Chat with Passive Coder"
-          subtitle="Questions, changes or payment help"
+          title={t("profile.chatUs")}
+          subtitle={t("profile.chatUsHint")}
           onPress={() => Linking.openURL(`https://wa.me/${SUPPORT_WHATSAPP}`)}
         />
       </Card>

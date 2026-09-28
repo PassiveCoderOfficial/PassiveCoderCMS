@@ -8,6 +8,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { en, type TranslationKey } from "./locales/en";
 import { bn } from "./locales/bn";
+import { setFormatLanguage } from "./format";
 
 export type Language = "en" | "bn";
 
@@ -45,6 +46,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   const value = useMemo(() => {
+    setFormatLanguage(language);
     function t(key: TranslationKey, vars?: Record<string, string | number>): string {
       let str = DICTS[language][key] ?? en[key] ?? key;
       if (vars) {

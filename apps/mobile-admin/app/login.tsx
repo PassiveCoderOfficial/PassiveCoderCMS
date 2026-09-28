@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
+import { useLanguage } from "../lib/languageContext";
 import { router } from "expo-router";
 import { useAuth } from "../lib/auth";
 import { Button, ErrorText, Field, TextField } from "../components/form";
@@ -11,6 +12,7 @@ import { useTheme } from "../lib/themeContext";
 export default function LoginScreen() {
   const { login } = useAuth();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +32,7 @@ export default function LoginScreen() {
     setError(null);
 
     if (!email.includes("@")) {
-      setEmailError("Enter a valid email address.");
+      setEmailError(t("login.invalidEmail"));
       return;
     }
 
@@ -38,7 +40,7 @@ export default function LoginScreen() {
     const r = await login(email.trim(), password);
     setBusy(false);
     if (!r.ok) {
-      setError(r.error ?? "Login failed");
+      setError(r.error ?? t("login.failed"));
       return;
     }
     // index.tsx's redirect effect takes over from here.
@@ -55,14 +57,14 @@ export default function LoginScreen() {
             resizeMode="cover"
           />
         </View>
-        <Text style={[type.display, { color: palette.text, marginTop: spacing.lg }]}>Welcome back</Text>
+        <Text style={[type.display, { color: palette.text, marginTop: spacing.lg }]}>{t("login.welcome")}</Text>
         <Text style={[type.body, { color: palette.textMuted, textAlign: "center" }]}>
-          Sign in to manage your sites, leads and pages.
+          {t("login.subtitle")}
         </Text>
       </View>
 
       <Card style={{ gap: 14 }}>
-        <Field label="Email" required error={emailError ?? undefined}>
+        <Field label={t("login.email")} required error={emailError ?? undefined}>
           <TextField
             value={email}
             onChangeText={(t) => {
@@ -80,7 +82,7 @@ export default function LoginScreen() {
           />
         </Field>
 
-        <Field label="Password" required>
+        <Field label={t("login.password")} required>
           <View style={{ position: "relative", justifyContent: "center" }}>
             <TextField
               ref={passwordRef}
@@ -99,7 +101,7 @@ export default function LoginScreen() {
               onPress={() => setShowPassword((v) => !v)}
               hitSlop={10}
               accessibilityRole="button"
-              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+              accessibilityLabel={showPassword ? t("login.hidePassword") : t("login.showPassword")}
               style={{
                 position: "absolute",
                 right: 4,
@@ -117,7 +119,7 @@ export default function LoginScreen() {
 
         <ErrorText>{error}</ErrorText>
 
-        <Button title="Sign In" onPress={submit} loading={busy} disabled={!canSubmit} style={{ marginTop: spacing.xs }} />
+        <Button title={t("login.signIn")} onPress={submit} loading={busy} disabled={!canSubmit} style={{ marginTop: spacing.xs }} />
       </Card>
 
       <Pressable
@@ -125,7 +127,7 @@ export default function LoginScreen() {
         style={({ pressed }) => ({ alignSelf: "center", marginTop: spacing.lg, padding: spacing.sm, opacity: pressed ? 0.6 : 1 })}
       >
         <Text style={[type.body, { color: palette.textMuted }]}>
-          New here? <Text style={{ color: palette.primary600, fontWeight: "700" }}>Create a site</Text>
+          {t("login.newHere")} <Text style={{ color: palette.primary600, fontWeight: "700" }}>{t("login.createSite")}</Text>
         </Text>
       </Pressable>
 

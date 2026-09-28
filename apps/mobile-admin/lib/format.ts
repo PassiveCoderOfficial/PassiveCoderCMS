@@ -1,6 +1,19 @@
 // Small display helpers shared across screens. Kept dependency-free —
 // pulling in a date library for three functions isn't worth the bundle.
 
+import { en } from "./locales/en";
+import { bn } from "./locales/bn";
+
+// Plain functions can't call useLanguage(), so LanguageProvider pushes the
+// current language in here. Screens re-render on a language change anyway
+// (they read t()), which re-runs these with the new value.
+let dict: Record<string, string> = en;
+export function setFormatLanguage(lang: "en" | "bn") {
+  dict = lang === "bn" ? bn : en;
+}
+const tr = (key: keyof typeof en, n?: number) =>
+  n === undefined ? dict[key] : dict[key].replace("{n}", String(n));
+
 /** "just now" / "5m ago" / "3h ago" / "2d ago" / "12 Mar" / "12 Mar 2025" */
 export function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -10,14 +23,14 @@ export function relativeTime(iso: string | null | undefined): string {
   const diffMs = Date.now() - then;
   const mins = Math.floor(diffMs / 60_000);
 
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return tr("time.justNow");
+  if (mins < 60) return tr("time.minutesAgo", mins);
 
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return tr("time.hoursAgo", hours);
 
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return tr("time.daysAgo", days);
 
   const d = new Date(iso);
   const sameYear = d.getFullYear() === new Date().getFullYear();
@@ -51,7 +64,7 @@ export function leadDisplayName(lead: {
   company?: string | null;
 }): string {
   const name = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim();
-  return name || lead.company || lead.email || lead.phone || "Unnamed lead";
+  return name || lead.company || lead.email || lead.phone || tr("lead.unnamed");
 }
 
 /** Two-letter avatar initials from whatever identity fields exist. */

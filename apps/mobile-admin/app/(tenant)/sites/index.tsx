@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, View } from "react-native";
+import { useLanguage } from "../../../lib/languageContext";
 import { router } from "expo-router";
 import { useRole } from "../../../lib/role";
 import { useSelectedTenant } from "../../../lib/tenant";
@@ -13,6 +14,7 @@ const SEARCH_THRESHOLD = 6;
 
 export default function SitesScreen() {
   const { memberships, loading: roleLoading } = useRole();
+  const { t } = useLanguage();
   const { setSelectedTenantId, loading: tenantLoading } = useSelectedTenant();
   const [query, setQuery] = useState("");
 
@@ -41,8 +43,8 @@ export default function SitesScreen() {
     return (
       <Screen>
         <EmptyState
-          title="No sites yet"
-          subtitle="You don't have access to any sites."
+          title={t("sites.none")}
+          subtitle={t("sites.noneHint")}
           icon="🌐"
         />
       </Screen>
@@ -58,7 +60,7 @@ export default function SitesScreen() {
     <Screen scroll={false}>
       {showSearch && (
         <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
-          <SearchField value={query} onChangeText={setQuery} placeholder="Search sites" />
+          <SearchField value={query} onChangeText={setQuery} placeholder={t("sites.search")} />
         </View>
       )}
       <FlatList
@@ -78,8 +80,8 @@ export default function SitesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="No matching sites"
-            subtitle="Try a different name or slug."
+            title={t("sites.noMatch")}
+            subtitle={t("sites.noMatchHint")}
             icon="🔍"
           />
         }

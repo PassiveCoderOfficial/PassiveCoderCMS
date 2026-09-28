@@ -1,5 +1,6 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useTheme } from "../../../../lib/themeContext";
+import { useLanguage } from "../../../../lib/languageContext";
 import { useRole } from "../../../../lib/role";
 import { TenantHeaderTitle } from "../../../../components/TenantSwitcher";
 
@@ -7,6 +8,7 @@ import { TenantHeaderTitle } from "../../../../components/TenantSwitcher";
 // domain, transfer) into a single Stack segment nested under sites/_layout.
 export default function TenantSiteStackLayout() {
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { memberships } = useRole();
   const siteName = memberships.find((m) => m.tenantId === tenantId)?.tenant.name;
@@ -28,17 +30,17 @@ export default function TenantSiteStackLayout() {
         contentStyle: { backgroundColor: palette.bg },
       }}
     >
-      <Stack.Screen name="pages/index" options={titled("Pages")} />
+      <Stack.Screen name="pages/index" options={titled(t("screen.pages"))} />
       {/* The page editor has its own inner Stack with its own header; showing
           this one too stacked two app bars ("Page" over "Blocks"). */}
-      <Stack.Screen name="pages/[pageId]" options={{ title: "Page", headerShown: false }} />
-      <Stack.Screen name="leads/index" options={titled("Leads")} />
-      <Stack.Screen name="leads/[contactId]" options={{ title: "Lead" }} />
-      <Stack.Screen name="settings" options={titled("Settings")} />
-      <Stack.Screen name="billing" options={titled("Billing")} />
-      <Stack.Screen name="support" options={titled("Support")} />
-      <Stack.Screen name="domain" options={titled("Domain")} />
-      <Stack.Screen name="transfer" options={{ title: "Transfer ownership" }} />
+      <Stack.Screen name="pages/[pageId]" options={{ title: t("screen.page"), headerShown: false }} />
+      <Stack.Screen name="leads/index" options={titled(t("screen.leads"))} />
+      <Stack.Screen name="leads/[contactId]" options={{ title: t("screen.lead") }} />
+      <Stack.Screen name="settings" options={titled(t("screen.settings"))} />
+      <Stack.Screen name="billing" options={titled(t("screen.billing"))} />
+      <Stack.Screen name="support" options={titled(t("screen.support"))} />
+      <Stack.Screen name="domain" options={titled(t("screen.domain"))} />
+      <Stack.Screen name="transfer" options={{ title: t("screen.transfer") }} />
       <Stack.Screen name="restaurant" options={{ headerShown: false }} />
     </Stack>
   );

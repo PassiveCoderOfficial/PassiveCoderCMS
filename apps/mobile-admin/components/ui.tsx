@@ -24,6 +24,8 @@ import type { Palette } from "../lib/theme";
 import { useTheme } from "../lib/themeContext";
 import { tapFeedback } from "../lib/haptics";
 import { Chevron, Icon, IconTile } from "./Icon";
+import { useLanguage } from "../lib/languageContext";
+import { en } from "../lib/locales/en";
 
 /* ------------------------------------------------------------------ Screen */
 
@@ -502,6 +504,11 @@ export function Badge({ label, tone }: { label: string; tone?: BadgeTone }) {
   // humanised label silently falls through to the brand colour.
   const key = label.trim().toLowerCase().replace(/\s+/g, "_");
   const resolved = tone ?? LABEL_TONE[key] ?? "brand";
+  // Known status values ("published", "active"...) are shown translated;
+  // anything else (names, free text) passes through untouched.
+  const { t } = useLanguage();
+  const statusKey = `status.${key}` as keyof typeof en;
+  const text = statusKey in en ? t(statusKey) : label;
   const meta = toneColors(palette, resolved);
   return (
     <View
@@ -514,7 +521,7 @@ export function Badge({ label, tone }: { label: string; tone?: BadgeTone }) {
       }}
     >
       <Text style={{ fontSize: 11, fontWeight: "700", textTransform: "capitalize", color: meta.text }}>
-        {label}
+        {text}
       </Text>
     </View>
   );

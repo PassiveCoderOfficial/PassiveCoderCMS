@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
+import { useLanguage } from "../../lib/languageContext";
 import { router } from "expo-router";
 import { useRole } from "../../lib/role";
 import { useSelectedTenant } from "../../lib/tenant";
@@ -29,15 +30,16 @@ import { hasRestaurantAccess } from "../../lib/restaurant";
 import { Icon } from "../../components/Icon";
 import { publicHost, publicUrl } from "../../lib/siteUrls";
 
-function greeting(): string {
+function greeting(t: ReturnType<typeof useLanguage>["t"]): string {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return t("dash.morning");
+  if (h < 18) return t("dash.afternoon");
+  return t("dash.evening");
 }
 
 export default function DashboardScreen() {
   const { memberships } = useRole();
+  const { t } = useLanguage();
   const { selectedTenantId, loading: tenantLoading } = useSelectedTenant();
   const { palette } = useTheme();
   const { error: toastError } = useToast();
@@ -69,7 +71,7 @@ export default function DashboardScreen() {
       setStats(s);
       setLeads(l);
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load dashboard");
+      toastError(e instanceof Error ? e.message : t("dash.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -97,10 +99,10 @@ export default function DashboardScreen() {
     return (
       <Screen>
         <EmptyState
-          title="No site selected"
-          subtitle="Pick a site to see its dashboard."
+          title={t("dash.noSite")}
+          subtitle={t("dash.noSiteHint")}
           icon="🌐"
-          action={{ label: "Choose a site", onPress: () => router.push("/(tenant)/sites") }}
+          action={{ label: t("dash.chooseSite"), onPress: () => router.push("/(tenant)/sites") }}
         />
       </Screen>
     );
@@ -118,7 +120,7 @@ export default function DashboardScreen() {
     >
       {/* -------------------------------------------------------- Greeting */}
       <View style={{ gap: 6 }}>
-        <Text style={[type.body, { color: palette.textMuted }]}>{greeting()}</Text>
+        <Text style={[type.body, { color: palette.textMuted }]}>{greeting(t)}</Text>
         <Text style={[type.display, { color: palette.text }]} numberOfLines={2}>
           {tenant.name}
         </Text>
@@ -127,9 +129,9 @@ export default function DashboardScreen() {
 
       {/* --------------------------------------------------- Quick actions */}
       <View style={{ flexDirection: "row", gap: 10 }}>
-        <QuickAction icon="open-outline" label="View site" onPress={() => Linking.openURL(publicUrl(tenant))} />
-        <QuickAction icon="document-text-outline" label="Pages" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)} />
-        <QuickAction icon="people-outline" label="Leads" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)} />
+        <QuickAction icon="open-outline" label={t("dash.viewSite")} onPress={() => Linking.openURL(publicUrl(tenant))} />
+        <QuickAction icon="document-text-outline" label={t("dash.pages")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)} />
+        <QuickAction icon="people-outline" label={t("dash.leads")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)} />
       </View>
 
       {/* ----------------------------------------------------------- Stats */}
@@ -137,14 +139,14 @@ export default function DashboardScreen() {
         <StatCard
           loading={loading}
           value={stats?.publishedPages}
-          label="Published"
+          label={t("dash.published")}
           icon="checkmark-circle-outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
         />
         <StatCard
           loading={loading}
           value={stats?.draftPages}
-          label="Drafts"
+          label={t("dash.drafts")}
           icon="create-outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/pages`)}
         />
@@ -153,14 +155,14 @@ export default function DashboardScreen() {
         <StatCard
           loading={loading}
           value={stats?.totalLeads}
-          label="Total leads"
+          label={t("dash.totalLeads")}
           icon="people-outline"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)}
         />
         <StatCard
           loading={loading}
           value={stats?.newLeadsThisWeek}
-          label="New this week"
+          label={t("dash.newThisWeek")}
           icon="sparkles-outline"
           highlight
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)}
@@ -168,7 +170,7 @@ export default function DashboardScreen() {
       </View>
 
       {/* ---------------------------------------------------- Recent leads */}
-      <SectionHeader title="Recent leads" />
+      <SectionHeader title={t("dash.recentLeads")} />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
         {loading ? (
           <View style={{ padding: spacing.lg, gap: spacing.md }}>
@@ -178,9 +180,9 @@ export default function DashboardScreen() {
         ) : leads.length === 0 ? (
           <View style={{ paddingVertical: spacing.xl, paddingHorizontal: spacing.lg, alignItems: "center", gap: 4 }}>
             <Icon name="mail-open-outline" size={28} color={palette.textFaint} />
-            <Text style={[type.bodyStrong, { color: palette.text }]}>No leads yet</Text>
+            <Text style={[type.bodyStrong, { color: palette.text }]}>{t("dash.noLeads")}</Text>
             <Text style={[type.caption, { color: palette.textMuted, textAlign: "center" }]}>
-              New enquiries from your site will show up here.
+              {t("dash.noLeadsHint")}
             </Text>
           </View>
         ) : (
@@ -197,14 +199,14 @@ export default function DashboardScreen() {
       </Card>
       {leads.length > 0 && (
         <Button
-          title="View all leads"
+          title={t("dash.viewAllLeads")}
           variant="ghost"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads`)}
         />
       )}
 
       {/* ------------------------------------------------------------ Site */}
-      <SectionHeader title="Site" />
+      <SectionHeader title={t("dash.site")} />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
         <View style={{ padding: spacing.lg, gap: 6 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -217,33 +219,33 @@ export default function DashboardScreen() {
             {(stats?.customDomain ?? tenant.custom_domain) ? (
               <Badge label={humanize(stats?.domainStatus ?? tenant.domain_status)} />
             ) : (
-              <Badge label="Free subdomain" tone="neutral" />
+              <Badge label={t("dash.freeSubdomain")} tone="neutral" />
             )}
             <Text style={[type.caption, { color: palette.textMuted }]}>
-              {humanize(stats?.plan ?? tenant.plan)} plan
+              {t("dash.planSuffix", { plan: humanize(stats?.plan ?? tenant.plan) })}
             </Text>
           </View>
         </View>
         <Row
           icon="⚙️"
-          title="Site settings"
+          title={t("dash.siteSettings")}
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/settings`)}
         />
         <Row
           icon="🌐"
-          title="Domain"
+          title={t("dash.domain")}
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/domain`)}
         />
         <Row
           icon="💳"
-          title="Billing"
+          title={t("dash.billing")}
           subtitle={humanize(stats?.plan ?? tenant.plan)}
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/billing`)}
         />
         <Row
           icon="🎫"
-          title="Support"
-          subtitle="Get help from our team"
+          title={t("dash.support")}
+          subtitle={t("dash.supportHint")}
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/support`)}
         />
       </Card>
@@ -251,14 +253,14 @@ export default function DashboardScreen() {
       {/* ------------------------------------------------------ Restaurant */}
       {restaurantAccess && (
         <>
-          <SectionHeader title="Restaurant" />
+          <SectionHeader title={t("dash.restaurant")} />
           <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
-            <Row icon="🍳" title="Kitchen" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/kitchen`)} />
-            <Row icon="🧾" title="POS" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/pos`)} />
-            <Row icon="🏪" title="Branches" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/branches`)} />
-            <Row icon="🏍️" title="Riders" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/riders`)} />
-            <Row icon="📅" title="Reservations" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/reservations`)} />
-            <Row icon="📊" title="Sales" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/sales`)} />
+            <Row icon="🍳" title={t("dash.kitchen")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/kitchen`)} />
+            <Row icon="🧾" title={t("dash.pos")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/pos`)} />
+            <Row icon="🏪" title={t("dash.branches")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/branches`)} />
+            <Row icon="🏍️" title={t("dash.riders")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/riders`)} />
+            <Row icon="📅" title={t("dash.reservations")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/reservations`)} />
+            <Row icon="📊" title={t("dash.sales")} onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/sales`)} />
           </Card>
         </>
       )}
