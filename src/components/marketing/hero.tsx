@@ -55,16 +55,16 @@ export default function HeroSection({ settings }: { settings: Settings | null })
           </h1>
 
           <p className="mt-6 text-lg text-slate-300/90 leading-relaxed max-w-xl">
-            {s.hero_subheadline ??
+            {s.hero_subheadline ||
               "We build and run a professional website for your business, with WhatsApp enquiries, online booking and a shop built in. You serve customers. We handle the tech."}
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row gap-3">
             <Link
-              href={s.hero_cta_url ?? "/onboarding"}
+              href={s.hero_cta_url || "/onboarding"}
               className="group inline-flex items-center justify-center gap-2 bg-white text-slate-950 font-semibold px-7 py-4 rounded-xl shadow-2xl shadow-orange-950/40 transition-transform hover:-translate-y-0.5"
             >
-              {s.hero_cta_text ?? "Get my website"}
+              {s.hero_cta_text || "Get my website"}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <a
@@ -86,17 +86,17 @@ export default function HeroSection({ settings }: { settings: Settings | null })
 
           <div className="mt-10 flex items-center gap-6 border-t border-white/[0.08] pt-6">
             <div>
-              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_sites ?? "17+"}</div>
+              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_sites || "17+"}</div>
               <div className="text-xs text-slate-500">live client websites</div>
             </div>
             <div className="w-px h-10 bg-white/10" />
             <div>
-              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_businesses ?? "8"}</div>
+              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_businesses || "8"}</div>
               <div className="text-xs text-slate-500">countries</div>
             </div>
             <div className="w-px h-10 bg-white/10" />
             <div>
-              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_uptime ?? "99.9%"}</div>
+              <div className="text-2xl font-bold text-white tabular-nums">{s.stat_uptime || "99.9%"}</div>
               <div className="text-xs text-slate-500">uptime</div>
             </div>
           </div>
