@@ -20,6 +20,8 @@ import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home"
 import { LocationConsent } from "@/components/donors/location-consent";
 import { PushConsent } from "@/components/donors/push-consent";
 import { resolveSiteTheme } from "@/modules/themes/site-theme";
+import { CartProvider } from "@/lib/cart/cart-context";
+import { CartDrawer } from "@/components/site/cart-drawer";
 import { buildTemplateBodyScript } from "@/modules/themes/template-css";
 import { publicUrl } from "@/lib/tenant/site-urls";
 import type { Block } from "@/types/cms";
@@ -106,7 +108,12 @@ export default async function MarketingHomePage() {
       : blocks;
 
     if (rawBlocks.length > 0) {
+      // Same cart setup as (site)/layout.tsx. The homepage renders here, not
+      // through that layout, so product blocks on "/" had no CartProvider:
+      // their add-to-cart buttons silently did nothing (logged live on shop
+      // homepages as "useCart() called outside <CartProvider>").
       return (
+        <CartProvider>
         <div className="min-h-screen">
           {templateCSSVars && (
             <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />
@@ -131,6 +138,8 @@ export default async function MarketingHomePage() {
           <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>
+        <CartDrawer />
+        </CartProvider>
       );
     }
 
