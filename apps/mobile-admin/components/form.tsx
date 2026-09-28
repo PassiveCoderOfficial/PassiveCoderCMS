@@ -3,6 +3,7 @@
 // follow the light/dark preference.
 
 import React, { useMemo, useRef, useState } from "react";
+import { Icon } from "./Icon";
 import {
   ActivityIndicator,
   Animated,
@@ -89,8 +90,9 @@ export const TextField = React.forwardRef<TextInput, TextInputProps>(function Te
           borderColor: focused ? palette.primary600 : palette.borderStrong,
           borderRadius: radius.md,
           paddingHorizontal: spacing.md,
-          paddingVertical: 10,
-          fontSize: 14,
+          paddingVertical: 12,
+          minHeight: 48,
+          fontSize: 15,
           backgroundColor: palette.bgElevated,
           color: palette.text,
         },
@@ -182,7 +184,7 @@ export function Button({
           <ActivityIndicator color={fg} size="small" />
         ) : (
           <>
-            {icon ? <Text style={{ fontSize: size === "sm" ? 13 : 15 }}>{icon}</Text> : null}
+            {icon ? <Icon name={icon} size={size === "sm" ? 15 : 18} color={fg} /> : null}
             <Text style={{ color: fg, fontWeight: "700", fontSize: size === "sm" ? 13 : 14 }}>
               {title}
             </Text>
@@ -202,7 +204,7 @@ const btnStyles = StyleSheet.create({
     borderRadius: radius.md,
   },
   sm: { paddingVertical: 8, paddingHorizontal: spacing.md },
-  md: { paddingVertical: 12, paddingHorizontal: spacing.lg },
+  md: { paddingVertical: 14, paddingHorizontal: spacing.lg, minHeight: 50 },
 });
 
 /* ------------------------------------------------------------------- Select */
@@ -418,7 +420,7 @@ export function SearchField({
         style,
       ]}
     >
-      <Text style={{ fontSize: 14 }}>🔍</Text>
+      <Icon name="search-outline" size={18} color={palette.textFaint} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -426,7 +428,7 @@ export function SearchField({
         placeholderTextColor={palette.textFaint}
         autoCorrect={false}
         autoCapitalize="none"
-        style={{ flex: 1, paddingVertical: 10, fontSize: 14, color: palette.text }}
+        style={{ flex: 1, paddingVertical: 12, fontSize: 15, color: palette.text }}
       />
       {value.length > 0 && (
         <Pressable
@@ -436,7 +438,7 @@ export function SearchField({
           }}
           hitSlop={8}
         >
-          <Text style={{ color: palette.textMuted, fontSize: 14 }}>✕</Text>
+          <Icon name="close-circle" size={18} color={palette.textFaint} />
         </Pressable>
       )}
     </View>

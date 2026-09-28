@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
+import { Chevron } from "../../../../../components/Icon";
 import { useLocalSearchParams } from "expo-router";
 import {
   addLeadNote, getLead, listLeadEvents, listStages, updateLeadStage,
@@ -365,7 +366,7 @@ function ActionRow({
         </Text>
         <Text style={[type.caption, { color: palette.textMuted }]}>{subtitle}</Text>
       </View>
-      <Text style={{ color: palette.primary600, fontSize: 18 }}>›</Text>
+      <Chevron />
     </Pressable>
   );
 }

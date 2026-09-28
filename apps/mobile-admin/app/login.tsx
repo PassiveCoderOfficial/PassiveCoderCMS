@@ -4,7 +4,8 @@ import { router } from "expo-router";
 import { useAuth } from "../lib/auth";
 import { Button, ErrorText, Field, TextField } from "../components/form";
 import { Card, Screen } from "../components/ui";
-import { radius, spacing, type } from "../lib/theme";
+import { radius, shadow, spacing, type } from "../lib/theme";
+import { Icon } from "../components/Icon";
 import { useTheme } from "../lib/themeContext";
 
 export default function LoginScreen() {
@@ -46,14 +47,18 @@ export default function LoginScreen() {
 
   return (
     <Screen keyboardAvoiding>
-      <View style={{ alignItems: "center", gap: spacing.sm, marginTop: 48, marginBottom: spacing.lg }}>
-        <Image
-          source={require("../assets/icon.png")}
-          style={{ width: 72, height: 72, borderRadius: 18 }}
-          resizeMode="cover"
-        />
-        <Text style={[type.title, { color: palette.text, marginTop: spacing.sm }]}>Passive Coder</Text>
-        <Text style={[type.body, { color: palette.textMuted }]}>Admin</Text>
+      <View style={{ alignItems: "center", gap: spacing.xs, marginTop: "18%", marginBottom: spacing.xl }}>
+        <View style={[{ borderRadius: 22, padding: 4, backgroundColor: palette.primary50 }, shadow.raised]}>
+          <Image
+            source={require("../assets/icon.png")}
+            style={{ width: 76, height: 76, borderRadius: 18 }}
+            resizeMode="cover"
+          />
+        </View>
+        <Text style={[type.display, { color: palette.text, marginTop: spacing.lg }]}>Welcome back</Text>
+        <Text style={[type.body, { color: palette.textMuted, textAlign: "center" }]}>
+          Sign in to manage your sites, leads and pages.
+        </Text>
       </View>
 
       <Card style={{ gap: 14 }}>
@@ -105,19 +110,28 @@ export default function LoginScreen() {
                 borderRadius: radius.sm,
               }}
             >
-              <Text style={{ fontSize: 16 }}>{showPassword ? "🙈" : "👁"}</Text>
+              <Icon name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} />
             </Pressable>
           </View>
         </Field>
 
         <ErrorText>{error}</ErrorText>
 
-        <Button title="Sign In" onPress={submit} loading={busy} disabled={!canSubmit} />
+        <Button title="Sign In" onPress={submit} loading={busy} disabled={!canSubmit} style={{ marginTop: spacing.xs }} />
       </Card>
 
-      <Pressable onPress={() => router.push("/onboard")} style={{ alignSelf: "center", marginTop: spacing.lg }}>
-        <Text style={[type.body, { color: palette.primary600 }]}>New here? Create a site</Text>
+      <Pressable
+        onPress={() => router.push("/onboard")}
+        style={({ pressed }) => ({ alignSelf: "center", marginTop: spacing.lg, padding: spacing.sm, opacity: pressed ? 0.6 : 1 })}
+      >
+        <Text style={[type.body, { color: palette.textMuted }]}>
+          New here? <Text style={{ color: palette.primary600, fontWeight: "700" }}>Create a site</Text>
+        </Text>
       </Pressable>
+
+      <Text style={[type.caption, { color: palette.textFaint, textAlign: "center", marginTop: "auto", paddingTop: spacing.xl }]}>
+        Passive Coder Admin
+      </Text>
     </Screen>
   );
 }

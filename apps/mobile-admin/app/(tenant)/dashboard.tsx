@@ -177,7 +177,6 @@ export default function DashboardScreen() {
               leading={<Avatar text={initials(lead)} size={36} />}
               title={leadDisplayName(lead)}
               subtitle={relativeTime(lead.created_at)}
-              right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
               onPress={() => router.push(`/(tenant)/sites/${tenant.id}/leads/${lead.id}`)}
             />
           ))
@@ -209,27 +208,23 @@ export default function DashboardScreen() {
           icon="⚙️"
           title="Site settings"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/settings`)}
-          right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
         />
         <Row
           icon="🌐"
           title="Domain"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/domain`)}
-          right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
         />
         <Row
           icon="💳"
           title="Billing"
           subtitle={humanize(stats?.plan ?? tenant.plan)}
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/billing`)}
-          right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
         />
         <Row
           icon="🎫"
           title="Support"
           subtitle="Get help from our team"
           onPress={() => router.push(`/(tenant)/sites/${tenant.id}/support`)}
-          right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>}
         />
       </Card>
 
@@ -238,12 +233,12 @@ export default function DashboardScreen() {
         <>
           <SectionHeader title="Restaurant" />
           <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
-            <Row icon="🍳" title="Kitchen" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/kitchen`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
-            <Row icon="🧾" title="POS" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/pos`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
-            <Row icon="🏪" title="Branches" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/branches`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
-            <Row icon="🏍️" title="Riders" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/riders`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
-            <Row icon="📅" title="Reservations" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/reservations`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
-            <Row icon="📊" title="Sales" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/sales`)} right={<Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>} />
+            <Row icon="🍳" title="Kitchen" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/kitchen`)} />
+            <Row icon="🧾" title="POS" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/pos`)} />
+            <Row icon="🏪" title="Branches" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/branches`)} />
+            <Row icon="🏍️" title="Riders" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/riders`)} />
+            <Row icon="📅" title="Reservations" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/reservations`)} />
+            <Row icon="📊" title="Sales" onPress={() => router.push(`/(tenant)/sites/${tenant.id}/restaurant/sales`)} />
           </Card>
         </>
       )}

@@ -23,6 +23,7 @@ import { radius, shadow, spacing, type } from "../lib/theme";
 import type { Palette } from "../lib/theme";
 import { useTheme } from "../lib/themeContext";
 import { tapFeedback } from "../lib/haptics";
+import { Chevron, Icon, IconTile } from "./Icon";
 
 /* ------------------------------------------------------------------ Screen */
 
@@ -154,7 +155,7 @@ export function Row({
   onPress,
   danger = false,
 }: {
-  /** Emoji rendered as the leading glyph. */
+  /** Ionicons name (or legacy emoji) drawn in a tinted tile. */
   icon?: string;
   /** Arbitrary leading node (e.g. an Avatar). Takes precedence over `icon`. */
   leading?: React.ReactNode;
@@ -169,7 +170,7 @@ export function Row({
 
   const content = (
     <>
-      {leading ?? (icon ? <Text style={rowStyles.icon}>{icon}</Text> : null)}
+      {leading ?? (icon ? <IconTile name={icon} tone={danger ? "danger" : "brand"} /> : null)}
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[type.bodyStrong, { color: titleColor }]} numberOfLines={1}>
           {title}
@@ -180,7 +181,7 @@ export function Row({
           </Text>
         ) : null}
       </View>
-      {right}
+      {right === undefined && onPress ? <Chevron /> : right}
     </>
   );
 
@@ -214,7 +215,6 @@ const rowStyles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radius.md,
   },
-  icon: { fontSize: 20, width: 26, textAlign: "center" },
 });
 
 /* -------------------------------------------------------------- EmptyState */
@@ -234,7 +234,11 @@ export function EmptyState({
   const { palette } = useTheme();
   return (
     <View style={emptyStyles.wrap}>
-      {icon ? <Text style={emptyStyles.icon}>{icon}</Text> : null}
+      {icon ? (
+        <View style={[emptyStyles.icon, { backgroundColor: palette.primary50 }]}>
+          <Icon name={icon} size={30} color={palette.primary600} />
+        </View>
+      ) : null}
       <Text style={[type.heading, { color: palette.text, textAlign: "center" }]}>{title}</Text>
       {subtitle ? (
         <Text style={[type.body, { color: palette.textMuted, textAlign: "center" }]}>
@@ -267,7 +271,14 @@ const emptyStyles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.sm,
   },
-  icon: { fontSize: 40, marginBottom: spacing.xs },
+  icon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.sm,
+  },
   action: {
     marginTop: spacing.md,
     paddingVertical: 10,
