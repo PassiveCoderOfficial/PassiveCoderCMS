@@ -1,4 +1,6 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Pressable } from "react-native";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTheme } from "../../../../../../lib/themeContext";
 import { PageEditProvider } from "../../../../../../lib/pageEditContext";
 
@@ -21,7 +23,25 @@ export default function PageEditStackLayout() {
           contentStyle: { backgroundColor: palette.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: "Page" }} />
+        <Stack.Screen
+          name="index"
+          options={{
+            title: "Page",
+            // First screen of this inner Stack gets no automatic back button;
+            // the outer header that used to provide one is now hidden.
+            headerLeft: () => (
+              <Pressable
+                onPress={() => router.back()}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Back to pages"
+                style={{ paddingRight: 16 }}
+              >
+                <Ionicons name="arrow-back" size={24} color={palette.white} />
+              </Pressable>
+            ),
+          }}
+        />
         <Stack.Screen name="blocks" options={{ title: "Blocks" }} />
         <Stack.Screen name="blocks/[blockId]" options={{ title: "Edit block" }} />
       </Stack>

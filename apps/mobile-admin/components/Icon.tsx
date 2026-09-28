@@ -31,7 +31,7 @@ const EMOJI: Record<string, IconName> = {
   "🔗": "link-outline",
   "📭": "mail-open-outline",
   "📞": "call-outline",
-  "💬": "logo-whatsapp",
+  "💬": "chatbubble-ellipses-outline",
   "✉️": "mail-outline",
   "✉": "mail-outline",
   "📝": "create-outline",

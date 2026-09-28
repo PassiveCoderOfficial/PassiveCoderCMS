@@ -29,7 +29,9 @@ export default function TenantSiteStackLayout() {
       }}
     >
       <Stack.Screen name="pages/index" options={titled("Pages")} />
-      <Stack.Screen name="pages/[pageId]" options={{ title: "Page" }} />
+      {/* The page editor has its own inner Stack with its own header; showing
+          this one too stacked two app bars ("Page" over "Blocks"). */}
+      <Stack.Screen name="pages/[pageId]" options={{ title: "Page", headerShown: false }} />
       <Stack.Screen name="leads/index" options={titled("Leads")} />
       <Stack.Screen name="leads/[contactId]" options={{ title: "Lead" }} />
       <Stack.Screen name="settings" options={titled("Settings")} />

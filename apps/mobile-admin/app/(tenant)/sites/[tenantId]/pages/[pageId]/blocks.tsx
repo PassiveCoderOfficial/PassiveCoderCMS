@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { humanize } from "../../../../../../lib/format";
 import { Chevron, Icon, IconTile } from "../../../../../../components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, Stack, useLocalSearchParams } from "expo-router";
@@ -364,7 +365,7 @@ function BlockRow({
         <IconTile name={icon ?? "layers-outline"} />
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
           <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>
-            {label ?? block.type}
+            {label ?? humanize(block.type)}
           </Text>
           <Text style={[type.caption, { color: palette.textMuted }]} numberOfLines={1}>
             {block.type}

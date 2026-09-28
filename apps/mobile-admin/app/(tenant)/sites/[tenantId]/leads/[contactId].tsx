@@ -210,7 +210,7 @@ export default function LeadDetailScreen() {
               <>
                 {phone ? <Divider inset /> : null}
                 <ActionRow
-                  icon="💬"
+                  icon="logo-whatsapp"
                   title={whatsapp}
                   subtitle="WhatsApp"
                   onPress={() =>
