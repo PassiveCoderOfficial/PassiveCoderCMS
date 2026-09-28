@@ -74,7 +74,7 @@ function ServicesIconCardsGrid({ data }: { data: ServicesBlockProps["data"] }) {
       )}
       <div className={cn("grid grid-cols-1 gap-6", colMap)}>
         {data.items.map((item) => (
-          <div key={item.id} className="service-card bg-card border border-border rounded-xl p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-t-4 border-t-primary">
+          <div key={item.id} className="service-card relative bg-card border border-border rounded-xl p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-t-4 border-t-primary">
             <div className="text-primary mb-4 flex items-center justify-center">
               <ServiceIcon item={item} size="lg" />
             </div>
@@ -82,7 +82,7 @@ function ServicesIconCardsGrid({ data }: { data: ServicesBlockProps["data"] }) {
             <p className="text-muted-foreground text-sm flex-1 leading-relaxed whitespace-pre-line">{item.description}</p>
             {item.link && (
               <div className="mt-4">
-                <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-semibold">
+                <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-sm text-primary hover:underline font-semibold">
                   {item.linkLabel || "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
@@ -108,7 +108,7 @@ function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) 
       )}
       <div className={cn("grid grid-cols-1 gap-6", colMap)}>
         {data.items.map((item) => (
-          <div key={item.id} className="service-card group bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300">
+          <div key={item.id} className="service-card relative group bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300">
             {item.imageUrl && (
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image src={item.imageUrl} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -120,7 +120,7 @@ function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) 
               <p className="text-muted-foreground text-xs leading-relaxed mb-3 whitespace-pre-line">{item.description}</p>
 
               {item.link && (
-                <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2">
+                <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2">
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
@@ -145,7 +145,7 @@ function ServicesBorderedList({ data }: { data: ServicesBlockProps["data"] }) {
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {data.items.map((item) => (
-          <div key={item.id} className="service-card flex gap-4 p-5 border-l-4 border-l-secondary bg-card border border-border rounded-r-xl">
+          <div key={item.id} className="service-card relative flex gap-4 p-5 border-l-4 border-l-secondary bg-card border border-border rounded-r-xl">
             <div className="text-primary shrink-0 mt-1">
               <ServiceIcon item={item} size="sm" />
             </div>
@@ -153,7 +153,7 @@ function ServicesBorderedList({ data }: { data: ServicesBlockProps["data"] }) {
               <h3 className="font-bold text-base mb-1">{item.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
               {item.link && (
-                <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline font-medium">
+                <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline font-medium">
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
@@ -179,14 +179,14 @@ function ServicesDarkGridCards({ data }: { data: ServicesBlockProps["data"] }) {
       )}
       <div className={cn("grid grid-cols-1 gap-5", colMap)}>
         {data.items.map((item) => (
-          <div key={item.id} className="service-card group p-6 rounded-xl border border-border bg-card hover:border-primary/50 hover:-translate-y-1 transition-all duration-200">
+          <div key={item.id} className="service-card relative group p-6 rounded-xl border border-border bg-card hover:border-primary/50 hover:-translate-y-1 transition-all duration-200">
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-5">
               <ServiceIcon item={item} size="sm" />
             </div>
             <h3 className="font-bold text-base mb-2">{item.title}</h3>
             <p className="text-muted-foreground text-sm leading-relaxed mb-4 whitespace-pre-line">{item.description}</p>
             {item.link && (
-              <Link href={item.link} className="inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
+              <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
                 {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
               </Link>
             )}
@@ -211,7 +211,7 @@ function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
       )}
       <div className={cn("grid grid-cols-1 gap-8", colMap)}>
         {data.items.map((item) => (
-          <div key={item.id} className="service-card group">
+          <div key={item.id} className="service-card relative group">
             {item.imageUrl && (
               <div className="relative rounded-xl overflow-hidden aspect-[4/3] mb-4 shadow-md">
                 <Image src={item.imageUrl} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -223,7 +223,7 @@ function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
             {item.link && (
-              <Link href={item.link} className="inline-flex items-center gap-1 text-xs text-primary mt-3 hover:underline font-medium">
+              <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-xs text-primary mt-3 hover:underline font-medium">
                 {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
               </Link>
             )}
@@ -260,7 +260,7 @@ function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }
               <p className="text-muted-foreground text-sm leading-relaxed mb-3 whitespace-pre-line">{item.description}</p>
 
               {item.link && (
-                <Link href={item.link} className="inline-flex items-center gap-1 text-xs font-semibold text-primary mt-2">
+                <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-xs font-semibold text-primary mt-2">
                   {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
@@ -288,7 +288,7 @@ function ServicesNumbered({ data }: { data: ServicesBlockProps["data"] }) {
         )}
         <div className={cn("grid grid-cols-2 gap-4", colMap)}>
           {data.items.map((item, i) => (
-            <div key={item.id} className="service-card group rounded-xl overflow-hidden bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/15 hover:bg-primary-foreground/20 transition-all">
+            <div key={item.id} className="service-card relative group rounded-xl overflow-hidden bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/15 hover:bg-primary-foreground/20 transition-all">
               {item.imageUrl ? (
                 <div className="relative h-28 w-full">
                   <Image src={item.imageUrl} alt={item.title} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
@@ -343,7 +343,7 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
                 <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
                 <p className="text-muted-foreground text-sm whitespace-pre-line">{item.description}</p>
                 {item.link && (
-                  <Link href={item.link} className="inline-flex items-center gap-1 text-sm text-primary mt-2 hover:underline">
+                  <Link href={item.link} className="after:absolute after:inset-0 after:content-[''] inline-flex items-center gap-1 text-sm text-primary mt-2 hover:underline">
                     {item.linkLabel ?? "Learn More"} <ArrowRight className="h-3 w-3" />
                   </Link>
                 )}
