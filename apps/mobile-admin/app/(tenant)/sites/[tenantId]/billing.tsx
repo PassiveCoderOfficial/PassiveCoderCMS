@@ -6,6 +6,7 @@
 // API to call instead.
 
 import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../../../lib/languageContext";
 import { Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getSubscription, getPlans, getReceipts, type Subscription, type Plan, type Receipt } from "../../../../lib/queries/subscription";
@@ -22,6 +23,7 @@ import { PlanPickerSheet } from "../../../../components/PlanPickerSheet";
 export default function BillingScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
 
   const [sub, setSub] = useState<Subscription | null>(null);
@@ -39,7 +41,7 @@ export default function BillingScreen() {
       setPlans(p);
       if (s) setReceipts(await getReceipts(s.id, tenantId));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load billing info");
+      toastError(e instanceof Error ? e.message : t("billing.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -52,8 +54,8 @@ export default function BillingScreen() {
     setCancelling(true);
     try {
       const res = await cancelSubscription(tenantId);
-      if (!res.ok) { toastError(res.error ?? "Cancel failed"); return; }
-      success("Subscription cancelled");
+      if (!res.ok) { toastError(res.error ?? t("billing.cancelFailed")); return; }
+      success(t("billing.cancelled"));
       load();
     } finally {
       setCancelling(false);
@@ -78,7 +80,7 @@ export default function BillingScreen() {
           <Badge label={humanize(sub?.status ?? "—")} />
           {price != null && (
             <Text style={[type.caption, { color: palette.textMuted }]}>
-              {formatMoney(price, currency)}/{sub?.billing_cycle === "monthly" ? "mo" : "yr"}
+              {formatMoney(price, currency)}/{sub?.billing_cycle === "monthly" ? t("billing.perMonth") : t("billing.perYear")}
             </Text>
           )}
         </View>
@@ -86,23 +88,23 @@ export default function BillingScreen() {
 
       {sub?.status === "past_due" && (
         <Card style={{ backgroundColor: palette.bgElevated }}>
-          <Text style={[type.bodyStrong, { color: palette.text }]}>Payment needs attention</Text>
+          <Text style={[type.bodyStrong, { color: palette.text }]}>{t("billing.attention")}</Text>
           <Text style={[type.caption, { color: palette.textMuted, marginTop: 2 }]}>
-            Usually just an expired card — update it to keep your site running smoothly.
+            {t("billing.attentionHint")}
           </Text>
         </Card>
       )}
 
-      <Button title="Change plan" onPress={() => setShowPlanPicker(true)} />
+      <Button title={t("billing.changePlan")} onPress={() => setShowPlanPicker(true)} />
       {canCancel && (
-        <Button title="Cancel subscription" variant="danger" onPress={handleCancel} loading={cancelling} />
+        <Button title={t("billing.cancelSub")} variant="danger" onPress={handleCancel} loading={cancelling} />
       )}
 
-      <SectionHeader title="Receipts" />
+      <SectionHeader title={t("billing.receipts")} />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
         {receipts.length === 0 ? (
           <View style={{ padding: spacing.lg, alignItems: "center" }}>
-            <Text style={[type.caption, { color: palette.textMuted }]}>No payments yet.</Text>
+            <Text style={[type.caption, { color: palette.textMuted }]}>{t("billing.noPayments")}</Text>
           </View>
         ) : (
           receipts.map((r) => (

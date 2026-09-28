@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Text, View } from "react-native";
+import { useLanguage } from "../../../../lib/languageContext";
 import { useLocalSearchParams } from "expo-router";
 import { getTenant } from "../../../../lib/queries/tenant";
 import { connectDomain, disconnectDomain, type DomainDnsType } from "../../../../lib/queries/domain";
@@ -17,13 +18,6 @@ const DNS_TYPE_OPTIONS = [
   { label: "A Record / CNAME", value: "arecord" },
 ];
 
-const DNS_HINTS: Record<DomainDnsType, string> = {
-  nameserver:
-    "Point your domain's nameservers at us. Simplest option — we manage all DNS records for you afterwards.",
-  arecord:
-    "Keep your DNS where it is and add a single record. Choose this if you already run email or other services on this domain.",
-};
-
 /** Domain status → badge tone, so "active" reads green and "failed" red
  *  rather than everything sharing the neutral default. */
 function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
@@ -36,6 +30,7 @@ function statusTone(status: string): "success" | "warning" | "danger" | "neutral
 export default function DomainScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const toast = useToast();
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -59,7 +54,7 @@ export default function DomainScreen() {
       setTenant(await getTenant(tenantId));
       setLoadError(null);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Failed to load site");
+      setLoadError(e instanceof Error ? e.message : t("settings.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -77,7 +72,7 @@ export default function DomainScreen() {
     // Cheap client-side sanity check — the server validates properly, but
     // catching an obvious typo here saves a round trip and a scary error.
     if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(value)) {
-      setFieldError("That doesn't look like a domain. Enter it without https:// or a trailing slash.");
+      setFieldError(t("domain.invalid"));
       return;
     }
 
@@ -88,11 +83,11 @@ export default function DomainScreen() {
     setBusy(false);
 
     if (!r.ok) {
-      toast.error(r.error ?? "Failed to connect domain");
+      toast.error(r.error ?? t("domain.connectFailed"));
       return;
     }
     actionFeedback();
-    toast.success("Domain connected — add the DNS records below");
+    toast.success(t("domain.connected"));
     if (r.instructions) setInstructions(JSON.stringify(r.instructions, null, 2));
     setDomain("");
     await load();
@@ -102,22 +97,22 @@ export default function DomainScreen() {
     if (!tenantId) return;
     warningFeedback();
     Alert.alert(
-      "Disconnect domain?",
-      `${tenant?.custom_domain ?? "This domain"} will stop serving this site. The site stays reachable at its default address.`,
+      t("domain.disconnectQ"),
+      t("domain.disconnectHint", { domain: tenant?.custom_domain ?? t("domain.thisDomain") }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Disconnect",
+          text: t("domain.disconnect"),
           style: "destructive",
           onPress: async () => {
             setBusy(true);
             const r = await disconnectDomain({ tenantId });
             setBusy(false);
             if (!r.ok) {
-              toast.error(r.error ?? "Failed to disconnect domain");
+              toast.error(r.error ?? t("domain.disconnectFailed"));
               return;
             }
-            toast.success("Domain disconnected");
+            toast.success(t("domain.disconnected"));
             setInstructions(null);
             await load();
           },
@@ -139,10 +134,10 @@ export default function DomainScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Couldn't load this site"
+          title={t("domain.cantLoad")}
           subtitle={loadError ?? undefined}
           icon="⚠️"
-          action={{ label: "Try again", onPress: () => { setLoading(true); load(); } }}
+          action={{ label: t("domain.tryAgain"), onPress: () => { setLoading(true); load(); } }}
         />
       </Screen>
     );
@@ -158,31 +153,31 @@ export default function DomainScreen() {
         load();
       }}
     >
-      <SectionHeader title="Current domain" />
+      <SectionHeader title={t("domain.current")} />
       <Card style={{ gap: spacing.md }}>
         <Text style={[type.title, { color: connected ? palette.text : palette.textMuted }]} numberOfLines={1}>
-          {tenant.custom_domain ?? "No custom domain"}
+          {tenant.custom_domain ?? t("domain.none")}
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm, flexWrap: "wrap" }}>
           <Badge label={humanize(tenant.domain_status)} tone={statusTone(tenant.domain_status)} />
           {!connected && (
             <Text style={[type.caption, { color: palette.textMuted }]}>
-              Your site is live at its default address
+              {t("domain.liveDefault")}
             </Text>
           )}
         </View>
         {connected && (
-          <Button title="Disconnect domain" variant="danger" onPress={onDisconnect} loading={busy} />
+          <Button title={t("domain.disconnectBtn")} variant="danger" onPress={onDisconnect} loading={busy} />
         )}
       </Card>
 
-      <SectionHeader title={connected ? "Connect a different domain" : "Connect a domain"} />
+      <SectionHeader title={connected ? t("domain.connectDifferent") : t("domain.connectOne")} />
       <Card style={{ gap: spacing.lg }}>
         <Field
-          label="Domain"
+          label={t("domain.domain")}
           required
           error={fieldError ?? undefined}
-          hint={fieldError ? undefined : "Just the domain — no https://, no trailing slash."}
+          hint={fieldError ? undefined : t("domain.fieldHint")}
         >
           <TextField
             value={domain}
@@ -199,24 +194,24 @@ export default function DomainScreen() {
           />
         </Field>
 
-        <Field label="DNS method" hint={DNS_HINTS[dnsType]}>
+        <Field label={t("domain.dnsMethod")} hint={t(dnsType === "nameserver" ? "domain.nsHint" : "domain.aHint")}>
           <Select
             value={dnsType}
-            placeholder="DNS method"
-            options={DNS_TYPE_OPTIONS}
+            placeholder={t("domain.dnsMethod")}
+            options={DNS_TYPE_OPTIONS.map((o) => ({ ...o, label: t(o.value === "nameserver" ? "domain.nameservers" : "domain.arecord") }))}
             onChange={(v) => setDnsType(v as DomainDnsType)}
           />
         </Field>
 
-        <Button title="Connect" icon="🔗" onPress={onConnect} loading={busy} disabled={!domain.trim()} />
+        <Button title={t("domain.connect")} icon="🔗" onPress={onConnect} loading={busy} disabled={!domain.trim()} />
       </Card>
 
       {instructions && (
         <>
-          <SectionHeader title="DNS records to add" />
+          <SectionHeader title={t("domain.recordsTitle")} />
           <Card style={{ gap: spacing.sm }}>
             <Text style={[type.caption, { color: palette.textMuted }]}>
-              Add these at your domain registrar. Verification can take up to a few hours.
+              {t("domain.recordsHint")}
             </Text>
             <View
               style={{
@@ -235,7 +230,7 @@ export default function DomainScreen() {
               </Text>
             </View>
             <Text style={[type.caption, { color: palette.textFaint }]}>
-              Tip: long-press the text above to copy it.
+              {t("domain.copyTip")}
             </Text>
           </Card>
         </>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { useLanguage } from "../../../../lib/languageContext";
 import { router, useLocalSearchParams } from "expo-router";
 import { getTenant, updateTenantName } from "../../../../lib/queries/tenant";
 import type { Tenant } from "../../../../lib/types";
@@ -15,6 +16,7 @@ import { useToast } from "../../../../lib/toast";
 export default function TenantSettingsScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { success, error: toastError } = useToast();
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -35,7 +37,7 @@ export default function TenantSettingsScreen() {
       setName(t.name);
       setLoadError(null);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Failed to load site");
+      setLoadError(e instanceof Error ? e.message : t("settings.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -48,16 +50,16 @@ export default function TenantSettingsScreen() {
   async function save() {
     if (!tenantId) return;
     if (!name.trim()) {
-      setNameError("Site name can't be empty.");
+      setNameError(t("settings.nameEmpty"));
       return;
     }
     setNameError(null);
     setSaving(true);
     try {
       await updateTenantName(tenantId, name.trim());
-      success("Site name updated");
+      success(t("settings.nameUpdated"));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to save");
+      toastError(e instanceof Error ? e.message : t("settings.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -82,11 +84,11 @@ export default function TenantSettingsScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Site not found"
-          subtitle={loadError ?? "This site may no longer exist."}
+          title={t("settings.notFound")}
+          subtitle={loadError ?? t("settings.maybeGone")}
           icon="⚠️"
           action={{
-            label: "Retry",
+            label: t("common.retry"),
             onPress: () => {
               setLoading(true);
               load();
@@ -100,12 +102,12 @@ export default function TenantSettingsScreen() {
   return (
     <Screen>
       {/* ----------------------------------------------------------- Site */}
-      <SectionHeader title="Site" />
+      <SectionHeader title={t("settings.site")} />
       <Card style={{ gap: 14 }}>
         <Field
-          label="Site name"
+          label={t("settings.siteName")}
           required
-          hint="Shown in the dashboard and anywhere the site is listed. Doesn't change the URL."
+          hint={t("settings.siteNameHint")}
           error={nameError ?? undefined}
         >
           <TextField
@@ -116,23 +118,23 @@ export default function TenantSettingsScreen() {
             }}
           />
         </Field>
-        <Field label="Slug" hint="The site's permanent identifier. Contact support to change it.">
+        <Field label={t("settings.slug")} hint={t("settings.slugHint")}>
           <Text style={[type.body, { color: palette.textMuted }]}>/{tenant.slug}</Text>
         </Field>
-        <Button title="Save changes" onPress={save} loading={saving} />
+        <Button title={t("settings.saveChanges")} onPress={save} loading={saving} />
       </Card>
 
       {/* ----------------------------------------------------------- Plan */}
-      <SectionHeader title="Plan" />
+      <SectionHeader title={t("settings.plan")} />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
-        <Row title="Plan" right={<Text style={[type.bodyStrong, { color: palette.text }]}>{humanize(tenant.plan)}</Text>} />
+        <Row title={t("settings.plan")} right={<Text style={[type.bodyStrong, { color: palette.text }]}>{humanize(tenant.plan)}</Text>} />
         <Divider inset />
-        <Row title="Status" right={<Badge label={tenant.status} />} />
+        <Row title={t("settings.status")} right={<Badge label={tenant.status} />} />
         {tenant.trial_ends_at ? (
           <>
             <Divider inset />
             <Row
-              title="Trial ends"
+              title={t("settings.trialEnds")}
               right={
                 <Text style={[type.body, { color: palette.textMuted }]}>
                   {absoluteTime(tenant.trial_ends_at)}
@@ -144,20 +146,20 @@ export default function TenantSettingsScreen() {
         <Divider inset />
         <Row
           icon="🌐"
-          title="Domain"
-          subtitle={tenant.custom_domain ?? "No custom domain"}
+          title={t("settings.domain")}
+          subtitle={tenant.custom_domain ?? t("settings.noCustomDomain")}
           right={<Badge label={humanize(tenant.domain_status)} />}
           onPress={() => router.push(`/(tenant)/sites/${tenantId}/domain`)}
         />
       </Card>
 
       {/* --------------------------------------------------- Danger zone */}
-      <SectionHeader title="Danger zone" />
+      <SectionHeader title={t("settings.danger")} />
       <Card style={{ padding: 0, gap: 0, overflow: "hidden", borderColor: palette.red50 }}>
         <Row
           icon="🔑"
-          title="Transfer ownership"
-          subtitle="Hand this site to a different account. This cannot be undone from the app."
+          title={t("settings.transfer")}
+          subtitle={t("settings.transferHint")}
           danger
           onPress={() => router.push(`/(tenant)/sites/${tenantId}/transfer`)}
         />

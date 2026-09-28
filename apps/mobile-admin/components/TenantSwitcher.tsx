@@ -6,6 +6,7 @@
 // it reachable from the header everywhere instead of one screen deep.
 
 import { useState } from "react";
+import { useLanguage } from "../lib/languageContext";
 import { Icon } from "./Icon";
 import { Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -56,11 +57,12 @@ export function TenantSwitcherSheet({ visible, onClose }: { visible: boolean; on
   const { memberships } = useRole();
   const { selectedTenantId, setSelectedTenantId } = useSelectedTenant();
   const { success } = useToast();
+  const { t } = useLanguage();
 
   function switchTo(tenantId: string, name: string) {
     if (tenantId !== selectedTenantId) {
       setSelectedTenantId(tenantId);
-      success(`Switched to ${name}`);
+      success(t("switcher.switchedTo", { name }));
       // Land on that site's dashboard rather than leaving whatever
       // tenant-scoped screen (pages/leads/settings/...) is currently open —
       // the old route's [tenantId] param would now point at the wrong site.
@@ -73,7 +75,7 @@ export function TenantSwitcherSheet({ visible, onClose }: { visible: boolean; on
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={onClose}>
         <Pressable style={[styles.sheet, { backgroundColor: palette.bgElevated }]} onPress={() => {}}>
-          <Text style={[type.heading, { color: palette.text, marginBottom: spacing.sm }]}>Switch site</Text>
+          <Text style={[type.heading, { color: palette.text, marginBottom: spacing.sm }]}>{t("switcher.title")}</Text>
           <View style={{ gap: 2 }}>
             {memberships.map((m) => (
               <Row
@@ -96,8 +98,8 @@ export function TenantSwitcherSheet({ visible, onClose }: { visible: boolean; on
             ))}
           </View>
           <Row
-            title="All sites"
-            subtitle="Browse the full list"
+            title={t("switcher.allSites")}
+            subtitle={t("switcher.allSitesHint")}
             onPress={() => { onClose(); router.push("/(tenant)/sites"); }}
           />
         </Pressable>
