@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Alert, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Chevron } from "../../../../../../components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { usePageEdit } from "../../../../../../lib/pageEditContext";
@@ -371,7 +370,7 @@ function BlockRow({
           </Text>
         </View>
         {!block.visible && <Tag label="Hidden" />}
-        <Chevron />
+        <Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>
       </Pressable>
 
       <View style={styles.actionsRow}>
