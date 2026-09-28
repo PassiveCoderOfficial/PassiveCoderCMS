@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { useLanguage } from "../lib/languageContext";
 import { router } from "expo-router";
 import { radius, shadow, spacing, type } from "../lib/theme";
 import { useTheme } from "../lib/themeContext";
@@ -11,6 +12,7 @@ import type { PageListItem as PageListItemType } from "../lib/queries/pages";
 
 export function PageListItem({ tenantId, page }: { tenantId: string; page: PageListItemType }) {
   const { palette } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Pressable
@@ -47,7 +49,7 @@ export function PageListItem({ tenantId, page }: { tenantId: string; page: PageL
           /{page.slug}
         </Text>
         <Text style={[type.caption, { color: palette.textFaint }]}>
-          Updated {relativeTime(page.updated_at)}
+          {t("pages.updated", { when: relativeTime(page.updated_at) })}
         </Text>
       </View>
       <Badge label={page.status} />

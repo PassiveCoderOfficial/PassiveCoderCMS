@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, RefreshControl, ScrollView, View } from "react-native";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { useLocalSearchParams } from "expo-router";
 import {
   listLeads,
@@ -16,6 +17,7 @@ import { useTheme } from "../../../../../lib/themeContext";
 export default function LeadsListScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const [leads, setLeads] = useState<LeadListItemType[]>([]);
   const [stages, setStages] = useState<CrmStage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function LeadsListScreen() {
       setStages(stageRows);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load leads");
+      setError(e instanceof Error ? e.message : t("leads.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -77,11 +79,11 @@ export default function LeadsListScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Couldn't load leads"
+          title={t("leads.cantLoad")}
           subtitle={error}
           icon="⚠️"
           action={{
-            label: "Retry",
+            label: t("common.retry"),
             onPress: () => {
               setLoading(true);
               setError(null);
@@ -99,7 +101,7 @@ export default function LeadsListScreen() {
         <SearchField
           value={query}
           onChangeText={setQuery}
-          placeholder="Search name, email, phone…"
+          placeholder={t("leads.search")}
         />
         {stages.length > 0 && (
           <ScrollView
@@ -108,7 +110,7 @@ export default function LeadsListScreen() {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ gap: spacing.sm, paddingRight: spacing.lg }}
           >
-            <Pill label="All" selected={stageFilter === "all"} onPress={() => setStageFilter("all")} />
+            <Pill label={t("common.all")} selected={stageFilter === "all"} onPress={() => setStageFilter("all")} />
             {stages.map((s) => (
               <Pill
                 key={s.id}
@@ -118,7 +120,7 @@ export default function LeadsListScreen() {
               />
             ))}
             <Pill
-              label="No stage"
+              label={t("leads.noStage")}
               selected={stageFilter === "none"}
               onPress={() => setStageFilter("none")}
             />
@@ -152,14 +154,14 @@ export default function LeadsListScreen() {
         ListEmptyComponent={
           leads.length === 0 ? (
             <EmptyState
-              title="No leads yet"
-              subtitle="Enquiries from your site will appear here."
+              title={t("leads.none")}
+              subtitle={t("leads.noneHint")}
               icon="📭"
             />
           ) : (
             <EmptyState
-              title="No matching leads"
-              subtitle="Try a different search or stage filter."
+              title={t("leads.noMatch")}
+              subtitle={t("leads.noMatchHint")}
               icon="🔍"
             />
           )

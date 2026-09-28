@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
+import { useLanguage } from "../../../../../../lib/languageContext";
 import { getPage, updatePageMeta } from "../../../../../../lib/queries/pages";
 import type { Page } from "../../../../../../lib/types";
 import { Button, Field, Select, TextField } from "../../../../../../components/form";
@@ -28,6 +29,7 @@ const SEO_DESCRIPTION_LIMIT = 160;
 export default function PageDetailScreen() {
   const { pageId, tenantId } = useLocalSearchParams<{ pageId: string; tenantId: string }>();
   const toast = useToast();
+  const { t } = useLanguage();
 
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function PageDetailScreen() {
         setSeoTitle(p.seo?.title ?? "");
         setSeoDescription(p.seo?.description ?? "");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load page");
+        setError(e instanceof Error ? e.message : t("page.loadFailed"));
       } finally {
         setLoading(false);
       }
@@ -71,9 +73,9 @@ export default function PageDetailScreen() {
         seo: { title: seoTitle || undefined, description: seoDescription || undefined },
       });
       successFeedback();
-      toast.success("Page saved");
+      toast.success(t("page.saved"));
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to save";
+      const message = e instanceof Error ? e.message : t("page.saveFailed");
       setError(message);
       toast.error(message);
     } finally {
@@ -93,7 +95,7 @@ export default function PageDetailScreen() {
   if (!page) {
     return (
       <Screen>
-        <EmptyState title="Couldn't load this page" subtitle={error ?? "Page not found"} icon="⚠️" />
+        <EmptyState title={t("page.cantLoad")} subtitle={error ?? t("page.notFound")} icon="⚠️" />
       </Screen>
     );
   }
@@ -106,36 +108,36 @@ export default function PageDetailScreen() {
   return (
     <Screen>
       {/* ------------------------------------------------------------ Page */}
-      <SectionHeader title="Page" />
+      <SectionHeader title={t("page.section")} />
       <Card style={{ gap: spacing.lg }}>
-        <Field label="Title" required>
+        <Field label={t("page.title")} required>
           <TextField value={title} onChangeText={setTitle} />
         </Field>
-        <Field label="Status" hint="Only published pages are visible on the live site.">
-          <Select value={status} placeholder="Status" options={STATUS_OPTIONS} onChange={setStatus} />
+        <Field label={t("page.status")} hint={t("page.statusHint")}>
+          <Select value={status} placeholder={t("page.status")} options={STATUS_OPTIONS.map((o) => ({ ...o, label: t(`status.${o.value}` as "status.draft") }))} onChange={setStatus} />
         </Field>
         <Field
-          label="Excerpt"
-          hint="A short summary used in page listings and as the SEO description fallback."
+          label={t("page.excerpt")}
+          hint={t("page.excerptHint")}
         >
           <TextField value={excerpt} onChangeText={setExcerpt} multiline numberOfLines={3} />
         </Field>
       </Card>
 
       {/* ------------------------------------------------------------- SEO */}
-      <SectionHeader title="SEO" />
+      <SectionHeader title={t("page.seo")} />
       <Card style={{ gap: spacing.lg }}>
         <Field
-          label="SEO title"
-          hint={titleOver ? undefined : `${titleCount} — falls back to the page title when blank.`}
-          error={titleOver ? `${titleCount} — too long, search results will truncate it.` : undefined}
+          label={t("page.seoTitle")}
+          hint={titleOver ? undefined : t("page.seoTitleHint", { count: titleCount })}
+          error={titleOver ? t("page.tooLong", { count: titleCount }) : undefined}
         >
           <TextField value={seoTitle} onChangeText={setSeoTitle} />
         </Field>
         <Field
-          label="SEO description"
-          hint={descOver ? undefined : `${descCount} — falls back to the excerpt when blank.`}
-          error={descOver ? `${descCount} — too long, search results will truncate it.` : undefined}
+          label={t("page.seoDesc")}
+          hint={descOver ? undefined : t("page.seoDescHint", { count: descCount })}
+          error={descOver ? t("page.tooLong", { count: descCount }) : undefined}
         >
           <TextField
             value={seoDescription}
@@ -144,14 +146,14 @@ export default function PageDetailScreen() {
             numberOfLines={3}
           />
         </Field>
-        <Button title="Save" onPress={save} loading={saving} />
+        <Button title={t("common.save")} onPress={save} loading={saving} />
       </Card>
 
       {/* ---------------------------------------------------------- Blocks */}
-      <SectionHeader title="Content" />
+      <SectionHeader title={t("page.content")} />
       <Card style={{ gap: spacing.md }}>
         <Button
-          title={`Edit blocks (${page.blocks?.length ?? 0})`}
+          title={t("page.editBlocks", { n: page.blocks?.length ?? 0 })}
           icon="🧱"
           onPress={() => router.push(`/(tenant)/sites/${tenantId}/pages/${pageId}/blocks`)}
         />

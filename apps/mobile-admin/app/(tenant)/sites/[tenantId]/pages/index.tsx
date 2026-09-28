@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Linking, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { listPages, type PageListItem as PageListItemType } from "../../../../../lib/queries/pages";
 import { PageListItem } from "../../../../../components/PageListItem";
@@ -21,6 +22,7 @@ const STATUS_FILTERS = [
 export default function PagesListScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { memberships } = useRole();
   const tenant = memberships.find((m) => m.tenantId === tenantId)?.tenant;
   const [pages, setPages] = useState<PageListItemType[]>([]);
@@ -41,7 +43,7 @@ export default function PagesListScreen() {
       setPages(rows);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load pages");
+      setError(e instanceof Error ? e.message : t("pages.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -74,14 +76,14 @@ export default function PagesListScreen() {
                 hitSlop={10}
                 style={{ padding: 4 }}
               >
-                <Text style={{ color: palette.white, fontSize: 13, fontWeight: "700" }}>Preview site</Text>
+                <Text style={{ color: palette.white, fontSize: 13, fontWeight: "700" }}>{t("pages.preview")}</Text>
               </Pressable>
             ),
           }}
         />
       )}
       <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.md }}>
-        <SearchField value={query} onChangeText={setQuery} placeholder="Search pages" />
+        <SearchField value={query} onChangeText={setQuery} placeholder={t("pages.search")} />
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -91,7 +93,7 @@ export default function PagesListScreen() {
           {STATUS_FILTERS.map((f) => (
             <Pill
               key={f.value}
-              label={f.label}
+              label={t(`status.${f.value}` as "status.all")}
               selected={status === f.value}
               onPress={() => setStatus(f.value)}
             />
@@ -119,11 +121,11 @@ export default function PagesListScreen() {
         ListEmptyComponent={
           error ? (
             <EmptyState
-              title="Couldn't load pages"
+              title={t("pages.cantLoad")}
               subtitle={error}
               icon="⚠️"
               action={{
-                label: "Retry",
+                label: t("common.retry"),
                 onPress: () => {
                   setLoading(true);
                   load();
@@ -131,11 +133,11 @@ export default function PagesListScreen() {
               }}
             />
           ) : pages.length === 0 ? (
-            <EmptyState title="No pages yet" subtitle="This site has no pages." icon="📄" />
+            <EmptyState title={t("pages.none")} subtitle={t("pages.noneHint")} icon="📄" />
           ) : (
             <EmptyState
-              title="No matching pages"
-              subtitle="Try a different search or filter."
+              title={t("pages.noMatch")}
+              subtitle={t("pages.noMatchHint")}
               icon="🔍"
             />
           )

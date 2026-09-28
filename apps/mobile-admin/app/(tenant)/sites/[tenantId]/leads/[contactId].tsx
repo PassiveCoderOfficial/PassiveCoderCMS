@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { Chevron } from "../../../../../components/Icon";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -24,6 +25,7 @@ function waNumber(phone: string): string {
 
 export default function LeadDetailScreen() {
   const { tenantId, contactId } = useLocalSearchParams<{ tenantId: string; contactId: string }>();
+  const { t } = useLanguage();
   const { palette } = useTheme();
   const { success, error: toastError } = useToast();
 
@@ -52,7 +54,7 @@ export default function LeadDetailScreen() {
       setStages(stageRows);
       setLoadError(null);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Failed to load lead");
+      setLoadError(e instanceof Error ? e.message : t("lead.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -90,13 +92,13 @@ export default function LeadDetailScreen() {
     setChangingStage(true);
     try {
       await updateLeadStage(contactId, tenantId, next);
-      success("Stage updated");
+      success(t("lead.stageUpdated"));
       // updateLeadStage also writes a timeline entry server-side; pull just
       // the events back so the timeline reflects it.
       listLeadEvents(contactId).then(setEvents).catch(() => {});
     } catch (e) {
       setLead((cur) => (cur ? { ...cur, stage_id: previous } : cur));
-      toastError(e instanceof Error ? e.message : "Failed to change stage");
+      toastError(e instanceof Error ? e.message : t("lead.stageFailed"));
     } finally {
       setChangingStage(false);
     }
@@ -117,16 +119,16 @@ export default function LeadDetailScreen() {
         tenant_id: tenantId,
         contact_id: contactId,
         type: "note",
-        title: "Note",
+        title: t("lead.note"),
         body,
         meta: null,
         actor_user_id: null,
         created_at: new Date().toISOString(),
       };
       setEvents((prev) => [optimistic, ...prev]);
-      success("Note added");
+      success(t("lead.noteAdded"));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to add note");
+      toastError(e instanceof Error ? e.message : t("lead.noteFailed"));
     } finally {
       setSavingNote(false);
     }
@@ -153,11 +155,11 @@ export default function LeadDetailScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Lead not found"
-          subtitle={loadError ?? "This contact may have been deleted."}
+          title={t("lead.notFound")}
+          subtitle={loadError ?? t("lead.maybeDeleted")}
           icon="⚠️"
           action={{
-            label: "Retry",
+            label: t("common.retry"),
             onPress: () => {
               setLoading(true);
               load();
@@ -170,7 +172,7 @@ export default function LeadDetailScreen() {
 
   const currentStage = stages.find((s) => s.id === lead.stage_id) ?? null;
   const stageOptions = [
-    { label: "No stage", value: "" },
+    { label: t("leads.noStage"), value: "" },
     ...stages.map((s) => ({ label: s.name, value: s.id })),
   ];
 
@@ -196,14 +198,14 @@ export default function LeadDetailScreen() {
       {/* -------------------------------------------------------- Contact */}
       {(phone || email || whatsapp) && (
         <>
-          <SectionHeader title="Contact" />
+          <SectionHeader title={t("lead.contact")} />
           <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
             {phone ? (
               <ActionRow
                 icon="📞"
                 title={phone}
-                subtitle="Call"
-                onPress={() => openUrl(`tel:${phone}`, "No phone app available on this device.")}
+                subtitle={t("lead.call")}
+                onPress={() => openUrl(`tel:${phone}`, t("lead.noPhoneApp"))}
               />
             ) : null}
             {whatsapp && waNumber(whatsapp) ? (
@@ -212,9 +214,9 @@ export default function LeadDetailScreen() {
                 <ActionRow
                   icon="logo-whatsapp"
                   title={whatsapp}
-                  subtitle="WhatsApp"
+                  subtitle={t("lead.whatsapp")}
                   onPress={() =>
-                    openUrl(`https://wa.me/${waNumber(whatsapp)}`, "Couldn't open WhatsApp.")
+                    openUrl(`https://wa.me/${waNumber(whatsapp)}`, t("lead.noWhatsapp"))
                   }
                 />
               </>
@@ -225,8 +227,8 @@ export default function LeadDetailScreen() {
                 <ActionRow
                   icon="✉️"
                   title={email}
-                  subtitle="Email"
-                  onPress={() => openUrl(`mailto:${email}`, "No mail app available on this device.")}
+                  subtitle={t("lead.email")}
+                  onPress={() => openUrl(`mailto:${email}`, t("lead.noMailApp"))}
                 />
               </>
             ) : null}
@@ -235,12 +237,12 @@ export default function LeadDetailScreen() {
       )}
 
       {/* ---------------------------------------------------------- Stage */}
-      <SectionHeader title="Stage" />
+      <SectionHeader title={t("lead.stage")} />
       <Card>
-        <Field label="Move to stage" hint={changingStage ? "Updating…" : undefined}>
+        <Field label={t("lead.moveStage")} hint={changingStage ? t("common.updating") : undefined}>
           <Select
             value={typeof lead.stage_id === "string" ? lead.stage_id : ""}
-            placeholder="Change stage"
+            placeholder={t("lead.changeStage")}
             options={stageOptions}
             onChange={onChangeStage}
             searchable
@@ -249,7 +251,7 @@ export default function LeadDetailScreen() {
       </Card>
 
       {/* ------------------------------------------------------- Timeline */}
-      <SectionHeader title="Timeline" />
+      <SectionHeader title={t("lead.timeline")} />
       <Card style={{ gap: 0 }}>
         {events.length === 0 ? (
           <Text style={[type.body, { color: palette.textMuted, paddingVertical: spacing.sm }]}>
@@ -301,16 +303,16 @@ export default function LeadDetailScreen() {
 
       {/* --------------------------------------------------- Note composer */}
       <Card style={{ gap: spacing.md, borderColor: palette.borderStrong }}>
-        <Text style={[type.heading, { color: palette.text }]}>Add a note</Text>
+        <Text style={[type.heading, { color: palette.text }]}>{t("lead.addNoteTitle")}</Text>
         <TextField
           value={noteBody}
           onChangeText={setNoteBody}
-          placeholder="Write a note…"
+          placeholder={t("lead.notePlaceholder")}
           multiline
           numberOfLines={3}
         />
         <Button
-          title="Add note"
+          title={t("lead.addNote")}
           icon="📝"
           onPress={onAddNote}
           loading={savingNote}
