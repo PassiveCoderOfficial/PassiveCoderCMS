@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Alert, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Chevron } from "../../../../../../components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { usePageEdit } from "../../../../../../lib/pageEditContext";
-import { updatePageBlocks } from "../../../../../../lib/queries/pages";
+import { savePageBlocks, publishPage, discardPageDraft, PageConflictError } from "../../../../../../lib/queries/pages";
 import { getBlockCatalogEntry, blockCatalogByCategory } from "../../../../../../lib/blockCatalog";
 import { publicUrl } from "../../../../../../lib/siteUrls";
 import { useRole } from "../../../../../../lib/role";
@@ -53,7 +54,8 @@ const SAVE_BAR_HEIGHT = 64;
 
 export default function BlocksScreen() {
   const { tenantId, pageId } = useLocalSearchParams<{ tenantId: string; pageId: string }>();
-  const { page, loading, error, dirty, setBlocks, markSaved } = usePageEdit();
+  const { page, loading, error, dirty, rev, hasDraft, isLive, setBlocks, markSaved, reload } = usePageEdit();
+  const [publishing, setPublishing] = useState(false);
   const { palette } = useTheme();
   const toast = useToast();
   const insets = useSafeAreaInsets();
@@ -145,19 +147,68 @@ export default function BlocksScreen() {
     commit([...blocks, block]);
   }
 
+  function conflict() {
+    Alert.alert(
+      "Page changed elsewhere",
+      "Someone saved this page (maybe in the web editor) after you opened it. Reload to get their version? Your unsaved changes here will be lost.",
+      [{ text: "Keep editing", style: "cancel" }, { text: "Reload", style: "destructive", onPress: () => void reload() }],
+    );
+  }
+
+  // Live pages save as a draft (not visible to visitors until Publish);
+  // unpublished pages save directly. Same rules as the web editor.
   async function save() {
     if (!pageId || !tenantId || !page) return;
     setSaving(true);
     try {
-      await updatePageBlocks(pageId, tenantId, page.blocks);
-      markSaved();
-      toast.success("Blocks saved");
+      const r = await savePageBlocks(pageId, page.blocks, rev);
+      markSaved(r);
+      toast.success(r.hasDraft ? "Saved as draft (not live yet)" : "Saved");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save blocks");
+      if (e instanceof PageConflictError) conflict();
+      else toast.error(e instanceof Error ? e.message : "Failed to save blocks");
     } finally {
       setSaving(false);
     }
   }
+
+  async function publish() {
+    if (!pageId || !page) return;
+    setPublishing(true);
+    try {
+      const r = await publishPage(pageId, page.blocks, rev);
+      markSaved({ rev: r.rev, hasDraft: false });
+      toast.success("Published: your changes are live");
+    } catch (e) {
+      if (e instanceof PageConflictError) conflict();
+      else toast.error(e instanceof Error ? e.message : "Failed to publish");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  function discard() {
+    if (!pageId) return;
+    Alert.alert("Discard draft?", "Throw away the unpublished changes and go back to what is live now.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Discard",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const r = await discardPageDraft(pageId);
+            markSaved({ rev: r.rev, hasDraft: false, blocks: r.blocks });
+            toast.success("Draft discarded");
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Failed to discard");
+          }
+        },
+      },
+    ]);
+  }
+
+  // The bar shows for unsaved edits, and on a live page with a saved draft.
+  const showBar = dirty || (isLive && hasDraft);
 
   if (loading) {
     return (
@@ -183,8 +234,8 @@ export default function BlocksScreen() {
   // breathing room of its own so it isn't flush against the screen edge.
   const barBottomPad = insets.bottom > 0 ? spacing.md : spacing.lg;
   // Keep the last row clear of the FAB and, when present, the save bar.
-  const listBottomPad = spacing.lg + 72 + (dirty ? SAVE_BAR_HEIGHT : 0);
-  const fabBottom = spacing.lg + (dirty ? SAVE_BAR_HEIGHT : 0);
+  const listBottomPad = spacing.lg + 72 + (showBar ? SAVE_BAR_HEIGHT : 0);
+  const fabBottom = spacing.lg + (showBar ? SAVE_BAR_HEIGHT : 0);
 
   return (
     <Screen scroll={false}>
@@ -257,7 +308,7 @@ export default function BlocksScreen() {
       </Pressable>
 
       {/* ------------------------------------------------- Sticky save bar */}
-      {dirty && (
+      {showBar && (
         <View
           style={[
             styles.saveBar,
@@ -268,8 +319,12 @@ export default function BlocksScreen() {
             },
           ]}
         >
-          <Text style={[type.bodyStrong, { color: palette.text, flex: 1 }]}>Unsaved changes</Text>
-          <Button title="Save" onPress={save} loading={saving} />
+          <Text style={[type.bodyStrong, { color: palette.text, flex: 1 }]} numberOfLines={2}>
+            {dirty ? "Unsaved changes" : "Draft saved, not live yet"}
+          </Text>
+          {dirty && <Button title={isLive ? "Save draft" : "Save"} onPress={save} loading={saving} variant={isLive ? "outline" : undefined} />}
+          {!dirty && isLive && hasDraft && <Button title="Discard" onPress={discard} variant="outline" />}
+          {isLive && <Button title="Publish" onPress={publish} loading={publishing} disabled={saving} />}
         </View>
       )}
 
@@ -316,7 +371,7 @@ function BlockRow({
           </Text>
         </View>
         {!block.visible && <Tag label="Hidden" />}
-        <Text style={{ color: palette.textFaint, fontSize: 18 }}>›</Text>
+        <Chevron />
       </Pressable>
 
       <View style={styles.actionsRow}>

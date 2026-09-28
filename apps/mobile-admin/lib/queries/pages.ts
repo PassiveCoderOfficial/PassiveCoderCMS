@@ -34,29 +34,46 @@ export async function updatePageMeta(
 }
 
 /**
- * TODO(drafts) — NOTE FOR WHOEVER PICKS UP THE MOBILE APP (left 2026-09-27):
- * the web editor moved to draft/publish (migration 105, see
- * cms/supabase/migrations/105_page_drafts.sql). Writing `blocks` directly
- * here PUBLISHES INSTANTLY to the live site and also discards any pending
- * web draft for this page. Switch to the same RPCs the web editor uses:
- *   supabase.rpc("save_page_blocks", { p_id, p_blocks, p_expected_rev })
- *     -> { rev, has_draft }  (live pages save to draft, others direct)
- *   supabase.rpc("publish_page",     { p_id, p_blocks, p_expected_rev })
- *   supabase.rpc("discard_page_draft", { p_id })
- * Load `draft_blocks ?? blocks` and keep `draft_rev`; a stale rev raises
- * "page_conflict" (someone else edited) — show it, don't retry blindly.
- * Also surface a Publish button + "not live yet" state like the web
- * toolbar (components/admin/page-builder/builder-interface.tsx).
- *
- * Overwrites a page's blocks jsonb column. tenant_id filter is defense in
- * depth (matches listPages/getPage convention) — RLS already scopes writes
- * to tenants the caller belongs to.
+ * Page saves go through the same draft/publish RPCs as the web editor
+ * (cms/supabase/migrations/105_page_drafts.sql). For a live (published) page
+ * a save lands in draft_blocks and does NOT change the live site until
+ * publishPage; for any other page it writes blocks directly. expectedRev is
+ * the draft_rev this editor loaded — if someone else saved since, the server
+ * raises "page_conflict" instead of silently overwriting their work.
  */
-export async function updatePageBlocks(pageId: string, tenantId: string, blocks: Block[]): Promise<void> {
-  const { error } = await supabase
-    .from("pages")
-    .update({ blocks, updated_at: new Date().toISOString() })
-    .eq("id", pageId)
-    .eq("tenant_id", tenantId);
-  if (error) throw error;
+export class PageConflictError extends Error {
+  constructor() {
+    super("This page was changed somewhere else since you opened it.");
+    this.name = "PageConflictError";
+  }
+}
+
+function rethrow(error: { message?: string }): never {
+  if (error.message?.includes("page_conflict")) throw new PageConflictError();
+  throw error;
+}
+
+export async function savePageBlocks(
+  pageId: string,
+  blocks: Block[],
+  expectedRev: number | null,
+): Promise<{ rev: number; hasDraft: boolean }> {
+  const { data, error } = await supabase.rpc("save_page_blocks", { p_id: pageId, p_blocks: blocks, p_expected_rev: expectedRev });
+  if (error) rethrow(error);
+  const row = (Array.isArray(data) ? data[0] : data) as { rev: number; has_draft: boolean };
+  return { rev: row.rev, hasDraft: row.has_draft };
+}
+
+export async function publishPage(pageId: string, blocks: Block[], expectedRev: number | null): Promise<{ rev: number }> {
+  const { data, error } = await supabase.rpc("publish_page", { p_id: pageId, p_blocks: blocks, p_expected_rev: expectedRev });
+  if (error) rethrow(error);
+  const row = (Array.isArray(data) ? data[0] : data) as { rev: number };
+  return { rev: row.rev };
+}
+
+export async function discardPageDraft(pageId: string): Promise<{ rev: number; blocks: Block[] }> {
+  const { data, error } = await supabase.rpc("discard_page_draft", { p_id: pageId });
+  if (error) rethrow(error);
+  const row = (Array.isArray(data) ? data[0] : data) as { rev: number; blocks: Block[] };
+  return { rev: row.rev, blocks: row.blocks ?? [] };
 }

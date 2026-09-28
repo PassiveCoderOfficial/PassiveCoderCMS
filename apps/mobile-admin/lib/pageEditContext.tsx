@@ -12,8 +12,14 @@ interface PageEditContextValue {
   loading: boolean;
   error: string | null;
   dirty: boolean;
+  /** draft_rev loaded/last saved — sent with every save to catch conflicts. */
+  rev: number | null;
+  /** Live page with unpublished changes saved as a draft. */
+  hasDraft: boolean;
+  /** Published pages save as drafts until Publish. */
+  isLive: boolean;
   setBlocks: (blocks: Block[]) => void;
-  markSaved: () => void;
+  markSaved: (next: { rev: number; hasDraft: boolean; blocks?: Block[] }) => void;
   reload: () => Promise<void>;
 }
 
@@ -24,13 +30,18 @@ export function PageEditProvider({ pageId, children }: { pageId: string; childre
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [rev, setRev] = useState<number | null>(null);
+  const [hasDraft, setHasDraft] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const p = await getPage(pageId);
-      setPage(p);
+      // Edit the pending draft when there is one, same as the web editor.
+      setPage({ ...p, blocks: p.draft_blocks ?? p.blocks ?? [] });
+      setRev(p.draft_rev ?? 0);
+      setHasDraft(!!p.draft_blocks);
       setDirty(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load page");
@@ -56,10 +67,16 @@ export function PageEditProvider({ pageId, children }: { pageId: string; childre
     setDirty(true);
   }, []);
 
-  const markSaved = useCallback(() => setDirty(false), []);
+  const markSaved = useCallback((next: { rev: number; hasDraft: boolean; blocks?: Block[] }) => {
+    setRev(next.rev);
+    setHasDraft(next.hasDraft);
+    if (next.blocks) setPage((prev) => (prev ? { ...prev, blocks: next.blocks! } : prev));
+    setDirty(false);
+  }, []);
+  const isLive = page?.status === "published";
 
   return (
-    <PageEditContext.Provider value={{ page, loading, error, dirty, setBlocks, markSaved, reload }}>
+    <PageEditContext.Provider value={{ page, loading, error, dirty, rev, hasDraft, isLive, setBlocks, markSaved, reload }}>
       {children}
     </PageEditContext.Provider>
   );

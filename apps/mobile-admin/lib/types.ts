@@ -52,6 +52,10 @@ export interface Page {
   type: string;
   status: "draft" | "published" | "archived" | string;
   blocks: Block[];
+  /** Unpublished edits on a live page (migration 105). */
+  draft_blocks?: Block[] | null;
+  /** Bumped on every blocks/draft write; sent back to detect conflicts. */
+  draft_rev?: number | null;
   seo: PageSeo | null;
   settings: Record<string, unknown> | null;
   excerpt: string | null;
