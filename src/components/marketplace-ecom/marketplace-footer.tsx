@@ -27,7 +27,7 @@ export function MarketplaceFooter({
   contact: SiteContact | null;
 }) {
   return (
-    <footer className="mt-16">
+    <footer>
       {/* Trust strip — the four things a first-time BD buyer actually wants
           answered before they hand over money. */}
       <div className="border-y border-[#EAECF0] bg-[#FFF6F2]">

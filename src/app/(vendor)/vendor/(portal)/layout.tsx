@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, Store, MessageCircle, Star } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Store, MessageCircle, Star, ExternalLink } from "lucide-react";
+import { getMarketplaceChrome } from "@/lib/marketplace-ecom/chrome";
+import { MARKETPLACE_TOKENS_CSS } from "@/lib/marketplace-ecom/brand-tokens";
 import { currentVendor, vendorApplicationStatus } from "@/lib/marketplace-ecom/vendor-auth";
 
 export const metadata = { title: "Seller Centre" };
@@ -27,29 +29,45 @@ export default async function VendorLayout({ children }: { children: React.React
     redirect(status === "none" ? "/vendor/signup" : "/vendor-pending");
   }
 
+  const chrome = await getMarketplaceChrome(vendor.tenant_id);
+
   return (
-    <div className="min-h-screen bg-muted/30 text-foreground">
-      <header className="border-b bg-background sticky top-0 z-30 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-4">
-          <Link href="/vendor/dashboard" className="flex items-center gap-2 font-semibold shrink-0">
-            <Store className="w-5 h-5 text-primary" />
-            <span className="hidden sm:inline">Seller Centre</span>
+    <div className="min-h-screen bg-[#F5F5F7] text-foreground">
+      <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: MARKETPLACE_TOKENS_CSS }} />
+      <header className="sticky top-0 z-30 bg-white border-b shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-3">
+          <Link href="/vendor/dashboard" className="flex items-center gap-2 shrink-0">
+            {chrome?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={chrome.logoUrl} alt={chrome.siteName} className="h-7 w-auto" />
+            ) : (
+              <Store className="w-5 h-5 text-primary" />
+            )}
+            <span className="text-[11px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded px-1.5 py-0.5">
+              Seller Centre
+            </span>
           </Link>
-          <nav className="flex items-center gap-1 overflow-x-auto">
-            {NAV.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent whitespace-nowrap transition-colors"
-              >
-                {n.label}
+          <div className="ml-auto flex items-center gap-3 min-w-0">
+            <span className="text-sm font-medium truncate max-w-[40vw]">{vendor.name}</span>
+            {vendor.slug && (
+              <Link href={`/shop?vendor=${vendor.slug}`} className="hidden sm:inline-flex items-center gap-1 text-sm text-primary font-semibold" target="_blank">
+                <ExternalLink className="w-4 h-4" /> View my shop
               </Link>
-            ))}
-          </nav>
-          <div className="ml-auto text-sm text-muted-foreground truncate max-w-[40%] text-right">
-            {vendor.name}
+            )}
           </div>
         </div>
+        <nav className="max-w-6xl mx-auto px-2 flex items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+          {NAV.map((n) => (
+            <Link
+              key={n.href}
+              href={n.href}
+              className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-muted-foreground hover:text-primary whitespace-nowrap transition-colors"
+            >
+              <n.icon className="w-4 h-4" />
+              {n.label}
+            </Link>
+          ))}
+        </nav>
       </header>
       <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
     </div>

@@ -9,7 +9,13 @@ import { customerLoginAction, customerSignupAction } from "../actions";
  * matches how most storefronts present this (Shopify, WooCommerce accounts
  * both do a single "sign in or create an account" screen).
  */
-export function CustomerLoginForm({ next = "/account/orders" }: { next?: string }) {
+const REASONS: Record<string, string> = {
+  chat: "Sign in to chat with the seller. It only takes a moment.",
+  review: "Sign in to write your review.",
+  wishlist: "Sign in to save items to your wishlist.",
+};
+
+export function CustomerLoginForm({ next = "/account/orders", reason }: { next?: string; reason?: string }) {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -60,10 +66,27 @@ export function CustomerLoginForm({ next = "/account/orders" }: { next?: string 
   }
 
   return (
-    <div className="max-w-sm mx-auto py-16 px-4">
-      <h1 className="text-xl font-semibold mb-1">{mode === "login" ? "Sign in" : "Create an account"}</h1>
+    <div className="max-w-md mx-auto py-10 sm:py-16 px-4">
+     <div className="rounded-2xl bg-card border shadow-sm overflow-hidden">
+      <div className="grid grid-cols-2 border-b">
+        {(["login", "signup"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => { setMode(m); setError(null); }}
+            className={`py-3.5 text-sm font-semibold border-b-2 -mb-px ${mode === m ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+          >
+            {m === "login" ? "Sign in" : "Create account"}
+          </button>
+        ))}
+      </div>
+      <div className="p-6">
+      {reason && REASONS[reason] && (
+        <p className="mb-4 rounded-xl bg-primary/10 text-primary text-sm font-medium px-4 py-3">{REASONS[reason]}</p>
+      )}
+      <h1 className="text-xl font-bold mb-1">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        {mode === "login" ? "Sign in to view your orders." : "Create an account to track your orders."}
+        {mode === "login" ? "Track orders, chat with sellers and review purchases." : "Free, and takes less than a minute."}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +95,7 @@ export function CustomerLoginForm({ next = "/account/orders" }: { next?: string 
             <label className="block text-sm font-medium mb-1">Name</label>
             <input
               type="text" required value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="w-full h-11 rounded-xl border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
           </div>
         )}
@@ -80,14 +103,14 @@ export function CustomerLoginForm({ next = "/account/orders" }: { next?: string 
           <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
+            className="w-full h-11 rounded-xl border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
           />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Password</label>
           <input
             type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
+            className="w-full h-11 rounded-xl border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
           />
         </div>
 
@@ -95,7 +118,7 @@ export function CustomerLoginForm({ next = "/account/orders" }: { next?: string 
 
         <button
           type="submit" disabled={loading}
-          className="w-full rounded-md bg-primary text-primary-foreground py-2 text-sm font-medium disabled:opacity-50"
+          className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-bold disabled:opacity-50 hover:opacity-90"
         >
           {loading ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
         </button>
@@ -107,6 +130,8 @@ export function CustomerLoginForm({ next = "/account/orders" }: { next?: string 
       >
         {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
       </button>
+      </div>
+     </div>
     </div>
   );
 }

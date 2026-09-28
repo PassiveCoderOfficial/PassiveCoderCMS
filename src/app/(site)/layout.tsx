@@ -24,6 +24,7 @@ import { DineInBadge } from "@/components/site/dine-in-badge";
 import { MarketplaceHeader } from "@/components/marketplace-ecom/marketplace-header";
 import { MarketplaceFooter } from "@/components/marketplace-ecom/marketplace-footer";
 import { getMarketplaceChrome } from "@/lib/marketplace-ecom/chrome";
+import { MARKETPLACE_TOKENS_CSS } from "@/lib/marketplace-ecom/brand-tokens";
 
 // Single-vendor tenant with a dedicated floating WhatsApp CTA (per explicit
 // client request). Not a general platform feature yet — gated to this one
@@ -237,6 +238,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {templateCustomCss && (
         <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />
       )}
+      {marketplaceChrome && (
+        // Marketplace brand tokens, so shared storefront pages (cart,
+        // checkout, account, order confirmation) pick up the marketplace
+        // look without per-page colour hardcoding. Light-locked on purpose.
+        <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: MARKETPLACE_TOKENS_CSS }} />
+      )}
       {settings?.custom_css && (
         <style precedence="pc-custom" dangerouslySetInnerHTML={{ __html: settings.custom_css }} />
       )}
@@ -266,7 +273,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       ) : null}
 
       {/* Page content */}
-      {children}
+      {marketplaceChrome ? <div className="bg-[#F5F5F7] min-h-[60vh]">{children}</div> : children}
 
       {/* Persistent global footer */}
       {marketplaceChrome ? (

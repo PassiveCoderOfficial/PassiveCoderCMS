@@ -17,7 +17,7 @@ export default async function AccountMessagesPage() {
   const chrome = await getMarketplaceChrome(tenantId);
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
+    <div className="max-w-5xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
       <AccountNav />
       <Suspense>
         <ChatInbox as="buyer" siteName={chrome?.siteName ?? "our store"} />

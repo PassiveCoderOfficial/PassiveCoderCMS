@@ -10,8 +10,9 @@ function safeNext(v: string | undefined) {
   return v && v.startsWith("/") && !v.startsWith("//") ? v : "/account/orders";
 }
 
-export default async function AccountLoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const next = safeNext((await searchParams).next);
+export default async function AccountLoginPage({ searchParams }: { searchParams: Promise<{ next?: string; reason?: string }> }) {
+  const sp = await searchParams;
+  const next = safeNext(sp.next);
   const tenantId = (await headers()).get("x-tenant-id");
   if (!tenantId) redirect("/");
 
@@ -20,5 +21,5 @@ export default async function AccountLoginPage({ searchParams }: { searchParams:
   const { data: { user } } = await supabase.auth.getUser();
   if (user) redirect(next);
 
-  return <CustomerLoginForm next={next} />;
+  return <CustomerLoginForm next={next} reason={sp.reason} />;
 }

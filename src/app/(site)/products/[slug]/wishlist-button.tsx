@@ -24,7 +24,7 @@ export function WishlistButton({ productId, initiallySaved, isSignedIn }: {
 
   async function handleClick() {
     if (!isSignedIn) {
-      router.push("/account/login");
+      location.assign(`/account/login?next=${encodeURIComponent(location.pathname)}&reason=wishlist`);
       return;
     }
     setPending(true);

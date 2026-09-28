@@ -53,7 +53,7 @@ export function CartDrawer() {
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-muted/50">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-16">
               <ShoppingCart className="h-12 w-12 text-muted-foreground opacity-30" />
@@ -70,7 +70,7 @@ export function CartDrawer() {
             </div>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="flex gap-3">
+              <div key={item.id} className="flex gap-3 rounded-xl bg-card border p-3">
                 {/* Image */}
                 <div className="w-16 h-16 rounded-lg border overflow-hidden bg-muted shrink-0">
                   {item.image ? (
@@ -92,7 +92,7 @@ export function CartDrawer() {
                   >
                     {item.name}
                   </Link>
-                  <p className="text-sm font-bold mt-1">{format(item.price)}</p>
+                  <p className="text-base font-bold text-primary mt-1">{format(item.price)}</p>
 
                   {/* Qty stepper */}
                   <div className="flex items-center gap-2 mt-2">
@@ -128,12 +128,12 @@ export function CartDrawer() {
           <div className="border-t px-5 py-4 space-y-3 bg-background">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-bold text-base">{format(subtotal)}</span>
+              <span className="font-extrabold text-lg text-primary">{format(subtotal)}</span>
             </div>
             <p className="text-xs text-muted-foreground">Shipping & taxes calculated at checkout</p>
             <button
               onClick={handleCheckout}
-              className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground rounded-xl py-3.5 text-base font-bold hover:opacity-90 shadow-sm transition-opacity"
             >
               Checkout <ArrowRight className="h-4 w-4" />
             </button>

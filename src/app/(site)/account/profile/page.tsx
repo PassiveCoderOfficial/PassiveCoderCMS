@@ -24,9 +24,10 @@ export default async function AccountProfilePage() {
     .maybeSingle();
 
   return (
-    <div className="max-w-2xl mx-auto py-12 px-4">
+    <div className="max-w-5xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
       <AccountNav />
-      <h1 className="text-xl font-semibold mb-6">My Profile</h1>
+      <div className="rounded-2xl bg-card border p-5 sm:p-6">
+        <h1 className="text-lg font-bold mb-4">Profile & delivery address</h1>
       <ProfileForm
         initial={{
           full_name: profile?.full_name ?? "",
@@ -39,6 +40,7 @@ export default async function AccountProfilePage() {
           country: profile?.country ?? "",
         }}
       />
+      </div>
     </div>
   );
 }

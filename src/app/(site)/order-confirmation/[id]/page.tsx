@@ -5,6 +5,10 @@ import Link from "next/link";
 import { CheckCircle, Package, ArrowLeft, Store, Truck, Banknote, UtensilsCrossed, ShoppingBag } from "lucide-react";
 import type { CartItem } from "@/types/cms";
 import { OrderSummary } from "./order-summary";
+import { ChatNowButton } from "@/components/marketplace-ecom/chat/chat-now-button";
+
+const STEPS = ["pending", "accepted", "packed", "shipped", "delivered"] as const;
+const STEP_LABEL: Record<string, string> = { pending: "Placed", accepted: "Confirmed", packed: "Packed", shipped: "Shipped", delivered: "Delivered" };
 
 /** Marketplace checkout stores a Bangladesh-shaped address (single address
  *  line plus an area) rather than the Western first/last-name, postal-code
@@ -33,6 +37,9 @@ interface SubOrderRow {
   subtotal: number;
   shipping_cost: number;
   total: number;
+  vendor_id: string;
+  courier: string | null;
+  tracking_number: string | null;
   vendors: { name: string; slug: string | null } | null;
 }
 
@@ -56,7 +63,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
 
   const { data: subRows } = await supabase
     .from("sub_orders")
-    .select("id, sub_order_number, status, items, subtotal, shipping_cost, total, vendors(name, slug)")
+    .select("id, sub_order_number, status, items, subtotal, shipping_cost, total, vendor_id, courier, tracking_number, vendors(name, slug)")
     .eq("order_id", id)
     .order("created_at");
 
@@ -74,8 +81,8 @@ export default async function OrderConfirmationPage({ params }: Props) {
   const pickupTime = (order as { pickup_time?: string | null }).pickup_time;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <div className="text-center mb-10">
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-12">
+      <div className="text-center mb-6 rounded-2xl bg-card border p-6">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold">Order confirmed</h1>
         <p className="text-muted-foreground mt-2 text-sm">
@@ -97,15 +104,17 @@ export default async function OrderConfirmationPage({ params }: Props) {
         {/* Multi-vendor orders ship as separate parcels, so the buyer is told
             up front rather than wondering why one box arrived without the
             rest of their basket. */}
-        {subOrders.length > 1 && (
-          <div className="border rounded-xl p-4 space-y-3">
+        {subOrders.length > 0 && (
+          <div className="bg-card border rounded-2xl p-4 space-y-3">
             <div>
               <h2 className="font-semibold">
-                Arriving in {subOrders.length} separate parcels
+                {subOrders.length > 1 ? `Arriving in ${subOrders.length} separate parcels` : "Your parcel"}
               </h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Each seller ships their own items. They may arrive on different days.
-              </p>
+              {subOrders.length > 1 && (
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Each seller ships their own items. They may arrive on different days.
+                </p>
+              )}
             </div>
             {subOrders.map((s) => (
               <div key={s.id} className="border rounded-lg p-3 space-y-2">
@@ -132,6 +141,44 @@ export default async function OrderConfirmationPage({ params }: Props) {
                   </span>
                   <span>{s.shipping_cost === 0 ? "Free" : tk(s.shipping_cost)}</span>
                 </div>
+                {["cancelled", "returned"].includes(s.status) ? (
+                  <p className="text-xs font-semibold text-red-600 uppercase">{s.status}</p>
+                ) : (
+                  <ol className="grid grid-cols-5 gap-1 pt-1">
+                    {STEPS.map((st, k) => {
+                      const done = STEPS.indexOf(s.status as (typeof STEPS)[number]) >= k;
+                      return (
+                        <li key={st} className="text-center">
+                          <span className={`block h-1.5 rounded-full ${done ? "bg-primary" : "bg-muted"}`} />
+                          <span className={`block mt-1 text-[10px] ${done ? "text-primary font-semibold" : "text-muted-foreground"}`}>{STEP_LABEL[st]}</span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                )}
+                {s.tracking_number && (
+                  <p className="text-xs text-muted-foreground">
+                    Tracking: <span className="font-mono text-foreground">{s.tracking_number}</span>
+                    {s.courier ? ` (${s.courier})` : ""}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <ChatNowButton
+                    vendorId={s.vendor_id}
+                    label="Chat with seller"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold border rounded-full px-3 py-1.5 hover:border-primary hover:text-primary [&_svg]:w-3.5 [&_svg]:h-3.5"
+                  />
+                  {s.status === "delivered" &&
+                    (s.items ?? []).slice(0, 3).map((it, i) => (
+                      <Link
+                        key={i}
+                        href={`/products/${it.slug}?review=1#reviews`}
+                        className="inline-flex items-center text-xs font-semibold bg-primary text-primary-foreground rounded-full px-3 py-1.5"
+                      >
+                        Rate {it.name.length > 18 ? `${it.name.slice(0, 18)}…` : it.name}
+                      </Link>
+                    ))}
+                </div>
               </div>
             ))}
           </div>
@@ -146,7 +193,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
         />
 
         {isCod && (
-          <div className="border rounded-xl p-4 flex items-start gap-3">
+          <div className="bg-card border rounded-2xl p-4 flex items-start gap-3">
             <Banknote className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-sm">Cash on delivery</p>
@@ -159,7 +206,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
         )}
 
         {isDineIn ? (
-          <div className="border rounded-xl p-4 flex items-start gap-3">
+          <div className="bg-card border rounded-2xl p-4 flex items-start gap-3">
             <UtensilsCrossed className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-sm">{branch?.name ?? "Dine-in"} — Table {tableNumber ?? "—"}</p>
@@ -169,7 +216,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
             </div>
           </div>
         ) : isPickup ? (
-          <div className="border rounded-xl p-4 flex items-start gap-3">
+          <div className="bg-card border rounded-2xl p-4 flex items-start gap-3">
             <ShoppingBag className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-sm">{branch?.name ?? "Pickup"}</p>
@@ -181,7 +228,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
             </div>
           </div>
         ) : (
-          <div className="border rounded-xl p-4">
+          <div className="bg-card border rounded-2xl p-4">
             <h2 className="font-semibold mb-2">Delivery address</h2>
             <div className="text-sm text-muted-foreground space-y-0.5">
               <p className="text-foreground">{order.customer_name}</p>
