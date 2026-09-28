@@ -5,7 +5,7 @@ import { BedDouble, Bath, Maximize, MapPin, Calendar, Home, Sofa, Check, Buildin
 import { createAdminClient } from "@/lib/supabase/server";
 import { bedsLabel, titleCase, LISTING_TYPE_LABEL, areaLabel, type ReProperty } from "@/lib/real-estate/format";
 import { PropertyCard } from "@/components/blocks/real-estate/shared";
-import { Gallery, PriceHeader, PaymentPlan, LocationMap, AgentCard, type AgentInfo } from "./property-client";
+import { Gallery, PriceHeader, PaymentPlan, LocationMap, AgentCard, MobileContact, type AgentInfo } from "./property-client";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -98,6 +98,7 @@ export default async function PropertyPage({ params }: Props) {
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{p.title}</h1>
               {place && <p className="mt-2 text-muted-foreground flex items-center gap-1.5"><MapPin className="w-4 h-4" />{place}</p>}
               <div className="mt-6"><PriceHeader p={p} /></div>
+              <div className="mt-5"><MobileContact p={p} agent={agent} /></div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

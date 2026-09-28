@@ -164,3 +164,27 @@ export function AgentCard({ p, agent, siteName }: { p: ReProperty; agent: AgentI
     </div>
   );
 }
+
+/** Phone-only contact row under the price: on small screens the agent card
+ *  sits below the whole listing, too far down for the main call to action. */
+export function MobileContact({ p, agent }: { p: ReProperty; agent: AgentInfo }) {
+  const waNumber = (agent.whatsapp ?? "").replace(/[^\d]/g, "");
+  const tel = (agent.phone || agent.whatsapp || "").replace(/[^\d+]/g, "");
+  if (waNumber.length < 8 && !tel) return null;
+  const wa = `https://wa.me/${waNumber}?text=${encodeURIComponent(`Hi, I'm interested in "${p.title}"${p.reference ? ` (Ref ${p.reference})` : ""}. ${typeof window !== "undefined" ? window.location.href : ""}`)}`;
+  return (
+    <div className="lg:hidden grid grid-cols-2 gap-2">
+      {waNumber.length >= 8 && (
+        <a href={wa} target="_blank" rel="noreferrer" onClick={() => logWhatsappClick(p.id)}
+          className="h-12 rounded-xl bg-[#25D366] text-white font-semibold flex items-center justify-center gap-2">
+          <MessageCircle className="w-5 h-5" />WhatsApp
+        </a>
+      )}
+      {tel && (
+        <a href={`tel:${tel}`} className="h-12 rounded-xl border font-semibold flex items-center justify-center gap-2">
+          <Phone className="w-5 h-5" />Call
+        </a>
+      )}
+    </div>
+  );
+}
