@@ -6,6 +6,7 @@
 // feature).
 
 import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { FlatList, Image, Linking, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams } from "expo-router";
@@ -28,6 +29,7 @@ function qrImageUrl(url: string): string {
 export default function TablesScreen() {
   const { tenantId, branchId, branchName } = useLocalSearchParams<{ tenantId: string; branchId: string; branchName?: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
   const { memberships } = useRole();
   const tenant = memberships.find((m) => m.tenantId === tenantId)?.tenant;
@@ -48,7 +50,7 @@ export default function TablesScreen() {
     try {
       setTables(await getTables(branchId));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load tables");
+      toastError(e instanceof Error ? e.message : t("tables.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -69,9 +71,9 @@ export default function TablesScreen() {
       setTables((prev) => [...prev, table].sort((a, b) => a.table_number.localeCompare(b.table_number, undefined, { numeric: true })));
       setTableNumber("");
       setShowAdd(false);
-      success("Table added");
+      success(t("tables.added"));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to add table");
+      toastError(e instanceof Error ? e.message : t("tables.addFailed"));
     } finally {
       setSaving(false);
     }
@@ -79,7 +81,7 @@ export default function TablesScreen() {
 
   async function copyLink(qrToken: string) {
     await Clipboard.setStringAsync(tableUrl(qrToken));
-    success("Order link copied");
+    success(t("tables.linkCopied"));
   }
 
   async function savePin() {
@@ -91,7 +93,7 @@ export default function TablesScreen() {
       setPinDraft("");
       success("PIN saved");
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to save PIN");
+      toastError(e instanceof Error ? e.message : t("tables.pinFailed"));
     }
   }
 
@@ -102,7 +104,7 @@ export default function TablesScreen() {
       await deactivateTable(table.id);
     } catch (e) {
       setTables(prev);
-      toastError(e instanceof Error ? e.message : "Failed to remove table");
+      toastError(e instanceof Error ? e.message : t("tables.removeFailed"));
     }
   }
 
@@ -114,16 +116,16 @@ export default function TablesScreen() {
         {branchName ? <Text style={[type.caption, { color: palette.textMuted }]}>{branchName}</Text> : null}
         {showAdd ? (
           <Card>
-            <Field label="Table number">
-              <TextField value={tableNumber} onChangeText={setTableNumber} placeholder="e.g. 12" autoFocus />
+            <Field label={t("tables.number")}>
+              <TextField value={tableNumber} onChangeText={setTableNumber} placeholder={t("tables.numberPh")} autoFocus />
             </Field>
             <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
-              <Button title="Cancel" variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
-              <Button title="Add" onPress={addTable} loading={saving} style={{ flex: 1 }} />
+              <Button title={t("rest.cancel")} variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
+              <Button title={t("rest.add")} onPress={addTable} loading={saving} style={{ flex: 1 }} />
             </View>
           </Card>
         ) : (
-          <Button title="Add table" icon="➕" variant="outline" onPress={() => setShowAdd(true)} />
+          <Button title={t("tables.addBtn")} icon="➕" variant="outline" onPress={() => setShowAdd(true)} />
         )}
       </View>
 
@@ -139,7 +141,7 @@ export default function TablesScreen() {
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <Text style={[type.bodyStrong, { color: palette.text }]}>Table {item.table_number}</Text>
               <Text style={[type.caption, { color: item.table_pin ? palette.green600 : palette.textMuted }]}>
-                {item.table_pin ? "PIN set" : "No PIN"}
+                {item.table_pin ? t("tables.pinSet") : t("tables.noPin")}
               </Text>
             </View>
 
@@ -153,26 +155,26 @@ export default function TablesScreen() {
                   maxLength={6}
                   style={{ flex: 1 }}
                 />
-                <Button title="Save" size="sm" onPress={savePin} />
+                <Button title={t("rest.save")} size="sm" onPress={savePin} />
                 <Button title="✕" size="sm" variant="ghost" onPress={() => { setPinDraftFor(null); setPinDraft(""); }} />
               </View>
             ) : (
               <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm, flexWrap: "wrap" }}>
-                <Button title="QR code" size="sm" variant="outline" onPress={() => setQrTable(item)} />
-                <Button title="Copy link" size="sm" variant="outline" onPress={() => copyLink(item.qr_token)} />
+                <Button title={t("tables.qr")} size="sm" variant="outline" onPress={() => setQrTable(item)} />
+                <Button title={t("rest.copyLink")} size="sm" variant="outline" onPress={() => copyLink(item.qr_token)} />
                 <Button
-                  title={item.table_pin ? "Change PIN" : "Set PIN"}
+                  title={item.table_pin ? t("tables.changePin") : t("tables.setPin")}
                   size="sm"
                   variant="outline"
                   onPress={() => { setPinDraftFor(item.id); setPinDraft(item.table_pin ?? ""); }}
                 />
-                <Button title="Remove" size="sm" variant="danger" onPress={() => removeTable(item)} />
+                <Button title={t("tables.remove")} size="sm" variant="danger" onPress={() => removeTable(item)} />
               </View>
             )}
           </Card>
         )}
         ListEmptyComponent={
-          <EmptyState title="No tables yet" subtitle="Add a table to generate its scan-to-order QR code." icon="🍽️" />
+          <EmptyState title={t("tables.none")} subtitle={t("tables.noneHint")} icon="🍽️" />
         }
       />
 
@@ -190,8 +192,8 @@ export default function TablesScreen() {
                   {tableUrl(qrTable.qr_token)}
                 </Text>
                 <View style={{ flexDirection: "row", gap: spacing.sm }}>
-                  <Button title="Copy link" variant="outline" onPress={() => copyLink(qrTable.qr_token)} />
-                  <Button title="Open" variant="outline" onPress={() => Linking.openURL(tableUrl(qrTable.qr_token))} />
+                  <Button title={t("rest.copyLink")} variant="outline" onPress={() => copyLink(qrTable.qr_token)} />
+                  <Button title={t("tables.open")} variant="outline" onPress={() => Linking.openURL(tableUrl(qrTable.qr_token))} />
                 </View>
               </View>
             )}

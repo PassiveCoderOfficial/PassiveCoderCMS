@@ -5,6 +5,7 @@
 // assignment.
 
 import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { FlatList, Platform, Pressable, RefreshControl, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -18,11 +19,11 @@ import { spacing, type } from "../../../../../lib/theme";
 import { useTheme } from "../../../../../lib/themeContext";
 import { useToast } from "../../../../../lib/toast";
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string, today_: string): string {
   const d = new Date(iso);
   const today = new Date();
   const sameDay = d.toDateString() === today.toDateString();
-  const datePart = sameDay ? "Today" : d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  const datePart = sameDay ? today_ : d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   const timePart = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   return `${datePart}, ${timePart}`;
 }
@@ -30,6 +31,7 @@ function formatWhen(iso: string): string {
 export default function ReservationsScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
   const [branches, setBranches] = useState<RestaurantBranch[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -61,7 +63,7 @@ export default function ReservationsScreen() {
       setReservations(r);
       if (!branchId && b[0]) setBranchId(b[0].id);
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load reservations");
+      toastError(e instanceof Error ? e.message : t("resv.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -81,9 +83,9 @@ export default function ReservationsScreen() {
       setReservations((prev) => [...prev, reservation].sort((a, b) => a.reserved_at.localeCompare(b.reserved_at)));
       setCustomerName(""); setPhone(""); setPartySize("2"); setShowAdd(false);
       setReservedAt(new Date(Date.now() + 60 * 60 * 1000));
-      success("Reservation added");
+      success(t("resv.added"));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to add reservation");
+      toastError(e instanceof Error ? e.message : t("resv.addFailed"));
     } finally {
       setSaving(false);
     }
@@ -117,7 +119,7 @@ export default function ReservationsScreen() {
     try {
       await updateReservationStatus(id, status);
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to update");
+      toastError(e instanceof Error ? e.message : t("resv.updateFailed"));
       load();
     }
   }
@@ -130,20 +132,20 @@ export default function ReservationsScreen() {
         {showAdd ? (
           <Card>
             {branches.length > 1 && (
-              <Field label="Branch">
-                <Select value={branchId} placeholder="Choose a branch" onChange={setBranchId} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
+              <Field label={t("rest.branch")}>
+                <Select value={branchId} placeholder={t("rest.chooseBranch")} onChange={setBranchId} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
               </Field>
             )}
-            <Field label="Customer name">
-              <TextField value={customerName} onChangeText={setCustomerName} placeholder="Full name" autoFocus />
+            <Field label={t("resv.customerName")}>
+              <TextField value={customerName} onChangeText={setCustomerName} placeholder={t("rest.fullName")} autoFocus />
             </Field>
-            <Field label="Phone">
-              <TextField value={phone} onChangeText={setPhone} placeholder="Phone" keyboardType="phone-pad" />
+            <Field label={t("rest.phone")}>
+              <TextField value={phone} onChangeText={setPhone} placeholder={t("rest.phone")} keyboardType="phone-pad" />
             </Field>
-            <Field label="Party size">
+            <Field label={t("resv.partySize")}>
               <TextField value={partySize} onChangeText={setPartySize} placeholder="2" keyboardType="number-pad" />
             </Field>
-            <Field label="Date & time">
+            <Field label={t("resv.dateTime")}>
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
                 <Pressable
                   onPress={() => setShowDatePicker(true)}
@@ -170,12 +172,12 @@ export default function ReservationsScreen() {
               <DateTimePicker value={reservedAt} mode="time" onChange={onPickTime} />
             )}
             <View style={{ flexDirection: "row", gap: spacing.sm }}>
-              <Button title="Cancel" variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
-              <Button title="Add" onPress={addReservation} loading={saving} style={{ flex: 1 }} />
+              <Button title={t("rest.cancel")} variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
+              <Button title={t("rest.add")} onPress={addReservation} loading={saving} style={{ flex: 1 }} />
             </View>
           </Card>
         ) : (
-          <Button title="New reservation" icon="➕" variant="outline" onPress={() => setShowAdd(true)} disabled={branches.length === 0} />
+          <Button title={t("resv.new")} icon="➕" variant="outline" onPress={() => setShowAdd(true)} disabled={branches.length === 0} />
         )}
       </View>
 
@@ -190,21 +192,21 @@ export default function ReservationsScreen() {
           <Card>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <View style={{ gap: 2, flex: 1 }}>
-                <Text style={[type.bodyStrong, { color: palette.text }]}>{formatWhen(item.reserved_at)}</Text>
+                <Text style={[type.bodyStrong, { color: palette.text }]}>{formatWhen(item.reserved_at, t("resv.today"))}</Text>
                 <Text style={[type.caption, { color: palette.textMuted }]}>{item.customer_name} · {item.party_size} guests · {item.customer_phone}</Text>
               </View>
               <Badge label={item.status.replace("_", " ")} />
             </View>
             {(item.status === "pending" || item.status === "confirmed") && (
               <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
-                {item.status === "pending" && <Button title="Confirm" size="sm" onPress={() => setStatus(item.id, "confirmed")} style={{ flex: 1 }} />}
-                <Button title="Cancel" size="sm" variant="danger" onPress={() => setStatus(item.id, "cancelled")} style={{ flex: 1 }} />
+                {item.status === "pending" && <Button title={t("resv.confirm")} size="sm" onPress={() => setStatus(item.id, "confirmed")} style={{ flex: 1 }} />}
+                <Button title={t("rest.cancel")} size="sm" variant="danger" onPress={() => setStatus(item.id, "cancelled")} style={{ flex: 1 }} />
               </View>
             )}
           </Card>
         )}
         ListEmptyComponent={
-          <EmptyState title="No reservations" subtitle="Bookings for the next 30 days will appear here." icon="📅" />
+          <EmptyState title={t("resv.none")} subtitle={t("resv.noneHint")} icon="📅" />
         }
       />
     </Screen>

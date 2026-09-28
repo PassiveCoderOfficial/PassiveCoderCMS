@@ -3,6 +3,7 @@
 // per-branch table/QR management (tables.tsx).
 
 import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { getBranches, createBranch, toggleBranchScreen, type RestaurantBranch } from "../../../../../lib/queries/restaurant";
@@ -15,6 +16,7 @@ import { useToast } from "../../../../../lib/toast";
 export default function BranchesScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
   const [branches, setBranches] = useState<RestaurantBranch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +30,7 @@ export default function BranchesScreen() {
     try {
       setBranches(await getBranches(tenantId));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load branches");
+      toastError(e instanceof Error ? e.message : t("branches.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -45,9 +47,9 @@ export default function BranchesScreen() {
       setBranches((prev) => [...prev, branch]);
       setName("");
       setShowAdd(false);
-      success("Branch added");
+      success(t("branches.added"));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to add branch");
+      toastError(e instanceof Error ? e.message : t("branches.addFailed"));
     } finally {
       setSaving(false);
     }
@@ -59,7 +61,7 @@ export default function BranchesScreen() {
       await toggleBranchScreen(branch.id, field, value);
     } catch (e) {
       setBranches((prev) => prev.map((b) => b.id === branch.id ? { ...b, [field]: !value } : b));
-      toastError(e instanceof Error ? e.message : "Failed to save");
+      toastError(e instanceof Error ? e.message : t("rest.saveFailed"));
     }
   }
 
@@ -70,16 +72,16 @@ export default function BranchesScreen() {
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         {showAdd ? (
           <Card>
-            <Field label="Branch name">
-              <TextField value={name} onChangeText={setName} placeholder="e.g. Main Branch" autoFocus />
+            <Field label={t("branches.name")}>
+              <TextField value={name} onChangeText={setName} placeholder={t("branches.namePh")} autoFocus />
             </Field>
             <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
-              <Button title="Cancel" variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
-              <Button title="Add" onPress={addBranch} loading={saving} style={{ flex: 1 }} />
+              <Button title={t("rest.cancel")} variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
+              <Button title={t("rest.add")} onPress={addBranch} loading={saving} style={{ flex: 1 }} />
             </View>
           </Card>
         ) : (
-          <Button title="Add branch" icon="➕" variant="outline" onPress={() => setShowAdd(true)} />
+          <Button title={t("branches.addBtn")} icon="➕" variant="outline" onPress={() => setShowAdd(true)} />
         )}
       </View>
 
@@ -96,14 +98,14 @@ export default function BranchesScreen() {
               <Text style={[type.bodyStrong, { color: palette.text }]}>{item.name}</Text>
               {item.address ? <Text style={[type.caption, { color: palette.textMuted }]}>{item.address}</Text> : null}
             </View>
-            <Row title="Kitchen" subtitle="Staff order board" right={<Switch value={item.kitchen_screen_enabled} onValueChange={(v) => toggle(item, "kitchen_screen_enabled", v)} />} />
-            <Row title="Monitor" subtitle="Public queue display" right={<Switch value={item.monitor_screen_enabled} onValueChange={(v) => toggle(item, "monitor_screen_enabled", v)} />} />
-            <Row title="Table screen" subtitle="PIN-gated per-table tablet" right={<Switch value={item.table_screen_enabled} onValueChange={(v) => toggle(item, "table_screen_enabled", v)} />} />
-            <Row title="Tables & QR codes" subtitle="Add tables, set PINs, share order links" onPress={() => router.push({ pathname: "/(tenant)/sites/[tenantId]/restaurant/tables", params: { tenantId, branchId: item.id, branchName: item.name } })} />
+            <Row title={t("dash.kitchen")} subtitle={t("branches.kitchenHint")} right={<Switch value={item.kitchen_screen_enabled} onValueChange={(v) => toggle(item, "kitchen_screen_enabled", v)} />} />
+            <Row title={t("branches.monitor")} subtitle={t("branches.monitorHint")} right={<Switch value={item.monitor_screen_enabled} onValueChange={(v) => toggle(item, "monitor_screen_enabled", v)} />} />
+            <Row title={t("branches.tableScreen")} subtitle={t("branches.tableScreenHint")} right={<Switch value={item.table_screen_enabled} onValueChange={(v) => toggle(item, "table_screen_enabled", v)} />} />
+            <Row title={t("branches.tablesQr")} subtitle={t("branches.tablesQrHint")} onPress={() => router.push({ pathname: "/(tenant)/sites/[tenantId]/restaurant/tables", params: { tenantId, branchId: item.id, branchName: item.name } })} />
           </Card>
         )}
         ListEmptyComponent={
-          <EmptyState title="No branches yet" subtitle="Add your first location to start taking dine-in orders." icon="🏪" />
+          <EmptyState title={t("branches.none")} subtitle={t("branches.noneHint")} icon="🏪" />
         }
       />
     </Screen>

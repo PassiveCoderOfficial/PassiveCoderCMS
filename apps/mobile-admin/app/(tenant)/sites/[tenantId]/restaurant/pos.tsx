@@ -6,6 +6,7 @@
 // direct Supabase write.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getProducts, ringUpSale, ringUpSplitSale, type PosProduct } from "../../../../../lib/queries/pos";
@@ -24,6 +25,7 @@ const PAYMENT_METHODS = ["cash", "bkash", "nagad", "card", "bank"];
 export default function PosScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
 
   const [products, setProducts] = useState<PosProduct[]>([]);
@@ -57,7 +59,7 @@ export default function PosScreen() {
         setCurrency(c);
         if (b[0]) setBranchId(b[0].id);
       } catch (e) {
-        toastError(e instanceof Error ? e.message : "Failed to load POS data");
+        toastError(e instanceof Error ? e.message : t("pos.loadFailed"));
       } finally {
         setLoading(false);
       }
@@ -101,8 +103,8 @@ export default function PosScreen() {
         customer_name: customerName || undefined,
         branch_id: branchId || undefined, table_id: tableId || undefined,
       });
-      if (!res.ok) { toastError(res.error ?? "Sale failed"); return; }
-      success(`Sale complete — ${res.orderNumber}`);
+      if (!res.ok) { toastError(res.error ?? t("pos.saleFailed")); return; }
+      success(t("pos.saleDone", { n: res.orderNumber ?? "" }));
       resetSale();
     } finally {
       setCheckingOut(false);
@@ -134,7 +136,7 @@ export default function PosScreen() {
         payment_method: method, customer_name: customerName || undefined,
         branch_id: branchId || undefined, table_id: tableId || undefined,
       });
-      if (!res.ok) { toastError(res.error ?? "Split checkout failed"); return; }
+      if (!res.ok) { toastError(res.error ?? t("pos.splitFailed")); return; }
       success(`${res.seatsCharged} split bills — ${res.lastOrderNumber}`);
       setShowSplit(false);
       setSeatOf({});
@@ -149,18 +151,18 @@ export default function PosScreen() {
   return (
     <Screen scroll={false}>
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
-        <SearchField value={query} onChangeText={setQuery} placeholder="Search products…" />
+        <SearchField value={query} onChangeText={setQuery} placeholder={t("pos.search")} />
         {branches.length > 0 && (
           <View style={{ flexDirection: "row", gap: spacing.sm }}>
             <View style={{ flex: 1 }}>
-              <Select value={branchId} placeholder="Branch" onChange={setBranchId} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
+              <Select value={branchId} placeholder={t("rest.branch")} onChange={setBranchId} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
             </View>
             <View style={{ flex: 1 }}>
               <Select
                 value={tableId}
-                placeholder="Takeaway / pickup"
+                placeholder={t("pos.takeaway")}
                 onChange={setTableId}
-                options={tables.map((t) => ({ label: `Table ${t.table_number}`, value: t.id }))}
+                options={tables.map((tb) => ({ label: t("pos.table", { n: tb.table_number }), value: tb.id }))}
               />
             </View>
           </View>
@@ -188,11 +190,11 @@ export default function PosScreen() {
             >
               <Text style={[type.bodyStrong, { color: palette.text }]} numberOfLines={1}>{item.name}</Text>
               <Text style={[type.caption, { color: palette.textMuted, marginTop: 2 }]}>{formatMoney(Number(item.price), currency)}</Text>
-              {out && <Text style={[type.caption, { color: palette.red600, marginTop: 2 }]}>Out of stock</Text>}
+              {out && <Text style={[type.caption, { color: palette.red600, marginTop: 2 }]}>{t("pos.outOfStock")}</Text>}
             </Pressable>
           );
         }}
-        ListEmptyComponent={<EmptyState title="No products" subtitle="Add products in the dashboard first." icon="📦" />}
+        ListEmptyComponent={<EmptyState title={t("pos.noProducts")} subtitle={t("pos.noProductsHint")} icon="📦" />}
       />
 
       {cart.length > 0 && (
@@ -211,8 +213,8 @@ export default function PosScreen() {
               </View>
             ))}
           </ScrollView>
-          <Field label="Customer (optional)">
-            <TextField value={customerName} onChangeText={setCustomerName} placeholder="Walk-in" />
+          <Field label={t("pos.customer")}>
+            <TextField value={customerName} onChangeText={setCustomerName} placeholder={t("pos.walkIn")} />
           </Field>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.xs }}>
             {PAYMENT_METHODS.map((m) => (
@@ -230,14 +232,14 @@ export default function PosScreen() {
             ))}
           </View>
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={[type.bodyStrong, { color: palette.text }]}>Total</Text>
+            <Text style={[type.bodyStrong, { color: palette.text }]}>{t("pos.total")}</Text>
             <Text style={[type.bodyStrong, { color: palette.text }]}>{formatMoney(subtotal, currency)}</Text>
           </View>
-          <Button title="Complete sale" onPress={checkout} loading={checkingOut} disabled={splitting} />
+          <Button title={t("pos.completeSale")} onPress={checkout} loading={checkingOut} disabled={splitting} />
           {/* Split-bill only makes sense for a dine-in table with more than
               one item — a takeaway or single-item sale has nothing to divide. */}
           {tableId && cart.length > 1 && (
-            <Button title="Split bill" variant="outline" size="sm" onPress={openSplit} disabled={checkingOut} />
+            <Button title={t("pos.splitBill")} variant="outline" size="sm" onPress={openSplit} disabled={checkingOut} />
           )}
         </Card>
       )}
@@ -245,10 +247,10 @@ export default function PosScreen() {
       <Modal visible={showSplit} animationType="slide" transparent onRequestClose={() => setShowSplit(false)}>
         <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={() => setShowSplit(false)}>
           <Pressable style={[styles.sheet, { backgroundColor: palette.bgElevated }]} onPress={() => {}}>
-            <Text style={[type.heading, { color: palette.text, marginBottom: spacing.md }]}>Split bill</Text>
+            <Text style={[type.heading, { color: palette.text, marginBottom: spacing.md }]}>{t("pos.splitBill")}</Text>
 
             <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md }}>
-              <Text style={[type.caption, { color: palette.textMuted }]}>Seats</Text>
+              <Text style={[type.caption, { color: palette.textMuted }]}>{t("pos.seats")}</Text>
               <Pressable onPress={() => setSeatCount((n) => Math.max(2, n - 1))} style={{ padding: 8, backgroundColor: palette.bg, borderRadius: radius.sm }}>
                 <Text style={{ color: palette.text, fontSize: 14 }}>−</Text>
               </Pressable>
@@ -256,7 +258,7 @@ export default function PosScreen() {
               <Pressable onPress={() => setSeatCount((n) => Math.min(8, n + 1))} style={{ padding: 8, backgroundColor: palette.bg, borderRadius: radius.sm }}>
                 <Text style={{ color: palette.text, fontSize: 14 }}>+</Text>
               </Pressable>
-              <Text style={[type.caption, { color: palette.textFaint, flex: 1 }]}>Tap a seat next to each item</Text>
+              <Text style={[type.caption, { color: palette.textFaint, flex: 1 }]}>{t("pos.tapSeat")}</Text>
             </View>
 
             <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
@@ -299,7 +301,7 @@ export default function PosScreen() {
               })}
             </View>
 
-            <Button title="Charge all seats" onPress={checkoutSplit} loading={splitting} style={{ marginTop: spacing.md }} />
+            <Button title={t("pos.chargeAll")} onPress={checkoutSplit} loading={splitting} style={{ marginTop: spacing.md }} />
           </Pressable>
         </Pressable>
       </Modal>

@@ -3,6 +3,7 @@
 // (lib/queries/restaurant-sales.ts ports the logic client-side).
 
 import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getSalesAnalytics, type SalesAnalytics } from "../../../../../lib/queries/restaurant-sales";
@@ -17,6 +18,7 @@ const RANGES: (7 | 30 | 90)[] = [7, 30, 90];
 export default function SalesScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError } = useToast();
   const [range, setRange] = useState<7 | 30 | 90>(30);
   const [data, setData] = useState<SalesAnalytics | null>(null);
@@ -31,7 +33,7 @@ export default function SalesScreen() {
       setData(d);
       setCurrency(c);
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load sales data");
+      toastError(e instanceof Error ? e.message : t("sales.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -59,23 +61,23 @@ export default function SalesScreen() {
           <View style={{ flexDirection: "row", gap: spacing.md }}>
             <Card style={{ flex: 1 }}>
               <Text style={[type.title, { color: palette.text }]}>{data.orderCount}</Text>
-              <Text style={[type.caption, { color: palette.textMuted }]}>Orders</Text>
+              <Text style={[type.caption, { color: palette.textMuted }]}>{t("sales.orders")}</Text>
             </Card>
             <Card style={{ flex: 1 }}>
               <Text style={[type.title, { color: palette.text }]}>{formatMoney(data.totalRevenue, currency)}</Text>
-              <Text style={[type.caption, { color: palette.textMuted }]}>Revenue</Text>
+              <Text style={[type.caption, { color: palette.textMuted }]}>{t("sales.revenue")}</Text>
             </Card>
           </View>
           <Card>
             <Text style={[type.bodyStrong, { color: palette.text }]}>{formatMoney(data.avgTicket, currency)}</Text>
-            <Text style={[type.caption, { color: palette.textMuted }]}>Average ticket</Text>
+            <Text style={[type.caption, { color: palette.textMuted }]}>{t("sales.avgTicket")}</Text>
           </Card>
 
           <View>
-            <SectionHeader title="Best sellers" />
+            <SectionHeader title={t("sales.bestSellers")} />
             <Card>
               {data.bestSellers.length === 0 ? (
-                <Text style={[type.caption, { color: palette.textMuted }]}>No orders in this range yet.</Text>
+                <Text style={[type.caption, { color: palette.textMuted }]}>{t("sales.noOrders")}</Text>
               ) : (
                 <View style={{ gap: spacing.sm }}>
                   {data.bestSellers.map((b) => (
@@ -95,11 +97,11 @@ export default function SalesScreen() {
           </View>
 
           <View>
-            <SectionHeader title="Fulfillment split" />
+            <SectionHeader title={t("sales.fulfillment")} />
             <Card>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
                 {data.fulfillmentSplit.length === 0 ? (
-                  <Text style={[type.caption, { color: palette.textMuted }]}>No orders in this range yet.</Text>
+                  <Text style={[type.caption, { color: palette.textMuted }]}>{t("sales.noOrders")}</Text>
                 ) : (
                   data.fulfillmentSplit.map((f) => (
                     <Tag key={f.type} label={`${f.type.replace("_", " ")}: ${f.count}`} />

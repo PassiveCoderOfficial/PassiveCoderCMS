@@ -9,6 +9,7 @@
 // wired up yet for this app.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getKitchenOrders, advanceKitchenStatus, getBranches, type KitchenOrder, type RestaurantBranch } from "../../../../../lib/queries/restaurant";
@@ -18,10 +19,9 @@ import { spacing, type } from "../../../../../lib/theme";
 import { useTheme } from "../../../../../lib/themeContext";
 import { useToast } from "../../../../../lib/toast";
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Pending", cooking: "Cooking", ready: "Ready",
-  ready_to_pick: "Ready to Pick", served: "Served on Table", picked_up: "Picked Up", completed: "Completed",
-};
+const KNOWN_STATUS = ["pending", "cooking", "ready", "ready_to_pick", "served", "picked_up", "completed"];
+type T = ReturnType<typeof useLanguage>["t"];
+const statusLabel = (s: string, t: T) => (KNOWN_STATUS.includes(s) ? t(`kstatus.${s}` as "kstatus.pending") : s);
 
 function nextStatus(order: KitchenOrder): string | null {
   const type = order.fulfillment_type;
@@ -32,14 +32,15 @@ function nextStatus(order: KitchenOrder): string | null {
   return null;
 }
 
-function nextLabel(order: KitchenOrder): string {
+function nextLabel(order: KitchenOrder, t: T): string {
   const next = nextStatus(order);
-  return next ? `Mark ${STATUS_LABEL[next]}` : "Awaiting rider";
+  return next ? t("kitchen.mark", { status: statusLabel(next, t) }) : t("kitchen.awaitingRider");
 }
 
 export default function KitchenScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError } = useToast();
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
   const [branches, setBranches] = useState<RestaurantBranch[]>([]);
@@ -56,7 +57,7 @@ export default function KitchenScreen() {
       setOrders(rows);
       setBranches(b);
     } catch (e) {
-      if (!silent) toastError(e instanceof Error ? e.message : "Failed to load kitchen orders");
+      if (!silent) toastError(e instanceof Error ? e.message : t("kitchen.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -87,7 +88,7 @@ export default function KitchenScreen() {
       await advanceKitchenStatus(order.id, tenantId, next);
     } catch (e) {
       setOrders(prev);
-      toastError(e instanceof Error ? e.message : "Failed to update order");
+      toastError(e instanceof Error ? e.message : t("kitchen.updateFailed"));
     } finally {
       setBusyId(null);
     }
@@ -99,7 +100,7 @@ export default function KitchenScreen() {
     <Screen scroll={false}>
       {branches.length > 1 && (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, padding: spacing.lg, paddingBottom: 0 }}>
-          <Pill label="All branches" selected={branchFilter === "all"} onPress={() => setBranchFilter("all")} />
+          <Pill label={t("kitchen.allBranches")} selected={branchFilter === "all"} onPress={() => setBranchFilter("all")} />
           {branches.map((b) => (
             <Pill key={b.id} label={b.name} selected={branchFilter === b.id} onPress={() => setBranchFilter(b.id)} />
           ))}
@@ -124,7 +125,7 @@ export default function KitchenScreen() {
                 <Text style={[type.bodyStrong, { color: palette.text }]}>{item.order_number}</Text>
                 <Text style={[type.caption, { color: palette.textMuted }]}>{item.customer_name}</Text>
               </View>
-              <Badge label={STATUS_LABEL[item.kitchen_status] ?? item.kitchen_status} />
+              <Badge label={statusLabel(item.kitchen_status, t)} />
             </View>
             <View style={{ gap: 2, marginTop: spacing.sm }}>
               {item.items.slice(0, 6).map((it, i) => (
@@ -132,7 +133,7 @@ export default function KitchenScreen() {
               ))}
             </View>
             <Button
-              title={nextLabel(item)}
+              title={nextLabel(item, t)}
               onPress={() => advance(item)}
               loading={busyId === item.id}
               disabled={!nextStatus(item)}
@@ -142,7 +143,7 @@ export default function KitchenScreen() {
           </Card>
         )}
         ListEmptyComponent={
-          <EmptyState title="No live orders" subtitle="New dine-in and pickup orders will appear here." icon="🍳" />
+          <EmptyState title={t("kitchen.none")} subtitle={t("kitchen.noneHint")} icon="🍳" />
         }
       />
     </Screen>

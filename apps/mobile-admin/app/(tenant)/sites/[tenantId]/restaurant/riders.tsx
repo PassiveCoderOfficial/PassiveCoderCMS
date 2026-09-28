@@ -5,6 +5,7 @@
 // kitchen-client.tsx: a plain Maps link, no maps SDK dependency).
 
 import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../../../../lib/languageContext";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { Linking } from "react-native";
@@ -19,11 +20,11 @@ import { useRole } from "../../../../../lib/role";
 
 const ROOT_DOMAIN = process.env.EXPO_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
 
-function minutesAgo(iso: string | null): string {
-  if (!iso) return "never";
+function minutesAgo(iso: string | null, t: ReturnType<typeof useLanguage>["t"]): string {
+  if (!iso) return t("riders.never");
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return "just now";
-  return `${mins} min ago`;
+  if (mins < 1) return t("riders.justNow");
+  return t("riders.minAgo", { n: mins });
 }
 function isStale(iso: string | null): boolean {
   if (!iso) return true;
@@ -33,6 +34,7 @@ function isStale(iso: string | null): boolean {
 export default function RidersScreen() {
   const { tenantId } = useLocalSearchParams<{ tenantId: string }>();
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const { error: toastError, success } = useToast();
   const { memberships } = useRole();
   const tenant = memberships.find((m) => m.tenantId === tenantId)?.tenant;
@@ -58,7 +60,7 @@ export default function RidersScreen() {
       setRiders(r);
       if (!branchId && b[0]) setBranchId(b[0].id);
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to load riders");
+      toastError(e instanceof Error ? e.message : t("riders.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,9 +78,9 @@ export default function RidersScreen() {
       const rider = await createRider(branchId, name, phone);
       setRiders((prev) => [...prev, rider]);
       setName(""); setPhone(""); setShowAdd(false);
-      success("Rider added");
+      success(t("riders.added"));
     } catch (e) {
-      toastError(e instanceof Error ? e.message : "Failed to add rider");
+      toastError(e instanceof Error ? e.message : t("riders.addFailed"));
     } finally {
       setSaving(false);
     }
@@ -87,7 +89,7 @@ export default function RidersScreen() {
   async function copyLink(rider: Rider) {
     const url = `https://${siteHost}/rider/${rider.rider_token}`;
     await Clipboard.setStringAsync(url);
-    success("Rider link copied");
+    success(t("riders.linkCopied"));
   }
 
   if (loading) return <SkeletonList count={3} />;
@@ -98,23 +100,23 @@ export default function RidersScreen() {
         {showAdd ? (
           <Card>
             {branches.length > 1 && (
-              <Field label="Branch">
-                <Select value={branchId} placeholder="Choose a branch" onChange={setBranchId} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
+              <Field label={t("rest.branch")}>
+                <Select value={branchId} placeholder={t("rest.chooseBranch")} onChange={setBranchId} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
               </Field>
             )}
-            <Field label="Rider name">
-              <TextField value={name} onChangeText={setName} placeholder="Full name" autoFocus />
+            <Field label={t("riders.name")}>
+              <TextField value={name} onChangeText={setName} placeholder={t("rest.fullName")} autoFocus />
             </Field>
-            <Field label="Phone (optional)">
-              <TextField value={phone} onChangeText={setPhone} placeholder="Phone" keyboardType="phone-pad" />
+            <Field label={t("riders.phoneOpt")}>
+              <TextField value={phone} onChangeText={setPhone} placeholder={t("rest.phone")} keyboardType="phone-pad" />
             </Field>
             <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
-              <Button title="Cancel" variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
-              <Button title="Add" onPress={addRider} loading={saving} style={{ flex: 1 }} />
+              <Button title={t("rest.cancel")} variant="outline" onPress={() => setShowAdd(false)} style={{ flex: 1 }} />
+              <Button title={t("rest.add")} onPress={addRider} loading={saving} style={{ flex: 1 }} />
             </View>
           </Card>
         ) : (
-          <Button title="Add rider" icon="➕" variant="outline" onPress={() => setShowAdd(true)} disabled={branches.length === 0} />
+          <Button title={t("riders.addBtn")} icon="➕" variant="outline" onPress={() => setShowAdd(true)} disabled={branches.length === 0} />
         )}
       </View>
 
@@ -131,14 +133,14 @@ export default function RidersScreen() {
               <View style={{ gap: 2 }}>
                 <Text style={[type.bodyStrong, { color: palette.text }]}>{item.name}</Text>
                 <Text style={[type.caption, { color: isStale(item.last_location_at) ? palette.textFaint : palette.green600 }]}>
-                  {item.last_lat != null ? `Last seen ${minutesAgo(item.last_location_at)}` : "No location shared yet"}
+                  {item.last_lat != null ? t("riders.lastSeen", { when: minutesAgo(item.last_location_at, t) }) : t("riders.noLocation")}
                 </Text>
               </View>
-              <Button title="Copy link" size="sm" variant="outline" onPress={() => copyLink(item)} />
+              <Button title={t("rest.copyLink")} size="sm" variant="outline" onPress={() => copyLink(item)} />
             </View>
             {item.last_lat != null && (
               <Button
-                title="View on map"
+                title={t("riders.viewMap")}
                 size="sm"
                 variant="ghost"
                 onPress={() => Linking.openURL(`https://www.google.com/maps?q=${item.last_lat},${item.last_lng}`)}
@@ -148,7 +150,7 @@ export default function RidersScreen() {
           </Card>
         )}
         ListEmptyComponent={
-          <EmptyState title="No riders yet" subtitle="Add a rider to assign deliveries to them." icon="🏍️" />
+          <EmptyState title={t("riders.none")} subtitle={t("riders.noneHint")} icon="🏍️" />
         }
       />
     </Screen>
