@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
+import { useLanguage } from "../../../../../../../lib/languageContext";
 import { IconTile } from "../../../../../../../components/Icon";
 import { useLocalSearchParams, router } from "expo-router";
 import { usePageEdit } from "../../../../../../../lib/pageEditContext";
@@ -32,6 +33,7 @@ export default function BlockDetailScreen() {
   const { page, loading, error, setBlocks } = usePageEdit();
   const { palette } = useTheme();
   const toast = useToast();
+  const { t } = useLanguage();
 
   const blockIndex = useMemo(
     () => page?.blocks?.findIndex((b) => b.id === blockId) ?? -1,
@@ -68,7 +70,7 @@ export default function BlockDetailScreen() {
   if (!page || !local) {
     return (
       <Screen>
-        <EmptyState title="Couldn't load this block" subtitle={error ?? "Block not found"} icon="⚠️" />
+        <EmptyState title={t("block.cantLoad")} subtitle={error ?? t("block.notFound")} icon="⚠️" />
       </Screen>
     );
   }
@@ -78,7 +80,7 @@ export default function BlockDetailScreen() {
   return (
     <Screen>
       {/* -------------------------------------------------- Block settings */}
-      <SectionHeader title="Block settings" />
+      <SectionHeader title={t("block.settings")} />
       <Card style={{ gap: spacing.lg }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
           <IconTile name={entry?.icon ?? "layers-outline"} size={44} />
@@ -92,23 +94,23 @@ export default function BlockDetailScreen() {
           </View>
         </View>
 
-        <Field label="Visible" hint="Hidden blocks stay on the page but aren't rendered on the live site.">
+        <Field label={t("block.visible")} hint={t("block.visibleHint")}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
             <Switch
               value={local.visible}
               onValueChange={(v) => setLocal({ ...local, visible: v })}
             />
             <Text style={[type.body, { color: palette.textMuted }]}>
-              {local.visible ? "Visible" : "Hidden"}
+              {local.visible ? t("block.visible") : t("blocks.hidden")}
             </Text>
           </View>
         </Field>
 
-        <Field label="Width">
+        <Field label={t("block.width")}>
           <Select
             value={local.width}
-            placeholder="Width"
-            options={WIDTH_OPTIONS}
+            placeholder={t("block.width")}
+            options={WIDTH_OPTIONS.map((o) => ({ ...o, label: t(({ full: "block.wFull", wide: "block.wWide", normal: "block.wNormal", narrow: "block.wNarrow" } as const)[o.value as "full"]) }))}
             onChange={(v) => setLocal({ ...local, width: v })}
           />
         </Field>
@@ -117,7 +119,7 @@ export default function BlockDetailScreen() {
       </Card>
 
       {/* --------------------------------------------------------- Content */}
-      <SectionHeader title="Content" />
+      <SectionHeader title={t("block.content")} />
       <Card style={{ gap: spacing.lg }}>
         <BlockFieldEditor
           data={local.data}
@@ -126,10 +128,10 @@ export default function BlockDetailScreen() {
       </Card>
 
       <Button
-        title="Save"
+        title={t("common.save")}
         onPress={() => {
           saveAndBack();
-          toast.toast("Block updated — Save changes on the Blocks screen to publish.");
+          toast.toast(t("block.updatedToast"));
         }}
       />
     </Screen>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useLanguage } from "../../../../../../lib/languageContext";
 import { humanize } from "../../../../../../lib/format";
 import { Chevron, Icon, IconTile } from "../../../../../../components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -59,6 +60,7 @@ export default function BlocksScreen() {
   const [publishing, setPublishing] = useState(false);
   const { palette } = useTheme();
   const toast = useToast();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const { memberships } = useRole();
   const tenant = memberships.find((m) => m.tenantId === tenantId)?.tenant;
@@ -70,8 +72,8 @@ export default function BlocksScreen() {
     if (!tenant || !page) return;
     if (page.status !== "published") {
       Alert.alert(
-        "Not published yet",
-        "This page is a draft — it isn't visible on the live site until you publish it. Preview it in Preview mode instead once available, or publish first.",
+        t("blocks.notPublished"),
+        t("blocks.notPublishedHint"),
       );
       return;
     }
@@ -127,10 +129,10 @@ export default function BlocksScreen() {
 
   function remove(index: number) {
     warningFeedback();
-    Alert.alert("Delete block", "Remove this block from the page?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("blocks.deleteTitle"), t("blocks.deleteHint"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () => {
           const next = blocks.slice();
@@ -150,9 +152,9 @@ export default function BlocksScreen() {
 
   function conflict() {
     Alert.alert(
-      "Page changed elsewhere",
-      "Someone saved this page (maybe in the web editor) after you opened it. Reload to get their version? Your unsaved changes here will be lost.",
-      [{ text: "Keep editing", style: "cancel" }, { text: "Reload", style: "destructive", onPress: () => void reload() }],
+      t("blocks.changedElsewhere"),
+      t("blocks.changedHint"),
+      [{ text: t("blocks.keepEditing"), style: "cancel" }, { text: t("blocks.reload"), style: "destructive", onPress: () => void reload() }],
     );
   }
 
@@ -164,10 +166,10 @@ export default function BlocksScreen() {
     try {
       const r = await savePageBlocks(pageId, page.blocks, rev);
       markSaved(r);
-      toast.success(r.hasDraft ? "Saved as draft (not live yet)" : "Saved");
+      toast.success(r.hasDraft ? t("blocks.savedDraft") : t("blocks.saved"));
     } catch (e) {
       if (e instanceof PageConflictError) conflict();
-      else toast.error(e instanceof Error ? e.message : "Failed to save blocks");
+      else toast.error(e instanceof Error ? e.message : t("blocks.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -179,10 +181,10 @@ export default function BlocksScreen() {
     try {
       const r = await publishPage(pageId, page.blocks, rev);
       markSaved({ rev: r.rev, hasDraft: false });
-      toast.success("Published: your changes are live");
+      toast.success(t("blocks.published"));
     } catch (e) {
       if (e instanceof PageConflictError) conflict();
-      else toast.error(e instanceof Error ? e.message : "Failed to publish");
+      else toast.error(e instanceof Error ? e.message : t("blocks.publishFailed"));
     } finally {
       setPublishing(false);
     }
@@ -190,18 +192,18 @@ export default function BlocksScreen() {
 
   function discard() {
     if (!pageId) return;
-    Alert.alert("Discard draft?", "Throw away the unpublished changes and go back to what is live now.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("blocks.discardQ"), t("blocks.discardHint"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Discard",
+        text: t("blocks.discard"),
         style: "destructive",
         onPress: async () => {
           try {
             const r = await discardPageDraft(pageId);
             markSaved({ rev: r.rev, hasDraft: false, blocks: r.blocks });
-            toast.success("Draft discarded");
+            toast.success(t("blocks.discarded"));
           } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Failed to discard");
+            toast.error(e instanceof Error ? e.message : t("blocks.discardFailed"));
           }
         },
       },
@@ -224,7 +226,7 @@ export default function BlocksScreen() {
   if (!page) {
     return (
       <Screen>
-        <EmptyState title="Couldn't load this page" subtitle={error ?? "Page not found"} icon="⚠️" />
+        <EmptyState title={t("page.cantLoad")} subtitle={error ?? t("page.notFound")} icon="⚠️" />
       </Screen>
     );
   }
@@ -244,7 +246,7 @@ export default function BlocksScreen() {
         options={{
           headerRight: () => (
             <Pressable onPress={openPreview} hitSlop={10} style={{ padding: 4 }}>
-              <Text style={{ color: palette.white, fontSize: 13, fontWeight: "700" }}>Preview</Text>
+              <Text style={{ color: palette.white, fontSize: 13, fontWeight: "700" }}>{t("blocks.preview")}</Text>
             </Pressable>
           ),
         }}
@@ -280,10 +282,10 @@ export default function BlocksScreen() {
         }}
         ListEmptyComponent={
           <EmptyState
-            title="No blocks yet"
-            subtitle="Add a block to start building this page."
+            title={t("blocks.none")}
+            subtitle={t("blocks.noneHint")}
             icon="🧱"
-            action={{ label: "Add a block", onPress: () => setPickerOpen(true) }}
+            action={{ label: t("blocks.addOne"), onPress: () => setPickerOpen(true) }}
           />
         }
       />
@@ -294,7 +296,7 @@ export default function BlocksScreen() {
           tapFeedback();
           setPickerOpen(true);
         }}
-        accessibilityLabel="Add block"
+        accessibilityLabel={t("blocks.add")}
         style={({ pressed }) => [
           styles.fab,
           shadow.raised,
@@ -321,11 +323,11 @@ export default function BlocksScreen() {
           ]}
         >
           <Text style={[type.bodyStrong, { color: palette.text, flex: 1 }]} numberOfLines={2}>
-            {dirty ? "Unsaved changes" : "Draft saved, not live yet"}
+            {dirty ? t("blocks.unsaved") : t("blocks.draftNotLive")}
           </Text>
-          {dirty && <Button title={isLive ? "Save draft" : "Save"} onPress={save} loading={saving} variant={isLive ? "outline" : undefined} />}
-          {!dirty && isLive && hasDraft && <Button title="Discard" onPress={discard} variant="outline" />}
-          {isLive && <Button title="Publish" onPress={publish} loading={publishing} disabled={saving} />}
+          {dirty && <Button title={isLive ? t("blocks.saveDraft") : t("common.save")} onPress={save} loading={saving} variant={isLive ? "outline" : undefined} />}
+          {!dirty && isLive && hasDraft && <Button title={t("blocks.discard")} onPress={discard} variant="outline" />}
+          {isLive && <Button title={t("blocks.publish")} onPress={publish} loading={publishing} disabled={saving} />}
         </View>
       )}
 
@@ -353,6 +355,7 @@ function BlockRow({
   onDelete: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useLanguage();
   return (
     <Card style={{ gap: spacing.sm, opacity: block.visible ? 1 : 0.6 }}>
       <Pressable
@@ -371,20 +374,20 @@ function BlockRow({
             {block.type}
           </Text>
         </View>
-        {!block.visible && <Tag label="Hidden" />}
+        {!block.visible && <Tag label={t("blocks.hidden")} />}
         <Chevron />
       </Pressable>
 
       <View style={styles.actionsRow}>
-        <IconAction glyph="↑" label="Move up" onPress={onMoveUp} disabled={isFirst} />
-        <IconAction glyph="↓" label="Move down" onPress={onMoveDown} disabled={isLast} />
+        <IconAction glyph="↑" label={t("blocks.moveUp")} onPress={onMoveUp} disabled={isFirst} />
+        <IconAction glyph="↓" label={t("blocks.moveDown")} onPress={onMoveDown} disabled={isLast} />
         <IconAction
           glyph={block.visible ? "👁" : "🙈"}
-          label={block.visible ? "Hide block" : "Show block"}
+          label={block.visible ? t("blocks.hide") : t("blocks.show")}
           onPress={onToggleVisible}
         />
-        <IconAction glyph="⧉" label="Duplicate block" onPress={onDuplicate} />
-        <IconAction glyph="🗑" label="Delete block" onPress={onDelete} danger />
+        <IconAction glyph="⧉" label={t("blocks.duplicate")} onPress={onDuplicate} />
+        <IconAction glyph="🗑" label={t("blocks.deleteTitle")} onPress={onDelete} danger />
       </View>
     </Card>
   );
@@ -431,6 +434,7 @@ function BlockPickerModal({ visible, onClose, onPick }: {
   onPick: (type: string) => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
 
   const categories = useMemo(() => {
@@ -462,7 +466,7 @@ function BlockPickerModal({ visible, onClose, onPick }: {
           <SearchField
             value={query}
             onChangeText={setQuery}
-            placeholder="Search blocks…"
+            placeholder={t("blocks.search")}
             style={{ marginBottom: spacing.md }}
           />
           <ScrollView keyboardShouldPersistTaps="handled">

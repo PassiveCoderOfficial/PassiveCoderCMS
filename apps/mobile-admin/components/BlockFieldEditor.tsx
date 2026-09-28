@@ -17,6 +17,7 @@
 //   null/undefined       -> skipped (not rendered)
 
 import React, { useState } from "react";
+import { useLanguage } from "../lib/languageContext";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Button, Field, Switch, TextField } from "./form";
 import { Card } from "./ui";
@@ -207,6 +208,7 @@ function ArrayFieldEditor({ label, items, onChange }: {
   onChange: (v: unknown[]) => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useLanguage();
   const objectItems = items.length > 0 && items.every((it) => isPlainObject(it));
 
   function removeAt(index: number) {
@@ -249,7 +251,7 @@ function ArrayFieldEditor({ label, items, onChange }: {
             <View style={styles.itemHeaderRow}>
               <Text style={[styles.itemIndex, { color: palette.textFaint }]}>#{index + 1}</Text>
               <Pressable onPress={() => removeAt(index)} hitSlop={8}>
-                <Text style={[styles.removeText, { color: palette.red600 }]}>Remove ✕</Text>
+                <Text style={[styles.removeText, { color: palette.red600 }]}>{t("block.remove")}</Text>
               </Pressable>
             </View>
             <BlockFieldEditor
@@ -258,7 +260,7 @@ function ArrayFieldEditor({ label, items, onChange }: {
             />
           </Card>
         ))}
-        <Button title="Add item" variant="outline" onPress={addObject} />
+        <Button title={t("block.addItem")} variant="outline" onPress={addObject} />
       </View>
     );
   }
@@ -293,7 +295,7 @@ function ArrayFieldEditor({ label, items, onChange }: {
           </Pressable>
         </View>
       ))}
-      <Button title="Add item" variant="outline" onPress={addPrimitive} />
+      <Button title={t("block.addItem")} variant="outline" onPress={addPrimitive} />
     </View>
   );
 }
