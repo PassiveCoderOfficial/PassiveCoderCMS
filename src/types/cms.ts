@@ -107,8 +107,17 @@ export type BlockBase = {
   animation?: "none" | "fade" | "slide-up" | "slide-left" | "zoom";
   /** Shared section styling every block type gets from the Style panel. */
   style?: BlockStyle;
+  /** Order / visibility of the block's own pieces (badge, title, buttons…),
+   *  edited in the Style panel. Keys per type: modules/page-builder/block-elements.ts. */
+  elements?: BlockElements;
   // Template identity — controls which visual variant renders
   templateVariant?: string;
+};
+
+export type BlockElements = {
+  /** Piece keys in display order; pieces missing from it keep their default spot after the listed ones. */
+  order?: string[];
+  hidden?: string[];
 };
 
 export type BlockStyle = {

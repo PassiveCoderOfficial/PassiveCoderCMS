@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { ColorPicker } from "@/components/ui/color-picker";
+import { ElementsEditor } from "./elements-editor";
 import type { Block, BlockBackground, BlockStyle } from "@/types/cms";
 
 interface LayoutSettingsProps {
@@ -196,6 +197,9 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
           </div>
         )}
       </div>
+
+      {/* Elements — order/visibility of the block's own pieces (hero etc.) */}
+      <ElementsEditor block={block} />
 
       {/* Style — shared by every block type, rendered by getBlockWrapperStyle */}
       <div className="space-y-3 border-t pt-4">
