@@ -162,7 +162,7 @@ export default function EditSubscriptionPage() {
                 value={form.plan_id || undefined}
                 onValueChange={v => {
                   const plan = plans.find(p => p.id === v);
-                  if (plan) setForm(f => ({ ...f, plan_id: v, amount_cents: planPrice(plan, f.billing_cycle).toString(), currency: plan.currency }));
+                  if (plan) setForm(f => ({ ...f, plan_id: v, amount_cents: (planPrice(plan, f.billing_cycle) / 100).toString(), currency: plan.currency }));
                   else set("plan_id", v);
                 }}
               >
@@ -178,7 +178,7 @@ export default function EditSubscriptionPage() {
                 value={form.billing_cycle}
                 onValueChange={v => {
                   const plan = plans.find(p => p.id === form.plan_id);
-                  setForm(f => ({ ...f, billing_cycle: v, ...(plan && !f.custom_amount_cents ? { amount_cents: planPrice(plan, v).toString() } : {}) }));
+                  setForm(f => ({ ...f, billing_cycle: v, ...(plan && !f.custom_amount_cents ? { amount_cents: (planPrice(plan, v) / 100).toString() } : {}) }));
                 }}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>

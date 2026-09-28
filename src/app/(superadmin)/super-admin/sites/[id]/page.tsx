@@ -126,48 +126,75 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
         </CardContent>
       </Card>
 
-      {/* Subscription */}
-      {subscription && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2"><CreditCard className="w-4 h-4 text-muted-foreground" /> Subscription</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Plan</p>
-                <p className="capitalize">{subscription.plan_id ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Status</p>
-                <Badge variant={statusVariant(subscription.status)}>{subscription.status}</Badge>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Amount</p>
-                <p>
-                  {subscription.amount_cents ? `$${(subscription.amount_cents / 100).toFixed(2)}/yr` : "—"}
+      {/* Billing — always shown. It used to render only when a subscription
+          existed, so sites with none (plan set by hand) were never flagged. */}
+      <Card className={!subscription ? "border-red-500/40" : undefined}>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2"><CreditCard className="w-4 h-4 text-muted-foreground" /> Billing</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {!subscription ? (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+              <div className="text-sm">
+                <p className="font-medium text-red-600">This site isn&apos;t billed</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  It&apos;s on the <span className="capitalize font-medium">{site.plan ?? "—"}</span> plan but has no subscription, so no invoices, payment reminders or non-payment pause apply.
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Period End</p>
-                <p>
-                  {subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() :
-                   subscription.trial_ends_at ? new Date(subscription.trial_ends_at).toLocaleDateString() : "—"}
+              <Button asChild size="sm">
+                <Link href={`/super-admin/subscriptions/new?tenant=${site.id}&plan=${site.plan ?? ""}`}>Set up billing</Link>
+              </Button>
+            </div>
+          ) : (
+            <>
+              {subscription.plan_id !== site.plan && (
+                <p className="text-xs rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 px-3 py-2">
+                  The site runs on <b className="capitalize">{site.plan}</b> but the subscription is for <b className="capitalize">{subscription.plan_id}</b>. Saving the subscription sets the site to the subscription&apos;s plan.
                 </p>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Plan</p>
+                  <p className="capitalize">{subscription.plan_id ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Status</p>
+                  <Badge variant={statusVariant(subscription.status)}>{subscription.status}</Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Price</p>
+                  <p>
+                    {(() => {
+                      const cents = subscription.custom_amount_cents ?? subscription.amount_cents;
+                      if (!cents) return "—";
+                      const cur = subscription.currency === "BDT" ? "৳" : "$";
+                      const cyc = subscription.billing_cycle === "monthly" ? "/month" : subscription.billing_cycle === "lifetime" ? " one-time" : "/year";
+                      return `${cur}${(cents / 100).toLocaleString()}${cyc}`;
+                    })()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Next payment due</p>
+                  <p>
+                    {subscription.next_payment_due ? new Date(subscription.next_payment_due).toLocaleDateString()
+                      : subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString()
+                      : <span className="text-amber-600">Not set</span>}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Paid by</p>
+                  <p className="capitalize">{subscription.payment_provider ?? "manual"}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Provider</p>
-                <p className="capitalize">{subscription.payment_provider ?? "Manual"}</p>
+              <div className="pt-1">
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/super-admin/subscriptions/${subscription.id}/edit`}>Edit billing &amp; payments</Link>
+                </Button>
               </div>
-            </div>
-            <div className="pt-1">
-              <Link href={`/super-admin/subscriptions?tenant=${site.id}`} className="text-xs text-indigo-400 hover:text-indigo-300">
-                Manage subscription →
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <AiCreditsCard siteId={site.id} />
 

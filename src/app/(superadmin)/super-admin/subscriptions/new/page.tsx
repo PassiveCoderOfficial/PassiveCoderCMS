@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface Tenant { id: string; name: string; slug: string; }
 interface Plan { id: string; name: string; price_yearly: number; price_monthly: number; currency: string; }
 
+/** Plan price in cents; the form field holds whole currency units. */
 function planPrice(plan: Plan, cycle: string): number {
   if (cycle === "monthly") return plan.price_monthly ?? 0;
   return plan.price_yearly ?? 0;
@@ -44,6 +45,23 @@ export default function NewSubscriptionPage() {
     ]).then(([{ sites }, { plans: p }]) => {
       setTenants((sites ?? []).sort((a: Tenant, b: Tenant) => a.name.localeCompare(b.name)));
       setPlans(p ?? []);
+      // Opened from a site's "Set up billing": pre-fill that site and its
+      // current plan, active and manual (the usual case for sites set up by us).
+      const qs = new URLSearchParams(window.location.search);
+      const tenant = qs.get("tenant");
+      if (tenant) {
+        const plan = qs.get("plan") ?? "";
+        const planRow = (p ?? []).find((x: Plan & { price_monthly?: number }) => x.id === plan) as (Plan & { price_monthly?: number }) | undefined;
+        setForm(f => ({
+          ...f,
+          tenant_id: tenant,
+          plan_id: plan,
+          status: "active",
+          payment_provider: "manual",
+          billing_cycle: "monthly",
+          amount_cents: planRow?.price_monthly ? String(planRow.price_monthly / 100) : f.amount_cents,
+        }));
+      }
       setLoading(false);
     });
   }, []);
@@ -103,7 +121,7 @@ export default function NewSubscriptionPage() {
               value={form.plan_id}
               onValueChange={(v) => {
                 const plan = plans.find(p => p.id === v);
-                if (plan) setForm(f => ({ ...f, plan_id: v, amount_cents: planPrice(plan, f.billing_cycle).toString(), currency: plan.currency }));
+                if (plan) setForm(f => ({ ...f, plan_id: v, amount_cents: (planPrice(plan, f.billing_cycle) / 100).toString(), currency: plan.currency }));
                 else set("plan_id", v);
               }}
             >
@@ -120,7 +138,7 @@ export default function NewSubscriptionPage() {
               value={form.billing_cycle}
               onValueChange={(cycle) => {
                 const plan = plans.find(p => p.id === form.plan_id);
-                setForm(f => ({ ...f, billing_cycle: cycle, ...(plan ? { amount_cents: planPrice(plan, cycle).toString() } : {}) }));
+                setForm(f => ({ ...f, billing_cycle: cycle, ...(plan ? { amount_cents: (planPrice(plan, cycle) / 100).toString() } : {}) }));
               }}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -147,7 +165,7 @@ export default function NewSubscriptionPage() {
               <Input value={form.payment_provider} onChange={e => set("payment_provider", e.target.value)} placeholder="stripe, manual…" />
             </div>
             <div className="space-y-1.5">
-              <Label>Amount ($/yr)</Label>
+              <Label>Amount ({form.currency === "BDT" ? "৳" : "$"} per {form.billing_cycle === "monthly" ? "month" : form.billing_cycle === "lifetime" ? "one-time" : "year"})</Label>
               <Input type="number" min="0" step="0.01" value={form.amount_cents} onChange={e => set("amount_cents", e.target.value)} />
             </div>
             <div className="space-y-1.5">

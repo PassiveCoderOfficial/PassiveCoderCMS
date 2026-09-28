@@ -21,6 +21,18 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
 
   const { data: subs } = await query;
 
+  // Sites on a paid plan with no subscription at all never appear in the
+  // table below (it lists subscription rows), which is how they went unbilled.
+  const { data: allSites } = await supabase
+    .from("tenants")
+    .select("id,name,slug,plan,demo_expires_at,subscriptions(id)")
+    .in("plan", ["basic", "pro", "biz", "custom"])
+    .is("demo_expires_at", null);
+  const unbilled = (allSites ?? []).filter((t) => {
+    const s = t.subscriptions as unknown;
+    return !s || (Array.isArray(s) && s.length === 0);
+  });
+
   function statusVariant(s: string) {
     if (s === "active") return "success" as const;
     if (s === "onboarded") return "info" as const;
@@ -43,6 +55,27 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
           </Link>
         </Button>
       </div>
+
+      {unbilled.length > 0 && (
+        <Card className="border-red-500/40">
+          <CardContent className="p-4 space-y-3">
+            <div>
+              <p className="font-semibold text-red-600">{unbilled.length} site{unbilled.length === 1 ? "" : "s"} on a paid plan with no subscription</p>
+              <p className="text-xs text-muted-foreground">They aren&apos;t invoiced, reminded or paused for non-payment until billing is set up.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {unbilled.map((t) => (
+                <Link key={t.id} href={`/super-admin/subscriptions/new?tenant=${t.id}&plan=${t.plan}`}
+                  className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent">
+                  <span className="font-medium">{t.name}</span>
+                  <span className="text-xs capitalize text-muted-foreground">{t.plan}</span>
+                  <span className="text-xs text-red-600">Set up billing</span>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {STATUSES.map(s => (

@@ -21,6 +21,52 @@ interface Site {
   onboarding_completed: boolean;
   deletion_requested_at: string | null;
   owner_id: string | null;
+  plan: string | null;
+  demo_expires_at: string | null;
+  subscriptions: Sub[] | Sub | null;
+}
+
+interface Sub {
+  id: string;
+  plan_id: string;
+  status: string;
+  billing_cycle: string | null;
+  amount_cents: number | null;
+  custom_amount_cents: number | null;
+  currency: string | null;
+  next_payment_due: string | null;
+  current_period_end: string | null;
+  payment_provider: string | null;
+}
+
+// Plans that should be billed. free/trial/agency are internal or pre-sale.
+const PAID_PLANS = new Set(["basic", "pro", "biz", "custom"]);
+type BillingKey = "needs" | "paying" | "overdue" | "unbilled" | "demo" | "free";
+
+function subOf(site: Site): Sub | null {
+  const s = site.subscriptions;
+  return (Array.isArray(s) ? s[0] : s) ?? null;
+}
+
+/** One billing state per site, so the list answers "is this site paying?" at a glance. */
+function billingOf(site: Site): { key: BillingKey; label: string; tone: "success" | "destructive" | "warning" | "secondary" | "info" } {
+  const sub = subOf(site);
+  if (site.demo_expires_at) return { key: "demo", label: "Demo", tone: "info" };
+  if (!sub) return PAID_PLANS.has(site.plan ?? "")
+    ? { key: "needs", label: "No subscription", tone: "destructive" }
+    : { key: "free", label: "No subscription", tone: "secondary" };
+  if (sub.status === "active") return { key: "paying", label: "Paying", tone: "success" };
+  if (sub.status === "past_due" || site.status === "suspended") return { key: "overdue", label: sub.status === "past_due" ? "Past due" : "Paused", tone: "destructive" };
+  return { key: "unbilled", label: `Not billed (${sub.status})`, tone: "warning" };
+}
+
+function money(sub: Sub | null): string {
+  if (!sub) return "";
+  const cents = sub.custom_amount_cents ?? sub.amount_cents;
+  if (!cents) return "";
+  const cur = sub.currency === "BDT" ? "৳" : "$";
+  const cyc = sub.billing_cycle === "monthly" ? "/mo" : sub.billing_cycle === "lifetime" ? " once" : "/yr";
+  return `${cur}${(cents / 100).toLocaleString()}${cyc}`;
 }
 
 interface ContactInfo {
@@ -111,7 +157,7 @@ export default function AllSitesPage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [billingFilter, setBillingFilter] = useState<BillingKey | "">("");
   const [deletingSite, setDeletingSite] = useState<Site | null>(null);
   const [contactSite, setContactSite] = useState<Site | null>(null);
 
@@ -123,9 +169,17 @@ export default function AllSitesPage() {
 
   const filtered = sites.filter(s => {
     const matchQ = !q || s.name.toLowerCase().includes(q.toLowerCase()) || s.slug.toLowerCase().includes(q.toLowerCase());
-    const matchStatus = !statusFilter || s.status === statusFilter;
-    return matchQ && matchStatus;
+    const matchBilling = !billingFilter || billingOf(s).key === billingFilter;
+    return matchQ && matchBilling;
   });
+  const count = (k: BillingKey) => sites.filter(s => billingOf(s).key === k).length;
+  const TILES: { key: BillingKey; label: string; hint: string; cls: string }[] = [
+    { key: "needs", label: "Needs billing", hint: "Paid plan, no subscription", cls: "text-red-600" },
+    { key: "paying", label: "Paying", hint: "Active subscription", cls: "text-green-600" },
+    { key: "overdue", label: "Past due / paused", hint: "Payment missed", cls: "text-orange-600" },
+    { key: "unbilled", label: "Not billed yet", hint: "Plan picked, never paid", cls: "text-amber-600" },
+    { key: "demo", label: "Demos", hint: "Preview sites", cls: "text-blue-600" },
+  ];
 
   return (
     <>
@@ -141,8 +195,27 @@ export default function AllSitesPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Globe className="w-6 h-6 text-blue-500" /> All Sites
+            <Globe className="w-6 h-6 text-blue-500" /> Sites &amp; Billing
           </h1>
+        </div>
+
+        {/* Billing overview — each tile filters the table */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {TILES.map(t => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setBillingFilter(billingFilter === t.key ? "" : t.key)}
+              className={cn(
+                "rounded-xl border p-3 text-left transition-colors hover:bg-accent/50",
+                billingFilter === t.key && "ring-2 ring-primary",
+              )}
+            >
+              <div className={cn("text-2xl font-bold tabular-nums", t.cls)}>{loading ? "–" : count(t.key)}</div>
+              <div className="text-sm font-medium">{t.label}</div>
+              <div className="text-[11px] text-muted-foreground">{t.hint}</div>
+            </button>
+          ))}
         </div>
 
         {/* Filters */}
@@ -156,11 +229,11 @@ export default function AllSitesPage() {
               className="pl-9"
             />
           </div>
-          {STATUSES.map(s => (
-            <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
-              {s || "All"}
+          {billingFilter && (
+            <Button variant="outline" size="sm" onClick={() => setBillingFilter("")}>
+              Clear filter <X className="w-3.5 h-3.5 ml-1" />
             </Button>
-          ))}
+          )}
         </div>
 
         {/* Table */}
@@ -171,9 +244,9 @@ export default function AllSitesPage() {
             <thead>
               <tr className="border-b">
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Site Name</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Plan</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Billing</th>
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden md:table-cell">Domain</th>
-                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Status</th>
-                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Onboarded</th>
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium hidden lg:table-cell">Created</th>
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium"></th>
               </tr>
@@ -199,6 +272,32 @@ export default function AllSitesPage() {
                       <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">Deletion requested</p>
                     )}
                   </td>
+                  <td className="px-5 py-3">
+                    <span className="capitalize font-medium">{site.plan ?? "—"}</span>
+                    {(() => {
+                      const sub = subOf(site);
+                      return sub && sub.plan_id !== site.plan ? (
+                        <p className="text-[10px] text-amber-600">Subscription says {sub.plan_id}</p>
+                      ) : null;
+                    })()}
+                  </td>
+                  <td className="px-5 py-3">
+                    {(() => {
+                      const b = billingOf(site);
+                      const sub = subOf(site);
+                      const due = sub?.next_payment_due ?? sub?.current_period_end;
+                      return (
+                        <div className="space-y-0.5">
+                          <Badge variant={b.tone}>{b.label}</Badge>
+                          {sub && (money(sub) || due) && (
+                            <p className="text-[11px] text-muted-foreground">
+                              {money(sub)}{money(sub) && due ? " · " : ""}{due ? `due ${new Date(due).toLocaleDateString()}` : ""}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </td>
                   <td className="px-5 py-3 hidden md:table-cell">
                     {site.custom_domain ? (
                       <a href={`https://${site.custom_domain}`} target="_blank" rel="noopener noreferrer"
@@ -212,17 +311,15 @@ export default function AllSitesPage() {
                       </a>
                     )}
                   </td>
-                  <td className="px-5 py-3">
-                    <Badge variant={statusVariant(site.status)}>{site.status}</Badge>
-                  </td>
-                  <td className="px-5 py-3 hidden lg:table-cell">
-                    <span className={cn("text-xs", site.onboarding_completed ? "text-green-500" : "text-muted-foreground")}>
-                      {site.onboarding_completed ? "Yes" : "Pending"}
-                    </span>
-                  </td>
                   <td className="px-5 py-3 text-muted-foreground text-xs hidden lg:table-cell">{new Date(site.created_at).toLocaleDateString()}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3 justify-end">
+                      {billingOf(site).key === "needs" && (
+                        <Link href={`/super-admin/subscriptions/new?tenant=${site.id}&plan=${site.plan ?? ""}`}
+                          className="text-xs font-medium text-red-600 hover:underline whitespace-nowrap">
+                          Set up billing
+                        </Link>
+                      )}
                       <Link href={`/super-admin/sites/${site.id}`}
                         className="text-xs text-primary hover:underline flex items-center gap-1">
                         Manage <ExternalLink className="w-3 h-3" />

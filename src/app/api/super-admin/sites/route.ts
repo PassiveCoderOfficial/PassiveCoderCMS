@@ -11,7 +11,10 @@ export async function GET(req: Request) {
   const supabase = await createAdminClient();
   const { data, error } = await supabase
     .from("tenants")
-    .select("id,name,slug,status,custom_domain,domain_status,created_at,onboarding_completed,deletion_requested_at,owner_id")
+    // plan + the subscription row, so the Sites list can show billing state
+    // next to each site (sites with no subscription used to be invisible to
+    // billing entirely).
+    .select("id,name,slug,status,plan,demo_expires_at,custom_domain,domain_status,created_at,onboarding_completed,deletion_requested_at,owner_id,subscriptions(id,plan_id,status,billing_cycle,amount_cents,custom_amount_cents,currency,next_payment_due,current_period_end,payment_provider)")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -47,6 +50,22 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Every site gets its subscription row at creation. Sites made here used to
+  // get a plan but no subscription, so billing, dunning and the Subscriptions
+  // list never knew they existed. 'onboarded' = not billed yet; the super
+  // admin sets price, cycle and next payment date on the site's Billing card.
+  const sitePlan = plan ?? "basic";
+  const { data: planRow } = await supabase.from("plans").select("price_monthly").eq("id", sitePlan).maybeSingle();
+  await supabase.from("subscriptions").insert({
+    tenant_id: data.id,
+    plan_id: sitePlan,
+    status: "onboarded",
+    billing_cycle: "monthly",
+    payment_provider: "manual",
+    amount_cents: planRow?.price_monthly ?? null,
+    currency: "USD",
+  });
 
   // If owner provided, add them as tenant member with owner role
   if (owner_user_id) {
