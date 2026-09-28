@@ -156,7 +156,7 @@ function AdminFooter({ isSuperAdmin, isStaff, isVendor }: { isSuperAdmin: boolea
       <div className="p-3 space-y-1">
         <div className="flex items-center gap-1">
           {isSuperAdmin && (
-            <Link
+            <Link prefetch={false}
               href="/super-admin"
               className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-indigo-500 hover:bg-accent hover:text-indigo-400 transition-colors"
             >
@@ -174,7 +174,7 @@ function AdminFooter({ isSuperAdmin, isStaff, isVendor }: { isSuperAdmin: boolea
             </a>
           )}
           {isVendor && !isSuperAdmin && !isStaff && (
-            <Link
+            <Link prefetch={false}
               href="/vendor/dashboard"
               className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-emerald-600 hover:bg-accent hover:text-emerald-500 transition-colors"
             >

@@ -141,7 +141,7 @@ export function AnalyticsClient({
               You have an active Pro subscription from ExpertNear.Me. Complete your site setup to go live — choose a site name, subdomain, and template.
             </p>
           </div>
-          <Link href="/onboarding">
+          <Link prefetch={false} href="/onboarding">
             <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white border-0 shrink-0 flex items-center gap-1.5">
               <ExternalLink className="w-3.5 h-3.5" /> Create Your Pro Site
             </Button>
@@ -156,10 +156,10 @@ export function AnalyticsClient({
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/pages/new">{t("dashboard.newPage")}</Link>
+            <Link prefetch={false} href="/dashboard/pages/new">{t("dashboard.newPage")}</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/dashboard/posts/new">{t("dashboard.newPost")}</Link>
+            <Link prefetch={false} href="/dashboard/posts/new">{t("dashboard.newPost")}</Link>
           </Button>
         </div>
       </div>
@@ -173,7 +173,7 @@ export function AnalyticsClient({
           { label: t("dashboard.orders"), value: dashboardStats.orderCount, icon: ShoppingBag, href: "/dashboard/ecommerce/orders", color: "text-green-600" },
           { label: t("dashboard.users"), value: dashboardStats.userCount, icon: Users, href: "/dashboard/users", color: "text-pink-600" },
         ].map((stat) => (
-          <Link key={stat.label} href={stat.href}>
+          <Link prefetch={false} key={stat.label} href={stat.href}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -194,7 +194,7 @@ export function AnalyticsClient({
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold">{t("dashboard.recentOrders")}</CardTitle>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link href="/dashboard/ecommerce/orders">{t("dashboard.viewAll")}</Link>
+                <Link prefetch={false} href="/dashboard/ecommerce/orders">{t("dashboard.viewAll")}</Link>
               </Button>
             </div>
           </CardHeader>
@@ -229,7 +229,7 @@ export function AnalyticsClient({
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold">{t("dashboard.recentTransactions")}</CardTitle>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link href="/dashboard/accounting/transactions">{t("dashboard.viewAll")}</Link>
+                <Link prefetch={false} href="/dashboard/accounting/transactions">{t("dashboard.viewAll")}</Link>
               </Button>
             </div>
           </CardHeader>
@@ -271,7 +271,7 @@ export function AnalyticsClient({
               { label: t("dashboard.siteSettings"), href: "/dashboard/settings" },
             ].map((action) => (
               <Button key={action.href} asChild variant="outline" size="sm">
-                <Link href={action.href}>{action.label}</Link>
+                <Link prefetch={false} href={action.href}>{action.label}</Link>
               </Button>
             ))}
           </div>
