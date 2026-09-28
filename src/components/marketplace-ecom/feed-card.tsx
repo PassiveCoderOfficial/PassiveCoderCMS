@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ImageOff, Store } from "lucide-react";
+import { ImageOff, Star, Store } from "lucide-react";
 import type { CardProduct } from "./product-card";
 
 const tk = (n: number) => `৳${Number(n).toLocaleString()}`;
+const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
 
 /**
  * Dense discovery tile — the Shopee / Lazada / Daraz "Just for you" card.
@@ -64,6 +65,18 @@ export function FeedCard({ product: p }: { product: CardProduct }) {
             <span className="text-[11px] text-[#98A2B3] line-through">{tk(p.compare_price!)}</span>
           )}
         </div>
+        {((p.rating_count ?? 0) > 0 || (p.sold_count ?? 0) > 0) && (
+          <span className="text-[11px] text-[#667085] flex items-center gap-1">
+            {(p.rating_count ?? 0) > 0 && (
+              <>
+                <Star className="w-3 h-3 text-[#FFB400] fill-[#FFB400]" />
+                {Number(p.rating_avg).toFixed(1)}
+              </>
+            )}
+            {(p.rating_count ?? 0) > 0 && (p.sold_count ?? 0) > 0 && <span className="text-[#D0D5DD]">|</span>}
+            {(p.sold_count ?? 0) > 0 && <span>{compact(p.sold_count!)} sold</span>}
+          </span>
+        )}
         {p.vendors && (
           <span className="text-[11px] text-[#667085] flex items-center gap-1 truncate">
             <Store className="w-3 h-3 shrink-0" />

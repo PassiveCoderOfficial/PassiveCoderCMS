@@ -12,6 +12,9 @@ export interface CardProduct {
   stock_quantity: number;
   track_inventory: boolean;
   featured?: boolean;
+  rating_avg?: number;
+  rating_count?: number;
+  sold_count?: number;
   vendors: { id?: string; name: string; slug: string | null } | null;
 }
 

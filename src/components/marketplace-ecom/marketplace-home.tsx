@@ -38,7 +38,7 @@ export async function MarketplaceHome({
   const admin = await createAdminClient();
 
   const productCols =
-    "id, name, slug, price, compare_price, images, stock_quantity, track_inventory, featured, created_at, vendors!inner(id, name, slug, status)";
+    "id, name, slug, price, compare_price, images, stock_quantity, track_inventory, featured, rating_avg, rating_count, sold_count, created_at, vendors!inner(id, name, slug, status)";
 
   const live = () =>
     admin
