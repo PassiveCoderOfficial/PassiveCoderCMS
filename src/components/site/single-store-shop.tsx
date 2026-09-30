@@ -127,9 +127,11 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
           </form>
         </div>
 
-        <div className="grid lg:grid-cols-[230px_1fr] gap-6 items-start">
+        {/* grid-cols-1 + min-w-0: without them the scrolling category pills
+            stretch the single mobile column to their full width. */}
+        <div className="grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">
           {cats.length > 0 && (
-            <aside className="lg:sticky lg:top-28">
+            <aside className="min-w-0 lg:sticky lg:top-28">
               <p className="hidden lg:block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">
                 Categories
               </p>
