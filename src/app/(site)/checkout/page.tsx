@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
-import SingleVendorCheckout from "./single-vendor-checkout";
+import SingleVendorCheckout, { type ShippingRateOption } from "./single-vendor-checkout";
 import MarketplaceCheckoutClient from "../marketplace-checkout/checkout-client";
 
 export const metadata = { title: "Checkout" };
@@ -27,5 +27,25 @@ export default async function CheckoutPage() {
     if ((count ?? 0) > 0) return <MarketplaceCheckoutClient />;
   }
 
-  return <SingleVendorCheckout />;
+  // Delivery zones are optional: a tenant with no shipping_rates rows keeps
+  // the old free-delivery checkout untouched.
+  let shippingRates: ShippingRateOption[] = [];
+  if (tenantId) {
+    const admin = await createAdminClient();
+    const { data } = await admin
+      .from("shipping_rates")
+      .select("id, name, rate, free_above, eta_days, is_default")
+      .eq("tenant_id", tenantId)
+      .order("sort_order");
+    shippingRates = (data ?? []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      rate: Number(r.rate),
+      free_above: r.free_above === null ? null : Number(r.free_above),
+      eta_days: r.eta_days,
+      is_default: r.is_default,
+    }));
+  }
+
+  return <SingleVendorCheckout shippingRates={shippingRates} />;
 }

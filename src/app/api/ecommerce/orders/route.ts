@@ -19,6 +19,9 @@ interface OrderPayload {
    *  id — resolved server-side below so a client can't address an
    *  arbitrary table_id it was never shown. */
   table_qr_token?: string;
+  /** Delivery zone picked at checkout (shipping_rates.id). Only the id is
+   *  accepted — the charge is looked up and recalculated server-side. */
+  shipping_rate_id?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -26,7 +29,7 @@ export async function POST(req: NextRequest) {
     const tenantId = req.headers.get("x-tenant-id");
     const body: OrderPayload = await req.json();
 
-    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time, table_qr_token } = body;
+    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time, table_qr_token, shipping_rate_id } = body;
     const isDineIn = fulfillment_type === "dine_in";
 
     if (!items?.length) {
@@ -92,7 +95,24 @@ export async function POST(req: NextRequest) {
     }));
 
     const subtotal = verifiedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const shipping_cost = 0; // flat 0 for now — extend with delivery settings later
+    // Delivery charge from the tenant's own zones. A tenant with no
+    // shipping_rates rows (or a pickup / dine-in order) stays at 0, exactly
+    // as before zones existed here.
+    let shipping_cost = 0;
+    const isDelivery = !isDineIn && fulfillment_type !== "pickup";
+    if (isDelivery && tenantId && shipping_rate_id) {
+      const { data: rate } = await supabase
+        .from("shipping_rates")
+        .select("rate, free_above")
+        .eq("id", shipping_rate_id)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      if (!rate) {
+        return NextResponse.json({ error: "Delivery area not found" }, { status: 400 });
+      }
+      const freeAbove = rate.free_above === null ? null : Number(rate.free_above);
+      shipping_cost = freeAbove !== null && subtotal >= freeAbove ? 0 : Number(rate.rate);
+    }
     const tax = 0;
     const total = subtotal + shipping_cost + tax;
 

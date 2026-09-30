@@ -15,12 +15,26 @@ interface Gateway {
   name: string;
   slug: string;
   settings: Record<string, string>;
+  supported_currencies?: string[] | null;
 }
 
-export default function SingleVendorCheckout() {
+export interface ShippingRateOption {
+  id: string;
+  name: string;
+  rate: number;
+  free_above: number | null;
+  eta_days: string | null;
+  is_default: boolean;
+}
+
+export default function SingleVendorCheckout({ shippingRates = [] }: { shippingRates?: ShippingRateOption[] }) {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
-  const { format } = useEcommerceCurrency();
+  const { format, currency } = useEcommerceCurrency();
+  const [shippingRateId, setShippingRateId] = useState(
+    () => (shippingRates.find((r) => r.is_default) ?? shippingRates[0])?.id ?? "",
+  );
+  const [allGateways, setAllGateways] = useState<Gateway[]>([]);
   const [gateways, setGateways] = useState<Gateway[]>([]);
   const [selectedGateway, setSelectedGateway] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -65,12 +79,32 @@ export default function SingleVendorCheckout() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("payment_gateways").select("id, name, slug, settings").eq("is_enabled", true).then(({ data }) => {
-      const list = (data as Gateway[]) ?? [];
-      setGateways(list);
-      if (list.length > 0) setSelectedGateway(list[0].slug);
+    supabase.from("payment_gateways").select("id, name, slug, settings, supported_currencies").eq("is_enabled", true).then(({ data }) => {
+      setAllGateways((data as Gateway[]) ?? []);
     });
   }, []);
+
+  // Gateways are platform-wide rows, so a store only offers the ones that can
+  // take its currency (a riyal store has no use for bKash). If none declare
+  // the currency, fall back to the full list rather than a dead checkout.
+  useEffect(() => {
+    const usable = allGateways.filter(
+      (g) => !g.supported_currencies?.length || g.supported_currencies.includes(currency),
+    );
+    const list = usable.length > 0 ? usable : allGateways;
+    setGateways(list);
+    setSelectedGateway((prev) => (list.some((g) => g.slug === prev) ? prev : list[0]?.slug ?? ""));
+  }, [allGateways, currency]);
+
+  // Delivery charge mirrors the server's own calculation in
+  // /api/ecommerce/orders — shown here, never trusted from here.
+  const shippingRate = shippingRates.find((r) => r.id === shippingRateId) ?? null;
+  const isDelivery = fulfillmentType === "delivery";
+  const shippingCost =
+    isDelivery && shippingRate && !(shippingRate.free_above !== null && subtotal >= shippingRate.free_above)
+      ? shippingRate.rate
+      : 0;
+  const total = subtotal + shippingCost;
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -111,6 +145,7 @@ export default function SingleVendorCheckout() {
           payment_method: selectedGateway,
           notes: form.notes,
           fulfillment_type: fulfillmentType,
+          shipping_rate_id: isDelivery && shippingRate ? shippingRate.id : undefined,
           pickup_time: isPickup ? pickupTime : undefined,
           table_qr_token: isDineIn ? tableToken : undefined,
         }),
@@ -217,6 +252,35 @@ export default function SingleVendorCheckout() {
                   </button>
                 </div>
               )}
+              {isDelivery && shippingRates.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Delivery area</p>
+                  {shippingRates.map((r) => {
+                    const free = r.rate === 0 || (r.free_above !== null && subtotal >= r.free_above);
+                    return (
+                      <label key={r.id} className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${shippingRateId === r.id ? "border-primary bg-primary/5" : "hover:bg-muted"}`}>
+                        <input
+                          type="radio"
+                          name="shipping_rate"
+                          value={r.id}
+                          checked={shippingRateId === r.id}
+                          onChange={() => setShippingRateId(r.id)}
+                          className="accent-primary"
+                        />
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm font-medium">{r.name}</span>
+                          {(r.eta_days || r.free_above !== null) && (
+                            <span className="block text-xs text-muted-foreground">
+                              {[r.eta_days, r.free_above !== null ? `Free over ${format(r.free_above)}` : null].filter(Boolean).join(" · ")}
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-sm font-semibold shrink-0">{free ? "Free" : format(r.rate)}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
               {isPickup && (
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Pickup Time</label>
@@ -296,6 +360,12 @@ export default function SingleVendorCheckout() {
                 </div>
               )}
 
+              {selectedGw?.slug === "cod" && (
+                <p className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+                  {isPickup ? "Pay when you collect your order." : "Pay in cash when your order is delivered."}
+                </p>
+              )}
+
               {/* Manual gateway instructions */}
               {selectedGw?.slug === "manual" && selectedGw.settings?.instructions && (
                 <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-1">
@@ -355,14 +425,14 @@ export default function SingleVendorCheckout() {
                   <span>{format(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="text-muted-foreground">Free</span>
+                  <span className="text-muted-foreground">{isDelivery ? "Delivery" : "Shipping"}</span>
+                  {shippingCost > 0 ? <span>{format(shippingCost)}</span> : <span className="text-muted-foreground">Free</span>}
                 </div>
               </div>
 
               <div className="border-t pt-3 flex justify-between font-bold text-base">
                 <span>Total</span>
-                <span>{format(subtotal)}</span>
+                <span>{format(total)}</span>
               </div>
 
               <button

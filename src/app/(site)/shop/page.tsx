@@ -6,10 +6,11 @@ import type { CardProduct } from "@/components/marketplace-ecom/product-card";
 import { FeedCard } from "@/components/marketplace-ecom/feed-card";
 import { ChatNowButton } from "@/components/marketplace-ecom/chat/chat-now-button";
 import { Stars } from "@/components/marketplace-ecom/stars";
+import { SingleStoreShop } from "@/components/site/single-store-shop";
 
 export const metadata = { title: "Shop all products" };
 
-type SP = { q?: string; category?: string; vendor?: string; sort?: string; min?: string; max?: string; rating?: string };
+type SP = { q?: string; category?: string; vendor?: string; sort?: string; min?: string; max?: string; rating?: string; page?: string };
 interface Props {
   searchParams: Promise<SP>;
 }
@@ -41,6 +42,17 @@ export default async function ShopPage({ searchParams }: Props) {
   if (!tenantId) return null;
 
   const admin = await createAdminClient();
+
+  // An ordinary single-store tenant has no sellers, and every query below
+  // inner-joins `vendors` — its own catalogue would always come back empty.
+  // Same "approved ecommerce sellers exist" test checkout/page.tsx routes on.
+  const { count: sellerCount } = await admin
+    .from("vendors")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .eq("status", "approved")
+    .contains("capabilities", ["ecommerce"]);
+  if ((sellerCount ?? 0) === 0) return <SingleStoreShop tenantId={tenantId} sp={sp} />;
 
   let query = admin
     .from("products")

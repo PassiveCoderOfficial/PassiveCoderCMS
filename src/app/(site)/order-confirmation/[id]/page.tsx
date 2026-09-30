@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { CheckCircle, Package, ArrowLeft, Store, Truck, Banknote, UtensilsCrossed, ShoppingBag } from "lucide-react";
+import { CheckCircle, Package, ArrowLeft, Store, Truck, Banknote, UtensilsCrossed, ShoppingBag, MessageCircle } from "lucide-react";
 import type { CartItem } from "@/types/cms";
 import { OrderSummary } from "./order-summary";
 import { ChatNowButton } from "@/components/marketplace-ecom/chat/chat-now-button";
+import { getCurrencyConfig, formatWithConfig } from "@/lib/ecommerce/currency-server";
 
 const STEPS = ["pending", "accepted", "packed", "shipped", "delivered"] as const;
 const STEP_LABEL: Record<string, string> = { pending: "Placed", accepted: "Confirmed", packed: "Packed", shipped: "Shipped", delivered: "Delivered" };
@@ -80,6 +81,38 @@ export default async function OrderConfirmationPage({ params }: Props) {
   const branch = Array.isArray(branchRel) ? branchRel[0] : branchRel;
   const pickupTime = (order as { pickup_time?: string | null }).pickup_time;
 
+  // A single-store order (no seller parcels) is confirmed by the shop itself,
+  // so the buyer gets the shop's own contact: the pickup address, and a
+  // WhatsApp link pre-filled with the order number. Marketplace orders keep
+  // their per-seller chat instead.
+  const isSingleStore = subOrders.length === 0;
+  const currencyCfg = await getCurrencyConfig(tenantId);
+  // Marketplace orders keep their existing taka formatting (tk above).
+  const money = (n: number) => (isSingleStore ? formatWithConfig(Number(n), currencyCfg) : tk(n));
+  let shop: { address: string | null; phone: string | null; whatsapp: string | null } | null = null;
+  let shopName: string | null = null;
+  if (isSingleStore && tenantId && !isDineIn) {
+    const [{ data: contact }, { data: identity }] = await Promise.all([
+      supabase
+        .from("contact_details")
+        .select("address, phone, whatsapp")
+        .eq("tenant_id", tenantId)
+        .order("is_primary", { ascending: false })
+        .order("sort_order")
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("site_identity").select("site_name").eq("tenant_id", tenantId).maybeSingle(),
+    ]);
+    shop = contact ?? null;
+    shopName = identity?.site_name ?? null;
+  }
+  const waDigits = shop?.whatsapp?.replace(/\D/g, "") ?? "";
+  const waUrl = waDigits
+    ? `https://wa.me/${waDigits}?text=${encodeURIComponent(
+        `Hi${shopName ? ` ${shopName}` : ""}, I placed order ${order.order_number} (${money(Number(order.total))}) on your website. Please confirm it.`,
+      )}`
+    : null;
+
   return (
     <div className="max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-12">
       <div className="text-center mb-6 rounded-2xl bg-card border p-6">
@@ -89,7 +122,9 @@ export default async function OrderConfirmationPage({ params }: Props) {
           {isDineIn
             ? `Your order is on its way to Table ${tableNumber ?? ""}.`
             : isPickup
-              ? "Your order has been sent to the kitchen — we'll have it ready for pickup."
+              ? branch
+                ? "Your order has been sent to the kitchen — we'll have it ready for pickup."
+                : "Your order has been received — we'll have it ready for pickup."
               : isCod
                 ? "Please keep the exact amount ready for the delivery person."
                 : "Thank you for your purchase. Your order has been received."}
@@ -192,13 +227,34 @@ export default async function OrderConfirmationPage({ params }: Props) {
           total={Number(order.total)}
         />
 
+        {waUrl && (
+          <div className="bg-card border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Confirm on WhatsApp</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Send us your order number for a faster confirmation.
+              </p>
+            </div>
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 shrink-0"
+            >
+              <MessageCircle className="w-4 h-4" /> Confirm on WhatsApp
+            </a>
+          </div>
+        )}
+
         {isCod && (
           <div className="bg-card border rounded-2xl p-4 flex items-start gap-3">
             <Banknote className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-sm">Cash on delivery</p>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Pay {tk(Number(order.total))} when your parcels arrive.
+                {isPickup
+                  ? `Pay ${money(Number(order.total))} when you collect your order.`
+                  : `Pay ${money(Number(order.total))} when your ${subOrders.length > 1 ? "parcels arrive" : "order arrives"}.`}
                 {subOrders.length > 1 && " Each parcel is paid for separately on arrival."}
               </p>
             </div>
@@ -219,9 +275,13 @@ export default async function OrderConfirmationPage({ params }: Props) {
           <div className="bg-card border rounded-2xl p-4 flex items-start gap-3">
             <ShoppingBag className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-sm">{branch?.name ?? "Pickup"}</p>
-              {branch?.address && <p className="text-sm text-muted-foreground mt-0.5">{branch.address}</p>}
-              {branch?.phone && <p className="text-sm text-muted-foreground">{branch.phone}</p>}
+              <p className="font-medium text-sm">{branch?.name ?? (shopName ? `Pickup from ${shopName}` : "Pickup")}</p>
+              {(branch?.address ?? shop?.address) && (
+                <p className="text-sm text-muted-foreground mt-0.5">{branch?.address ?? shop?.address}</p>
+              )}
+              {(branch?.phone ?? shop?.phone) && (
+                <p className="text-sm text-muted-foreground">{branch?.phone ?? shop?.phone}</p>
+              )}
               <p className="text-sm text-muted-foreground mt-0.5">
                 {pickupTime ? `Ready around ${new Date(pickupTime).toLocaleString()}.` : "We'll have it ready as soon as possible."}
               </p>
