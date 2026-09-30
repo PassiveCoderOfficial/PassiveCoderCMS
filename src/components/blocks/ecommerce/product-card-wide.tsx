@@ -53,10 +53,10 @@ export function ProductCardWide({ product, showAddToCart = true, showDescription
       listMode
         ? "p-4 hover:bg-muted/30 transition-colors"
         : cardStyle === "shadow"
-          ? "rounded-xl shadow-md hover:shadow-xl transition-shadow bg-white dark:bg-gray-900 p-3"
+          ? "rounded-xl shadow-md hover:shadow-xl transition-shadow bg-card text-card-foreground p-3"
           : cardStyle === "bordered"
             ? "rounded-xl border-2 border-border hover:border-primary transition-colors bg-background p-3"
-            : "rounded-xl border hover:shadow-md transition-shadow bg-white dark:bg-gray-900 p-3"
+            : "rounded-xl border hover:shadow-md transition-shadow bg-card text-card-foreground p-3"
     )}>
       {/* Image */}
       <Link href={`/products/${product.slug}`} className="shrink-0">
@@ -106,7 +106,7 @@ export function ProductCardWide({ product, showAddToCart = true, showDescription
               className={cn(
                 "flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-colors shrink-0",
                 inStock
-                  ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:opacity-80"
+                  ? "bg-foreground text-background hover:opacity-80"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
               )}
             >

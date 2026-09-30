@@ -19,11 +19,14 @@ const RATIO_CLASS: Record<ImageRatio, string> = {
   auto:      "aspect-square",
 };
 
+// Theme tokens, not `dark:` utilities: the dark variant follows the visitor's
+// OS setting rather than the site's own theme, which made these cards
+// unreadable whenever the two disagreed.
 const CARD_STYLE: Record<CardStyle, string> = {
-  default:  "border rounded-xl overflow-hidden hover:shadow-lg transition-shadow bg-white dark:bg-gray-900",
+  default:  "border rounded-xl overflow-hidden hover:shadow-lg transition-shadow bg-card text-card-foreground",
   flat:     "rounded-xl overflow-hidden bg-muted/30 hover:bg-muted/60 transition-colors",
   minimal:  "rounded-xl overflow-hidden",
-  shadow:   "rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow bg-white dark:bg-gray-900",
+  shadow:   "rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow bg-card text-card-foreground",
   bordered: "border-2 border-border rounded-xl overflow-hidden hover:border-primary transition-colors bg-background",
 };
 
@@ -95,7 +98,7 @@ export function ProductCard({
   return (
     <div className={cn(CARD_STYLE[cardStyle], featured && "h-full")}>
       <Link href={`/products/${product.slug}`}>
-        <div className={cn("relative overflow-hidden bg-gray-50 dark:bg-gray-800", RATIO_CLASS[imageRatio])}>
+        <div className={cn("relative overflow-hidden bg-muted", RATIO_CLASS[imageRatio])}>
           {firstImage ? (
             <Image
               src={firstImage}
@@ -166,7 +169,7 @@ export function ProductCard({
               className={cn(
                 "flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors shrink-0",
                 inStock
-                  ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:opacity-80"
+                  ? "bg-foreground text-background hover:opacity-80"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
               )}
             >
