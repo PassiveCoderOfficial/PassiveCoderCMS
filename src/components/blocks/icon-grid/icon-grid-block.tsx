@@ -26,14 +26,18 @@ const TILE_FALLBACK_COLORS = [
   "bg-cyan-500",
 ];
 
+/** Column count from tablet up only. Each variant sets its own phone layout
+ *  (grid-cols-2 tiles, grid-cols-1 numbered rows); this used to return an
+ *  unprefixed "grid-cols-3" that overrode it, forcing 3 cramped columns on a
+ *  390px phone for every 3-column icon grid. */
 function colClassFor(columns: 3 | 4 | 5 | 6): string {
   const colClass: Record<number, string> = {
-    3: "grid-cols-3",
-    4: "sm:grid-cols-4",
-    5: "grid-cols-3 sm:grid-cols-5",
-    6: "grid-cols-3 sm:grid-cols-6",
+    3: "sm:grid-cols-3",
+    4: "sm:grid-cols-2 lg:grid-cols-4",
+    5: "sm:grid-cols-3 lg:grid-cols-5",
+    6: "sm:grid-cols-3 lg:grid-cols-6",
   };
-  return colClass[columns] ?? "grid-cols-4";
+  return colClass[columns] ?? "sm:grid-cols-2 lg:grid-cols-4";
 }
 
 function IconGridColoredTiles({ block }: { block: IconGridBlockProps }) {
@@ -48,7 +52,7 @@ function IconGridColoredTiles({ block }: { block: IconGridBlockProps }) {
           {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
         </div>
       )}
-      <div className={cn("grid gap-6", colClassFor(columns))}>
+      <div className={cn("grid grid-cols-2 gap-6", colClassFor(columns))}>
         {items.map((item, i) => {
           const fallback = TILE_FALLBACK_COLORS[i % TILE_FALLBACK_COLORS.length];
           const content = (
@@ -143,7 +147,7 @@ function IconGridLegacy({ block }: { block: IconGridBlockProps }) {
           {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
         </div>
       )}
-      <div className={cn("grid gap-6", colClassFor(columns))}>
+      <div className={cn("grid grid-cols-2 gap-6", colClassFor(columns))}>
         {items.map(item => {
           const iconBg = item.color ? `${item.color}20` : undefined;
           const iconColor = item.color ?? undefined;

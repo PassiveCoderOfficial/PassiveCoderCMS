@@ -1,3 +1,5 @@
+import { createAdminClient } from "@/lib/supabase/server";
+import { avoidanceBrief, diversifyVariants, recentHomeLayouts } from "@/modules/page-builder/layout-diversity";
 import { z } from "zod";
 import { BLOCK_VARIANTS } from "@/modules/page-builder/block-variants";
 import {
@@ -96,6 +98,11 @@ export async function planPage(
   pageKind: "home" | "interior" = "home",
 ): Promise<PagePlan> {
   const allowedBlocks = availableBlockTypes(facts);
+  // Homepages: show the planner what recent sites used so it picks a
+  // different skeleton, then enforce it on the variants (layout-diversity.ts).
+  const recent = pageKind === "home"
+    ? await recentHomeLayouts(await createAdminClient()).catch(() => [])
+    : [];
 
   const system = [
     "You are AiCoder's page planner for a block-based website builder.",
@@ -132,6 +139,7 @@ export async function planPage(
     "",
     "Brief for this page:",
     pageBrief.trim().slice(0, 12_000),
+    ...(recent.length ? ["", avoidanceBrief(recent)] : []),
   ].join("\n");
 
   const plan = await callModel(pagePlanSchema, system, user, 3000);
@@ -157,6 +165,15 @@ export async function planPage(
 
   if (sections.length < 3) {
     throw new AiCoderError("The planner returned too few usable sections for a page.", "invalid_output");
+  }
+
+  if (recent.length) {
+    const varied = diversifyVariants(
+      sections.map((sec) => ({ ...sec, type: sec.blockType, variant: sec.variantKey })),
+      recent,
+      facts.businessName ?? "",
+    );
+    varied.forEach((v, i) => { sections[i].variantKey = v.variant ?? undefined; });
   }
 
   return { pageTitle: plan.pageTitle, metaDescription: plan.metaDescription, sections };

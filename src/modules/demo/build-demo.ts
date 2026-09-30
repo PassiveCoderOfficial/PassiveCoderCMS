@@ -1,3 +1,4 @@
+import { diversifyBlocks, recentHomeLayouts } from "@/modules/page-builder/layout-diversity";
 /**
  * One-minute demo site builder.
  *
@@ -290,7 +291,10 @@ export async function createDemoSite(
     ),
   ]);
 
-  const blocks = await buildDemoBlocks(input, (tpl?.category as string) ?? "");
+  // Every demo used to get the identical section sequence and layouts; steer
+  // this one away from the most recently built sites (layout-diversity.ts).
+  const recent = await recentHomeLayouts(admin).catch(() => []);
+  const blocks = diversifyBlocks(await buildDemoBlocks(input, (tpl?.category as string) ?? ""), recent, input.slug) as Block[];
   const now = new Date().toISOString();
   const { error: pageErr } = await admin.from("pages").insert({
     tenant_id: tenantId, template_id: null, title: "Home", slug: "home", type: "page",
