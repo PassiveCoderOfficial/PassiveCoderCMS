@@ -154,7 +154,7 @@ export function ProductCard({
           </div>
         )}
 
-        <div className={cn("mt-3 flex items-center", showAddToCart ? "justify-between" : "justify-start", "gap-2")}>
+        <div className={cn("mt-3 flex flex-wrap items-center", showAddToCart ? "justify-between" : "justify-start", "gap-2")}>
           <div className="flex items-baseline gap-2">
             <span className={cn("font-bold", featured ? "text-xl" : "text-sm")}>{format(product.price)}</span>
             {product.compare_price && (
