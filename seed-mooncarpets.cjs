@@ -17,7 +17,7 @@ const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 const OWNER_ID = "2ec0befe-7aa8-4a89-acc4-b9fe9250bcf4"; // walibdpro — demo creator
 const SLUG = "mooncarpets";
 const PLAN = "basic";
-const TEMPLATE_SLUG = "construction-classic";
+const TEMPLATE_SLUG = "real-estate-classic"; // no template CSS; construction-classic forced orange card borders
 const DEMO_HOURS = 24 * 7;
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -33,7 +33,7 @@ const PHONE_DISPLAY = "+971 58 839 3675";
 const WA_NUMBER = "971588393675";
 const ADDRESS = "Shop AB154, Ground Floor, Capital Mall, Abu Dhabi, UAE";
 const MAPS_URL = "https://www.google.com/maps/search/?api=1&query=Capital+Mall+Abu+Dhabi";
-const MAP_EMBED = "https://maps.google.com/maps?q=Capital%20Mall%20Abu%20Dhabi&z=16&output=embed";
+const MAP_EMBED = "https://www.google.com/maps?q=Capital%20Mall%20Abu%20Dhabi&z=16&output=embed";
 const waText = (t) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
 const WA = waText("Hello Moon Carpets, I would like to ask about your products.");
 
@@ -151,7 +151,7 @@ function floatingWhatsApp() {
     data: {
       html: `<a class="mc-wa" href="${WA}" target="_blank" rel="noopener noreferrer" aria-label="Chat with Moon Carpets on WhatsApp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" fill="#fff"><path d="M16 0C7.164 0 0 7.164 0 16c0 2.82.737 5.469 2.027 7.773L0 32l8.473-2.004A15.934 15.934 0 0016 32c8.836 0 16-7.164 16-16S24.836 0 16 0zm0 29.333a13.257 13.257 0 01-6.749-1.839l-.484-.287-5.027 1.188 1.213-4.895-.316-.502A13.263 13.263 0 012.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.266-9.987c-.398-.199-2.353-1.161-2.718-1.294-.365-.133-.631-.199-.897.199-.266.398-1.031 1.294-1.264 1.56-.233.266-.465.299-.863.1-.398-.199-1.681-.62-3.203-1.977-1.184-1.055-1.983-2.357-2.216-2.755-.233-.398-.025-.613.175-.811.18-.178.398-.465.598-.698.199-.233.266-.398.398-.664.133-.266.067-.498-.033-.697-.1-.199-.897-2.161-1.229-2.958-.324-.778-.653-.672-.897-.684l-.764-.013c-.266 0-.697.1-1.062.498-.365.398-1.395 1.362-1.395 3.322s1.428 3.852 1.627 4.118c.199.266 2.81 4.291 6.81 6.022.952.411 1.695.657 2.274.841.955.304 1.824.261 2.511.158.766-.114 2.353-.962 2.685-1.891.332-.929.332-1.726.232-1.891-.099-.166-.365-.266-.763-.465z"/></svg></a>`,
       // theme-image-fade tints photo cards with the primary colour; magenta is too loud for that.
-      css: `.theme-image-fade{background:linear-gradient(to top,rgba(28,25,27,.55) 0%,transparent 60%)!important}.mc-wa{position:fixed;right:20px;bottom:20px;z-index:9990;width:56px;height:56px;border-radius:9999px;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:transform .15s ease}.mc-wa:hover{transform:scale(1.06)}@media(max-width:640px){.mc-wa{right:14px;bottom:14px;width:52px;height:52px}}`,
+      css: `.theme-image-fade{background:linear-gradient(to top,rgba(28,25,27,.55) 0%,transparent 60%)!important}.mc-wa{position:fixed;right:20px;bottom:20px;z-index:9990;width:56px;height:56px;border-radius:9999px;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:transform .15s ease}.mc-wa:hover{transform:scale(1.06)}@media(max-width:640px){.mc-wa{right:14px;bottom:14px;width:52px;height:52px}}${POLISH}`,
     },
   };
 }
@@ -180,22 +180,130 @@ function footer() {
   };
 }
 
+// Site-wide finishing touches shared by every page.
+const POLISH = [
+  ".mc-head{text-align:center;max-width:44rem;margin:0 auto 44px}",
+  `.mc-eyebrow{font-size:.75rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:${MAGENTA};margin-bottom:12px}`,
+  `.mc-head h2{font-family:Montserrat,sans-serif;font-size:clamp(1.9rem,3.2vw,2.75rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;color:${CHARCOAL}}`,
+  ".mc-lede{margin-top:14px;color:#6E6568;font-size:1.05rem;line-height:1.6}",
+  "h2{letter-spacing:-.02em}",
+  "a,button{transition:background-color .2s,color .2s,border-color .2s,box-shadow .2s,transform .2s}",
+  "img{image-rendering:auto}",
+].join("");
+
 // ─── sections ───────────────────────────────────────────────────────────────
 function heroHome() {
   return {
-    ...BASE, id: uid("hero"), type: "hero", padding: { top: 72, right: 24, bottom: 72, left: 24 },
+    ...BASE, id: uid("hero"), type: "hero", padding: ZERO,
     background: bgColor(IVORY),
-    templateVariant: "split-image-right",
+    // Full-bleed room photo fading out of the ivory page on the left.
+    templateVariant: "dark-gradient-left",
     data: {
-      layout: "split", badge: "Capital Mall, Abu Dhabi · Shop AB154",
-      title: "Curtains, Carpets & Floors\nThat Finish Your Space",
-      subtitle: LEGAL_NAME,
-      description: "Seven product ranges under one roof: curtains, wallpaper, carpets, wall panels, SPC flooring, artificial grass and foam sheets. We measure, supply and install.",
+      layout: "left", badge: "CAPITAL MALL · ABU DHABI",
+      title: "Floors, walls & windows, finished beautifully.",
+      subtitle: "Curtains · Wallpaper · Carpets · Wall Panels · SPC Flooring · Artificial Grass · Foam Sheet",
+      description: "Choose everything for your room in one showroom. We measure at your place, supply the materials and our team installs them.",
       badgeBgColor: MAGENTA, badgeTextColor: "#ffffff",
-      primaryButton: { label: "Get a Free Quote on WhatsApp", url: waText("Hello Moon Carpets, I would like a quote."), variant: "primary" },
-      secondaryButton: { label: "Browse Products", url: "/products", variant: "outline" },
-      imageUrl: IMG.heroRoom, imageAlt: "Living room with floor-length curtains and wood flooring",
+      primaryButton: { label: "Get a Free Quote", url: waText("Hello Moon Carpets, I would like a quote."), variant: "primary" },
+      secondaryButton: { label: "Explore Products", url: "/products", variant: "secondary", bgColor: "#ffffff", textColor: CHARCOAL },
+      imageUrl: IMG.heroRoom, imageAlt: "Dining room with floor-length curtains and wood flooring", imagePosition: "70% center",
       typography: { titleSize: "5xl", titleColor: CHARCOAL, subtitleColor: MAGENTA, descColor: "#5C5457" },
+    },
+  };
+}
+
+// Product showcase. A custom bento because the stock card grids leave the 7th
+// category orphaned on its own row; the 8th tile is a WhatsApp prompt.
+function productBento(bg = IVORY) {
+  const tile = ([, , title, short, , img], i) => `
+    <a href="/products" class="mc-tile mc-t${i}">
+      <img src="${img.replace("w=1600", "w=1000")}" alt="${title}" loading="lazy" />
+      <span class="mc-tile-body"><strong>${title}</strong><em>${short}</em></span>
+      <span class="mc-tile-arrow" aria-hidden="true">→</span>
+    </a>`;
+  return {
+    ...BASE, id: uid("bento"), type: "custom_html", background: bgColor(bg),
+    data: {
+      html: `<div class="mc-bento-wrap">
+  <div class="mc-head"><p class="mc-eyebrow">Our Products</p><h2>Seven ranges. One showroom.</h2><p class="mc-lede">Everything to finish a room, from the curtains to the floor under your feet.</p></div>
+  <div class="mc-bento">${CATEGORIES.map(tile).join("")}
+    <a href="${waText("Hello Moon Carpets, I am not sure what I need. Here is a photo of my room.")}" target="_blank" rel="noopener noreferrer" class="mc-tile mc-ask">
+      <span class="mc-ask-body"><strong>Not sure what fits?</strong><em>Send us a photo of your room on WhatsApp and we suggest options with prices.</em><span class="mc-ask-btn">Chat on WhatsApp →</span></span>
+    </a>
+  </div>
+</div>`,
+      css: `.mc-bento-wrap{max-width:80rem;margin:0 auto}
+.mc-bento{display:grid;gap:16px;grid-template-columns:repeat(4,1fr);grid-auto-rows:240px}
+.mc-tile{position:relative;display:block;overflow:hidden;border-radius:18px;background:${CHARCOAL};color:#fff;text-decoration:none;isolation:isolate}
+.mc-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1);z-index:-2}
+.mc-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(20,17,19,.82) 0%,rgba(20,17,19,.25) 45%,transparent 70%);z-index:-1}
+.mc-tile:hover img{transform:scale(1.06)}
+.mc-tile-body{position:absolute;left:22px;right:56px;bottom:20px;display:flex;flex-direction:column;gap:4px}
+.mc-tile-body strong{font-family:Montserrat,sans-serif;font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+.mc-tile-body em{font-style:normal;font-size:.85rem;line-height:1.4;color:rgba(255,255,255,.82)}
+.mc-tile-arrow{position:absolute;right:18px;bottom:20px;width:36px;height:36px;border-radius:999px;background:#fff;color:${CHARCOAL};display:flex;align-items:center;justify-content:center;font-weight:700;transition:background .2s,color .2s,transform .2s}
+.mc-tile:hover .mc-tile-arrow{background:${MAGENTA};color:#fff;transform:translateX(3px)}
+.mc-t0{grid-column:span 2;grid-row:span 2}.mc-t0 .mc-tile-body strong{font-size:2rem}.mc-t0 .mc-tile-body em{font-size:1rem;max-width:26rem}
+.mc-ask{grid-column:span 2;background:linear-gradient(135deg,${MAGENTA} 0%,${MAGENTA_DEEP} 100%)}
+.mc-ask::after{display:none}
+.mc-ask-body{position:absolute;inset:0;padding:28px 30px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.mc-ask-body strong{font-family:Montserrat,sans-serif;font-size:1.6rem;font-weight:700}
+.mc-ask-body em{font-style:normal;color:rgba(255,255,255,.88);max-width:28rem;line-height:1.5}
+.mc-ask-btn{margin-top:8px;align-self:flex-start;background:#fff;color:${MAGENTA_DEEP};font-weight:700;font-size:.9rem;padding:10px 18px;border-radius:999px}
+@media(max-width:1023px){.mc-bento{grid-template-columns:repeat(2,1fr);grid-auto-rows:210px}}
+@media(max-width:560px){.mc-bento{grid-template-columns:1fr 1fr;grid-auto-rows:170px;gap:10px}.mc-tile-body{left:14px;right:14px;bottom:14px}.mc-tile-body em,.mc-tile-arrow{display:none}.mc-tile-body strong{font-size:1rem}.mc-t0 .mc-tile-body strong{font-size:1.4rem}.mc-t0 .mc-tile-body em{display:block;font-size:.85rem}.mc-ask{grid-row:span 1}.mc-ask-body{padding:18px}.mc-ask-body strong{font-size:1.2rem}.mc-ask-body em{font-size:.85rem}}`,
+    },
+  };
+}
+
+function spaces(bg = SAND) {
+  return {
+    ...BASE, id: uid("ig"), type: "icon_grid", background: bgColor(bg),
+    templateVariant: "circle-icons",
+    data: {
+      title: "Spaces We Furnish", subtitle: "Homes, businesses and places of worship across Abu Dhabi", columns: 6, iconSize: "md",
+      items: [
+        ["Home", "Villas"],
+        ["Building2", "Apartments"],
+        ["Briefcase", "Offices"],
+        ["Hotel", "Hotels"],
+        ["Sofa", "Majlis"],
+        ["Landmark", "Mosques"],
+      ].map(([icon, label]) => ({ id: uid("i"), icon, color: MAGENTA, label, description: "" })),
+    },
+  };
+}
+
+function showroomStrip(bg = IVORY) {
+  return {
+    ...BASE, id: uid("gal"), type: "gallery", background: bgColor(bg),
+    padding: { top: 0, right: 24, bottom: 88, left: 24 },
+    templateVariant: "filmstrip",
+    data: {
+      title: "", subtitle: "", layout: "grid", columns: 4, gap: "md", lightbox: true,
+      images: [
+        [IMG.storefront, "Our shop front at Capital Mall"],
+        [IMG.curtains, "Curtain fabrics on display"],
+        [IMG.marble, "Marble-look wall panel board"],
+        [IMG.foam, "Wood-grain foam sheet board"],
+      ].map(([url, alt]) => ({ id: uid("gi"), url, alt, caption: alt })),
+    },
+  };
+}
+
+function visitShowroom(bg = IVORY) {
+  return {
+    ...BASE, id: uid("feat"), type: "features", background: bgColor(bg),
+    templateVariant: "split-list",
+    data: {
+      title: "See and feel the samples first", subtitle: "Visit the showroom",
+      description: "Fabrics, wallpaper books, carpet samples and panel boards are all on display at Shop AB154, on the ground floor of Capital Mall. Come in, compare colours side by side and take samples home.",
+      layout: "split", columns: 2, style: "minimal", imageUrl: IMG.storefront,
+      items: [
+        ["MapPin", "Shop AB154, Ground Floor", "Capital Mall, Abu Dhabi"],
+        ["Layers", "Hundreds of samples", "Curtain fabrics, carpet and panel boards in store"],
+        ["MessageCircle", "Can't visit?", "We bring samples to your home when we measure"],
+      ].map(([icon, title, description]) => ({ id: uid("f"), icon, title, description })),
     },
   };
 }
@@ -204,7 +312,7 @@ function pageHero({ badge, title, description, img }) {
   return {
     ...BASE, id: uid("hero"), type: "hero", padding: ZERO,
     templateVariant: "fullscreen-overlay",
-    background: { type: "image", imageUrl: img, imageOverlay: CHARCOAL_DEEP, imageOverlayOpacity: 0.62 },
+    background: { type: "image", imageUrl: img, imageOverlay: CHARCOAL_DEEP, imageOverlayOpacity: 0.5 },
     data: {
       layout: "left", badge, title, subtitle: "", description, compact: true,
       badgeBgColor: MAGENTA, badgeTextColor: "#ffffff",
@@ -285,7 +393,7 @@ function showroom(bg = SAND) {
 function howItWorks(bg = IVORY) {
   return {
     ...BASE, id: uid("steps"), type: "steps", background: bgColor(bg),
-    templateVariant: "arrow-flow",
+    templateVariant: "numbered-cards",
     data: {
       title: "From Idea to Installed", subtitle: "How an order works", layout: "horizontal", style: "connected",
       items: [
@@ -320,12 +428,13 @@ function faq(items = FAQ, bg = SAND) {
 
 function cta() {
   return {
-    ...BASE, id: uid("cta"), type: "cta", background: bgColor(CHARCOAL),
-    templateVariant: "dark-split",
+    ...BASE, id: uid("cta"), type: "cta",
+    background: bgColor(IVORY),
+    templateVariant: "gradient-banner",
     data: {
       title: "Planning a new look for your home or office?",
       description: "Send us a photo of the room on WhatsApp. We reply with ideas, samples and a quote.",
-      layout: "split",
+      layout: "centered",
       primaryButton: { label: "WhatsApp Us", url: WA },
       secondaryButton: { label: `Call ${PHONE_DISPLAY}`, url: `tel:${PHONE}` },
     },
@@ -365,9 +474,9 @@ function contactCards(bg = SAND) {
   };
 }
 
-function contact(bg = IVORY) {
+function contact(bg = IVORY, top = 88) {
   return {
-    ...BASE, id: uid("contact"), type: "contact", background: bgColor(bg),
+    ...BASE, padding: { top, right: 24, bottom: 88, left: 24 }, id: uid("contact"), type: "contact", background: bgColor(bg),
     data: {
       title: "Ask for a Quote", subtitle: "Tell us what you need and we will get back to you. For the fastest reply, use WhatsApp.",
       layout: "split",
@@ -386,7 +495,7 @@ function contact(bg = IVORY) {
 
 // ─── pages ──────────────────────────────────────────────────────────────────
 const BUILDERS = {
-  home: () => [heroHome(), promises(), categoryCards(), showroom(), howItWorks(), faq(FAQ.slice(0, 4)), cta(), contact()],
+  home: () => [heroHome(), promises(), productBento(), spaces(), visitShowroom(), showroomStrip(), howItWorks(SAND), faq(FAQ.slice(0, 4), IVORY), cta(), contact(IVORY, 24)],
   products: () => [
     pageHero({ badge: "Our Products", title: "Product Categories", description: "Curtains, wallpaper, carpets, wall panels, SPC flooring, artificial grass and foam sheets. Supplied and installed in Abu Dhabi.", img: IMG.bedroomCurtains }),
     promises(),
@@ -394,7 +503,7 @@ const BUILDERS = {
     cta(),
   ],
   about: () => [
-    pageHero({ badge: "About Us", title: "Moon Carpets, Capital Mall", description: "A one-stop showroom for floors, walls and windows in Abu Dhabi.", img: IMG.woodPanel }),
+    pageHero({ badge: "About Us", title: "Moon Carpets, Capital Mall", description: "A one-stop showroom for floors, walls and windows in Abu Dhabi.", img: IMG.slatPanel }),
     aboutSplit(),
     showroom(),
     howItWorks(IVORY),
