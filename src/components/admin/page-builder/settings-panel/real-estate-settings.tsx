@@ -68,8 +68,10 @@ export function RealEstateSettings({ block }: { block: ReBlock }) {
         </>
       )}
 
+      {block.type !== "re_search" && block.type !== "re_lead_form" && text("eyebrow", "Section label (editorial style)")}
       {block.type === "re_listings" && (
         <>
+          {select("cardStyle", "Card style", [["standard", "Standard"], ["editorial", "Editorial"]])}
           {select("listingType", "Listing type", [["", "All (visitor can switch)"], ["sale", "For sale"], ["rent", "For rent"], ["offplan", "Off-plan"]])}
           {text("communitySlug", "Only community (slug)")}
           {text("developerSlug", "Only developer (slug)")}

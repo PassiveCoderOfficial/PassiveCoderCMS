@@ -74,6 +74,7 @@ export type BlockType =
   | "donor_requests"
   | "container"
   | "item_box"
+  | "scroll_story"
   // Header-only sub-blocks (2026-09-06): a header composes these as
   // independent, separately draggable blocks rather than one big Header
   // block with many settings sections — see project_block_editor_bugs memory
@@ -832,6 +833,8 @@ export type FooterSocial = {
 export type FooterBlockProps = BlockBase & {
   type: "footer";
   data: {
+    /** Oversized brand name across the very bottom of the footer. */
+    wordmark?: boolean;
     /** Small icon image shown before the text logo when no logo image is set. */
     logoIconUrl?: string;
     logo?: string;
@@ -962,6 +965,7 @@ export type Block =
   | DonorRequestsBlockProps
   | ContainerBlockProps
   | ItemBoxBlockProps
+  | ScrollStoryBlockProps
   | HeaderLogoBlockProps
   | HeaderNavBlockProps
   | HeaderCtaBlockProps
@@ -1469,7 +1473,7 @@ export type ReSearchBlockProps = BlockBase & {
 
 export type ReListingsBlockProps = BlockBase & {
   type: "re_listings";
-  data: {
+  data: { cardStyle?: "standard" | "editorial"; /** Square-bullet label above a rule; switches the heading to the editorial style. */ eyebrow?: string;
     title?: string;
     subtitle?: string;
     /** Preset filter. Empty = all listing types (buyer can switch). */
@@ -1488,17 +1492,17 @@ export type ReListingsBlockProps = BlockBase & {
 
 export type ReCommunitiesBlockProps = BlockBase & {
   type: "re_communities";
-  data: { title?: string; subtitle?: string; featuredOnly?: boolean; limit?: number; country?: string };
+  data: { /** Square-bullet label above a rule; switches the heading to the editorial style. */ eyebrow?: string; title?: string; subtitle?: string; featuredOnly?: boolean; limit?: number; country?: string };
 };
 
 export type ReDevelopersBlockProps = BlockBase & {
   type: "re_developers";
-  data: { title?: string; subtitle?: string; style?: "logos" | "cards" };
+  data: { /** Square-bullet label above a rule; switches the heading to the editorial style. */ eyebrow?: string; title?: string; subtitle?: string; style?: "logos" | "cards" };
 };
 
 export type ReCalculatorBlockProps = BlockBase & {
   type: "re_calculator";
-  data: {
+  data: { /** Square-bullet label above a rule; switches the heading to the editorial style. */ eyebrow?: string;
     title?: string;
     subtitle?: string;
     mode?: "mortgage" | "roi" | "both";
@@ -1521,5 +1525,26 @@ export type ReLeadFormBlockProps = BlockBase & {
     showBudget?: boolean;
     image?: string;
     bullets?: string[];
+  };
+};
+
+export type ScrollStoryBlockProps = BlockBase & {
+  type: "scroll_story";
+  data: {
+    /** Section height in vh; more = slower scrub. */
+    heightVh?: number;
+    backgrounds?: { imageUrl: string }[];
+    /** Transparent cut-out (PNG/WebP) standing in front of the backgrounds. */
+    portraitImage?: string;
+    portraitAlt?: string;
+    portraitSide?: "left" | "center" | "right";
+    scenes?: { eyebrow?: string; title: string; text?: string; side?: "left" | "right" }[];
+    overlayOpacity?: number;
+    accentColor?: string;
+    /** Colour the bottom edge fades into (the next section background). */
+    blendColor?: string;
+    showLines?: boolean;
+    primaryCta?: { label: string; url: string };
+    secondaryCta?: { label: string; url: string };
   };
 };

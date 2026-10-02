@@ -76,7 +76,8 @@ export type ReCardProperty = Pick<ReProperty,
 
 const STATUS_BADGE: Record<string, string> = { reserved: "Reserved", sold: "Sold", rented: "Rented" };
 
-export function PropertyCard({ p, currency, unit }: { p: ReCardProperty; currency?: string; unit?: AreaUnit }) {
+export function PropertyCard({ p, currency, unit, variant }: { p: ReCardProperty; currency?: string; unit?: AreaUnit; variant?: "standard" | "editorial" }) {
+  if (variant === "editorial") return <EditorialCard p={p} currency={currency} unit={unit} />;
   const img = p.images?.[0];
   const place = [p.community?.name, p.city].filter(Boolean).join(", ");
   const closed = STATUS_BADGE[p.status];
@@ -212,12 +213,63 @@ export function logWhatsappClick(propertyId?: string) {
   } catch { /* ignore */ }
 }
 
-export function SectionHeading({ title, subtitle, align = "center" }: { title?: string; subtitle?: string; align?: "center" | "left" }) {
+export function SectionHeading({ title, subtitle, align = "center", eyebrow }: { title?: string; subtitle?: string; align?: "center" | "left"; eyebrow?: string }) {
+  if (eyebrow) {
+    return (
+      <div className="mb-12">
+        <div className="border-t border-foreground/15 pt-6 flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-[3px] bg-foreground" />
+          <span className="text-xs font-semibold uppercase tracking-[0.12em]">{eyebrow}</span>
+        </div>
+        {title && <h2 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-[-0.04em] leading-[1.02] max-w-3xl">{title}</h2>}
+        {subtitle && <p className="mt-5 text-lg text-muted-foreground max-w-2xl">{subtitle}</p>}
+      </div>
+    );
+  }
   if (!title && !subtitle) return null;
   return (
     <div className={align === "center" ? "text-center mb-10 max-w-2xl mx-auto" : "mb-8"}>
       {title && <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">{title}</h2>}
       {subtitle && <p className="mt-3 text-muted-foreground">{subtitle}</p>}
     </div>
+  );
+}
+
+const TAG_TONE: Record<string, string> = { sale: "bg-[#E3F1D6] text-[#2F5A16]", rent: "bg-[#FBD58E] text-[#5A3A06]", offplan: "bg-[#D9E7FB] text-[#173E73]" };
+
+function EditorialCard({ p, currency, unit }: { p: ReCardProperty; currency?: string; unit?: AreaUnit }) {
+  const img = p.images?.[0];
+  const place = [p.community?.name, p.city].filter(Boolean).join(", ");
+  const closed = STATUS_BADGE[p.status];
+  const specs = [
+    p.beds != null ? <span key="b" className="flex items-center gap-1.5"><BedDouble className="w-4 h-4" />{p.beds_max && p.beds_max > p.beds ? `${p.beds}-${p.beds_max}` : p.beds === 0 ? "Studio" : p.beds}</span> : null,
+    p.baths != null ? <span key="t" className="flex items-center gap-1.5"><Bath className="w-4 h-4" />{p.baths}</span> : null,
+    p.area != null ? <span key="a" className="flex items-center gap-1.5"><Maximize className="w-4 h-4" />{areaLabel(p.area, p.area_unit, unit).toUpperCase()}</span> : null,
+  ].filter(Boolean);
+  return (
+    <a href={`/properties/${p.slug}`} className="group block">
+      <div className="relative aspect-[5/3] overflow-hidden rounded-[22px] bg-muted">
+        {img ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={img} alt={p.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700" />
+        ) : <div className="w-full h-full flex items-center justify-center"><Building2 className="w-10 h-10 text-muted-foreground" /></div>}
+        {/* Notched corner tag, cut out of the photo in the page colour */}
+        <div className="absolute top-0 right-0 bg-background rounded-bl-[18px] pl-2.5 pb-2.5">
+          <span className={`block px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${closed ? "bg-foreground text-background" : TAG_TONE[p.listing_type] ?? TAG_TONE.sale}`}>
+            {closed ?? LISTING_TYPE_LABEL[p.listing_type]}
+          </span>
+        </div>
+      </div>
+      <div className="pt-4">
+        {place && <p className="text-[11px] font-semibold uppercase tracking-wide flex items-center gap-1.5"><MapPin className="w-4 h-4" />{place}</p>}
+        <div className="mt-3 flex items-center justify-between gap-3 pb-3 border-b border-foreground/15 text-sm">
+          <div className="flex items-center gap-2.5 text-foreground/80">
+            {specs.map((x, i) => <React.Fragment key={i}>{i > 0 && <span className="w-1 h-1 rounded-full bg-foreground/70" />}{x}</React.Fragment>)}
+          </div>
+          <span className="font-semibold whitespace-nowrap">{priceLabel(p, currency)}</span>
+        </div>
+        <h3 className="mt-3 text-xl tracking-[-0.02em] group-hover:underline underline-offset-4 decoration-1">{p.title}</h3>
+      </div>
+    </a>
   );
 }

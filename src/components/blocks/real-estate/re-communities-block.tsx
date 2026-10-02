@@ -26,7 +26,7 @@ export function ReCommunitiesBlock({ block }: { block: ReCommunitiesBlockProps }
   return (
     <section className="px-4">
       <div className="max-w-7xl mx-auto">
-        <SectionHeading title={data.title} subtitle={data.subtitle} />
+        <SectionHeading title={data.title} subtitle={data.subtitle} eyebrow={data.eyebrow} />
         {items === null ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-72 rounded-2xl bg-muted animate-pulse" />)}</div>
         ) : list.length === 0 ? (

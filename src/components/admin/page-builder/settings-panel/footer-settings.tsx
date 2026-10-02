@@ -74,6 +74,10 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
         <Label className="text-xs">Logo Icon (before text)</Label>
         <MediaPickerInput compact value={block.data.logoIconUrl ?? ""} onChange={(v) => update("logoIconUrl", v)} />
       </div>
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Giant wordmark at bottom</Label>
+        <Switch checked={!!block.data.wordmark} onCheckedChange={(v) => update("wordmark", v)} />
+      </div>
       <div className="space-y-1.5">
         <Label className="text-xs">Logo Image (optional override)</Label>
         <MediaPickerInput compact value={block.data.logo ?? ""} onChange={(url) => update("logo", url)} />

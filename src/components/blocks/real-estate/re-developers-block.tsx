@@ -26,7 +26,7 @@ export function ReDevelopersBlock({ block }: { block: ReDevelopersBlockProps }) 
   return (
     <section className="px-4">
       <div className="max-w-7xl mx-auto">
-        <SectionHeading title={data.title} subtitle={data.subtitle} />
+        <SectionHeading title={data.title} subtitle={data.subtitle} eyebrow={data.eyebrow} />
         {data.style === "cards" ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((d) => (

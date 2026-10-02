@@ -968,6 +968,29 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "scroll_story",
+    label: "Scroll Story Hero",
+    description: "Cinematic hero: photos zoom and cross-fade, a cut-out portrait and headlines animate as visitors scroll",
+    icon: "🎬",
+    category: "media",
+    create: () => ({
+      ...baseBlock("scroll_story"),
+      type: "scroll_story" as const,
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      data: {
+        heightVh: 500,
+        backgrounds: [],
+        portraitSide: "center",
+        scenes: [
+          { eyebrow: "Welcome", title: "Your headline here", side: "left" },
+          { eyebrow: "Second scene", title: "Tell the story as they scroll", side: "right" },
+        ],
+        overlayOpacity: 0.45,
+        showLines: true,
+      },
+    }),
+  },
+  {
     type: "re_search",
     label: "Property Search",
     description: "Hero search: Buy / Rent / Off-plan tabs with location, type, beds and budget",

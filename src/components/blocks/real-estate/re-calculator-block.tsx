@@ -62,7 +62,7 @@ export function ReCalculatorBlock({ block }: { block: ReCalculatorBlockProps }) 
   return (
     <section className="px-4">
       <div className="max-w-5xl mx-auto">
-        <SectionHeading title={data.title} subtitle={data.subtitle} />
+        <SectionHeading title={data.title} subtitle={data.subtitle} eyebrow={data.eyebrow} />
         {mode === "both" && (
           <div className="flex justify-center mb-6">
             <div className="inline-flex rounded-full border bg-card p-1">

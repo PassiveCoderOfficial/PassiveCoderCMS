@@ -80,7 +80,7 @@ export function ReListingsBlock({ block }: { block: ReListingsBlockProps }) {
 
   const showTypeTabs = data.showFilters !== false && !data.listingType;
   const sel = "h-10 rounded-xl border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
-  const gridCols = cols === 2 ? "sm:grid-cols-2" : cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3";
+  const gridCols = data.cardStyle === "editorial" ? "sm:grid-cols-2 gap-x-10 gap-y-14" : cols === 2 ? "sm:grid-cols-2" : cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3";
 
   const pins: MapPin[] = items.filter((p) => p.lat != null && p.lng != null).map((p) => ({
     id: p.id, lat: p.lat!, lng: p.lng!, label: priceLabel(p, prefs.currency),
@@ -97,7 +97,7 @@ export function ReListingsBlock({ block }: { block: ReListingsBlockProps }) {
   return (
     <section className="px-4">
       <div className="max-w-7xl mx-auto">
-        <SectionHeading title={data.title} subtitle={data.subtitle} />
+        <SectionHeading title={data.title} subtitle={data.subtitle} eyebrow={data.eyebrow} />
 
         {data.showFilters !== false && (
           <div className="mb-8 space-y-4">
@@ -162,7 +162,7 @@ export function ReListingsBlock({ block }: { block: ReListingsBlockProps }) {
           </div>
         ) : (
           <div className={`grid gap-6 ${gridCols}`}>
-            {items.map((p) => <PropertyCard key={p.id} p={p} currency={prefs.currency} unit={prefs.unit} />)}
+            {items.map((p) => <PropertyCard key={p.id} p={p} currency={prefs.currency} unit={prefs.unit} variant={data.cardStyle} />)}
           </div>
         )}
 

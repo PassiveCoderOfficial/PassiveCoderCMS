@@ -48,6 +48,7 @@ import { BookingBlock } from "@/components/blocks/booking/booking-block";
 import { MarketplaceBookingBlock } from "@/components/blocks/marketplace/marketplace-booking-block";
 import { MarketplaceRequestBlock } from "@/components/blocks/marketplace/marketplace-request-block";
 import { MarketplaceVendorDirectoryBlock } from "@/components/blocks/marketplace/marketplace-vendor-directory-block";
+import { ScrollStoryBlock } from "@/components/blocks/scroll-story/scroll-story-block";
 import { ReSearchBlock } from "@/components/blocks/real-estate/re-search-block";
 import { ReListingsBlock } from "@/components/blocks/real-estate/re-listings-block";
 import { ReCommunitiesBlock } from "@/components/blocks/real-estate/re-communities-block";
@@ -145,6 +146,7 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
     case "marketplace_booking": content = <MarketplaceBookingBlock block={block} />; break;
     case "marketplace_request": content = <MarketplaceRequestBlock block={block} />; break;
     case "marketplace_vendor_directory": content = <MarketplaceVendorDirectoryBlock block={block} />; break;
+    case "scroll_story": content = <ScrollStoryBlock block={block} />; break;
     case "re_search": content = <ReSearchBlock block={block} />; break;
     case "re_listings": content = <ReListingsBlock block={block} />; break;
     case "re_communities": content = <ReCommunitiesBlock block={block} />; break;

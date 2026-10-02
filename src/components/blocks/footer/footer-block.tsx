@@ -24,8 +24,9 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
     copyrightText, copyrightYear = true,
     backgroundColor, textColor, accentColor,
     showNewsletter, newsletterLabel, newsletterPlaceholder,
-    bottomLinks = [], style = "dark", logoCaption,
+    bottomLinks = [], style = "dark", logoCaption, wordmark,
   } = data;
+  const [subscribed, setSubscribed] = useState(false);
 
   const [email, setEmail] = useState("");
 
@@ -90,7 +91,13 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               </p>
               <p className="text-sm mt-0.5" style={{ color: mutedFg }}>Tips, offers and service updates — no spam.</p>
             </div>
-            <form className="flex gap-2 w-full md:w-auto" onSubmit={(e) => { e.preventDefault(); setEmail(""); }}>
+            <form className="flex gap-2 w-full md:w-auto" onSubmit={(e) => {
+              e.preventDefault();
+              if (!email.trim()) return;
+              fetch("/api/contact/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fields: { Email: email.trim() }, formName: "Newsletter" }) }).catch(() => {});
+              setEmail("");
+              setSubscribed(true);
+            }}>
               <input
                 type="email"
                 value={email}
@@ -104,7 +111,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full shrink-0 transition-transform hover:-translate-y-0.5"
                 style={{ backgroundColor: accent, color: "#ffffff" }}
               >
-                Subscribe <ArrowRight className="w-3.5 h-3.5" />
+                {subscribed ? "Subscribed" : "Subscribe"} <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </form>
           </div>
@@ -201,6 +208,14 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
           )}
         </div>
       </div>
+      {wordmark && logoText && (
+        <div className="relative overflow-hidden select-none pointer-events-none" aria-hidden="true">
+          <p className="whitespace-nowrap text-center font-semibold leading-[0.78] tracking-[-0.06em] translate-y-[14%]"
+            style={{ color: fg, opacity: 0.95, fontSize: "clamp(4rem, 16vw, 15rem)", fontFamily: "var(--heading-font, inherit)" }}>
+            {logoText}
+          </p>
+        </div>
+      )}
     </footer>
   );
 }
