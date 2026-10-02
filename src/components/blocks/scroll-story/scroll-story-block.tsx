@@ -152,12 +152,12 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
           <div className="absolute inset-x-0 bottom-[12vh] z-50 flex justify-center gap-3 px-4 transition-all duration-500"
             style={{ opacity: ctaVisible ? 1 : 0, transform: `translateY(${ctaVisible ? 0 : 16}px)`, pointerEvents: ctaVisible ? "auto" : "none" }}>
             {data.primaryCta?.label && (
-              <a href={data.primaryCta.url || "#"} className="h-12 px-7 rounded-full font-semibold inline-flex items-center text-black shadow-xl" style={{ background: accent }}>
+              <a href={data.primaryCta.url || "#"} className="h-11 sm:h-12 px-5 sm:px-7 rounded-full text-sm sm:text-base font-semibold inline-flex items-center whitespace-nowrap text-black shadow-xl" style={{ background: accent }}>
                 {data.primaryCta.label}
               </a>
             )}
             {data.secondaryCta?.label && (
-              <a href={data.secondaryCta.url || "#"} className="h-12 px-7 rounded-full font-semibold inline-flex items-center text-white border border-white/40 bg-white/10 backdrop-blur">
+              <a href={data.secondaryCta.url || "#"} className="h-11 sm:h-12 px-5 sm:px-7 rounded-full text-sm sm:text-base font-semibold inline-flex items-center whitespace-nowrap text-white border border-white/40 bg-white/10 backdrop-blur">
                 {data.secondaryCta.label}
               </a>
             )}
