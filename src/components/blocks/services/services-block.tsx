@@ -249,7 +249,7 @@ function ServicesImageTiles({ data }: { data: ServicesBlockProps["data"] }) {
               <span className="text-xs font-semibold uppercase tracking-[0.12em]">{data.subtitle}</span>
             </div>
           )}
-          {data.title && <h2 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-[-0.04em] leading-[1.02] max-w-3xl">{data.title}</h2>}
+          {data.title && <h2 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.02] max-w-3xl">{data.title}</h2>}
         </div>
       )}
       <div className={cn("grid grid-cols-1 gap-x-6 gap-y-8", colMap)}>

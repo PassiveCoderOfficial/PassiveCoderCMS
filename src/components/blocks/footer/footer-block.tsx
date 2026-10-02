@@ -132,7 +132,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               ) : data.logoIconUrl ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={data.logoIconUrl} alt="" className="w-9 h-9 rounded-lg" />
+                  <img src={data.logoIconUrl} alt="" className="h-9 w-auto object-contain" />
                   <span className="text-lg font-semibold" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>{logoText ?? "Brand"}</span>
                 </>
               ) : (

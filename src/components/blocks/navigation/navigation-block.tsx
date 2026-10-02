@@ -126,7 +126,7 @@ export function NavigationBlock({ block, identityLogo }: {
               <>
               {data.logoIconUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={data.logoIconUrl} alt="" style={{ height: logoH, width: logoH }} className="rounded-lg shrink-0" />
+                <img src={data.logoIconUrl} alt="" style={{ height: logoH, width: "auto" }} className="shrink-0 object-contain" />
               )}
               <span className="text-[1.15rem] font-extrabold tracking-tight" style={{ color: fg, fontFamily: "var(--heading-font, inherit)" }}>
                 {logoText ?? "Brand"}
