@@ -73,6 +73,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "numbered", label: "Numbered", description: "Sequentially numbered services — reads as a process.", thumb: "numbered-list" },
     { key: "menu-cards", label: "Menu Cards", description: "Compact price-led cards, styled like a menu.", thumb: "menu-list" },
     { key: "program-cards-dark", label: "Program Cards", description: "Bold dark cards for classes, programs or packages.", thumb: "cards-dark", dark: true },
+    { key: "image-tiles", label: "Image Tiles", description: "Framed photo tiles with the title and an arrow button underneath — editorial and calm.", thumb: "cards-grid" },
   ],
 
   testimonials: [

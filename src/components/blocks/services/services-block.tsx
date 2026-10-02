@@ -234,6 +234,48 @@ function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
   );
 }
 
+// ─── Variant: image-tiles ─────────────────────────────────────────────────
+// Framed photo tiles, title with a small arrow chip underneath. The whole
+// tile links when an item has a link. Editorial / real estate.
+function ServicesImageTiles({ data }: { data: ServicesBlockProps["data"] }) {
+  const colMap = { 2: "md:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-2 lg:grid-cols-3";
+  return (
+    <div className="max-w-7xl mx-auto">
+      {(data.title || data.subtitle) && (
+        <div className="mb-12">
+          {data.subtitle && (
+            <div className="border-t border-foreground/15 pt-6 flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-[3px] bg-foreground" />
+              <span className="text-xs font-semibold uppercase tracking-[0.12em]">{data.subtitle}</span>
+            </div>
+          )}
+          {data.title && <h2 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-[-0.04em] leading-[1.02] max-w-3xl">{data.title}</h2>}
+        </div>
+      )}
+      <div className={cn("grid grid-cols-1 gap-x-6 gap-y-8", colMap)}>
+        {data.items.map((item) => (
+          <div key={item.id} className="service-card relative group">
+            <div className="rounded-[20px] bg-card p-1.5 shadow-sm">
+              <div className="relative rounded-[15px] overflow-hidden aspect-[3/2] bg-muted">
+                {item.imageUrl && <Image src={item.imageUrl} alt={item.title} fill className="object-cover group-hover:scale-[1.04] transition-transform duration-700" />}
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 px-1">
+              <h3 className="text-xl tracking-[-0.02em]">{item.title}</h3>
+              {item.link ? (
+                <Link href={item.link} aria-label={item.title} className="after:absolute after:inset-0 after:content-[''] w-9 h-9 shrink-0 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-colors">
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              ) : null}
+            </div>
+            {item.description && <p className="mt-1.5 px-1 text-sm text-muted-foreground leading-relaxed">{item.description}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Variant: program-cards-dark ──────────────────────────────────────────
 // Dark cards with top image, orange accents, bold title — gym
 function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }) {
@@ -386,6 +428,7 @@ function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
 
 export function ServicesByVariant({ data, variant }: { data: ServicesBlockProps["data"]; variant?: string }) {
   if (variant === "icon-cards-grid") return <ServicesIconCardsGrid data={data} />;
+  if (variant === "image-tiles") return <ServicesImageTiles data={data} />;
   if (variant === "image-cards-dark") return <ServicesImageCardsDark data={data} />;
   if (variant === "bordered-list") return <ServicesBorderedList data={data} />;
   if (variant === "dark-grid-cards") return <ServicesDarkGridCards data={data} />;
