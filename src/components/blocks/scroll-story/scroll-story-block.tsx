@@ -86,7 +86,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
   const portraitIn = reduced ? 1 : ease(progress / 0.14);
   const portraitScale = 0.92 + 0.08 * portraitIn + (reduced ? 0 : 0.04 * progress);
   const side = data.portraitSide ?? "center";
-  const portraitPos = side === "left" ? "left-[4%] lg:left-[8%]" : side === "right" ? "right-[4%] lg:right-[8%]" : "left-1/2 -translate-x-1/2";
+  const portraitPos = side === "left" ? "left-[4%] lg:left-[8%]" : side === "right" ? "right-[4%] lg:right-[8%]" : "left-1/2";
   const ctaVisible = progress > 0.86 || reduced;
 
   return (
@@ -119,7 +119,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
         {data.portraitImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={data.portraitImage} alt={data.portraitAlt ?? ""}
-            className={`absolute bottom-0 z-30 h-[62vh] sm:h-[78vh] lg:h-[88vh] w-auto max-w-none origin-bottom will-change-transform pointer-events-none ${portraitPos}`}
+            className={`absolute bottom-0 z-30 h-[58vh] sm:h-[74vh] lg:h-[82vh] w-auto max-w-none origin-bottom will-change-transform pointer-events-none ${portraitPos}`}
             style={{
               opacity: portraitIn,
               transform: `${side === "center" ? "translateX(-50%) " : ""}translateY(${(1 - portraitIn) * 18}%) scale(${portraitScale})`,
@@ -133,7 +133,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
             const right = (s.side ?? (i % 2 ? "right" : "left")) === "right";
             return (
               <div key={i} style={sceneStyle(i)}
-                className={`absolute inset-x-0 top-[96px] px-5 text-center sm:top-[16%] sm:px-0 sm:max-w-[560px] will-change-transform ${right ? "sm:inset-x-auto sm:right-[7%] sm:text-right" : "sm:inset-x-auto sm:left-[7%] sm:text-left"}`}>
+                className={`absolute inset-x-0 top-[96px] px-5 text-center sm:top-[16%] sm:px-0 sm:max-w-[min(440px,36vw)] will-change-transform ${right ? "sm:inset-x-auto sm:right-[5%] sm:text-right" : "sm:inset-x-auto sm:left-[5%] sm:text-left"}`}>
                 {s.eyebrow && (
                   <p className="mb-3 text-[11px] sm:text-sm font-semibold uppercase tracking-[0.25em]" style={{ color: accent }}>{s.eyebrow}</p>
                 )}
