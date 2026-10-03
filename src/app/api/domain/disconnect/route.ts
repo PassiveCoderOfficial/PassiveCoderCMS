@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     if (domain) {
       try {
         await removeDomainFromVercel(domain);
+        await removeDomainFromVercel(`www.${domain}`).catch(() => {});
       } catch (e) {
         // Non-fatal: domain may already be gone from Vercel.
         console.warn("removeDomainFromVercel:", e instanceof Error ? e.message : e);

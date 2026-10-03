@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { checkDnsResolution } from "@/lib/domain/dns";
 import { verifyDomainOnVercel } from "@/lib/domain/vercel";
+import { callerCanManageTenant } from "@/lib/auth/verify-bearer";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -9,6 +10,9 @@ export async function GET(req: Request) {
 
   if (!tenantId) {
     return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+  }
+  if (!(await callerCanManageTenant(req, tenantId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const supabase = await createAdminClient();

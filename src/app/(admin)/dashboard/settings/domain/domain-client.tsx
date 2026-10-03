@@ -61,8 +61,9 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tenantId: tenant!.id, domain, type: dnsType }),
       });
-      const data = await res.json() as { ok?: boolean; instructions?: Record<string, unknown>; error?: string; warning?: string };
+      const data = await res.json() as { ok?: boolean; domain?: string; instructions?: Record<string, unknown>; error?: string; warning?: string };
       if (!data.ok) throw new Error(data.error ?? "Failed");
+      if (data.domain) setDomain(data.domain);
       setInstructions(data.instructions ?? null);
       if (data.warning) setWarning(data.warning);
       setStatus("pending");
@@ -83,9 +84,9 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
         setVerifyMsg("");
       } else if (!silent) {
         const bits: string[] = [];
-        bits.push(data.dns ? "DNS ✓" : "DNS pending");
-        bits.push(data.vercel ? "Vercel ✓" : "Vercel pending");
-        setVerifyMsg(`Not verified yet — ${bits.join(" · ")}. ${data.reason ?? "DNS can take up to 48h to propagate."} We'll keep checking automatically.`);
+        bits.push(data.dns ? "DNS records found" : "DNS records not found yet");
+        bits.push(data.vercel ? "SSL ready" : "SSL waiting for DNS");
+        setVerifyMsg(`Not live yet: ${bits.join(", ")}. Most changes show up within an hour; some registrars take up to 48 hours. This page keeps checking automatically.`);
       }
     } catch {
       if (!silent) setVerifyMsg("Could not check right now. Try again in a moment.");
@@ -230,7 +231,7 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
                 <DnsRecord
                   type="A"
                   host="@"
-                  value="76.76.21.21"
+                  value={VERCEL_IP}
                   onCopy={copyText}
                   copied={copied}
                 />
@@ -258,7 +259,7 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground pt-1">
-                  Nameserver method points your whole domain to Vercel (we manage DNS for you). The A Record method keeps DNS at your current registrar — either works for any domain.
+                  The nameserver method hands your whole domain's DNS to us, so email records must be re-added here. If you use email on this domain, choose the A Record method instead: it keeps DNS at your registrar.
                 </p>
               </div>
             )}

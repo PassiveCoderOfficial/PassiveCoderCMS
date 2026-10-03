@@ -3,15 +3,17 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { addDomainToVercel } from "@/lib/domain/vercel";
 import { getNameserverInstructions, getARecordInstructions } from "@/lib/domain/dns";
 import { callerCanManageTenant } from "@/lib/auth/verify-bearer";
+import { normalizeDomain } from "@/lib/domain/normalize";
+import { addWwwRedirectToVercel, removeDomainFromVercel } from "@/lib/domain/vercel";
 
 export async function POST(req: Request) {
-  const { tenantId, domain, type } = await req.json() as {
+  const { tenantId, domain: rawDomain, type } = await req.json() as {
     tenantId: string;
     domain: string;
     type: "nameserver" | "arecord";
   };
 
-  if (!tenantId || !domain || !type) {
+  if (!tenantId || !rawDomain || !type) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
@@ -19,8 +21,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const norm = normalizeDomain(rawDomain, process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com");
+  if ("error" in norm) return NextResponse.json({ error: norm.error }, { status: 400 });
+  const domain = norm.domain;
+
   try {
     const supabase = await createAdminClient();
+
+    // One domain, one site. Without this a second site could claim a domain
+    // that's already live elsewhere and take over its traffic once verified.
+    const { data: taken } = await supabase.from("tenants").select("id")
+      .ilike("custom_domain", domain).neq("id", tenantId).limit(1);
+    if (taken?.length) {
+      return NextResponse.json({ error: "This domain is already connected to another site. If it's yours, contact support." }, { status: 409 });
+    }
+
+    // Switching domains: release the old one from Vercel first.
+    const { data: current } = await supabase.from("tenants").select("custom_domain").eq("id", tenantId).maybeSingle();
+    if (current?.custom_domain && current.custom_domain !== domain) {
+      for (const d of [current.custom_domain, `www.${current.custom_domain}`]) {
+        await removeDomainFromVercel(d).catch(() => {});
+      }
+      await supabase.from("domain_orders").delete().eq("tenant_id", tenantId).eq("domain", current.custom_domain);
+    }
 
     // Add to Vercel so it's ready to route when DNS propagates. Don't hard-fail the
     // whole flow if the Vercel API call fails (e.g. token not yet configured) — we
@@ -29,6 +52,7 @@ export async function POST(req: Request) {
     let vercelWarning: string | null = null;
     try {
       await addDomainToVercel(domain);
+      await addWwwRedirectToVercel(domain);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Vercel domain registration failed";
       // 409 / "already in use" = domain is already on the project → success, not an error.
@@ -65,6 +89,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
+      domain,
       instructions,
       ...(warn && { warning: warn }),
     });

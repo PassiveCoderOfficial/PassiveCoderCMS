@@ -29,6 +29,22 @@ export async function addDomainToVercel(domain: string): Promise<void> {
   });
 }
 
+/**
+ * www.<domain> as a permanent redirect to the apex, so visitors typing www land
+ * on the site (the DNS instructions already tell owners to add the www CNAME).
+ * "Already on the project" counts as success.
+ */
+export async function addWwwRedirectToVercel(domain: string): Promise<void> {
+  try {
+    await vercelFetch(`/v9/projects/${VERCEL_PROJECT_ID()}/domains?${teamParam()}`, {
+      method: "POST",
+      body: JSON.stringify({ name: `www.${domain}`, redirect: domain, redirectStatusCode: 308 }),
+    });
+  } catch (e) {
+    if (!/already in use|domain_already_in_use|409/i.test(e instanceof Error ? e.message : "")) throw e;
+  }
+}
+
 export async function removeDomainFromVercel(domain: string): Promise<void> {
   await vercelFetch(`/v9/projects/${VERCEL_PROJECT_ID()}/domains/${domain}?${teamParam()}`, {
     method: "DELETE",
