@@ -45,7 +45,7 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
         <Label className="text-xs">Style</Label>
         <Select value={block.data.style} onValueChange={(v) => update("style", v)}>
           <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{["default","centered","split","minimal"].map((s) => <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>)}</SelectContent>
+          <SelectContent>{["default","centered","logo-center","split","minimal"].map((s) => <SelectItem key={s} value={s} className="text-xs capitalize">{s === "logo-center" ? "Logo centered" : s}</SelectItem>)}</SelectContent>
         </Select>
       </div>
 

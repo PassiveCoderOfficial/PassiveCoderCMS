@@ -217,7 +217,7 @@ export type NavigationBlockProps = BlockBase & {
     menuLocation?: "header" | "footer" | "footer_secondary" | "mobile" | "sidebar" | "legal";
     sticky: boolean;
     transparent: boolean;
-    style: "default" | "centered" | "split" | "minimal";
+    style: "default" | "centered" | "split" | "minimal" | "logo-center";
     backgroundColor?: string;
     backgroundGradientTo?: string; // when set, renders a gradient from backgroundColor to this
     textColor?: string;
@@ -322,7 +322,7 @@ export type HeaderNavBlockProps = BlockBase & {
   data: {
     items: NavItem[];
     menuLocation?: "header" | "footer" | "footer_secondary" | "mobile" | "sidebar" | "legal";
-    style: "default" | "centered" | "split" | "minimal";
+    style: "default" | "centered" | "split" | "minimal" | "logo-center";
     textColor?: string;
     activeColor?: string;
   };

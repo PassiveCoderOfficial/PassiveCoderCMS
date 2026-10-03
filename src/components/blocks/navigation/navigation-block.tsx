@@ -49,6 +49,12 @@ export function NavigationBlock({ block, identityLogo }: {
   // Solid = not in transparent-over-hero state.
   const solid = !overlayHero || scrolled;
   const logoH = logoHeight ?? 34;
+  // "logo-center": logo sits in the middle of the top row, menu on its own
+  // centered row underneath (desktop). Mobile keeps logo centered + toggle right.
+  const logoCenter = style === "logo-center";
+  const desktopItems = items.map((item) => (
+    <NavItemDesktop key={item.id} item={item} currentColor={fg} />
+  ));
 
   // Colors are token-driven so each tenant's own template palette /
   // color_overrides drive the nav — never hardcode a brand hex here, it
@@ -102,14 +108,17 @@ export function NavigationBlock({ block, identityLogo }: {
       <div className={cn("mx-auto px-4 sm:px-6", floating ? "max-w-6xl pt-3" : "max-w-7xl")}>
         <div
           className={cn(
-            "flex items-center h-[4.5rem] gap-4 transition-all",
+            logoCenter
+              ? "grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3 min-h-[4.5rem] transition-all"
+              : "flex items-center h-[4.5rem] gap-4 transition-all",
             floating && solid && "rounded-2xl px-5 border border-border/60 h-16 backdrop-blur-xl",
             style === "centered" && "justify-between",
           )}
           style={floating && solid ? { background: glass ? "hsl(var(--card) / 0.8)" : "hsl(var(--card))", boxShadow: "var(--shadow-md)" } : undefined}
         >
+          {logoCenter && <div aria-hidden />}
           {/* Logo */}
-          <Link href={logoUrl ?? "/"} className="flex items-center gap-2 shrink-0">
+          <Link href={logoUrl ?? "/"} className={cn("flex items-center gap-2 shrink-0", logoCenter && "justify-self-center")}>
             {logo ? (
               <Image src={logo} alt={logoText ?? "Logo"} width={logoH * 3.4} height={logoH} style={{ height: logoH }} className="w-auto object-contain" />
             ) : data.useBrandMark ? (
@@ -141,17 +150,17 @@ export function NavigationBlock({ block, identityLogo }: {
           </Link>
 
           {/* Desktop nav */}
-          <ul className={cn(
-            "hidden md:flex items-center gap-0.5",
-            style === "centered" ? "mx-auto" : "ml-4 flex-1",
-          )}>
-            {items.map((item) => (
-              <NavItemDesktop key={item.id} item={item} currentColor={fg} />
-            ))}
-          </ul>
+          {!logoCenter && (
+            <ul className={cn(
+              "hidden md:flex items-center gap-0.5",
+              style === "centered" ? "mx-auto" : "ml-4 flex-1",
+            )}>
+              {desktopItems}
+            </ul>
+          )}
 
           {/* Right cluster */}
-          <div className="flex items-center gap-2 shrink-0 ml-auto">
+          <div className={cn("flex items-center gap-2 shrink-0", logoCenter ? "justify-self-end" : "ml-auto")}>
             {secondaryCtaLabel && secondaryCtaUrl && (
               <Link href={secondaryCtaUrl} className="hidden lg:inline-flex items-center px-3.5 py-2 text-[0.9rem] font-medium rounded-lg transition-colors hover:bg-current/5" style={{ color: fg, opacity: 0.85 }}>
                 {secondaryCtaLabel}
@@ -190,6 +199,11 @@ export function NavigationBlock({ block, identityLogo }: {
             </button>
           </div>
         </div>
+        {logoCenter && (
+          <ul className="hidden md:flex items-center justify-center gap-0.5 border-t border-border/60 py-1.5">
+            {desktopItems}
+          </ul>
+        )}
       </div>
 
       {/* Mobile drawer */}
