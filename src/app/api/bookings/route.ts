@@ -1,3 +1,4 @@
+import { sendEmail } from "@/lib/email";
 import { NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
@@ -71,8 +72,12 @@ export async function PATCH(req: Request) {
   const { _type, id, ...fields } = await req.json();
 
   if (_type === "appointment") {
+    // Only the fields the dashboard edits — never tenant_id or customer data.
+    const allowed: Record<string, unknown> = {};
+    if (["pending", "confirmed", "cancelled", "completed", "no_show"].includes(fields.status)) allowed.status = fields.status;
+    if (typeof fields.admin_note === "string") allowed.admin_note = fields.admin_note.slice(0, 2000);
     await supabase.from("booking_appointments")
-      .update({ ...fields, updated_at: new Date().toISOString() })
+      .update({ ...allowed, updated_at: new Date().toISOString() })
       .eq("id", id).eq("tenant_id", tenantId);
 
     // Push the lifecycle change to ENM after the response — a completed job
@@ -84,6 +89,22 @@ export async function PATCH(req: Request) {
           .select("id, date, start_time, end_time, customer_name, customer_email, customer_phone, message, status")
           .eq("id", id).eq("tenant_id", tenantId).single();
         if (!appt) return;
+
+        // Tell the customer when their booking is confirmed or cancelled.
+        if ((appt.status === "confirmed" || appt.status === "cancelled") && appt.customer_email) {
+          const { data: ss } = await supabase.from("site_settings").select("site_name").eq("tenant_id", tenantId).maybeSingle();
+          const shop = String(ss?.site_name || "Our team").replace(/[<>"]/g, "");
+          const when = `${new Date(appt.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} at ${String(appt.start_time).slice(0, 5)}`;
+          const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+          await sendEmail({
+            to: appt.customer_email,
+            from: `${shop} <contact@noreply.passivecoder.com>`,
+            subject: appt.status === "confirmed" ? `Your booking is confirmed: ${when}` : `Your booking on ${when} was cancelled`,
+            html: appt.status === "confirmed"
+              ? `<p>Hi ${esc(appt.customer_name ?? "there")},</p><p>Your booking with <b>${esc(shop)}</b> is confirmed for <b>${when}</b>.</p><p>See you then.</p>`
+              : `<p>Hi ${esc(appt.customer_name ?? "there")},</p><p>Your booking with <b>${esc(shop)}</b> on <b>${when}</b> has been cancelled. Reply or contact us to book another time.</p>`,
+          }).catch(() => {});
+        }
 
         const { data: integration } = await supabase
           .from("tenant_enm_integration")
