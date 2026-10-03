@@ -22,14 +22,14 @@ interface Booking {
 }
 
 const STATUS_META: Record<Booking["status"], { labelKey: TranslationKey; cls: string }> = {
-  pending: { labelKey: "mpBookings.statusPending", cls: "bg-gray-800 text-gray-400 border-gray-700" },
+  pending: { labelKey: "mpBookings.statusPending", cls: "bg-muted text-muted-foreground border-border" },
   confirmed: { labelKey: "mpBookings.statusConfirmed", cls: "bg-blue-900/50 text-blue-300 border-blue-700/50" },
   in_progress: { labelKey: "mpBookings.statusInProgress", cls: "bg-yellow-900/50 text-yellow-300 border-yellow-700/50" },
   completed: { labelKey: "mpBookings.statusCompleted", cls: "bg-green-900/50 text-green-300 border-green-700/50" },
-  cancelled: { labelKey: "mpBookings.statusCancelled", cls: "bg-gray-800 text-gray-500 border-gray-700" },
+  cancelled: { labelKey: "mpBookings.statusCancelled", cls: "bg-muted text-muted-foreground border-border" },
 };
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
 
 function NewBookingModal({ vendors, categories, onClose, onCreated }: {
@@ -59,10 +59,10 @@ function NewBookingModal({ vendors, categories, onClose, onCreated }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{t("mpBookings.newBookingTitle")}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground">{t("mpBookings.newBookingTitle")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <input className={inputCls} placeholder={t("mpBookings.customerNamePlaceholder")} value={f.customer_name}
@@ -136,8 +136,8 @@ export default function BookingsClient({ initialBookings, vendors, categories }:
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-indigo-400" /> {t("mpBookings.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-primary" /> {t("mpBookings.title")}
         </h1>
         <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("mpBookings.newBooking")}</button>
       </div>
@@ -146,27 +146,27 @@ export default function BookingsClient({ initialBookings, vendors, categories }:
         {["active", "pending", "confirmed", "in_progress", "completed", "cancelled", "all"].map(s => (
           <button key={s} onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400 hover:border-gray-500"
+              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground hover:border-gray-500"
             }`}>{t(FILTER_KEY[s])}</button>
         ))}
       </div>
 
       <div className="space-y-3">
         {shown.length === 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl text-center py-16 text-gray-500 text-sm">
+          <div className="bg-card border border-border rounded-xl text-center py-16 text-muted-foreground text-sm">
             {t("mpBookings.noBookingsHere")}
           </div>
         )}
         {shown.map((b) => (
-          <div key={b.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+          <div key={b.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold text-white">{b.service_subcategories?.name ?? t("mpBookings.service")}</span>
+                  <span className="text-sm font-semibold text-foreground">{b.service_subcategories?.name ?? t("mpBookings.service")}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_META[b.status].cls}`}>{t(STATUS_META[b.status].labelKey)}</span>
-                  {b.price != null && <span className="text-xs text-gray-400">{Number(b.price).toFixed(2)}{b.commission_amount != null ? t("mpBookings.commissionInline", { amount: Number(b.commission_amount).toFixed(2) }) : ""}</span>}
+                  {b.price != null && <span className="text-xs text-muted-foreground">{Number(b.price).toFixed(2)}{b.commission_amount != null ? t("mpBookings.commissionInline", { amount: Number(b.commission_amount).toFixed(2) }) : ""}</span>}
                 </div>
-                <div className="text-xs text-gray-500 mt-1 flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                   {b.scheduled_date && <span>{b.scheduled_date}{b.scheduled_time ? ` ${b.scheduled_time.slice(0, 5)}` : ""}</span>}
                   {b.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{b.address}</span>}
                   {b.customer_name && <span>{b.customer_name}</span>}
@@ -175,7 +175,7 @@ export default function BookingsClient({ initialBookings, vendors, categories }:
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <select className="bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+              <select className="bg-muted border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                 value={b.vendor_id ?? ""} disabled={busy === b.id}
                 onChange={(e) => patch(b, { vendor_id: e.target.value || null })}>
                 <option value="">{t("mpBookings.unassigned")}</option>
@@ -190,7 +190,7 @@ export default function BookingsClient({ initialBookings, vendors, categories }:
               )}
               {b.customer_phone && (
                 <a href={`tel:${b.customer_phone}`}
-                  className="inline-flex items-center gap-1.5 border border-gray-700 text-gray-300 hover:bg-gray-800 px-2.5 py-1.5 rounded-lg text-xs transition-colors">
+                  className="inline-flex items-center gap-1.5 border border-border text-foreground/80 hover:bg-muted px-2.5 py-1.5 rounded-lg text-xs transition-colors">
                   <Phone className="w-3.5 h-3.5" /> {t("mpBookings.customer")}
                 </a>
               )}
@@ -210,7 +210,7 @@ export default function BookingsClient({ initialBookings, vendors, categories }:
                 )}
                 {!["completed", "cancelled"].includes(b.status) && (
                   <button disabled={busy === b.id} onClick={() => patch(b, { status: "cancelled" })}
-                    className="inline-flex items-center gap-1.5 text-xs text-gray-400 border border-gray-700 hover:bg-gray-800 px-2.5 py-1.5 rounded-lg transition-colors">
+                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-border hover:bg-muted px-2.5 py-1.5 rounded-lg transition-colors">
                     <Ban className="w-3.5 h-3.5" /> {t("mpBookings.cancel")}
                   </button>
                 )}

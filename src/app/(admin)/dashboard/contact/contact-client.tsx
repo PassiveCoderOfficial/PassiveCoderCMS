@@ -70,40 +70,40 @@ function DetailEditor({ detail: initial, onSave, onCancel }: {
   }
 
   return (
-    <div className="bg-gray-800/50 border border-indigo-500/30 rounded-xl p-5 space-y-4">
+    <div className="bg-muted border border-primary/30 rounded-xl p-5 space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("contact.label")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("contact.label")}</label>
           <input value={d.label ?? ""} onChange={e => set("label", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("contact.labelPlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("contact.labelPlaceholder")} />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("contact.phone")}</label>
-          <PhoneInput value={d.phone ?? ""} onChange={v => set("phone", v)} inputClassName="bg-gray-800 border-gray-700 text-white" />
+          <label className="block text-xs text-muted-foreground mb-1">{t("contact.phone")}</label>
+          <PhoneInput value={d.phone ?? ""} onChange={v => set("phone", v)} inputClassName="bg-muted border-border text-foreground" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("contact.whatsappNumber")}</label>
-          <PhoneInput value={d.whatsapp ?? ""} onChange={v => set("whatsapp", v)} inputClassName="bg-gray-800 border-gray-700 text-white" />
+          <label className="block text-xs text-muted-foreground mb-1">{t("contact.whatsappNumber")}</label>
+          <PhoneInput value={d.whatsapp ?? ""} onChange={v => set("whatsapp", v)} inputClassName="bg-muted border-border text-foreground" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("contact.email")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("contact.email")}</label>
           <input value={d.email ?? ""} onChange={e => set("email", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("contact.address")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("contact.address")}</label>
         <textarea rows={2} value={d.address ?? ""} onChange={e => set("address", e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("contact.mapsEmbedUrl")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("contact.mapsEmbedUrl")}</label>
         <input value={d.maps_embed_url ?? ""} onChange={e => set("maps_embed_url", e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://maps.google.com/maps?..." />
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder="https://maps.google.com/maps?..." />
       </div>
 
-      <div className="border-t border-gray-700 pt-4">
-        <p className="text-xs font-medium text-gray-300 mb-3">{t("contact.floatingContactButtons")}</p>
+      <div className="border-t border-border pt-4">
+        <p className="text-xs font-medium text-foreground/80 mb-3">{t("contact.floatingContactButtons")}</p>
         <div className="grid grid-cols-3 gap-3 mb-3">
           {(["whatsapp", "call", "email"] as const).map(btn => (
             <label key={btn} className="flex items-center gap-2 cursor-pointer">
@@ -111,25 +111,25 @@ function DetailEditor({ detail: initial, onSave, onCancel }: {
                 checked={d[`floating_${btn}` as keyof ContactDetail] as boolean ?? false}
                 onChange={e => set(`floating_${btn}` as keyof ContactDetail, e.target.checked)}
                 className="w-4 h-4 rounded" />
-              <span className="text-sm text-gray-300">{t(`contact.btn${btn.charAt(0).toUpperCase()}${btn.slice(1)}` as TranslationKey)}</span>
+              <span className="text-sm text-foreground/80">{t(`contact.btn${btn.charAt(0).toUpperCase()}${btn.slice(1)}` as TranslationKey)}</span>
             </label>
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">{t("contact.position")}</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("contact.position")}</label>
             <select value={d.floating_position ?? "bottom-right"} onChange={e => set("floating_position", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
+              className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none">
               {["bottom-right", "bottom-left", "top-right", "top-left"].map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">{t("contact.buttonColor")}</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("contact.buttonColor")}</label>
             <div className="flex gap-2">
               <input type="color" value={d.floating_color ?? "#25D366"} onChange={e => set("floating_color", e.target.value)}
                 className="w-8 h-8 rounded cursor-pointer border-0" />
               <input value={d.floating_color ?? "#25D366"} onChange={e => set("floating_color", e.target.value)}
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                className="flex-1 bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ function DetailEditor({ detail: initial, onSave, onCancel }: {
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={d.is_primary ?? false} onChange={e => set("is_primary", e.target.checked)} className="w-4 h-4 rounded" />
-          <span className="text-sm text-gray-300">{t("contact.primaryLocation")}</span>
+          <span className="text-sm text-foreground/80">{t("contact.primaryLocation")}</span>
         </label>
       </div>
 
@@ -147,7 +147,7 @@ function DetailEditor({ detail: initial, onSave, onCancel }: {
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
           {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("contact.save")}
         </button>
-        <button onClick={onCancel} className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded">
+        <button onClick={onCancel} className="flex items-center gap-1.5 bg-muted-foreground/20 hover:bg-gray-600 text-foreground text-xs px-3 py-1.5 rounded">
           <X className="w-3 h-3" /> {t("contact.cancel")}
         </button>
       </div>
@@ -166,24 +166,24 @@ function SubmissionDrawer({ submission, formName, onClose, onRead }: {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="font-medium text-white">{formName}</p>
-            <p className="text-xs text-gray-400">{new Date(submission.created_at).toLocaleString()}</p>
+            <p className="font-medium text-foreground">{formName}</p>
+            <p className="text-xs text-muted-foreground">{new Date(submission.created_at).toLocaleString()}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
         </div>
         <div className="space-y-3">
           {Object.entries(submission.data).map(([k, v]) => (
             <div key={k}>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">{k}</p>
-              <p className="text-sm text-white mt-0.5">{String(v)}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{k}</p>
+              <p className="text-sm text-foreground mt-0.5">{String(v)}</p>
             </div>
           ))}
         </div>
         {!submission.read && (
-          <button onClick={markRead} className="mt-4 flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300">
+          <button onClick={markRead} className="mt-4 flex items-center gap-2 text-xs text-primary hover:text-indigo-300">
             <Eye className="w-3.5 h-3.5" /> {t("contact.markAsRead")}
           </button>
         )}
@@ -243,17 +243,17 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
     <div className="p-6 max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Phone className="w-6 h-6 text-indigo-400" /> {t("contact.title")}
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Phone className="w-6 h-6 text-primary" /> {t("contact.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">{t("contact.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("contact.subtitle")}</p>
         </div>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-800">
+      <div className="flex gap-1 border-b border-border">
         {(["details", "forms", "inbox"] as const).map(tb => (
           <button key={tb} onClick={() => setTab(tb)}
-            className={`px-4 py-2 text-sm font-medium transition-colors relative ${tab === tb ? "text-indigo-400 border-b-2 border-indigo-400" : "text-gray-400 hover:text-white"}`}>
+            className={`px-4 py-2 text-sm font-medium transition-colors relative ${tab === tb ? "text-primary border-b-2 border-indigo-400" : "text-muted-foreground hover:text-foreground"}`}>
             {t(`contact.tab${tb.charAt(0).toUpperCase()}${tb.slice(1)}` as TranslationKey)}
             {tb === "inbox" && unread > 0 && (
               <span className="ml-1.5 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{unread}</span>
@@ -269,21 +269,21 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
               <DetailEditor key={d.id} detail={d}
                 onSave={(u, isNew) => handleDetailSaved(u, isNew)} onCancel={() => setEditingDetail(null)} />
             ) : (
-              <div key={d.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div key={d.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-white">{d.label}</span>
+                      <span className="font-medium text-foreground">{d.label}</span>
                       {d.is_primary && <span className="text-xs bg-indigo-900/50 text-indigo-300 px-1.5 py-0.5 rounded">{t("contact.primary")}</span>}
                     </div>
-                    <div className="mt-2 space-y-1 text-sm text-gray-400">
+                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                       {d.phone && <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> {d.phone}</p>}
                       {d.whatsapp && <p className="flex items-center gap-2"><MessageSquare className="w-3.5 h-3.5 text-green-400" /> {d.whatsapp}</p>}
                       {d.email && <p className="flex items-center gap-2"><Mail className="w-3.5 h-3.5" /> {d.email}</p>}
                       {d.address && <p className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> {d.address}</p>}
                     </div>
                     {(d.floating_whatsapp || d.floating_call || d.floating_email) && (
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         {t("contact.floating", {
                           items: [d.floating_whatsapp && t("contact.btnWhatsapp"), d.floating_call && t("contact.btnCall"), d.floating_email && t("contact.btnEmail")].filter(Boolean).join(", "),
                           position: d.floating_position,
@@ -292,8 +292,8 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setEditingDetail(d.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => deleteDetail(d.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setEditingDetail(d.id)} className="text-muted-foreground hover:text-foreground p-1"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => deleteDetail(d.id)} className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
@@ -304,7 +304,7 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
             <DetailEditor detail={{}} onSave={(d, isNew) => handleDetailSaved(d, isNew)} onCancel={() => setAddingDetail(false)} />
           ) : (
             <button onClick={() => setAddingDetail(true)}
-              className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-xl px-4 py-3 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
+              className="w-full flex items-center gap-2 border border-dashed border-border hover:border-primary rounded-xl px-4 py-3 text-sm text-muted-foreground hover:text-primary transition-colors">
               <Plus className="w-4 h-4" /> {t("contact.addContactLocation")}
             </button>
           )}
@@ -314,28 +314,28 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
       {tab === "forms" && (
         <div className="space-y-4">
           {forms.map(f => (
-            <div key={f.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+            <div key={f.id} className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
               <div>
-                <p className="font-medium text-white">{f.name}</p>
-                {f.recipient_email && <p className="text-xs text-gray-400 mt-0.5">{t("contact.sendsTo", { email: f.recipient_email })}</p>}
-                <p className="text-xs text-gray-500 mt-0.5">{t("contact.submissionsCount", { count: submissions.filter(s => s.form_id === f.id).length })}</p>
+                <p className="font-medium text-foreground">{f.name}</p>
+                {f.recipient_email && <p className="text-xs text-muted-foreground mt-0.5">{t("contact.sendsTo", { email: f.recipient_email })}</p>}
+                <p className="text-xs text-muted-foreground mt-0.5">{t("contact.submissionsCount", { count: submissions.filter(s => s.form_id === f.id).length })}</p>
               </div>
-              <button onClick={() => deleteForm(f.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => deleteForm(f.id)} className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
             </div>
           ))}
 
           {addingForm ? (
-            <div className="bg-gray-900 border border-indigo-500/40 rounded-xl p-4 space-y-3">
+            <div className="bg-card border border-primary/40 rounded-xl p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">{t("contact.formName")}</label>
+                  <label className="block text-xs text-muted-foreground mb-1">{t("contact.formName")}</label>
                   <input value={newFormName} onChange={e => setNewFormName(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("contact.formNamePlaceholder")} />
+                    className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("contact.formNamePlaceholder")} />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">{t("contact.recipientEmail")}</label>
+                  <label className="block text-xs text-muted-foreground mb-1">{t("contact.recipientEmail")}</label>
                   <input value={newFormEmail} onChange={e => setNewFormEmail(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="info@example.com" />
+                    className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder="info@example.com" />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -343,14 +343,14 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
                   className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
                   {savingForm ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("contact.create")}
                 </button>
-                <button onClick={() => setAddingForm(false)} className="flex items-center gap-1.5 bg-gray-700 text-white text-xs px-3 py-1.5 rounded">
+                <button onClick={() => setAddingForm(false)} className="flex items-center gap-1.5 bg-muted-foreground/20 text-foreground text-xs px-3 py-1.5 rounded">
                   <X className="w-3 h-3" /> {t("contact.cancel")}
                 </button>
               </div>
             </div>
           ) : (
             <button onClick={() => setAddingForm(true)}
-              className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-xl px-4 py-3 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
+              className="w-full flex items-center gap-2 border border-dashed border-border hover:border-primary rounded-xl px-4 py-3 text-sm text-muted-foreground hover:text-primary transition-colors">
               <Plus className="w-4 h-4" /> {t("contact.createContactForm")}
             </button>
           )}
@@ -360,19 +360,19 @@ export default function ContactClient({ initialDetails, initialForms, initialSub
       {tab === "inbox" && (
         <div className="space-y-2">
           {submissions.length === 0 ? (
-            <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
-              <Inbox className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm">{t("contact.noSubmissionsYet")}</p>
+            <div className="text-center py-16 border border-dashed border-border rounded-xl">
+              <Inbox className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">{t("contact.noSubmissionsYet")}</p>
             </div>
           ) : submissions.map(s => {
             const form = forms.find(f => f.id === s.form_id);
             return (
               <button key={s.id} onClick={() => setViewingSub(s)}
-                className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-colors ${s.read ? "border-gray-800 bg-gray-900/50" : "border-indigo-800/50 bg-indigo-950/20"}`}>
+                className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-colors ${s.read ? "border-border bg-card" : "border-indigo-800/50 bg-indigo-950/20"}`}>
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.read ? "bg-gray-600" : "bg-indigo-400"}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{String(Object.values(s.data)[0] ?? t("contact.submission"))}</p>
-                  <p className="text-xs text-gray-400">{form?.name ?? t("contact.unknownForm")} · {new Date(s.created_at).toLocaleDateString()}</p>
+                  <p className="text-sm font-medium text-foreground truncate">{String(Object.values(s.data)[0] ?? t("contact.submission"))}</p>
+                  <p className="text-xs text-muted-foreground">{form?.name ?? t("contact.unknownForm")} · {new Date(s.created_at).toLocaleDateString()}</p>
                 </div>
               </button>
             );

@@ -75,7 +75,7 @@ export default function DonorsDashboardClient() {
   return (
     <div className="p-6 space-y-5 max-w-5xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Droplet className="w-6 h-6 text-red-500" fill="currentColor" /> {t("donors.title")}
         </h1>
         <Link href="/dashboard/donors/new"
@@ -84,10 +84,10 @@ export default function DonorsDashboardClient() {
         </Link>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-4">
+      <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-white flex items-center gap-1.5"><Settings2 className="w-4 h-4 text-gray-400" /> {t("donors.otpVerification")}</p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5"><Settings2 className="w-4 h-4 text-muted-foreground" /> {t("donors.otpVerification")}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {otpRequired ? t("donors.otpOnHint") : t("donors.otpOffHint")}
           </p>
         </div>
@@ -98,13 +98,13 @@ export default function DonorsDashboardClient() {
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
-        <input className="bg-gray-800 border border-gray-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white w-full placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+        <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+        <input className="bg-muted border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground w-full placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-500/30"
           placeholder={t("donors.searchPlaceholder")} value={q} onChange={e => onSearch(e.target.value)} />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="hidden sm:flex items-center gap-3 px-4 py-2.5 bg-gray-950/50 border-b border-gray-800 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="hidden sm:flex items-center gap-3 px-4 py-2.5 bg-background border-b border-border text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           <span className="w-10 shrink-0" />
           <span className="w-9 shrink-0 text-center">{t("donors.colGroup")}</span>
           <span className="min-w-0 flex-1">{t("donors.colNameLocation")}</span>
@@ -112,11 +112,11 @@ export default function DonorsDashboardClient() {
           <span className="shrink-0 w-16 text-center">{t("donors.colActions")}</span>
         </div>
         {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-500" /></div>
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : donors.length === 0 ? (
-          <div className="text-center py-16 text-gray-500 text-sm">{t("donors.noEntries")}</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">{t("donors.noEntries")}</div>
         ) : (
-          <div className="divide-y divide-gray-800">
+          <div className="divide-y divide-border">
             {donors.map((d) => {
               const meta = AVAILABILITY_META[d.availability];
               return (
@@ -127,12 +127,12 @@ export default function DonorsDashboardClient() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <Link href={`/dashboard/donors/${d.id}`} className="text-sm font-semibold text-white hover:underline truncate">{d.name}</Link>
+                      <Link href={`/dashboard/donors/${d.id}`} className="text-sm font-semibold text-foreground hover:underline truncate">{d.name}</Link>
                       {d.is_admin && <ShieldCheck className="w-3.5 h-3.5 text-red-400 shrink-0" />}
                       {d.is_claimed && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-950 text-green-300 shrink-0">{t("donors.claimed")}</span>}
-                      {d.has_password && !d.is_claimed && <KeyRound className="w-3 h-3 text-gray-500 shrink-0" />}
+                      {d.has_password && !d.is_claimed && <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" />}
                     </div>
-                    <div className="text-xs text-gray-500 truncate">
+                    <div className="text-xs text-muted-foreground truncate">
                       {d.phone} · {[d.area, d.district].filter(Boolean).join(", ") || t("donors.noLocation")}
                     </div>
                   </div>
@@ -140,8 +140,8 @@ export default function DonorsDashboardClient() {
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: meta.bg, color: meta.text }}>{meta.label}</span>
                   </span>
                   <div className="shrink-0 w-16 flex items-center justify-center gap-1">
-                    <Link href={`/dashboard/donors/${d.id}`} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><Pencil className="w-4 h-4" /></Link>
-                    <button onClick={() => del(d)} className="p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-gray-800"><Trash2 className="w-4 h-4" /></button>
+                    <Link href={`/dashboard/donors/${d.id}`} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><Pencil className="w-4 h-4" /></Link>
+                    <button onClick={() => del(d)} className="p-2 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               );
@@ -151,12 +151,12 @@ export default function DonorsDashboardClient() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 text-sm text-gray-400">
+        <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
           <button disabled={page === 0} onClick={() => { const p = page - 1; setPage(p); load(q, p); }}
-            className="p-2 border border-gray-700 rounded-lg disabled:opacity-30 bg-card"><ChevronLeft className="w-4 h-4" /></button>
+            className="p-2 border border-border rounded-lg disabled:opacity-30 bg-card"><ChevronLeft className="w-4 h-4" /></button>
           <span>{t("donors.entriesCount", { page: page + 1, totalPages, total })}</span>
           <button disabled={page >= totalPages - 1} onClick={() => { const p = page + 1; setPage(p); load(q, p); }}
-            className="p-2 border border-gray-700 rounded-lg disabled:opacity-30 bg-card"><ChevronRight className="w-4 h-4" /></button>
+            className="p-2 border border-border rounded-lg disabled:opacity-30 bg-card"><ChevronRight className="w-4 h-4" /></button>
         </div>
       )}
     </div>

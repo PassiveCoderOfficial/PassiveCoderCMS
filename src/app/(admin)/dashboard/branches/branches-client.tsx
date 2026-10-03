@@ -12,7 +12,7 @@ interface Branch {
   restaurant_tables: TableRow[];
 }
 
-const inputCls = "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 
 function qrImageUrl(url: string) {
   // No QR library added for one feature — a public, keyless QR image
@@ -128,8 +128,8 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Store className="w-6 h-6 text-indigo-400" /> {t("branches.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Store className="w-6 h-6 text-primary" /> {t("branches.title")}
         </h1>
         <button onClick={() => setShowAddBranch(v => !v)}
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors">
@@ -140,7 +140,7 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
       <PrinterNotice />
 
       {showAddBranch && (
-        <form onSubmit={addBranch} className="bg-gray-900 border border-gray-800 rounded-xl p-4 grid sm:grid-cols-3 gap-3">
+        <form onSubmit={addBranch} className="bg-card border border-border rounded-xl p-4 grid sm:grid-cols-3 gap-3">
           <input required placeholder={t("branches.branchName")} value={newBranch.name}
             onChange={(e) => setNewBranch(v => ({ ...v, name: e.target.value }))} className={inputCls} />
           <input placeholder={t("branches.addressOptional")} value={newBranch.address}
@@ -156,24 +156,24 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
       )}
 
       {branches.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16 text-muted-foreground">
           <Store className="w-10 h-10 mx-auto mb-3 opacity-40" />
           <p className="text-sm">{t("branches.noBranchesYet")}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {branches.map(branch => (
-            <div key={branch.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-4">
+            <div key={branch.id} className="bg-card border border-border rounded-xl p-4 space-y-4">
               <div>
-                <h2 className="font-semibold text-white">{branch.name}</h2>
-                {branch.address && <p className="text-xs text-gray-500">{branch.address}</p>}
+                <h2 className="font-semibold text-foreground">{branch.name}</h2>
+                {branch.address && <p className="text-xs text-muted-foreground">{branch.address}</p>}
               </div>
 
               {/* Screen toggles — which of KITCHEN/MONITOR/TABLE this branch
                   actually runs (migration 092). Manager picks per operational
                   reality: not every location has a spare screen for MONITOR
                   or tablets for TABLE. */}
-              <div className="flex flex-wrap gap-3 pb-3 border-b border-gray-800">
+              <div className="flex flex-wrap gap-3 pb-3 border-b border-border">
                 {([
                   { key: "kitchen_screen_enabled" as const, label: t("branches.kitchen"), icon: ChefHat, href: "/dashboard/kitchen" },
                   { key: "monitor_screen_enabled" as const, label: t("branches.monitor"), icon: Tv, href: monitorUrl(branch.id) },
@@ -186,14 +186,14 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                         branch[key]
                           ? "bg-indigo-600/20 border-indigo-600/40 text-indigo-300"
-                          : "bg-gray-800 border-gray-700 text-gray-500"
+                          : "bg-muted border-border text-muted-foreground"
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" /> {label} {branch[key] ? t("branches.on") : t("branches.off")}
                     </button>
                     {branch[key] && href && (
                       <a href={href} target="_blank" rel="noopener noreferrer" title={t("branches.openLabel", { label })}
-                        className="text-xs text-gray-500 hover:text-indigo-400 underline">
+                        className="text-xs text-muted-foreground hover:text-primary underline">
                         {t("branches.open")}
                       </a>
                     )}
@@ -203,20 +203,20 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
 
               <div className="space-y-2">
                 {branch.restaurant_tables.filter(tbl => tbl.is_active).map(tbl => (
-                  <div key={tbl.id} className="flex flex-wrap items-center gap-1 bg-gray-800 border border-gray-700 rounded-lg pl-3 pr-1 py-1.5">
-                    <span className="text-xs text-white w-20 shrink-0">{t("branches.table", { number: tbl.table_number })}</span>
+                  <div key={tbl.id} className="flex flex-wrap items-center gap-1 bg-muted border border-border rounded-lg pl-3 pr-1 py-1.5">
+                    <span className="text-xs text-foreground w-20 shrink-0">{t("branches.table", { number: tbl.table_number })}</span>
                     <button onClick={() => setPrintTable({ branchName: branch.name, table: tbl })} title={t("branches.showQrCode")}
-                      className="p-1 text-gray-500 hover:text-indigo-400 rounded"><QrCode className="w-3.5 h-3.5" /></button>
+                      className="p-1 text-muted-foreground hover:text-primary rounded"><QrCode className="w-3.5 h-3.5" /></button>
                     <button onClick={() => copyLink(tbl.qr_token)} title={t("branches.copyOrderLink")}
-                      className="p-1 text-gray-500 hover:text-white rounded">
+                      className="p-1 text-muted-foreground hover:text-foreground rounded">
                       {copiedToken === tbl.qr_token ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                     <button onClick={() => removeTable(branch.id, tbl.id)} title={t("branches.removeTable")}
-                      className="p-1 text-gray-500 hover:text-red-400 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                      className="p-1 text-muted-foreground hover:text-red-400 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
 
                     {branch.table_screen_enabled && (
-                      <div className="flex items-center gap-1 ml-2 pl-2 border-l border-gray-700">
-                        <KeyRound className="w-3 h-3 text-gray-500 shrink-0" />
+                      <div className="flex items-center gap-1 ml-2 pl-2 border-l border-border">
+                        <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" />
                         <input
                           placeholder={tbl.table_pin ? t("branches.pinLabel", { pin: tbl.table_pin }) : t("branches.setPin")}
                           value={pinDraft[tbl.id] ?? ""}
@@ -226,12 +226,12 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
                           className={`${inputCls} w-24 py-1 text-xs`}
                         />
                         <button onClick={() => saveTablePin(branch.id, tbl.id)} disabled={savingPin === tbl.id}
-                          className="text-xs text-indigo-400 hover:text-indigo-300 px-1.5 disabled:opacity-50">
+                          className="text-xs text-primary hover:text-indigo-300 px-1.5 disabled:opacity-50">
                           {savingPin === tbl.id ? "…" : t("branches.set")}
                         </button>
                         {tbl.table_pin && (
                           <a href={tableScreenUrl(tbl.qr_token)} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-gray-500 hover:text-indigo-400 underline shrink-0">
+                            className="text-xs text-muted-foreground hover:text-primary underline shrink-0">
                             {t("branches.openScreen")}
                           </a>
                         )}
@@ -245,7 +245,7 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
                     onKeyDown={(e) => e.key === "Enter" && addTable(branch.id)}
                     className={`${inputCls} w-24 py-1.5`} />
                   <button onClick={() => addTable(branch.id)}
-                    className="p-1.5 text-gray-500 hover:text-indigo-400 rounded-lg border border-dashed border-gray-700 hover:border-indigo-600/60">
+                    className="p-1.5 text-muted-foreground hover:text-primary rounded-lg border border-dashed border-border hover:border-indigo-600/60">
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -259,19 +259,19 @@ export default function BranchesClient({ branches: initial, siteUrl }: { branche
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 print:static print:bg-white">
           <div className="absolute inset-0 bg-black/60 print:hidden" onClick={() => setPrintTable(null)} />
           <div className="relative bg-white rounded-2xl p-8 text-center space-y-4 max-w-xs w-full">
-            <p className="text-sm text-gray-500">{printTable.branchName}</p>
+            <p className="text-sm text-muted-foreground">{printTable.branchName}</p>
             <p className="text-xl font-bold text-gray-900">{t("branches.table", { number: printTable.table.table_number })}</p>
             {/* eslint-disable-next-line @next/next/no-img-element -- external
                 QR image service, not a project asset next/image can optimize */}
             <img src={qrImageUrl(tableUrl(printTable.table.qr_token))} alt={t("branches.scanToOrder")} className="mx-auto" width={220} height={220} />
-            <p className="text-xs text-gray-500">{t("branches.scanToOrder")}</p>
+            <p className="text-xs text-muted-foreground">{t("branches.scanToOrder")}</p>
             <div className="flex gap-2 print:hidden">
               <button onClick={() => window.print()}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3 py-2 text-sm font-medium">
                 <Printer className="w-4 h-4" /> {t("branches.print")}
               </button>
               <button onClick={() => setPrintTable(null)}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-3 py-2 text-sm font-medium">
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-muted-foreground/60 rounded-lg px-3 py-2 text-sm font-medium">
                 {t("branches.close")}
               </button>
             </div>

@@ -8,7 +8,7 @@ interface ApiKey {
   last_used_at: string | null; revoked_at: string | null; created_at: string;
 }
 
-const inputCls = "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
 
 export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }) {
@@ -48,21 +48,21 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <KeyRound className="w-6 h-6 text-indigo-400" /> API Keys
+      <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+        <KeyRound className="w-6 h-6 text-primary" /> API Keys
       </h1>
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-muted-foreground">
         Keys authenticate external apps against your site&apos;s API — Expert Near Me lead dispatch,
         custom integrations, Zapier-style tools. Send requests with
-        <code className="mx-1 px-1.5 py-0.5 bg-gray-800 rounded text-xs">Authorization: Bearer pc_…</code>
-        to <code className="px-1.5 py-0.5 bg-gray-800 rounded text-xs">/api/v1/contacts</code>.
+        <code className="mx-1 px-1.5 py-0.5 bg-muted rounded text-xs">Authorization: Bearer pc_…</code>
+        to <code className="px-1.5 py-0.5 bg-muted rounded text-xs">/api/v1/contacts</code>.
       </p>
 
       {freshKey && (
         <div className="bg-green-900/30 border border-green-700/50 rounded-xl p-4 space-y-2">
           <p className="text-sm font-semibold text-green-300">Key created — copy it now, it will not be shown again.</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-green-200 break-all">{freshKey}</code>
+            <code className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-xs text-green-200 break-all">{freshKey}</code>
             <button onClick={copy} className={btnPrimary}>
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </button>
@@ -79,18 +79,18 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
         </button>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl divide-y divide-gray-800">
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
         {keys.length === 0 && (
-          <div className="text-center py-10 text-gray-500 text-sm">No API keys yet.</div>
+          <div className="text-center py-10 text-muted-foreground text-sm">No API keys yet.</div>
         )}
         {keys.map((k) => (
           <div key={k.id} className="flex items-center gap-4 px-4 py-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium ${k.revoked_at ? "text-gray-500 line-through" : "text-white"}`}>{k.name}</span>
+                <span className={`text-sm font-medium ${k.revoked_at ? "text-muted-foreground line-through" : "text-foreground"}`}>{k.name}</span>
                 {k.revoked_at && <span className="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-300 border border-red-700/50">revoked</span>}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 {k.key_prefix}… · {k.scopes.join(", ")} ·
                 {k.last_used_at ? ` last used ${new Date(k.last_used_at).toLocaleDateString()}` : " never used"}
               </div>

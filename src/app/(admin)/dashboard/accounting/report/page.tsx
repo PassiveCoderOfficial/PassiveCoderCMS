@@ -63,29 +63,29 @@ export default async function ReportPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <BarChart3 className="w-6 h-6 text-indigo-400" /> <ReportHeading />
+      <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+        <BarChart3 className="w-6 h-6 text-primary" /> <ReportHeading />
       </h1>
 
       <div className="grid sm:grid-cols-3 gap-4 max-w-2xl">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1"><T k="report.income" /></p>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1"><T k="report.income" /></p>
           <p className="text-xl font-bold text-green-400">{money(totalIncome)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1"><T k="report.expenses" /></p>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1"><T k="report.expenses" /></p>
           <p className="text-xl font-bold text-red-400">{money(totalExpense)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1"><T k="report.netProfit" /></p>
-          <p className={`text-xl font-bold ${net >= 0 ? "text-white" : "text-red-400"}`}>{money(net)}</p>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1"><T k="report.netProfit" /></p>
+          <p className={`text-xl font-bold ${net >= 0 ? "text-foreground" : "text-red-400"}`}>{money(net)}</p>
         </div>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 overflow-x-auto">
+      <div className="bg-card border border-border rounded-xl p-5 overflow-x-auto">
         <table className="w-full text-sm min-w-[540px]">
           <thead>
-            <tr className="text-left text-xs uppercase text-gray-500 border-b border-gray-800">
+            <tr className="text-left text-xs uppercase text-muted-foreground border-b border-border">
               <th className="py-2 pr-4"><T k="report.colMonth" /></th>
               <th className="py-2 pr-4"><T k="report.colIncome" /></th>
               <th className="py-2 pr-4"><T k="report.colExpenses" /></th>
@@ -97,11 +97,11 @@ export default async function ReportPage() {
             {rows.map(([key, v]) => {
               const rowNet = v.income - v.expense;
               return (
-                <tr key={key} className="border-b border-gray-800/60">
-                  <td className="py-2.5 pr-4 text-gray-300">{monthLabel(key)}</td>
+                <tr key={key} className="border-b border-border">
+                  <td className="py-2.5 pr-4 text-foreground/80">{monthLabel(key)}</td>
                   <td className="py-2.5 pr-4 text-green-400">{v.income ? money(v.income) : "—"}</td>
                   <td className="py-2.5 pr-4 text-red-400">{v.expense ? money(v.expense) : "—"}</td>
-                  <td className={`py-2.5 pr-4 font-medium ${rowNet >= 0 ? "text-gray-200" : "text-red-400"}`}>
+                  <td className={`py-2.5 pr-4 font-medium ${rowNet >= 0 ? "text-foreground" : "text-red-400"}`}>
                     {v.income || v.expense ? money(rowNet) : "—"}
                   </td>
                   <td className="py-2.5">
@@ -118,14 +118,14 @@ export default async function ReportPage() {
       </div>
 
       {byCategory.size > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 max-w-2xl">
-          <h2 className="text-sm font-semibold text-white mb-3"><T k="report.byCategory" /></h2>
+        <div className="bg-card border border-border rounded-xl p-5 max-w-2xl">
+          <h2 className="text-sm font-semibold text-foreground mb-3"><T k="report.byCategory" /></h2>
           <div className="space-y-2">
             {[...byCategory.entries()]
               .sort((a, b) => (b[1].income + b[1].expense) - (a[1].income + a[1].expense))
               .map(([cat, v]) => (
                 <div key={cat} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400 capitalize">{cat === "uncategorized" ? <T k="report.uncategorized" /> : cat}</span>
+                  <span className="text-muted-foreground capitalize">{cat === "uncategorized" ? <T k="report.uncategorized" /> : cat}</span>
                   <span>
                     {v.income > 0 && <span className="text-green-400 mr-3">+{money(v.income)}</span>}
                     {v.expense > 0 && <span className="text-red-400">−{money(v.expense)}</span>}
@@ -136,7 +136,7 @@ export default async function ReportPage() {
         </div>
       )}
 
-      <p className="text-xs text-gray-600">
+      <p className="text-xs text-muted-foreground">
         <T k="report.builtFromHint" />
       </p>
     </div>

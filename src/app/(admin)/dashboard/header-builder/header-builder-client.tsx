@@ -217,7 +217,7 @@ export default function HeaderBuilderClient({
           </div>
         )}
 
-        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900">
+        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-card">
           {/* A header is a strip, not a page. min-h-full previously forced this
               wrapper to fill the viewport height, which left a large dead grey
               area below the actual header content — sized to content instead,
@@ -231,7 +231,7 @@ export default function HeaderBuilderClient({
                 actually overlays, rather than a surface it was never drawn
                 for. Solid headers paint their own background over this. */}
             <div className="mx-auto max-w-[1400px] shadow-sm cms-canvas-light">
-              <BuilderCanvas surfaceClassName={previewOnDark ? "bg-neutral-800" : "bg-card"} />
+              <BuilderCanvas surfaceClassName={previewOnDark ? "bg-muted" : "bg-card"} />
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">
               {t("headerBuilder.appearsOnEveryPage", { label: label.toLowerCase() })}

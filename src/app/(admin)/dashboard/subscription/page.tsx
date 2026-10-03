@@ -64,7 +64,7 @@ function statusConfig(t: TFn): Record<string, { color: string; icon: React.React
     active:    { color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: t("sub.statusActive") },
     past_due:  { color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400",         icon: <AlertCircle className="w-3.5 h-3.5" />, label: t("sub.statusPastDue") },
     suspended: { color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400", icon: <AlertCircle className="w-3.5 h-3.5" />, label: t("sub.statusSuspended") },
-    cancelled: { color: "text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400",       icon: null, label: t("sub.statusCancelled") },
+    cancelled: { color: "text-muted-foreground bg-gray-100 dark:bg-muted dark:text-muted-foreground",       icon: null, label: t("sub.statusCancelled") },
     expired:   { color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400", icon: <Clock className="w-3.5 h-3.5" />, label: t("sub.statusExpired") },
   };
 }
@@ -158,9 +158,9 @@ export default function SubscriptionPage() {
 
       {/* Staff / Super Admin badge */}
       {(agent || isSuperAdmin) && (
-        <div className={cn("rounded-xl border p-4 flex items-start gap-3", agent ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800" : "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700")}>
-          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", agent ? "bg-indigo-600" : "bg-gray-700")}>
-            {agent ? <Zap className="w-5 h-5 text-white" /> : <Star className="w-5 h-5 text-white" />}
+        <div className={cn("rounded-xl border p-4 flex items-start gap-3", agent ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800" : "bg-gray-50 dark:bg-card border-gray-200 dark:border-border")}>
+          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", agent ? "bg-indigo-600" : "bg-muted-foreground/20")}>
+            {agent ? <Zap className="w-5 h-5 text-foreground" /> : <Star className="w-5 h-5 text-foreground" />}
           </div>
           <div className="flex-1">
             {isSuperAdmin && !agent && (
@@ -173,7 +173,7 @@ export default function SubscriptionPage() {
               <>
                 <p className="font-bold text-sm">{t("sub.staffAccount")}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {t("sub.referralCode")} <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{agent.referral_code}</span>
+                  {t("sub.referralCode")} <span className="font-mono font-semibold text-indigo-600 dark:text-primary">{agent.referral_code}</span>
                 </p>
                 {discountPct > 0 && (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 font-medium">

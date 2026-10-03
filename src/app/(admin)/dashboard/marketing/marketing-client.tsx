@@ -19,16 +19,16 @@ interface Campaign {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-800 text-gray-400 border-gray-700",
+  draft: "bg-muted text-muted-foreground border-border",
   sending: "bg-yellow-900/50 text-yellow-300 border-yellow-700/50",
   sent: "bg-green-900/50 text-green-300 border-green-700/50",
   failed: "bg-red-900/50 text-red-300 border-red-700/50",
-  cancelled: "bg-gray-800 text-gray-500 border-gray-700",
+  cancelled: "bg-muted text-muted-foreground border-border",
 };
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
-const btnGhost = "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50";
+const btnGhost = "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50";
 
 function Composer({ campaign, stages, onClose, onSaved }: {
   campaign: Campaign | null; stages: Stage[];
@@ -70,10 +70,10 @@ function Composer({ campaign, stages, onClose, onSaved }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{campaign ? t("marketing.editCampaign") : t("marketing.newCampaignTitle")}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground">{campaign ? t("marketing.editCampaign") : t("marketing.newCampaignTitle")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
 
         <input className={inputCls} placeholder={t("marketing.campaignNamePlaceholder")} value={f.name}
@@ -82,10 +82,10 @@ function Composer({ campaign, stages, onClose, onSaved }: {
         <div className="flex gap-2">
           <button type="button" onClick={() => setF(p => ({ ...p, channel: "email" }))}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border text-sm transition-colors ${
-              f.channel === "email" ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400"
+              f.channel === "email" ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground"
             }`}><Mail className="w-4 h-4" /> {t("marketing.email")}</button>
           <button type="button" disabled title={t("marketing.whatsappSoonTitle")}
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-800 text-sm text-gray-600 cursor-not-allowed bg-card">
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-border text-sm text-muted-foreground cursor-not-allowed bg-card">
             <MessageCircle className="w-4 h-4" /> {t("marketing.whatsapp")} <span className="text-[10px] uppercase">{t("marketing.soon")}</span>
           </button>
         </div>
@@ -96,13 +96,13 @@ function Composer({ campaign, stages, onClose, onSaved }: {
         <div>
           <textarea className={inputCls} rows={8} value={f.body}
             onChange={(e) => setF(p => ({ ...p, body: e.target.value }))} />
-          <p className="text-[11px] text-gray-500 mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             {t("marketing.personalizeHint")}
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 space-y-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase">{t("marketing.audienceHeading")}</p>
+        <div className="bg-card border border-border rounded-xl p-3 space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase">{t("marketing.audienceHeading")}</p>
           <input className={inputCls} placeholder={t("marketing.tagsPlaceholder")} value={f.tags}
             onChange={(e) => setF(p => ({ ...p, tags: e.target.value }))} />
           {stages.length > 0 && (
@@ -116,7 +116,7 @@ function Composer({ campaign, stages, onClose, onSaved }: {
                       : [...p.stage_ids, s.id],
                   }))}
                   className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-                    f.stage_ids.includes(s.id) ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400"
+                    f.stage_ids.includes(s.id) ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground"
                   }`}>{s.name}</button>
               ))}
             </div>
@@ -172,38 +172,38 @@ export default function MarketingClient({ initialCampaigns, audienceCount, stage
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Megaphone className="w-6 h-6 text-indigo-400" /> {t("marketing.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Megaphone className="w-6 h-6 text-primary" /> {t("marketing.title")}
         </h1>
         <button onClick={() => setComposer({ open: true, campaign: null })} className={btnPrimary}>
           <Plus className="w-4 h-4" /> {t("marketing.newCampaign")}
         </button>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 max-w-xs">
-        <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {t("marketing.emailAudience")}</p>
-        <p className="text-xl font-bold text-white">{audienceCount}</p>
-        <p className="text-[11px] text-gray-500 mt-1">{t("marketing.audienceHint")}</p>
+      <div className="bg-card border border-border rounded-xl p-4 max-w-xs">
+        <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {t("marketing.emailAudience")}</p>
+        <p className="text-xl font-bold text-foreground">{audienceCount}</p>
+        <p className="text-[11px] text-muted-foreground mt-1">{t("marketing.audienceHint")}</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         {campaigns.length === 0 ? (
-          <div className="text-center py-16 text-gray-500 text-sm">
+          <div className="text-center py-16 text-muted-foreground text-sm">
             {t("marketing.noCampaignsYet")}
           </div>
         ) : (
-          <div className="divide-y divide-gray-800">
+          <div className="divide-y divide-border">
             {campaigns.map((c) => (
               <div key={c.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     {c.channel === "email"
-                      ? <Mail className="w-4 h-4 text-gray-500 shrink-0" />
-                      : <MessageCircle className="w-4 h-4 text-gray-500 shrink-0" />}
-                    <span className="text-sm font-medium text-white truncate">{c.name}</span>
+                      ? <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
+                      : <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />}
+                    <span className="text-sm font-medium text-foreground truncate">{c.name}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${STATUS_COLORS[c.status]}`}>{t(STATUS_KEY[c.status] ?? "marketing.statusDraft")}</span>
                   </div>
-                  <div className="text-xs text-gray-500 truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {c.subject || t("marketing.noSubject")}
                     {c.status !== "draft" && t("marketing.sentSummary", {
                       sent: c.sent_count, total: c.recipient_count,
@@ -215,17 +215,17 @@ export default function MarketingClient({ initialCampaigns, audienceCount, stage
                   {c.status === "draft" && (
                     <>
                       <button title={t("marketing.edit")} onClick={() => setComposer({ open: true, campaign: c })}
-                        className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-800"><Pencil className="w-4 h-4" /></button>
+                        className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><Pencil className="w-4 h-4" /></button>
                       <button title={t("marketing.sendTestToMe")} disabled={busy === c.id} onClick={() => act(c, "test")}
-                        className="p-2 text-gray-500 hover:text-yellow-300 rounded-lg hover:bg-gray-800"><FlaskConical className="w-4 h-4" /></button>
+                        className="p-2 text-muted-foreground hover:text-yellow-300 rounded-lg hover:bg-muted"><FlaskConical className="w-4 h-4" /></button>
                       <button title={t("marketing.sendCampaign")} disabled={busy === c.id} onClick={() => act(c, "send")}
-                        className="p-2 text-gray-500 hover:text-indigo-400 rounded-lg hover:bg-gray-800">
+                        className="p-2 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted">
                         {busy === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       </button>
                     </>
                   )}
                   <button title={t("marketing.delete")} onClick={() => del(c)}
-                    className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-gray-800"><Trash2 className="w-4 h-4" /></button>
+                    className="p-2 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}

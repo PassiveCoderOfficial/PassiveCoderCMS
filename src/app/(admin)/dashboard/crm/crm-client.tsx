@@ -59,9 +59,9 @@ function timeAgo(iso: string, t: TFn) {
   return new Date(iso).toLocaleDateString();
 }
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
-const btnGhost = "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
+const btnGhost = "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
 
 // ── Contact detail slide-over ────────────────────────────────────────────────
 function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
@@ -160,22 +160,22 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg h-full bg-gray-950 border-l border-gray-800 overflow-y-auto">
+      <div className="relative w-full max-w-lg h-full bg-background border-l border-border overflow-y-auto">
         {loading || !contact ? (
-          <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-gray-500" /></div>
+          <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : (
           <div className="p-5 space-y-5">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">{contactName(contact, t)}</h2>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <h2 className="text-xl font-bold text-foreground">{contactName(contact, t)}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {t("crm.addedTimeAgo", { source: sourceLabels(t)[contact.source] ?? contact.source, time: timeAgo(contact.created_at, t) })}
                 </p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setEditing(!editing)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><Pencil className="w-4 h-4" /></button>
-                <button onClick={del} className="p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-gray-800"><Trash2 className="w-4 h-4" /></button>
-                <button onClick={onClose} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+                <button onClick={() => setEditing(!editing)} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><Pencil className="w-4 h-4" /></button>
+                <button onClick={del} className="p-2 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
               </div>
             </div>
 
@@ -196,14 +196,14 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
 
             {/* Stage selector */}
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">{t("crm.pipelineStage")}</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">{t("crm.pipelineStage")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {stages.map((s) => (
                   <button key={s.id} onClick={() => changeStage(s.id)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                       contact.stage_id === s.id
-                        ? "text-white border-transparent"
-                        : "text-gray-400 border-gray-700 hover:border-gray-500"
+                        ? "text-foreground border-transparent"
+                        : "text-muted-foreground border-border hover:border-gray-500"
                     }`}
                     style={contact.stage_id === s.id ? { backgroundColor: s.color } : {}}>
                     {s.name}
@@ -214,7 +214,7 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
 
             {/* Fields */}
             {editing ? (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+              <div className="bg-card border border-border rounded-xl p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <input className={inputCls} placeholder={t("crm.firstName")} value={form.first_name ?? ""} onChange={(e) => setForm(f => ({ ...f, first_name: e.target.value }))} />
                   <input className={inputCls} placeholder={t("crm.lastName")} value={form.last_name ?? ""} onChange={(e) => setForm(f => ({ ...f, last_name: e.target.value }))} />
@@ -232,28 +232,28 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
                 </div>
               </div>
             ) : (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-2 text-sm">
-                {contact.email && <div className="flex items-center gap-2 text-gray-300"><Mail className="w-3.5 h-3.5 text-gray-500" />{contact.email}</div>}
-                {contact.phone && <div className="flex items-center gap-2 text-gray-300"><Phone className="w-3.5 h-3.5 text-gray-500" />{contact.phone}</div>}
-                {contact.company && <div className="text-gray-400">{contact.company}</div>}
-                {contact.notes && <div className="text-gray-400 whitespace-pre-wrap pt-1 border-t border-gray-800">{contact.notes}</div>}
+              <div className="bg-card border border-border rounded-xl p-4 space-y-2 text-sm">
+                {contact.email && <div className="flex items-center gap-2 text-foreground/80"><Mail className="w-3.5 h-3.5 text-muted-foreground" />{contact.email}</div>}
+                {contact.phone && <div className="flex items-center gap-2 text-foreground/80"><Phone className="w-3.5 h-3.5 text-muted-foreground" />{contact.phone}</div>}
+                {contact.company && <div className="text-muted-foreground">{contact.company}</div>}
+                {contact.notes && <div className="text-muted-foreground whitespace-pre-wrap pt-1 border-t border-border">{contact.notes}</div>}
                 {!contact.email && !contact.phone && !contact.company && !contact.notes && (
-                  <div className="text-gray-600">{t("crm.noDetailsYet")}</div>
+                  <div className="text-muted-foreground">{t("crm.noDetailsYet")}</div>
                 )}
               </div>
             )}
 
             {/* Tasks */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2"><CheckSquare className="w-4 h-4 text-indigo-400" /> {t("crm.followUps")}</h3>
+            <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><CheckSquare className="w-4 h-4 text-primary" /> {t("crm.followUps")}</h3>
               {tasks.filter(tk => tk.status !== "cancelled").map((tk) => (
                 <div key={tk.id} className="flex items-center gap-2 text-sm">
                   <button onClick={() => toggleTask(tk)}
-                    className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center ${tk.status === "done" ? "bg-green-600 border-green-600" : "border-gray-600"}`}>
-                    {tk.status === "done" && <Check className="w-3 h-3 text-white" />}
+                    className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center ${tk.status === "done" ? "bg-green-600 border-green-600" : "border-border"}`}>
+                    {tk.status === "done" && <Check className="w-3 h-3 text-foreground" />}
                   </button>
-                  <span className={tk.status === "done" ? "line-through text-gray-600" : "text-gray-300"}>{tk.title}</span>
-                  <span className={`ml-auto text-xs ${new Date(tk.due_at) < new Date() && tk.status === "open" ? "text-red-400" : "text-gray-500"}`}>
+                  <span className={tk.status === "done" ? "line-through text-muted-foreground" : "text-foreground/80"}>{tk.title}</span>
+                  <span className={`ml-auto text-xs ${new Date(tk.due_at) < new Date() && tk.status === "open" ? "text-red-400" : "text-muted-foreground"}`}>
                     {new Date(tk.due_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
@@ -277,15 +277,15 @@ function ContactPanel({ contactId, stages, onClose, onChanged, onDeleted }: {
               </div>
               <div className="space-y-2">
                 {events.map((ev) => (
-                  <div key={ev.id} className="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2.5">
+                  <div key={ev.id} className="bg-card border border-border rounded-lg px-3 py-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-white font-medium">{ev.title}</span>
-                      <span className="text-xs text-gray-500">{timeAgo(ev.created_at, t)}</span>
+                      <span className="text-sm text-foreground font-medium">{ev.title}</span>
+                      <span className="text-xs text-muted-foreground">{timeAgo(ev.created_at, t)}</span>
                     </div>
-                    {ev.body && <p className="text-xs text-gray-400 mt-1 whitespace-pre-wrap">{ev.body}</p>}
+                    {ev.body && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{ev.body}</p>}
                   </div>
                 ))}
-                {!events.length && <p className="text-sm text-gray-600 text-center py-4">{t("crm.noActivityYet")}</p>}
+                {!events.length && <p className="text-sm text-muted-foreground text-center py-4">{t("crm.noActivityYet")}</p>}
               </div>
             </div>
           </div>
@@ -319,10 +319,10 @@ function AddContactModal({ stages, onClose, onCreated }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
+      <div className="relative w-full max-w-md bg-background border border-border rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{t("crm.newContact")}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground">{t("crm.newContact")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <input className={inputCls} placeholder={t("crm.firstName")} value={f.first_name} onChange={(e) => setF(p => ({ ...p, first_name: e.target.value }))} />
@@ -388,22 +388,22 @@ function StagesTab({ stages, onChange }: { stages: Stage[]; onChange: (s: Stage[
 
   return (
     <div className="max-w-xl space-y-4">
-      <div className="bg-gray-900 border border-gray-800 rounded-xl divide-y divide-gray-800">
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
         {stages.map((s, i) => (
           <div key={s.id} className="flex items-center gap-3 px-4 py-3">
-            <GripVertical className="w-4 h-4 text-gray-600" />
+            <GripVertical className="w-4 h-4 text-muted-foreground" />
             <input type="color" value={s.color} onChange={(e) => recolor(s.id, e.target.value)}
               className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
-            <input className="flex-1 bg-transparent text-sm text-white focus:outline-none"
+            <input className="flex-1 bg-transparent text-sm text-foreground focus:outline-none"
               defaultValue={s.name} onBlur={(e) => e.target.value !== s.name && rename(s.id, e.target.value)} />
             {(s.is_won || s.is_lost) && (
               <span className={`text-xs px-2 py-0.5 rounded-full ${s.is_won ? "bg-green-900/50 text-green-300" : "bg-red-900/50 text-red-300"}`}>
                 {s.is_won ? t("crm.won") : t("crm.lost")}
               </span>
             )}
-            <button disabled={i === 0} onClick={() => move(i, -1)} className="p-1 text-gray-500 hover:text-white disabled:opacity-30"><ChevronLeft className="w-4 h-4 rotate-90" /></button>
-            <button disabled={i === stages.length - 1} onClick={() => move(i, 1)} className="p-1 text-gray-500 hover:text-white disabled:opacity-30"><ChevronRight className="w-4 h-4 rotate-90" /></button>
-            <button onClick={() => remove(s.id)} className="p-1 text-gray-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+            <button disabled={i === 0} onClick={() => move(i, -1)} className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"><ChevronLeft className="w-4 h-4 rotate-90" /></button>
+            <button disabled={i === stages.length - 1} onClick={() => move(i, 1)} className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"><ChevronRight className="w-4 h-4 rotate-90" /></button>
+            <button onClick={() => remove(s.id)} className="p-1 text-muted-foreground hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>
@@ -499,17 +499,17 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Users className="w-6 h-6 text-indigo-400" /> {t("crm.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Users className="w-6 h-6 text-primary" /> {t("crm.title")}
         </h1>
         <button onClick={() => setShowAdd(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("crm.newContact")}</button>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-800">
+      <div className="flex gap-1 border-b border-border">
         {TABS.map(tabItem => (
           <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === tabItem.id ? "border-indigo-500 text-white" : "border-transparent text-gray-400 hover:text-gray-200"
+              tab === tabItem.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}>
             <tabItem.icon className="w-4 h-4" /> {tabItem.label}
             {"badge" in tabItem && !!tabItem.badge && (
@@ -523,7 +523,7 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
         <div className="space-y-4">
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-1 min-w-52">
-              <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <input className={`${inputCls} pl-9`} placeholder={t("crm.searchPlaceholder")}
                 value={q} onChange={(e) => onSearch(e.target.value)} />
             </div>
@@ -533,26 +533,26 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
             </select>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
             {loading ? (
-              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-500" /></div>
+              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
             ) : contacts.length === 0 ? (
-              <div className="text-center py-16 text-gray-500 text-sm">
+              <div className="text-center py-16 text-muted-foreground text-sm">
                 {t("crm.noContactsYet")}
               </div>
             ) : (
-              <div className="divide-y divide-gray-800">
+              <div className="divide-y divide-border">
                 {contacts.map((c) => {
                   const wa = waLink(c.whatsapp ?? c.phone);
                   return (
                     <div key={c.id} onClick={() => setOpenContact(c.id)}
-                      className="flex items-center gap-4 px-4 py-3 hover:bg-gray-800/60 cursor-pointer transition-colors">
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-muted cursor-pointer transition-colors">
                       <div className="w-9 h-9 rounded-full bg-indigo-600/20 text-indigo-300 flex items-center justify-center text-sm font-semibold shrink-0">
                         {contactName(c, t).charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-white truncate">{contactName(c, t)}</span>
+                          <span className="text-sm font-medium text-foreground truncate">{contactName(c, t)}</span>
                           {c.crm_stages && (
                             <span className="text-xs px-2 py-0.5 rounded-full shrink-0"
                               style={{ backgroundColor: c.crm_stages.color + "33", color: c.crm_stages.color }}>
@@ -560,15 +560,15 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-muted-foreground truncate">
                           {[c.email, c.phone, c.company].filter(Boolean).join(" · ") || sourceLabels(t)[c.source]}
                         </div>
                       </div>
-                      <span className="text-xs text-gray-600 shrink-0 hidden sm:block">{timeAgo(c.last_activity_at, t)}</span>
+                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">{timeAgo(c.last_activity_at, t)}</span>
                       <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        {c.phone && <a href={`tel:${c.phone}`} className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-700"><Phone className="w-4 h-4" /></a>}
-                        {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-700"><MessageCircle className="w-4 h-4" /></a>}
-                        {c.email && <a href={`mailto:${c.email}`} className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-700"><Mail className="w-4 h-4" /></a>}
+                        {c.phone && <a href={`tel:${c.phone}`} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted-foreground/20"><Phone className="w-4 h-4" /></a>}
+                        {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="p-2 text-muted-foreground hover:text-green-400 rounded-lg hover:bg-muted-foreground/20"><MessageCircle className="w-4 h-4" /></a>}
+                        {c.email && <a href={`mailto:${c.email}`} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted-foreground/20"><Mail className="w-4 h-4" /></a>}
                       </div>
                     </div>
                   );
@@ -578,7 +578,7 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between text-sm text-gray-400">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{t("crm.contactsCount", { count: total })}</span>
               <div className="flex items-center gap-2">
                 <button disabled={page === 0} onClick={() => onPage(page - 1)} className={`${btnGhost} disabled:opacity-40`}><ChevronLeft className="w-4 h-4" /></button>
@@ -601,17 +601,17 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
                   onDrop={(e) => { const id = e.dataTransfer.getData("contactId"); if (id) dropOnStage(id, s.id); }}>
                   <div className="flex items-center gap-2 mb-2 px-1">
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                    <span className="text-sm font-semibold text-white">{s.name}</span>
-                    <span className="text-xs text-gray-500">{inStage.length}</span>
+                    <span className="text-sm font-semibold text-foreground">{s.name}</span>
+                    <span className="text-xs text-muted-foreground">{inStage.length}</span>
                   </div>
-                  <div className="space-y-2 min-h-24 bg-gray-900/50 border border-gray-800 rounded-xl p-2">
+                  <div className="space-y-2 min-h-24 bg-card border border-border rounded-xl p-2">
                     {inStage.map((c) => (
                       <div key={c.id} draggable
                         onDragStart={(e) => e.dataTransfer.setData("contactId", c.id)}
                         onClick={() => setOpenContact(c.id)}
-                        className="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2.5 cursor-pointer hover:border-gray-600 transition-colors">
-                        <div className="text-sm font-medium text-white truncate">{contactName(c, t)}</div>
-                        <div className="text-xs text-gray-500 truncate">{c.email ?? c.phone ?? ""}</div>
+                        className="bg-card border border-border rounded-lg px-3 py-2.5 cursor-pointer hover:border-border transition-colors">
+                        <div className="text-sm font-medium text-foreground truncate">{contactName(c, t)}</div>
+                        <div className="text-xs text-muted-foreground truncate">{c.email ?? c.phone ?? ""}</div>
                       </div>
                     ))}
                   </div>
@@ -619,34 +619,34 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
               );
             })}
           </div>
-          <p className="text-xs text-gray-600 mt-3">{t("crm.dragHint")}</p>
+          <p className="text-xs text-muted-foreground mt-3">{t("crm.dragHint")}</p>
         </div>
       )}
 
       {tab === "tasks" && (
         <div className="max-w-2xl space-y-2">
           {tasks.filter(tk => tk.status === "open").length === 0 ? (
-            <div className="text-center py-16 text-gray-500 text-sm">{t("crm.noOpenFollowUps")}</div>
+            <div className="text-center py-16 text-muted-foreground text-sm">{t("crm.noOpenFollowUps")}</div>
           ) : tasks.filter(tk => tk.status === "open").map((tk) => {
             const overdue = new Date(tk.due_at) < new Date();
             const wa = tk.contacts ? waLink(tk.contacts.whatsapp ?? tk.contacts.phone) : null;
             return (
-              <div key={tk.id} className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+              <div key={tk.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
                 <button onClick={() => completeTask(tk)}
-                  className="w-5 h-5 rounded-full border border-gray-600 hover:border-green-500 hover:bg-green-500/20 shrink-0 transition-colors" />
+                  className="w-5 h-5 rounded-full border border-border hover:border-green-500 hover:bg-green-500/20 shrink-0 transition-colors" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm text-white truncate">{tk.title}</div>
-                  <div className="text-xs text-gray-500 truncate">
+                  <div className="text-sm text-foreground truncate">{tk.title}</div>
+                  <div className="text-xs text-muted-foreground truncate">
                     {tk.contacts ? contactName(tk.contacts, t) : t("crm.noContact")}
                   </div>
                 </div>
-                <span className={`text-xs flex items-center gap-1 shrink-0 ${overdue ? "text-red-400" : "text-gray-500"}`}>
+                <span className={`text-xs flex items-center gap-1 shrink-0 ${overdue ? "text-red-400" : "text-muted-foreground"}`}>
                   <Clock className="w-3.5 h-3.5" />
                   {new Date(tk.due_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  {tk.contacts?.phone && <a href={`tel:${tk.contacts.phone}`} className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-700"><Phone className="w-4 h-4" /></a>}
-                  {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-700"><MessageCircle className="w-4 h-4" /></a>}
+                  {tk.contacts?.phone && <a href={`tel:${tk.contacts.phone}`} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted-foreground/20"><Phone className="w-4 h-4" /></a>}
+                  {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="p-2 text-muted-foreground hover:text-green-400 rounded-lg hover:bg-muted-foreground/20"><MessageCircle className="w-4 h-4" /></a>}
                 </div>
               </div>
             );

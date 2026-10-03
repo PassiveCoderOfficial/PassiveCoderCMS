@@ -64,55 +64,55 @@ function PackageEditor({ pkg: initial, tableId, onSave, onCancel }: {
   }
 
   return (
-    <div className="border border-indigo-500/30 rounded-xl p-4 space-y-3 bg-indigo-950/20">
+    <div className="border border-primary/30 rounded-xl p-4 space-y-3 bg-indigo-950/20">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.planName")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.planName")}</label>
           <input value={pkg.name ?? ""} onChange={e => set("name", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("pricingMgr.planNamePlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("pricingMgr.planNamePlaceholder")} />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.badge")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.badge")}</label>
           <input value={pkg.badge ?? ""} onChange={e => set("badge", e.target.value || null)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("pricingMgr.badgePlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("pricingMgr.badgePlaceholder")} />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.price")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.price")}</label>
           <input value={pkg.price ?? ""} onChange={e => set("price", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("pricingMgr.pricePlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("pricingMgr.pricePlaceholder")} />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.priceSuffix")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.priceSuffix")}</label>
           <input value={pkg.price_suffix ?? ""} onChange={e => set("price_suffix", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("pricingMgr.priceSuffixPlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("pricingMgr.priceSuffixPlaceholder")} />
         </div>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.description")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.description")}</label>
         <textarea rows={2} value={pkg.description ?? ""} onChange={e => set("description", e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.featuresOnePerLine")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.featuresOnePerLine")}</label>
         <textarea rows={5} value={featuresText} onChange={e => setFeaturesText(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none font-mono"
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none font-mono"
           placeholder={t("pricingMgr.featuresPlaceholder")} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.ctaLabel")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.ctaLabel")}</label>
           <input value={pkg.cta_label ?? ""} onChange={e => set("cta_label", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("pricingMgr.ctaLabelPlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("pricingMgr.ctaLabelPlaceholder")} />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("pricingMgr.ctaUrl")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("pricingMgr.ctaUrl")}</label>
           <input value={pkg.cta_url ?? ""} onChange={e => set("cta_url", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("pricingMgr.ctaUrlPlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("pricingMgr.ctaUrlPlaceholder")} />
         </div>
       </div>
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="checkbox" checked={pkg.is_featured ?? false} onChange={e => set("is_featured", e.target.checked)} className="w-4 h-4 rounded" />
-        <span className="text-sm text-gray-300 flex items-center gap-1">
+        <span className="text-sm text-foreground/80 flex items-center gap-1">
           <Star className="w-3.5 h-3.5 text-yellow-400" /> {t("pricingMgr.featuredPlan")}
         </span>
       </label>
@@ -121,7 +121,7 @@ function PackageEditor({ pkg: initial, tableId, onSave, onCancel }: {
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
           {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("pricingMgr.save")}
         </button>
-        <button onClick={onCancel} className="flex items-center gap-1.5 bg-gray-700 text-white text-xs px-3 py-1.5 rounded">
+        <button onClick={onCancel} className="flex items-center gap-1.5 bg-muted-foreground/20 text-foreground text-xs px-3 py-1.5 rounded">
           <X className="w-3 h-3" /> {t("pricingMgr.cancel")}
         </button>
       </div>
@@ -156,32 +156,32 @@ function TableCard({ table, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
-        <button onClick={() => setOpen(o => !o)} className="text-gray-400">
+        <button onClick={() => setOpen(o => !o)} className="text-muted-foreground">
           {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
         {editingName ? (
           <div className="flex items-center gap-2 flex-1">
             <input autoFocus value={name} onChange={e => setName(e.target.value)}
-              className="flex-1 bg-gray-800 border border-indigo-500 rounded px-2 py-1 text-sm text-white focus:outline-none" />
-            <button onClick={saveName}><Check className="w-4 h-4 text-indigo-400" /></button>
-            <button onClick={() => { setEditingName(false); setName(table.name); }}><X className="w-4 h-4 text-gray-400" /></button>
+              className="flex-1 bg-muted border border-primary rounded px-2 py-1 text-sm text-foreground focus:outline-none" />
+            <button onClick={saveName}><Check className="w-4 h-4 text-primary" /></button>
+            <button onClick={() => { setEditingName(false); setName(table.name); }}><X className="w-4 h-4 text-muted-foreground" /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2 flex-1">
-            <span className="font-medium text-white text-sm">{table.name}</span>
-            <span className="text-xs text-gray-500">/{table.slug}</span>
-            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-gray-500" /></button>
+            <span className="font-medium text-foreground text-sm">{table.name}</span>
+            <span className="text-xs text-muted-foreground">/{table.slug}</span>
+            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-muted-foreground" /></button>
           </div>
         )}
-        <span className="text-xs text-gray-500">{t("pricingMgr.plansCount", { count: table.pricing_packages.length })}</span>
+        <span className="text-xs text-muted-foreground">{t("pricingMgr.plansCount", { count: table.pricing_packages.length })}</span>
         <button onClick={() => { if (confirm(t("pricingMgr.deleteTableConfirm", { name: table.name }))) { api("DELETE", undefined, { type: "table", id: table.id }); onDelete(table.id); } }}
-          className="text-gray-600 hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
+          className="text-muted-foreground hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
       </div>
 
       {open && (
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-border">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-3">
             {table.pricing_packages.map(pkg => (
               editingPkg === pkg.id ? (
@@ -190,24 +190,24 @@ function TableCard({ table, onUpdate, onDelete }: {
                     onSave={(u, isNew) => handlePkgSaved(u, isNew)} onCancel={() => setEditingPkg(null)} />
                 </div>
               ) : (
-                <div key={pkg.id} className={`relative rounded-xl p-4 border group/pkg ${pkg.is_featured ? "border-indigo-500 bg-indigo-950/30" : "border-gray-700 bg-gray-800/50"}`}>
+                <div key={pkg.id} className={`relative rounded-xl p-4 border group/pkg ${pkg.is_featured ? "border-primary bg-indigo-950/30" : "border-border bg-muted"}`}>
                   {pkg.badge && (
                     <span className="absolute -top-2.5 left-4 text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full">{pkg.badge}</span>
                   )}
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-semibold text-white">{pkg.name}</p>
-                      <p className="text-2xl font-bold text-white mt-1">{pkg.price}<span className="text-sm text-gray-400 font-normal">{pkg.price_suffix}</span></p>
+                      <p className="font-semibold text-foreground">{pkg.name}</p>
+                      <p className="text-2xl font-bold text-foreground mt-1">{pkg.price}<span className="text-sm text-muted-foreground font-normal">{pkg.price_suffix}</span></p>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover/pkg:opacity-100 transition-opacity">
-                      <button onClick={() => setEditingPkg(pkg.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => deletePkg(pkg.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => setEditingPkg(pkg.id)} className="text-muted-foreground hover:text-foreground p-1"><Pencil className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => deletePkg(pkg.id)} className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   </div>
-                  {pkg.description && <p className="text-xs text-gray-400 mt-1">{pkg.description}</p>}
+                  {pkg.description && <p className="text-xs text-muted-foreground mt-1">{pkg.description}</p>}
                   <ul className="mt-2 space-y-1">
-                    {pkg.features.slice(0, 4).map((f, i) => <li key={i} className="text-xs text-gray-300 flex items-center gap-1.5"><Check className="w-3 h-3 text-green-400 flex-shrink-0" />{f}</li>)}
-                    {pkg.features.length > 4 && <li className="text-xs text-gray-500">{t("pricingMgr.moreFeatures", { count: pkg.features.length - 4 })}</li>}
+                    {pkg.features.slice(0, 4).map((f, i) => <li key={i} className="text-xs text-foreground/80 flex items-center gap-1.5"><Check className="w-3 h-3 text-green-400 flex-shrink-0" />{f}</li>)}
+                    {pkg.features.length > 4 && <li className="text-xs text-muted-foreground">{t("pricingMgr.moreFeatures", { count: pkg.features.length - 4 })}</li>}
                   </ul>
                 </div>
               )
@@ -219,7 +219,7 @@ function TableCard({ table, onUpdate, onDelete }: {
               onSave={(pkg, isNew) => handlePkgSaved(pkg, isNew)} onCancel={() => setAddingPkg(false)} />
           ) : (
             <button onClick={() => setAddingPkg(true)}
-              className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
+              className="w-full flex items-center gap-2 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-primary transition-colors">
               <Plus className="w-4 h-4" /> {t("pricingMgr.addPlan")}
             </button>
           )}
@@ -250,10 +250,10 @@ export default function PricingManagerClient({ initialTables }: { initialTables:
     <div className="p-6 max-w-5xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <DollarSign className="w-6 h-6 text-indigo-400" /> {t("pricingMgr.title")}
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <DollarSign className="w-6 h-6 text-primary" /> {t("pricingMgr.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">{t("pricingMgr.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("pricingMgr.subtitle")}</p>
         </div>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
           <Plus className="w-4 h-4" /> {t("pricingMgr.newTable")}
@@ -261,23 +261,23 @@ export default function PricingManagerClient({ initialTables }: { initialTables:
       </div>
 
       {creating && (
-        <div className="bg-gray-900 border border-indigo-500/40 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-card border border-primary/40 rounded-xl p-4 flex items-center gap-3">
           <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") createTable(); if (e.key === "Escape") setCreating(false); }}
             placeholder={t("pricingMgr.tableNamePlaceholder")}
-            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="flex-1 bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
           <button onClick={createTable} disabled={saving || !newName.trim()}
             className="flex items-center gap-1.5 bg-indigo-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("pricingMgr.create")}
           </button>
-          <button onClick={() => setCreating(false)} className="text-gray-400"><X className="w-5 h-5" /></button>
+          <button onClick={() => setCreating(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
         </div>
       )}
 
       {tables.length === 0 && !creating ? (
-        <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
-          <DollarSign className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">{t("pricingMgr.noTablesYet")}</p>
+        <div className="text-center py-16 border border-dashed border-border rounded-xl">
+          <DollarSign className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{t("pricingMgr.noTablesYet")}</p>
         </div>
       ) : (
         <div className="space-y-4">

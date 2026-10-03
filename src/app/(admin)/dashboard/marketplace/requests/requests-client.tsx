@@ -18,14 +18,14 @@ interface ServiceRequest {
 }
 
 const STATUS_META: Record<ServiceRequest["status"], { labelKey: TranslationKey; cls: string }> = {
-  open: { labelKey: "mpRequests.statusOpen", cls: "bg-gray-800 text-gray-400 border-gray-700" },
+  open: { labelKey: "mpRequests.statusOpen", cls: "bg-muted text-muted-foreground border-border" },
   claimed: { labelKey: "mpRequests.statusClaimed", cls: "bg-blue-900/50 text-blue-300 border-blue-700/50" },
   fulfilled: { labelKey: "mpRequests.statusFulfilled", cls: "bg-green-900/50 text-green-300 border-green-700/50" },
-  cancelled: { labelKey: "mpRequests.statusCancelled", cls: "bg-gray-800 text-gray-500 border-gray-700" },
-  archived: { labelKey: "mpRequests.statusArchived", cls: "bg-gray-800 text-gray-500 border-gray-700" },
+  cancelled: { labelKey: "mpRequests.statusCancelled", cls: "bg-muted text-muted-foreground border-border" },
+  archived: { labelKey: "mpRequests.statusArchived", cls: "bg-muted text-muted-foreground border-border" },
 };
 
-const btnGhost = "inline-flex items-center gap-1.5 border border-gray-700 hover:bg-gray-800 text-gray-300 px-2.5 py-1.5 rounded-lg text-xs transition-colors";
+const btnGhost = "inline-flex items-center gap-1.5 border border-border hover:bg-muted text-foreground/80 px-2.5 py-1.5 rounded-lg text-xs transition-colors";
 
 /** wa.me deep link with the request brief prefilled — no WhatsApp API needed,
  *  same pattern as staffWaLink() in src/app/(admin)/dashboard/jobs/jobs-client.tsx. */
@@ -63,28 +63,28 @@ export default function RequestsClient({ initialRequests, vendors }: { initialRe
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <AlertTriangle className="w-6 h-6 text-indigo-400" /> {t("mpRequests.title")}
+      <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+        <AlertTriangle className="w-6 h-6 text-primary" /> {t("mpRequests.title")}
       </h1>
-      <p className="text-sm text-gray-500">{t("mpRequests.subtitle")}</p>
+      <p className="text-sm text-muted-foreground">{t("mpRequests.subtitle")}</p>
 
       <div className="flex gap-2 flex-wrap">
         {(["open", "claimed", "fulfilled", "cancelled", "all"] as const).map(s => (
           <button key={s} onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400 hover:border-gray-500"
+              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground hover:border-gray-500"
             }`}>{t(FILTER_KEY[s])}</button>
         ))}
       </div>
 
       <div className="space-y-3">
         {shown.length === 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl text-center py-16 text-gray-500 text-sm">
+          <div className="bg-card border border-border rounded-xl text-center py-16 text-muted-foreground text-sm">
             {t("mpRequests.noRequestsHere")}
           </div>
         )}
         {shown.map((r) => (
-          <div key={r.id} className={`bg-gray-900 border rounded-xl p-4 space-y-3 ${r.urgency === "urgent" ? "border-red-700/50" : "border-gray-800"}`}>
+          <div key={r.id} className={`bg-card border rounded-xl p-4 space-y-3 ${r.urgency === "urgent" ? "border-red-700/50" : "border-border"}`}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -93,17 +93,17 @@ export default function RequestsClient({ initialRequests, vendors }: { initialRe
                       <AlertTriangle className="w-3 h-3" /> {t("mpRequests.urgent")}
                     </span>
                   )}
-                  <span className="text-sm font-semibold text-white">{r.service_subcategories?.name ?? t("mpRequests.service")}</span>
+                  <span className="text-sm font-semibold text-foreground">{r.service_subcategories?.name ?? t("mpRequests.service")}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_META[r.status].cls}`}>{t(STATUS_META[r.status].labelKey)}</span>
                   {r.urgency === "urgent" && r.notified_count > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs text-gray-500"><Clock className="w-3 h-3" /> {t("mpRequests.notifiedCount", { count: r.notified_count })}</span>
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="w-3 h-3" /> {t("mpRequests.notifiedCount", { count: r.notified_count })}</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-500 mt-1 flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                   {r.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{r.address}</span>}
                   {r.customer_name && <span>{r.customer_name}</span>}
                 </div>
-                {r.description && <p className="text-xs text-gray-400 mt-1.5">{r.description}</p>}
+                {r.description && <p className="text-xs text-muted-foreground mt-1.5">{r.description}</p>}
               </div>
             </div>
 
@@ -120,7 +120,7 @@ export default function RequestsClient({ initialRequests, vendors }: { initialRe
                 </>
               )}
 
-              <select className="bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+              <select className="bg-muted border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                 value={r.claimed_by_vendor_id ?? ""} disabled={busy === r.id}
                 onChange={(e) => patch(r, { claimed_by_vendor_id: e.target.value || null })}>
                 <option value="">{t("mpRequests.unclaimed")}</option>
@@ -141,7 +141,7 @@ export default function RequestsClient({ initialRequests, vendors }: { initialRe
                 )}
                 {!["fulfilled", "cancelled"].includes(r.status) && (
                   <button disabled={busy === r.id} onClick={() => patch(r, { status: "cancelled" })}
-                    className="inline-flex items-center gap-1.5 text-xs text-gray-400 border border-gray-700 hover:bg-gray-800 px-2.5 py-1.5 rounded-lg transition-colors">
+                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-border hover:bg-muted px-2.5 py-1.5 rounded-lg transition-colors">
                     <Ban className="w-3.5 h-3.5" /> {t("mpRequests.cancel")}
                   </button>
                 )}

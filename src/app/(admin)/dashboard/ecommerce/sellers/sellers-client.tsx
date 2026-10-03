@@ -35,11 +35,11 @@ function statusMeta(t: TFn): Record<Seller["status"], { label: string; cls: stri
 }
 
 const inputCls =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+  "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary =
   "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
 const btnGhost =
-  "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
+  "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
 
 function NewSellerModal({
   onClose,
@@ -75,10 +75,10 @@ function NewSellerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">{t("sellers.newSellerTitle")}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
+          <h2 className="text-lg font-semibold text-foreground">{t("sellers.newSellerTitle")}</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground/80">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -165,10 +165,10 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Store className="w-6 h-6 text-indigo-400" /> {t("sellers.title")}
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Store className="w-6 h-6 text-primary" /> {t("sellers.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {t("sellers.subtitle")}
           </p>
         </div>
@@ -186,8 +186,8 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
               onClick={() => setFilter(k)}
               className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                 filter === k
-                  ? "bg-indigo-600 border-indigo-500 text-white"
-                  : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                  ? "bg-indigo-600 border-primary text-white"
+                  : "border-border text-muted-foreground hover:bg-muted"
               }`}
             >
               {label} ({counts[k]})
@@ -195,7 +195,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
           );
         })}
         <div className="relative ml-auto">
-          <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             className={`${inputCls} pl-9 w-64`}
             placeholder={t("sellers.searchPlaceholder")}
@@ -206,7 +206,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
       </div>
 
       {shown.length === 0 ? (
-        <div className="border border-gray-800 rounded-xl p-10 text-center text-gray-500">
+        <div className="border border-border rounded-xl p-10 text-center text-muted-foreground">
           {t("sellers.noSellersYet")}
         </div>
       ) : (
@@ -214,11 +214,11 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
           {shown.map((s) => {
             const meta = statusMeta(t)[s.status];
             return (
-              <div key={s.id} className="border border-gray-800 rounded-xl p-4 bg-gray-900/40 space-y-3">
+              <div key={s.id} className="border border-border rounded-xl p-4 bg-card space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-white truncate">{s.name}</h3>
-                    {s.slug && <p className="text-xs text-gray-500 truncate">/shop/{s.slug}</p>}
+                    <h3 className="font-semibold text-foreground truncate">{s.name}</h3>
+                    {s.slug && <p className="text-xs text-muted-foreground truncate">/shop/{s.slug}</p>}
                   </div>
                   <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full border ${meta.cls}`}>
                     {meta.label}
@@ -226,10 +226,10 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                 </div>
 
                 {s.description && (
-                  <p className="text-sm text-gray-400 line-clamp-2">{s.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{s.description}</p>
                 )}
 
-                <div className="space-y-1 text-sm text-gray-400">
+                <div className="space-y-1 text-sm text-muted-foreground">
                   {s.contact_name && <p className="truncate">{s.contact_name}</p>}
                   {s.phone && (
                     <p className="flex items-center gap-2 truncate">
@@ -248,7 +248,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                   )}
                   <p className="flex items-center gap-2">
                     <Percent className="w-3.5 h-3.5 shrink-0" /> {Number(s.commission_rate)}{t("sellers.commissionSuffix")}
-                    <span className="text-gray-600">·</span>
+                    <span className="text-muted-foreground">·</span>
                     <Clock className="w-3.5 h-3.5 shrink-0" /> {s.payout_hold_days}{t("sellers.holdSuffix")}
                   </p>
                 </div>
@@ -272,7 +272,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                       <Ban className="w-3.5 h-3.5" /> {t("sellers.suspend")}
                     </button>
                   )}
-                  <label className="inline-flex items-center gap-1.5 text-xs text-gray-500 ml-auto">
+                  <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
                     {t("sellers.commissionLabel")}
                     <input
                       type="number"
@@ -281,7 +281,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
                         const v = Number(e.target.value);
                         if (v !== Number(s.commission_rate)) patch(s.id, { commission_rate: v });
                       }}
-                      className="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-xs"
+                      className="w-16 bg-muted border border-border rounded px-2 py-1 text-foreground text-xs"
                     />
                     %
                   </label>

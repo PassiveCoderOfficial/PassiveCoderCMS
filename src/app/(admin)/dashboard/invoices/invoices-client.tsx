@@ -19,16 +19,16 @@ interface Invoice {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-800 text-gray-400 border-gray-700",
+  draft: "bg-muted text-muted-foreground border-border",
   sent: "bg-blue-900/50 text-blue-300 border-blue-700/50",
   paid: "bg-green-900/50 text-green-300 border-green-700/50",
   overdue: "bg-red-900/50 text-red-300 border-red-700/50",
-  cancelled: "bg-gray-800 text-gray-500 border-gray-700",
+  cancelled: "bg-muted text-muted-foreground border-border",
 };
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
-const btnGhost = "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
+const btnGhost = "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
 
 function money(n: number, currency: string) {
   try {
@@ -76,10 +76,10 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{t("invoices.newInvoice")}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground">{t("invoices.newInvoice")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
 
         <div className="grid sm:grid-cols-3 gap-3">
@@ -92,7 +92,7 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
         </div>
 
         <div className="space-y-2">
-          <div className="grid grid-cols-[1fr_70px_100px_32px] gap-2 text-xs text-gray-500 px-1">
+          <div className="grid grid-cols-[1fr_70px_100px_32px] gap-2 text-xs text-muted-foreground px-1">
             <span>{t("invoices.colDescription")}</span><span>{t("invoices.colQty")}</span><span>{t("invoices.colUnitPrice")}</span><span />
           </div>
           {items.map((item, i) => (
@@ -105,7 +105,7 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
                 onChange={(e) => setItem(i, { unit_price: Number(e.target.value) })} />
               <button onClick={() => setItems(l => l.filter((_, j) => j !== i))}
                 disabled={items.length === 1}
-                className="text-gray-500 hover:text-red-400 disabled:opacity-30"><Trash2 className="w-4 h-4 mx-auto" /></button>
+                className="text-muted-foreground hover:text-red-400 disabled:opacity-30"><Trash2 className="w-4 h-4 mx-auto" /></button>
             </div>
           ))}
           <button onClick={() => setItems(l => [...l, { description: "", quantity: 1, unit_price: 0 }])}
@@ -114,27 +114,27 @@ function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
 
         <div className="grid sm:grid-cols-4 gap-3">
           <div>
-            <label className="text-xs text-gray-500">{t("invoices.discount")}</label>
+            <label className="text-xs text-muted-foreground">{t("invoices.discount")}</label>
             <input className={inputCls} type="number" min={0} step="0.01" value={discount} onChange={(e) => setDiscount(Number(e.target.value) || 0)} />
           </div>
           <div>
-            <label className="text-xs text-gray-500">{t("invoices.tax")}</label>
+            <label className="text-xs text-muted-foreground">{t("invoices.tax")}</label>
             <input className={inputCls} type="number" min={0} step="0.01" value={tax} onChange={(e) => setTax(Number(e.target.value) || 0)} />
           </div>
           <div>
-            <label className="text-xs text-gray-500">{t("invoices.currency")}</label>
+            <label className="text-xs text-muted-foreground">{t("invoices.currency")}</label>
             <input className={inputCls} value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
           </div>
           <div>
-            <label className="text-xs text-gray-500">{t("invoices.dueDate")}</label>
+            <label className="text-xs text-muted-foreground">{t("invoices.dueDate")}</label>
             <input className={inputCls} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
         </div>
 
         <textarea className={inputCls} rows={2} placeholder={t("invoices.notesPlaceholder")} value={notes} onChange={(e) => setNotes(e.target.value)} />
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-800">
-          <span className="text-sm text-gray-400">{t("invoices.total")} <span className="text-white font-bold">{money(total, currency)}</span></span>
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <span className="text-sm text-muted-foreground">{t("invoices.total")} <span className="text-foreground font-bold">{money(total, currency)}</span></span>
           <div className="flex items-center gap-3">
             {error && <p className="text-sm text-red-400">{error}</p>}
             <button onClick={save} disabled={saving} className={btnPrimary}>
@@ -197,19 +197,19 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <FileText className="w-6 h-6 text-indigo-400" /> {t("invoices.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <FileText className="w-6 h-6 text-primary" /> {t("invoices.title")}
         </h1>
         <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("invoices.newInvoice")}</button>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4 max-w-lg">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">{t("invoices.outstanding")}</p>
-          <p className="text-xl font-bold text-white">{money(outstanding, baseCurrency)}</p>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">{t("invoices.outstanding")}</p>
+          <p className="text-xl font-bold text-foreground">{money(outstanding, baseCurrency)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">{t("invoices.paidThisMonth")}</p>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">{t("invoices.paidThisMonth")}</p>
           <p className="text-xl font-bold text-green-400">{money(paidThisMonth, baseCurrency)}</p>
         </div>
       </div>
@@ -218,56 +218,56 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
         {(["all", "draft", "sent", "paid", "overdue", "cancelled"] as const).map(s => (
           <button key={s} onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400 hover:border-gray-500"
+              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground hover:border-gray-500"
             }`}>{t(STATUS_KEY[s])}</button>
         ))}
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         {shown.length === 0 ? (
-          <div className="text-center py-16 text-gray-500 text-sm">{t("invoices.noInvoicesYet")}</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">{t("invoices.noInvoicesYet")}</div>
         ) : (
-          <div className="divide-y divide-gray-800">
+          <div className="divide-y divide-border">
             {shown.map((inv) => (
               <div key={inv.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white">{inv.invoice_number}</span>
+                    <span className="text-sm font-medium text-foreground">{inv.invoice_number}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[inv.status]}`}>{t(STATUS_KEY[inv.status] ?? "invoices.statusDraft")}</span>
                   </div>
-                  <div className="text-xs text-gray-500 truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {inv.customer_name}{inv.due_date ? t("invoices.dueDateInline", { date: inv.due_date }) : ""}
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-white shrink-0">{money(inv.total, inv.currency)}</span>
+                <span className="text-sm font-semibold text-foreground shrink-0">{money(inv.total, inv.currency)}</span>
                 <div className="flex items-center gap-1 shrink-0">
                   {inv.status !== "paid" && inv.status !== "cancelled" && (
                     <>
                       {inv.customer_email && (
                         <button title={inv.sent_at ? t("invoices.resend") : t("invoices.sendToCustomer")} disabled={busy === inv.id}
                           onClick={() => action(inv, { action: "send" })}
-                          className="p-2 text-gray-500 hover:text-indigo-400 rounded-lg hover:bg-gray-800">
+                          className="p-2 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted">
                           {busy === inv.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </button>
                       )}
                       <button title={t("invoices.markPaid")} disabled={busy === inv.id}
                         onClick={() => action(inv, { status: "paid" })}
-                        className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-800">
+                        className="p-2 text-muted-foreground hover:text-green-400 rounded-lg hover:bg-muted">
                         <Check className="w-4 h-4" />
                       </button>
                     </>
                   )}
                   <button title={copied === inv.id ? t("invoices.copied") : t("invoices.copyPublicLink")}
                     onClick={() => copyLink(inv)}
-                    className={`p-2 rounded-lg hover:bg-gray-800 ${copied === inv.id ? "text-green-400" : "text-gray-500 hover:text-white"}`}>
+                    className={`p-2 rounded-lg hover:bg-muted ${copied === inv.id ? "text-green-400" : "text-muted-foreground hover:text-foreground"}`}>
                     <Copy className="w-4 h-4" />
                   </button>
                   <a title={t("invoices.openPublicView")} href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer"
-                    className="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-gray-800">
+                    className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted">
                     <ExternalLink className="w-4 h-4" />
                   </a>
                   <button title={t("invoices.delete")} onClick={() => del(inv)}
-                    className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-gray-800">
+                    className="p-2 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

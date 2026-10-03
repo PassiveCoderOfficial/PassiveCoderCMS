@@ -27,9 +27,9 @@ const STATUS_META: Record<Vendor["status"], { labelKey: TranslationKey; cls: str
   suspended: { labelKey: "mpVendors.statusSuspended", cls: "bg-red-900/50 text-red-300 border-red-700/50" },
 };
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
-const btnGhost = "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
+const btnGhost = "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
 
 function NewVendorModal({ onClose, onCreated }: { onClose: () => void; onCreated: (v: Vendor) => void }) {
   const t = useT();
@@ -54,10 +54,10 @@ function NewVendorModal({ onClose, onCreated }: { onClose: () => void; onCreated
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{t("mpVendors.newVendorTitle")}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground">{t("mpVendors.newVendorTitle")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
         <input className={inputCls} placeholder={t("mpVendors.companyNamePlaceholder")} value={f.name}
           onChange={(e) => setF(p => ({ ...p, name: e.target.value }))} />
@@ -72,13 +72,13 @@ function NewVendorModal({ onClose, onCreated }: { onClose: () => void; onCreated
         <input className={inputCls} placeholder={t("mpVendors.addressPlaceholder")} value={f.address}
           onChange={(e) => setF(p => ({ ...p, address: e.target.value }))} />
         <div>
-          <label className="text-xs text-gray-400">{t("mpVendors.pinLocationHint")}</label>
+          <label className="text-xs text-muted-foreground">{t("mpVendors.pinLocationHint")}</label>
           <div className="mt-1">
             <MapPicker value={pin} onChange={setPin} defaultCenter={MAP_DEFAULT_CENTER} defaultZoom={11} height={200} />
           </div>
         </div>
         <div>
-          <label className="text-xs text-gray-400">{t("mpVendors.commissionRate")}</label>
+          <label className="text-xs text-muted-foreground">{t("mpVendors.commissionRate")}</label>
           <input className={inputCls} type="number" min={0} max={100} step="0.5" value={f.commission_rate}
             onChange={(e) => setF(p => ({ ...p, commission_rate: e.target.value }))} />
         </div>
@@ -130,25 +130,25 @@ function ServicesModal({ vendor, categories, onClose }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2"><Wrench className="w-4 h-4 text-indigo-400" /> {t("mpVendors.servicesModalTitle", { name: vendor.name })}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2"><Wrench className="w-4 h-4 text-primary" /> {t("mpVendors.servicesModalTitle", { name: vendor.name })}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
-        {loading && <div className="text-center py-8 text-gray-500 text-sm">{t("mpVendors.loading")}</div>}
+        {loading && <div className="text-center py-8 text-muted-foreground text-sm">{t("mpVendors.loading")}</div>}
         {!loading && categories.map((cat) => (
           <div key={cat.id} className="space-y-1.5">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{cat.name}</div>
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat.name}</div>
             {cat.service_subcategories.map((sub) => {
               const vs = byId.get(sub.id);
               return (
-                <div key={sub.id} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2">
+                <div key={sub.id} className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
                   <input type="checkbox" checked={!!vs} onChange={(e) => toggle(sub.id, e.target.checked)} className="accent-indigo-500" />
-                  <span className="text-sm text-gray-200 flex-1">{sub.name}</span>
+                  <span className="text-sm text-foreground flex-1">{sub.name}</span>
                   {vs && (
                     <input type="number" min={0} step="0.01" placeholder={t("mpVendors.pricePlaceholder")} defaultValue={vs.price ?? ""}
                       onBlur={(e) => setPrice(sub.id, e.target.value)}
-                      className="w-24 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white" />
+                      className="w-24 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground" />
                   )}
                 </div>
               );
@@ -156,7 +156,7 @@ function ServicesModal({ vendor, categories, onClose }: {
           </div>
         ))}
         {!loading && categories.length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-6">{t("mpVendors.noCategoriesYet")}</p>
+          <p className="text-sm text-muted-foreground text-center py-6">{t("mpVendors.noCategoriesYet")}</p>
         )}
       </div>
     </div>
@@ -227,54 +227,54 @@ function AvailabilityModal({ vendor, onClose }: { vendor: Vendor; onClose: () =>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2"><CalendarDays className="w-4 h-4 text-indigo-400" /> {t("mpVendors.availabilityModalTitle", { name: vendor.name })}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2"><CalendarDays className="w-4 h-4 text-primary" /> {t("mpVendors.availabilityModalTitle", { name: vendor.name })}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
 
         {!days ? (
-          <div className="text-center py-8 text-gray-500 text-sm">{t("mpVendors.loading")}</div>
+          <div className="text-center py-8 text-muted-foreground text-sm">{t("mpVendors.loading")}</div>
         ) : (
           <>
             <div className="space-y-1.5">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("mpVendors.weeklyHours")}</div>
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("mpVendors.weeklyHours")}</div>
               {days.map((d, i) => (
-                <div key={d.day_of_week} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2">
+                <div key={d.day_of_week} className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
                   <input type="checkbox" checked={d.is_open} onChange={(e) => updateDay(i, { is_open: e.target.checked })} className="accent-indigo-500" />
-                  <span className="text-sm text-gray-200 w-10">{DAY_LABELS[d.day_of_week]}</span>
+                  <span className="text-sm text-foreground w-10">{DAY_LABELS[d.day_of_week]}</span>
                   <input type="time" value={d.open_time.slice(0, 5)} disabled={!d.is_open}
                     onChange={(e) => updateDay(i, { open_time: e.target.value })}
-                    className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white disabled:opacity-40" />
-                  <span className="text-gray-500 text-xs">{t("mpVendors.to")}</span>
+                    className="bg-muted border border-border rounded px-2 py-1 text-xs text-foreground disabled:opacity-40" />
+                  <span className="text-muted-foreground text-xs">{t("mpVendors.to")}</span>
                   <input type="time" value={d.close_time.slice(0, 5)} disabled={!d.is_open}
                     onChange={(e) => updateDay(i, { close_time: e.target.value })}
-                    className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white disabled:opacity-40" />
+                    className="bg-muted border border-border rounded px-2 py-1 text-xs text-foreground disabled:opacity-40" />
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-400">{t("mpVendors.slotLength")}</label>
+                <label className="text-xs text-muted-foreground">{t("mpVendors.slotLength")}</label>
                 <input type="number" min={15} step={15} value={settings.slot_duration_mins}
                   onChange={(e) => setSettings(s => ({ ...s, slot_duration_mins: parseInt(e.target.value, 10) || 60 }))}
                   className={inputCls} />
               </div>
               <div>
-                <label className="text-xs text-gray-400">{t("mpVendors.bufferBetweenJobs")}</label>
+                <label className="text-xs text-muted-foreground">{t("mpVendors.bufferBetweenJobs")}</label>
                 <input type="number" min={0} step={5} value={settings.buffer_mins}
                   onChange={(e) => setSettings(s => ({ ...s, buffer_mins: parseInt(e.target.value, 10) || 0 }))}
                   className={inputCls} />
               </div>
               <div>
-                <label className="text-xs text-gray-400">{t("mpVendors.bookUpTo")}</label>
+                <label className="text-xs text-muted-foreground">{t("mpVendors.bookUpTo")}</label>
                 <input type="number" min={1} value={settings.advance_days}
                   onChange={(e) => setSettings(s => ({ ...s, advance_days: parseInt(e.target.value, 10) || 30 }))}
                   className={inputCls} />
               </div>
               <div>
-                <label className="text-xs text-gray-400">{t("mpVendors.minNotice")}</label>
+                <label className="text-xs text-muted-foreground">{t("mpVendors.minNotice")}</label>
                 <input type="number" min={0} value={settings.min_notice_hours}
                   onChange={(e) => setSettings(s => ({ ...s, min_notice_hours: parseInt(e.target.value, 10) || 0 }))}
                   className={inputCls} />
@@ -285,18 +285,18 @@ function AvailabilityModal({ vendor, onClose }: { vendor: Vendor; onClose: () =>
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {t("mpVendors.saveHoursSettings")}
             </button>
 
-            <div className="space-y-1.5 pt-2 border-t border-gray-800">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("mpVendors.blockedDatesHeading")}</div>
+            <div className="space-y-1.5 pt-2 border-t border-border">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("mpVendors.blockedDatesHeading")}</div>
               {blocked.map((bd) => (
-                <div key={bd.id} className="flex items-center gap-2 text-sm text-gray-300">
+                <div key={bd.id} className="flex items-center gap-2 text-sm text-foreground/80">
                   <span className="flex-1">{bd.blocked_date}</span>
-                  <button onClick={() => removeBlockedDate(bd)} className="p-1 text-gray-600 hover:text-red-400 rounded"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => removeBlockedDate(bd)} className="p-1 text-muted-foreground hover:text-red-400 rounded"><Trash2 className="w-3 h-3" /></button>
                 </div>
               ))}
               <div className="flex gap-2 pt-1">
                 <input type="date" className={`${inputCls} flex-1 py-1.5 text-xs`} value={newBlockedDate}
                   onChange={(e) => setNewBlockedDate(e.target.value)} />
-                <button onClick={addBlockedDate} className="text-xs text-indigo-400 hover:text-indigo-300 px-2">{t("mpVendors.add")}</button>
+                <button onClick={addBlockedDate} className="text-xs text-primary hover:text-indigo-300 px-2">{t("mpVendors.add")}</button>
               </div>
             </div>
           </>
@@ -340,8 +340,8 @@ export default function VendorsClient({ initialVendors, categories }: { initialV
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Store className="w-6 h-6 text-indigo-400" /> {t("mpVendors.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Store className="w-6 h-6 text-primary" /> {t("mpVendors.title")}
         </h1>
         <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("mpVendors.newVendor")}</button>
       </div>
@@ -350,33 +350,33 @@ export default function VendorsClient({ initialVendors, categories }: { initialV
         {(["all", "pending", "approved", "suspended"] as const).map(s => (
           <button key={s} onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400 hover:border-gray-500"
+              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground hover:border-gray-500"
             }`}>{t(FILTER_KEY[s])}</button>
         ))}
       </div>
 
       <div className="space-y-3">
         {shown.length === 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl text-center py-16 text-gray-500 text-sm">
+          <div className="bg-card border border-border rounded-xl text-center py-16 text-muted-foreground text-sm">
             {t("mpVendors.noVendorsYet")}
           </div>
         )}
         {shown.map((v) => (
-          <div key={v.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+          <div key={v.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold text-white">{v.name}</span>
+                  <span className="text-sm font-semibold text-foreground">{v.name}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_META[v.status].cls}`}>{t(STATUS_META[v.status].labelKey)}</span>
-                  <span className="text-xs text-gray-500">{t("mpVendors.commissionInline", { rate: v.commission_rate })}</span>
+                  <span className="text-xs text-muted-foreground">{t("mpVendors.commissionInline", { rate: v.commission_rate })}</span>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                   {v.contact_name && <span>{v.contact_name}</span>}
                   {v.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{v.phone}</span>}
                   {v.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{v.email}</span>}
                 </div>
               </div>
-              <button onClick={() => del(v)} className="p-1.5 text-gray-600 hover:text-red-400 rounded-lg hover:bg-gray-800 shrink-0"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => del(v)} className="p-1.5 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted shrink-0"><Trash2 className="w-4 h-4" /></button>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">

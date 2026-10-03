@@ -53,30 +53,30 @@ function NavItemEditor({ item, onChange, onDelete, depth = 0 }: {
   const deleteChild = (i: number) => onChange({ ...item, children: item.children?.filter((_, j) => j !== i) });
 
   return (
-    <div className={depth > 0 ? "ml-4 border-l border-gray-700 pl-3" : ""}>
+    <div className={depth > 0 ? "ml-4 border-l border-border pl-3" : ""}>
       <div className="flex items-center gap-2 py-1">
         {depth === 0 && (
-          <button onClick={() => setOpen(o => !o)} className="text-gray-500 hover:text-white w-5 flex-shrink-0">
+          <button onClick={() => setOpen(o => !o)} className="text-muted-foreground hover:text-foreground w-5 flex-shrink-0">
             {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </button>
         )}
         <input value={item.label} onChange={e => onChange({ ...item, label: e.target.value })}
-          className="w-32 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" placeholder="Label" />
+          className="w-32 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="Label" />
         <input value={item.url} onChange={e => onChange({ ...item, url: e.target.value })}
-          className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" placeholder="/page" />
+          className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="/page" />
         <select value={item.target ?? "_self"} onChange={e => onChange({ ...item, target: e.target.value })}
-          className="bg-gray-800 border border-gray-700 rounded px-1 py-1 text-xs text-white focus:outline-none">
+          className="bg-muted border border-border rounded px-1 py-1 text-xs text-foreground focus:outline-none">
           <option value="_self">Same tab</option>
           <option value="_blank">New tab</option>
         </select>
         {depth === 0 && (
           <button onClick={() => { setOpen(true); addChild(); }}
             title="Add sub-menu item"
-            className="text-gray-500 hover:text-indigo-400 text-xs border border-gray-700 rounded px-1.5 py-1 hover:border-indigo-500">
+            className="text-muted-foreground hover:text-primary text-xs border border-border rounded px-1.5 py-1 hover:border-primary">
             + Sub
           </button>
         )}
-        <button onClick={onDelete} className="text-gray-600 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+        <button onClick={onDelete} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
       </div>
       {open && depth === 0 && (
         <div className="mt-1 mb-2 space-y-1">
@@ -84,7 +84,7 @@ function NavItemEditor({ item, onChange, onDelete, depth = 0 }: {
             <NavItemEditor key={child.id ?? i} item={child} depth={1}
               onChange={u => updateChild(i, u)} onDelete={() => deleteChild(i)} />
           ))}
-          <button onClick={addChild} className="ml-4 text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-1">
+          <button onClick={addChild} className="ml-4 text-xs text-primary hover:text-indigo-300 flex items-center gap-1 mt-1">
             <Plus className="w-3 h-3" /> Add sub-link
           </button>
         </div>
@@ -117,19 +117,19 @@ function MenuCard({ menu, onUpdate, onDelete }: {
   const deleteItem = (i: number) => setItems(prev => prev.filter((_, j) => j !== i));
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         {editingName ? (
           <div className="flex items-center gap-2">
             <input autoFocus value={name} onChange={e => setName(e.target.value)}
-              className="bg-gray-800 border border-indigo-500 rounded px-2 py-1 text-sm text-white focus:outline-none" />
-            <button onClick={() => setEditingName(false)}><Check className="w-4 h-4 text-indigo-400" /></button>
+              className="bg-muted border border-primary rounded px-2 py-1 text-sm text-foreground focus:outline-none" />
+            <button onClick={() => setEditingName(false)}><Check className="w-4 h-4 text-primary" /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="font-medium text-white">{name}</span>
-            <span className="text-xs text-gray-500">/{slugify(name)}</span>
-            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-gray-500" /></button>
+            <span className="font-medium text-foreground">{name}</span>
+            <span className="text-xs text-muted-foreground">/{slugify(name)}</span>
+            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-muted-foreground" /></button>
           </div>
         )}
         <div className="flex gap-2">
@@ -139,7 +139,7 @@ function MenuCard({ menu, onUpdate, onDelete }: {
             {saved ? "Saved" : "Save"}
           </button>
           <button onClick={() => { if (confirm(`Delete menu "${menu.name}"?`)) { api("DELETE", undefined, { id: menu.id }); onDelete(menu.id); } }}
-            className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+            className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
         </div>
       </div>
       <div className="space-y-1">
@@ -148,7 +148,7 @@ function MenuCard({ menu, onUpdate, onDelete }: {
         ))}
       </div>
       <button onClick={addItem}
-        className="flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 w-full transition-colors">
+        className="flex items-center gap-2 text-xs text-primary hover:text-indigo-300 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 w-full transition-colors">
         <Plus className="w-3.5 h-3.5" /> Add Link
       </button>
     </div>
@@ -195,8 +195,8 @@ function GlobalNavEditor({ initialBlock }: { initialBlock: Record<string, unknow
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-white flex items-center gap-2"><Navigation className="w-4 h-4 text-indigo-400" /> Global Navigation</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
+          <h2 className="font-semibold text-foreground flex items-center gap-2"><Navigation className="w-4 h-4 text-primary" /> Global Navigation</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
         </div>
         <button onClick={save} disabled={saving}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
@@ -205,57 +205,57 @@ function GlobalNavEditor({ initialBlock }: { initialBlock: Record<string, unknow
         </button>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-4">
+      <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         {/* Logo */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1.5">Nav Logo Image (overrides text)</label>
+          <label className="block text-xs text-muted-foreground mb-1.5">Nav Logo Image (overrides text)</label>
           <MediaPickerInput value={logoUrl} onChange={v => setLogoUrl(v ?? "")} placeholder="https://... or pick from media" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Logo Text (shown if no image)</label>
-            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <label className="block text-xs text-muted-foreground mb-1">Logo Text (shown if no image)</label>
+            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
           </div>
           <div className="flex items-end pb-0.5">
-            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
               <input type="checkbox" checked={sticky} onChange={e => setSticky(e.target.checked)} className="rounded" />
               Sticky on scroll
             </label>
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">CTA Button Label</label>
-            <input value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <label className="block text-xs text-muted-foreground mb-1">CTA Button Label</label>
+            <input value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">CTA Button URL</label>
-            <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <label className="block text-xs text-muted-foreground mb-1">CTA Button URL</label>
+            <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Background</label>
+            <label className="block text-xs text-muted-foreground mb-1">Background</label>
             <div className="flex gap-2">
-              <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
-              <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+              <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+              <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
             </div>
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Text Color</label>
+            <label className="block text-xs text-muted-foreground mb-1">Text Color</label>
             <div className="flex gap-2">
-              <input type="color" value={fg} onChange={e => setFg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
-              <input value={fg} onChange={e => setFg(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+              <input type="color" value={fg} onChange={e => setFg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+              <input value={fg} onChange={e => setFg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
             </div>
           </div>
         </div>
 
         {/* Nav items */}
         <div>
-          <label className="block text-xs text-gray-400 mb-2">Menu Items <span className="text-gray-600">— click ▶ to add sub-menu items</span></label>
+          <label className="block text-xs text-muted-foreground mb-2">Menu Items <span className="text-muted-foreground">— click ▶ to add sub-menu items</span></label>
           <div className="space-y-1">
             {items.map((item, i) => (
               <NavItemEditor key={item.id ?? i} item={item} onChange={u => updateItem(i, u)} onDelete={() => deleteItem(i)} />
             ))}
           </div>
           <button onClick={addItem}
-            className="mt-2 flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 w-full transition-colors">
+            className="mt-2 flex items-center gap-2 text-xs text-primary hover:text-indigo-300 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 w-full transition-colors">
             <Plus className="w-3.5 h-3.5" /> Add Nav Item
           </button>
         </div>
@@ -328,8 +328,8 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-white flex items-center gap-2"><Footprints className="w-4 h-4 text-indigo-400" /> Global Footer</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
+          <h2 className="font-semibold text-foreground flex items-center gap-2"><Footprints className="w-4 h-4 text-primary" /> Global Footer</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
         </div>
         <button onClick={save} disabled={saving}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
@@ -338,22 +338,22 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
         </button>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-4">
+      <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Logo Text</label>
-            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <label className="block text-xs text-muted-foreground mb-1">Logo Text</label>
+            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Tagline</label>
-            <input value={tagline} onChange={e => setTagline(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            <label className="block text-xs text-muted-foreground mb-1">Tagline</label>
+            <input value={tagline} onChange={e => setTagline(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
           </div>
           <div className="col-span-2">
-            <label className="block text-xs text-gray-400 mb-1">Copyright Text <span className="text-gray-600">(use {"{year}"} for auto year)</span></label>
-            <input value={copyright} onChange={e => setCopyright(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="© {year} Your Company. All rights reserved." />
+            <label className="block text-xs text-muted-foreground mb-1">Copyright Text <span className="text-muted-foreground">(use {"{year}"} for auto year)</span></label>
+            <input value={copyright} onChange={e => setCopyright(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder="© {year} Your Company. All rights reserved." />
           </div>
           <div className="col-span-2">
-            <label className="block text-xs text-gray-400 mb-1">Footer Style</label>
+            <label className="block text-xs text-muted-foreground mb-1">Footer Style</label>
             <div className="flex gap-2">
               {([
                 { key: "dark" as const, label: "Dark" },
@@ -366,38 +366,38 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
                   onClick={() => setFooterStyle(opt.key)}
                   className={`px-3 py-1.5 rounded text-xs border transition-colors ${
                     footerStyle === opt.key
-                      ? "bg-indigo-600 border-indigo-500 text-white"
-                      : "bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600"
+                      ? "bg-indigo-600 border-primary text-white"
+                      : "bg-muted border-border text-foreground/80 hover:border-border"
                   }`}
                 >
                   {opt.label}
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-gray-500 mt-1">
+            <p className="text-[11px] text-muted-foreground mt-1">
               Dark and Light build a gradient from this site&apos;s theme colors. Custom pins your own.
             </p>
           </div>
           {footerStyle === "custom" && (
             <>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Background</label>
+                <label className="block text-xs text-muted-foreground mb-1">Background</label>
                 <div className="flex gap-2">
-                  <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
-                  <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+                  <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+                  <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Accent / Heading Color</label>
+                <label className="block text-xs text-muted-foreground mb-1">Accent / Heading Color</label>
                 <div className="flex gap-2">
-                  <input type="color" value={accent} onChange={e => setAccent(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-gray-700 bg-gray-800" />
-                  <input value={accent} onChange={e => setAccent(e.target.value)} className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+                  <input type="color" value={accent} onChange={e => setAccent(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+                  <input value={accent} onChange={e => setAccent(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
                 </div>
               </div>
             </>
           )}
           <div className="col-span-2 flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
               <input type="checkbox" checked={newsletter} onChange={e => setNewsletter(e.target.checked)} className="rounded" />
               Show newsletter signup
             </label>
@@ -407,24 +407,24 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
         {/* Footer columns */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs text-gray-400">Link Columns</label>
-            <button onClick={addColumn} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Column</button>
+            <label className="text-xs text-muted-foreground">Link Columns</label>
+            <button onClick={addColumn} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Column</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {columns.map(col => (
-              <div key={col.id} className="border border-gray-700 rounded-lg p-3 space-y-2 bg-gray-800/40">
+              <div key={col.id} className="border border-border rounded-lg p-3 space-y-2 bg-muted">
                 <div className="flex items-center gap-2">
-                  <input value={col.heading} onChange={e => updateColHeading(col.id, e.target.value)} className="flex-1 font-semibold text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white focus:border-indigo-500 focus:outline-none" placeholder="Heading" />
-                  <button onClick={() => removeCol(col.id)} className="text-gray-600 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <input value={col.heading} onChange={e => updateColHeading(col.id, e.target.value)} className="flex-1 font-semibold text-xs bg-muted border border-border rounded px-2 py-1 text-foreground focus:border-primary focus:outline-none" placeholder="Heading" />
+                  <button onClick={() => removeCol(col.id)} className="text-muted-foreground hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
                 {col.links.map(link => (
                   <div key={link.id} className="flex items-center gap-1.5">
-                    <input value={link.label} onChange={e => updateLink(col.id, link.id, "label", e.target.value)} className="flex-1 text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white focus:border-indigo-500 focus:outline-none" placeholder="Label" />
-                    <input value={link.url} onChange={e => updateLink(col.id, link.id, "url", e.target.value)} className="flex-1 text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white focus:border-indigo-500 focus:outline-none" placeholder="/url" />
-                    <button onClick={() => removeLink(col.id, link.id)} className="text-gray-600 hover:text-red-400"><X className="w-3 h-3" /></button>
+                    <input value={link.label} onChange={e => updateLink(col.id, link.id, "label", e.target.value)} className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1 text-foreground focus:border-primary focus:outline-none" placeholder="Label" />
+                    <input value={link.url} onChange={e => updateLink(col.id, link.id, "url", e.target.value)} className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1 text-foreground focus:border-primary focus:outline-none" placeholder="/url" />
+                    <button onClick={() => removeLink(col.id, link.id)} className="text-muted-foreground hover:text-red-400"><X className="w-3 h-3" /></button>
                   </div>
                 ))}
-                <button onClick={() => addLink(col.id)} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add link</button>
+                <button onClick={() => addLink(col.id)} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add link</button>
               </div>
             ))}
           </div>
@@ -433,18 +433,18 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
         {/* Socials */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs text-gray-400">Social Links</label>
-            <button onClick={() => setSocials(prev => [...prev, { platform: "facebook", url: "" }])} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Social</button>
+            <label className="text-xs text-muted-foreground">Social Links</label>
+            <button onClick={() => setSocials(prev => [...prev, { platform: "facebook", url: "" }])} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Social</button>
           </div>
           {socials.map((s, i) => (
             <div key={i} className="flex items-center gap-2 mb-1.5">
               <select value={s.platform} onChange={e => setSocials(prev => prev.map((p, j) => j === i ? { ...p, platform: e.target.value } : p))}
-                className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white focus:outline-none">
+                className="bg-muted border border-border rounded px-2 py-1.5 text-xs text-foreground focus:outline-none">
                 {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
               <input value={s.url} onChange={e => setSocials(prev => prev.map((p, j) => j === i ? { ...p, url: e.target.value } : p))}
-                placeholder="https://..." className="flex-1 text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white focus:border-indigo-500 focus:outline-none" />
-              <button onClick={() => setSocials(prev => prev.filter((_, j) => j !== i))} className="text-gray-600 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+                placeholder="https://..." className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1.5 text-foreground focus:border-primary focus:outline-none" />
+              <button onClick={() => setSocials(prev => prev.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
             </div>
           ))}
         </div>
@@ -452,16 +452,16 @@ function GlobalFooterEditor({ initialBlock }: { initialBlock: Record<string, unk
         {/* Bottom links */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs text-gray-400">Bottom Bar Links <span className="text-gray-600">(Privacy, Terms etc.)</span></label>
-            <button onClick={() => setBottomLinks(prev => [...prev, { id: uid(), label: "", url: "/" }])} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
+            <label className="text-xs text-muted-foreground">Bottom Bar Links <span className="text-muted-foreground">(Privacy, Terms etc.)</span></label>
+            <button onClick={() => setBottomLinks(prev => [...prev, { id: uid(), label: "", url: "/" }])} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
           </div>
           {bottomLinks.map((bl) => (
             <div key={bl.id} className="flex items-center gap-2 mb-1.5">
               <input value={bl.label} onChange={e => setBottomLinks(prev => prev.map(l => l.id === bl.id ? { ...l, label: e.target.value } : l))}
-                placeholder="Privacy Policy" className="flex-1 text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white focus:border-indigo-500 focus:outline-none" />
+                placeholder="Privacy Policy" className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1.5 text-foreground focus:border-primary focus:outline-none" />
               <input value={bl.url} onChange={e => setBottomLinks(prev => prev.map(l => l.id === bl.id ? { ...l, url: e.target.value } : l))}
-                placeholder="/privacy" className="flex-1 text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white focus:border-indigo-500 focus:outline-none" />
-              <button onClick={() => setBottomLinks(prev => prev.filter(l => l.id !== bl.id))} className="text-gray-600 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+                placeholder="/privacy" className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1.5 text-foreground focus:border-primary focus:outline-none" />
+              <button onClick={() => setBottomLinks(prev => prev.filter(l => l.id !== bl.id))} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
             </div>
           ))}
         </div>
@@ -536,14 +536,14 @@ function GlobalPrefooterEditor({ initialCta, initialContact }: {
     setTimeout(() => setSaved(false), 2500);
   }, [initialCta, initialContact, ctaTitle, ctaDesc, ctaPrimaryLabel, ctaPrimaryUrl, ctaSecondaryLabel, ctaSecondaryUrl, title, subtitle, phone, email, address, recipientEmail, cc]);
 
-  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none";
+  const inputCls = "w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none";
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-white">Global Pre-Footer (CTA + Contact)</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Shows on every page above the footer. Edit once — updates the whole site. (Skipped on pages that already have their own contact form, like the Contact page.)</p>
+          <h2 className="font-semibold text-foreground">Global Pre-Footer (CTA + Contact)</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Shows on every page above the footer. Edit once — updates the whole site. (Skipped on pages that already have their own contact form, like the Contact page.)</p>
         </div>
         <button onClick={save} disabled={saving}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
@@ -552,27 +552,27 @@ function GlobalPrefooterEditor({ initialCta, initialContact }: {
         </button>
       </div>
 
-      <section className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
-        <h3 className="text-sm font-semibold text-indigo-400">Call-to-Action Banner</h3>
-        <div><label className="block text-xs text-gray-400 mb-1">Title</label><input value={ctaTitle} onChange={e => setCtaTitle(e.target.value)} className={inputCls} /></div>
-        <div><label className="block text-xs text-gray-400 mb-1">Description</label><input value={ctaDesc} onChange={e => setCtaDesc(e.target.value)} className={inputCls} /></div>
+      <section className="bg-card border border-border rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-primary">Call-to-Action Banner</h3>
+        <div><label className="block text-xs text-muted-foreground mb-1">Title</label><input value={ctaTitle} onChange={e => setCtaTitle(e.target.value)} className={inputCls} /></div>
+        <div><label className="block text-xs text-muted-foreground mb-1">Description</label><input value={ctaDesc} onChange={e => setCtaDesc(e.target.value)} className={inputCls} /></div>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className="block text-xs text-gray-400 mb-1">Primary Button Label</label><input value={ctaPrimaryLabel} onChange={e => setCtaPrimaryLabel(e.target.value)} className={inputCls} /></div>
-          <div><label className="block text-xs text-gray-400 mb-1">Primary Button URL</label><input value={ctaPrimaryUrl} onChange={e => setCtaPrimaryUrl(e.target.value)} className={inputCls} /></div>
-          <div><label className="block text-xs text-gray-400 mb-1">Secondary Button Label</label><input value={ctaSecondaryLabel} onChange={e => setCtaSecondaryLabel(e.target.value)} className={inputCls} /></div>
-          <div><label className="block text-xs text-gray-400 mb-1">Secondary Button URL</label><input value={ctaSecondaryUrl} onChange={e => setCtaSecondaryUrl(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Primary Button Label</label><input value={ctaPrimaryLabel} onChange={e => setCtaPrimaryLabel(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Primary Button URL</label><input value={ctaPrimaryUrl} onChange={e => setCtaPrimaryUrl(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Secondary Button Label</label><input value={ctaSecondaryLabel} onChange={e => setCtaSecondaryLabel(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Secondary Button URL</label><input value={ctaSecondaryUrl} onChange={e => setCtaSecondaryUrl(e.target.value)} className={inputCls} /></div>
         </div>
       </section>
 
-      <section className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
-        <h3 className="text-sm font-semibold text-indigo-400">Contact Form</h3>
+      <section className="bg-card border border-border rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-primary">Contact Form</h3>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className="block text-xs text-gray-400 mb-1">Heading</label><input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} /></div>
-          <div><label className="block text-xs text-gray-400 mb-1">Subheading</label><input value={subtitle} onChange={e => setSubtitle(e.target.value)} className={inputCls} /></div>
-          <div><label className="block text-xs text-gray-400 mb-1">Phone</label><input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls} /></div>
-          <div><label className="block text-xs text-gray-400 mb-1">Email (shown)</label><input value={email} onChange={e => setEmail(e.target.value)} className={inputCls} /></div>
-          <div className="col-span-2"><label className="block text-xs text-gray-400 mb-1">Address</label><input value={address} onChange={e => setAddress(e.target.value)} className={inputCls} /></div>
-          <div className="col-span-2"><label className="block text-xs text-gray-400 mb-1">Form submissions sent to (email)</label><input value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} placeholder="defaults to shown email" className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Heading</label><input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Subheading</label><input value={subtitle} onChange={e => setSubtitle(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Phone</label><input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Email (shown)</label><input value={email} onChange={e => setEmail(e.target.value)} className={inputCls} /></div>
+          <div className="col-span-2"><label className="block text-xs text-muted-foreground mb-1">Address</label><input value={address} onChange={e => setAddress(e.target.value)} className={inputCls} /></div>
+          <div className="col-span-2"><label className="block text-xs text-muted-foreground mb-1">Form submissions sent to (email)</label><input value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} placeholder="defaults to shown email" className={inputCls} /></div>
         </div>
       </section>
     </div>
@@ -637,17 +637,17 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
   return (
     <div className="p-6 max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Layers className="w-6 h-6 text-indigo-400" /> Identity & Navigation
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Layers className="w-6 h-6 text-primary" /> Identity & Navigation
         </h1>
-        <p className="text-sm text-gray-400 mt-1">Manage global navigation, footer, site branding and menus.</p>
+        <p className="text-sm text-muted-foreground mt-1">Manage global navigation, footer, site branding and menus.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-800">
+      <div className="flex gap-1 border-b border-border">
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.key ? "border-indigo-500 text-indigo-400" : "border-transparent text-gray-400 hover:text-white"}`}>
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
             {tab.icon}{tab.label}
           </button>
         ))}
@@ -664,9 +664,9 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
 
       {/* Site Identity */}
       {activeTab === "identity" && (
-        <section className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        <section className="bg-card border border-border rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-white">Site Identity</h2>
+            <h2 className="font-semibold text-foreground">Site Identity</h2>
             <button onClick={saveIdentity} disabled={saving}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
@@ -675,35 +675,35 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Site Name</label>
+              <label className="block text-xs text-muted-foreground mb-1">Site Name</label>
               <input value={identity.site_name ?? ""} onChange={e => set("site_name", e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Tagline</label>
+              <label className="block text-xs text-muted-foreground mb-1">Tagline</label>
               <input value={identity.tagline ?? ""} onChange={e => set("tagline", e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-400 mb-2">Logo (light mode)</label>
+              <label className="block text-xs text-muted-foreground mb-2">Logo (light mode)</label>
               <MediaPickerInput value={identity.logo_url ?? ""} onChange={url => set("logo_url", url || null)} placeholder="https://..." />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-400 mb-2">Logo (dark mode) <span className="text-gray-600">— optional</span></label>
+              <label className="block text-xs text-muted-foreground mb-2">Logo (dark mode) <span className="text-muted-foreground">— optional</span></label>
               <MediaPickerInput value={identity.logo_dark_url ?? ""} onChange={url => set("logo_dark_url", url || null)} placeholder="https://..." />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Logo Alt Text</label>
+              <label className="block text-xs text-muted-foreground mb-1">Logo Alt Text</label>
               <input value={identity.logo_alt ?? ""} onChange={e => set("logo_alt", e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Logo Width (px)</label>
+              <label className="block text-xs text-muted-foreground mb-1">Logo Width (px)</label>
               <input type="number" value={identity.logo_width ?? 160} onChange={e => set("logo_width", Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-400 mb-2">Favicon</label>
+              <label className="block text-xs text-muted-foreground mb-2">Favicon</label>
               <MediaPickerInput value={identity.favicon_url ?? ""} onChange={url => set("favicon_url", url || null)} placeholder="https://..." />
             </div>
           </div>
@@ -717,28 +717,28 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
             Legacy nav_menus table. Use &quot;Global Nav&quot; tab to manage the site-wide navigation instead.
           </div>
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-white">Navigation Menus</h2>
+            <h2 className="font-semibold text-foreground">Navigation Menus</h2>
             <button onClick={() => setCreatingMenu(true)}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">
               <Plus className="w-4 h-4" /> New Menu
             </button>
           </div>
           {creatingMenu && (
-            <div className="flex items-center gap-3 bg-gray-900 border border-indigo-500/40 rounded-xl p-4">
+            <div className="flex items-center gap-3 bg-card border border-primary/40 rounded-xl p-4">
               <input autoFocus value={newMenuName} onChange={e => setNewMenuName(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") createMenu(); if (e.key === "Escape") setCreatingMenu(false); }}
                 placeholder='Menu name (e.g. "Main Nav", "Footer")'
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                className="flex-1 bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
               <button onClick={createMenu} disabled={!newMenuName.trim()}
                 className="flex items-center gap-1.5 bg-indigo-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
                 <Check className="w-4 h-4" /> Create
               </button>
-              <button onClick={() => setCreatingMenu(false)} className="text-gray-400"><X className="w-5 h-5" /></button>
+              <button onClick={() => setCreatingMenu(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
             </div>
           )}
           {menus.length === 0 && !creatingMenu ? (
-            <div className="text-center py-10 border border-dashed border-gray-800 rounded-xl">
-              <p className="text-gray-400 text-sm">No menus yet.</p>
+            <div className="text-center py-10 border border-dashed border-border rounded-xl">
+              <p className="text-muted-foreground text-sm">No menus yet.</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -29,7 +29,7 @@ const TABS: { key: "pending" | "rejected" | "approved"; labelKey: TranslationKey
 ];
 
 const btnGhost =
-  "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
+  "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
 
 export default function ReviewClient() {
   const t = useT();
@@ -80,10 +80,10 @@ export default function ReviewClient() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <BadgeCheck className="w-6 h-6 text-indigo-400" /> {t("review.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <BadgeCheck className="w-6 h-6 text-primary" /> {t("review.title")}
         </h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           {t("review.subtitle")}
         </p>
       </div>
@@ -95,8 +95,8 @@ export default function ReviewClient() {
             onClick={() => setTab(tabItem.key)}
             className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
               tab === tabItem.key
-                ? "bg-indigo-600 border-indigo-500 text-white"
-                : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                ? "bg-indigo-600 border-primary text-white"
+                : "border-border text-muted-foreground hover:bg-muted"
             }`}
           >
             {t(tabItem.labelKey)}
@@ -114,10 +114,10 @@ export default function ReviewClient() {
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : items.length === 0 ? (
-        <div className="border border-gray-800 rounded-xl p-10 text-center text-gray-500">
+        <div className="border border-border rounded-xl p-10 text-center text-muted-foreground">
           {t("review.nothingInQueue")}
         </div>
       ) : (
@@ -125,7 +125,7 @@ export default function ReviewClient() {
           {items.map((p) => {
             const img = Array.isArray(p.images) ? p.images[0] : undefined;
             return (
-              <div key={p.id} className="border border-gray-800 rounded-xl p-4 bg-gray-900/40 flex gap-4">
+              <div key={p.id} className="border border-border rounded-xl p-4 bg-card flex gap-4">
                 {tab === "pending" && (
                   <input
                     type="checkbox"
@@ -134,32 +134,32 @@ export default function ReviewClient() {
                     className="mt-1 w-4 h-4 shrink-0 accent-indigo-500"
                   />
                 )}
-                <div className="w-20 h-20 shrink-0 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center">
+                <div className="w-20 h-20 shrink-0 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <ImageOff className="w-6 h-6 text-gray-600" />
+                    <ImageOff className="w-6 h-6 text-muted-foreground" />
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-white truncate">{p.name}</h3>
-                      <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5">
+                      <h3 className="font-semibold text-foreground truncate">{p.name}</h3>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         <Store className="w-3.5 h-3.5" />
                         {p.vendors?.name ?? t("review.unknownSeller")}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-white font-semibold">৳{Number(p.price).toLocaleString()}</p>
-                      <p className="text-xs text-gray-500">{t("review.inStock", { count: p.stock_quantity })}</p>
+                      <p className="text-foreground font-semibold">৳{Number(p.price).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">{t("review.inStock", { count: p.stock_quantity })}</p>
                     </div>
                   </div>
 
                   {(p.short_description || p.description) && (
-                    <p className="text-sm text-gray-400 mt-2 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                       {p.short_description || p.description}
                     </p>
                   )}
@@ -197,9 +197,9 @@ export default function ReviewClient() {
       {rejecting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setRejecting(null)} />
-          <div className="relative w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
-            <h2 className="text-lg font-semibold text-white">{t("review.rejectListingTitle")}</h2>
-            <p className="text-sm text-gray-400">
+          <div className="relative w-full max-w-md bg-background border border-border rounded-2xl p-5 space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">{t("review.rejectListingTitle")}</h2>
+            <p className="text-sm text-muted-foreground">
               {t("review.rejectListingHint")}
             </p>
             <textarea
@@ -207,7 +207,7 @@ export default function ReviewClient() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={t("review.rejectReasonPlaceholder")}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
             <div className="flex justify-end gap-2">
               <button onClick={() => setRejecting(null)} className={btnGhost}>{t("review.cancel")}</button>

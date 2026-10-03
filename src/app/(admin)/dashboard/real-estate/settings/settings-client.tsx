@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 
 type S = Record<string, unknown>;
 
@@ -15,7 +15,7 @@ export function SettingsClient({ initial }: { initial: S }) {
   const set = (k: string, v: unknown) => setS((p) => ({ ...p, [k]: v }));
   const text = (k: string, label: string, ph?: string) => (
     <label className="block">
-      <span className="text-xs text-gray-400">{label}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
       <input className={`${inputCls} mt-1`} placeholder={ph} value={String(s[k] ?? "")} onChange={(e) => set(k, e.target.value)} />
     </label>
   );
@@ -32,10 +32,10 @@ export function SettingsClient({ initial }: { initial: S }) {
   return (
     <div className="max-w-2xl space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-white">Agent Settings</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Shown on every property page: the agent card, WhatsApp and call buttons, and the licence line.</p>
+        <h1 className="text-2xl font-bold text-foreground">Agent Settings</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Shown on every property page: the agent card, WhatsApp and call buttons, and the licence line.</p>
       </div>
-      <section className="bg-gray-900 border border-gray-800 rounded-2xl p-5 grid sm:grid-cols-2 gap-4">
+      <section className="bg-card border border-border rounded-2xl p-5 grid sm:grid-cols-2 gap-4">
         {text("agent_name", "Agent name")}
         {text("agent_title", "Title", "Founder & Property Advisor")}
         {text("whatsapp", "WhatsApp number", "+971 56 409 0700")}
@@ -43,23 +43,23 @@ export function SettingsClient({ initial }: { initial: S }) {
         {text("email", "Lead notification email")}
         {text("licence_text", "Licence line", "REGA FAL No. … · RERA BRN …")}
         <label className="block">
-          <span className="text-xs text-gray-400">Default currency</span>
+          <span className="text-xs text-muted-foreground">Default currency</span>
           <select className={`${inputCls} mt-1`} value={String(s.default_currency)} onChange={(e) => set("default_currency", e.target.value)}>
             {["SAR", "AED", "USD"].map((c) => <option key={c}>{c}</option>)}
           </select>
         </label>
         <label className="block">
-          <span className="text-xs text-gray-400">Default area unit</span>
+          <span className="text-xs text-muted-foreground">Default area unit</span>
           <select className={`${inputCls} mt-1`} value={String(s.default_area_unit)} onChange={(e) => set("default_area_unit", e.target.value)}>
             <option value="sqm">sqm</option><option value="sqft">sqft</option>
           </select>
         </label>
         <label className="sm:col-span-2 flex items-center gap-3">
           <input type="checkbox" className="w-4 h-4 accent-indigo-500" checked={!!s.brochure_gate} onChange={(e) => set("brochure_gate", e.target.checked)} />
-          <span className="text-sm text-gray-200">Ask for WhatsApp number before brochure download</span>
+          <span className="text-sm text-foreground">Ask for WhatsApp number before brochure download</span>
         </label>
         <div className="sm:col-span-2">
-          <span className="text-xs text-gray-400">Agent photo</span>
+          <span className="text-xs text-muted-foreground">Agent photo</span>
           <div className="mt-1"><MediaPickerInput value={String(s.agent_photo ?? "")} onChange={(v) => set("agent_photo", v)} /></div>
         </div>
       </section>

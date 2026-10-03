@@ -59,58 +59,58 @@ function SlideEditor({ slide: initial, groupId, onSave, onCancel }: {
   }
 
   return (
-    <div className="border border-indigo-500/30 rounded-lg p-4 space-y-3 bg-indigo-950/20">
+    <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-indigo-950/20">
       {slide.image_url && (
         <div className="w-full h-24 rounded-lg overflow-hidden">
           <img src={slide.image_url} className="w-full h-full object-cover" alt="" />
         </div>
       )}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("sliders.backgroundImageUrl")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("sliders.backgroundImageUrl")}</label>
         <input value={slide.image_url ?? ""} onChange={e => set("image_url", e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder="https://..." />
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder="https://..." />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("sliders.title2")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("sliders.title2")}</label>
           <input value={slide.title ?? ""} onChange={e => set("title", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("sliders.subtitle2")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("sliders.subtitle2")}</label>
           <input value={slide.subtitle ?? ""} onChange={e => set("subtitle", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("sliders.description")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("sliders.description")}</label>
         <textarea rows={2} value={slide.description ?? ""} onChange={e => set("description", e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("sliders.buttonLabel")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("sliders.buttonLabel")}</label>
           <input value={slide.button_label ?? ""} onChange={e => set("button_label", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("sliders.buttonUrl")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("sliders.buttonUrl")}</label>
           <input value={slide.button_url ?? ""} onChange={e => set("button_url", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
       </div>
       <div className="flex items-center gap-4">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("sliders.textColor")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("sliders.textColor")}</label>
           <div className="flex gap-2">
             <input type="color" value={slide.text_color ?? "#ffffff"} onChange={e => set("text_color", e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
             <input value={slide.text_color ?? "#ffffff"} onChange={e => set("text_color", e.target.value)}
-              className="w-24 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+              className="w-24 bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
           </div>
         </div>
         <label className="flex items-center gap-2 mt-4 cursor-pointer">
           <input type="checkbox" checked={slide.overlay ?? true} onChange={e => set("overlay", e.target.checked)} className="w-4 h-4 rounded" />
-          <span className="text-sm text-gray-300">{t("sliders.darkOverlay")}</span>
+          <span className="text-sm text-foreground/80">{t("sliders.darkOverlay")}</span>
         </label>
       </div>
       <div className="flex gap-2">
@@ -118,7 +118,7 @@ function SlideEditor({ slide: initial, groupId, onSave, onCancel }: {
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
           {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("sliders.save")}
         </button>
-        <button onClick={onCancel} className="flex items-center gap-1.5 bg-gray-700 text-white text-xs px-3 py-1.5 rounded">
+        <button onClick={onCancel} className="flex items-center gap-1.5 bg-muted-foreground/20 text-foreground text-xs px-3 py-1.5 rounded">
           <X className="w-3 h-3" /> {t("sliders.cancel")}
         </button>
       </div>
@@ -180,61 +180,61 @@ function GroupCard({ group, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
-        <button onClick={() => setOpen(o => !o)} className="text-gray-400">
+        <button onClick={() => setOpen(o => !o)} className="text-muted-foreground">
           {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
         {editingName ? (
           <div className="flex items-center gap-2 flex-1">
             <input autoFocus value={name} onChange={e => setName(e.target.value)}
-              className="flex-1 bg-gray-800 border border-indigo-500 rounded px-2 py-1 text-sm text-white focus:outline-none" />
-            <button onClick={saveName}><Check className="w-4 h-4 text-indigo-400" /></button>
-            <button onClick={() => { setEditingName(false); setName(group.name); }}><X className="w-4 h-4 text-gray-400" /></button>
+              className="flex-1 bg-muted border border-primary rounded px-2 py-1 text-sm text-foreground focus:outline-none" />
+            <button onClick={saveName}><Check className="w-4 h-4 text-primary" /></button>
+            <button onClick={() => { setEditingName(false); setName(group.name); }}><X className="w-4 h-4 text-muted-foreground" /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2 flex-1">
-            <span className="font-medium text-white text-sm">{group.name}</span>
-            <span className="text-xs text-gray-500">/{group.slug}</span>
-            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-gray-500" /></button>
+            <span className="font-medium text-foreground text-sm">{group.name}</span>
+            <span className="text-xs text-muted-foreground">/{group.slug}</span>
+            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-muted-foreground" /></button>
           </div>
         )}
-        <span className="text-xs text-gray-500">{t("sliders.slidesCount", { count: group.slider_slides.length })}</span>
+        <span className="text-xs text-muted-foreground">{t("sliders.slidesCount", { count: group.slider_slides.length })}</span>
         <button onClick={() => { if (confirm(t("sliders.deleteSliderConfirm", { name: group.name }))) { api("DELETE", undefined, { type: "group", id: group.id }); onDelete(group.id); } }}
-          className="text-gray-600 hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
+          className="text-muted-foreground hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
       </div>
 
       {open && (
-        <div className="border-t border-gray-800">
+        <div className="border-t border-border">
           {/* Settings */}
-          <div className="p-4 border-b border-gray-800 bg-gray-900/50">
+          <div className="p-4 border-b border-border bg-card">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={settings.auto_play} onChange={e => setSettings(p => ({ ...p, auto_play: e.target.checked }))} className="w-4 h-4 rounded" />
-                <span className="text-xs text-gray-300">{t("sliders.autoPlay")}</span>
+                <span className="text-xs text-foreground/80">{t("sliders.autoPlay")}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={settings.show_arrows} onChange={e => setSettings(p => ({ ...p, show_arrows: e.target.checked }))} className="w-4 h-4 rounded" />
-                <span className="text-xs text-gray-300">{t("sliders.arrows")}</span>
+                <span className="text-xs text-foreground/80">{t("sliders.arrows")}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={settings.show_dots} onChange={e => setSettings(p => ({ ...p, show_dots: e.target.checked }))} className="w-4 h-4 rounded" />
-                <span className="text-xs text-gray-300">{t("sliders.dots")}</span>
+                <span className="text-xs text-foreground/80">{t("sliders.dots")}</span>
               </label>
               <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-400 flex-shrink-0">{t("sliders.height")}</label>
+                <label className="text-xs text-muted-foreground flex-shrink-0">{t("sliders.height")}</label>
                 <input value={settings.height} onChange={e => setSettings(p => ({ ...p, height: e.target.value }))}
-                  className="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" placeholder="500px" />
+                  className="w-20 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="500px" />
               </div>
             </div>
             {settings.auto_play && (
               <div className="mt-2 flex items-center gap-2">
-                <label className="text-xs text-gray-400">{t("sliders.intervalMs")}</label>
+                <label className="text-xs text-muted-foreground">{t("sliders.intervalMs")}</label>
                 <input type="number" value={settings.interval_ms} onChange={e => setSettings(p => ({ ...p, interval_ms: Number(e.target.value) }))}
-                  className="w-24 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+                  className="w-24 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
               </div>
             )}
-            <button onClick={saveSettings} disabled={savingSettings} className="mt-2 flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300">
+            <button onClick={saveSettings} disabled={savingSettings} className="mt-2 flex items-center gap-1.5 text-xs text-primary hover:text-indigo-300">
               {savingSettings ? <Loader2 className="w-3 h-3 animate-spin" /> : savedSettings ? <CheckCircle className="w-3 h-3" /> : <Save className="w-3 h-3" />}
               {savedSettings ? t("sliders.saved") : t("sliders.saveSettings")}
             </button>
@@ -247,22 +247,22 @@ function GroupCard({ group, onUpdate, onDelete }: {
                 <SlideEditor key={slide.id} slide={slide} groupId={group.id}
                   onSave={(u, isNew) => handleSlideSaved(u, isNew)} onCancel={() => setEditingSlide(null)} />
               ) : (
-                <div key={slide.id} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg group/slide">
+                <div key={slide.id} className="flex items-center gap-3 p-3 bg-muted rounded-lg group/slide">
                   {slide.image_url ? (
                     <div className="w-16 h-10 rounded overflow-hidden flex-shrink-0">
                       <img src={slide.image_url} className="w-full h-full object-cover" alt="" />
                     </div>
                   ) : (
-                    <div className="w-16 h-10 rounded bg-gray-700 flex-shrink-0" />
+                    <div className="w-16 h-10 rounded bg-muted-foreground/20 flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{slide.title ?? t("sliders.untitledSlide")}</p>
-                    {slide.subtitle && <p className="text-xs text-gray-400 truncate">{slide.subtitle}</p>}
+                    <p className="text-sm font-medium text-foreground truncate">{slide.title ?? t("sliders.untitledSlide")}</p>
+                    {slide.subtitle && <p className="text-xs text-muted-foreground truncate">{slide.subtitle}</p>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover/slide:opacity-100 transition-opacity">
-                    <button onClick={() => setEditingSlide(slide.id)} className="text-gray-400 hover:text-white p-1"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => duplicateSlide(slide)} className="text-gray-400 hover:text-green-400 p-1" title={t("sliders.duplicate")}><Copy className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => deleteSlide(slide.id)} className="text-gray-400 hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setEditingSlide(slide.id)} className="text-muted-foreground hover:text-foreground p-1"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => duplicateSlide(slide)} className="text-muted-foreground hover:text-green-400 p-1" title={t("sliders.duplicate")}><Copy className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => deleteSlide(slide.id)} className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
               )
@@ -273,7 +273,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
                 onSave={(slide, isNew) => handleSlideSaved(slide, isNew)} onCancel={() => setAddingSlide(false)} />
             ) : (
               <button onClick={() => setAddingSlide(true)}
-                className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
+                className="w-full flex items-center gap-2 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Plus className="w-4 h-4" /> {t("sliders.addSlide")}
               </button>
             )}
@@ -309,10 +309,10 @@ export default function SlidersClient({ initialGroups }: { initialGroups: Slider
     <div className="p-6 max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <SlidersHorizontal className="w-6 h-6 text-indigo-400" /> {t("sliders.title")}
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <SlidersHorizontal className="w-6 h-6 text-primary" /> {t("sliders.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">{t("sliders.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("sliders.subtitle")}</p>
         </div>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
           <Plus className="w-4 h-4" /> {t("sliders.newSlider")}
@@ -320,23 +320,23 @@ export default function SlidersClient({ initialGroups }: { initialGroups: Slider
       </div>
 
       {creating && (
-        <div className="bg-gray-900 border border-indigo-500/40 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-card border border-primary/40 rounded-xl p-4 flex items-center gap-3">
           <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") createGroup(); if (e.key === "Escape") setCreating(false); }}
             placeholder={t("sliders.sliderNamePlaceholder")}
-            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="flex-1 bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
           <button onClick={createGroup} disabled={saving || !newName.trim()}
             className="flex items-center gap-1.5 bg-indigo-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("sliders.create")}
           </button>
-          <button onClick={() => setCreating(false)} className="text-gray-400"><X className="w-5 h-5" /></button>
+          <button onClick={() => setCreating(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
         </div>
       )}
 
       {groups.length === 0 && !creating ? (
-        <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
-          <SlidersHorizontal className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">{t("sliders.noSlidersYet")}</p>
+        <div className="text-center py-16 border border-dashed border-border rounded-xl">
+          <SlidersHorizontal className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{t("sliders.noSlidersYet")}</p>
         </div>
       ) : (
         <div className="space-y-4">

@@ -57,33 +57,33 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   }
 
   return (
-    <div className="border border-indigo-500/30 rounded-lg p-4 space-y-3 bg-indigo-950/20">
+    <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-indigo-950/20">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("portfolio.itemTitle")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("portfolio.itemTitle")}</label>
           <input value={item.title ?? ""} onChange={e => set("title", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("portfolio.image")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("portfolio.image")}</label>
           <MediaPickerInput compact value={item.image_url ?? ""} onChange={v => set("image_url", v)} />
         </div>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">{t("portfolio.description")}</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t("portfolio.description")}</label>
         <textarea rows={2} value={item.description ?? ""} onChange={e => set("description", e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none resize-none" />
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("portfolio.linkUrl")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("portfolio.linkUrl")}</label>
           <input value={item.link ?? ""} onChange={e => set("link", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">{t("portfolio.tagsCommaSeparated")}</label>
+          <label className="block text-xs text-muted-foreground mb-1">{t("portfolio.tagsCommaSeparated")}</label>
           <input value={tagInput} onChange={e => setTagInput(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none" placeholder={t("portfolio.tagsPlaceholder")} />
+            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder={t("portfolio.tagsPlaceholder")} />
         </div>
       </div>
       <div className="flex gap-2">
@@ -91,7 +91,7 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
           {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} {t("portfolio.save")}
         </button>
-        <button onClick={onCancel} className="flex items-center gap-1.5 bg-gray-700 text-white text-xs px-3 py-1.5 rounded">
+        <button onClick={onCancel} className="flex items-center gap-1.5 bg-muted-foreground/20 text-foreground text-xs px-3 py-1.5 rounded">
           <X className="w-3 h-3" /> {t("portfolio.cancel")}
         </button>
       </div>
@@ -143,30 +143,30 @@ function GroupCard({ group, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
-        <button onClick={() => setOpen(o => !o)} className="text-gray-400 hover:text-white">
+        <button onClick={() => setOpen(o => !o)} className="text-muted-foreground hover:text-foreground">
           {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
         {editingName ? (
           <div className="flex items-center gap-2 flex-1">
             <input autoFocus value={name} onChange={e => setName(e.target.value)}
-              className="flex-1 bg-gray-800 border border-indigo-500 rounded px-2 py-1 text-sm text-white focus:outline-none" />
-            <button onClick={saveName} className="text-indigo-400"><Check className="w-4 h-4" /></button>
-            <button onClick={() => { setEditingName(false); setName(group.name); }} className="text-gray-400"><X className="w-4 h-4" /></button>
+              className="flex-1 bg-muted border border-primary rounded px-2 py-1 text-sm text-foreground focus:outline-none" />
+            <button onClick={saveName} className="text-primary"><Check className="w-4 h-4" /></button>
+            <button onClick={() => { setEditingName(false); setName(group.name); }} className="text-muted-foreground"><X className="w-4 h-4" /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2 flex-1">
-            <span className="font-medium text-white text-sm">{group.name}</span>
-            <button onClick={() => setEditingName(true)} className="text-gray-500 hover:text-gray-300"><Pencil className="w-3 h-3" /></button>
+            <span className="font-medium text-foreground text-sm">{group.name}</span>
+            <button onClick={() => setEditingName(true)} className="text-muted-foreground hover:text-foreground/80"><Pencil className="w-3 h-3" /></button>
           </div>
         )}
-        <span className="text-xs text-gray-500">{t("portfolio.itemsCount", { count: group.portfolio_items.length })}</span>
-        <button onClick={deleteGroup} className="text-gray-600 hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
+        <span className="text-xs text-muted-foreground">{t("portfolio.itemsCount", { count: group.portfolio_items.length })}</span>
+        <button onClick={deleteGroup} className="text-muted-foreground hover:text-red-400 ml-2"><Trash2 className="w-4 h-4" /></button>
       </div>
 
       {open && (
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-border">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
             {group.portfolio_items.map(item => (
               editingItem === item.id ? (
@@ -175,19 +175,19 @@ function GroupCard({ group, onUpdate, onDelete }: {
                     onSave={(u, isNew) => handleItemSaved(u, isNew)} onCancel={() => setEditingItem(null)} />
                 </div>
               ) : (
-                <div key={item.id} className="relative group/item rounded-lg overflow-hidden aspect-square bg-gray-800">
+                <div key={item.id} className="relative group/item rounded-lg overflow-hidden aspect-square bg-muted">
                   <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity flex flex-col justify-between p-2">
                     <div className="flex gap-1 justify-end">
-                      <button onClick={() => setEditingItem(item.id)} className="bg-white/20 hover:bg-white/30 p-1 rounded"><Pencil className="w-3 h-3 text-white" /></button>
-                      <button onClick={() => duplicateItem(item)} className="bg-white/20 hover:bg-green-500/80 p-1 rounded" title={t("portfolio.duplicate")}><Copy className="w-3 h-3 text-white" /></button>
-                      <button onClick={() => deleteItem(item.id)} className="bg-red-500/80 hover:bg-red-500 p-1 rounded"><Trash2 className="w-3 h-3 text-white" /></button>
+                      <button onClick={() => setEditingItem(item.id)} className="bg-white/20 hover:bg-white/30 p-1 rounded"><Pencil className="w-3 h-3 text-foreground" /></button>
+                      <button onClick={() => duplicateItem(item)} className="bg-white/20 hover:bg-green-500/80 p-1 rounded" title={t("portfolio.duplicate")}><Copy className="w-3 h-3 text-foreground" /></button>
+                      <button onClick={() => deleteItem(item.id)} className="bg-red-500/80 hover:bg-red-500 p-1 rounded"><Trash2 className="w-3 h-3 text-foreground" /></button>
                     </div>
                     <div>
-                      <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                      <p className="text-foreground text-xs font-medium truncate">{item.title}</p>
                       {item.tags.length > 0 && (
                         <div className="flex gap-1 mt-1 flex-wrap">
-                          {item.tags.slice(0, 3).map(tag => <span key={tag} className="text-xs bg-white/20 text-white px-1 rounded">{tag}</span>)}
+                          {item.tags.slice(0, 3).map(tag => <span key={tag} className="text-xs bg-white/20 text-foreground px-1 rounded">{tag}</span>)}
                         </div>
                       )}
                     </div>
@@ -202,7 +202,7 @@ function GroupCard({ group, onUpdate, onDelete }: {
               onSave={(item, isNew) => handleItemSaved(item, isNew)} onCancel={() => setAddingItem(false)} />
           ) : (
             <button onClick={() => setAddingItem(true)}
-              className="w-full flex items-center gap-2 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg px-3 py-2 text-sm text-gray-400 hover:text-indigo-400 transition-colors">
+              className="w-full flex items-center gap-2 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-primary transition-colors">
               <Plus className="w-4 h-4" /> {t("portfolio.addPortfolioItem")}
             </button>
           )}
@@ -233,10 +233,10 @@ export default function PortfolioClient({ initialGroups }: { initialGroups: Port
     <div className="p-6 max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <FolderOpen className="w-6 h-6 text-indigo-400" /> {t("portfolio.title")}
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <FolderOpen className="w-6 h-6 text-primary" /> {t("portfolio.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">{t("portfolio.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("portfolio.subtitle")}</p>
         </div>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
           <Plus className="w-4 h-4" /> {t("portfolio.newGallery")}
@@ -244,23 +244,23 @@ export default function PortfolioClient({ initialGroups }: { initialGroups: Port
       </div>
 
       {creating && (
-        <div className="bg-gray-900 border border-indigo-500/40 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-card border border-primary/40 rounded-xl p-4 flex items-center gap-3">
           <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") createGroup(); if (e.key === "Escape") setCreating(false); }}
             placeholder={t("portfolio.galleryNamePlaceholder")}
-            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none" />
+            className="flex-1 bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
           <button onClick={createGroup} disabled={saving || !newName.trim()}
             className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t("portfolio.create")}
           </button>
-          <button onClick={() => setCreating(false)} className="text-gray-400"><X className="w-5 h-5" /></button>
+          <button onClick={() => setCreating(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
         </div>
       )}
 
       {groups.length === 0 && !creating ? (
-        <div className="text-center py-16 border border-dashed border-gray-800 rounded-xl">
-          <FolderOpen className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">{t("portfolio.noGalleriesYet")}</p>
+        <div className="text-center py-16 border border-dashed border-border rounded-xl">
+          <FolderOpen className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{t("portfolio.noGalleriesYet")}</p>
         </div>
       ) : (
         <div className="space-y-4">

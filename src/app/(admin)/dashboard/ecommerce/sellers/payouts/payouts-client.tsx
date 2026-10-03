@@ -99,54 +99,54 @@ export default function PayoutsClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Wallet className="w-6 h-6 text-indigo-400" /> {t("payouts.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Wallet className="w-6 h-6 text-primary" /> {t("payouts.title")}
         </h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           {t("payouts.subtitle")}
         </p>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
         <>
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
+              <h2 className="text-sm font-semibold text-foreground/80 uppercase tracking-wide">
                 {t("payouts.readyToPay")}
               </h2>
               {eligible.length > 0 && (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {t("payouts.totalDue", { amount: tk(totalDue) })}
                 </p>
               )}
             </div>
 
             {eligible.length === 0 ? (
-              <div className="border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">
+              <div className="border border-border rounded-xl p-8 text-center text-muted-foreground text-sm">
                 {t("payouts.nothingPayableYet")}
               </div>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 {eligible.map((e) => (
-                  <div key={e.vendor_id} className="border border-gray-800 rounded-xl p-4 bg-gray-900/40 space-y-3">
+                  <div key={e.vendor_id} className="border border-border rounded-xl p-4 bg-card space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h3 className="font-semibold text-white truncate flex items-center gap-1.5">
-                          <Store className="w-4 h-4 text-gray-500 shrink-0" /> {e.vendor_name}
+                        <h3 className="font-semibold text-foreground truncate flex items-center gap-1.5">
+                          <Store className="w-4 h-4 text-muted-foreground shrink-0" /> {e.vendor_name}
                         </h3>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {t("payouts.orderCount", { count: e.sub_order_count, plural: e.sub_order_count === 1 ? "" : "s" })}
                           {e.bkash_number ? ` ${t("payouts.bkashNumber", { number: e.bkash_number })}` : ` ${t("payouts.noBkashSet")}`}
                         </p>
                       </div>
-                      <p className="text-lg font-bold text-white shrink-0">{tk(e.net)}</p>
+                      <p className="text-lg font-bold text-foreground shrink-0">{tk(e.net)}</p>
                     </div>
 
-                    <div className="text-xs text-gray-400 space-y-0.5">
+                    <div className="text-xs text-muted-foreground space-y-0.5">
                       <p>{t("payouts.gross", { amount: tk(e.gross) })}</p>
                       <p>{t("payouts.commission", { amount: tk(e.commission) })}</p>
                       {e.deductions > 0 && <p>{t("payouts.codFees", { amount: tk(e.deductions) })}</p>}
@@ -171,18 +171,18 @@ export default function PayoutsClient() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
+            <h2 className="text-sm font-semibold text-foreground/80 uppercase tracking-wide">
               {t("payouts.payoutHistory")}
             </h2>
             {payouts.length === 0 ? (
-              <div className="border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">
+              <div className="border border-border rounded-xl p-8 text-center text-muted-foreground text-sm">
                 {t("payouts.noPayoutsYet")}
               </div>
             ) : (
-              <div className="border border-gray-800 rounded-xl overflow-hidden">
+              <div className="border border-border rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-900/60 text-gray-400">
+                    <thead className="bg-card text-muted-foreground">
                       <tr>
                         <th className="text-left font-medium px-4 py-2.5">{t("payouts.colSeller")}</th>
                         <th className="text-left font-medium px-4 py-2.5">{t("payouts.colPeriod")}</th>
@@ -193,21 +193,21 @@ export default function PayoutsClient() {
                         <th className="px-4 py-2.5" />
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-border">
                       {payouts.map((p) => (
-                        <tr key={p.id} className="text-gray-300">
+                        <tr key={p.id} className="text-foreground/80">
                           <td className="px-4 py-2.5">
-                            <span className="text-white">{p.vendors?.name ?? "—"}</span>
+                            <span className="text-foreground">{p.vendors?.name ?? "—"}</span>
                             {p.reference && (
-                              <span className="block text-xs text-gray-500">{t("payouts.refLabel", { reference: p.reference })}</span>
+                              <span className="block text-xs text-muted-foreground">{t("payouts.refLabel", { reference: p.reference })}</span>
                             )}
                           </td>
-                          <td className="px-4 py-2.5 text-gray-400 whitespace-nowrap">
+                          <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
                             {p.period_start} → {p.period_end}
                           </td>
                           <td className="px-4 py-2.5 text-right">{tk(p.gross)}</td>
-                          <td className="px-4 py-2.5 text-right text-gray-400">−{tk(p.commission)}</td>
-                          <td className="px-4 py-2.5 text-right font-semibold text-white">{tk(p.net)}</td>
+                          <td className="px-4 py-2.5 text-right text-muted-foreground">−{tk(p.commission)}</td>
+                          <td className="px-4 py-2.5 text-right font-semibold text-foreground">{tk(p.net)}</td>
                           <td className="px-4 py-2.5">
                             <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_CLS[p.status]}`}>
                               {t(STATUS_LABEL_KEY[p.status])}
@@ -223,7 +223,7 @@ export default function PayoutsClient() {
                               </button>
                             )}
                             {p.status === "paid" && p.paid_at && (
-                              <span className="text-xs text-gray-500 flex items-center justify-end gap-1">
+                              <span className="text-xs text-muted-foreground flex items-center justify-end gap-1">
                                 <Clock className="w-3 h-3" />
                                 {new Date(p.paid_at).toLocaleDateString()}
                               </span>
@@ -243,8 +243,8 @@ export default function PayoutsClient() {
       {paying && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setPaying(null)} />
-          <div className="relative w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
-            <h2 className="text-lg font-semibold text-white">{t("payouts.markPayoutPaidTitle")}</h2>
+          <div className="relative w-full max-w-md bg-background border border-border rounded-2xl p-5 space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">{t("payouts.markPayoutPaidTitle")}</h2>
             <div className="flex items-start gap-2 text-sm text-amber-300 bg-amber-950/40 border border-amber-800/50 rounded-lg p-3">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <p>
@@ -255,12 +255,12 @@ export default function PayoutsClient() {
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               placeholder={t("payouts.transactionIdPlaceholder")}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setPaying(null)}
-                className="inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm"
+                className="inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm"
               >
                 {t("payouts.cancel")}
               </button>

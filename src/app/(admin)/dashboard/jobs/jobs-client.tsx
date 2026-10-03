@@ -23,16 +23,16 @@ interface Job {
 }
 
 const STATUS_META: Record<Job["status"], { labelKey: TranslationKey; cls: string }> = {
-  unassigned: { labelKey: "jobs.statusUnassigned", cls: "bg-gray-800 text-gray-400 border-gray-700" },
+  unassigned: { labelKey: "jobs.statusUnassigned", cls: "bg-muted text-muted-foreground border-border" },
   assigned: { labelKey: "jobs.statusAssigned", cls: "bg-blue-900/50 text-blue-300 border-blue-700/50" },
   in_progress: { labelKey: "jobs.statusInProgress", cls: "bg-yellow-900/50 text-yellow-300 border-yellow-700/50" },
   completed: { labelKey: "jobs.statusCompleted", cls: "bg-green-900/50 text-green-300 border-green-700/50" },
-  cancelled: { labelKey: "jobs.statusCancelled", cls: "bg-gray-800 text-gray-500 border-gray-700" },
+  cancelled: { labelKey: "jobs.statusCancelled", cls: "bg-muted text-muted-foreground border-border" },
 };
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
-const btnGhost = "inline-flex items-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors";
+const btnGhost = "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
 
 /** wa.me deep link with the job brief prefilled — WhatsApp without any API. */
 function staffWaLink(job: Job, staffPhone: string) {
@@ -72,10 +72,10 @@ function NewJobModal({ staff, onClose, onCreated }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-3">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{t("jobs.newJobTitle")}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-bold text-foreground">{t("jobs.newJobTitle")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
         </div>
         <input className={inputCls} placeholder={t("jobs.jobTitlePlaceholder")} value={f.title}
           onChange={(e) => setF(p => ({ ...p, title: e.target.value }))} />
@@ -139,7 +139,7 @@ function StaffTab({ staff, setStaff }: { staff: Staff[]; setStaff: (fn: (s: Staf
 
   return (
     <div className="max-w-2xl space-y-4">
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-2">
+      <div className="bg-card border border-border rounded-xl p-4 grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-2">
         <input className={inputCls} placeholder={t("jobs.namePlaceholder")} value={f.name} onChange={(e) => setF(p => ({ ...p, name: e.target.value }))} />
         <input className={inputCls} placeholder={t("jobs.phoneWhatsappPlaceholder")} value={f.phone} onChange={(e) => setF(p => ({ ...p, phone: e.target.value }))} />
         <input className={inputCls} placeholder={t("jobs.rolePlaceholder")} value={f.role_title} onChange={(e) => setF(p => ({ ...p, role_title: e.target.value }))} />
@@ -147,23 +147,23 @@ function StaffTab({ staff, setStaff }: { staff: Staff[]; setStaff: (fn: (s: Staf
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
         </button>
       </div>
-      <div className="bg-gray-900 border border-gray-800 rounded-xl divide-y divide-gray-800">
-        {staff.length === 0 && <div className="text-center py-10 text-gray-500 text-sm">{t("jobs.noStaffYet")}</div>}
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
+        {staff.length === 0 && <div className="text-center py-10 text-muted-foreground text-sm">{t("jobs.noStaffYet")}</div>}
         {staff.map((s) => (
           <div key={s.id} className="flex items-center gap-3 px-4 py-3">
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${s.active ? "bg-indigo-600/20 text-indigo-300" : "bg-gray-800 text-gray-600"}`}>
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${s.active ? "bg-indigo-600/20 text-indigo-300" : "bg-muted text-muted-foreground"}`}>
               {s.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <div className={`text-sm font-medium ${s.active ? "text-white" : "text-gray-500 line-through"}`}>{s.name}</div>
-              <div className="text-xs text-gray-500">{[s.role_title, s.phone].filter(Boolean).join(" · ") || "—"}</div>
+              <div className={`text-sm font-medium ${s.active ? "text-foreground" : "text-muted-foreground line-through"}`}>{s.name}</div>
+              <div className="text-xs text-muted-foreground">{[s.role_title, s.phone].filter(Boolean).join(" · ") || "—"}</div>
             </div>
             {s.phone && (
               <a href={`https://wa.me/${s.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
-                className="p-2 text-gray-500 hover:text-green-400 rounded-lg hover:bg-gray-800"><MessageCircle className="w-4 h-4" /></a>
+                className="p-2 text-muted-foreground hover:text-green-400 rounded-lg hover:bg-muted"><MessageCircle className="w-4 h-4" /></a>
             )}
             <button onClick={() => toggle(s)} className={btnGhost}>{s.active ? t("jobs.deactivate") : t("jobs.activate")}</button>
-            <button onClick={() => remove(s)} className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-gray-800"><Trash2 className="w-4 h-4" /></button>
+            <button onClick={() => remove(s)} className="p-2 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>
@@ -214,20 +214,20 @@ export default function JobsClient({ initialJobs, initialStaff }: {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Briefcase className="w-6 h-6 text-indigo-400" /> {t("jobs.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Briefcase className="w-6 h-6 text-primary" /> {t("jobs.title")}
         </h1>
         <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("jobs.newJob")}</button>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-800">
+      <div className="flex gap-1 border-b border-border">
         {([["jobs", t("jobs.tabJobs"), Briefcase], ["staff", t("jobs.tabStaff"), Users]] as const).map(([id, label, Icon]) => (
           <button key={id} onClick={() => setTab(id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === id ? "border-indigo-500 text-white" : "border-transparent text-gray-400 hover:text-gray-200"
+              tab === id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}>
             <Icon className="w-4 h-4" /> {label}
-            {id === "staff" && <span className="text-xs text-gray-500">{staff.filter(s => s.active).length}</span>}
+            {id === "staff" && <span className="text-xs text-muted-foreground">{staff.filter(s => s.active).length}</span>}
           </button>
         ))}
       </div>
@@ -240,37 +240,37 @@ export default function JobsClient({ initialJobs, initialStaff }: {
             {["active", "unassigned", "assigned", "in_progress", "completed", "cancelled", "all"].map(s => (
               <button key={s} onClick={() => setFilter(s)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-700 text-gray-400 hover:border-gray-500"
+                  filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground hover:border-gray-500"
                 }`}>{t(FILTER_KEY[s])}</button>
             ))}
           </div>
 
           <div className="space-y-3">
             {shown.length === 0 && (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl text-center py-16 text-gray-500 text-sm">
+              <div className="bg-card border border-border rounded-xl text-center py-16 text-muted-foreground text-sm">
                 {t("jobs.noJobsHere")}
               </div>
             )}
             {shown.map((j) => (
-              <div key={j.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
+              <div key={j.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-white">{j.title}</span>
+                      <span className="text-sm font-semibold text-foreground">{j.title}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_META[j.status].cls}`}>{t(STATUS_META[j.status].labelKey)}</span>
-                      {j.price != null && <span className="text-xs text-gray-400">{Number(j.price).toFixed(2)}</span>}
+                      {j.price != null && <span className="text-xs text-muted-foreground">{Number(j.price).toFixed(2)}</span>}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1 flex items-center gap-3 flex-wrap">
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                       {j.scheduled_date && <span>{j.scheduled_date}{j.scheduled_time ? ` ${j.scheduled_time.slice(0, 5)}` : ""}</span>}
                       {j.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{j.address}</span>}
                       {j.customer_name && <span>{j.customer_name}</span>}
                     </div>
                   </div>
-                  <button onClick={() => del(j)} className="p-1.5 text-gray-600 hover:text-red-400 rounded-lg hover:bg-gray-800 shrink-0"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => del(j)} className="p-1.5 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted shrink-0"><Trash2 className="w-4 h-4" /></button>
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <select className="bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                  <select className="bg-muted border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     value={j.staff_id ?? ""} disabled={busy === j.id}
                     onChange={(e) => patch(j, { staff_id: e.target.value || null })}>
                     <option value="">{t("jobs.unassignedOption")}</option>
@@ -287,7 +287,7 @@ export default function JobsClient({ initialJobs, initialStaff }: {
                   )}
                   {j.customer_phone && (
                     <a href={`tel:${j.customer_phone}`}
-                      className="inline-flex items-center gap-1.5 border border-gray-700 text-gray-300 hover:bg-gray-800 px-2.5 py-1.5 rounded-lg text-xs transition-colors">
+                      className="inline-flex items-center gap-1.5 border border-border text-foreground/80 hover:bg-muted px-2.5 py-1.5 rounded-lg text-xs transition-colors">
                       <Phone className="w-3.5 h-3.5" /> {t("jobs.customer")}
                     </a>
                   )}
@@ -307,7 +307,7 @@ export default function JobsClient({ initialJobs, initialStaff }: {
                     )}
                     {!["completed", "cancelled"].includes(j.status) && (
                       <button disabled={busy === j.id} onClick={() => patch(j, { status: "cancelled" })}
-                        className="inline-flex items-center gap-1.5 text-xs text-gray-400 border border-gray-700 hover:bg-gray-800 px-2.5 py-1.5 rounded-lg transition-colors">
+                        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-border hover:bg-muted px-2.5 py-1.5 rounded-lg transition-colors">
                         <Ban className="w-3.5 h-3.5" /> {t("jobs.cancel")}
                       </button>
                     )}

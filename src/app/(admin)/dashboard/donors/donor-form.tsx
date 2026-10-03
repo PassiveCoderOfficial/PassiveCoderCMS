@@ -11,8 +11,8 @@ import { useT } from "@/lib/i18n/language-provider";
 
 const MapPicker = dynamic(() => import("@/components/donors/donor-map").then(m => m.MapPicker), { ssr: false });
 
-const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/30";
-const labelCls = "block text-xs font-medium text-gray-400 mb-1";
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-500/30";
+const labelCls = "block text-xs font-medium text-muted-foreground mb-1";
 
 async function api(path: string, method: string, body?: unknown) {
   const res = await fetch(path, {
@@ -88,20 +88,20 @@ export function DonorDashboardForm({ donorId }: { donorId?: string }) {
     router.push("/dashboard/donors");
   }
 
-  if (!ready) return <div className="p-6 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-gray-500" /></div>;
+  if (!ready) return <div className="p-6 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>;
 
   const thanas = f.district ? BD_LOCATIONS[f.district] ?? [] : [];
 
   return (
     <div className="p-6 max-w-2xl space-y-4">
-      <Link href="/dashboard/donors" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
+      <Link href="/dashboard/donors" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="w-4 h-4" /> {t("donors.backToDonors")}
       </Link>
-      <h1 className="text-xl font-bold text-white flex items-center gap-2">
+      <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
         <Droplet className="w-5 h-5 text-red-500" fill="currentColor" /> {donorId ? t("donors.editDonor", { name: f.name }) : t("donors.newDonor")}
       </h1>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
+      <div className="bg-card border border-border rounded-xl p-5 space-y-3">
         <div><label className={labelCls}>{t("donors.name")}</label><input className={inputCls} value={f.name} onChange={e => set("name", e.target.value)} /></div>
         <div className="grid grid-cols-2 gap-3">
           <div><label className={labelCls}>{t("donors.phone")}</label><input className={inputCls} placeholder="01XXXXXXXXX" value={f.phone} onChange={e => set("phone", e.target.value)} /></div>
@@ -155,11 +155,11 @@ export function DonorDashboardForm({ donorId }: { donorId?: string }) {
           <input className={inputCls} type="date" disabled={f.never_donated || f.date_unknown}
             value={f.last_donated_on} onChange={e => set("last_donated_on", e.target.value)} />
           <div className="flex flex-col gap-1.5 mt-2">
-            <label className="flex items-center gap-2 text-sm text-gray-400">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={f.never_donated} onChange={e => { set("never_donated", e.target.checked); if (e.target.checked) set("date_unknown", false); }} className="accent-green-600" />
               {t("donors.neverDonated")} <span className="text-[11px] text-green-400">{t("donors.green")}</span>
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-400">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={f.date_unknown} onChange={e => { set("date_unknown", e.target.checked); if (e.target.checked) set("never_donated", false); }} className="accent-yellow-500" />
               {t("donors.dateUnknown")} <span className="text-[11px] text-yellow-400">{t("donors.yellow")}</span>
             </label>
@@ -167,8 +167,8 @@ export function DonorDashboardForm({ donorId }: { donorId?: string }) {
         </div>
         <div><label className={labelCls}>{t("donors.socialContactLinks")}</label><SocialLinksEditor socials={socials} onChange={setSocials} /></div>
 
-        <div className="border-t border-gray-800 pt-3 space-y-3">
-          <div className="flex items-center gap-5 flex-wrap text-sm text-gray-400">
+        <div className="border-t border-border pt-3 space-y-3">
+          <div className="flex items-center gap-5 flex-wrap text-sm text-muted-foreground">
             <label className="flex items-center gap-2"><input type="checkbox" checked={f.is_active} onChange={e => set("is_active", e.target.checked)} className="accent-red-600" /> {t("donors.activeVisible")}</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={f.is_admin} onChange={e => set("is_admin", e.target.checked)} className="accent-red-600" /> {t("donors.admin")}</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!f.is_available} onChange={e => set("is_available", !e.target.checked)} className="accent-gray-500" /> {t("donors.temporarilyUnavailable")}</label>

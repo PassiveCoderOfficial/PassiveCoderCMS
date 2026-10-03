@@ -10,7 +10,7 @@ interface Product {
   low_stock_threshold: number | null; images: unknown;
 }
 
-const inputCls = "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const inputCls = "bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
 
 export default function InventoryClient({ initialProducts }: { initialProducts: Product[] }) {
   const t = useT();
@@ -46,13 +46,13 @@ export default function InventoryClient({ initialProducts }: { initialProducts: 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Boxes className="w-6 h-6 text-indigo-400" /> {t("inventory.title")}
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Boxes className="w-6 h-6 text-primary" /> {t("inventory.title")}
         </h1>
         {lowCount > 0 && (
           <button onClick={() => setLowOnly(!lowOnly)}
             className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
-              lowOnly ? "bg-red-900/40 border-red-700/50 text-red-300" : "border-gray-700 text-gray-300 hover:bg-gray-800"
+              lowOnly ? "bg-red-900/40 border-red-700/50 text-red-300" : "border-border text-foreground/80 hover:bg-muted"
             }`}>
             <AlertTriangle className="w-4 h-4" /> {t("inventory.lowStockCount", { count: lowCount })}
           </button>
@@ -60,27 +60,27 @@ export default function InventoryClient({ initialProducts }: { initialProducts: 
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
         <input className={`${inputCls} w-full pl-9`} placeholder={t("inventory.searchPlaceholder")}
           value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         {shown.length === 0 ? (
-          <div className="text-center py-16 text-gray-500 text-sm">{t("inventory.noProductsFound")}</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">{t("inventory.noProductsFound")}</div>
         ) : (
-          <div className="divide-y divide-gray-800">
+          <div className="divide-y divide-border">
             {shown.map((p) => (
               <div key={p.id} className="flex items-center gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white truncate">{p.name}</span>
+                    <span className="text-sm font-medium text-foreground truncate">{p.name}</span>
                     {isLow(p) && <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />}
                   </div>
-                  <div className="text-xs text-gray-500">{p.sku || t("inventory.noSku")} · {p.status}</div>
+                  <div className="text-xs text-muted-foreground">{p.sku || t("inventory.noSku")} · {p.status}</div>
                 </div>
 
-                <label className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
                   <input type="checkbox" checked={p.track_inventory}
                     onChange={(e) => patch(p, { track_inventory: e.target.checked })}
                     className="accent-indigo-600" />
@@ -92,7 +92,7 @@ export default function InventoryClient({ initialProducts }: { initialProducts: 
                     <div className="flex items-center gap-1 shrink-0">
                       <button onClick={() => patch(p, { stock_quantity: (p.stock_quantity ?? 0) - 1 })}
                         disabled={busy === p.id || (p.stock_quantity ?? 0) <= 0}
-                        className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 disabled:opacity-30">
+                        className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted disabled:opacity-30">
                         <Minus className="w-4 h-4" />
                       </button>
                       <input type="number" min={0} value={p.stock_quantity ?? 0}
@@ -102,11 +102,11 @@ export default function InventoryClient({ initialProducts }: { initialProducts: 
                         className={`${inputCls} w-20 text-center ${isLow(p) ? "border-red-700/60 text-red-300" : ""}`} />
                       <button onClick={() => patch(p, { stock_quantity: (p.stock_quantity ?? 0) + 1 })}
                         disabled={busy === p.id}
-                        className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800">
+                        className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted">
                         {busy === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                       </button>
                     </div>
-                    <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 shrink-0">
+                    <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                       {t("inventory.alertAt")}
                       <input type="number" min={0} value={p.low_stock_threshold ?? 0}
                         onChange={(e) => setProducts(list => list.map(x => x.id === p.id
