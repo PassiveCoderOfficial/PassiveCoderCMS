@@ -254,3 +254,10 @@ html {
     transparent 72%
   );
 }
+
+/* Order packing slip: print only the order, not the dashboard chrome. */
+@media print {
+  body:has(.order-print-root) aside,
+  body:has(.order-print-root) header,
+  body:has(.order-print-root) [data-sidebar] { display: none !important; }
+}

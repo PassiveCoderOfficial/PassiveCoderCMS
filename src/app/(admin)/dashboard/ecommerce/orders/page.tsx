@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { ShoppingBag, Plus, X, Loader2, Check, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useT } from "@/lib/i18n/language-provider";
+import { useSiteCurrency } from "@/lib/hooks/use-site-currency";
+import { useRouter } from "next/navigation";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface Order {
@@ -32,9 +34,6 @@ const STATUS_VARIANT: Record<string, "default" | "outline" | "destructive" | "se
 
 const supabase = createClient();
 
-function formatCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
-}
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
@@ -70,6 +69,16 @@ export default function OrdersPage() {
   }, []);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+  // Shop's own currency (site_settings), not hardcoded USD.
+  const money = useSiteCurrency().format;
+  const router = useRouter();
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const FILTERS = ["all", "pending", "processing", "on_hold", "completed", "cancelled"] as const;
+  const countOf = (f: string) => f === "all" ? orders.length : orders.filter(o => o.status === f).length;
+  const shown = orders.filter(o =>
+    (statusFilter === "all" || o.status === statusFilter) &&
+    (!q.trim() || [o.order_number, o.customer_name, o.customer_email].some(v => String(v ?? "").toLowerCase().includes(q.trim().toLowerCase()))));
 
   async function createOrder() {
     if (!form.customer_name.trim() || !form.customer_email.trim()) return;
@@ -163,6 +172,20 @@ export default function OrdersPage() {
         </Card>
       )}
 
+      {orders.length > 0 && (
+        <div className="space-y-3">
+          <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Search order number, customer name or email…" />
+          <div className="flex flex-wrap gap-1.5">
+            {FILTERS.map(f => (
+              <button key={f} type="button" onClick={() => setStatusFilter(f)}
+                className={`rounded-full border px-3 py-1 text-xs ${statusFilter === f ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}>
+                {f === "all" ? "All" : ORDER_STATUS_KEYS[f] ? t(ORDER_STATUS_KEYS[f]) : f} <span className="opacity-70">{countOf(f)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : orders.length === 0 && !adding ? (
@@ -175,8 +198,9 @@ export default function OrdersPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {orders.map(order => (
-            <Card key={order.id} className="hover:shadow-sm transition-shadow">
+          {shown.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">No orders match.</p>}
+          {shown.map(order => (
+            <Card key={order.id} className="hover:shadow-sm transition-shadow cursor-pointer" onClick={() => router.push(`/dashboard/ecommerce/orders/${order.id}`)}>
               <CardContent className="p-4 flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
@@ -189,7 +213,7 @@ export default function OrdersPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <p className="font-semibold text-sm">{formatCurrency(order.total)}</p>
+                  <p className="font-semibold text-sm">{money(order.total)}</p>
                   <Link href={`/dashboard/ecommerce/orders/${order.id}`} className="text-xs text-primary hover:underline">{t("orders.view")}</Link>
                 </div>
               </CardContent>

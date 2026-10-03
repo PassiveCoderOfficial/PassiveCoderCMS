@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Truck, Plus, Trash2, Pencil, Check, X, Loader2, GripVertical } from "lucide-react";
 import { useT } from "@/lib/i18n/language-provider";
+import { useSiteCurrency } from "@/lib/hooks/use-site-currency";
 
 interface DeliveryOption {
   id: string;
@@ -25,6 +26,7 @@ const supabase = createClient();
 
 export default function DeliveryPage() {
   const t = useT();
+  const money = useSiteCurrency().format;
   const [options, setOptions] = useState<DeliveryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -163,7 +165,7 @@ export default function DeliveryPage() {
                     {o.description && <p className="text-xs text-muted-foreground">{o.description}</p>}
                     {o.estimated_days && <p className="text-xs text-muted-foreground">{o.estimated_days}</p>}
                   </div>
-                  <p className="font-semibold text-sm shrink-0">{o.price === 0 ? t("delivery.free") : `$${o.price.toFixed(2)}`}</p>
+                  <p className="font-semibold text-sm shrink-0">{o.price === 0 ? t("delivery.free") : money(o.price)}</p>
                   <div className="flex items-center gap-1 shrink-0">
                     <Switch checked={o.is_enabled} onCheckedChange={() => toggleEnabled(o)} />
                     <Button size="sm" variant="ghost" onClick={() => startEdit(o)}><Pencil className="w-3.5 h-3.5" /></Button>
