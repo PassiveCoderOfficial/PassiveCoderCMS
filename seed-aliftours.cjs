@@ -1,12 +1,14 @@
 /**
- * Alif Tours & Cargo — UAE group based in Sanaiya, Al Ain. Air cargo from the
- * UAE to Bangladesh, plus a travel desk: Umrah packages, air tickets, visit
- * visas, holiday packages, hotel reservations, travel insurance and airport
- * transfers. The group also trades building materials and manufactures gypsum
- * design panels (About page only).
- * Pro-plan demo at aliftours.passivecoder.com. English, navy + signal red from
- * the client's "Alif Air Cargo" logo. All photos are Pexels stand-ins; no
- * prices on the site — enquiries go to WhatsApp. Safe to re-run.
+ * Alif Tours & Cargo — UAE group based in Sanaiya, Al Ain. Six service lines:
+ * Cargo (UAE to Bangladesh), Visa Processing, Ticketing, Umrah & Hajj, Tour
+ * Packages and Travel Services. Each line has its own page under /services/
+ * with its sub-services as anchored sections, so the header dropdowns can
+ * jump straight to them. The group also trades building materials and
+ * manufactures gypsum design panels (About page only).
+ * Pro-plan demo at aliftours.passivecoder.com. English, navy + signal red.
+ * Logo v2 is our own redraw (clients/Alif Tour & Cargo UAE/build-logo-v2.cjs).
+ * All photos are Pexels stand-ins; no prices — enquiries go to WhatsApp.
+ * Safe to re-run.
  */
 const fs = require("fs");
 const path = require("path");
@@ -31,6 +33,7 @@ const PHONE = "+971503202626";
 const PHONE_DISPLAY = "+971 50 320 2626";
 const WA_NUMBER = "971503202626";
 const ADDRESS = "3 Street 14/2, Sanaiya, Al Ain, United Arab Emirates";
+const HOURS = "Open daily, 9 AM to 11 PM";
 const MAPS_URL = "https://www.google.com/maps/search/?api=1&query=Sanaiya+Al+Ain+United+Arab+Emirates";
 const MAP_EMBED = "https://www.google.com/maps?q=Sanaiya%2C%20Al%20Ain%2C%20United%20Arab%20Emirates&z=14&output=embed";
 const waText = (t) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
@@ -47,10 +50,9 @@ const LINE = "#D5DDEA";
 
 const STORAGE_DIR = `uploads/${SLUG}`;
 const asset = (name) => `${SUPABASE_URL}/storage/v1/object/public/media/${STORAGE_DIR}/${name}`;
-// Built from the client's logo by clients/Alif Tour & Cargo UAE/build-logo.cjs.
-const LOGO_ON_LIGHT = asset("logo-dark-text.png");
-const LOGO_ON_DARK = asset("logo-light-text.png");
-const FAVICON_URL = asset("favicon.png");
+const LOGO_ON_LIGHT = asset("logo-v2.png");
+const LOGO_ON_DARK = asset("logo-v2-dark.png");
+const FAVICON_URL = asset("favicon-v2.png");
 
 // Pexels (free for commercial use), stand-ins until the client sends photos.
 const px = (id, w = 1600) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
@@ -62,12 +64,15 @@ const IMG = {
   boxes: px(5025503),
   warehouse: px(4487361),
   packing: px(31043129),
+  port: px(93106),
   wing: px(12916439, 2000),
   wing2: px(112116),
   tickets: px(7310015),
   passport: px(4922080),
+  passport2: px(8193761),
   dubai: px(33687795),
   dubaiWide: px(17865557),
+  desert: px(4781951),
   hotel: px(34672504),
   hotel2: px(5883728),
   maldives: px(28843924),
@@ -77,51 +82,96 @@ const IMG = {
   gypsum: px(5493670),
   plaster: px(6474130),
 };
+const sized = (url, w) => url.replace(/w=\d+/, `w=${w}`);
 
-// ─── Services ───────────────────────────────────────────────────────────────
-// From the client's description and shop banner. Cargo is the flagship; the
-// rest are the travel desk. Each gets its own page under /services/.
+// ─── Service lines ──────────────────────────────────────────────────────────
+// Six lines approved by Wali 2026-10-03. Each `subs` entry becomes an anchored
+// section (#<id>) on the line's page and a link in its header dropdown.
+// [id, icon, title, description, points[]]
 const SERVICES = [
   {
-    slug: "cargo-to-bangladesh", icon: "Package", title: "Cargo to Bangladesh", img: IMG.warehouse, desk: "cargo",
-    short: "Send boxes home from the UAE to Bangladesh, packed, tracked and handled with care.",
-    intro: "Our main service for over a decade. Bring your boxes to our Al Ain office or ask us about collection, and we send them to your family in Bangladesh.",
-    includes: [
-      ["Shirt", "Clothes & textiles", "Clothes, sarees, blankets and fabric for the family."],
-      ["Smartphone", "Electronics", "Phones, TVs, laptops and small appliances, packed safely."],
-      ["Gift", "Gifts & cosmetics", "Perfumes, cosmetics, chocolates and Eid gifts."],
-      ["Package", "Household goods", "Kitchenware, utensils and everyday household items."],
-      ["Wrench", "Tools & spare parts", "Hand tools, parts and work equipment."],
-      ["Boxes", "Personal & bulk boxes", "From a single carton to a full load for a business."],
+    slug: "cargo", nav: "Cargo", icon: "Package", title: "Cargo to Bangladesh", img: IMG.warehouse,
+    short: "Air and sea cargo from the UAE to Bangladesh, door to door, for families and businesses.",
+    intro: "Our specialty for over a decade. Send boxes to your family or goods for your business, by air when it is urgent or by sea when the load is big.",
+    wa: "I want to send cargo to Bangladesh.",
+    subs: [
+      ["air-cargo", "Plane", "Air Cargo to Bangladesh", "The fast way to send boxes home. Ideal for personal parcels, gifts, electronics and anything that cannot wait.", ["Personal boxes and parcels", "Electronics, clothes and gifts", "Weekly shipments"]],
+      ["sea-cargo", "Ship", "Sea Cargo to Bangladesh", "The economical way to send heavy or bulky goods when time is less important than cost.", ["Furniture and household goods", "Large and heavy loads", "Lower cost per kilo"]],
+      ["door-to-door", "Truck", "Door-to-Door Delivery", "We collect from your place in the UAE and deliver to your family's home in Bangladesh.", ["Collection across the UAE", "Delivery to the home address", "Updates along the way"]],
+      ["packing", "Boxes", "Packing & Boxing", "Proper cartons, tape and packing for fragile items, done at our office.", ["Cartons supplied", "Fragile items wrapped", "Weighed and labelled"]],
+      ["commercial", "Building2", "Commercial & Bulk Shipments", "Regular shipments for shops, traders and businesses sending goods to Bangladesh.", ["Trade and business goods", "Regular schedules", "Rates for volume"]],
     ],
-    tags: ["Air cargo", "Personal boxes", "Business shipments", "Packing help", "Tracking updates", "Delivery to the family"],
     steps: [
-      ["Message us", "Tell us what you are sending, roughly how many boxes and the destination district."],
-      ["Pack & weigh", "Bring the boxes to our Al Ain office, or ask about collection. We check, pack and weigh them."],
-      ["We ship", "Your cargo goes out on the next shipment with a receipt for your records."],
-      ["Delivered home", "We keep you updated until the boxes reach your family in Bangladesh."],
+      ["Message us", "Tell us what you are sending, the size or weight, and the district in Bangladesh."],
+      ["Get a rate", "We confirm air or sea and give you the rate before you pack."],
+      ["Drop off or collection", "Bring the boxes to our Al Ain office or book a collection."],
+      ["Delivered home", "We keep you updated until the boxes reach your family."],
     ],
     faq: [
-      ["How is the cargo price calculated?", "By weight and the type of goods. Send us the details on WhatsApp and we give you the rate before you pack."],
-      ["Which areas in Bangladesh do you deliver to?", "Tell us the district and we confirm delivery and the time it takes."],
-      ["Are there items you cannot send?", "Yes. Liquids, batteries on their own, and restricted or dangerous goods cannot go. Ask us first if you are not sure."],
-      ["Can you help me pack?", "Yes. We have cartons and tape at the office and pack fragile items properly."],
+      ["How is the cargo price calculated?", "By weight, size and the type of goods, and whether it goes by air or sea. Send us the details on WhatsApp for a rate."],
+      ["How long does air or sea cargo take?", "Air is the faster option and sea takes longer. We give you the current timeline when you book."],
+      ["Are there items you cannot send?", "Yes. Liquids, loose batteries, and restricted or dangerous goods cannot go. Ask us first if you are not sure."],
     ],
-    gallery: [IMG.warehouse, IMG.packing, IMG.boxes],
+    gallery: [IMG.warehouse, IMG.port, IMG.packing],
   },
   {
-    slug: "umrah-packages", icon: "Moon", title: "Umrah Packages", img: IMG.kaaba, desk: "travel",
-    short: "Complete Umrah packages from the UAE with visa, flights, hotels and transport arranged.",
-    intro: "Perform Umrah with everything taken care of. We arrange the visa, the travel, hotels in Makkah and Madinah, and transport between them, so you can focus on your worship.",
-    includes: [
-      ["FileCheck", "Umrah visa", "Visa processing handled by our team."],
-      ["Plane", "Flights or bus", "Travel by air or road from the UAE, depending on the package."],
-      ["Hotel", "Hotels in Makkah & Madinah", "Stays at a range of distances from the Haram."],
-      ["Bus", "Ground transport", "Transfers between airports, hotels and both holy cities."],
-      ["Users", "Family & group packages", "Packages for individuals, couples, families and groups."],
-      ["Calendar", "Ramadan & seasonal", "Special departures for Ramadan and school holidays."],
+    slug: "visa-processing", nav: "Visa", icon: "FileCheck", title: "Visa Processing", img: IMG.passport,
+    short: "UAE visit visas, Umrah visas and tourist visas abroad, with the paperwork handled for you.",
+    intro: "Bring your family to visit, travel for Umrah or apply for a tourist visa abroad. We give you a clear document checklist and handle the application.",
+    wa: "I want to ask about a visa.",
+    subs: [
+      ["uae-visit-visa", "Home", "UAE Visit Visa", "Visit and tourist visas for your parents, spouse, children and relatives to come to the UAE.", ["Family visit visas", "Tourist visas", "Short and long stays"]],
+      ["umrah-visa", "Moon", "Umrah Visa", "Umrah visas on their own or as part of a full Umrah package.", ["Visa only or with package", "Individuals and groups", "Fast processing"]],
+      ["tourist-visa", "Globe", "Tourist Visas Abroad", "Help applying for visas to Schengen countries, Malaysia, Thailand, Turkey and more.", ["Schengen", "Asia and Middle East", "Appointment and file preparation"]],
+      ["visa-extension", "RefreshCw", "Visa Extension & Status Change", "Guidance and processing for extending a visit visa or changing visa status.", ["Visit visa extensions", "Status change", "Clear timelines"]],
+      ["attestation", "Stamp", "Document Attestation & Typing", "Attestation of certificates and documents, plus typing services for applications.", ["Certificate attestation", "Application typing", "Translation on request"]],
     ],
-    tags: ["Economy packages", "Premium packages", "Ramadan Umrah", "Family groups", "First-time pilgrims", "Visa only on request"],
+    steps: [
+      ["Tell us the visa", "Who is travelling, their nationality and the visa needed."],
+      ["Get the checklist", "We send exactly which documents to prepare."],
+      ["We apply", "We submit the application and keep you updated."],
+      ["Visa issued", "You receive the visa and travel advice."],
+    ],
+    faq: [
+      ["How long does a UAE visit visa take?", "Processing times vary by visa type. We give you the current timeline when you apply."],
+      ["Can you guarantee approval?", "No one can guarantee a visa decision, but we make sure the application is complete and correct."],
+      ["Which documents do I need?", "It depends on the visa. Tell us which one and we send the exact checklist."],
+    ],
+    gallery: [IMG.passport, IMG.passport2, IMG.tickets],
+  },
+  {
+    slug: "ticketing", nav: "Ticketing", icon: "Plane", title: "Air Ticketing", img: IMG.wing,
+    short: "Flights to Bangladesh and worldwide, group fares, date changes and reissues.",
+    intro: "Going home for Eid, flying family over or travelling for work? Tell us the route and dates and we find a fair fare on a reliable airline.",
+    wa: "I want to book an air ticket.",
+    subs: [
+      ["bangladesh-flights", "PlaneTakeoff", "Flights to Bangladesh", "Dhaka, Chattogram and Sylhet from Abu Dhabi, Dubai and Sharjah. One-way and return.", ["Dhaka · Chattogram · Sylhet", "One-way and return", "Eid and holiday seasons"]],
+      ["international-flights", "Globe", "International Flights", "Tickets to any destination for holidays, business or family visits.", ["Worldwide destinations", "Economy and business", "Multi-city trips"]],
+      ["group-tickets", "Users", "Group & Labour Tickets", "Fares for families, company workers and groups travelling together.", ["Company and labour groups", "Family bookings", "Group fares"]],
+      ["date-change", "CalendarClock", "Date Change & Reissue", "Change your travel date or reissue your ticket, whatever the airline allows.", ["Date changes", "Reissues", "Cancellations and refunds help"]],
+    ],
+    steps: [
+      ["Send route & dates", "WhatsApp us where you are flying, when, and how many travellers."],
+      ["Get fare options", "We send the best options we can find."],
+      ["Ticket issued", "Confirm and receive your e-ticket."],
+    ],
+    faq: [
+      ["Can you find cheaper tickets to Bangladesh before Eid?", "Book as early as you can. Fares rise close to Eid, and we look for the best options for your dates."],
+      ["Can you change my existing ticket?", "Send us the ticket details and we check what the airline allows."],
+      ["Can you book for a group of workers?", "Yes. Send us the number of travellers and dates and we quote for the group."],
+    ],
+    gallery: [IMG.wing, IMG.wing2, IMG.tickets],
+  },
+  {
+    slug: "umrah-hajj", nav: "Umrah & Hajj", icon: "Moon", title: "Umrah & Hajj", img: IMG.kaaba,
+    short: "Umrah and Hajj packages from the UAE with visa, travel, hotels and transport arranged.",
+    intro: "Perform your pilgrimage with everything taken care of. We arrange the visa, the travel, hotels in Makkah and Madinah and the transport between them, so you can focus on worship.",
+    wa: "I want to ask about Umrah and Hajj packages.",
+    subs: [
+      ["umrah-packages", "Moon", "Umrah Packages", "Economy and premium Umrah packages for individuals, couples, families and groups.", ["Visa, travel and hotels", "Makkah and Madinah stays", "Ground transport included"]],
+      ["ramadan-umrah", "Sparkles", "Ramadan Umrah", "Special departures to perform Umrah in the blessed month, including the last ten nights.", ["Early booking recommended", "Last ten nights options", "Family packages"]],
+      ["hajj-packages", "Landmark", "Hajj Packages", "Hajj packages with full guidance, accommodation and transport through the season.", ["Guidance throughout", "Accommodation and transport", "Limited seats each year"]],
+    ],
     steps: [
       ["Choose your dates", "Tell us when you want to travel and how many people are going."],
       ["Pick a package", "We send the package options with hotels and price."],
@@ -130,67 +180,22 @@ const SERVICES = [
     ],
     faq: [
       ["Which documents do I need for Umrah?", "A passport valid for at least six months, a photo and a valid UAE residence visa. We confirm the full list when you book."],
-      ["Can you arrange Umrah for my family coming from Bangladesh?", "Ask us. We can advise on the options for relatives travelling from Bangladesh."],
       ["How far are the hotels from the Haram?", "It depends on the package. Each package lists its hotels so you can choose."],
+      ["When should I book Hajj?", "As early as possible. Seats are limited each year, so message us well before the season."],
     ],
     gallery: [IMG.kaaba, IMG.kaabaClose, IMG.madinah],
   },
   {
-    slug: "air-tickets", icon: "Plane", title: "Air Tickets", img: IMG.wing, desk: "travel",
-    short: "Flights to Bangladesh and worldwide at good fares, booked by people who answer the phone.",
-    intro: "Going home for Eid, flying family over, or travelling for work? Tell us the route and dates and we find you a fair fare on a reliable airline.",
-    includes: [
-      ["Plane", "UAE to Bangladesh", "Dhaka, Chattogram and Sylhet, one-way and return."],
-      ["Globe", "Worldwide flights", "Tickets to any destination your trip needs."],
-      ["Repeat", "Changes & reissues", "Help changing dates or reissuing your ticket."],
-      ["Users", "Group bookings", "Fares for families, workers and groups travelling together."],
-    ],
-    tags: ["Dhaka", "Chattogram", "Sylhet", "Saudi Arabia", "One-way", "Return", "Group fares"],
-    steps: [
-      ["Send route & dates", "WhatsApp us where you are flying and when."],
-      ["Get fare options", "We send the best options we can find."],
-      ["Ticket issued", "Confirm and receive your e-ticket."],
-    ],
-    faq: [
-      ["Can you find cheap tickets to Bangladesh before Eid?", "Book as early as you can. Fares rise close to Eid, and we watch for the best options for your dates."],
-      ["Can you change my existing ticket?", "Send us the ticket details and we check what the airline allows."],
-      ["How do I pay?", "Ask us when you book and we explain the payment options."],
-    ],
-    gallery: [IMG.wing, IMG.wing2, IMG.tickets],
-  },
-  {
-    slug: "visa-services", icon: "FileCheck", title: "Visit Visa & Visa Services", img: IMG.passport, desk: "travel",
-    short: "UAE visit visas for your family and help with visa applications for other countries.",
-    intro: "Bring your family to visit the UAE, or get help with the paperwork for travel abroad. We guide you on the documents and handle the application.",
-    includes: [
-      ["Home", "UAE visit visa", "Visit visas for parents, spouses, children and relatives."],
-      ["Globe", "Tourist visas abroad", "Help applying for visas to other countries."],
-      ["RefreshCw", "Visa extension & change", "Guidance on extending or changing visa status."],
-      ["FileText", "Document guidance", "A clear checklist of what you need before you apply."],
-    ],
-    tags: ["Family visit", "Tourist visa", "Umrah visa", "Extensions", "Document checklist"],
-    steps: [
-      ["Tell us who is travelling", "Share the traveller's nationality and the visa you need."],
-      ["Send documents", "We send a checklist. You send passport copies and photos."],
-      ["We apply", "We submit the application and keep you updated."],
-    ],
-    faq: [
-      ["How long does a UAE visit visa take?", "Processing times vary. We give you the current timeline when you apply."],
-      ["Can you guarantee approval?", "No one can guarantee a visa decision, but we make sure the application is complete and correct."],
-    ],
-    gallery: [IMG.passport, IMG.tickets, IMG.dubaiWide],
-  },
-  {
-    slug: "holiday-packages", icon: "Palmtree", title: "Holiday Packages", img: IMG.maldives, desk: "travel",
-    short: "Ready-made and custom holidays with flights, hotels and tours arranged in one package.",
+    slug: "tour-packages", nav: "Tours", icon: "Palmtree", title: "Tour Packages", img: IMG.maldives,
+    short: "UAE tours, international holidays, Bangladesh trips and honeymoon packages.",
     intro: "Take a proper holiday without planning every detail. Pick a destination and budget, and we put together flights, hotel, transfers and tours.",
-    includes: [
-      ["Palmtree", "Beach holidays", "Maldives, Thailand and other island escapes."],
-      ["Mountain", "Bangladesh tours", "Cox's Bazar, Sylhet tea gardens and more."],
-      ["Building2", "City breaks", "Short trips to the region's favourite cities."],
-      ["Heart", "Honeymoons & families", "Packages planned around couples or children."],
+    wa: "I want to ask about a tour package.",
+    subs: [
+      ["uae-tours", "Sun", "UAE Tours", "Dubai city tours, desert safaris and Abu Dhabi trips for you or your visiting family.", ["Dubai city tour", "Desert safari", "Abu Dhabi day trip"]],
+      ["international-holidays", "Palmtree", "International Holidays", "Beach and city holidays with flights, hotels and transfers in one package.", ["Maldives · Thailand", "Malaysia · Turkey", "Custom itineraries"]],
+      ["bangladesh-tours", "Mountain", "Bangladesh Tours", "Trips to Cox's Bazar, Sylhet's tea gardens and other favourites back home.", ["Cox's Bazar", "Sylhet tea gardens", "Family trips"]],
+      ["honeymoon-family", "Heart", "Honeymoon & Family Packages", "Packages planned around couples or children, with the right hotels and pace.", ["Honeymoon specials", "Child-friendly hotels", "Private transfers"]],
     ],
-    tags: ["Maldives", "Thailand", "Malaysia", "Turkey", "Cox's Bazar", "Custom trips"],
     steps: [
       ["Share your idea", "Destination, dates, number of people and budget."],
       ["Get a plan", "We send a package with flights, hotel and what is included."],
@@ -199,76 +204,37 @@ const SERVICES = [
     faq: [
       ["Can you plan a custom trip?", "Yes. Tell us what you want and we build the package around it."],
       ["Do packages include visas?", "Where needed, we can include the visa application in the package."],
+      ["Can you arrange a desert safari for my visiting family?", "Yes. Tell us the date and number of people."],
     ],
-    gallery: [IMG.maldives, IMG.beach, IMG.jetty],
+    gallery: [IMG.maldives, IMG.desert, IMG.beach],
   },
   {
-    slug: "hotel-reservations", icon: "Hotel", title: "Hotel Reservations", img: IMG.hotel, desk: "travel",
-    short: "Hotel bookings worldwide, from budget stays to Haram-view rooms.",
-    intro: "Need a room for a trip, an Umrah or a visiting family member? We book hotels to match your budget and location.",
-    includes: [
-      ["Hotel", "Worldwide hotels", "Rooms in any city you are travelling to."],
-      ["Moon", "Makkah & Madinah", "Hotels near the Haram for Umrah trips."],
-      ["Building2", "UAE stays", "Rooms for visiting family and short stays in the UAE."],
-      ["FileText", "Booking confirmation", "Confirmations ready for visa applications."],
+    slug: "travel-services", nav: "Travel Services", icon: "Luggage", title: "Travel Services", img: IMG.hotel,
+    short: "Hotel reservations, travel insurance and airport transfers to complete your trip.",
+    intro: "The details that make a trip go smoothly. Book your hotel, get insured and arrange your airport pick-up with the same team.",
+    wa: "I want to ask about hotels, insurance or airport transfers.",
+    subs: [
+      ["hotel-reservations", "Hotel", "Hotel Reservations", "Hotel bookings worldwide, from budget stays to rooms near the Haram.", ["Worldwide hotels", "Makkah and Madinah", "Confirmations for visa files"]],
+      ["travel-insurance", "ShieldCheck", "Travel Insurance", "Cover for medical emergencies, delays and lost baggage, including visa-ready policies.", ["Medical cover", "Baggage and delays", "Visa-ready policies"]],
+      ["airport-transfers", "Car", "Airport Transfers", "Pick-up and drop-off between the airport, home and hotel for you and your guests.", ["Abu Dhabi · Dubai · Al Ain", "Jeddah and Madinah", "Cars and vans for groups"]],
     ],
-    tags: ["Budget", "Mid-range", "Luxury", "Near Haram", "Visa confirmations"],
     steps: [
-      ["Send city & dates", "Tell us where, when and how many guests."],
-      ["Pick a hotel", "Choose from the options we send."],
-      ["Confirmed", "Receive your booking confirmation."],
+      ["Tell us what you need", "City, dates, travellers and the service."],
+      ["Get options", "We send hotels, policies or transfer prices."],
+      ["Confirmed", "Receive your booking, policy or driver details."],
     ],
     faq: [
       ["Can I get a hotel booking for my visa application?", "Yes. Ask us for a confirmed booking for your application."],
-    ],
-    gallery: [IMG.hotel, IMG.hotel2, IMG.dubai],
-  },
-  {
-    slug: "travel-insurance", icon: "ShieldCheck", title: "Travel Insurance", img: IMG.tickets, desk: "travel",
-    short: "Travel insurance for trips abroad and for visa applications that require it.",
-    intro: "Travel with cover for medical emergencies, delays and lost baggage. We arrange travel insurance for your trip or for a visa that needs it.",
-    includes: [
-      ["HeartPulse", "Medical cover", "Cover for medical emergencies while abroad."],
-      ["Luggage", "Baggage & delays", "Cover for lost baggage and travel delays."],
-      ["FileCheck", "Visa-ready policies", "Policies that meet visa application requirements."],
-      ["Users", "Family & group cover", "One policy for everyone on the trip."],
-    ],
-    tags: ["Single trip", "Family cover", "Visa requirement", "Umrah trips"],
-    steps: [
-      ["Share trip details", "Destination, dates and travellers."],
-      ["Choose cover", "We send the policy options."],
-      ["Policy issued", "Receive your policy document."],
-    ],
-    faq: [
       ["Do I need travel insurance for a visa?", "Some countries require it. Tell us the destination and we confirm."],
-    ],
-    gallery: [IMG.tickets, IMG.passport, IMG.wing2],
-  },
-  {
-    slug: "airport-transfers", icon: "Car", title: "Airport Transfers", img: IMG.dubai, desk: "travel",
-    short: "Pick-up and drop-off between the airport, home and hotel.",
-    intro: "Start and end your trip without the stress. We arrange transfers to and from the airport for you, your family and your guests.",
-    includes: [
-      ["PlaneLanding", "Airport pick-up", "Someone waiting when your guests land."],
-      ["PlaneTakeoff", "Airport drop-off", "On-time drop-off for your flight."],
-      ["Bus", "Umrah transport", "Transfers between Jeddah, Makkah and Madinah."],
-      ["Users", "Family & group vehicles", "Cars and vans for larger groups and luggage."],
-    ],
-    tags: ["Abu Dhabi", "Dubai", "Al Ain", "Jeddah", "Madinah", "Groups"],
-    steps: [
-      ["Send flight details", "Flight number, date and passenger count."],
-      ["Confirmed", "We confirm the vehicle and the price."],
-      ["On your way", "Driver meets you on time."],
-    ],
-    faq: [
       ["Can you pick up my family arriving from Bangladesh?", "Yes. Send the flight details and we arrange the pick-up."],
     ],
-    gallery: [IMG.dubai, IMG.dubaiWide, IMG.madinahDome],
+    gallery: [IMG.hotel, IMG.hotel2, IMG.dubai],
   },
 ];
 const svcUrl = (s) => `/services/${s.slug}`;
 const CARGO = SERVICES[0];
-const TRAVEL = SERVICES.filter((s) => s.desk === "travel");
+const UMRAH = SERVICES.find((s) => s.slug === "umrah-hajj");
+const byNav = (slug) => SERVICES.find((s) => s.slug === slug);
 
 // ─── shared block helpers ───────────────────────────────────────────────────
 const ZERO = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -280,48 +246,84 @@ const BASE = {
 };
 const bgColor = (color) => ({ type: "color", color });
 
-// [slug, title, url, isServiceDetail]
+// [slug, title, url]
 const PAGES = [
   ["home", "Home", "/"],
   ["services", "Services", "/services"],
-  ...SERVICES.map((s) => [`services/${s.slug}`, s.title, svcUrl(s), true]),
+  ...SERVICES.map((s) => [`services/${s.slug}`, s.title, svcUrl(s)]),
   ["about", "About", "/about"],
   ["contact", "Contact", "/contact"],
 ];
 
 function navItems() {
+  const line = (s, i) => ({
+    id: `n${i}`, label: s.nav, url: svcUrl(s),
+    children: s.subs.map(([id, , title], k) => ({ id: `n${i}-${k}`, label: title, url: `${svcUrl(s)}#${id}`, children: [] })),
+  });
+  const travel = byNav("travel-services");
   return [
     { id: "n0", label: "Home", url: "/", children: [] },
-    { id: "n1", label: "Cargo", url: svcUrl(CARGO), children: [] },
-    { id: "n2", label: "Travel", url: "/services", children: TRAVEL.map((s, k) => ({ id: `n2-${k}`, label: s.title, url: svcUrl(s), children: [] })) },
-    { id: "n3", label: "About", url: "/about", children: [] },
-    { id: "n4", label: "Contact", url: "/contact", children: [] },
+    ...["cargo", "visa-processing", "ticketing", "umrah-hajj", "tour-packages"].map((slug, i) => line(byNav(slug), i + 1)),
+    { id: "n6", label: "More", url: "/services", children: [
+      ...travel.subs.map(([id, , title], k) => ({ id: `n6-${k}`, label: title, url: `${svcUrl(travel)}#${id}`, children: [] })),
+      { id: "n6-a", label: "All services", url: "/services", children: [] },
+      { id: "n6-b", label: "About us", url: "/about", children: [] },
+      { id: "n6-c", label: "Contact", url: "/contact", children: [] },
+    ]},
   ];
+}
+
+// Utility strip above the main nav: hours, address, phone, WhatsApp.
+function topBar() {
+  const ico = (d) => `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const CLOCK = ico('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>');
+  const PIN = ico('<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>');
+  const PHONE_I = ico('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/>');
+  return {
+    id: uid("topbar"), type: "custom_html", order: 0, visible: true, width: "full",
+    padding: ZERO, margin: ZERO, background: bgColor(NAVY_DEEP),
+    data: {
+      html: `<div class="al-top"><div class="al-top-in">
+  <div class="al-top-l"><span>${CLOCK}${HOURS}</span><a href="${MAPS_URL}" target="_blank" rel="noopener noreferrer" class="al-top-addr">${PIN}Sanaiya, Al Ain, UAE</a></div>
+  <div class="al-top-r"><a href="tel:${PHONE}">${PHONE_I}${PHONE_DISPLAY}</a><a href="${WA}" target="_blank" rel="noopener noreferrer" class="al-top-wa">WhatsApp</a></div>
+</div></div>`,
+      css: `.al-top{background:${NAVY_DEEP};color:#C3CEE3;font-size:.8rem;font-weight:500}
+.al-top-in{max-width:80rem;margin:0 auto;padding:8px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.al-top-l,.al-top-r{display:flex;align-items:center;gap:22px}
+.al-top span,.al-top a{display:inline-flex;align-items:center;gap:7px;color:inherit;text-decoration:none}
+.al-top svg{color:${RED};flex:none}
+.al-top a:hover{color:#fff}
+.al-top-wa{background:${RED};color:#fff!important;padding:4px 12px;border-radius:999px;font-weight:700}
+.al-top-wa:hover{background:#B81F26}
+@media(max-width:760px){.al-top-addr{display:none!important}.al-top-in{padding:7px 14px;font-size:.74rem}.al-top-l,.al-top-r{gap:12px}.al-top-r a:first-child{display:none}}`,
+    },
+  };
 }
 
 function header() {
   return {
-    id: uid("nav"), type: "navigation", order: 0, visible: true, width: "full",
+    id: uid("nav"), type: "navigation", order: 1, visible: true, width: "full",
     padding: ZERO, margin: ZERO, background: bgColor("#ffffff"),
     templateVariant: "solid-with-cta",
     data: {
       logoText: SITE_NAME, logo: LOGO_ON_LIGHT, items: navItems(),
       sticky: true, transparent: false, style: "default", showCart: false,
-      backgroundColor: "#ffffff", textColor: INK, colorMode: "legacy", activeColor: RED, ctaVariant: "solid", logoHeight: 52, logoCaption: "",
-      showCta: true, ctaLabel: "WhatsApp Us", ctaUrl: WA,
+      backgroundColor: "#ffffff", textColor: INK, colorMode: "legacy", activeColor: RED, ctaVariant: "solid", logoHeight: 58, logoCaption: "",
+      showCta: true, ctaLabel: "Get a Quote", ctaUrl: WA,
     },
   };
 }
 
 const POLISH = [
   ".al-head{max-width:46rem;margin:0 0 40px}",
+  ".al-head.c{margin:0 auto 44px;text-align:center}",
   `.al-eyebrow{font-size:.75rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:${RED};margin-bottom:10px}`,
   `.al-head h2{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:clamp(2rem,3.4vw,2.8rem);line-height:1.1;color:${INK}}`,
   ".al-lede{margin-top:12px;color:#4A5568;font-size:1.05rem;line-height:1.6}",
   "a,button{transition:background-color .2s,color .2s,border-color .2s,box-shadow .2s,transform .2s}",
+  "html{scroll-behavior:smooth}[id]{scroll-margin-top:110px}",
 ].join("");
 
-// Floating WhatsApp rides along with the global footer.
 function floatingWhatsApp() {
   return {
     id: uid("wa"), type: "custom_html", order: 0, visible: true, width: "full",
@@ -338,22 +340,23 @@ function footer() {
     id: uid("footer"), type: "footer", order: 1, visible: true, width: "full",
     padding: ZERO, margin: ZERO, background: { type: "none" },
     data: {
-      logo: LOGO_ON_DARK, logoText: SITE_NAME, logoCaption: "Sanaiya · Al Ain · UAE",
-      tagline: "Cargo from the UAE to Bangladesh, Umrah packages, air tickets, visas and holidays. Over a decade of service from Al Ain.",
+      logo: LOGO_ON_DARK, logoText: SITE_NAME, logoCaption: HOURS,
+      tagline: "Cargo to Bangladesh, visa processing, air tickets, Umrah and Hajj, tours and travel services. Over a decade of service from Al Ain.",
       style: "dark", backgroundColor: NAVY_DEEP, accentColor: RED, textColor: "#C3CEE3",
       copyrightText: `© {year} ${SITE_NAME}. All rights reserved.`, copyrightYear: true, showNewsletter: false,
       socials: [{ platform: "whatsapp", url: WA }],
       columns: [
-        { id: uid("fc"), heading: "Cargo", links: [
-          { id: uid("fl"), label: "Cargo to Bangladesh", url: svcUrl(CARGO) },
-          { id: uid("fl"), label: "Get a cargo rate", url: WA_CARGO },
+        { id: uid("fc"), heading: "Services", links: SERVICES.map((s) => ({ id: uid("fl"), label: s.title, url: svcUrl(s) })) },
+        { id: uid("fc"), heading: "Company", links: [
+          { id: uid("fl"), label: "About us", url: "/about" },
+          { id: uid("fl"), label: "All services", url: "/services" },
+          { id: uid("fl"), label: "Contact", url: "/contact" },
         ]},
-        { id: uid("fc"), heading: "Travel", links: TRAVEL.map((s) => ({ id: uid("fl"), label: s.title, url: svcUrl(s) })) },
         { id: uid("fc"), heading: "Contact", links: [
           { id: uid("fl"), label: `Call ${PHONE_DISPLAY}`, url: `tel:${PHONE}` },
           { id: uid("fl"), label: "WhatsApp us", url: WA },
           { id: uid("fl"), label: "3 Street 14/2, Sanaiya, Al Ain", url: MAPS_URL },
-          { id: uid("fl"), label: "About the group", url: "/about" },
+          { id: uid("fl"), label: HOURS, url: "/contact" },
         ]},
       ],
       bottomLinks: [],
@@ -368,13 +371,13 @@ function heroHome() {
     templateVariant: "dark-gradient-left",
     background: { type: "image", imageUrl: IMG.wing },
     data: {
-      layout: "left", badge: "AL AIN · UAE TO BANGLADESH",
+      layout: "left", badge: "AL AIN · SERVING THE UAE",
       title: "Your cargo home. Your journey, sorted.",
-      subtitle: "Cargo to Bangladesh · Umrah · Air tickets · Visas · Holidays",
-      description: "Send boxes to your family in Bangladesh, book Umrah, fly home for Eid or bring your family to visit. One trusted Al Ain office, over ten years in business.",
+      subtitle: "Cargo · Visas · Tickets · Umrah & Hajj · Tours",
+      description: "Send boxes to your family in Bangladesh, bring your family to visit, fly home for Eid or book your Umrah. One trusted Al Ain office, over ten years in business, open every day until 11 PM.",
       badgeBgColor: RED, badgeTextColor: "#ffffff",
       primaryButton: { label: "Send Cargo", url: WA_CARGO, variant: "primary" },
-      secondaryButton: { label: "Plan a Trip", url: "/services", variant: "outline", bgColor: "#ffffff", textColor: NAVY },
+      secondaryButton: { label: "Explore Services", url: "/services", variant: "outline", bgColor: "#ffffff", textColor: NAVY },
       imageUrl: IMG.wing, imageAlt: "Aircraft wing above the clouds",
       typography: { titleSize: "5xl", titleColor: NAVY, subtitleColor: RED, descColor: "#3B4658" },
     },
@@ -390,63 +393,52 @@ function stats() {
       title: "", subtitle: "", columns: 4,
       items: [
         ["10+", "Years in business"],
-        ["UAE → BD", "Cargo route"],
-        ["8", "Cargo & travel services"],
-        ["1", "WhatsApp for everything"],
+        ["6", "Service lines"],
+        ["UAE → BD", "Air & sea cargo"],
+        ["11 PM", "Open late, every day"],
       ].map(([value, label]) => ({ id: uid("st"), value, label })),
     },
   };
 }
 
-// Two desks: cargo and travel, side by side. Custom so the split reads at a glance.
-function twoDesks(bg = MIST) {
-  const card = (eyebrow, title, text, points, img, url, label) => `
-    <a href="${url}" class="al-desk">
-      <div class="al-desk-img"><img src="${img.replace(/w=\d+/, "w=1100")}" alt="${title}" loading="lazy"/></div>
-      <div class="al-desk-body">
-        <p class="al-eyebrow">${eyebrow}</p>
-        <h3>${title}</h3>
-        <p>${text}</p>
-        <ul>${points.map((p) => `<li>${p}</li>`).join("")}</ul>
-        <span class="al-desk-btn">${label} →</span>
+// The six service boxes: photo, icon, title, sub-services, link.
+function serviceBoxes(bg = MIST, heading = true) {
+  const box = (s, i) => `
+    <a href="${svcUrl(s)}" class="al-box al-b${i}">
+      <div class="al-box-img"><img src="${sized(s.img, 900)}" alt="${s.title}" loading="lazy"/><span class="al-box-n">0${i + 1}</span></div>
+      <div class="al-box-body">
+        <h3>${s.title}</h3>
+        <p>${s.short}</p>
+        <ul>${s.subs.map(([, , t]) => `<li>${t}</li>`).join("")}</ul>
+        <span class="al-box-go">Explore ${s.nav} <b>→</b></span>
       </div>
     </a>`;
   return {
-    ...BASE, id: uid("desks"), type: "custom_html", background: bgColor(bg),
+    ...BASE, id: uid("boxes"), type: "custom_html", background: bgColor(bg),
     data: {
-      html: `<div class="al-desks-wrap">
-  <div class="al-head"><p class="al-eyebrow">Two desks, one office</p><h2>Cargo for your family. Travel for your plans.</h2><p class="al-lede">Most of our customers use both. Send a box home this month, book the Eid ticket next month, same people, same number.</p></div>
-  <div class="al-desks">${card("Cargo desk", "Cargo to Bangladesh", CARGO.intro, ["Clothes, electronics, gifts & household goods", "Packing help at the office", "Updates until it reaches home"], IMG.packing, svcUrl(CARGO), "Cargo details")}
-  ${card("Travel desk", "Umrah, tickets & visas", "Umrah packages, flights to Bangladesh and worldwide, UAE visit visas, holidays, hotels, insurance and airport transfers.", ["Umrah packages with visa & hotels", "Air tickets to Dhaka, Chattogram, Sylhet", "Visit visas for your family"], IMG.kaabaClose, "/services", "All travel services")}</div>
+      html: `<div class="al-boxes-wrap">
+  ${heading ? `<div class="al-head c"><p class="al-eyebrow">What we do</p><h2>Six services, one trusted office</h2><p class="al-lede">From a box for your mother in Sylhet to an Umrah for the whole family. Pick a service to see everything it covers.</p></div>` : ""}
+  <div class="al-boxes">${SERVICES.map(box).join("")}</div>
 </div>`,
-      css: `.al-desks-wrap{max-width:80rem;margin:0 auto}
-.al-desks{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.al-desk{display:flex;flex-direction:column;background:#fff;border:1px solid ${LINE};border-radius:20px;overflow:hidden;text-decoration:none;color:${INK};box-shadow:0 10px 30px rgba(14,42,92,.06)}
-.al-desk:hover{box-shadow:0 18px 40px rgba(14,42,92,.14);transform:translateY(-3px)}
-.al-desk-img{height:250px;overflow:hidden}.al-desk-img img{width:100%;height:100%;object-fit:cover;transition:transform .7s ease}.al-desk:hover .al-desk-img img{transform:scale(1.05)}
-.al-desk-body{padding:28px 28px 30px;display:flex;flex-direction:column;gap:10px;flex:1}
-.al-desk-body .al-eyebrow{margin:0}
-.al-desk h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.65rem;color:${NAVY}}
-.al-desk p{color:#4A5568;line-height:1.6}
-.al-desk ul{list-style:none;padding:0;margin:4px 0 8px;display:flex;flex-direction:column;gap:8px}
-.al-desk li{position:relative;padding-left:26px;font-weight:600;color:${INK}}
-.al-desk li::before{content:"";position:absolute;left:0;top:.35em;width:14px;height:14px;border-radius:4px;background:${RED}}
-.al-desk-btn{margin-top:auto;font-weight:800;color:${RED}}
-@media(max-width:860px){.al-desks{grid-template-columns:1fr}.al-desk-img{height:200px}}`,
-    },
-  };
-}
-
-function travelServices(bg = "#ffffff") {
-  return {
-    ...BASE, id: uid("svc"), type: "services", background: bgColor(bg),
-    templateVariant: "numbered",
-    data: {
-      title: "The travel desk", subtitle: "Seven ways we get you where you need to be",
-      layout: "grid", columns: 3, cardStyle: "flat", source: "inline",
-      items: TRAVEL.map((s) => ({
-        id: uid("sv"), title: s.title, description: s.short, icon: s.icon, iconType: "lucide", linkLabel: "Details", link: svcUrl(s),
-      })),
+      css: `.al-boxes-wrap{max-width:80rem;margin:0 auto}
+.al-boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.al-box{display:flex;flex-direction:column;background:#fff;border:1px solid ${LINE};border-radius:18px;overflow:hidden;text-decoration:none;color:${INK};box-shadow:0 8px 24px rgba(14,42,92,.06)}
+.al-box:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(14,42,92,.14);border-color:${NAVY}}
+.al-box-img{position:relative;height:190px;overflow:hidden;background:${NAVY}}
+.al-box-img img{width:100%;height:100%;object-fit:cover;transition:transform .7s ease}
+.al-box:hover .al-box-img img{transform:scale(1.06)}
+.al-box-img::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(8,26,61,.55),transparent 55%)}
+.al-box-n{position:absolute;left:18px;bottom:12px;z-index:1;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.6rem;color:#fff}
+.al-box-body{padding:22px 24px 24px;display:flex;flex-direction:column;gap:10px;flex:1}
+.al-box h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.3rem;color:${NAVY}}
+.al-box p{color:#4A5568;font-size:.95rem;line-height:1.55}
+.al-box ul{list-style:none;padding:0;margin:4px 0 6px;display:flex;flex-direction:column;gap:6px}
+.al-box li{position:relative;padding-left:18px;font-size:.9rem;font-weight:600;color:${INK}}
+.al-box li::before{content:"";position:absolute;left:0;top:.5em;width:8px;height:8px;border-radius:2px;background:${RED}}
+.al-box-go{margin-top:auto;padding-top:8px;font-weight:800;color:${RED};font-size:.95rem}
+.al-box:hover .al-box-go b{margin-left:4px}
+@media(max-width:1000px){.al-boxes{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.al-boxes{grid-template-columns:1fr}.al-box-img{height:170px}}`,
     },
   };
 }
@@ -457,11 +449,11 @@ function umrahBand() {
     background: { type: "image", imageUrl: IMG.madinah, imageOverlay: NAVY_DEEP, imageOverlayOpacity: 0.7 },
     templateVariant: "navy-banner",
     data: {
-      title: "Planning Umrah this season?",
+      title: "Planning Umrah or Hajj this season?",
       description: "Visa, travel, hotels in Makkah and Madinah, and transport between them. Ask for the current packages.",
       layout: "centered",
-      primaryButton: { label: "Ask About Umrah", url: waText("Hello Alif Tours & Cargo, I want to ask about Umrah packages.") },
-      secondaryButton: { label: "Package details", url: "/services/umrah-packages" },
+      primaryButton: { label: "Ask About Packages", url: waText(`Hello Alif Tours & Cargo, ${UMRAH.wa}`) },
+      secondaryButton: { label: "Umrah & Hajj details", url: svcUrl(UMRAH) },
     },
   };
 }
@@ -485,21 +477,21 @@ function whyUs(bg = "#ffffff", variant = "bento-grid") {
       title: "Why families in the UAE choose Alif", subtitle: "Over a decade of trust", layout: "grid", columns: 3, style: "cards",
       items: [
         ["Award", "10+ years in business", "We have built our customer base on quality and service, one box and one booking at a time."],
+        ["Clock", "Open 9 AM to 11 PM, every day", "Come after work or on the weekend. We are open late, seven days a week."],
         ["MessageCircle", "Real people on WhatsApp", "Ask a question and get an answer from our team, in English, Bangla or Arabic."],
         ["BadgeCheck", "Clear prices first", "You know the cargo rate or the package price before you commit."],
-        ["Layers", "Cargo and travel together", "Send boxes, book tickets and arrange visas with one trusted office."],
-        ["MapPin", "Easy to find in Al Ain", "Our office is in Sanaiya, Al Ain. Walk in or message first."],
-      ].map(([icon, title, description]) => ({ id: uid("f"), icon, title, description })),
+        ["Layers", "Everything in one place", "Cargo, visas, tickets, Umrah and tours with one trusted office."],
+      ].map(([icon, title, description], i) => ({ id: uid("f"), icon, title, description, ...(i === 0 ? { imageUrl: sized(IMG.packing, 1200) } : {}) })),
     },
   };
 }
 
 const FAQ_HOME = [
-  ["How do I get a cargo rate?", "Message us on WhatsApp with what you are sending and the destination district. We reply with the rate."],
-  ["Where is your office?", `${ADDRESS}. Message us before you come and we tell you the best time.`],
-  ["Can you arrange Umrah from the UAE?", "Yes. We arrange packages with visa, travel, hotels and transport."],
+  ["How do I get a cargo rate?", "Message us on WhatsApp with what you are sending, the weight and the district in Bangladesh. We reply with the rate for air or sea."],
+  ["What are your opening hours?", "We are open every day from 9 AM to 11 PM."],
+  ["Where is your office?", `${ADDRESS}.`],
   ["Can you get a visit visa for my parents?", "Yes. Tell us their nationality and we send the document checklist."],
-  ["Do you book tickets to Bangladesh?", "Yes. Dhaka, Chattogram and Sylhet, plus worldwide flights."],
+  ["Do you arrange Umrah and Hajj?", "Yes. Packages include the visa, travel, hotels and transport."],
 ];
 
 function faq(items, bg = MIST, variant = "split-heading", title = "Common Questions") {
@@ -520,7 +512,7 @@ function cta(variant = "orange-banner") {
     templateVariant: variant,
     data: {
       title: "Sending a box home or planning a trip?",
-      description: `Message us on WhatsApp or call ${PHONE_DISPLAY}. We reply quickly with a rate or the options.`,
+      description: `Message us on WhatsApp or call ${PHONE_DISPLAY}. Open every day, 9 AM to 11 PM.`,
       layout: "centered",
       primaryButton: { label: "WhatsApp Us", url: WA },
       secondaryButton: { label: `Call ${PHONE_DISPLAY}`, url: `tel:${PHONE}` },
@@ -533,7 +525,7 @@ function contactForm(bg = MIST, service) {
     ...BASE, id: uid("contact"), type: "contact", background: bgColor(bg),
     data: {
       title: service ? `Ask about ${service}` : "Send Us an Enquiry",
-      subtitle: "Tell us what you need and we will get back to you. For the fastest reply, use WhatsApp.",
+      subtitle: `Tell us what you need and we will get back to you. ${HOURS}.`,
       layout: "split",
       showMap: true, mapEmbedUrl: MAP_EMBED, showContactInfo: true,
       phone: PHONE_DISPLAY, email: "", address: ADDRESS, recipientEmail: "",
@@ -549,8 +541,8 @@ function contactForm(bg = MIST, service) {
   };
 }
 
-// ─── inner page sections ────────────────────────────────────────────────────
-function pageHero({ badge, title, description, img, cargo }) {
+// ─── service page sections ──────────────────────────────────────────────────
+function pageHero({ badge, title, description, img, waUrl = WA, waLabel = "WhatsApp Us" }) {
   return {
     ...BASE, id: uid("hero"), type: "hero", padding: ZERO,
     templateVariant: "fullscreen-overlay",
@@ -558,7 +550,7 @@ function pageHero({ badge, title, description, img, cargo }) {
     data: {
       layout: "left", badge, title, subtitle: "", description, compact: true,
       badgeBgColor: RED, badgeTextColor: "#ffffff",
-      primaryButton: { label: cargo ? "Get a Cargo Rate" : "WhatsApp Us", url: cargo ? WA_CARGO : WA, variant: "primary" },
+      primaryButton: { label: waLabel, url: waUrl, variant: "primary" },
       secondaryButton: { label: `Call ${PHONE_DISPLAY}`, url: `tel:${PHONE}`, variant: "outline" },
       imageUrl: img,
       typography: { titleSize: "5xl", titleColor: "#ffffff", descColor: "#D8E1F0" },
@@ -566,31 +558,47 @@ function pageHero({ badge, title, description, img, cargo }) {
   };
 }
 
-function svcIncludes(s, bg = MIST) {
+// Sub-services as anchored cards: chips on top jump to each one.
+function subServices(s, bg = MIST) {
   return {
-    ...BASE, id: uid("feat"), type: "features", background: bgColor(bg),
-    templateVariant: "highlight-cards",
+    ...BASE, id: uid("subs"), type: "custom_html", background: bgColor(bg),
     data: {
-      title: s.desk === "cargo" ? "What you can send" : "What's included", subtitle: s.title, description: s.intro,
-      layout: "grid", columns: s.includes.length === 4 ? 2 : 3, style: "cards",
-      items: s.includes.map(([icon, title, description]) => ({ id: uid("f"), icon, title, description })),
+      html: `<div class="al-subs-wrap">
+  <div class="al-head"><p class="al-eyebrow">${s.title}</p><h2>What we offer</h2><p class="al-lede">${s.intro}</p></div>
+  <nav class="al-chips">${s.subs.map(([id, , t]) => `<a href="#${id}">${t}</a>`).join("")}</nav>
+  <div class="al-subs">${s.subs.map(([id, ic, t, d, pts], i) => `
+    <article id="${id}" class="al-sub">
+      <div class="al-sub-top"><span class="al-sub-n">0${i + 1}</span><h3>${t}</h3></div>
+      <p>${d}</p>
+      <ul>${pts.map((p) => `<li>${p}</li>`).join("")}</ul>
+      <a class="al-sub-btn" href="${waText(`Hello Alif Tours & Cargo, I want to ask about ${t}.`)}" target="_blank" rel="noopener noreferrer">Ask about ${t} →</a>
+    </article>`).join("")}
+  </div>
+</div>`,
+      css: `.al-subs-wrap{max-width:80rem;margin:0 auto}
+.al-chips{display:flex;flex-wrap:wrap;gap:10px;margin:-12px 0 32px}
+.al-chips a{padding:8px 16px;border-radius:999px;border:1.5px solid ${LINE};background:#fff;color:${NAVY};font-weight:700;font-size:.88rem;text-decoration:none}
+.al-chips a:hover{border-color:${RED};color:${RED}}
+.al-subs{display:grid;grid-template-columns:repeat(${s.subs.length === 4 ? 2 : 3},1fr);gap:22px}
+.al-sub{position:relative;background:#fff;border:1px solid ${LINE};border-top:4px solid ${NAVY};border-radius:16px;padding:26px 26px 24px;display:flex;flex-direction:column;gap:12px}
+.al-sub:target{border-top-color:${RED};box-shadow:0 0 0 3px rgba(215,38,46,.18)}
+.al-sub:hover{border-top-color:${RED};box-shadow:0 16px 36px rgba(14,42,92,.1)}
+.al-sub-top{display:flex;align-items:baseline;gap:12px}
+.al-sub-n{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.1rem;color:${RED}}
+.al-sub h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.25rem;color:${NAVY};line-height:1.25}
+.al-sub p{color:#4A5568;line-height:1.6;font-size:.96rem}
+.al-sub ul{list-style:none;padding:0;margin:0 0 6px;display:flex;flex-direction:column;gap:7px}
+.al-sub li{position:relative;padding-left:24px;font-weight:600;font-size:.92rem;color:${INK}}
+.al-sub li::before{content:"✓";position:absolute;left:0;top:0;color:${RED};font-weight:800}
+.al-sub-btn{margin-top:auto;font-weight:800;font-size:.9rem;color:${RED};text-decoration:none}
+.al-sub-btn:hover{color:${NAVY}}
+@media(max-width:1000px){.al-subs{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.al-subs{grid-template-columns:1fr}.al-chips{gap:8px}.al-chips a{font-size:.8rem;padding:6px 12px}}`,
     },
   };
 }
 
-function svcTags(s, bg = "#ffffff") {
-  return {
-    ...BASE, id: uid("ig"), type: "icon_grid", background: bgColor(bg),
-    padding: { top: 48, right: 24, bottom: 48, left: 24 },
-    templateVariant: "pill-row",
-    data: {
-      title: s.desk === "cargo" ? "Good to know" : "Popular choices", subtitle: "", columns: 4, iconSize: "sm",
-      items: s.tags.map((label) => ({ id: uid("i"), icon: "Check", color: RED, label, description: "" })),
-    },
-  };
-}
-
-function svcSteps(s, bg = MIST) {
+function svcSteps(s, bg = "#ffffff") {
   return {
     ...BASE, id: uid("steps"), type: "steps", background: bgColor(bg),
     templateVariant: s.steps.length > 3 ? "timeline-connected" : "numbered-cards",
@@ -601,13 +609,13 @@ function svcSteps(s, bg = MIST) {
   };
 }
 
-function svcGallery(s, bg = "#ffffff") {
+function svcGallery(s, bg = MIST) {
   return {
     ...BASE, id: uid("gal"), type: "gallery", background: bgColor(bg),
     templateVariant: "hero-mosaic",
     data: {
       title: "", subtitle: "", layout: "grid", columns: 3, gap: "md", lightbox: true,
-      images: s.gallery.map((url) => ({ id: uid("gi"), url: url.replace(/w=\d+/, "w=1200"), alt: s.title, caption: "" })),
+      images: s.gallery.map((url) => ({ id: uid("gi"), url: sized(url, 1200), alt: s.title, caption: "" })),
     },
   };
 }
@@ -615,49 +623,35 @@ function svcGallery(s, bg = "#ffffff") {
 function otherServices(current, bg = MIST) {
   return {
     ...BASE, id: uid("svc"), type: "services", background: bgColor(bg),
-    templateVariant: "bordered-list",
+    templateVariant: "image-tiles",
     data: {
-      title: "More from Alif Tours & Cargo", subtitle: "", layout: "list", columns: 2, cardStyle: "flat", source: "inline",
+      title: "Our other services", subtitle: "", layout: "grid", columns: 3, cardStyle: "elevated", source: "inline",
       items: SERVICES.filter((s) => s.slug !== current.slug).map((s) => ({
-        id: uid("sv"), title: s.title, description: s.short, icon: s.icon, iconType: "lucide", linkLabel: "View", link: svcUrl(s),
+        id: uid("sv"), title: s.title, description: s.short, icon: s.icon, iconType: "lucide",
+        imageUrl: sized(s.img, 900), linkLabel: "Explore", link: svcUrl(s),
       })),
     },
   };
 }
 
-function servicesDetail(bg = "#ffffff") {
-  return {
-    ...BASE, id: uid("feat"), type: "features", background: bgColor(bg),
-    templateVariant: "alternating-media",
-    data: {
-      title: "Cargo & travel services", subtitle: "Pick a service to see the details", layout: "alternating", columns: 2, style: "minimal",
-      items: SERVICES.map((s) => ({
-        id: s.slug, title: s.title, icon: s.icon, imageUrl: s.img.replace(/w=\d+/, "w=1200"),
-        description: `${s.intro} Includes: ${s.includes.map((x) => x[1]).join(" · ")}.`,
-        link: svcUrl(s), linkLabel: "View details",
-      })),
-    },
-  };
-}
-
+// ─── about sections ─────────────────────────────────────────────────────────
 function aboutSplit(bg = "#ffffff") {
   return {
     ...BASE, id: uid("feat"), type: "features", background: bgColor(bg),
     templateVariant: "split-list",
     data: {
       title: "A group of businesses, built on service", subtitle: "About Alif Tours & Cargo",
-      description: "We are a group operating multiple businesses across the United Arab Emirates. We specialise in cargo from the UAE to Bangladesh, and run a full travel desk for Umrah packages, air tickets and travel services. We have been in business for over a decade and have built a strong customer base through our commitment to quality and customer service.",
+      description: "We are a group operating multiple businesses across the United Arab Emirates. We specialise in cargo from the UAE to Bangladesh, and run a full travel desk for visas, air tickets, Umrah and Hajj, tours and travel services. We have been in business for over a decade and have built a strong customer base through our commitment to quality and customer service.",
       layout: "split", columns: 2, style: "minimal", imageUrl: IMG.dubaiWide,
       items: [
-        ["Package", "Cargo to Bangladesh", "Our specialty: boxes and shipments from the UAE to families in Bangladesh."],
-        ["Plane", "Tours & travel", "Umrah packages, air tickets, visas, holidays, hotels and transfers."],
+        ["Package", "Cargo to Bangladesh", "Our specialty: air and sea cargo from the UAE to families and businesses in Bangladesh."],
+        ["Plane", "Tours & travel", "Visas, air tickets, Umrah and Hajj, tour packages, hotels, insurance and transfers."],
         ["Target", "Our mission", "To provide our customers with quality services and products that exceed their expectations."],
       ].map(([icon, title, description]) => ({ id: uid("f"), icon, title, description })),
     },
   };
 }
 
-// The group's other businesses, About page only.
 function groupBusinesses(bg = MIST) {
   return {
     ...BASE, id: uid("svc"), type: "services", background: bgColor(bg),
@@ -670,14 +664,14 @@ function groupBusinesses(bg = MIST) {
         ["Gypsum Design Panels", "We manufacture gypsum design panels for ceilings and walls.", "LayoutPanelTop", IMG.gypsum],
         ["Gypsum Products", "A range of gypsum products made in our own production.", "PaintRoller", IMG.plaster],
       ].map(([title, description, icon, img]) => ({
-        id: uid("sv"), title, description, icon, iconType: "lucide", imageUrl: img.replace(/w=\d+/, "w=900"),
+        id: uid("sv"), title, description, icon, iconType: "lucide", imageUrl: sized(img, 900),
         linkLabel: "Enquire", link: waText(`Hello Alif group, I want to ask about ${title.toLowerCase()}.`),
       })),
     },
   };
 }
 
-function aboutTimeline(bg = "#ffffff") {
+function values(bg = "#ffffff") {
   return {
     ...BASE, id: uid("ig"), type: "icon_grid", background: bgColor(bg),
     templateVariant: "numbered-features",
@@ -697,11 +691,12 @@ function contactCards(bg = "#ffffff") {
     ...BASE, id: uid("ig"), type: "icon_grid", background: bgColor(bg),
     templateVariant: "colored-tiles",
     data: {
-      title: "Reach Us", subtitle: "", columns: 3, iconSize: "md",
+      title: "Reach Us", subtitle: HOURS, columns: 4, iconSize: "md",
       items: [
         ["MessageCircle", "WhatsApp", PHONE_DISPLAY, WA],
         ["Phone", "Call", PHONE_DISPLAY, `tel:${PHONE}`],
         ["MapPin", "Visit", "3 Street 14/2, Sanaiya, Al Ain", MAPS_URL],
+        ["Clock", "Hours", "Every day, 9 AM to 11 PM", WA],
       ].map(([icon, label, description, url]) => ({ id: uid("i"), icon, color: NAVY, label, description, url })),
     },
   };
@@ -709,11 +704,11 @@ function contactCards(bg = "#ffffff") {
 
 // ─── pages ──────────────────────────────────────────────────────────────────
 const BUILDERS = {
-  home: () => [heroHome(), stats(), twoDesks(), travelServices(), umrahBand(), cargoSteps(), whyUs(), faq(FAQ_HOME), cta()],
+  home: () => [heroHome(), stats(), serviceBoxes(), umrahBand(), cargoSteps("#ffffff"), whyUs(MIST), faq(FAQ_HOME, "#ffffff"), cta()],
   services: () => [
-    pageHero({ badge: "Our Services", title: "Cargo and travel, under one roof", description: "Cargo to Bangladesh, Umrah packages, air tickets, visas, holidays, hotels, insurance and airport transfers.", img: IMG.dubai }),
-    servicesDetail(),
-    whyUs(MIST, "icon-list-cards"),
+    pageHero({ badge: "Our Services", title: "Six services under one roof", description: "Cargo, visa processing, air ticketing, Umrah and Hajj, tour packages and travel services from Al Ain.", img: IMG.dubai }),
+    serviceBoxes(MIST, false),
+    whyUs("#ffffff", "icon-list-cards"),
     cta("navy-banner"),
   ],
   about: () => [
@@ -721,33 +716,33 @@ const BUILDERS = {
     aboutSplit(),
     stats(),
     groupBusinesses(),
-    aboutTimeline(),
+    values(),
     cta(),
   ],
   contact: () => [
-    pageHero({ badge: "Contact", title: "Message, call or visit", description: `WhatsApp or call ${PHONE_DISPLAY}. ${ADDRESS}.`, img: IMG.wing2 }),
+    pageHero({ badge: "Contact", title: "Message, call or visit", description: `${HOURS}. ${ADDRESS}.`, img: IMG.wing2 }),
     contactCards(),
     contactForm(),
   ],
 };
 for (const s of SERVICES) {
+  const waUrl = waText(`Hello Alif Tours & Cargo, ${s.wa}`);
   BUILDERS[`services/${s.slug}`] = () => [
-    pageHero({ badge: s.desk === "cargo" ? "Cargo" : "Travel", title: s.title, description: s.short, img: s.img, cargo: s.desk === "cargo" }),
-    svcIncludes(s),
-    svcTags(s),
+    pageHero({ badge: "Service", title: s.title, description: s.short, img: s.img, waUrl, waLabel: "Get a Quote" }),
+    subServices(s),
     svcSteps(s),
     svcGallery(s),
-    faq(s.faq, MIST, "minimal-lines", "Questions"),
-    otherServices(s, "#ffffff"),
-    contactForm(MIST, s.title),
+    faq(s.faq, "#ffffff", "minimal-lines", "Questions"),
+    otherServices(s),
+    contactForm("#ffffff", s.title),
   ];
 }
 
 const SEO = {
-  home: ["Cargo to Bangladesh, Umrah & Travel Services in Al Ain, UAE", "Alif Tours & Cargo in Al Ain: cargo from the UAE to Bangladesh, Umrah packages, air tickets, visit visas, holidays and hotel bookings. Over 10 years in business."],
-  services: ["Cargo & Travel Services", "Cargo to Bangladesh, Umrah packages, air tickets, visa services, holiday packages, hotel reservations, travel insurance and airport transfers from Al Ain, UAE."],
+  home: ["Cargo to Bangladesh, Visas, Tickets, Umrah & Tours in Al Ain, UAE", "Alif Tours & Cargo in Al Ain: air and sea cargo to Bangladesh, visa processing, air tickets, Umrah and Hajj, tour packages and travel services. Open daily 9 AM to 11 PM."],
+  services: ["Our Services", "Cargo to Bangladesh, visa processing, air ticketing, Umrah and Hajj, tour packages and travel services from Al Ain, UAE."],
   about: ["About Alif Tours & Cargo", "A UAE group specialising in cargo to Bangladesh and travel services, also trading building materials and manufacturing gypsum design panels."],
-  contact: ["Contact Alif Tours & Cargo", `WhatsApp or call ${PHONE_DISPLAY}. ${ADDRESS}.`],
+  contact: ["Contact Alif Tours & Cargo", `WhatsApp or call ${PHONE_DISPLAY}. ${ADDRESS}. ${HOURS}.`],
 };
 for (const s of SERVICES) SEO[`services/${s.slug}`] = [`${s.title} from Al Ain, UAE`, `${s.short} ${s.intro}`.slice(0, 158)];
 
@@ -825,8 +820,8 @@ async function run() {
   const { error: idErr } = await sb.from("site_identity").upsert({
     tenant_id: tenantId,
     template_id: tpl.id, active_template_slug: TEMPLATE_SLUG,
-    site_name: SITE_NAME, tagline: "Cargo to Bangladesh, Umrah & Travel Services in Al Ain",
-    logo_url: LOGO_ON_LIGHT, logo_dark_url: LOGO_ON_DARK, logo_type: "image", logo_alt: SITE_NAME, logo_width: 150,
+    site_name: SITE_NAME, tagline: "Cargo, Visas, Tickets, Umrah & Tours in Al Ain",
+    logo_url: LOGO_ON_LIGHT, logo_dark_url: LOGO_ON_DARK, logo_type: "image", logo_alt: SITE_NAME, logo_width: 195,
     favicon_url: FAVICON_URL,
     primary_color: NAVY, secondary_color: RED,
     color_overrides: {
@@ -835,7 +830,7 @@ async function run() {
       border: LINE, borderRadius: "0.75rem",
     },
     design_overrides: { headingFont: "Plus Jakarta Sans", bodyFont: "Inter", headingWeight: "800", roundness: "rounded", shadow: "soft" },
-    global_header: header(), global_footer: [floatingWhatsApp(), footer()], global_prefooter: [],
+    global_header: [topBar(), header()], global_footer: [floatingWhatsApp(), footer()], global_prefooter: [],
     updated_at: now,
   }, { onConflict: "tenant_id" });
   console.log(idErr ? `✗ site_identity: ${idErr.message}` : "✓ site_identity");
