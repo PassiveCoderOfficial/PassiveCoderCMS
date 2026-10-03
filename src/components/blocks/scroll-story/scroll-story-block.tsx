@@ -157,7 +157,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
               </a>
             )}
             {data.secondaryCta?.label && (
-              <a href={data.secondaryCta.url || "#"} className="h-11 sm:h-12 px-5 sm:px-7 rounded-full text-sm sm:text-base font-semibold inline-flex items-center whitespace-nowrap text-white border border-white/40 bg-white/10 backdrop-blur">
+              <a href={data.secondaryCta.url || "#"} className="h-11 sm:h-12 px-5 sm:px-7 rounded-full text-sm sm:text-base font-semibold inline-flex items-center whitespace-nowrap border-2 bg-black/35 backdrop-blur" style={{ borderColor: accent, color: accent }}>
                 {data.secondaryCta.label}
               </a>
             )}
