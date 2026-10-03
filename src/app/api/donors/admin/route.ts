@@ -4,6 +4,7 @@ import { getDonorSession, getDonorSettings, normalizeBdPhone, hashPassword, disp
 import { availabilityOf, ageOf } from "@/lib/donors/availability";
 import { BLOOD_GROUPS, GENDERS, RELIGIONS, BD_DISTRICTS } from "@/lib/donors/bd-locations";
 import { normalizeSocials } from "@/lib/donors/socials";
+import { siteAccess } from "@/lib/mcp/auth";
 import { geocodeBdArea } from "@/lib/donors/geocode";
 
 /**
@@ -22,11 +23,8 @@ async function requireAdmin(tenantId: string): Promise<{ id: string; donorId: st
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   const admin = await createAdminClient();
-  const { data: member } = await admin.from("tenant_members")
-    .select("user_id").eq("tenant_id", tenantId).eq("user_id", user.id).maybeSingle();
-  const { data: sa } = await admin.from("super_admins")
-    .select("user_id").eq("user_id", user.id).maybeSingle();
-  if (member || sa) return { id: user.id, donorId: null };
+  // Owner/admin/editor, assigned staff or super admin; view-only members can't administer donors.
+  if ((await siteAccess(admin, user.id, tenantId)) === "write") return { id: user.id, donorId: null };
   return null;
 }
 

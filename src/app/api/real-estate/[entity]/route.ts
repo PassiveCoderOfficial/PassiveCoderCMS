@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { slugify } from "@/lib/real-estate/format";
 
 /** Dashboard CRUD for the real estate module. RLS (migration 112) is the
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   if (!cfg || !cfg.slugFrom) return NextResponse.json({ error: "Unknown entity" }, { status: 404 });
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   const row = pick(cfg.fields, body);
@@ -112,6 +114,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   if (!cfg) return NextResponse.json({ error: "Unknown entity" }, { status: 404 });
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   if (!body.id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -134,6 +137,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
   if (!cfg) return NextResponse.json({ error: "Unknown entity" }, { status: 404 });
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 
 /** Forgets the stored Google grant. Does not call Google's revoke endpoint —
  *  the tenant remains free to also remove Passive Coder from
@@ -13,6 +14,7 @@ export async function POST() {
 
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const admin = await createAdminClient();
   // Secrets live in tenant_integrations (see migration 101); the picked

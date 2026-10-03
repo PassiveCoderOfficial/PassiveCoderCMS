@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 
 /**
  * Manual Measurement ID save — moved here from Settings -> Appearance
@@ -18,6 +19,7 @@ export async function POST(req: NextRequest) {
 
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const { measurement_id } = await req.json();
   const trimmed = typeof measurement_id === "string" ? measurement_id.trim() : "";
