@@ -371,9 +371,9 @@ function serviceTiles(bg = PAPER) {
 // Split band: who we clean for, custom so the three audiences read as one story.
 function audiences(bg = MIST) {
   const cards = [
-    ["For homes", "Villas and apartments, weekly or one-time, move-in and move-out.", IMG.teamRoom, "/services/house-cleaning"],
-    ["For businesses", "Offices, showrooms, clinics and restaurant kitchens on contract.", IMG.officeTable, "/services/office-cleaning"],
-    ["For hotels", "Housekeeping teams for rooms, lobbies and banquet halls.", IMG.hotelPair, "/services/hotel-cleaning"],
+    ["For homes", "Villas and apartments, weekly or one-time, move-in and move-out.", IMG.wipeTable, "/services/house-cleaning"],
+    ["For businesses", "Offices, showrooms, clinics and restaurant kitchens on contract.", IMG.deepWipe, "/services/office-cleaning"],
+    ["For hotels", "Housekeeping teams for rooms, lobbies and banquet halls.", IMG.hotelSheet, "/services/hotel-cleaning"],
   ];
   return {
     ...BASE, id: uid("aud"), type: "custom_html", background: bgColor(bg),
@@ -627,38 +627,302 @@ function contactCards(bg = MIST) {
   };
 }
 
+// ─── premium custom sections ────────────────────────────────────────────────
+const CHECK = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+const ARROW = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+const ICO = {
+  phone: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>`,
+  mail: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>`,
+  pin: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
+  shield: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`,
+  wa: `<svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M16 0C7.2 0 0 7.2 0 16c0 2.8.7 5.5 2 7.8L0 32l8.5-2A16 16 0 1 0 16 0zm7.3 19.3c-.4-.2-2.4-1.2-2.7-1.3-.4-.1-.6-.2-.9.2-.3.4-1 1.3-1.3 1.6-.2.3-.5.3-.9.1-.4-.2-1.7-.6-3.2-2-1.2-1-2-2.4-2.2-2.8-.2-.4 0-.6.2-.8l.6-.7c.2-.2.3-.4.4-.7.1-.3.1-.5 0-.7l-1.2-3c-.3-.8-.7-.7-.9-.7h-.8c-.3 0-.7.1-1.1.5-.4.4-1.4 1.4-1.4 3.3s1.4 3.9 1.6 4.1c.2.3 2.8 4.3 6.8 6 1 .4 1.7.7 2.3.8 1 .3 1.8.3 2.5.2.8-.1 2.4-1 2.7-1.9.3-.9.3-1.7.2-1.9-.1-.2-.4-.3-.8-.5z"/></svg>`,
+};
+const SVC_NUM = (i) => String(i + 1).padStart(2, "0");
+const html = (id, markup, css, bg = PAPER, pad = ZERO) => ({
+  ...BASE, id: uid(id), type: "custom_html", padding: pad, background: bgColor(bg), data: { html: markup, css },
+});
+const BTN_CSS = `.amk-btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;font-weight:700;font-size:.98rem;text-decoration:none;line-height:1}
+.amk-btn-p{background:${BLUE};color:#fff;box-shadow:0 14px 30px -12px rgba(24,128,196,.7)}.amk-btn-p:hover{background:#1170AF;transform:translateY(-2px)}
+.amk-btn-g{background:#fff;color:${NAVY};border:1.5px solid ${LINE}}.amk-btn-g:hover{border-color:${BLUE};color:${BLUE}}
+.amk-btn-w{background:#fff;color:${NAVY}}.amk-btn-w:hover{transform:translateY(-2px)}
+.amk-btn-o{border:1.5px solid rgba(255,255,255,.5);color:#fff}.amk-btn-o:hover{background:rgba(255,255,255,.1)}
+.amk-wrap{max-width:78rem;margin:0 auto;padding:0 24px}`;
+
+function topBar() {
+  return {
+    id: uid("top"), type: "custom_html", order: 0, visible: true, width: "full",
+    padding: ZERO, margin: ZERO, background: bgColor(NAVY),
+    data: {
+      html: `<div class="amk-top"><div class="amk-top-in">
+  <div class="amk-top-l"><span>${ICO.pin} Doha, Qatar</span><span class="amk-hide">${ICO.clock} 7 days a week, 7am to 10pm</span><span class="amk-hide">CR No. ${CR}</span></div>
+  <div class="amk-top-r"><a href="mailto:${EMAIL}" class="amk-hide">${ICO.mail} ${EMAIL}</a><a href="tel:${PHONE}">${ICO.phone} ${PHONE_DISPLAY}</a><a href="${WA}" class="amk-top-wa">${ICO.wa} WhatsApp</a></div>
+</div></div>`,
+      css: `.amk-top{background:${NAVY};color:#CFE2F0;font-size:.82rem}
+.amk-top-in{max-width:80rem;margin:0 auto;padding:9px 24px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.amk-top-l,.amk-top-r{display:flex;gap:22px;align-items:center}
+.amk-top span,.amk-top a{display:inline-flex;align-items:center;gap:7px;color:inherit;text-decoration:none;white-space:nowrap}
+.amk-top a:hover{color:#fff}
+.amk-top-wa{background:#25D366;color:#fff!important;padding:5px 12px;border-radius:999px;font-weight:700}
+@media(max-width:900px){.amk-hide{display:none!important}.amk-top-in{padding:8px 16px}}`,
+    },
+  };
+}
+
+function heroPremium() {
+  return html("hero", `<section class="amk-hero"><div class="amk-wrap amk-hero-g">
+  <div class="amk-hero-copy">
+    <span class="amk-pill"><i></i> Trusted cleaning company in Doha</span>
+    <h1>Professional cleaning for homes, offices <em>and hotels</em> across Qatar.</h1>
+    <p>Trained, uniformed teams with professional equipment, a checklist on every job and a fixed price before we start. Book in one WhatsApp message.</p>
+    <div class="amk-hero-cta"><a class="amk-btn amk-btn-p" href="${WA}">${ICO.wa} Get a free quote</a><a class="amk-btn amk-btn-g" href="/services">Explore services ${ARROW}</a></div>
+    <ul class="amk-hero-ticks">${["Fixed, upfront prices", "Materials included", "Same-week booking"].map((t) => `<li>${CHECK}${t}</li>`).join("")}</ul>
+  </div>
+  <div class="amk-hero-art">
+    <div class="amk-hero-main"><img src="${w(IMG.teamRoom, 1100)}" alt="AMK cleaning team at work"/></div>
+    <div class="amk-hero-sub"><img src="${w(IMG.hotelPair, 600)}" alt="Hotel room made up by housekeeping"/></div>
+    <div class="amk-float amk-float-a"><b>${ICO.shield}</b><div><strong>Fully trained staff</strong><span>Uniformed and supervised</span></div></div>
+    <div class="amk-float amk-float-b"><strong>6</strong><span>specialist<br/>services</span></div>
+  </div>
+</div></section>`, `${BTN_CSS}
+.amk-hero{background:radial-gradient(1200px 500px at 85% 0%,#DCEEFB 0%,transparent 60%),linear-gradient(180deg,#F5FAFE,#fff);padding:72px 0 96px;overflow:hidden}
+.amk-hero-g{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.amk-pill{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid ${LINE};color:${NAVY};font-weight:600;font-size:.85rem;padding:8px 16px;border-radius:999px;box-shadow:0 6px 20px -10px rgba(15,61,92,.25)}
+.amk-pill i{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 4px rgba(34,197,94,.18)}
+.amk-hero h1{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(2.3rem,4.6vw,3.9rem);line-height:1.06;letter-spacing:-.02em;color:${INK};margin:22px 0 20px}
+.amk-hero h1 em{font-style:normal;background:linear-gradient(90deg,${BLUE},#35A9E6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.amk-hero p{font-size:1.12rem;line-height:1.7;color:#4A5B69;max-width:34rem}
+.amk-hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin:30px 0 26px}
+.amk-hero-ticks{display:flex;flex-wrap:wrap;gap:10px 22px;list-style:none;padding:0;margin:0}
+.amk-hero-ticks li{display:flex;align-items:center;gap:8px;font-weight:600;color:${NAVY};font-size:.95rem}
+.amk-hero-ticks svg{color:#fff;background:${BLUE};border-radius:50%;padding:3px;width:20px;height:20px}
+.amk-hero-art{position:relative;min-height:540px}
+.amk-hero-main{position:absolute;right:0;top:0;width:82%;height:88%;border-radius:32px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(15,61,92,.45)}
+.amk-hero-sub{position:absolute;left:0;bottom:0;width:44%;aspect-ratio:1;border-radius:24px;overflow:hidden;border:8px solid #fff;box-shadow:0 30px 60px -25px rgba(15,61,92,.45)}
+.amk-hero-art img{width:100%;height:100%;object-fit:cover;display:block}
+.amk-float{position:absolute;background:#fff;border-radius:18px;box-shadow:0 24px 50px -20px rgba(15,61,92,.4);display:flex;align-items:center;gap:12px;padding:14px 18px}
+.amk-float-a{right:-8px;bottom:22%}.amk-float-a b{width:44px;height:44px;border-radius:12px;background:#E6F3FC;color:${BLUE};display:grid;place-items:center}
+.amk-float strong{display:block;color:${INK};font-weight:800;font-size:.98rem}.amk-float span{color:#64748B;font-size:.82rem}
+.amk-float-b{left:8%;top:10%;flex-direction:row;background:${NAVY}}.amk-float-b strong{color:${SKY};font-family:"Montserrat",sans-serif;font-size:2.2rem;line-height:1}.amk-float-b span{color:#CFE2F0;line-height:1.25}
+@media(max-width:960px){.amk-hero-g{grid-template-columns:1fr;gap:40px}.amk-hero-art{min-height:420px}.amk-hero{padding:48px 0 64px}}
+@media(max-width:520px){.amk-hero-art{min-height:340px}.amk-float-a{right:0;bottom:14%;padding:10px 14px}.amk-float-b{left:0;top:4%}}`);
+}
+
+function servicesPremium(bg = PAPER, title = "Cleaning services built around your space") {
+  return html("svcp", `<section class="amk-sv"><div class="amk-wrap">
+  <div class="amk-sv-head"><div><p class="amk-eyebrow">What we do</p><h2>${title}</h2></div><p class="amk-lede">Six specialist services, each with its own trained crew, checklist and equipment. Pick one to see exactly what is included.</p></div>
+  <div class="amk-sv-g">${SERVICES.map((s, i) => `
+    <a class="amk-sc" href="${svcUrl(s)}"><div class="amk-sc-img"><img src="${w(s.img, 800)}" alt="${s.title}" loading="lazy"/><span>${SVC_NUM(i)}</span></div>
+    <div class="amk-sc-b"><h3>${s.title}</h3><p>${s.short}</p><em>View service ${ARROW}</em></div></a>`).join("")}
+  </div>
+</div></section>`, `.amk-sv{padding:96px 0}
+.amk-sv-head{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:end;margin-bottom:48px}
+.amk-sv-head h2{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(1.9rem,3.2vw,2.8rem);line-height:1.1;color:${INK};letter-spacing:-.01em}
+.amk-eyebrow{font-size:.75rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:${BLUE};margin-bottom:12px}
+.amk-lede{color:#4A5B69;font-size:1.05rem;line-height:1.65}
+.amk-sv-g{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.amk-sc{display:flex;flex-direction:column;background:#fff;border:1px solid ${LINE};border-radius:22px;overflow:hidden;text-decoration:none;color:${INK}}
+.amk-sc:hover{transform:translateY(-6px);box-shadow:0 30px 60px -28px rgba(15,61,92,.45);border-color:transparent}
+.amk-sc-img{position:relative;aspect-ratio:16/11;overflow:hidden}
+.amk-sc-img img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.amk-sc:hover .amk-sc-img img{transform:scale(1.06)}
+.amk-sc-img span{position:absolute;left:18px;top:18px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:${NAVY};font-weight:800;font-family:"Montserrat",sans-serif;font-size:.85rem;padding:6px 12px;border-radius:999px}
+.amk-sc-b{padding:24px 24px 26px;display:flex;flex-direction:column;gap:10px;flex:1}
+.amk-sc h3{font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.3rem}
+.amk-sc p{color:#4A5B69;line-height:1.6;flex:1}
+.amk-sc em{font-style:normal;color:${BLUE};font-weight:700;display:inline-flex;align-items:center;gap:8px}
+@media(max-width:960px){.amk-sv-g{grid-template-columns:1fr 1fr}.amk-sv-head{grid-template-columns:1fr;gap:12px}}
+@media(max-width:600px){.amk-sv-g{grid-template-columns:1fr}.amk-sv{padding:64px 0}}`, bg);
+}
+
+function statsBand() {
+  const items = [["6", "Specialist services"], ["7", "Days a week"], ["100%", "Trained, uniformed staff"], ["1", "Message to book"]];
+  return html("stats", `<section class="amk-st"><div class="amk-wrap amk-st-g">${items.map(([n, l]) => `<div><strong>${n}</strong><span>${l}</span></div>`).join("")}</div></section>`,
+    `.amk-st{background:linear-gradient(120deg,${NAVY},#145A86);padding:56px 0;position:relative;overflow:hidden}
+.amk-st::after{content:"";position:absolute;right:-120px;top:-120px;width:380px;height:380px;border-radius:50%;background:rgba(143,211,244,.08)}
+.amk-st-g{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative;z-index:1}
+.amk-st-g div{border-left:1px solid rgba(255,255,255,.15);padding-left:24px}
+.amk-st strong{display:block;font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(2.2rem,4vw,3.2rem);color:#fff;line-height:1}
+.amk-st span{display:block;margin-top:10px;color:${SKY};font-weight:600;font-size:.95rem}
+@media(max-width:760px){.amk-st-g{grid-template-columns:1fr 1fr;row-gap:32px}}`, NAVY);
+}
+
+function processPremium(steps, title = "From first message to spotless", bg = MIST) {
+  return html("proc", `<section class="amk-pr"><div class="amk-wrap">
+  <div class="amk-head"><p class="amk-eyebrow">How it works</p><h2>${title}</h2></div>
+  <ol class="amk-pr-g" style="--n:${steps.length}">${steps.map(([t, d], i) => `<li><span>${SVC_NUM(i)}</span><h3>${t}</h3><p>${d}</p></li>`).join("")}</ol>
+</div></section>`, `.amk-pr{padding:96px 0}
+.amk-pr-g{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:22px;counter-reset:s;position:relative}
+.amk-pr-g li{background:#fff;border-radius:22px;padding:30px 26px;border:1px solid ${LINE};position:relative}
+.amk-pr-g span{display:inline-grid;place-items:center;width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,${BLUE},#35A9E6);color:#fff;font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.1rem;box-shadow:0 14px 28px -12px rgba(24,128,196,.7)}
+.amk-pr-g h3{font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.2rem;color:${INK};margin:20px 0 8px}
+.amk-pr-g p{color:#4A5B69;line-height:1.6}
+@media(max-width:860px){.amk-pr-g{grid-template-columns:1fr 1fr}}@media(max-width:560px){.amk-pr-g{grid-template-columns:1fr}.amk-pr{padding:64px 0}}`, bg);
+}
+
+function ctaPhoto(title = "Ready for a spotless home or workplace?", text = "Send us a message on WhatsApp with what you need. We reply with a fixed price, usually within minutes.") {
+  return html("ctap", `<section class="amk-cp"><div class="amk-wrap"><div class="amk-cp-box">
+  <img src="${w(IMG.teamWalk, 1600)}" alt="" aria-hidden="true"/>
+  <div class="amk-cp-c"><h2>${title}</h2><p>${text}</p><div class="amk-hero-cta"><a class="amk-btn amk-btn-w" href="${WA}">${ICO.wa} WhatsApp ${WA_DISPLAY}</a><a class="amk-btn amk-btn-o" href="tel:${PHONE}">${ICO.phone} Call ${PHONE_DISPLAY}</a></div></div>
+</div></div></section>`, `${BTN_CSS}
+.amk-cp{padding:88px 0}
+.amk-cp-box{position:relative;border-radius:32px;overflow:hidden;padding:72px 64px;min-height:340px;display:flex;align-items:center}
+.amk-cp-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.amk-cp-box::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(15,61,92,.96) 0%,rgba(15,61,92,.85) 45%,rgba(24,128,196,.35) 100%)}
+.amk-cp-c{position:relative;z-index:2;max-width:36rem}
+.amk-cp h2{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(1.9rem,3.4vw,2.8rem);line-height:1.1;color:#fff}
+.amk-cp p{color:#D5E6F2;font-size:1.08rem;line-height:1.6;margin-top:14px}
+.amk-cp .amk-hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+@media(max-width:700px){.amk-cp-box{padding:44px 26px}.amk-cp{padding:56px 0}}`);
+}
+
+function innerHero({ crumbs, title, description, img }) {
+  return html("ihero", `<section class="amk-ih"><img src="${w(img, 1800)}" alt="" aria-hidden="true"/><div class="amk-wrap amk-ih-c">
+  <nav class="amk-crumb"><a href="/">Home</a>${crumbs.map(([l, u]) => u ? ` <i>/</i> <a href="${u}">${l}</a>` : ` <i>/</i> <span>${l}</span>`).join("")}</nav>
+  <h1>${title}</h1><p>${description}</p>
+  <div class="amk-hero-cta"><a class="amk-btn amk-btn-p" href="${WA}">${ICO.wa} Get a free quote</a><a class="amk-btn amk-btn-o" href="tel:${PHONE}">${ICO.phone} ${PHONE_DISPLAY}</a></div>
+</div></section>`, `${BTN_CSS}
+.amk-ih{position:relative;padding:110px 0 100px;overflow:hidden}
+.amk-ih>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.amk-ih::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(15,61,92,.95) 0%,rgba(15,61,92,.8) 50%,rgba(15,61,92,.35) 100%)}
+.amk-ih-c{position:relative;z-index:2}
+.amk-crumb{font-size:.88rem;color:#A9CBE3;margin-bottom:18px}.amk-crumb a{color:#A9CBE3;text-decoration:none}.amk-crumb a:hover{color:#fff}.amk-crumb span{color:#fff;font-weight:600}.amk-crumb i{font-style:normal;margin:0 6px;opacity:.6}
+.amk-ih h1{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(2.3rem,4.8vw,3.8rem);line-height:1.06;color:#fff;max-width:44rem;letter-spacing:-.02em}
+.amk-ih p{color:#D5E6F2;font-size:1.12rem;line-height:1.6;max-width:38rem;margin-top:16px}
+.amk-ih .amk-hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+@media(max-width:700px){.amk-ih{padding:72px 0 64px}}`, NAVY);
+}
+
+function svcOverview(s) {
+  return html("ovw", `<section class="amk-ov"><div class="amk-wrap amk-ov-g">
+  <div><p class="amk-eyebrow">${s.title}</p><h2>${s.intro.split(". ")[0]}.</h2><p class="amk-lede">${s.intro.split(". ").slice(1).join(". ")}</p>
+    <ul class="amk-ov-tags">${s.tags.map((t) => `<li>${CHECK}${t}</li>`).join("")}</ul></div>
+  <aside class="amk-ov-card"><img src="${w(s.gallery[1] || s.img, 900)}" alt="${s.title}"/><div><strong>Get a fixed quote</strong><p>Send a few photos and your location. We reply with a price, usually within minutes.</p><a class="amk-btn amk-btn-p" href="${waText(`Hello AMK Cleaning, I would like a quote for ${s.title}.`)}">${ICO.wa} Quote on WhatsApp</a></div></aside>
+</div></section>`, `${BTN_CSS}.amk-ov{padding:96px 0}
+.amk-ov-g{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:start}
+.amk-ov h2{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(1.7rem,2.8vw,2.4rem);line-height:1.15;color:${INK};margin-bottom:16px}
+.amk-ov-tags{list-style:none;padding:0;margin:28px 0 0;display:flex;flex-wrap:wrap;gap:10px}
+.amk-ov-tags li{display:flex;align-items:center;gap:8px;background:${MIST};color:${NAVY};font-weight:600;font-size:.92rem;padding:9px 14px;border-radius:999px}.amk-ov-tags svg{color:${BLUE}}
+.amk-ov-card{background:#fff;border:1px solid ${LINE};border-radius:24px;overflow:hidden;box-shadow:0 30px 60px -35px rgba(15,61,92,.45);position:sticky;top:110px}
+.amk-ov-card img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}.amk-ov-card div{padding:24px}
+.amk-ov-card strong{font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.25rem;color:${INK}}.amk-ov-card p{color:#4A5B69;margin:8px 0 18px;line-height:1.55}
+@media(max-width:900px){.amk-ov-g{grid-template-columns:1fr}.amk-ov-card{position:static}.amk-ov{padding:64px 0}}`);
+}
+
+function svcIncludesPremium(s, bg = MIST) {
+  return html("inc", `<section class="amk-in"><div class="amk-wrap">
+  <div class="amk-head"><p class="amk-eyebrow">What's included</p><h2>Every ${s.title.toLowerCase()} visit covers</h2></div>
+  <div class="amk-in-g">${s.includes.map(([, t, d], i) => `<div><span>${SVC_NUM(i)}</span><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
+</div></section>`, `.amk-in{padding:96px 0}
+.amk-in-g{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.amk-in-g div{background:#fff;border-radius:20px;padding:28px;border:1px solid ${LINE};transition:box-shadow .2s,transform .2s}
+.amk-in-g div:hover{transform:translateY(-4px);box-shadow:0 24px 48px -28px rgba(15,61,92,.45)}
+.amk-in-g span{font-family:"Montserrat",sans-serif;font-weight:800;color:${BLUE};font-size:.95rem;letter-spacing:.05em}
+.amk-in-g h3{font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.15rem;color:${INK};margin:10px 0 8px}
+.amk-in-g p{color:#4A5B69;line-height:1.6}
+@media(max-width:900px){.amk-in-g{grid-template-columns:1fr 1fr}}@media(max-width:560px){.amk-in-g{grid-template-columns:1fr}.amk-in{padding:64px 0}}`, bg);
+}
+
+function galleryStrip(s) {
+  const g = s.gallery.slice(0, 3);
+  return html("gal", `<section class="amk-gs"><div class="amk-wrap amk-gs-g">${g.map((u, i) => `<div class="amk-gs-${i}"><img src="${w(u, 1000)}" alt="${s.title}" loading="lazy"/></div>`).join("")}</div></section>`,
+    `.amk-gs{padding:0 0 96px}
+.amk-gs-g{display:grid;grid-template-columns:1.5fr 1fr;grid-template-rows:220px 220px;gap:16px}
+.amk-gs-g div{border-radius:22px;overflow:hidden}.amk-gs-g img{width:100%;height:100%;object-fit:cover;display:block}
+.amk-gs-0{grid-row:span 2}
+@media(max-width:700px){.amk-gs-g{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:220px}.amk-gs-0{grid-row:auto}.amk-gs{padding-bottom:64px}}`, MIST);
+}
+
+function whyPremium(bg = MIST, o = {}) {
+  const pts = o.pts || [
+    ["Trained & uniformed staff", "Our own team, trained on every service we offer and supervised on site."],
+    ["Professional equipment", "Industrial vacuums, scrubbers and the right products for each surface."],
+    ["Fixed, upfront pricing", "You get the price before we start. No surprises on the day."],
+    ["Flexible scheduling", "Early mornings, evenings and weekends, so your day is never disrupted."],
+  ];
+  return html("why", `<section class="amk-why"><div class="amk-wrap amk-why-g">
+  <div class="amk-why-img"><img src="${w(o.img || IMG.teamWalk, 1100)}" alt="AMK cleaning crew"/><div class="amk-why-badge"><strong>CR ${CR}</strong><span>Registered in Qatar</span></div></div>
+  <div><p class="amk-eyebrow">${o.eyebrow || "Why AMK"}</p><h2>${o.title || "Why clients in Qatar choose AMK"}</h2><p class="amk-lede">${o.lede || "A registered Doha company with its own crews. Every job follows a written checklist and is checked before we leave."}</p>
+    <ul>${pts.map(([t, d]) => `<li><b>${CHECK}</b><div><strong>${t}</strong><p>${d}</p></div></li>`).join("")}</ul></div>
+</div></section>`, `.amk-why{padding:96px 0}
+.amk-why-g{display:grid;grid-template-columns:1fr 1.05fr;gap:64px;align-items:center}
+.amk-why-img{position:relative;border-radius:28px;overflow:visible}
+.amk-why-img img{width:100%;aspect-ratio:4/4.4;object-fit:cover;border-radius:28px;display:block;box-shadow:0 40px 80px -40px rgba(15,61,92,.5)}
+.amk-why-badge{position:absolute;right:-18px;bottom:36px;background:${BLUE};color:#fff;border-radius:18px;padding:16px 20px;box-shadow:0 20px 40px -18px rgba(24,128,196,.8)}
+.amk-why-badge strong{display:block;font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.2rem}.amk-why-badge span{font-size:.85rem;color:#D8EEFB}
+.amk-why h2{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(1.9rem,3.2vw,2.7rem);line-height:1.1;color:${INK};margin-bottom:14px}
+.amk-why ul{list-style:none;padding:0;margin:30px 0 0;display:grid;gap:18px}
+.amk-why li{display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid ${LINE};border-radius:18px;padding:18px 20px}
+.amk-why li b{flex:none;width:36px;height:36px;border-radius:10px;background:#E6F3FC;color:${BLUE};display:grid;place-items:center}
+.amk-why li strong{font-family:"Montserrat",sans-serif;font-weight:800;color:${INK};font-size:1.05rem}.amk-why li p{color:#4A5B69;margin-top:4px;line-height:1.55}
+@media(max-width:900px){.amk-why-g{grid-template-columns:1fr;gap:40px}.amk-why-badge{right:12px}.amk-why{padding:64px 0}}`, bg);
+}
+
+function otherPremium(cur, bg = PAPER) {
+  const list = SERVICES.filter((x) => x.slug !== cur.slug);
+  return html("oth", `<section class="amk-ot"><div class="amk-wrap">
+  <div class="amk-ot-h"><h2>Other services</h2><a href="/services">All services ${ARROW}</a></div>
+  <div class="amk-ot-g">${list.map((x) => `<a href="${svcUrl(x)}"><img src="${w(x.img, 600)}" alt="${x.title}" loading="lazy"/><span>${x.title}</span></a>`).join("")}</div>
+</div></section>`, `.amk-ot{padding:88px 0 0}
+.amk-ot-h{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px}
+.amk-ot-h h2{font-family:"Montserrat",sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.1rem);color:${INK}}
+.amk-ot-h a{color:${BLUE};font-weight:700;text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+.amk-ot-g{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.amk-ot-g a{position:relative;aspect-ratio:3/4;border-radius:20px;overflow:hidden;display:block}
+.amk-ot-g img{width:100%;height:100%;object-fit:cover;transition:transform .7s}
+.amk-ot-g a:hover img{transform:scale(1.06)}
+.amk-ot-g a::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(15,61,92,.9),transparent 55%)}
+.amk-ot-g span{position:absolute;left:16px;right:16px;bottom:16px;z-index:1;color:#fff;font-family:"Montserrat",sans-serif;font-weight:800;font-size:1.02rem;line-height:1.2}
+@media(max-width:900px){.amk-ot-g{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){.amk-ot-g{grid-template-columns:1fr 1fr}.amk-ot{padding-top:56px}}`, bg);
+}
+
 // ─── pages ──────────────────────────────────────────────────────────────────
 const BUILDERS = {
-  home: () => [heroHome(), audiences(PAPER), stats(), whyUs(MIST), serviceTiles(PAPER), cta("warm-banner"), howItWorks(MIST), faq(FAQ_HOME, PAPER, "minimal-lines")],
+  home: () => [heroPremium(), statsBand(), servicesPremium(), whyPremium(MIST), audiences(PAPER), processPremium([
+    ["Message us", "Tell us the service, your area and a preferred date on WhatsApp. Photos help."],
+    ["Get a fixed price", "We confirm the price and the time slot before anything is booked."],
+    ["We clean, you check", "Our uniformed team arrives on time and walks you through the finished job."],
+  ]), faq(FAQ_HOME, PAPER, "minimal-lines"), ctaPhoto()],
   services: () => [
-    pageHero({ badge: "Our Services", title: "Six cleaning services, one trusted team", description: "Office, hotel, house, kitchen, deep and furniture cleaning across Doha and Qatar.", img: IMG.teamWalk }),
-    servicesDetail(),
-    howItWorks(),
-    cta(),
+    innerHero({ crumbs: [["Services"]], title: "Cleaning services for every kind of space", description: "Office, hotel, house, kitchen, deep and furniture cleaning across Doha and Qatar.", img: IMG.teamWalk }),
+    servicesPremium(PAPER, "Choose the service you need"),
+    statsBand(),
+    whyPremium(PAPER),
+    ctaPhoto(),
   ],
   about: () => [
-    pageHero({ badge: "About Us", title: "Cleaning Qatar, one space at a time", description: `Registered in Doha, CR No. ${CR}.`, img: IMG.teamRoom }),
-    aboutSplit(),
-    values(),
-    stats(),
-    cta("warm-banner"),
+    innerHero({ crumbs: [["About"]], title: "Cleaning Qatar, one space at a time", description: `A registered cleaning company in Doha, CR No. ${CR}.`, img: IMG.teamRoom }),
+    whyPremium(PAPER, {
+      eyebrow: "About AMK", img: IMG.teamRoom,
+      title: "A Qatari cleaning company built on doing the job properly",
+      lede: `AMK General Cleaning Services is a registered cleaning company in Doha (CR No. ${CR}). We clean offices, hotels, homes, kitchens and furniture with our own trained teams, and we keep pricing simple: a fixed quote before we start.`,
+      pts: [
+        ["Our own team", "No casual labour. Trained, uniformed and supervised staff."],
+        ["Checklists on every job", "Every service follows a written checklist, checked before we leave."],
+        ["Long-term clients", "Contracts for offices and hotels, regular plans for homes."],
+        ["Across Qatar", "Based in Doha, serving the surrounding areas."],
+      ],
+    }),
+    statsBand(),
+    values(MIST),
+    ctaPhoto(),
   ],
   contact: () => [
-    pageHero({ badge: "Contact", title: "Get your free quote", description: `WhatsApp ${WA_DISPLAY} or call ${PHONE_DISPLAY}.`, img: IMG.team }),
-    contactCards(),
-    contactForm(),
+    innerHero({ crumbs: [["Contact"]], title: "Get your free quote", description: `WhatsApp ${WA_DISPLAY}, call ${PHONE_DISPLAY} or send the form below.`, img: IMG.team }),
+    contactCards(PAPER),
+    contactForm(MIST),
   ],
 };
 for (const s of SERVICES) {
   BUILDERS[`services/${s.slug}`] = () => [
-    pageHero({ badge: "Service", title: s.title, description: s.short, img: s.img }),
-    svcIncludes(s),
-    svcTags(s),
-    svcSteps(s),
-    svcGallery(s),
-    faq(s.faq, PAPER, "minimal-lines", "Questions"),
-    otherServices(s),
-    contactForm(PAPER, s.title),
+    innerHero({ crumbs: [["Services", "/services"], [s.title]], title: s.title, description: s.short, img: s.img }),
+    svcOverview(s),
+    svcIncludesPremium(s),
+    galleryStrip(s),
+    processPremium(s.steps, `How ${s.title.toLowerCase()} works`, PAPER),
+    faq(s.faq, MIST, "minimal-lines", "Questions"),
+    otherPremium(s),
+    ctaPhoto(`Book ${s.title.toLowerCase()} today`),
   ];
 }
 
@@ -756,7 +1020,7 @@ async function run() {
       border: LINE, borderRadius: "0.75rem",
     },
     design_overrides: { headingFont: "Montserrat", bodyFont: "Inter", headingWeight: "800", roundness: "rounded", shadow: "soft" },
-    global_header: header(), global_footer: [floatingWhatsApp(), footer()], global_prefooter: [],
+    global_header: [topBar(), header()], global_footer: [floatingWhatsApp(), footer()], global_prefooter: [],
     updated_at: now,
   }, { onConflict: "tenant_id" });
   console.log(idErr ? `✗ site_identity: ${idErr.message}` : "✓ site_identity");
