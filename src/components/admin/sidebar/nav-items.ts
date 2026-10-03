@@ -47,8 +47,7 @@
   Landmark,
   Inbox,
   UserCog,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, ArrowLeftRight } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -248,6 +247,7 @@ export const navSections: NavSection[] = [
       { label: "Modules", href: "/dashboard/modules", icon: ToggleLeft },
       { label: "Users", href: "/dashboard/users", icon: Users },
       { label: "Backups", href: "/dashboard/backups", icon: Archive },
+      { label: "Import / Export", href: "/dashboard/import-export", icon: ArrowLeftRight },
       { label: "Settings", href: "/dashboard/settings", icon: Settings },
       { label: "AI Connect", href: "/dashboard/ai-connect", icon: Bot },
       { label: "API Keys", href: "/dashboard/settings/api-keys", icon: Puzzle },

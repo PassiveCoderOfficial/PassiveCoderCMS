@@ -71,6 +71,7 @@ const LABEL_KEY: Record<string, TranslationKey> = {
   "Modules": "sidebar.modules",
   "Users": "sidebar.users",
   "Backups": "sidebar.backups",
+  "Import / Export": "sidebar.importExport",
   "Settings": "sidebar.settings",
   "AI Connect": "sidebar.aiConnect",
   "API Keys": "sidebar.apiKeys",
