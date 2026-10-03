@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { MODULE_KEYS } from "@/components/admin/sidebar/nav-items";
 import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
 
@@ -43,6 +44,8 @@ export async function PATCH(req: Request) {
   const admin = await createAdminClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Turning a module off hides it for the whole team: owners/admins/editors only.
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't change this site's modules." }, { status: 403 });
 
   const { key, enabled } = await req.json();
   if (!MODULE_KEYS.includes(key)) return NextResponse.json({ error: "Unknown module" }, { status: 400 });

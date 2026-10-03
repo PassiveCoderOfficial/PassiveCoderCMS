@@ -39,6 +39,11 @@ export async function saveContentItem(input: ContentItemInput) {
   const supabase = await createClient();
   const userId = await currentUserId();
 
+  // RLS checks the item's tenant, not its brand's: keep items on this site's own brands.
+  const { data: brand } = await supabase.from("brand_profiles").select("id")
+    .eq("id", input.brand_id).eq("tenant_id", tenantId).maybeSingle();
+  if (!brand) return { error: "Brand not found on this site" };
+
   const row = {
     tenant_id: tenantId,
     brand_id: input.brand_id,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { seedBusinessProfileFromSite } from "@/modules/business-profile/seed-from-site";
 import { enmPushProfile } from "@/lib/enm";
 
@@ -92,16 +93,8 @@ export async function PATCH(req: Request) {
 
   // Writes go through the admin client, so re-check edit rights explicitly
   // rather than relying on RLS.
-  const { data: member } = await admin
-    .from("tenant_members")
-    .select("role")
-    .eq("tenant_id", tenantId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const { data: sa } = await admin
-    .from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
-  const canEdit = !!sa || ["owner", "admin", "editor"].includes(member?.role ?? "");
-  if (!canEdit) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // (Shared rule: owner/admin/editor, assigned staff, super admin.)
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { completed, ...fields } = parsed.data;
   const row: Record<string, unknown> = { tenant_id: tenantId, ...fields };

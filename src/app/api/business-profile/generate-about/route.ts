@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { callModel, AiCoderError } from "@/lib/aicoder/generate";
 import { reserveGeneration, refundGeneration, AiCoderQuotaError } from "@/lib/aicoder/quota";
 
@@ -24,6 +25,7 @@ export async function POST() {
 
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "No tenant" }, { status: 404 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const admin = await createAdminClient();
   const { data: profile } = await admin
