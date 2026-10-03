@@ -49,7 +49,8 @@ const LINE = "#D6E6F2";
 
 const STORAGE_DIR = `uploads/${SLUG}`;
 const asset = (name) => `${SUPABASE_URL}/storage/v1/object/public/media/${STORAGE_DIR}/${name}`;
-const LOGO = asset("amk-logo-v2.png");       // vector export of the letterhead lockup (clients/AMK Cleaning QA/logo.svg)
+const LOGO = asset("amk-logo-v3.png");       // vector redraw: clients/AMK Cleaning QA/build-logo.cjs
+const LOGO_LIGHT = asset("amk-logo-v3-light.png");
 const FAVICON_URL = asset("favicon.png"); // emblem
 
 // Pexels (free for commercial use), stand-ins until the client sends photos.
@@ -1011,7 +1012,7 @@ async function run() {
     tenant_id: tenantId,
     template_id: tpl.id, active_template_slug: TEMPLATE_SLUG,
     site_name: SITE_NAME, tagline: "Professional Cleaning Services in Doha, Qatar",
-    logo_url: LOGO, logo_dark_url: LOGO, logo_type: "image", logo_alt: SITE_NAME, logo_width: 340,
+    logo_url: LOGO, logo_dark_url: LOGO_LIGHT, logo_type: "image", logo_alt: SITE_NAME, logo_width: 320,
     favicon_url: FAVICON_URL,
     primary_color: BLUE, secondary_color: NAVY,
     color_overrides: {
