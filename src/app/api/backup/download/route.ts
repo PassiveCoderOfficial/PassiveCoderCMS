@@ -9,6 +9,11 @@ export async function GET(req: Request) {
   const path = searchParams.get("path");
 
   if (!path) return NextResponse.json({ error: "Missing path" }, { status: 400 });
+  // Exactly tenantId/folder/file — no "..", no extra segments, so the
+  // tenant check below always applies to the file actually downloaded.
+  if (!/^[0-9a-f-]{36}\/[\w.-]+\/[\w.-]+$/i.test(path) || path.includes("..")) {
+    return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+  }
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -28,7 +33,8 @@ export async function GET(req: Request) {
 
   const { data: sa } = await admin.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
 
-  let allowed = !!member || !!sa;
+  // A backup holds every customer record: owners and admins only.
+  let allowed = (!!member && ["owner", "admin"].includes(member.role as string)) || !!sa;
 
   if (!allowed) {
     const agent = await getStaff();
