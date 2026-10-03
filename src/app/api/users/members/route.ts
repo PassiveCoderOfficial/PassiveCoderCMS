@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { teamAccess, type TeamAccess } from "@/lib/team/access";
 
-const ROLES = ["admin", "editor", "author"] as const;
+const ROLES = ["admin", "editor", "viewer"] as const;
 
 /** The site's team with names and emails. */
 export async function GET() {
@@ -31,7 +31,7 @@ export async function PATCH(req: Request) {
   const a = await teamAccess();
   if (!a?.manage) return NextResponse.json({ error: "Only the site owner or an admin can change roles." }, { status: 403 });
   const { userId, role } = await req.json().catch(() => ({})) as { userId?: string; role?: string };
-  if (!userId || !ROLES.includes(role as typeof ROLES[number])) return NextResponse.json({ error: "Choose admin, editor or author." }, { status: 400 });
+  if (!userId || !ROLES.includes(role as typeof ROLES[number])) return NextResponse.json({ error: "Choose admin, editor or view only." }, { status: 400 });
   const current = await target(a, userId);
   if (!current) return NextResponse.json({ error: "Member not found" }, { status: 404 });
   if (current === "owner") return NextResponse.json({ error: "The owner's role can't be changed. Use Transfer site to hand over ownership." }, { status: 400 });

@@ -10,7 +10,7 @@ import { TransferSiteDialog } from "@/components/admin/transfer-site-dialog";
 import { useT } from "@/lib/i18n/language-provider";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 
-type Role = "admin" | "editor" | "author";
+type Role = "admin" | "editor" | "viewer";
 interface Member {
   user_id: string;
   role: Role;
@@ -21,13 +21,13 @@ interface Member {
 const ROLE_COLORS: Record<Role, string> = {
   admin: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   editor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  author: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  viewer: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
 };
 
 const ROLE_GUIDE: { role: Role; labelKey: TranslationKey; descKey: TranslationKey }[] = [
   { role: "admin", labelKey: "usersPage.roleAdmin", descKey: "usersPage.roleAdminDesc" },
   { role: "editor", labelKey: "usersPage.roleEditor", descKey: "usersPage.roleEditorDesc" },
-  { role: "author", labelKey: "usersPage.roleAuthor", descKey: "usersPage.roleAuthorDesc" },
+  { role: "viewer", labelKey: "usersPage.roleAuthor", descKey: "usersPage.roleAuthorDesc" },
 ];
 
 export default function UsersPage() {
@@ -144,7 +144,7 @@ export default function UsersPage() {
             >
               <option value="admin">{t("usersPage.roleAdminFull")}</option>
               <option value="editor">{t("usersPage.roleEditorContent")}</option>
-              <option value="author">{t("usersPage.roleAuthorPosts")}</option>
+              <option value="viewer">{t("usersPage.roleAuthorPosts")}</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -201,7 +201,7 @@ export default function UsersPage() {
                       >
                         <option value="admin">{t("usersPage.roleAdmin")}</option>
                         <option value="editor">{t("usersPage.roleEditor")}</option>
-                        <option value="author">{t("usersPage.roleAuthor")}</option>
+                        <option value="viewer">{t("usersPage.roleAuthor")}</option>
                       </select>
                       <button onClick={() => updateRole(m.user_id, editRole)} className="text-green-600 hover:text-green-700"><Check className="w-4 h-4" /></button>
                       <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>

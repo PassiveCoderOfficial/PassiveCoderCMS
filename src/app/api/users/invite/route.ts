@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { teamAccess } from "@/lib/team/access";
 
-const ROLES = ["admin", "editor", "author"];
+const ROLES = ["admin", "editor", "viewer"];
 
 /**
  * Add someone to the site's team. Existing accounts are added straight away;
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const email = String(body.email ?? "").trim().toLowerCase();
   const role = String(body.role ?? "");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
-  if (!ROLES.includes(role)) return NextResponse.json({ error: "Choose admin, editor or author." }, { status: 400 });
+  if (!ROLES.includes(role)) return NextResponse.json({ error: "Choose admin, editor or view only." }, { status: 400 });
 
   // profiles mirrors auth.users and is indexed by email; listUsers() only
   // returned the first page, so existing accounts past it were "not found".
