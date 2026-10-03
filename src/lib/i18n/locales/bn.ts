@@ -1839,6 +1839,10 @@ export const bn = {
   "usersPage.inviteFailed": "ইনভাইট ব্যর্থ হয়েছে",
   "usersPage.failed": "ব্যর্থ হয়েছে",
   "usersPage.roleUpdated": "রোল আপডেট হয়েছে",
+  "usersPage.leaveConfirm": "এই সাইট ছেড়ে দেবেন? আবার আমন্ত্রণ না পাওয়া পর্যন্ত অ্যাক্সেস থাকবে না।",
+  "usersPage.leaveSite": "সাইট ছেড়ে দিন",
+  "usersPage.removeMember": "সদস্য সরান",
+  "usersPage.changeRole": "রোল বদলান",
   "usersPage.removeConfirm": "এই টিম মেম্বারকে রিমুভ করবেন?",
   "usersPage.memberRemoved": "মেম্বার রিমুভ হয়েছে",
 

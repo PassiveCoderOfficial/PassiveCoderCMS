@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,13 +40,11 @@ export default function UsersPage() {
   const [inviting, setInviting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRole, setEditRole] = useState<Role>("editor");
-
-  const supabase = createClient();
+  const [canManage, setCanManage] = useState(false);
+  const [me, setMe] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
       // Server-resolved (subdomain-aware) rather than a tenant_members lookup:
       // a super admin has no membership row, so .single() returned HTTP 406 and
       // the Users page rendered empty — no members listed, nobody invitable —
@@ -56,39 +53,17 @@ export default function UsersPage() {
       const { tenantId: currentTenantId } = await res.json().catch(() => ({ tenantId: null }));
       if (!currentTenantId) return;
       setTenantId(currentTenantId);
-      loadMembers(currentTenantId);
+      loadMembers();
     })();
   }, []);
 
-  async function loadMembers(tid: string) {
+  async function loadMembers() {
     setLoading(true);
-    // Two queries, not one embedded select: tenant_members.user_id references
-    // auth.users, not profiles, so PostgREST has no FK path to walk for
-    // `profiles(...)` — that embed returned HTTP 400 ("could not find a
-    // relationship") on every load, which the earlier .single() 406 upstream
-    // had been masking. Fetching profiles separately by id and merging
-    // client-side is the standard workaround for embedding across two tables
-    // that both reference a third rather than each other.
-    const { data: rows } = await supabase
-      .from("tenant_members")
-      .select("user_id, role, joined_at")
-      .eq("tenant_id", tid)
-      .order("joined_at");
-
-    const userIds = (rows ?? []).map(r => r.user_id);
-    const { data: profileRows } = userIds.length
-      ? await supabase.from("profiles").select("id, email, full_name, avatar_url").in("id", userIds)
-      : { data: [] as { id: string; email: string; full_name: string | null; avatar_url: string | null }[] };
-    const byId = new Map((profileRows ?? []).map(p => [p.id, p]));
-
-    setMembers((rows ?? []).map(r => ({
-      user_id: r.user_id,
-      role: r.role as Role,
-      joined_at: r.joined_at,
-      profiles: byId.get(r.user_id)
-        ? { email: byId.get(r.user_id)!.email, full_name: byId.get(r.user_id)!.full_name, avatar_url: byId.get(r.user_id)!.avatar_url }
-        : null,
-    })));
+    const res = await fetch("/api/users/members");
+    const data = await res.json().catch(() => ({})) as { members?: Member[]; canManage?: boolean; me?: string };
+    setMembers(data.members ?? []);
+    setCanManage(!!data.canManage);
+    setMe(data.me ?? null);
     setLoading(false);
   }
 
@@ -99,13 +74,13 @@ export default function UsersPage() {
       const res = await fetch("/api/users/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole, tenantId }),
+        body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole }),
       });
       const data = await res.json() as { error?: string };
       if (!res.ok) throw new Error(data.error ?? t("usersPage.failed"));
       toast.success(t("usersPage.invitedEmail", { email: inviteEmail }));
       setInviteEmail("");
-      loadMembers(tenantId);
+      loadMembers();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("usersPage.inviteFailed"));
     } finally {
@@ -114,24 +89,22 @@ export default function UsersPage() {
   }
 
   async function updateRole(userId: string, role: Role) {
-    if (!tenantId) return;
-    const { error } = await supabase
-      .from("tenant_members")
-      .update({ role })
-      .eq("tenant_id", tenantId)
-      .eq("user_id", userId);
-    if (error) { toast.error(error.message); return; }
+    const res = await fetch("/api/users/members", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, role }) });
+    const data = await res.json().catch(() => ({})) as { error?: string };
+    if (!res.ok) { toast.error(data.error ?? t("usersPage.failed")); return; }
     toast.success(t("usersPage.roleUpdated"));
     setEditingId(null);
-    loadMembers(tenantId);
+    loadMembers();
   }
 
   async function removeMember(userId: string) {
-    if (!tenantId) return;
-    if (!confirm(t("usersPage.removeConfirm"))) return;
-    await supabase.from("tenant_members").delete().eq("tenant_id", tenantId).eq("user_id", userId);
+    if (!confirm(t(userId === me ? "usersPage.leaveConfirm" : "usersPage.removeConfirm"))) return;
+    const res = await fetch(`/api/users/members?userId=${encodeURIComponent(userId)}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({})) as { error?: string };
+    if (!res.ok) { toast.error(data.error ?? t("usersPage.failed")); return; }
+    if (userId === me) { window.location.href = "/dashboard"; return; }
     toast.success(t("usersPage.memberRemoved"));
-    loadMembers(tenantId);
+    loadMembers();
   }
 
   return (
@@ -144,12 +117,12 @@ export default function UsersPage() {
       {/* Ownership handover. Separate from the invite box below because it does
           something categorically different — invite grants access, this changes
           who the site belongs to. */}
-      {tenantId && (
-        <TransferSiteDialog tenantId={tenantId} onDone={() => loadMembers(tenantId)} />
+      {tenantId && canManage && (
+        <TransferSiteDialog tenantId={tenantId} onDone={() => loadMembers()} />
       )}
 
       {/* Invite */}
-      <div className="rounded-xl border bg-card p-5 space-y-4">
+      {canManage && <div className="rounded-xl border bg-card p-5 space-y-4">
         <h2 className="font-semibold flex items-center gap-2"><UserPlus className="w-4 h-4" /> {t("usersPage.inviteTeamMember")}</h2>
         <div className="flex gap-3 flex-wrap">
           <div className="flex-1 min-w-48">
@@ -182,10 +155,10 @@ export default function UsersPage() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">{t("usersPage.inviteHint")}</p>
-      </div>
+      </div>}
 
       {/* Role guide */}
-      <div className="grid grid-cols-3 gap-3 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
         {ROLE_GUIDE.map(({ role, labelKey, descKey }) => (
           <div key={role} className="rounded-lg border p-3 space-y-1 bg-card">
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[role]}`}>{t(labelKey)}</span>
@@ -245,12 +218,16 @@ export default function UsersPage() {
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[m.role as Role] ?? ""}`}>
                         {t(ROLE_GUIDE.find(r => r.role === m.role)?.labelKey ?? "usersPage.roleEditor")}
                       </span>
-                      <button onClick={() => { setEditingId(m.user_id); setEditRole(m.role as Role); }} className="text-muted-foreground hover:text-foreground">
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => removeMember(m.user_id)} className="text-muted-foreground hover:text-red-500">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {canManage && (
+                        <button onClick={() => { setEditingId(m.user_id); setEditRole(m.role as Role); }} className="text-muted-foreground hover:text-foreground" aria-label={t("usersPage.changeRole")}>
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {(canManage || m.user_id === me) && (
+                        <button onClick={() => removeMember(m.user_id)} className="text-muted-foreground hover:text-red-500" aria-label={m.user_id === me ? t("usersPage.leaveSite") : t("usersPage.removeMember")}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground hidden sm:block">

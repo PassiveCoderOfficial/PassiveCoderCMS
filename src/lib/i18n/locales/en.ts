@@ -1833,6 +1833,10 @@ export const en = {
   "usersPage.inviteFailed": "Invite failed",
   "usersPage.failed": "Failed",
   "usersPage.roleUpdated": "Role updated",
+  "usersPage.leaveConfirm": "Leave this site? You'll lose access until someone invites you again.",
+  "usersPage.leaveSite": "Leave site",
+  "usersPage.removeMember": "Remove member",
+  "usersPage.changeRole": "Change role",
   "usersPage.removeConfirm": "Remove this team member?",
   "usersPage.memberRemoved": "Member removed",
 
