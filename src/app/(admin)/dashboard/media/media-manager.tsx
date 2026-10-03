@@ -1,7 +1,8 @@
 "use client";
 
+import { compressImageForUpload } from "@/lib/media/client-compress";
 import React, { useCallback, useRef, useState, useTransition } from "react";
-import { uploadMediaFile, deleteMediaFile, updateMediaAlt } from "./actions";
+import { uploadMediaFile, deleteMediaFile, updateMediaAlt, getMediaUsage } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -347,6 +348,7 @@ export function MediaManager({ initialMedia }: Props) {
   const [uploadErrors, setUploadErrors] = useState<UploadError[]>([]);
   const [selected, setSelected] = useState<MediaItem | null>(null);
   const [toDelete, setToDelete] = useState<MediaItem | null>(null);
+  const [usage, setUsage] = useState<{ kind: string; title: string }[] | null>(null);
   const [deleting, startDelete] = useTransition();
 
   const handleUpload = async (files: File[]) => {
@@ -375,7 +377,7 @@ export function MediaManager({ initialMedia }: Props) {
       valid.map(async (file, i) => {
         try {
           const fd = new FormData();
-          fd.append("file", file);
+          fd.append("file", await compressImageForUpload(file));
           const result = await uploadMediaFile(fd);
           if (result.error) {
             newErrors.push({ name: file.name, reason: result.error });
@@ -409,6 +411,8 @@ export function MediaManager({ initialMedia }: Props) {
   const handleDelete = (item: MediaItem) => {
     setToDelete(item);
     setSelected(null);
+    setUsage(null);
+    getMediaUsage(item.id).then(setUsage).catch(() => setUsage([]));
   };
 
   const confirmDelete = () => {
@@ -615,6 +619,18 @@ export function MediaManager({ initialMedia }: Props) {
             <AlertDialogDescription>
               <strong>{toDelete?.original_name}</strong> will be permanently removed from storage and the database. This cannot be undone.
             </AlertDialogDescription>
+            {usage === null ? (
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" /> Checking where this file is used…</p>
+            ) : usage.length > 0 ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                <p className="font-semibold">Still in use in {usage.length} place{usage.length === 1 ? "" : "s"}. Deleting it will leave a broken image there:</p>
+                <ul className="list-disc pl-4">
+                  {usage.slice(0, 8).map((u, i) => <li key={i}><span className="capitalize">{u.kind}</span>: {u.title}</li>)}
+                </ul>
+              </div>
+            ) : (
+              <p className="text-xs text-green-700 dark:text-green-400">Not used anywhere on your site. Safe to delete.</p>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
