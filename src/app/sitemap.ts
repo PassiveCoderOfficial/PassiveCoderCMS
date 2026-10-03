@@ -30,20 +30,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (tenant) {
     const admin = await createAdminClient();
-    const { data: pages } = await admin
-      .from("pages")
-      .select("slug, updated_at, type")
-      .eq("tenant_id", tenant.id)
-      .eq("status", "published")
-      .is("deleted_at", null);
+    const [{ data: pages }, { data: products }, { data: properties }, { data: communities }] = await Promise.all([
+      admin.from("pages").select("slug, updated_at, type, seo")
+        .eq("tenant_id", tenant.id).eq("status", "published").is("deleted_at", null),
+      admin.from("products").select("slug, updated_at").eq("tenant_id", tenant.id).eq("status", "active").limit(5000),
+      admin.from("re_properties").select("slug, updated_at").eq("tenant_id", tenant.id).neq("status", "draft").limit(5000),
+      admin.from("re_communities").select("slug").eq("tenant_id", tenant.id).limit(1000),
+    ]);
 
     const site = { slug: tenant.slug, custom_domain: tenant.custom_domain };
-    return (pages ?? []).map((p) => ({
-      url: publicUrl(site, p.slug === "home" ? "/" : `/${p.slug}`),
-      lastModified: p.updated_at ?? new Date().toISOString(),
-      changeFrequency: (p.type === "post" ? "weekly" : "monthly") as "weekly" | "monthly",
-      priority: p.slug === "home" ? 1 : 0.7,
-    }));
+    const now = new Date().toISOString();
+    return [
+      // Pages marked "hide from search engines" stay out of the sitemap too.
+      ...(pages ?? []).filter((p) => !(p.seo as { no_index?: boolean } | null)?.no_index).map((p) => ({
+        url: publicUrl(site, p.slug === "home" ? "/" : `/${p.slug}`),
+        lastModified: p.updated_at ?? now,
+        changeFrequency: (p.type === "post" ? "weekly" : "monthly") as "weekly" | "monthly",
+        priority: p.slug === "home" ? 1 : 0.7,
+      })),
+      ...(products ?? []).map((p) => ({ url: publicUrl(site, `/products/${p.slug}`), lastModified: p.updated_at ?? now, changeFrequency: "weekly" as const, priority: 0.6 })),
+      ...(properties ?? []).map((p) => ({ url: publicUrl(site, `/properties/${p.slug}`), lastModified: p.updated_at ?? now, changeFrequency: "weekly" as const, priority: 0.6 })),
+      ...(communities ?? []).map((c) => ({ url: publicUrl(site, `/communities/${c.slug}`), lastModified: now, changeFrequency: "monthly" as const, priority: 0.5 })),
+    ];
   }
 
   const now = new Date().toISOString();
