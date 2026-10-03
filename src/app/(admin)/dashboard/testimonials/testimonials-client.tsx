@@ -1,5 +1,6 @@
 "use client";
 
+import { groupedApi } from "@/lib/content/grouped-api-client";
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, Star as StarIcon, Eye, EyeOff, Copy } from "lucide-react";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
@@ -40,10 +41,7 @@ function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function api(method: string, body?: unknown, params?: Record<string, string>) {
-  const url = params ? `/api/testimonials?${new URLSearchParams(params)}` : "/api/testimonials";
-  return fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
-}
+const api = groupedApi("/api/testimonials");
 
 function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
@@ -70,11 +68,15 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   async function save() {
     if (!item.name?.trim() || !item.content?.trim()) return;
     setSaving(true);
-    const res = await api(isNew ? "POST" : "PATCH", {
-      _type: "item", ...(isNew ? { group_id: groupId } : {}), ...item,
-    });
-    const data = isNew ? await res.json() : { ...item, id: item.id! };
-    setSaving(false);
+    let data;
+    try {
+      const res = await api(isNew ? "POST" : "PATCH", {
+        _type: "item", ...(isNew ? { group_id: groupId } : {}), ...item,
+      });
+      data = isNew ? await res.json() : { ...item, id: item.id! };
+    } finally {
+      setSaving(false);
+    }
     onSave(data as Testimonial, isNew);
   }
 
@@ -322,13 +324,17 @@ export default function TestimonialsClient({ initialGroups }: { initialGroups: T
   async function createGroup() {
     if (!newName.trim()) return;
     setSaving(true);
-    const res = await api("POST", {
-      _type: "group", name: newName.trim(), slug: slugify(newName.trim()),
-      show_custom: true, show_google: false, show_trustpilot: false, show_facebook: false,
-      sort_order: groups.length,
-    });
-    const data = await res.json();
-    setSaving(false);
+    let data;
+    try {
+      const res = await api("POST", {
+        _type: "group", name: newName.trim(), slug: slugify(newName.trim()),
+        show_custom: true, show_google: false, show_trustpilot: false, show_facebook: false,
+        sort_order: groups.length,
+      });
+      data = await res.json();
+    } finally {
+      setSaving(false);
+    }
     setGroups(prev => [...prev, { ...data, testimonials: [] }]);
     setNewName(""); setCreating(false);
   }

@@ -1,70 +1,12 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { apiTenantId } from "@/lib/tenant/api";
+import { groupedCrud } from "@/lib/content/grouped-crud";
 
+const crud = groupedCrud({
+  groupTable: "portfolio_groups",
+  itemTable: "portfolio_items",
+  itemTypes: ["item"],
+});
 
-export async function GET() {
-  const supabase = await createClient();
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data } = await supabase
-    .from("portfolio_groups")
-    .select("*, portfolio_items(*)")
-    .eq("tenant_id", tenantId)
-    .order("sort_order");
-
-  return NextResponse.json(data ?? []);
-}
-
-export async function POST(req: Request) {
-  const supabase = await createClient();
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const body = await req.json();
-
-  if (body._type === "group") {
-    const { _type, ...fields } = body;
-    const { data, error } = await supabase.from("portfolio_groups")
-      .insert({ ...fields, tenant_id: tenantId }).select().single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json(data);
-  }
-
-  if (body._type === "item") {
-    const { _type, ...fields } = body;
-    const { data, error } = await supabase.from("portfolio_items")
-      .insert({ ...fields, tenant_id: tenantId }).select().single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json(data);
-  }
-
-  return NextResponse.json({ error: "Invalid _type" }, { status: 400 });
-}
-
-export async function PATCH(req: Request) {
-  const supabase = await createClient();
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { _type, id, ...fields } = await req.json();
-  const table = _type === "group" ? "portfolio_groups" : "portfolio_items";
-  await supabase.from(table as "portfolio_groups").update(fields).eq("id", id).eq("tenant_id", tenantId);
-  return NextResponse.json({ ok: true });
-}
-
-export async function DELETE(req: Request) {
-  const supabase = await createClient();
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { searchParams } = new URL(req.url);
-  const type = searchParams.get("type");
-  const id = searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
-
-  const table = type === "group" ? "portfolio_groups" : "portfolio_items";
-  await supabase.from(table as "portfolio_groups").delete().eq("id", id).eq("tenant_id", tenantId);
-  return NextResponse.json({ ok: true });
-}
+export const GET = crud.GET;
+export const POST = crud.POST;
+export const PATCH = crud.PATCH;
+export const DELETE = crud.DELETE;

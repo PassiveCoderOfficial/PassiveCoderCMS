@@ -1,5 +1,6 @@
 "use client";
 
+import { groupedApi } from "@/lib/content/grouped-api-client";
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, SlidersHorizontal, Save, CheckCircle, Copy } from "lucide-react";
 import { useT } from "@/lib/i18n/language-provider";
@@ -35,10 +36,7 @@ function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function api(method: string, body?: unknown, params?: Record<string, string>) {
-  const url = params ? `/api/sliders?${new URLSearchParams(params)}` : "/api/sliders";
-  return fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
-}
+const api = groupedApi("/api/sliders");
 
 function SlideEditor({ slide: initial, groupId, onSave, onCancel }: {
   slide: Partial<SliderSlide>; groupId: string;
@@ -52,9 +50,13 @@ function SlideEditor({ slide: initial, groupId, onSave, onCancel }: {
 
   async function save() {
     setSaving(true);
-    const res = await api(isNew ? "POST" : "PATCH", { _type: "slide", ...(isNew ? { group_id: groupId } : {}), ...slide });
-    const data = isNew ? await res.json() : { ...slide, id: slide.id! };
-    setSaving(false);
+    let data;
+    try {
+      const res = await api(isNew ? "POST" : "PATCH", { _type: "slide", ...(isNew ? { group_id: groupId } : {}), ...slide });
+      data = isNew ? await res.json() : { ...slide, id: slide.id! };
+    } finally {
+      setSaving(false);
+    }
     onSave(data as SliderSlide, isNew);
   }
 
@@ -294,13 +296,17 @@ export default function SlidersClient({ initialGroups }: { initialGroups: Slider
   async function createGroup() {
     if (!newName.trim()) return;
     setSaving(true);
-    const res = await api("POST", {
-      _type: "group", name: newName.trim(), slug: slugify(newName.trim()),
-      auto_play: true, interval_ms: 5000, show_arrows: true, show_dots: true,
-      height: "500px", sort_order: groups.length,
-    });
-    const data = await res.json();
-    setSaving(false);
+    let data;
+    try {
+      const res = await api("POST", {
+        _type: "group", name: newName.trim(), slug: slugify(newName.trim()),
+        auto_play: true, interval_ms: 5000, show_arrows: true, show_dots: true,
+        height: "500px", sort_order: groups.length,
+      });
+      data = await res.json();
+    } finally {
+      setSaving(false);
+    }
     setGroups(prev => [...prev, { ...data, slider_slides: [] }]);
     setNewName(""); setCreating(false);
   }

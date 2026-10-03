@@ -1,5 +1,6 @@
 "use client";
 
+import { groupedApi } from "@/lib/content/grouped-api-client";
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, GripVertical, Pencil, Check, X, Loader2, Sparkles, Copy } from "lucide-react";
 import { IconPicker } from "@/components/ui/icon-picker";
@@ -33,14 +34,7 @@ function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function api(method: string, body?: unknown, params?: Record<string, string>) {
-  const url = params ? `/api/features?${new URLSearchParams(params)}` : "/api/features";
-  return fetch(url, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : {},
-    body: body ? JSON.stringify(body) : undefined,
-  });
-}
+const api = groupedApi("/api/features");
 
 function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   item: Partial<FeatureItem>; groupId: string;
@@ -55,11 +49,15 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   async function save() {
     if (!item.title?.trim()) return;
     setSaving(true);
-    const res = await api(isNew ? "POST" : "PATCH", {
-      _type: "item", ...(isNew ? { group_id: groupId } : {}), ...item,
-    });
-    const data = isNew ? await res.json() : { ...item, id: item.id! };
-    setSaving(false);
+    let data;
+    try {
+      const res = await api(isNew ? "POST" : "PATCH", {
+        _type: "item", ...(isNew ? { group_id: groupId } : {}), ...item,
+      });
+      data = isNew ? await res.json() : { ...item, id: item.id! };
+    } finally {
+      setSaving(false);
+    }
     onSave(data as FeatureItem, isNew);
   }
 
@@ -260,9 +258,13 @@ export default function FeaturesClient({ initialGroups }: { initialGroups: Featu
   async function createGroup() {
     if (!newName.trim()) return;
     setSaving(true);
-    const res = await api("POST", { _type: "group", name: newName.trim(), slug: slugify(newName.trim()), sort_order: groups.length });
-    const data = await res.json();
-    setSaving(false);
+    let data;
+    try {
+      const res = await api("POST", { _type: "group", name: newName.trim(), slug: slugify(newName.trim()), sort_order: groups.length });
+      data = await res.json();
+    } finally {
+      setSaving(false);
+    }
     setGroups(prev => [...prev, { ...data, feature_items: [] }]);
     setNewName(""); setCreating(false);
   }

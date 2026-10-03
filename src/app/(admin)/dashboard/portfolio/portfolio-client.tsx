@@ -1,5 +1,6 @@
 "use client";
 
+import { groupedApi } from "@/lib/content/grouped-api-client";
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Check, X, Loader2, FolderOpen, Copy } from "lucide-react";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
@@ -29,10 +30,7 @@ function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function api(method: string, body?: unknown, params?: Record<string, string>) {
-  const url = params ? `/api/portfolio?${new URLSearchParams(params)}` : "/api/portfolio";
-  return fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
-}
+const api = groupedApi("/api/portfolio");
 
 function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   item: Partial<PortfolioItem>; groupId: string;
@@ -48,11 +46,15 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
   async function save() {
     if (!item.title?.trim() || !item.image_url?.trim()) return;
     setSaving(true);
-    const tags = tagInput.split(",").map(tg => tg.trim()).filter(Boolean);
-    const payload = { ...item, tags, ...(isNew ? { group_id: groupId } : {}) };
-    const res = await api(isNew ? "POST" : "PATCH", { _type: "item", ...payload });
-    const data = isNew ? await res.json() : { ...payload, id: item.id! };
-    setSaving(false);
+    let data;
+    try {
+      const tags = tagInput.split(",").map(tg => tg.trim()).filter(Boolean);
+      const payload = { ...item, tags, ...(isNew ? { group_id: groupId } : {}) };
+      const res = await api(isNew ? "POST" : "PATCH", { _type: "item", ...payload });
+      data = isNew ? await res.json() : { ...payload, id: item.id! };
+    } finally {
+      setSaving(false);
+    }
     onSave(data as PortfolioItem, isNew);
   }
 
@@ -222,9 +224,13 @@ export default function PortfolioClient({ initialGroups }: { initialGroups: Port
   async function createGroup() {
     if (!newName.trim()) return;
     setSaving(true);
-    const res = await api("POST", { _type: "group", name: newName.trim(), slug: slugify(newName.trim()), sort_order: groups.length });
-    const data = await res.json();
-    setSaving(false);
+    let data;
+    try {
+      const res = await api("POST", { _type: "group", name: newName.trim(), slug: slugify(newName.trim()), sort_order: groups.length });
+      data = await res.json();
+    } finally {
+      setSaving(false);
+    }
     setGroups(prev => [...prev, { ...data, portfolio_items: [] }]);
     setNewName(""); setCreating(false);
   }
