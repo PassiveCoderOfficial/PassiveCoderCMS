@@ -25,6 +25,8 @@ export type PageRowData = {
     has_draft?: boolean | null;
     /** SEO meta description set? Missing ones are flagged in the list. */
     has_seo_description?: boolean;
+    /** Came in through Import / Export; "rebuilt" once AI has redesigned it. */
+    imported?: "imported" | "rebuilt";
 };
 
 interface PageRowProps {
@@ -54,6 +56,7 @@ export function PageRow({ page, inTrash, siteBase, selected, onSelect }: PageRow
         <span className="font-medium text-sm flex items-center gap-2 min-w-0">
           <span className="truncate">{page.title}</span>
           {isHome && <span className="shrink-0 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-semibold">{t("pages.homeBadge")}</span>}
+          {page.imported && <span className="shrink-0 rounded-full bg-muted text-muted-foreground px-2 py-0.5 text-[10px] font-semibold">{t("pages.importedBadge")}</span>}
         </span>
         {!inTrash && page.has_seo_description === false && page.status === "published" && (
           <span className="mt-0.5 block text-[11px] text-muted-foreground">{t("pages.noSeoDescription")}</span>
@@ -82,7 +85,7 @@ export function PageRow({ page, inTrash, siteBase, selected, onSelect }: PageRow
         <ScheduleTrigger pageId={page.id} updatedAt={page.updated_at} scheduledAt={page.scheduled_at} disabled={inTrash} />
       </td>
       <td className="px-4 py-3 text-right">
-        <PageActions pageId={page.id} viewUrl={`${siteBase}${path}`} inTrash={inTrash} />
+        <PageActions pageId={page.id} viewUrl={`${siteBase}${path}`} inTrash={inTrash} imported={page.imported} />
       </td>
     </tr>
   );

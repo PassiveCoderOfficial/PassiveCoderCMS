@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, Download, FileUp, Globe, Loader2, CheckCircle2, AlertTriangle, Package } from "lucide-react";
+import { ArrowLeftRight, Download, FileUp, Globe, Loader2, CheckCircle2, AlertTriangle, Package, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ export default function ImportExportPage() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [wpUrl, setWpUrl] = useState("");
+  const [migKey, setMigKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const wxrRef = useRef<HTMLInputElement>(null);
   const csvRef = useRef<HTMLInputElement>(null);
   const jsonRef = useRef<HTMLInputElement>(null);
@@ -127,6 +129,14 @@ export default function ImportExportPage() {
     catch (e) { toast.error(e instanceof Error ? e.message : "Couldn't read that file."); }
   }
 
+  async function createKey() {
+    try {
+      const r = await api<{ token: string; scope: string }>("/api/mcp-tokens", { name: "WordPress migration", scope: "write" });
+      if (r.scope !== "write") { toast.error("Your role can't import content on this site. Ask the site owner."); return; }
+      setMigKey(r.token);
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn't create a key"); }
+  }
+
   const pct = progress && progress.total ? Math.round((progress.cursor / progress.total) * 100) : 0;
 
   return (
@@ -181,7 +191,30 @@ export default function ImportExportPage() {
             </form>
           </div>
           <div className="space-y-2 border-t pt-4">
-            <p className="text-sm font-medium">Option 2: WordPress export file</p>
+            <p className="text-sm font-medium">Option 2: Passive Coder Migration plugin <span className="text-xs font-normal text-muted-foreground">(most complete)</span></p>
+            <p className="text-xs text-muted-foreground">
+              Install the plugin on your WordPress site to bring everything over, including drafts, page-builder layouts (Elementor, Divi, WPBakery) and WooCommerce customers.
+              In WordPress: Plugins &gt; Add New &gt; Upload Plugin, then Tools &gt; Passive Coder Migration and paste your key.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" asChild><a href="/downloads/passive-coder-migration.zip" download><Download className="w-4 h-4 mr-2" /> Download plugin</a></Button>
+              <Button variant="outline" onClick={createKey} disabled={busy}><KeyRound className="w-4 h-4 mr-2" /> Create migration key</Button>
+            </div>
+            {migKey && (
+              <div className="rounded-lg border bg-muted/50 p-3 space-y-2">
+                <p className="text-xs">Copy this key now; it won&apos;t be shown again. You can revoke it any time under <Link href="/dashboard/ai-connect" className="underline">AI Connect</Link>.</p>
+                <div className="flex gap-2">
+                  <Input readOnly value={migKey} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+                  <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(migKey); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Imports from the plugin show up under Recent imports below.</p>
+              </div>
+            )}
+          </div>
+          <div className="space-y-2 border-t pt-4">
+            <p className="text-sm font-medium">Option 3: WordPress export file</p>
             <p className="text-xs text-muted-foreground">In WordPress go to Tools &gt; Export, choose All content, and upload the .xml file here. Includes drafts.</p>
             <input ref={wxrRef} type="file" accept=".xml,text/xml,application/xml" className="hidden" onChange={onWxr} />
             <Button variant="outline" disabled={busy} onClick={() => wxrRef.current?.click()}><FileUp className="w-4 h-4 mr-2" /> Upload .xml file</Button>

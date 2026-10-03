@@ -32,7 +32,7 @@ export async function ContentList({
 
   let query = supabase
     .from("pages")
-    .select("id, title, slug, type, status, created_at, updated_at, published_at, scheduled_at, deleted_at, has_draft, seo")
+    .select("id, title, slug, type, status, created_at, updated_at, published_at, scheduled_at, deleted_at, has_draft, seo, settings")
     .in("type", TYPES)
     .eq("tenant_id", tenantId);
   query = sort === "title" ? query.order("title") : query.order("updated_at", { ascending: false });
@@ -62,7 +62,14 @@ export async function ContentList({
 
   // Home page first, then the chosen order.
   const pages = (rows ?? [])
-    .map((p) => ({ ...p, has_seo_description: !!(p.seo as { description?: string } | null)?.description }))
+    .map(({ settings, ...p }) => {
+      const imported = (settings as { imported?: { rebuilt_at?: string; original_blocks?: unknown } } | null)?.imported;
+      return {
+        ...p,
+        has_seo_description: !!(p.seo as { description?: string } | null)?.description,
+        imported: imported ? (imported.original_blocks ? "rebuilt" as const : "imported" as const) : undefined,
+      };
+    })
     .sort((a, b) => (a.slug === "home" ? -1 : b.slug === "home" ? 1 : 0));
   const siteBase = site ? publicUrl(site) : "";
 
