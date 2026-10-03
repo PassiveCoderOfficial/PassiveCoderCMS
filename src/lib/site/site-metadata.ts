@@ -39,6 +39,8 @@ export interface ResolvedSiteMetadata {
   description: string | undefined;
   faviconUrl: string;
   ogImage: string | undefined;
+  /** Google Search Console HTML-tag verification code. */
+  googleVerification?: string;
 }
 
 const firstNonEmpty = (...vals: (string | null | undefined)[]) =>
@@ -77,7 +79,7 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
 
   const admin = await createAdminClient();
   const [{ data: settings }, { data: identity }] = await Promise.all([
-    admin.from("site_settings").select("site_name, meta_description, site_description, favicon_url").eq("tenant_id", tenantId).maybeSingle(),
+    admin.from("site_settings").select("site_name, meta_description, site_description, favicon_url, google_site_verification").eq("tenant_id", tenantId).maybeSingle(),
     admin.from("site_identity").select("site_name, favicon_url, logo_url, tagline").eq("tenant_id", tenantId).maybeSingle(),
   ]);
 
@@ -105,7 +107,8 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
   const faviconUrl = uploadedFavicon ?? autoFavicon(siteName);
   const ogImage = firstNonEmpty(identity?.logo_url, uploadedFavicon);
 
-  return { siteName, description, faviconUrl, ogImage };
+  const googleVerification = firstNonEmpty(settings?.google_site_verification as string | null | undefined);
+  return { siteName, description, faviconUrl, ogImage, googleVerification };
 }
 
 /** Builds the full Metadata object from a resolved tenant, including
@@ -115,7 +118,7 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
  *  complete version instead of a partial one. */
 export async function buildSiteMetadata(tenantId: string | null | undefined): Promise<Metadata> {
   const resolved = await resolveSiteMetadata(tenantId);
-  const { siteName, description, faviconUrl, ogImage } = resolved;
+  const { siteName, description, faviconUrl, ogImage, googleVerification } = resolved;
 
   const reqHeaders = await headers();
   const host = reqHeaders.get("host");
@@ -127,6 +130,7 @@ export async function buildSiteMetadata(tenantId: string | null | undefined): Pr
     title: { default: siteName, template: `%s | ${siteName}` },
     description,
     icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
+    ...(googleVerification ? { verification: { google: googleVerification } } : {}),
     openGraph: {
       title: siteName,
       description,
