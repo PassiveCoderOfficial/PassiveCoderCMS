@@ -13,8 +13,7 @@ import { PageActions } from "./page-actions";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n/language-provider";
 
-interface PageRowProps {
-  page: {
+export type PageRowData = {
     id: string;
     title: string;
     slug: string;
@@ -24,21 +23,41 @@ interface PageRowProps {
     deleted_at?: string | null;
     /** Live page with saved edits that aren't published yet (migration 105/106). */
     has_draft?: boolean | null;
-  };
+    /** SEO meta description set? Missing ones are flagged in the list. */
+    has_seo_description?: boolean;
+};
+
+interface PageRowProps {
+  page: PageRowData;
   inTrash?: boolean;
+  /** Public site origin, e.g. https://example.com — links open the real site. */
+  siteBase: string;
+  selected?: boolean;
+  onSelect?: () => void;
 }
 
-export function PageRow({ page, inTrash }: PageRowProps) {
+export function PageRow({ page, inTrash, siteBase, selected, onSelect }: PageRowProps) {
   const router = useRouter();
   const t = useT();
+  const isHome = page.slug === "home";
+  const path = isHome ? "/" : `/${page.slug}`;
 
   return (
     <tr
       className="hover:bg-muted/30 transition-colors cursor-pointer"
       onClick={() => router.push(`/dashboard/pages/${page.id}`)}
     >
+      <td className="pl-4 py-3 w-8" onClick={(e) => e.stopPropagation()}>
+        <input type="checkbox" aria-label={`Select ${page.title}`} checked={!!selected} onChange={() => onSelect?.()} />
+      </td>
       <td className="px-4 py-3 max-w-[140px] sm:max-w-none">
-        <span className="font-medium text-sm block truncate">{page.title}</span>
+        <span className="font-medium text-sm flex items-center gap-2 min-w-0">
+          <span className="truncate">{page.title}</span>
+          {isHome && <span className="shrink-0 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-semibold">{t("pages.homeBadge")}</span>}
+        </span>
+        {!inTrash && page.has_seo_description === false && page.status === "published" && (
+          <span className="mt-0.5 block text-[11px] text-muted-foreground">{t("pages.noSeoDescription")}</span>
+        )}
         {page.has_draft && page.status === "published" && !inTrash && (
           <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -48,12 +67,12 @@ export function PageRow({ page, inTrash }: PageRowProps) {
       </td>
       <td className="px-4 py-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
         <a
-          href={`/${page.slug}`}
+          href={`${siteBase}${path}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs bg-muted hover:bg-muted/70 px-1.5 py-0.5 rounded font-mono inline-block"
         >
-          /{page.slug}
+          {path}
         </a>
       </td>
       <td className="px-4 py-3 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
@@ -63,7 +82,7 @@ export function PageRow({ page, inTrash }: PageRowProps) {
         <ScheduleTrigger pageId={page.id} updatedAt={page.updated_at} scheduledAt={page.scheduled_at} disabled={inTrash} />
       </td>
       <td className="px-4 py-3 text-right">
-        <PageActions pageId={page.id} pageSlug={page.slug} inTrash={inTrash} />
+        <PageActions pageId={page.id} viewUrl={`${siteBase}${path}`} inTrash={inTrash} />
       </td>
     </tr>
   );

@@ -10,11 +10,12 @@ import { useT } from "@/lib/i18n/language-provider";
 
 interface PageActionsProps {
   pageId: string;
-  pageSlug: string;
+  /** Full public URL of the page on the site's real domain. */
+  viewUrl: string;
   inTrash?: boolean;
 }
 
-export function PageActions({ pageId, pageSlug, inTrash }: PageActionsProps) {
+export function PageActions({ pageId, viewUrl, inTrash }: PageActionsProps) {
   const router = useRouter();
   const t = useT();
 
@@ -68,7 +69,7 @@ export function PageActions({ pageId, pageSlug, inTrash }: PageActionsProps) {
       <Button variant="ghost" size="icon" className="h-7 w-7" title={t("pages.actionEdit")} onClick={() => router.push(`/dashboard/pages/${pageId}`)}>
         <Edit className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-7 w-7" title={t("pages.actionView")} onClick={() => window.open(`/${pageSlug}`, "_blank")}>
+      <Button variant="ghost" size="icon" className="h-7 w-7" title={t("pages.actionView")} onClick={() => window.open(viewUrl, "_blank")}>
         <Eye className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-7 w-7" title={t("pages.actionDuplicate")} onClick={handleDuplicate}>

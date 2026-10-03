@@ -15,7 +15,7 @@ const TABS: { key: string; labelKey: TranslationKey }[] = [
 
 // Shared filter-tab strip (build once, reuse everywhere) — used by both
 // /dashboard/pages and /dashboard/posts, and any future post-type list.
-export function StatusTabs({ basePath, active }: { basePath: string; active: string }) {
+export function StatusTabs({ basePath, active, counts }: { basePath: string; active: string; counts?: Record<string, number> }) {
   const t = useT();
   return (
     <div className="flex items-center gap-1 mb-4 border-b overflow-x-auto">
@@ -31,6 +31,9 @@ export function StatusTabs({ basePath, active }: { basePath: string; active: str
           )}
         >
           {t(tab.labelKey)}
+          {counts && counts[tab.key] !== undefined && (
+            <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{counts[tab.key]}</span>
+          )}
         </Link>
       ))}
     </div>

@@ -8,6 +8,7 @@
 // client component. Same split used wherever a server-fetched list needs
 // translated chrome.
 
+import type React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText } from "lucide-react";
@@ -44,10 +45,11 @@ export function PagesEmptyState({ inTrash }: { inTrash: boolean }) {
   );
 }
 
-export function PagesTableHead() {
+export function PagesTableHead({ selectAll }: { selectAll?: React.ReactNode } = {}) {
   const t = useT();
   return (
     <tr className="border-b text-xs text-muted-foreground">
+      {selectAll !== undefined && <th className="pl-4 py-3 w-8 text-left">{selectAll}</th>}
       <th className="px-4 py-3 text-left font-medium">{t("pages.colTitle")}</th>
       <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">{t("pages.colSlug")}</th>
       <th className="px-4 py-3 text-left font-medium hidden md:table-cell">{t("pages.colStatus")}</th>

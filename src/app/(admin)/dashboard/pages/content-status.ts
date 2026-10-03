@@ -64,3 +64,23 @@ export async function duplicatePage(id: string): Promise<{ id: string | null; er
   if (error) return { id: null, error: error.message };
   return { id: inserted.id as string, error: null };
 }
+
+// ─── Bulk versions (pages list bulk actions) ────────────────────────────────
+export async function bulkUpdateStatus(ids: string[], status: "published" | "draft") {
+  const supabase = createClient();
+  const updates: Record<string, unknown> = { status };
+  if (status === "published") updates.published_at = new Date().toISOString();
+  return supabase.from("pages").update(updates).in("id", ids);
+}
+
+export async function bulkMoveToTrash(ids: string[]) {
+  return createClient().from("pages").update({ deleted_at: new Date().toISOString() }).in("id", ids);
+}
+
+export async function bulkRestore(ids: string[]) {
+  return createClient().from("pages").update({ deleted_at: null }).in("id", ids);
+}
+
+export async function bulkDeletePermanently(ids: string[]) {
+  return createClient().from("pages").delete().in("id", ids);
+}
