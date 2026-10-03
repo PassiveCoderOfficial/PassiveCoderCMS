@@ -136,4 +136,6 @@ export type SiteDesign = {
   letterSpacing?: string;
   roundness?: "sharp" | "soft" | "rounded" | "extra";
   shadow?: "none" | "subtle" | "normal" | "bold";
+  /** "cinematic": sections and photos animate in on scroll, both directions. */
+  motion?: "none" | "cinematic";
 };

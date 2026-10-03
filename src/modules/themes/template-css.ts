@@ -127,6 +127,7 @@ export function buildTemplateCSSVars(
 
   return `
 ${fontsHref ? `@import url("${fontsHref}");\n` : ""}${scopeSelector} {
+  --pc-motion: ${design?.motion ?? "none"};
   --background: ${p(palette.background)};
   --foreground: ${p(palette.foreground)};
   --card: ${p(palette.card)};

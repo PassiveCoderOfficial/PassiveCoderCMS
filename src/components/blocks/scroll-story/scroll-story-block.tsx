@@ -90,7 +90,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
   const ctaVisible = progress > 0.86 || reduced;
 
   return (
-    <section ref={sectionRef} className="relative w-full bg-black" style={{ height: `${reduced ? 100 : heightVh}vh` }}>
+    <section ref={sectionRef} data-no-motion className="relative w-full bg-black" style={{ height: `${reduced ? 100 : heightVh}vh` }}>
       <div className="sticky top-0 h-screen h-[100dvh] w-full overflow-hidden">
         {/* Background photos */}
         {backgrounds.length > 0 ? backgrounds.map((b, i) => (

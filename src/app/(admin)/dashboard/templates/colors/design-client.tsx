@@ -158,6 +158,11 @@ export function DesignClient({ initial, typography, palette, tenantId }: {
           <Label>Shadows</Label>
           <Choice options={SHADOWS} value={d.shadow} onChange={(v) => set("shadow", v)} />
         </div>
+        <div className="space-y-1.5">
+          <Label>Scroll animation</Label>
+          <Choice options={[{ value: "none" as const, label: "Off" }, { value: "cinematic" as const, label: "Cinematic" }]} value={d.motion} onChange={(v) => set("motion", v)} />
+          <p className="text-xs text-muted-foreground">Cinematic: text and photos animate in as visitors scroll, up or down.</p>
+        </div>
       </div>
 
       <div>
