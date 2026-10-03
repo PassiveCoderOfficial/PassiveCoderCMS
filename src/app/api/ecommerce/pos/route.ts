@@ -4,6 +4,7 @@ import { apiTenantId } from "@/lib/tenant/api";
 import { verifyBearerTenantMember } from "@/lib/auth/verify-bearer";
 import { upsertContact } from "@/lib/crm/upsertContact";
 import { requireModule } from "@/lib/modules/resolve-modules";
+import { siteAccess } from "@/lib/mcp/auth";
 
 interface PosItem { product_id: string; name: string; price: number; quantity: number }
 
@@ -17,6 +18,12 @@ export async function POST(req: NextRequest) {
   // existing web behavior. requireEditor excludes a 'viewer' role member,
   // same restriction the web dashboard's own POS access implies.
   let tenantId = await apiTenantId();
+  if (tenantId) {
+    // Web path: same rule as the app path below, viewers can't ring up sales.
+    const { data: { user } } = await supabase.auth.getUser();
+    const access = user ? await siteAccess(await createAdminClient(), user.id, tenantId) : null;
+    if (access !== "write") return NextResponse.json({ error: "Your role can't record sales on this site." }, { status: 403 });
+  }
   if (!tenantId) {
     const bearerTenantId = req.headers.get("x-tenant-id");
     if (bearerTenantId && await verifyBearerTenantMember(req, bearerTenantId, { requireEditor: true })) {
@@ -34,6 +41,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const items: PosItem[] = Array.isArray(body.items) ? body.items : [];
   if (!items.length) return NextResponse.json({ error: "No items" }, { status: 400 });
+  if (items.some((i) => !Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 9999)) {
+    return NextResponse.json({ error: "Each item needs a whole-number quantity of at least 1." }, { status: 400 });
+  }
 
   // Restaurant vertical (docs/business/06-restaurant-vertical.md phase 3):
   // staff can ring up a dine-in order directly on the POS (no QR scan) by
@@ -50,6 +60,16 @@ export async function POST(req: NextRequest) {
 
   const admin = await createAdminClient();
 
+  // Branch and table must be this site's own.
+  if (branchId) {
+    const { data: b } = await admin.from("restaurant_branches").select("id").eq("id", branchId).eq("tenant_id", tenantId).maybeSingle();
+    if (!b) return NextResponse.json({ error: "Branch not found" }, { status: 400 });
+  }
+  if (tableId) {
+    const { data: tb } = await admin.from("restaurant_tables").select("id").eq("id", tableId).eq("tenant_id", tenantId).maybeSingle();
+    if (!tb) return NextResponse.json({ error: "Table not found" }, { status: 400 });
+  }
+
   // Server-side prices
   const ids = [...new Set(items.map(i => i.product_id))];
   const { data: products } = await admin.from("products")
@@ -58,9 +78,14 @@ export async function POST(req: NextRequest) {
   if (!products?.length) return NextResponse.json({ error: "Products not found" }, { status: 400 });
 
   const priceMap = new Map(products.map(p => [p.id, p]));
+  // Every line must be one of this site's products, priced from the database.
+  // Unknown ids used to fall back to the price the client sent.
+  if (items.some((i) => !priceMap.has(i.product_id))) {
+    return NextResponse.json({ error: "One or more products weren't found. Refresh the POS and try again." }, { status: 400 });
+  }
   const verified = items.map(i => {
-    const p = priceMap.get(i.product_id);
-    return { ...i, name: p?.name ?? i.name, price: p?.price ?? i.price };
+    const p = priceMap.get(i.product_id)!;
+    return { product_id: i.product_id, quantity: i.quantity, name: p.name, price: Number(p.price) };
   });
 
   const subtotal = verified.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -102,13 +127,16 @@ export async function POST(req: NextRequest) {
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  // Stock decrement for tracked items
-  for (const item of verified) {
-    const p = priceMap.get(item.product_id);
+  // Stock decrement for tracked items, summed per product (the same product
+  // on two lines used to be decremented only once).
+  const qtyByProduct = new Map<string, number>();
+  for (const item of verified) qtyByProduct.set(item.product_id, (qtyByProduct.get(item.product_id) ?? 0) + item.quantity);
+  for (const [id, qty] of qtyByProduct) {
+    const p = priceMap.get(id);
     if (!p?.track_inventory) continue;
     await admin.from("products")
-      .update({ stock_quantity: Math.max(0, (p.stock_quantity ?? 0) - item.quantity), updated_at: new Date().toISOString() })
-      .eq("id", p.id);
+      .update({ stock_quantity: Math.max(0, (p.stock_quantity ?? 0) - qty), updated_at: new Date().toISOString() })
+      .eq("id", p.id).eq("tenant_id", tenantId);
   }
 
   // Accounting income entry

@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { requireModule } from "@/lib/modules/resolve-modules";
 
 /** Create a rider for one of this tenant's branches. */
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
   if (!(await requireModule(tenantId, "pos"))) {
     return NextResponse.json({ error: "Riders are not available on your plan" }, { status: 403 });
   }
@@ -39,6 +41,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
   if (!(await requireModule(tenantId, "pos"))) {
     return NextResponse.json({ error: "Riders are not available on your plan" }, { status: 403 });
   }

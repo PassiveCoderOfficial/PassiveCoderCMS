@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { requireModule } from "@/lib/modules/resolve-modules";
 
 // Fulfillment-aware vocabulary (migration 092, docs/business/06-restaurant-vertical.md):
@@ -51,6 +52,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
   if (!(await requireModule(tenantId, "pos"))) {
     return NextResponse.json({ error: "Kitchen is not available on your plan" }, { status: 403 });
   }
