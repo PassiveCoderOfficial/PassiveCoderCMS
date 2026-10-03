@@ -1,4 +1,5 @@
 import { DemoBanner } from "@/components/demo/demo-banner";
+import { SiteJsonLd } from "@/components/seo/site-jsonld";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildSiteMetadata } from "@/lib/site/site-metadata";
 import { headers } from "next/headers";
@@ -271,6 +272,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           <PageRenderer blocks={globalHeader} />
         </div>
       ) : null}
+
+      {/* Business + website structured data for search and AI answer engines. */}
+      <SiteJsonLd tenantId={tenantId} />
 
       {/* Page content */}
       {marketplaceChrome ? <div className="bg-[#F5F5F7] min-h-[60vh]">{children}</div> : children}

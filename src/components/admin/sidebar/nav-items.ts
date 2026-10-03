@@ -47,7 +47,7 @@
   Landmark,
   Inbox,
   UserCog,
-  type LucideIcon, ArrowLeftRight } from "lucide-react";
+  type LucideIcon, ArrowLeftRight, SearchCheck } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -249,6 +249,7 @@ export const navSections: NavSection[] = [
       { label: "Backups", href: "/dashboard/backups", icon: Archive },
       { label: "Import / Export", href: "/dashboard/import-export", icon: ArrowLeftRight },
       { label: "Settings", href: "/dashboard/settings", icon: Settings },
+      { label: "SEO & AI Search", href: "/dashboard/settings/seo", icon: SearchCheck },
       { label: "AI Connect", href: "/dashboard/ai-connect", icon: Bot },
       { label: "API Keys", href: "/dashboard/settings/api-keys", icon: Puzzle },
       { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },

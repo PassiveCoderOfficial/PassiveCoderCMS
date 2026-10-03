@@ -1,4 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation";
+import { faqJsonLd, ldScript } from "@/lib/seo/jsonld";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -251,8 +252,10 @@ export default async function SitePage({ params }: Props) {
     );
   }
 
+  const faq = faqJsonLd(finalBlocks);
   return (
     <div className="min-h-screen">
+      {faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(faq) }} />}
       <PageRenderer blocks={finalBlocks} />
     </div>
   );

@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { faqJsonLd, ldScript } from "@/lib/seo/jsonld";
 import { headers } from "next/headers";
 import MarketingNav from "@/components/marketing/nav";
 import HeroSection from "@/components/marketing/hero";
@@ -138,6 +139,7 @@ export default async function MarketingHomePage() {
               <PushConsent />
             </>
           ) : globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
+          {(() => { const faq = faqJsonLd(body); return faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(faq) }} />; })()}
           <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}
         </div>

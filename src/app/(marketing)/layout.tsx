@@ -1,4 +1,5 @@
 import { DemoBanner } from "@/components/demo/demo-banner";
+import { SiteJsonLd } from "@/components/seo/site-jsonld";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { after } from "next/server";
@@ -176,6 +177,22 @@ export default async function MarketingLayout({ children }: { children: React.Re
       )}
       {!tenantId && <WhatsAppButton />}
       <DemoBanner tenantId={tenantId} />
+      {/* Business + website structured data for search and AI answer engines. */}
+      {tenantId && <SiteJsonLd tenantId={tenantId} />}
+      {!tenantId && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            { "@type": "Organization", "@id": "https://www.passivecoder.com/#org", name: "Passive Coder", url: "https://www.passivecoder.com",
+              logo: "https://www.passivecoder.com/branding/passivecoder-icon.png",
+              description: "Websites, online booking, ecommerce, invoicing, CRM and AI page building for small businesses." },
+            { "@type": "SoftwareApplication", name: "Passive Coder", applicationCategory: "BusinessApplication", operatingSystem: "Web",
+              url: "https://www.passivecoder.com", publisher: { "@id": "https://www.passivecoder.com/#org" },
+              offers: { "@type": "Offer", url: "https://www.passivecoder.com/pricing" } },
+            { "@type": "WebSite", url: "https://www.passivecoder.com", name: "Passive Coder", publisher: { "@id": "https://www.passivecoder.com/#org" } },
+          ],
+        }).replace(/</g, "\\u003c") }} />
+      )}
     </>
   );
 }
