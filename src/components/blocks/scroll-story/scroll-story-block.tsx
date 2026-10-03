@@ -153,7 +153,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
             const right = (s.side ?? (i % 2 ? "right" : "left")) === "right";
             return (
               <div key={i} style={sceneStyle(i)}
-                className={`absolute inset-x-0 top-[96px] px-5 text-center sm:top-[16%] sm:px-0 sm:max-w-[min(440px,36vw)] will-change-transform ${right ? "sm:inset-x-auto sm:right-[5%] sm:text-right" : "sm:inset-x-auto sm:left-[5%] sm:text-left"}`}>
+                className={`absolute inset-x-0 top-[96px] px-5 text-center ${s.vAlign === "middle" ? "sm:top-0 sm:bottom-0 sm:flex sm:flex-col sm:justify-center" : "sm:top-[16%]"} sm:px-0 sm:max-w-[min(440px,36vw)] will-change-transform ${right ? "sm:inset-x-auto sm:right-[5%] sm:text-right" : "sm:inset-x-auto sm:left-[5%] sm:text-left"}`}>
                 {s.eyebrow && (
                   <p className="mb-3 text-[11px] sm:text-sm font-semibold uppercase tracking-[0.25em]" style={{ color: accent }}>{s.eyebrow}</p>
                 )}
