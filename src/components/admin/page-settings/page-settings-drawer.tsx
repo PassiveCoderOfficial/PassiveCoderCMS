@@ -14,6 +14,13 @@ import { toast } from "sonner";
 import type { Page } from "@/types/cms";
 import { cn } from "@/lib/utils";
 
+/** Character count with an ideal range, like Yoast/Shopify. */
+function CharCount({ n, ideal }: { n: number; ideal: [number, number] }) {
+  const tone = n === 0 ? "text-muted-foreground" : n < ideal[0] ? "text-amber-600" : n > ideal[1] ? "text-red-600" : "text-green-600";
+  const hint = n === 0 ? "" : n < ideal[0] ? " · a bit short" : n > ideal[1] ? " · too long, Google will cut it" : " · good length";
+  return <p className={cn("text-xs", tone)}>{n} characters (aim for {ideal[0]}–{ideal[1]}){hint}</p>;
+}
+
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9-/]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
 }
@@ -114,6 +121,9 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
                   <Input value={slug} onChange={e => setSlug(slugify(e.target.value))} placeholder="page-slug" className="font-mono text-sm" />
                 </div>
                 <p className="text-xs text-muted-foreground">Use <span className="font-mono">home</span> for the homepage.</p>
+                {slug !== page.slug && page.slug && (
+                  <p className="text-xs text-green-700 dark:text-green-400">Links to the old address (/{page.slug}) will redirect here automatically.</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label>Excerpt</Label>
@@ -132,12 +142,19 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
               <div className="space-y-1.5">
                 <Label>SEO Title</Label>
                 <Input value={seoTitle} onChange={e => setSeoTitle(e.target.value)} placeholder={title || "Page title"} />
-                <p className="text-xs text-muted-foreground">{seoTitle.length}/60 chars</p>
+                <CharCount n={(seoTitle || title).length} ideal={[30, 60]} />
               </div>
               <div className="space-y-1.5">
                 <Label>Meta Description</Label>
                 <Textarea value={seoDesc} onChange={e => setSeoDesc(e.target.value)} placeholder="Describe this page..." rows={3} />
-                <p className="text-xs text-muted-foreground">{seoDesc.length}/160 chars</p>
+                <CharCount n={seoDesc.length} ideal={[70, 160]} />
+              </div>
+              {/* Google result preview — what searchers actually see */}
+              <div className="rounded-lg border bg-background p-3 space-y-0.5">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Google preview</p>
+                <p className="text-xs text-[#202124] dark:text-slate-300 truncate">{typeof window !== "undefined" ? window.location.host : ""}{slug === "home" ? "" : ` › ${slug}`}</p>
+                <p className="text-[#1a0dab] dark:text-blue-400 text-base leading-snug truncate">{(seoTitle || title || "Page title").slice(0, 60)}{(seoTitle || title).length > 60 ? "…" : ""}</p>
+                <p className="text-xs text-[#4d5156] dark:text-slate-400 line-clamp-2">{seoDesc ? seoDesc.slice(0, 160) + (seoDesc.length > 160 ? "…" : "") : "Add a meta description, or Google will pick some text from the page."}</p>
               </div>
               <div className="space-y-1.5">
                 <Label>Keywords</Label>
@@ -154,8 +171,9 @@ export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: 
                   <Textarea value={ogDesc} onChange={e => setOgDesc(e.target.value)} placeholder={seoDesc} rows={2} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>OG Image URL</Label>
-                  <Input value={ogImage} onChange={e => setOgImage(e.target.value)} placeholder="https://..." />
+                  <Label>Share image</Label>
+                  <MediaPickerInput compact value={ogImage} onChange={(url) => setOgImage(url)} />
+                  <p className="text-xs text-muted-foreground">Shown when the page is shared on WhatsApp, Facebook or LinkedIn. Best size 1200×630.</p>
                 </div>
               </div>
               <div className="border-t pt-4 space-y-3">

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -152,6 +152,16 @@ export default async function SitePage({ params }: Props) {
   }
   const { data: page } = await pageQuery.maybeSingle();
 
+  // Old address of a page whose URL changed: 301 to the new one.
+  if (!page && !isRoot && tenantId) {
+    const admin = await createAdminClient();
+    const { data: r } = await admin.from("page_redirects").select("id, to_path, hits")
+      .eq("tenant_id", tenantId).eq("from_path", pageSlug).maybeSingle();
+    if (r) {
+      after(async () => { await admin.from("page_redirects").update({ hits: (r.hits ?? 0) + 1 }).eq("id", r.id); });
+      permanentRedirect(r.to_path === "home" ? "/" : `/${r.to_path}`);
+    }
+  }
   if (!page && !isRoot) notFound();
 
   // Recorded here, past the notFound() above: a 404 isn't a real pageview of
