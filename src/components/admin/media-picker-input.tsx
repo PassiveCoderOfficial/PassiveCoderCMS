@@ -1,5 +1,6 @@
 "use client";
 
+import { compressImageForUpload } from "@/lib/media/client-compress";
 import React, { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,9 @@ function InlineUploadZone({ onDone, onSelect }: { onDone: () => void; onSelect: 
     });
     if (!valid.length) return;
     startUpload(async () => {
-      const results = await Promise.all(valid.map((file) => {
+      const results = await Promise.all(valid.map(async (file) => {
         const fd = new FormData();
-        fd.append("file", file);
+        fd.append("file", await compressImageForUpload(file));
         return uploadMediaFile(fd);
       }));
       toast.success(`${valid.length} file(s) uploaded`);

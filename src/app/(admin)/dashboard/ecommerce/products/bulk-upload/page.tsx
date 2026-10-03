@@ -1,5 +1,6 @@
 "use client";
 
+import { compressImageForUpload } from "@/lib/media/client-compress";
 import React, { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -313,7 +314,7 @@ export default function BulkUploadPage() {
         const withUrls = await Promise.all(valid.map(async (row) => {
           if (row.imageFile) {
             const fd = new FormData();
-            fd.append("file", row.imageFile);
+            fd.append("file", await compressImageForUpload(row.imageFile));
             const result = await uploadMediaFile(fd);
             return { ...row, image: result.url ?? null };
           }

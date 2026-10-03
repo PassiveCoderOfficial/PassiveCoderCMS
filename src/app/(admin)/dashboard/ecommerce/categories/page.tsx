@@ -1,5 +1,6 @@
 "use client";
 
+import { compressImageForUpload } from "@/lib/media/client-compress";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getClientTenantId } from "@/lib/tenant/client";
@@ -76,7 +77,7 @@ export default function CategoriesPage() {
     if (!file.type.startsWith("image/")) { toast.error(t("categories.selectImageFile")); return; }
     setUploading(true);
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", await compressImageForUpload(file));
     const res = await uploadMediaFile(fd);
     setUploading(false);
     if (res.error || !res.url) { toast.error(res.error ?? t("categories.uploadFailed")); return; }
