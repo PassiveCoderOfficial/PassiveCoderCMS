@@ -6,6 +6,22 @@ export interface InvoiceItem {
   unit_price: number;
 }
 
+/** Keep only well-formed line items: text description, quantity > 0, price >= 0. */
+export function cleanItems(raw: unknown): InvoiceItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, 200).map((i) => {
+    const r = (i ?? {}) as Record<string, unknown>;
+    return {
+      ...r,
+      description: String(r.description ?? "").slice(0, 500),
+      quantity: Math.max(0, Number(r.quantity) || 0),
+      unit_price: Math.max(0, Number(r.unit_price) || 0),
+    } as InvoiceItem;
+  }).filter((i) => i.description.trim() && i.quantity > 0);
+}
+
+export const INVOICE_STATUSES = ["draft", "sent", "paid", "overdue", "cancelled"];
+
 export function computeTotals(items: InvoiceItem[], discount = 0, tax = 0) {
   const subtotal = items.reduce(
     (sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unit_price) || 0), 0);

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { sendEmail } from "@/lib/email";
-import { computeTotals, tenantBaseUrl, formatMoney, type InvoiceItem } from "@/lib/invoices/utils";
+import { computeTotals, tenantBaseUrl, formatMoney, type InvoiceItem, cleanItems, INVOICE_STATUSES } from "@/lib/invoices/utils";
+import { canWriteSite } from "@/lib/auth/site-write";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json();
 
@@ -74,13 +76,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (key in body) patch[key] = body[key];
   }
   if ("items" in body || "discount" in body || "tax" in body) {
-    const items: InvoiceItem[] = Array.isArray(body.items) ? body.items : invoice.items;
+    const items = Array.isArray(body.items) ? cleanItems(body.items) : (invoice.items as InvoiceItem[]);
+    if (!items.length) return NextResponse.json({ error: "Add at least one line item with a description and a quantity above zero." }, { status: 400 });
     const discount = "discount" in body ? Number(body.discount) || 0 : Number(invoice.discount);
     const tax = "tax" in body ? Number(body.tax) || 0 : Number(invoice.tax);
     const { subtotal, total } = computeTotals(items, discount, tax);
     Object.assign(patch, { items, discount, tax, subtotal, total });
   }
   if ("status" in body) {
+    if (!INVOICE_STATUSES.includes(body.status)) return NextResponse.json({ error: "Unknown status" }, { status: 400 });
     patch.status = body.status;
     if (body.status === "paid" && !invoice.paid_at) {
       patch.paid_at = new Date().toISOString();
@@ -106,6 +110,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const { error } = await supabase.from("invoices")
     .delete().eq("id", id).eq("tenant_id", tenantId);

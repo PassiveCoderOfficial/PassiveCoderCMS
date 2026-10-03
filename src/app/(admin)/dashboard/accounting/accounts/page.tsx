@@ -97,13 +97,19 @@ export default function AccountsPage() {
 
   async function remove(id: string) {
     if (!confirm(t("accounts.deleteConfirm"))) return;
-    await supabase.from("accounts").delete().eq("id", id);
+    const { error } = await supabase.from("accounts").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
     setAccounts(prev => prev.filter(a => a.id !== id));
   }
 
   async function setDefault(id: string) {
-    await supabase.from("accounts").update({ is_default: false }).neq("id", "");
-    await supabase.from("accounts").update({ is_default: true }).eq("id", id);
+    // Scoped to this site: the unscoped version cleared the default account
+    // on every site the user could reach (every site, for a super admin).
+    const tenantId = await getClientTenantId();
+    if (!tenantId) { toast.error(t("accounts.noTenantFound")); return; }
+    const { error: e1 } = await supabase.from("accounts").update({ is_default: false }).eq("tenant_id", tenantId).neq("id", id);
+    const { error: e2 } = await supabase.from("accounts").update({ is_default: true }).eq("id", id).eq("tenant_id", tenantId);
+    if (e1 || e2) { toast.error((e1 ?? e2)!.message); return; }
     setAccounts(prev => prev.map(a => ({ ...a, is_default: a.id === id })));
   }
 

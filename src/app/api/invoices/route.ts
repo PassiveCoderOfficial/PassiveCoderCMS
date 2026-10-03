@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
-import { computeTotals, nextInvoiceNumber, type InvoiceItem } from "@/lib/invoices/utils";
+import { cleanItems, computeTotals, nextInvoiceNumber } from "@/lib/invoices/utils";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { upsertContact } from "@/lib/crm/upsertContact";
 
 export async function GET(req: NextRequest) {
@@ -25,14 +26,15 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json();
-  const items: InvoiceItem[] = Array.isArray(body.items) ? body.items : [];
+  const items = cleanItems(body.items);
   if (!body.customer_name?.trim()) {
     return NextResponse.json({ error: "Customer name required" }, { status: 400 });
   }
   if (!items.length) {
-    return NextResponse.json({ error: "At least one line item required" }, { status: 400 });
+    return NextResponse.json({ error: "Add at least one line item with a description and a quantity above zero." }, { status: 400 });
   }
 
   const { subtotal, total } = computeTotals(items, body.discount, body.tax);
@@ -55,11 +57,16 @@ export async function POST(req: NextRequest) {
     },
   }).catch(() => null);
 
-  const { data, error } = await supabase.from("invoices")
+  // invoice_number is unique per site: two invoices created at the same moment
+  // pick the same next number, so retry with the following one.
+  let number = nextInvoiceNumber(latest?.invoice_number);
+  let data = null, error = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+  ({ data, error } = await supabase.from("invoices")
     .insert({
       tenant_id: tenantId,
       contact_id: contactId,
-      invoice_number: nextInvoiceNumber(latest?.invoice_number),
+      invoice_number: number,
       currency: body.currency?.trim().toUpperCase() || "USD",
       customer_name: body.customer_name.trim(),
       customer_email: body.customer_email?.trim().toLowerCase() || null,
@@ -73,7 +80,10 @@ export async function POST(req: NextRequest) {
       issue_date: body.issue_date || undefined,
       due_date: body.due_date || null,
     })
-    .select().single();
+    .select().single());
+    if (error?.code !== "23505") break;
+    number = nextInvoiceNumber(number);
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json(data);
