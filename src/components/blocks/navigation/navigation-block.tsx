@@ -52,9 +52,6 @@ export function NavigationBlock({ block, identityLogo }: {
   // "logo-center": logo sits in the middle of the top row, menu on its own
   // centered row underneath (desktop). Mobile keeps logo centered + toggle right.
   const logoCenter = style === "logo-center";
-  const desktopItems = items.map((item) => (
-    <NavItemDesktop key={item.id} item={item} currentColor={fg} />
-  ));
 
   // Colors are token-driven so each tenant's own template palette /
   // color_overrides drive the nav — never hardcode a brand hex here, it
@@ -70,6 +67,11 @@ export function NavigationBlock({ block, identityLogo }: {
     ? "#ffffff"
     : tokenMode ? "hsl(var(--foreground))" : (textColor ?? "#ffffff");
   const accent = activeColor ?? (tokenMode ? BRAND_PRIMARY : fg);
+  // Built after `fg` exists — referencing it earlier is a TDZ crash that
+  // takes down every site header (happened in v1.0.442).
+  const desktopItems = items.map((item) => (
+    <NavItemDesktop key={item.id} item={item} currentColor={fg} />
+  ));
 
   const ctaV = ctaVariant ?? "gradient";
   // No display class here — each call site sets its own responsive display
