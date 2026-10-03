@@ -58,6 +58,7 @@ export function ScrollStorySettings({ block }: { block: ScrollStoryBlockProps })
                   <button type="button" className="px-1 text-muted-foreground hover:text-destructive" onClick={() => set("scenes", scenes.filter((_, j) => j !== i))}><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
                 <Textarea value={s.title} placeholder="Headline" rows={2} onChange={(e) => upd({ title: e.target.value })} className="text-xs" />
+                <Input value={(s.rotateWords ?? []).join(", ")} placeholder="Rotating words, comma separated (use {words} in headline)" onChange={(e) => upd({ rotateWords: e.target.value.split(",").map((w) => w.trim()).filter(Boolean) })} className="h-7 text-xs" />
                 <Input value={s.text ?? ""} placeholder="Optional line" onChange={(e) => upd({ text: e.target.value })} className="h-7 text-xs" />
               </div>
             );

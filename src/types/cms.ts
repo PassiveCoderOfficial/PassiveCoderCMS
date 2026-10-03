@@ -1538,7 +1538,8 @@ export type ScrollStoryBlockProps = BlockBase & {
     portraitImage?: string;
     portraitAlt?: string;
     portraitSide?: "left" | "center" | "right";
-    scenes?: { eyebrow?: string; title: string; text?: string; side?: "left" | "right" }[];
+    /** rotateWords: cycled into the title's "{words}" slot (or appended). */
+    scenes?: { eyebrow?: string; title: string; text?: string; side?: "left" | "right"; rotateWords?: string[] }[];
     overlayOpacity?: number;
     accentColor?: string;
     /** Colour the bottom edge fades into (the next section background). */

@@ -159,7 +159,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
                 )}
                 <h2 className="text-[2rem] sm:text-5xl lg:text-[64px] font-bold leading-[1.04] tracking-tight text-white"
                   style={{ textShadow: "0 6px 28px rgba(0,0,0,0.8)", fontFamily: "var(--heading-font, inherit)" }}>
-                  {s.title}
+                  {s.rotateWords?.length ? <RotatingTitle title={s.title} words={s.rotateWords} color={accent} /> : s.title}
                 </h2>
                 {s.text && <p className="mt-4 text-base sm:text-lg text-white/80">{s.text}</p>}
               </div>
@@ -196,5 +196,25 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
         )}
       </div>
     </section>
+  );
+}
+
+/** Title with a "{words}" slot that cycles through words, each sliding up
+ *  into place in the accent colour. Without the slot, words go at the end. */
+function RotatingTitle({ title, words, color }: { title: string; words: string[]; color: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => (n + 1) % words.length), 2400);
+    return () => clearInterval(t);
+  }, [words.length]);
+  const [before, after = ""] = title.includes("{words}") ? title.split("{words}") : [title + " ", ""];
+  return (
+    <>
+      {before}
+      <span className="relative inline-block align-bottom overflow-hidden" style={{ color }}>
+        <span key={i} className="inline-block animate-in fade-in slide-in-from-bottom-6 duration-700">{words[i]}</span>
+      </span>
+      {after}
+    </>
   );
 }
