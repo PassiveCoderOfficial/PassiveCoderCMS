@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tenantId = reqHeaders.get("x-tenant-id");
 
   const supabase = await createClient();
-  let q = supabase.from("products").select("name, short_description, images").eq("slug", slug).eq("status", "active");
+  let q = supabase.from("products").select("name, short_description, images, seo").eq("slug", slug).eq("status", "active");
   if (tenantId) q = q.eq("tenant_id", tenantId);
   const { data } = await q.maybeSingle();
 
@@ -35,16 +35,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Omitted rather than set to undefined — Next treats an explicit undefined
   // as a value and it would wipe the tenant defaults from (site)/layout.tsx.
-  const og: NonNullable<Metadata["openGraph"]> = { title: data.name };
+  const seo = (data.seo ?? {}) as { title?: string | null; description?: string | null };
+  const title = seo.title?.trim() || data.name;
+  const metaDescription = seo.description?.trim() || description;
+  const og: NonNullable<Metadata["openGraph"]> = { title };
   if (description) og.description = description;
   if (image) og.images = [{ url: image }];
 
+  if (metaDescription) og.description = metaDescription;
   return {
-    title: data.name,
-    ...(description ? { description } : {}),
+    title,
+    ...(metaDescription ? { description: metaDescription } : {}),
     openGraph: og,
     ...(image
-      ? { twitter: { card: "summary_large_image" as const, title: data.name, ...(description ? { description } : {}), images: [image] } }
+      ? { twitter: { card: "summary_large_image" as const, title, ...(metaDescription ? { description: metaDescription } : {}), images: [image] } }
       : {}),
   };
 }
@@ -97,8 +101,27 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ? formatWithConfig(product.compare_price, currencyCfg)
     : null;
 
+  // Google product rich results (price, availability, image).
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    ...(images.length ? { image: images.slice(0, 5) } : {}),
+    ...(product.short_description || product.description ? { description: String(product.short_description || product.description).slice(0, 500) } : {}),
+    ...(product.sku ? { sku: product.sku } : {}),
+    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+    offers: {
+      "@type": "Offer",
+      price: Number(product.price ?? 0),
+      priceCurrency: currencyCfg.currency,
+      availability: product.track_inventory && Number(product.stock_quantity) <= 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+    },
+    ...(Number(product.rating_count) > 0 ? { aggregateRating: { "@type": "AggregateRating", ratingValue: Number(product.rating_avg), reviewCount: Number(product.rating_count) } } : {}),
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Images */}
         <div className="space-y-3">

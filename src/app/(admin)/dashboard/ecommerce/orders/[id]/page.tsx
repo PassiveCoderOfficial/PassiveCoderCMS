@@ -115,7 +115,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             status={order.status}
             paymentStatus={order.payment_status}
             notes={order.notes ?? ""}
-            hasEmail={!!order.customer_email}
+            hasEmail={!!order.customer_email && !String(order.customer_email).endsWith("@nomail.local")}
             transactionId={order.transaction_id}
           />
         </div>

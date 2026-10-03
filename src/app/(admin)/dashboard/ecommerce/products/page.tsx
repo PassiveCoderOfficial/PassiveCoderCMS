@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getClientTenantId } from "@/lib/tenant/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   Plus, Package, Loader2, Pencil, Trash2, Eye, EyeOff,
@@ -448,6 +449,8 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"" | "active" | "draft" | "archived">("");
+  const [search, setSearch] = useState("");
+  const [stockFilter, setStockFilter] = useState<"" | "low" | "out">("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -538,7 +541,13 @@ export default function ProductsPage() {
     toast.success(t("products.productsDeleted"));
   }
 
-  const filtered = filter ? products.filter((p) => p.status === filter) : products;
+  const term = search.trim().toLowerCase();
+  const filtered = products.filter((p) =>
+    (!filter || p.status === filter) &&
+    (stockFilter === "" || (p.track_inventory && (stockFilter === "out" ? p.stock_quantity <= 0 : p.stock_quantity > 0 && p.stock_quantity <= 5))) &&
+    (!term || p.name.toLowerCase().includes(term) || p.slug.toLowerCase().includes(term)));
+  const lowCount = products.filter((p) => p.track_inventory && p.stock_quantity > 0 && p.stock_quantity <= 5).length;
+  const outCount = products.filter((p) => p.track_inventory && p.stock_quantity <= 0).length;
   const counts = {
     all: products.length,
     active: products.filter((p) => p.status === "active").length,
@@ -565,6 +574,8 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products by name…" />
+
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">
         {([["", t("products.filterAll")], ["active", t("products.filterActive")], ["draft", t("products.filterDraft")], ["archived", t("products.filterArchived")]] as const).map(([val, label]) => (
@@ -574,6 +585,13 @@ export default function ProductsPage() {
                 ? "bg-primary text-primary-foreground border-primary"
                 : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground")}>
             {label} <span className="ml-1 opacity-60">{val === "" ? counts.all : counts[val as keyof typeof counts]}</span>
+          </button>
+        ))}
+        {(["low", "out"] as const).map((v) => (
+          <button key={v} onClick={() => setStockFilter(stockFilter === v ? "" : v)}
+            className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border",
+              stockFilter === v ? "bg-amber-600 text-white border-amber-600" : "border-border text-muted-foreground hover:border-amber-500/50 hover:text-foreground")}>
+            {v === "low" ? "Low stock" : "Out of stock"} <span className="ml-1 opacity-60">{v === "low" ? lowCount : outCount}</span>
           </button>
         ))}
       </div>

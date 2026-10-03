@@ -46,6 +46,8 @@ const schema = z.object({
   low_stock_threshold: z.coerce.number().int().min(0),
   weight: z.coerce.number().optional(),
   featured: z.boolean(),
+  seo_title: z.string().max(120).optional(),
+  seo_description: z.string().max(320).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -309,6 +311,8 @@ export function ProductForm({ product }: ProductFormProps) {
       slug: product?.slug ?? "",
       description: product?.description ?? "",
       short_description: product?.short_description ?? "",
+      seo_title: (product as { seo?: { title?: string } } | undefined)?.seo?.title ?? "",
+      seo_description: (product as { seo?: { description?: string } } | undefined)?.seo?.description ?? "",
       type: product?.type ?? "simple",
       status: product?.status ?? "draft",
       price: product?.price ?? 0,
@@ -392,8 +396,10 @@ export function ProductForm({ product }: ProductFormProps) {
     setLoading(true);
     try {
       const supabase = createClient();
+      const { seo_title, seo_description, ...rest } = values;
       const payload = {
-        ...values, images,
+        ...rest, images,
+        seo: { title: seo_title?.trim() || null, description: seo_description?.trim() || null },
         category_ids: categoryIds,
         compare_price: values.compare_price || null,
         cost_price: values.cost_price || null,
@@ -512,6 +518,17 @@ export function ProductForm({ product }: ProductFormProps) {
                 <div className="space-y-1.5">
                   <Label>{t("productForm.fullDescription")}</Label>
                   <Textarea {...form.register("description")} rows={5} placeholder={t("productForm.fullDescriptionPlaceholder")} />
+                </div>
+                {/* Search engine listing (Shopify/Woo standard). Blank = name + short description. */}
+                <div className="space-y-1.5 border-t pt-3">
+                  <Label>Search engine title</Label>
+                  <Input {...form.register("seo_title")} placeholder={form.watch("name") || "Product name"} />
+                  <p className="text-xs text-muted-foreground">{(form.watch("seo_title") || form.watch("name") || "").length}/60 characters</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Search engine description</Label>
+                  <Textarea {...form.register("seo_description")} rows={2} placeholder={form.watch("short_description") || "What Google shows under the title"} />
+                  <p className="text-xs text-muted-foreground">{(form.watch("seo_description") || "").length}/160 characters</p>
                 </div>
               </CardContent>
             </Card>
