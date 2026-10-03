@@ -54,7 +54,7 @@ export const USD_PEG: Record<string, number> = {
   USD: 1, SAR: 3.75, AED: 3.6725, QAR: 3.64, BHD: 0.376, OMR: 0.3845,
 };
 
-export const DISPLAY_CURRENCIES = ["SAR", "AED", "USD"] as const;
+export const DISPLAY_CURRENCIES = ["SAR", "AED", "QAR", "USD"] as const;
 
 export function convertPrice(amount: number, from: string, to: string): number | null {
   if (from === to) return amount;

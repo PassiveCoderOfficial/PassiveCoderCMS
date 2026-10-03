@@ -45,7 +45,7 @@ export function SettingsClient({ initial }: { initial: S }) {
         <label className="block">
           <span className="text-xs text-muted-foreground">Default currency</span>
           <select className={`${inputCls} mt-1`} value={String(s.default_currency)} onChange={(e) => set("default_currency", e.target.value)}>
-            {["SAR", "AED", "USD"].map((c) => <option key={c}>{c}</option>)}
+            {["SAR", "AED", "QAR", "USD"].map((c) => <option key={c}>{c}</option>)}
           </select>
         </label>
         <label className="block">
