@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { requireModule } from "@/lib/modules/resolve-modules";
 
 /** Create a branch for the current tenant. */
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
   // Restaurant stack is Biz-plan-only (docs/business/04-pricing-and-packaging.md,
   // "pos" module). Nav-hiding alone doesn't stop a direct POST from a Pro
   // tenant creating branches the sidebar never showed them.
@@ -32,6 +34,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
   if (!(await requireModule(tenantId, "pos"))) {
     return NextResponse.json({ error: "Branches are not available on your plan" }, { status: 403 });
   }

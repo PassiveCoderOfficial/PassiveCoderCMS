@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { requireModule } from "@/lib/modules/resolve-modules";
 
 /**
@@ -12,6 +13,7 @@ import { requireModule } from "@/lib/modules/resolve-modules";
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
   if (!(await requireModule(tenantId, "pos"))) {
     return NextResponse.json({ error: "Branch availability is not available on your plan" }, { status: 403 });
   }
@@ -30,6 +32,8 @@ export async function POST(req: NextRequest) {
     .from("restaurant_branches").select("id").eq("id", branch_id).eq("tenant_id", tenantId).maybeSingle();
   if (!branch) return NextResponse.json({ error: "Branch not found" }, { status: 404 });
 
+  const { data: product } = await admin.from("products").select("id").eq("id", product_id).eq("tenant_id", tenantId).maybeSingle();
+  if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
   const { error } = await admin
     .from("branch_product_availability")
     .upsert({ branch_id, product_id, in_stock, updated_at: new Date().toISOString() }, { onConflict: "branch_id,product_id" });
