@@ -24,6 +24,22 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [p, setP] = useState(0);
   const [reduced, setReduced] = useState(false);
+  // Load-in intro (0 → 1 over ~1.8s) so the portrait and first headline
+  // animate on arrival instead of waiting for the first scroll.
+  const [intro, setIntro] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setIntro(1); return; }
+    let raf = 0;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const v = Math.min((now - t0) / 1800, 1);
+      setIntro(v);
+      if (v < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -63,7 +79,7 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
     if (i > 0) opacity = ease((progress - (start - fade)) / (fade * 2));
     if (i < bgCount - 1 && progress > end - fade) opacity = Math.min(opacity, 1 - ease((progress - (end - fade)) / (fade * 2)));
     const local = Math.min(Math.max((progress - start) / slice, 0), 1);
-    const scale = 1.18 - 0.14 * local;
+    const scale = 1.18 - 0.14 * local + (i === 0 ? 0.12 * (1 - ease(intro)) : 0);
     return { opacity, transform: `scale(${scale})`, zIndex: i };
   };
 
@@ -71,19 +87,23 @@ export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
   const sceneSpan = scenes.length ? 0.88 / scenes.length : 0;
   const sceneStyle = (i: number): React.CSSProperties => {
     if (reduced) return { opacity: i === 0 ? 1 : 0 };
-    const start = 0.04 + i * sceneSpan;
+    const start = i === 0 ? 0 : 0.04 + i * sceneSpan;
     const inEnd = start + sceneSpan * 0.3;
     const outStart = start + sceneSpan * 0.72;
     const end = start + sceneSpan;
     const last = i === scenes.length - 1;
     let o = 0, y = 30, blur = 10;
+    if (i === 0 && progress < start + sceneSpan * 0.72) {
+      const t = ease(Math.max((intro - 0.25) / 0.75, 0));
+      return { opacity: t, transform: `translateY(${30 * (1 - t)}px)`, filter: t < 1 ? `blur(${(10 * (1 - t)).toFixed(1)}px)` : "none" };
+    }
     if (progress >= start && progress < inEnd) { const t = ease((progress - start) / (inEnd - start)); o = t; y = 30 * (1 - t); blur = 10 * (1 - t); }
     else if (progress >= inEnd && (progress < outStart || last)) { o = 1; y = 0; blur = 0; }
     else if (progress >= outStart && progress < end) { const t = (progress - outStart) / (end - outStart); o = 1 - t; y = -24 * t; blur = 6 * t; }
     return { opacity: o, transform: `translateY(${y}px)`, filter: blur ? `blur(${blur.toFixed(1)}px)` : "none" };
   };
 
-  const portraitIn = reduced ? 1 : ease(progress / 0.14);
+  const portraitIn = reduced ? 1 : ease(Math.min(intro / 0.7, 1));
   const portraitScale = 0.92 + 0.08 * portraitIn + (reduced ? 0 : 0.04 * progress);
   const side = data.portraitSide ?? "center";
   const portraitPos = side === "left" ? "left-[4%] lg:left-[8%]" : side === "right" ? "right-[4%] lg:right-[8%]" : "left-1/2";
