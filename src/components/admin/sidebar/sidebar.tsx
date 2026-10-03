@@ -72,6 +72,7 @@ const LABEL_KEY: Record<string, TranslationKey> = {
   "Users": "sidebar.users",
   "Backups": "sidebar.backups",
   "Settings": "sidebar.settings",
+  "AI Connect": "sidebar.aiConnect",
   "API Keys": "sidebar.apiKeys",
   "Domain": "sidebar.domain",
   "Visit Site": "sidebar.visitSite",

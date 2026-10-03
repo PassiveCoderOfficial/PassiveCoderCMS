@@ -1471,6 +1471,7 @@ export const en = {
   "sidebar.users": "Users",
   "sidebar.backups": "Backups",
   "sidebar.settings": "Settings",
+  "sidebar.aiConnect": "AI Connect",
   "sidebar.apiKeys": "API Keys",
   "sidebar.domain": "Domain",
   "sidebar.visitSite": "Visit Site",

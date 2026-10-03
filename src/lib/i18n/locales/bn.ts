@@ -1477,6 +1477,7 @@ export const bn = {
   "sidebar.users": "ইউজারস",
   "sidebar.backups": "ব্যাকআপস",
   "sidebar.settings": "সেটিংস",
+  "sidebar.aiConnect": "AI কানেক্ট",
   "sidebar.apiKeys": "API কী",
   "sidebar.domain": "ডোমেইন",
   "sidebar.visitSite": "সাইট দেখুন",

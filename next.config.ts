@@ -30,6 +30,17 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // OAuth discovery for the MCP server (app/api/mcp). Clients probe both the
+  // bare well-known path and one suffixed with the resource path.
+  async rewrites() {
+    return [
+      { source: "/.well-known/oauth-protected-resource", destination: "/api/oauth/metadata/protected-resource" },
+      { source: "/.well-known/oauth-protected-resource/:path*", destination: "/api/oauth/metadata/protected-resource" },
+      { source: "/.well-known/oauth-authorization-server", destination: "/api/oauth/metadata/authorization-server" },
+      { source: "/.well-known/oauth-authorization-server/:path*", destination: "/api/oauth/metadata/authorization-server" },
+      { source: "/.well-known/openid-configuration", destination: "/api/oauth/metadata/authorization-server" },
+    ];
+  },
   async redirects() {
     return [
       // Exact /dashboard -> analytics as a plain HTTP redirect, before any
