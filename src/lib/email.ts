@@ -14,6 +14,8 @@ export interface SendEmailInput {
   text?: string;
   from?: string;
   attachments?: EmailAttachment[];
+  /** Extra headers, e.g. List-Unsubscribe for marketing mail. */
+  headers?: Record<string, string>;
 }
 
 const DEFAULT_FROM = "Passive Coder <contact@noreply.passivecoder.com>";
@@ -39,6 +41,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; e
         ...(input.html ? { html: input.html } : {}),
         ...(input.text ? { text: input.text } : {}),
         ...(input.attachments ? { attachments: input.attachments } : {}),
+        ...(input.headers ? { headers: input.headers } : {}),
       }),
     });
     if (!res.ok) {

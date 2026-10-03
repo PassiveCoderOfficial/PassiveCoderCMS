@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 import { renderTemplate } from "@/lib/marketing/render";
+import { unsubscribeUrl } from "@/lib/marketing/unsubscribe";
 
 const BATCH = 40; // per tick, stays well inside function time limits
 
@@ -22,6 +23,9 @@ async function handle(authorized: boolean) {
   let processed = 0;
   for (const campaign of sending ?? []) {
     if (campaign.channel !== "email") continue;
+    // Sent in the business's name, not the platform's.
+    const { data: tenant } = await supabase.from("tenants").select("name").eq("id", campaign.tenant_id).maybeSingle();
+    const fromName = (tenant?.name ?? "").replace(/[<>"\r\n]/g, "").trim().slice(0, 60);
 
     const { data: batch } = await supabase.from("campaign_recipients")
       .select("id, contact_id")
@@ -41,10 +45,15 @@ async function handle(authorized: boolean) {
         continue;
       }
 
+      // Every marketing email carries an unsubscribe link plus the one-click
+      // List-Unsubscribe headers Gmail and Yahoo require from bulk senders.
+      const unsub = unsubscribeUrl(r.contact_id);
       const result = await sendEmail({
         to: contact.email,
         subject: campaign.subject ?? "",
-        text: renderTemplate(campaign.body, contact),
+        ...(fromName ? { from: `${fromName} <contact@noreply.passivecoder.com>` } : {}),
+        text: `${renderTemplate(campaign.body, contact)}\n\n--\nDon't want these emails? Unsubscribe: ${unsub}`,
+        headers: { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
       });
 
       await supabase.from("campaign_recipients")

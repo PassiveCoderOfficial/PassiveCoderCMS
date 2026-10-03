@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { sendEmail } from "@/lib/email";
+import { canWriteSite } from "@/lib/auth/site-write";
 import { renderTemplate } from "@/lib/marketing/render";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json();
 
@@ -82,7 +84,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { data: updated } = await supabase.from("campaigns")
       .update({ status: "sending", recipient_count: contacts.length, updated_at: new Date().toISOString() })
-      .eq("id", id).eq("tenant_id", tenantId).select().single();
+      .eq("id", id).eq("tenant_id", tenantId).eq("status", "draft").select().single();
 
     return NextResponse.json(updated);
   }
@@ -106,6 +108,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const { error } = await supabase.from("campaigns")
     .delete().eq("id", id).eq("tenant_id", tenantId);
