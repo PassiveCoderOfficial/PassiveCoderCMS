@@ -536,12 +536,14 @@ export function MediaManager({ initialMedia }: Props) {
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
                 <div className="flex justify-end gap-1">
                   <button
+                    aria-label="Copy link" title="Copy link"
                     onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.url); toast.success("URL copied"); }}
                     className="p-1 rounded bg-white/20 hover:bg-white/40 text-white"
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </button>
                   <button
+                    aria-label="Delete" title="Delete"
                     onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
                     className="p-1 rounded bg-white/20 hover:bg-red-500/80 text-white"
                   >
