@@ -16,7 +16,7 @@ export default async function PropertiesPage() {
   ]);
 
   return (
-    <div className="space-y-4">
+    <div className="p-6 space-y-4">
       {!rows?.length && <SampleDataButton />}
       <PropertiesManager
         initial={rows ?? []}

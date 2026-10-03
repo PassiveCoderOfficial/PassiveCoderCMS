@@ -30,7 +30,7 @@ export function SettingsClient({ initial }: { initial: S }) {
   };
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="p-6 max-w-2xl space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Agent Settings</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Shown on every property page: the agent card, WhatsApp and call buttons, and the licence line.</p>

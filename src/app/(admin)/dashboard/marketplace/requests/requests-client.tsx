@@ -62,7 +62,7 @@ export default function RequestsClient({ initialRequests, vendors }: { initialRe
   const shown = requests.filter(r => filter === "all" || r.status === filter);
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
         <AlertTriangle className="w-6 h-6 text-primary" /> {t("mpRequests.title")}
       </h1>

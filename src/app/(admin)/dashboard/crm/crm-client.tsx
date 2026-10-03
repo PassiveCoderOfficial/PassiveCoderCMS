@@ -497,12 +497,15 @@ export default function CrmClient({ initialStages, initialContacts, initialTotal
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Users className="w-6 h-6 text-primary" /> {t("crm.title")}
         </h1>
-        <button onClick={() => setShowAdd(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("crm.newContact")}</button>
+        <div className="flex items-center gap-2">
+          <a href="/api/crm/contacts/export" className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted">Export CSV</a>
+          <button onClick={() => setShowAdd(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("crm.newContact")}</button>
+        </div>
       </div>
 
       <div className="flex gap-1 border-b border-border">

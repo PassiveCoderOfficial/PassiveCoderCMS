@@ -78,7 +78,7 @@ export default function ReviewClient() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="p-6 space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <BadgeCheck className="w-6 h-6 text-primary" /> {t("review.title")}

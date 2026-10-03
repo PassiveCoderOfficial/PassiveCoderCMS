@@ -105,7 +105,7 @@ export default function CatalogClient({ initialCategories }: { initialCategories
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="p-6 space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Tag className="w-6 h-6 text-primary" /> {t("mpCatalog.title")}

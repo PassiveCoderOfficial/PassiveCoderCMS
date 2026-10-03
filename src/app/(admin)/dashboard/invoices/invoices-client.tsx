@@ -195,7 +195,7 @@ export default function InvoicesClient({ initialInvoices, baseCurrency }: {
     .reduce((s, i) => s + Number(i.total), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <FileText className="w-6 h-6 text-primary" /> {t("invoices.title")}

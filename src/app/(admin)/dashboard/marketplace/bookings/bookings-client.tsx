@@ -134,7 +134,7 @@ export default function BookingsClient({ initialBookings, vendors, categories }:
   });
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Calendar className="w-6 h-6 text-primary" /> {t("mpBookings.title")}

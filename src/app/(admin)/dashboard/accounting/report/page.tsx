@@ -62,7 +62,7 @@ export default async function ReportPage() {
   const maxBar = Math.max(1, ...rows.map(([, v]) => Math.max(v.income, v.expense)));
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
         <BarChart3 className="w-6 h-6 text-primary" /> <ReportHeading />
       </h1>

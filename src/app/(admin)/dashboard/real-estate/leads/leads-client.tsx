@@ -38,7 +38,7 @@ export function LeadsClient({ initial }: { initial: Lead[] }) {
     `https://wa.me/${phone.replace(/[^\d]/g, "")}?text=${encodeURIComponent(`Hi ${l.name ?? ""}, thanks for your interest${l.property ? ` in ${l.property.title}` : ""}.`)}`;
 
   return (
-    <div className="space-y-5">
+    <div className="p-6 space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Property Leads</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Every enquiry, brochure download and consultation request. Also saved to your CRM contacts.</p>

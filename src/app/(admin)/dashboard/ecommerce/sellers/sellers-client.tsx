@@ -162,7 +162,7 @@ export default function SellersClient({ initialSellers }: { initialSellers: Sell
   };
 
   return (
-    <div className="space-y-5">
+    <div className="p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">

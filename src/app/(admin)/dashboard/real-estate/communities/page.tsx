@@ -8,5 +8,5 @@ export default async function CommunitiesPage() {
   const tid = await getCurrentTenantId();
   const supabase = await createClient();
   const { data } = await supabase.from("re_communities").select("*").eq("tenant_id", tid).order("sort_order");
-  return <CommunitiesManager initial={data ?? []} />;
+  return <div className="p-6"><CommunitiesManager initial={data ?? []} /></div>;
 }

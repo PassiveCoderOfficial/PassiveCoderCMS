@@ -5,7 +5,7 @@ export const metadata = { title: "Promotions — Dashboard" };
 
 export default function PromotionsPage() {
   return (
-    <div className="space-y-10 max-w-5xl">
+    <div className="p-6 space-y-10 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold">Promotions</h1>
         <p className="text-sm text-muted-foreground">Flash sales and platform vouchers for your marketplace.</p>
