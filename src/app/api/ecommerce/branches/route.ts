@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
-  // Restaurant stack is Biz-plan-only (docs/business/04-pricing-and-packaging.md,
+  // Restaurant stack is on the Pro and Biz plans (moved down from Biz-only 2026-10-04; see docs/business/04-pricing-and-packaging.md,
   // "pos" module). Nav-hiding alone doesn't stop a direct POST from a Pro
   // tenant creating branches the sidebar never showed them.
   if (!(await requireModule(tenantId, "pos"))) {

@@ -428,3 +428,11 @@ query — worth a real browser-based test (not scripted against the DB
 directly) if that day comes.
 
 **Offline-tolerant POS — not started.** Next up.
+
+## Update 2026-10-04: restaurant stack moved to Pro
+
+Wali's call: the restaurant system (POS, Kitchen, Monitor, Table QR ordering,
+Reservations, Riders/Delivery, Branches) is now included on **Pro** as well as
+Biz. All of it still gates on the single `pos` plan module, which is now
+`included: true` on `pro` (and still on `biz`, `custom`). Both plans list
+"Restaurant & POS" in their pricing-page features. Basic does not include it.

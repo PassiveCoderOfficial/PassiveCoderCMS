@@ -6,7 +6,7 @@ import { requireModule } from "@/lib/modules/resolve-modules";
 /**
  * Restaurant sales analytics (Tier 2, docs/business/06-restaurant-vertical.md)
  * — best-sellers, peak hours, average ticket size. Gated the same way as
- * the rest of the restaurant stack ("pos" module = Biz plan).
+ * the rest of the restaurant stack ("pos" module = Pro and Biz plans).
  *
  * Aggregated in JS from the same orders.items jsonb shape POS/checkout
  * already write ({product_id, name, price, quantity}) rather than a new
