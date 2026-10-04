@@ -15,6 +15,7 @@ interface Plan {
   /** Regular yearly BDT price while a promotion is running (shown struck through). */
   price_yearly_bdt_regular?: number | null;
   promo_label?: string | null;
+  promo_ends_at?: string | null;
   price_monthly_bdt: number | null;
   storage_gb: number;
   pages_limit: number;
@@ -146,7 +147,9 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             const saveLabel = percentOff > 0 ? `save ${percentOff}%` : "";
             // Launch offer applies to yearly BDT prices.
             const regularBdt = plan.price_yearly_bdt_regular ?? null;
-            const promoActive = currency === "BDT" && regularBdt != null && yearlyBdt != null && regularBdt > yearlyBdt;
+            const promoEnds = plan.promo_ends_at ? new Date(plan.promo_ends_at) : null;
+            const promoActive = currency === "BDT" && regularBdt != null && yearlyBdt != null && regularBdt > yearlyBdt
+              && (!promoEnds || promoEnds.getTime() > Date.now());
             const visitorLimit = plan.visitor_limit_monthly ?? 0;
             const pagesLimit   = plan.pages_limit ?? -1;
 
@@ -173,6 +176,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                   {promoActive && (
                     <span className="mt-2 inline-flex items-center rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 text-[11px] font-semibold px-2.5 py-0.5">
                       {plan.promo_label ?? "Limited-time offer"}{cycle === "yearly" ? "" : " on yearly"}
+                      {promoEnds && ` · ends ${promoEnds.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "Asia/Dhaka" })}`}
                     </span>
                   )}
                   {offersCycle ? (

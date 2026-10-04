@@ -22,6 +22,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// Platform launch offer: 31 Dec 2026 23:59 Bangladesh time (same as plans.promo_ends_at).
+// The page re-renders hourly, so the offer copy switches off by itself.
+export const revalidate = 3600;
+const OFFER_ENDS = Date.UTC(2026, 11, 31, 18, 0, 0);
+const offerOn = () => Date.now() < OFFER_ENDS;
+
 const WA_NUMBER = "8801678669699";
 const WA_TEXT = encodeURIComponent(
   "আসসালামু আলাইকুম, আমি ফেসবুক বিজ্ঞাপনে দেখেছি — ওয়েবসাইট প্যাকেজ সম্পর্কে জানতে চাই।"
@@ -92,7 +98,7 @@ const faqs = [
   },
   {
     q: "ইয়ারলি প্যাকেজে আসলে কত সাশ্রয় হয়?",
-    a: "প্ল্যাটফর্ম লঞ্চ অফার চলছে, সীমিত সময়ের জন্য। Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০; ইয়ারলি নিলে এখন মাত্র ৳৩০,০০০ (নিয়মিত মূল্য ৳৬০,০০০)। Basic মাসিক ৳৪,০০০, ইয়ারলি এখন মাত্র ৳১৫,০০০ (নিয়মিত মূল্য ৳৩২,০০০)। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।",
+    a: "OFFER_FAQ",
   },
   {
     q: "সাইট তৈরি হতে কতদিন লাগে?",
@@ -206,7 +212,11 @@ const chapters = [
   ["14:17", "আজই শুরু করুন"],
 ];
 
+const FAQ_OFFER = "প্ল্যাটফর্ম লঞ্চ অফার চলছে ৩১ ডিসেম্বর পর্যন্ত। Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০; ইয়ারলি নিলে এখন মাত্র ৳৩০,০০০ (নিয়মিত মূল্য ৳৬০,০০০)। Basic মাসিক ৳৪,০০০, ইয়ারলি এখন মাত্র ৳১৫,০০০ (নিয়মিত মূল্য ৳৩২,০০০)। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।";
+const FAQ_REGULAR = "Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০। ইয়ারলি নিলে দিতে হবে ৳৬০,০০০ — মানে ৪ মাস একদম ফ্রি। Basic মাসিক ৳৪,০০০, ইয়ারলি ৳৩২,০০০। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।";
+
 export default function BangladeshiExpatLandingPage() {
+  const offer = offerOn();
   return (
     <div className={`${bangla.variable} font-[family-name:var(--font-bangla)] bg-white text-slate-900`}>
       {/* ── Header ───────────────────────────────────────────────────── */}
@@ -419,8 +429,10 @@ export default function BangladeshiExpatLandingPage() {
                 <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-400 text-sm font-semibold mb-6">
-                অথবা বছরে মাত্র ৳১৫,০০০ <span className="line-through text-gray-500 font-normal">৳৩২,০০০</span>
-                <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, সীমিত সময়ের জন্য</span>
+                {offer ? (<>
+                  অথবা বছরে মাত্র ৳১৫,০০০ <span className="line-through text-gray-500 font-normal">৳৩২,০০০</span>
+                  <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, ৩১ ডিসেম্বর পর্যন্ত</span>
+                </>) : "অথবা বছরে ৳৩২,০০০ — ৪ মাস ফ্রি"}
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {basicFeatures.map((f) => (
@@ -449,8 +461,10 @@ export default function BangladeshiExpatLandingPage() {
                 <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-300 text-sm font-semibold mb-6">
-                অথবা বছরে মাত্র ৳৩০,০০০ <span className="line-through text-gray-500 font-normal">৳৬০,০০০</span>
-                <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, সীমিত সময়ের জন্য</span>
+                {offer ? (<>
+                  অথবা বছরে মাত্র ৳৩০,০০০ <span className="line-through text-gray-500 font-normal">৳৬০,০০০</span>
+                  <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, ৩১ ডিসেম্বর পর্যন্ত</span>
+                </>) : "অথবা বছরে ৳৬০,০০০ — ৪ মাস ফ্রি"}
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {proFeatures.map((f) => (
@@ -554,7 +568,7 @@ export default function BangladeshiExpatLandingPage() {
           সাধারণ জিজ্ঞাসা
         </h2>
         <div className="space-y-4">
-          {faqs.map((f) => (
+          {faqs.map((f0) => ({ ...f0, a: f0.a === "OFFER_FAQ" ? (offer ? FAQ_OFFER : FAQ_REGULAR) : f0.a })).map((f) => (
             <div key={f.q} className="rounded-2xl border border-slate-200 p-5 sm:p-6">
               <h3 className="font-bold text-base sm:text-lg mb-2">{f.q}</h3>
               <div className={f.img ? "flex flex-col sm:grid sm:grid-cols-2 gap-4 items-start" : ""}>
