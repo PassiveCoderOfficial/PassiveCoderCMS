@@ -321,7 +321,7 @@ export async function applyItem(ctx: JobCtx, item: ImportItem): Promise<void> {
     if (existing) { ctx.results.skipped++; return; }
     // Saved alongside the site's own menus (not switched on), so nothing changes until the owner picks it.
     const { error } = await ctx.admin.from("nav_menus").insert({
-      tenant_id: ctx.tenantId, name: `${item.name} (imported)`.slice(0, 120), slug: `imported-${slug}`, items, location: null,
+      tenant_id: ctx.tenantId, name: `${item.name} (imported)`.slice(0, 120), slug: `imported-${slug}`, items, location: "none",
     });
     if (error) throw new Error(error.message);
     ctx.results.created++;
