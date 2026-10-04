@@ -17,3 +17,9 @@ alter table public.tenant_email_settings enable row level security;
 drop policy if exists tenant_email_settings_read on public.tenant_email_settings;
 create policy tenant_email_settings_read on public.tenant_email_settings for select using (is_tenant_member(tenant_id));
 revoke insert, update, delete on public.tenant_email_settings from anon, authenticated;
+
+-- Provider ownership check (zoho-verification=..., google-site-verification=..., MS=...)
+-- and Zoho data-centre region (its mail servers differ per region).
+alter table public.tenant_email_settings add column if not exists provider_verification text;
+alter table public.tenant_email_settings add column if not exists zoho_region text not null default 'com'
+  check (zoho_region in ('com', 'in', 'eu', 'com.au'));

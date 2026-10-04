@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { importAccess } from "@/lib/import/access";
 import {
   PROVIDERS, applyRecords, checkRecords, cleanForwards, requiredRecords, weHostDns,
-  type DnsRecord, type Provider,
+  ZOHO_REGIONS, type DnsRecord, type Provider, type ZohoRegion,
 } from "@/lib/email/business-email";
 import { setupSendingDomain, verifySendingDomain } from "@/lib/email/sender";
 
@@ -30,7 +30,8 @@ export async function GET() {
   const s = c.settings;
   const provider = (s?.provider ?? null) as Provider | null;
   const forwards = cleanForwards(s?.forwards);
-  const mail = requiredRecords(c.domain, provider, forwards, (s?.dkim as { name: string; value: string }[]) ?? []);
+  const mail = requiredRecords(c.domain, provider, forwards, (s?.dkim as { name: string; value: string }[]) ?? [],
+    { verification: (s?.provider_verification as string | null) ?? null, zohoRegion: ((s?.zoho_region as ZohoRegion) ?? "com") });
   const senderRecords = (s?.sender_records as DnsRecord[]) ?? [];
   const [mailCheck, senderCheck, auto] = await Promise.all([
     checkRecords(c.domain, mail),
@@ -44,6 +45,8 @@ export async function GET() {
     provider,
     forwards,
     dkim: s?.dkim ?? [],
+    verification: s?.provider_verification ?? "",
+    zohoRegion: s?.zoho_region ?? "com",
     mail: mailCheck,
     sender: { status: s?.sender_status ?? "none", local: s?.sender_local ?? "hello", name: s?.sender_name ?? "", records: senderCheck.records },
   });
@@ -70,6 +73,15 @@ export async function POST(req: Request) {
       .map((d) => ({ name: String(d.name ?? "").trim().replace(new RegExp(`\\.?${c.domain!.replace(/\./g, "\\.")}\\.?$`), ""), value: String(d.value ?? "").trim() }))
       .filter((d) => d.name && d.value).slice(0, 4);
   }
+  if ("verification" in body) {
+    // Accept the whole record or just the value; keep it to one TXT string.
+    const v = String(body.verification ?? "").trim().replace(/^"|"$/g, "").slice(0, 255);
+    patch.provider_verification = v || null;
+  }
+  if ("zoho_region" in body) {
+    if (!ZOHO_REGIONS.includes(body.zoho_region as ZohoRegion)) return NextResponse.json({ error: "Unknown Zoho region" }, { status: 400 });
+    patch.zoho_region = body.zoho_region;
+  }
   if ("sender_local" in body) patch.sender_local = String(body.sender_local ?? "hello").toLowerCase().replace(/[^a-z0-9._+-]/g, "").slice(0, 40) || "hello";
   if ("sender_name" in body) patch.sender_name = String(body.sender_name ?? "").replace(/[<>"\r\n]/g, "").trim().slice(0, 60) || null;
   const { error } = await c.admin.from("tenant_email_settings").upsert(patch, { onConflict: "tenant_id" });
@@ -82,7 +94,8 @@ export async function POST(req: Request) {
       }
       const { data: s } = await c.admin.from("tenant_email_settings").select("*").eq("tenant_id", c.tenantId).maybeSingle();
       const records = [
-        ...requiredRecords(c.domain, (s?.provider ?? null) as Provider | null, cleanForwards(s?.forwards), (s?.dkim as { name: string; value: string }[]) ?? []),
+        ...requiredRecords(c.domain, (s?.provider ?? null) as Provider | null, cleanForwards(s?.forwards), (s?.dkim as { name: string; value: string }[]) ?? [],
+          { verification: s?.provider_verification ?? null, zohoRegion: (s?.zoho_region as ZohoRegion) ?? "com" }),
         ...((s?.sender_records as DnsRecord[]) ?? []),
       ];
       if (!records.length) return NextResponse.json({ error: "Choose an email setup first." }, { status: 400 });

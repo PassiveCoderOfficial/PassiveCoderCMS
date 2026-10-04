@@ -18,6 +18,8 @@ type Data = {
   provider?: string | null;
   forwards?: { alias: string; to: string }[];
   dkim?: { name: string; value: string }[];
+  verification?: string;
+  zohoRegion?: string;
   mail?: { records: Rec[]; strayMx: string[] };
   sender?: { status: string; local: string; name: string; records: Rec[] };
 };
@@ -64,6 +66,7 @@ export default function BusinessEmailPage() {
   const [dkim, setDkim] = useState<{ name: string; value: string }[]>([]);
   const [senderLocal, setSenderLocal] = useState("hello");
   const [senderName, setSenderName] = useState("");
+  const [verification, setVerification] = useState("");
 
   const load = useCallback(async () => {
     const d = await fetch("/api/email").then((r) => r.json()).catch(() => null) as Data | null;
@@ -73,6 +76,7 @@ export default function BusinessEmailPage() {
       setDkim(d.dkim?.length ? d.dkim : [{ name: "", value: "" }]);
       setSenderLocal(d.sender?.local ?? "hello");
       setSenderName(d.sender?.name ?? "");
+      setVerification(d.verification ?? "");
     }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -131,6 +135,31 @@ export default function BusinessEmailPage() {
           </div>
 
           {prov && <p className="text-sm text-muted-foreground">{prov.help}</p>}
+
+          {p === "zoho" && (
+            <div className="space-y-1.5">
+              <Label>Zoho account region</Label>
+              <div className="flex flex-wrap gap-2">
+                {[["com", "Global (zoho.com)"], ["in", "India (zoho.in)"], ["eu", "Europe (zoho.eu)"], ["com.au", "Australia (zoho.com.au)"]].map(([v, l]) => (
+                  <button key={v} type="button" disabled={!!busy} onClick={() => act("zr", { zoho_region: v }, "Region saved")}
+                    className={cn("rounded-md border px-3 py-1.5 text-sm", (data.zohoRegion ?? "com") === v ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted")}>{l}</button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Check the address bar after logging in to Zoho Mail: mail.zoho.in means India, mail.zoho.eu Europe, and so on. The wrong region means mail won&apos;t arrive.</p>
+            </div>
+          )}
+
+          {p && p !== "forwarding" && (
+            <div className="space-y-1.5">
+              <Label>Domain verification code from your provider</Label>
+              <div className="flex gap-2">
+                <Input className="font-mono text-xs" value={verification} onChange={(e) => setVerification(e.target.value)}
+                  placeholder={p === "zoho" ? "zoho-verification=zb12345678.zmverify.zoho.com" : p === "google" ? "google-site-verification=…" : p === "microsoft" ? "MS=ms12345678" : "Verification TXT value"} />
+                <Button size="sm" variant="outline" disabled={!!busy} onClick={() => act("ver", { verification }, "Verification code saved")}>Save</Button>
+              </div>
+              <p className="text-xs text-muted-foreground">When you add the domain, your provider shows a TXT code to prove you own it. Paste it here, add the records, then click Verify in the provider.</p>
+            </div>
+          )}
 
           {p === "forwarding" && (
             <div className="space-y-2">

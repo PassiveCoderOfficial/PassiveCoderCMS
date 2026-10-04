@@ -20,7 +20,7 @@ export const PROVIDERS: Record<Provider, { label: string; help: string; dkimHelp
     dkimHelp: "In Google Admin go to Apps > Gmail > Authenticate email, generate a DKIM key and paste the TXT value here." },
   microsoft: { label: "Microsoft 365 (Outlook)", help: "Add this domain in the Microsoft 365 admin center, then add the records below.",
     dkimHelp: "In Microsoft Defender > Email authentication > DKIM, copy the two selector CNAME values." },
-  zoho: { label: "Zoho Mail", help: "Add this domain in Zoho Mail admin, then add the records below.",
+  zoho: { label: "Zoho Mail (free plan available)", help: "Sign up at zoho.com/mail (the Forever Free plan covers up to 5 mailboxes), add this domain, paste Zoho's verification code below, then add the records.",
     dkimHelp: "In Zoho Mail admin > Domains > Email configuration > DKIM, copy the TXT value." },
   titan: { label: "Titan Email", help: "Add this domain in your Titan account, then add the records below." },
   forwarding: { label: "Free forwarding to your inbox", help: "Mail to info@, sales@ and so on is forwarded to an inbox you already use (Gmail, Outlook). Free, no mailbox to manage." },
@@ -46,14 +46,26 @@ export function cleanForwards(raw: unknown): Forward[] {
 }
 
 /** Every record the chosen setup needs at the domain's apex (and DKIM/DMARC hosts). */
-export function requiredRecords(domain: string, provider: Provider | null, forwards: Forward[], dkim: { name: string; value: string }[]): DnsRecord[] {
+export const ZOHO_REGIONS = ["com", "in", "eu", "com.au"] as const;
+export type ZohoRegion = typeof ZOHO_REGIONS[number];
+
+export function requiredRecords(
+  domain: string, provider: Provider | null, forwards: Forward[], dkim: { name: string; value: string }[],
+  opts: { verification?: string | null; zohoRegion?: ZohoRegion } = {},
+): DnsRecord[] {
   const out: DnsRecord[] = [];
+  // Ownership proof the provider asks for at signup (zoho-verification=, google-site-verification=, MS=).
+  if (provider && provider !== "forwarding" && opts.verification) {
+    out.push({ type: "TXT", name: "@", value: opts.verification, purpose: "Proves to your email provider that you own the domain" });
+  }
+  const zr = opts.zohoRegion ?? "com";
   const mx = (value: string, priority: number) => out.push({ type: "MX", name: "@", value, priority, purpose: "Receive email" });
   switch (provider) {
     case "google": mx("smtp.google.com", 1); break;
     case "microsoft": mx(`${domain.replace(/\./g, "-")}.mail.protection.outlook.com`, 0);
       out.push({ type: "CNAME", name: "autodiscover", value: "autodiscover.outlook.com", purpose: "Outlook app setup" }); break;
-    case "zoho": mx("mx.zoho.com", 10); mx("mx2.zoho.com", 20); mx("mx3.zoho.com", 50); break;
+    // Zoho's mail servers depend on the data centre the account was created in.
+    case "zoho": mx(`mx.zoho.${zr}`, 10); mx(`mx2.zoho.${zr}`, 20); mx(`mx3.zoho.${zr}`, 50); break;
     case "titan": mx("mx1.titan.email", 10); mx("mx2.titan.email", 20); break;
     case "forwarding":
       mx("mx1.forwardemail.net", 10); mx("mx2.forwardemail.net", 10);
@@ -63,7 +75,7 @@ export function requiredRecords(domain: string, provider: Provider | null, forwa
       break;
     default: break;
   }
-  const inc = provider ? SPF[provider] : undefined;
+  const inc = provider === "zoho" ? `include:zoho.${zr}` : provider ? SPF[provider] : undefined;
   if (inc) out.push({ type: "TXT", name: "@", value: `v=spf1 ${inc} ~all`, purpose: "SPF: who may send as this domain" });
   for (const d of dkim) {
     if (d.name && d.value) out.push({ type: d.value.includes("v=DKIM1") ? "TXT" : "CNAME", name: d.name, value: d.value, purpose: "DKIM signature" });
