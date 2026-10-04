@@ -317,7 +317,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
         </div>
 
         <p className="text-center text-xs text-slate-600 mt-6">
-          All plans include SSL, daily backups, page builder, and uptime monitoring. Prices in USD.
+          All plans include SSL, daily backups, page builder, and uptime monitoring. Prices in {currency === "BDT" ? "Bangladeshi Taka (BDT)" : "USD"}.
         </p>
       </div>
     </section>
