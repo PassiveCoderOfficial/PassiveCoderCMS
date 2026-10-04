@@ -17,7 +17,7 @@ const OWNER_ID = "2ec0befe-7aa8-4a89-acc4-b9fe9250bcf4"; // walibdpro — demo c
 const SLUG = "alhasu";
 const PLAN = "pro";
 const TEMPLATE_SLUG = "events-venues"; // empty custom_css, so our palette wins
-const DEMO_HOURS = 24 * 7;
+const DEMO_HOURS = 72; // demos always 72h (matches src/modules/demo/links.ts)
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
