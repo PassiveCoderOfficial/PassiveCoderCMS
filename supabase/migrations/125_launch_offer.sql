@@ -11,3 +11,5 @@ update public.plans set price_yearly_bdt_regular = 60000, price_yearly_bdt = 300
 -- the regular price after this (and the pricing cards stop showing the offer).
 alter table public.plans add column if not exists promo_ends_at timestamptz;
 update public.plans set promo_ends_at = '2026-12-31T17:59:59Z' where id in ('basic', 'pro');
+
+update public.plans set price_yearly_bdt_regular = 120000, price_yearly_bdt = 60000, promo_label = 'Platform launch offer', promo_ends_at = '2026-12-31T17:59:59Z' where id = 'biz';
