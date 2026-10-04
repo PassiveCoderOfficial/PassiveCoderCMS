@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSiteSender } from "@/lib/email/sender";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 import { upsertContact } from "@/lib/crm/upsertContact";
@@ -146,6 +147,7 @@ export async function POST(req: NextRequest) {
 
   // Confirmation to the customer
   sendEmail({
+    ...(await getSiteSender(tenantId)),
     to: email,
     subject: status === "confirmed"
       ? `Booking confirmed — ${date} at ${slot.start}`

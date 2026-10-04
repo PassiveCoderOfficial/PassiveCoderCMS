@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSiteSender } from "@/lib/email/sender";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 
@@ -35,6 +36,7 @@ async function handle(authorized: boolean) {
       .maybeSingle();
 
     const result = await sendEmail({
+      ...(await getSiteSender(a.tenant_id)),
       to: a.customer_email,
       subject: `Reminder: your ${settings?.service_name ?? "appointment"} tomorrow at ${a.start_time.slice(0, 5)}`,
       text: [

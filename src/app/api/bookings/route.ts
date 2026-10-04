@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email";
+import { getSiteSender } from "@/lib/email/sender";
 import { NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
@@ -98,7 +99,7 @@ export async function PATCH(req: Request) {
           const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
           await sendEmail({
             to: appt.customer_email,
-            from: `${shop} <contact@noreply.passivecoder.com>`,
+            ...(await getSiteSender(tenantId)),
             subject: appt.status === "confirmed" ? `Your booking is confirmed: ${when}` : `Your booking on ${when} was cancelled`,
             html: appt.status === "confirmed"
               ? `<p>Hi ${esc(appt.customer_name ?? "there")},</p><p>Your booking with <b>${esc(shop)}</b> is confirmed for <b>${when}</b>.</p><p>See you then.</p>`

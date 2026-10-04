@@ -73,6 +73,7 @@ const LABEL_KEY: Record<string, TranslationKey> = {
   "Backups": "sidebar.backups",
   "Import / Export": "sidebar.importExport",
   "SEO & AI Search": "sidebar.seoAi",
+  "Business Email": "sidebar.businessEmail",
   "Settings": "sidebar.settings",
   "AI Connect": "sidebar.aiConnect",
   "API Keys": "sidebar.apiKeys",

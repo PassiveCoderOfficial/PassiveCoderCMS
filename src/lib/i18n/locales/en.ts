@@ -1499,6 +1499,7 @@ export const en = {
   "sidebar.aiConnect": "AI Connect",
   "sidebar.importExport": "Import / Export",
   "sidebar.seoAi": "SEO & AI Search",
+  "sidebar.businessEmail": "Business Email",
   "sidebar.apiKeys": "API Keys",
   "sidebar.domain": "Domain",
   "sidebar.visitSite": "Visit Site",

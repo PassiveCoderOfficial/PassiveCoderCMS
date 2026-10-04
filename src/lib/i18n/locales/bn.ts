@@ -1505,6 +1505,7 @@ export const bn = {
   "sidebar.aiConnect": "AI কানেক্ট",
   "sidebar.importExport": "ইমপোর্ট / এক্সপোর্ট",
   "sidebar.seoAi": "SEO ও AI সার্চ",
+  "sidebar.businessEmail": "বিজনেস ইমেইল",
   "sidebar.apiKeys": "API কী",
   "sidebar.domain": "ডোমেইন",
   "sidebar.visitSite": "সাইট দেখুন",

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSiteSender } from "@/lib/email/sender";
 import { z } from "zod";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
@@ -51,7 +52,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const shop = (s?.site_name as string) || "Our shop";
     const r = await sendEmail({
       to: order.customer_email,
-      from: `${shop.replace(/[<>"]/g, "")} <contact@noreply.passivecoder.com>`,
+      ...(await getSiteSender(tenantId)),
       subject: `Your order #${order.order_number} update`,
       html: `<p>Hi ${esc(order.customer_name ?? "there")},</p><p>Your order <b>#${esc(order.order_number)}</b> is ${STATUS_TEXT[patch.status] ?? esc(patch.status)}.</p><p>${esc(shop)}</p>`,
     });

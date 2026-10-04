@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSiteSender } from "@/lib/email/sender";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { sendEmail } from "@/lib/email";
@@ -35,6 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) return NextResponse.json({ error: "No email on your account" }, { status: 400 });
     const result = await sendEmail({
+      ...(await getSiteSender(tenantId)),
       to: user.email,
       subject: `[Test] ${campaign.subject ?? campaign.name}`,
       text: renderTemplate(campaign.body, { first_name: "Test", last_name: "Contact", email: user.email }),

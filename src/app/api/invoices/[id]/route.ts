@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSiteSender } from "@/lib/email/sender";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { sendEmail } from "@/lib/email";
@@ -41,6 +42,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const url = `${tenantBaseUrl(tenant!)}/invoice/${invoice.public_token}`;
     const result = await sendEmail({
+      ...(await getSiteSender(tenantId)),
       to: invoice.customer_email,
       subject: `Invoice ${invoice.invoice_number} from ${tenant?.name ?? "us"}`,
       text: [
