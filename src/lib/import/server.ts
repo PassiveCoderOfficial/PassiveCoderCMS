@@ -248,15 +248,82 @@ export async function applyItem(ctx: JobCtx, item: ImportItem): Promise<void> {
     const html = item.html ? await localizeHtml(ctx, cleanHtml(item.html)) : null;
     const images: string[] = [];
     for (const src of (item.images ?? []).slice(0, 12)) images.push(await localizeImage(ctx, src));
-    const { error } = await ctx.admin.from("products").insert({
-      tenant_id: ctx.tenantId, name: item.name.slice(0, 300), slug, status: "draft", type: "simple",
+    const variants = (item.variants ?? []).slice(0, 100);
+    const { data: created, error } = await ctx.admin.from("products").insert({
+      tenant_id: ctx.tenantId, name: item.name.slice(0, 300), slug, status: "draft", type: variants.length ? "variable" : "simple",
       description: html, short_description: item.short_description?.slice(0, 1000) ?? null,
       price: item.price ?? 0, compare_price: item.compare_price ?? null, sku: item.sku ?? null,
       track_inventory: item.stock != null, stock_quantity: item.stock ?? 0, images,
       seo: { ...(item.seo ?? {}), imported },
+    }).select("id").single();
+    if (error) throw new Error(error.message);
+    if (variants.length) {
+      const rows = [];
+      for (const [i, v] of variants.entries()) {
+        rows.push({
+          product_id: created.id, name: String(v.name || `Option ${i + 1}`).slice(0, 200), sku: v.sku || null,
+          price: v.price ?? item.price ?? 0, compare_price: v.compare_price ?? null, stock_quantity: v.stock ?? 0,
+          attributes: v.attributes ?? {}, image: v.image ? await localizeImage(ctx, v.image) : null, sort_order: i, is_active: true,
+        });
+      }
+      const { error: vErr } = await ctx.admin.from("product_variants").insert(rows);
+      if (vErr) ctx.results.errors.push(`${item.name}: variants not saved (${vErr.message})`);
+    }
+    await addRedirect(ctx, item.old_path, `/products/${slug}`);
+    ctx.results.created++;
+    return;
+  }
+
+  if (item.kind === "order") {
+    // Order numbers are unique platform-wide, so imported ones carry a site prefix.
+    const number = `WC-${ctx.tenantId.slice(0, 6)}-${String(item.number).replace(/[^\w-]/g, "").slice(0, 30)}`;
+    const { data: exists } = await ctx.admin.from("orders").select("id").eq("order_number", number).maybeSingle();
+    if (exists) { ctx.results.skipped++; return; }
+    const statusMap: Record<string, string> = { "on-hold": "on_hold", "checkout-draft": "pending" };
+    const status = statusMap[item.status ?? ""] ?? item.status ?? "completed";
+    const allowedStatus = ["pending", "processing", "on_hold", "completed", "cancelled", "refunded", "failed"];
+    const paid = ["processing", "completed"].includes(status);
+    const n = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+    const { error } = await ctx.admin.from("orders").insert({
+      tenant_id: ctx.tenantId, order_number: number,
+      status: allowedStatus.includes(status) ? status : "completed",
+      payment_status: item.payment_status ?? (status === "refunded" ? "refunded" : paid ? "paid" : "pending"),
+      payment_method: item.payment_method?.slice(0, 60) ?? null,
+      customer_name: item.customer?.name?.slice(0, 200) || "Customer",
+      customer_email: item.customer?.email?.toLowerCase().slice(0, 254) || "imported@nomail.local",
+      items: item.items.slice(0, 200).map((i) => ({ name: String(i.name).slice(0, 300), sku: i.sku ?? null, quantity: n(i.quantity), price: n(i.price) })),
+      billing_address: item.billing_address ?? {}, shipping_address: item.shipping_address ?? {},
+      subtotal: n(item.subtotal ?? item.total), discount: n(item.discount), shipping_cost: n(item.shipping), tax: n(item.tax), total: n(item.total),
+      notes: item.notes?.slice(0, 2000) ?? null, fulfillment_type: "delivery",
+      ...(item.date ? { created_at: new Date(item.date).toISOString() } : {}),
     });
     if (error) throw new Error(error.message);
-    await addRedirect(ctx, item.old_path, `/products/${slug}`);
+    ctx.results.created++;
+    return;
+  }
+
+  if (item.kind === "menu") {
+    // Links to the old site become paths here, so the menu works after the move.
+    const local = (u: string) => {
+      try {
+        const url = new URL(u);
+        const from = ctx.sourceLabel ? new URL(ctx.sourceLabel).host : null;
+        return from && url.host === from ? (url.pathname.replace(/\/+$/, "") || "/") + url.search + url.hash : u;
+      } catch { return u; }
+    };
+    let id = 0;
+    const items = item.items.slice(0, 50).map((i) => ({
+      id: `m${++id}`, label: String(i.label).slice(0, 80), url: local(i.url),
+      children: (i.children ?? []).slice(0, 30).map((c) => ({ id: `m${++id}`, label: String(c.label).slice(0, 80), url: local(c.url) })),
+    }));
+    const slug = slugify(item.name);
+    const { data: existing } = await ctx.admin.from("nav_menus").select("id").eq("tenant_id", ctx.tenantId).eq("slug", `imported-${slug}`).maybeSingle();
+    if (existing) { ctx.results.skipped++; return; }
+    // Saved alongside the site's own menus (not switched on), so nothing changes until the owner picks it.
+    const { error } = await ctx.admin.from("nav_menus").insert({
+      tenant_id: ctx.tenantId, name: `${item.name} (imported)`.slice(0, 120), slug: `imported-${slug}`, items, location: null,
+    });
+    if (error) throw new Error(error.message);
     ctx.results.created++;
     return;
   }

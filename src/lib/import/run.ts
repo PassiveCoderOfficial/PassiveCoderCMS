@@ -6,7 +6,7 @@ import type { ImportItem } from "./parse";
 
 const BUDGET_MS = 40_000;
 const MAX_ITEMS = 5000;
-const KINDS = ["page", "post", "product", "contact"];
+const KINDS = ["page", "post", "product", "contact", "order", "menu"];
 
 type Who = { admin: SupabaseClient; tenantId: string; userId: string };
 
@@ -48,7 +48,7 @@ export async function runJobStep(w: Who, id: string, budgetMs = BUDGET_MS) {
       await applyItem(ctx, item);
     } catch (e) {
       ctx.results.failed++;
-      const name = "title" in item ? item.title : "name" in item ? item.name : item.email ?? item.phone;
+      const name = "title" in item ? item.title : "name" in item ? item.name : item.kind === "order" ? `Order ${item.number}` : item.email ?? item.phone;
       if (ctx.results.errors.length < 50) ctx.results.errors.push(`${name}: ${e instanceof Error ? e.message : "failed"}`);
     }
     cursor++;

@@ -37,6 +37,8 @@ export type ImportItem =
       images?: string[];
       seo?: { title?: string; description?: string };
       old_path?: string;
+      /** WooCommerce variations (size, colour...); imported as product variants. */
+      variants?: { name: string; sku?: string; price?: number | null; compare_price?: number | null; stock?: number | null; attributes?: Record<string, string>; image?: string }[];
     }
   | {
       kind: "contact";
@@ -47,6 +49,32 @@ export type ImportItem =
       company?: string;
       tags?: string[];
       notes?: string;
+    }
+  | {
+      /** A past order (WooCommerce), kept for history and reporting. */
+      kind: "order";
+      number: string;
+      date?: string;
+      status?: string;
+      payment_status?: string;
+      payment_method?: string;
+      customer?: { name?: string; email?: string; phone?: string };
+      items: { name: string; sku?: string; quantity: number; price: number }[];
+      subtotal?: number;
+      discount?: number;
+      shipping?: number;
+      tax?: number;
+      total: number;
+      billing_address?: Record<string, string>;
+      shipping_address?: Record<string, string>;
+      notes?: string;
+    }
+  | {
+      /** A navigation menu; links to the old site become paths on this one. */
+      kind: "menu";
+      name: string;
+      location?: string;
+      items: { label: string; url: string; children?: { label: string; url: string }[] }[];
     };
 
 export function slugify(s: string): string {

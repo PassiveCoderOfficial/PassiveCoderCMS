@@ -193,7 +193,7 @@ export default function ImportExportPage() {
           <div className="space-y-2 border-t pt-4">
             <p className="text-sm font-medium">Option 2: Passive Coder Migration plugin <span className="text-xs font-normal text-muted-foreground">(most complete)</span></p>
             <p className="text-xs text-muted-foreground">
-              Install the plugin on your WordPress site to bring everything over, including drafts, page-builder layouts (Elementor, Divi, WPBakery) and WooCommerce customers.
+              Install the plugin on your WordPress site to bring everything over, including drafts, page-builder layouts (Elementor, Divi, WPBakery), menus, and WooCommerce product variations, customers and order history. Imported menus are saved alongside yours, not switched on.
               In WordPress: Plugins &gt; Add New &gt; Upload Plugin, then Tools &gt; Passive Coder Migration and paste your key.
             </p>
             <div className="flex flex-wrap gap-2">

@@ -3,7 +3,7 @@
  * Plugin Name:       Passive Coder Migration
  * Plugin URI:        https://www.passivecoder.com
  * Description:       Moves your pages, blog posts, WooCommerce products and customers to your Passive Coder site, with images, SEO titles and old-link redirects.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            Passive Coder
@@ -76,15 +76,22 @@ final class PCMig {
 	/* ── What gets migrated ───────────────────────────────────────────── */
 
 	private static function types() {
-		$t = array( 'page' => 'Pages', 'post' => 'Blog posts' );
+		$t = array( 'page' => 'Pages', 'post' => 'Blog posts', 'menu' => 'Menus' );
 		if ( class_exists( 'WooCommerce' ) ) {
 			$t['product']  = 'Products';
 			$t['customer'] = 'Customers';
+			$t['order']    = 'Orders';
 		}
 		return $t;
 	}
 
 	private static function count_type( $type ) {
+		if ( 'menu' === $type ) {
+			return count( wp_get_nav_menus() );
+		}
+		if ( 'order' === $type ) {
+			return function_exists( 'wc_get_orders' ) ? count( wc_get_orders( array( 'limit' => -1, 'return' => 'ids', 'type' => 'shop_order' ) ) ) : 0;
+		}
 		if ( 'customer' === $type ) {
 			$q = new WP_User_Query( array( 'role' => 'customer', 'number' => 1, 'count_total' => true, 'fields' => 'ID' ) );
 			return (int) $q->get_total();
@@ -134,8 +141,106 @@ final class PCMig {
 		return $html;
 	}
 
+	/** Variations of a variable product (size, colour...), as Passive Coder variants. */
+	private static function variants( $prod ) {
+		if ( ! $prod->is_type( 'variable' ) ) {
+			return array();
+		}
+		$out = array();
+		foreach ( array_slice( $prod->get_children(), 0, 100 ) as $vid ) {
+			$v = wc_get_product( $vid );
+			if ( ! $v ) {
+				continue;
+			}
+			$attrs = array();
+			foreach ( $v->get_variation_attributes() as $k => $val ) {
+				$attrs[ wc_attribute_label( str_replace( 'attribute_', '', $k ) ) ] = $val;
+			}
+			$regular = $v->get_regular_price();
+			$sale    = $v->get_sale_price();
+			$img     = $v->get_image_id() ? wp_get_attachment_url( $v->get_image_id() ) : '';
+			$out[]   = array(
+				'name'          => $attrs ? implode( ' / ', array_filter( array_values( $attrs ) ) ) : $v->get_name(),
+				'sku'           => $v->get_sku(),
+				'price'         => '' !== $sale ? (float) $sale : ( '' !== $regular ? (float) $regular : null ),
+				'compare_price' => ( '' !== $sale && '' !== $regular ) ? (float) $regular : null,
+				'stock'         => $v->managing_stock() ? (int) $v->get_stock_quantity() : null,
+				'attributes'    => $attrs,
+				'image'         => $img ? $img : null,
+			);
+		}
+		return $out;
+	}
+
 	private static function batch( $type, $offset ) {
 		$items = array();
+		if ( 'menu' === $type ) {
+			$menus = array_slice( wp_get_nav_menus(), $offset, self::BATCH );
+			$locations = array_flip( array_filter( (array) get_nav_menu_locations() ) );
+			foreach ( $menus as $m ) {
+				$tree = array();
+				$kids = array();
+				foreach ( (array) wp_get_nav_menu_items( $m->term_id ) as $mi ) {
+					$node = array( 'label' => html_entity_decode( $mi->title, ENT_QUOTES ), 'url' => $mi->url );
+					if ( $mi->menu_item_parent ) {
+						$kids[ $mi->menu_item_parent ][] = $node;
+					} else {
+						$tree[ $mi->ID ] = $node;
+					}
+				}
+				foreach ( $kids as $parent => $children ) {
+					if ( isset( $tree[ $parent ] ) ) {
+						$tree[ $parent ]['children'] = $children;
+					}
+				}
+				$items[] = array(
+					'kind'     => 'menu',
+					'name'     => $m->name,
+					'location' => isset( $locations[ $m->term_id ] ) ? $locations[ $m->term_id ] : null,
+					'items'    => array_values( $tree ),
+				);
+			}
+			return array( $items, count( $menus ) );
+		}
+		if ( 'order' === $type && function_exists( 'wc_get_orders' ) ) {
+			$orders = wc_get_orders( array( 'limit' => self::BATCH, 'offset' => $offset, 'orderby' => 'ID', 'order' => 'ASC', 'type' => 'shop_order' ) );
+			foreach ( $orders as $o ) {
+				$lines = array();
+				foreach ( $o->get_items() as $li ) {
+					$prod    = $li->get_product();
+					$qty     = max( 1, (int) $li->get_quantity() );
+					$lines[] = array(
+						'name'     => $li->get_name(),
+						'sku'      => $prod ? $prod->get_sku() : '',
+						'quantity' => $qty,
+						'price'    => round( (float) $li->get_total() / $qty, 2 ),
+					);
+				}
+				$created = $o->get_date_created();
+				$items[] = array(
+					'kind'             => 'order',
+					'number'           => (string) $o->get_order_number(),
+					'date'             => $created ? $created->date( 'c' ) : null,
+					'status'           => $o->get_status(),
+					'payment_method'   => $o->get_payment_method_title(),
+					'customer'         => array(
+						'name'  => trim( $o->get_billing_first_name() . ' ' . $o->get_billing_last_name() ),
+						'email' => $o->get_billing_email(),
+						'phone' => $o->get_billing_phone(),
+					),
+					'items'            => $lines,
+					'subtotal'         => (float) $o->get_subtotal(),
+					'discount'         => (float) $o->get_discount_total(),
+					'shipping'         => (float) $o->get_shipping_total(),
+					'tax'              => (float) $o->get_total_tax(),
+					'total'            => (float) $o->get_total(),
+					'billing_address'  => $o->get_address( 'billing' ),
+					'shipping_address' => $o->get_address( 'shipping' ),
+					'notes'            => $o->get_customer_note(),
+				);
+			}
+			return array( $items, count( $orders ) );
+		}
 		if ( 'customer' === $type ) {
 			$users = get_users( array( 'role' => 'customer', 'number' => self::BATCH, 'offset' => $offset, 'orderby' => 'ID' ) );
 			foreach ( $users as $u ) {
@@ -191,6 +296,7 @@ final class PCMig {
 					'images'            => $images,
 					'seo'               => self::seo( $p->ID ),
 					'old_path'          => $old,
+					'variants'          => self::variants( $prod ),
 				);
 				continue;
 			}
