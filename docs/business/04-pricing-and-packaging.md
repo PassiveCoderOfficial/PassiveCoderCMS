@@ -366,3 +366,7 @@ decision is actually enforced, not just documented.
 - **ENM phase D pricing** (associations, per-seat) — deliberately deferred
 
 
+
+## Update 2026-10-04: platform launch offer (limited time)
+
+Yearly BDT prices cut: **Basic ৳32,000 -> ৳15,000**, **Pro ৳60,000 -> ৳30,000** (Wali). USD prices unchanged. The regular price is stored in `plans.price_yearly_bdt_regular` and shown struck through with `plans.promo_label` ("Platform launch offer"). Checkout (shurjoPay/manual) charges `price_yearly_bdt`, i.e. the offer price. To end the offer, restore `price_yearly_bdt` from `price_yearly_bdt_regular` and clear both promo columns (see migration 125).

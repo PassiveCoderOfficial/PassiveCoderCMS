@@ -18,7 +18,7 @@ const LOGO =
 export const metadata: Metadata = {
   title: "প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট | Passive Coder",
   description:
-    "কনস্ট্রাকশন, HVAC, MEP, হ্যান্ডিম্যান, রেনোভেশন ব্যবসার জন্য প্রফেশনাল ওয়েবসাইট — বছরে পেমেন্ট করে ৬ মাসের মূল্য বাঁচান। UAE, সৌদি আরব, ওমান, কাতার, মালয়েশিয়া, সিঙ্গাপুর প্রবাসীদের জন্য।",
+    "কনস্ট্রাকশন, HVAC, MEP, হ্যান্ডিম্যান, রেনোভেশন ব্যবসার জন্য প্রফেশনাল ওয়েবসাইট — প্ল্যাটফর্ম লঞ্চ অফারে বছরে পেমেন্ট করলে ৬০%-এর বেশি সাশ্রয়। UAE, সৌদি আরব, ওমান, কাতার, মালয়েশিয়া, সিঙ্গাপুর প্রবাসীদের জন্য।",
   robots: { index: true, follow: true },
 };
 
@@ -92,7 +92,7 @@ const faqs = [
   },
   {
     q: "ইয়ারলি প্যাকেজে আসলে কত সাশ্রয় হয়?",
-    a: "Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০। ইয়ারলি নিলে দিতে হবে ৳৬০,০০০ — মানে ৪ মাস একদম ফ্রি। একই হিসাব Basic প্যাকেজেও প্রযোজ্য। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।",
+    a: "প্ল্যাটফর্ম লঞ্চ অফার চলছে, সীমিত সময়ের জন্য। Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০; ইয়ারলি নিলে এখন মাত্র ৳৩০,০০০ (নিয়মিত মূল্য ৳৬০,০০০)। Basic মাসিক ৳৪,০০০, ইয়ারলি এখন মাত্র ৳১৫,০০০ (নিয়মিত মূল্য ৳৩২,০০০)। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।",
   },
   {
     q: "সাইট তৈরি হতে কতদিন লাগে?",
@@ -419,7 +419,8 @@ export default function BangladeshiExpatLandingPage() {
                 <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-400 text-sm font-semibold mb-6">
-                অথবা বছরে ৳৩২,০০০ — ৪ মাস ফ্রি
+                অথবা বছরে মাত্র ৳১৫,০০০ <span className="line-through text-gray-500 font-normal">৳৩২,০০০</span>
+                <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, সীমিত সময়ের জন্য</span>
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {basicFeatures.map((f) => (
@@ -448,7 +449,8 @@ export default function BangladeshiExpatLandingPage() {
                 <span className="text-gray-400 text-sm mb-1">/মাস</span>
               </div>
               <p className="text-orange-300 text-sm font-semibold mb-6">
-                অথবা বছরে ৳৬০,০০০ — ৪ মাস ফ্রি
+                অথবা বছরে মাত্র ৳৩০,০০০ <span className="line-through text-gray-500 font-normal">৳৬০,০০০</span>
+                <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, সীমিত সময়ের জন্য</span>
               </p>
               <div className="space-y-2.5 mb-8 flex-1">
                 {proFeatures.map((f) => (

@@ -12,6 +12,9 @@ interface Plan {
   price_yearly: number;
   price_monthly: number;
   price_yearly_bdt: number | null;
+  /** Regular yearly BDT price while a promotion is running (shown struck through). */
+  price_yearly_bdt_regular?: number | null;
+  promo_label?: string | null;
   price_monthly_bdt: number | null;
   storage_gb: number;
   pages_limit: number;
@@ -136,6 +139,14 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             const yearlyBdt  = plan.price_yearly_bdt ?? null;
             const yearlyEffectiveMonthlyBdt = yearlyBdt != null && yearlyBdt > 0
               ? Math.round(yearlyBdt / 12) : null;
+            // Saving vs paying monthly, in the currency on screen (BDT and USD
+            // yearly prices differ, so one hardcoded "4 months free" was wrong).
+            const bdtPercentOff = monthlyBdt && yearlyBdt ? Math.round((1 - yearlyBdt / (monthlyBdt * 12)) * 100) : 0;
+            const percentOff = currency === "BDT" && bdtPercentOff > 0 ? bdtPercentOff : yearlyPercentOff;
+            const saveLabel = percentOff > 0 ? `save ${percentOff}%` : "";
+            // Launch offer applies to yearly BDT prices.
+            const regularBdt = plan.price_yearly_bdt_regular ?? null;
+            const promoActive = currency === "BDT" && regularBdt != null && yearlyBdt != null && regularBdt > yearlyBdt;
             const visitorLimit = plan.visitor_limit_monthly ?? 0;
             const pagesLimit   = plan.pages_limit ?? -1;
 
@@ -159,20 +170,30 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                 {/* Price */}
                 <div className="mb-6">
                   <h3 className="text-lg font-bold text-white">{plan.name}</h3>
+                  {promoActive && (
+                    <span className="mt-2 inline-flex items-center rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 text-[11px] font-semibold px-2.5 py-0.5">
+                      {plan.promo_label ?? "Limited-time offer"}{cycle === "yearly" ? "" : " on yearly"}
+                    </span>
+                  )}
                   {offersCycle ? (
                     <>
                       <div className="mt-3 flex items-baseline gap-1">
                         <span className="text-4xl font-bold text-white">{formatPrice(price, bdtFor(plan), currency, bdtRate)}</span>
                         <span className="text-slate-500 text-sm">{suffix}</span>
                       </div>
-                      {cycle === "yearly" && yearlyPercentOff > 0 && (
-                        <p className="text-xs text-emerald-400 font-medium mt-1">
-                          4 months free — {formatPrice(yearlyEffectiveMonthly, yearlyEffectiveMonthlyBdt, currency, bdtRate)}/mo billed yearly
+                      {cycle === "yearly" && promoActive && (
+                        <p className="text-sm text-slate-500 mt-0.5">
+                          <span className="line-through">৳{regularBdt!.toLocaleString("en-US")}</span> regular price
                         </p>
                       )}
-                      {cycle === "monthly" && yearlyPrice > 0 && yearlyPercentOff > 0 && (
-                        <p className="text-xs text-slate-500 mt-1">
-                          Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr — 4 months free
+                      {cycle === "yearly" && percentOff > 0 && (
+                        <p className="text-xs text-emerald-400 font-medium mt-1">
+                          {formatPrice(yearlyEffectiveMonthly, yearlyEffectiveMonthlyBdt, currency, bdtRate)}/mo billed yearly, {saveLabel} vs monthly
+                        </p>
+                      )}
+                      {cycle === "monthly" && yearlyPrice > 0 && percentOff > 0 && (
+                        <p className={`text-xs mt-1 ${promoActive ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
+                          Or {formatPrice(yearlyPrice, yearlyBdt, currency, bdtRate)}/yr ({saveLabel}){promoActive ? ", launch offer" : ""}
                         </p>
                       )}
                     </>
