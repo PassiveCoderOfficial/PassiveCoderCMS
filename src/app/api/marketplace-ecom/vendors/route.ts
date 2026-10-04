@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { teamAccess } from "@/lib/team/access";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -11,6 +12,9 @@ function slugify(s: string) {
 export async function GET() {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
 
   const admin = await createAdminClient();
   const { data, error } = await admin
@@ -28,6 +32,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
 
   const body = await req.json();
   if (!body.name?.trim()) return NextResponse.json({ error: "Shop name required" }, { status: 400 });
@@ -80,6 +87,9 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
 
   const { id, ...fields } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

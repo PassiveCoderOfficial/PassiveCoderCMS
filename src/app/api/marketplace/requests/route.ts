@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 
 const ARCHIVE_AFTER_MS = 24 * 60 * 60 * 1000;
 
@@ -42,6 +43,7 @@ export async function PATCH(req: NextRequest) {
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const { id, ...fields } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

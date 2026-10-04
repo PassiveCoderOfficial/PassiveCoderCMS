@@ -161,7 +161,8 @@ export async function splitCart(
     if (p.vendor_id && p.approval_status !== "approved") {
       throw new Error(`${p.name} is not approved for sale`);
     }
-    const qty = Math.max(1, Math.floor(line.quantity));
+    // Non-numeric input became NaN, which skipped the stock check and priced the line as NaN.
+    const qty = Math.min(999, Math.max(1, Math.floor(Number(line.quantity) || 1)));
     const variant = line.variant_id ? variantById.get(line.variant_id) : undefined;
     if (line.variant_id && (!variant || variant.product_id !== p.id || variant.is_active === false)) {
       throw new Error(`The option you picked for ${p.name} is no longer available`);

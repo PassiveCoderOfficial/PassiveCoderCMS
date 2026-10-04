@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { teamAccess } from "@/lib/team/access";
 import { cleanVoucherInput, listVouchers } from "@/lib/marketplace-ecom/voucher-admin";
 
 /** Store admin: platform-funded vouchers (vendor_id null). */
 export async function GET() {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
   const admin = await createAdminClient();
   return NextResponse.json({ vouchers: await listVouchers(admin, tenantId, null) });
 }
@@ -14,6 +18,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
   const c = cleanVoucherInput(await req.json().catch(() => ({})), false);
   if ("error" in c) return NextResponse.json({ error: c.error }, { status: 400 });
   const admin = await createAdminClient();
@@ -26,6 +33,9 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
   const b = await req.json().catch(() => ({}));
   const admin = await createAdminClient();
   const patch: Record<string, unknown> = {};
@@ -38,6 +48,9 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
   const id = new URL(req.url).searchParams.get("id");
   const admin = await createAdminClient();
   await admin.from("vouchers").delete().eq("id", id).eq("tenant_id", tenantId).is("vendor_id", null).eq("used_count", 0);

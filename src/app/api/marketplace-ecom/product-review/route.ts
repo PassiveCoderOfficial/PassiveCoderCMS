@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { teamAccess } from "@/lib/team/access";
 
 /** Vendor listings awaiting review. */
 export async function GET(req: NextRequest) {
@@ -28,6 +29,9 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Marketplace operations (sellers, commissions, vouchers, moderation): site owner/admin only.
+  const access = await teamAccess();
+  if (!access?.manage || access.tenantId !== tenantId) return NextResponse.json({ error: "Only the site owner or an admin can do this." }, { status: 403 });
 
   const { id, ids, action, reason } = await req.json();
   const targets: string[] = ids?.length ? ids : id ? [id] : [];

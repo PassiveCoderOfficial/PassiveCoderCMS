@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 
 export async function GET() {
   const supabase = await createClient();
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json();
 
@@ -52,6 +54,7 @@ export async function PATCH(req: NextRequest) {
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const { _type, id, ...fields } = await req.json();
   const table = _type === "category" ? "service_categories" : _type === "subcategory" ? "service_subcategories" : null;
@@ -66,6 +69,7 @@ export async function DELETE(req: NextRequest) {
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
+import { canWriteSite } from "@/lib/auth/site-write";
 
 /** GET/PUT weekly hours for a vendor. Body for PUT: array of
  *  { day_of_week, open_time, close_time, is_open } — one full-week upsert. */
@@ -25,6 +26,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const supabase = await createClient();
   const tenantId = await apiTenantId();
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
 
   const body = await req.json();
   const days = Array.isArray(body.days) ? body.days : [];

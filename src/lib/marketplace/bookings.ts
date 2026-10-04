@@ -40,6 +40,13 @@ export function computeCommission(price: number | null | undefined, commissionRa
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
   const supabase = await createAdminClient();
 
+  // The service must be one of this site's, whoever is booking.
+  if (input.subcategoryId) {
+    const { data: sub } = await supabase.from("service_subcategories").select("id")
+      .eq("id", input.subcategoryId).eq("tenant_id", input.tenantId).maybeSingle();
+    if (!sub) return { error: "Service not found" };
+  }
+
   let vendorCommissionRate: number | null = null;
   if (input.vendorId) {
     const { data: vendor } = await supabase
@@ -48,7 +55,23 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       .eq("id", input.vendorId)
       .eq("tenant_id", input.tenantId)
       .maybeSingle();
-    vendorCommissionRate = vendor?.commission_rate ?? null;
+    // An id from another site used to be saved anyway (only the rate lookup failed).
+    if (!vendor) return { error: "Provider not found" };
+    vendorCommissionRate = vendor.commission_rate ?? null;
+  }
+
+  // Public bookings never set their own price (and with it the provider's
+  // commission): it comes from the provider's listed price for this service,
+  // or stays empty to be quoted. Staff-entered bookings keep the price typed.
+  if (input.source === "public") {
+    let listed: number | null = null;
+    if (input.vendorId && input.subcategoryId) {
+      const { data: vs } = await supabase.from("vendor_services").select("price")
+        .eq("tenant_id", input.tenantId).eq("vendor_id", input.vendorId)
+        .eq("subcategory_id", input.subcategoryId).eq("active", true).maybeSingle();
+      listed = vs?.price != null ? Number(vs.price) : null;
+    }
+    input = { ...input, price: listed };
   }
   const { commissionRate, commissionAmount } = computeCommission(input.price, vendorCommissionRate);
 

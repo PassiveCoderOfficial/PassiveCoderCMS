@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { apiTenantId } from "@/lib/tenant/api";
+import { teamAccess } from "@/lib/team/access";
 import { appendLedger } from "@/lib/marketplace-ecom/ledger";
 import { money } from "@/lib/marketplace-ecom/split-order";
 import { payableForSubOrders, type EligibleSubOrder } from "@/lib/marketplace-ecom/payout-math";
 
 export async function GET(req: NextRequest) {
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Seller payouts and bKash numbers: site owner/admin (or super admin / assigned staff) only.
+  const access = await teamAccess();
+  if (!access?.manage) return NextResponse.json({ error: "Only the site owner or an admin can manage payouts." }, { status: 403 });
+  const tenantId = access.tenantId;
 
   const { searchParams } = new URL(req.url);
   const admin = await createAdminClient();
@@ -65,8 +67,10 @@ export async function GET(req: NextRequest) {
 
 /** Create a payout for one vendor covering their eligible delivered orders. */
 export async function POST(req: NextRequest) {
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Seller payouts and bKash numbers: site owner/admin (or super admin / assigned staff) only.
+  const access = await teamAccess();
+  if (!access?.manage) return NextResponse.json({ error: "Only the site owner or an admin can manage payouts." }, { status: 403 });
+  const tenantId = access.tenantId;
 
   const body = await req.json();
   const vendorId = body.vendor_id;
@@ -124,19 +128,31 @@ export async function POST(req: NextRequest) {
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  // Claim the sub-orders so a second run can never pay them twice.
-  await admin
+  // Claim the sub-orders, but only ones still unclaimed. Two payout runs at
+  // the same moment both read the same eligible orders; whichever claims
+  // second gets fewer rows back, so its payout is withdrawn instead of
+  // paying the seller twice.
+  const { data: claimed } = await admin
     .from("sub_orders")
     .update({ payout_id: payout.id })
-    .in("id", rows.map((r) => r.id));
+    .in("id", rows.map((r) => r.id))
+    .is("payout_id", null)
+    .select("id");
+  if ((claimed?.length ?? 0) !== rows.length) {
+    await admin.from("sub_orders").update({ payout_id: null }).eq("payout_id", payout.id);
+    await admin.from("vendor_payouts").delete().eq("id", payout.id);
+    return NextResponse.json({ error: "Another payout for this seller was created at the same time. Refresh and check." }, { status: 409 });
+  }
 
   return NextResponse.json({ ...payout, sub_order_count: rows.length });
 }
 
 /** Mark a payout paid — this is the point the money actually leaves. */
 export async function PATCH(req: NextRequest) {
-  const tenantId = await apiTenantId();
-  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Seller payouts and bKash numbers: site owner/admin (or super admin / assigned staff) only.
+  const access = await teamAccess();
+  if (!access?.manage) return NextResponse.json({ error: "Only the site owner or an admin can manage payouts." }, { status: 403 });
+  const tenantId = access.tenantId;
 
   const { id, status, reference, notes } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -150,23 +166,30 @@ export async function PATCH(req: NextRequest) {
     .maybeSingle();
   if (!payout) return NextResponse.json({ error: "Payout not found" }, { status: 404 });
 
+  // Allowed moves: pending -> paid, pending -> failed. A failed payout has
+  // released its orders to the next run, so it can never become paid; a paid
+  // one can't be undone here (money has left).
+  if (status && status !== payout.status) {
+    if (!["paid", "failed"].includes(status)) return NextResponse.json({ error: "Status must be paid or failed" }, { status: 400 });
+    if (payout.status !== "pending") return NextResponse.json({ error: `This payout is already ${payout.status}.` }, { status: 400 });
+  }
+
   const patch: Record<string, unknown> = {};
   if (reference !== undefined) patch.reference = reference || null;
   if (notes !== undefined) patch.notes = notes || null;
-  if (status) patch.status = status;
-  if (status === "paid") patch.paid_at = new Date().toISOString();
+  const transition = status && status !== payout.status ? status : null;
+  if (transition) patch.status = transition;
+  if (transition === "paid") patch.paid_at = new Date().toISOString();
 
-  const { data, error } = await admin
-    .from("vendor_payouts")
-    .update(patch)
-    .eq("id", id)
-    .select()
-    .single();
+  // Conditional on the status we read, so two "mark paid" clicks at once
+  // can't both post the ledger debit.
+  let q = admin.from("vendor_payouts").update(patch).eq("id", id).eq("tenant_id", tenantId);
+  if (transition) q = q.eq("status", payout.status);
+  const { data, error } = await q.select().maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (!data) return NextResponse.json({ error: "This payout was just changed by someone else. Refresh and check." }, { status: 409 });
 
-  // The debit posts only on the transition into `paid`, so re-saving a
-  // reference number on an already-paid payout can't double-debit.
-  if (status === "paid" && payout.status !== "paid") {
+  if (transition === "paid") {
     await appendLedger(admin, tenantId, payout.vendor_id, [
       {
         type: "payout",
@@ -178,7 +201,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   // Releasing a failed payout lets its orders be picked up by the next run.
-  if (status === "failed") {
+  if (transition === "failed") {
     await admin.from("sub_orders").update({ payout_id: null }).eq("payout_id", id);
   }
 
