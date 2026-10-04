@@ -187,7 +187,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
                       </div>
                       {cycle === "yearly" && promoActive && (
                         <p className="text-sm text-slate-500 mt-0.5">
-                          <span className="line-through">৳{regularBdt!.toLocaleString("en-US")}</span> regular price
+                          <span className="line-through">৳{regularBdt!.toLocaleString("en-IN")}</span> regular price
                         </p>
                       )}
                       {cycle === "yearly" && percentOff > 0 && (
