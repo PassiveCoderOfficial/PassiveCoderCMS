@@ -196,6 +196,15 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
               ? copyrightText.replace("{year}", String(year))
               : `© ${copyrightYear ? year : ""} ${logoText ?? ""}. All rights reserved.`
             }
+            {!/passive\s?coder/i.test(logoText ?? "") && (
+              <>
+                <span className="mx-2 opacity-50">·</span>
+                Powered by{" "}
+                <a href="https://www.passivecoder.com" target="_blank" rel="noopener" className="font-semibold hover:opacity-80 transition-opacity" style={{ color: fg }}>
+                  Passive Coder
+                </a>
+              </>
+            )}
           </p>
           {bottomLinks.length > 0 && (
             <div className="flex items-center gap-4 flex-wrap">
