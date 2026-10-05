@@ -82,7 +82,7 @@ function aggregate(rows: Row[], range: number): ApiResult {
 const RANGES = [7, 30, 90] as const;
 
 export function AnalyticsClient({
-  tenantId, initialRows, initialRange, gaConnected, gaMeasurementId, gaOAuthEmail, gaPropertyId,
+  tenantId, initialRows, initialRange, gaConnected, gaMeasurementId, gtmContainerId, gaOAuthEmail, gaPropertyId,
   showProSiteBanner, dashboardStats, recentOrders, recentTransactions, hasRestaurantBranches,
 }: {
   tenantId: string;
@@ -90,6 +90,7 @@ export function AnalyticsClient({
   initialRange: number;
   gaConnected: boolean;
   gaMeasurementId: string | null;
+  gtmContainerId: string | null;
   gaOAuthEmail: string | null;
   gaPropertyId: string | null;
   showProSiteBanner: boolean;
@@ -361,6 +362,7 @@ export function AnalyticsClient({
       <GoogleAnalyticsCard
         measurementIdSet={gaConnected}
         initialMeasurementId={gaMeasurementId}
+        initialGtmId={gtmContainerId}
         initialOAuthEmail={gaOAuthEmail}
         initialPropertyId={gaPropertyId}
       />
@@ -604,10 +606,11 @@ function RestaurantSalesCard() {
  * needs to know what a Measurement ID even is, let alone copy-paste one.
  */
 function GoogleAnalyticsCard({
-  measurementIdSet, initialMeasurementId, initialOAuthEmail, initialPropertyId,
+  measurementIdSet, initialMeasurementId, initialGtmId, initialOAuthEmail, initialPropertyId,
 }: {
   measurementIdSet: boolean;
   initialMeasurementId: string | null;
+  initialGtmId: string | null;
   initialOAuthEmail: string | null;
   initialPropertyId: string | null;
 }) {
@@ -625,6 +628,24 @@ function GoogleAnalyticsCard({
   // without ever connecting, or override what auto-tag picked.
   const [measurementId, setMeasurementId] = useState(initialMeasurementId ?? "");
   const [savingMeasurementId, setSavingMeasurementId] = useState(false);
+  const [gtmId, setGtmId] = useState(initialGtmId ?? "");
+  const [savingGtm, setSavingGtm] = useState(false);
+
+  async function saveGtmId() {
+    setSavingGtm(true);
+    const res = await fetch("/api/analytics/google/gtm-id", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gtm_id: gtmId }),
+    });
+    const json = await res.json().catch(() => ({}));
+    setSavingGtm(false);
+    if (res.ok) {
+      setGtmId(json.id ?? "");
+      toast.success(json.id ? "Tag Manager ID saved" : "Tag Manager ID cleared");
+    } else {
+      toast.error(json.error ?? "Failed to save Tag Manager ID");
+    }
+  }
 
   function refreshStatus() {
     setLoadingStatus(true);
@@ -808,6 +829,26 @@ function GoogleAnalyticsCard({
               {savingMeasurementId ? "Saving…" : "Save"}
             </Button>
           </div>
+        </div>
+
+        {/* Google Tag Manager container — injected on every page of the site
+            by components/site/google-tag-manager.tsx. Pasting the whole GTM
+            snippet works too; the server pulls the GTM-XXXX id out of it. */}
+        <div className="pt-3 border-t space-y-1.5">
+          <label className="text-xs text-muted-foreground">Google Tag Manager container ID</label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <input
+              type="text"
+              value={gtmId}
+              onChange={(e) => setGtmId(e.target.value)}
+              placeholder="GTM-XXXXXXX"
+              className="flex h-8 w-48 rounded-md border border-input bg-transparent px-2 text-xs font-mono shadow-sm"
+            />
+            <Button size="sm" variant="outline" onClick={saveGtmId} disabled={savingGtm}>
+              {savingGtm ? "Saving…" : "Save"}
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Added to every page of your site. Leave empty and save to remove it.</p>
         </div>
       </CardContent>
     </Card>

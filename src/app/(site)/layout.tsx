@@ -22,6 +22,7 @@ import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { FloatingWhatsApp } from "@/components/site/floating-whatsapp";
 import { FloatingContactButtons } from "@/components/site/floating-contact-buttons";
+import { GoogleTagManager } from "@/components/site/google-tag-manager";
 import { DineInBadge } from "@/components/site/dine-in-badge";
 import { MarketplaceHeader } from "@/components/marketplace-ecom/marketplace-header";
 import { MarketplaceFooter } from "@/components/marketplace-ecom/marketplace-footer";
@@ -67,7 +68,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // header plumbing needed — simpler and doesn't depend on a mechanism that
   // silently failed here.
 
-  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, ga_measurement_id, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
+  const settingsCols = "site_theme, custom_css, custom_js, analytics_code, ga_measurement_id, gtm_container_id, maintenance_mode, maintenance_title, maintenance_message, site_name, meta_description, auto_translate_enabled";
   const [settingsResult, identityResult] = await Promise.all([
     tenantId
       ? createAdminClient().then(admin =>
@@ -329,6 +330,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           </Script>
         </>
       )}
+      <GoogleTagManager id={settings?.gtm_container_id as string | null} />
       {settings?.analytics_code && (
         <div dangerouslySetInnerHTML={{ __html: settings.analytics_code }} />
       )}

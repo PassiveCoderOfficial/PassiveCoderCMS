@@ -58,7 +58,7 @@ export default async function AnalyticsPage() {
     // site_settings; the connected email + tokens live in
     // tenant_integrations (service-role only, see migration 101). Tokens
     // themselves are never selected here or sent to the client.
-    admin.from("site_settings").select("ga_measurement_id, ga_property_id").eq("tenant_id", tenantId).maybeSingle(),
+    admin.from("site_settings").select("ga_measurement_id, ga_property_id, gtm_container_id").eq("tenant_id", tenantId).maybeSingle(),
     supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "page").eq("tenant_id", tenantId),
     supabase.from("pages").select("*", { count: "exact", head: true }).eq("type", "post").eq("tenant_id", tenantId),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
@@ -83,6 +83,7 @@ export default async function AnalyticsPage() {
       initialRange={30}
       gaConnected={!!gaSettings?.ga_measurement_id}
       gaMeasurementId={gaSettings?.ga_measurement_id ?? null}
+      gtmContainerId={(gaSettings?.gtm_container_id as string | null) ?? null}
       gaOAuthEmail={gaIntegration?.ga_oauth_connected_email ?? null}
       gaPropertyId={gaSettings?.ga_property_id ?? null}
       showProSiteBanner={showProSiteBanner}

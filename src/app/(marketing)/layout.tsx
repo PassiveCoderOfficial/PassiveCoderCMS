@@ -1,5 +1,6 @@
 import { DemoBanner } from "@/components/demo/demo-banner";
 import { FloatingContactButtons } from "@/components/site/floating-contact-buttons";
+import { GoogleTagManager } from "@/components/site/google-tag-manager";
 import { SiteJsonLd } from "@/components/seo/site-jsonld";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -103,6 +104,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // Google Analytics. Fetched alongside site_theme rather than as a second
   // round-trip.
   let gaMeasurementId: string | null = null;
+  let gtmContainerId: string | null = null;
   // Same root-domain gap as the pageview tracking above: this used to only
   // fetch (and therefore only inject gtag) when a tenant subdomain header
   // was present, so passivecoder.com's own homepage never tagged itself
@@ -111,7 +113,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   if (gtagTenantId) {
     const supabase = await createAdminClient();
     const { data } = await supabase.from("site_settings")
-      .select("site_theme, ga_measurement_id").eq("tenant_id", gtagTenantId).maybeSingle();
+      .select("site_theme, ga_measurement_id, gtm_container_id").eq("tenant_id", gtagTenantId).maybeSingle();
     // Matches (site)/layout.tsx's own default: only an explicit "dark"
     // opts a tenant out of the light lock, "system" included — the
     // previous `t !== "system"` check left every "system"-theme tenant
@@ -121,6 +123,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
     const t = data?.site_theme === "dark" ? "dark" : "light";
     if (tenantId) scheme = t;
     gaMeasurementId = (data?.ga_measurement_id as string | null) ?? null;
+    gtmContainerId = (data?.gtm_container_id as string | null) ?? null;
   }
 
   // (site)/layout.tsx locks a tenant's theme by stamping documentElement's
@@ -176,6 +179,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
           </Script>
         </>
       )}
+      <GoogleTagManager id={gtmContainerId} />
       {!tenantId && <WhatsAppButton />}
       {tenantId && <FloatingContactButtons tenantId={tenantId} />}
       <DemoBanner tenantId={tenantId} />
