@@ -78,7 +78,7 @@ export default async function MarketingHomePage() {
         .eq("status", "published")
         .maybeSingle(),
       fetchGlobalLayout(tenantId),
-      supabase.from("site_settings").select("auto_translate_enabled").eq("tenant_id", tenantId).maybeSingle(),
+      supabase.from("site_settings").select("auto_translate_enabled, custom_css").eq("tenant_id", tenantId).maybeSingle(),
     ]);
 
     // The (site) layout injects the tenant's template palette on every other
@@ -122,6 +122,12 @@ export default async function MarketingHomePage() {
           )}
           {templateCustomCss && (
             <style precedence="pc-template-css" dangerouslySetInnerHTML={{ __html: templateCustomCss }} />
+          )}
+          {/* The tenant's own Custom CSS (Settings > Appearance). The (site)
+              layout injects it on every other page; "/" renders here, so
+              without this the homepage silently ignored it. */}
+          {siteSettings?.custom_css && (
+            <style precedence="pc-custom" dangerouslySetInnerHTML={{ __html: siteSettings.custom_css as string }} />
           )}
           {/* Template custom CSS is scoped to html.template-<slug>. The (site)
               layout adds that class on every other page; the homepage never
