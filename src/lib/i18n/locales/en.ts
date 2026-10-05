@@ -995,7 +995,7 @@ export const en = {
   "contact.btnCall": "call",
   "contact.btnEmail": "email",
   "contact.position": "Position",
-  "contact.buttonColor": "Button Color",
+  "contact.buttonColor": "Call & Email Button Color (default = theme colour)",
   "contact.primaryLocation": "Primary location",
   "contact.save": "Save",
   "contact.cancel": "Cancel",

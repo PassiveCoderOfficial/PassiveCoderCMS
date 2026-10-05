@@ -1,4 +1,5 @@
 import { DemoBanner } from "@/components/demo/demo-banner";
+import { FloatingContactButtons } from "@/components/site/floating-contact-buttons";
 import { SiteJsonLd } from "@/components/seo/site-jsonld";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -176,6 +177,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         </>
       )}
       {!tenantId && <WhatsAppButton />}
+      {tenantId && <FloatingContactButtons tenantId={tenantId} />}
       <DemoBanner tenantId={tenantId} />
       {/* Business + website structured data for search and AI answer engines. */}
       {tenantId && <SiteJsonLd tenantId={tenantId} />}

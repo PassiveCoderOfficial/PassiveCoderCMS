@@ -1001,7 +1001,7 @@ export const bn = {
   "contact.btnCall": "কল",
   "contact.btnEmail": "ইমেইল",
   "contact.position": "পজিশন",
-  "contact.buttonColor": "বাটন কালার",
+  "contact.buttonColor": "কল ও ইমেইল বাটনের কালার (ডিফল্ট = থিম কালার)",
   "contact.primaryLocation": "প্রাইমারি লোকেশন",
   "contact.save": "সেভ করুন",
   "contact.cancel": "বাতিল করুন",
