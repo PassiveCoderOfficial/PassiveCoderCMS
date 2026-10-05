@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ProductCardData } from "./product-card";
 
-type CardStyle = "default" | "flat" | "minimal" | "shadow" | "bordered";
+type CardStyle = "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique";
 
 interface Props {
   product: ProductCardData;

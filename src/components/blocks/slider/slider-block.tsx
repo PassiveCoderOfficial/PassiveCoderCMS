@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  */
 export function SliderBlock({ block }: { block: SliderBlockProps }) {
   const { data } = block;
-  const { slides, autoPlay, autoPlayInterval, showArrows, showDots, height } = data;
+  const { slides, autoPlay, autoPlayInterval, showArrows, showDots, height, mobileHeight, dotColor } = data;
   const variant = block.templateVariant;
   const isSplit = variant === "split";
   const isMinimal = variant === "minimal";
@@ -44,7 +44,9 @@ export function SliderBlock({ block }: { block: SliderBlockProps }) {
   }
 
   return (
-    <div className="relative overflow-hidden w-full" style={{ height }}>
+    <div className={cn("relative overflow-hidden w-full", mobileHeight && "slider-mh")} style={{ height, ["--slider-mh" as string]: mobileHeight }}>
+      {/* Phones get their own height so a wide banner isn't cropped to a sliver. */}
+      {mobileHeight && <style>{`@media(max-width:767px){.slider-mh{height:var(--slider-mh)!important}}`}</style>}
       {slides.map((slide, i) => (
         <div
           key={slide.id}
@@ -71,7 +73,10 @@ export function SliderBlock({ block }: { block: SliderBlockProps }) {
             )} />
           )}
 
-          {isSplit ? (
+          {/* Image-only banner: the whole slide is the link, no text layer. */}
+          {slide.linkUrl && !slide.title && !slide.subtitle && !slide.buttonLabel ? (
+            <Link href={slide.linkUrl} className="absolute inset-0 z-10" aria-label={slide.description || "View"} tabIndex={i === current ? 0 : -1} />
+          ) : !slide.title && !slide.subtitle && !slide.buttonLabel ? null : isSplit ? (
             <div className="absolute inset-0 grid md:grid-cols-2">
               <div className="hidden md:block" />
               <div className="flex items-center bg-background/95 backdrop-blur-sm px-8 lg:px-12">
@@ -158,8 +163,10 @@ export function SliderBlock({ block }: { block: SliderBlockProps }) {
               onClick={() => setCurrent(i)}
               className={cn(
                 "w-2 h-2 rounded-full transition-all",
-                i === current ? "bg-white w-6" : "bg-white/50 hover:bg-white/75",
+                dotColor ? (i === current ? "w-6" : "opacity-50 hover:opacity-75") : i === current ? "bg-white w-6" : "bg-white/50 hover:bg-white/75",
               )}
+              style={dotColor ? { background: dotColor } : undefined}
+              aria-label={`Slide ${i + 1}`}
             />
           ))}
         </div>

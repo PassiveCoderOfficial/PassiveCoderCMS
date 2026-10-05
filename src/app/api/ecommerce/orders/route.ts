@@ -89,9 +89,29 @@ export async function POST(req: NextRequest) {
 
     // Recalculate with server prices (trust server, not client)
     const priceMap = new Map(dbProducts.map((p) => [p.id, p.price]));
+    // Size/colour lines are priced from their own variant row, which must
+    // belong to the product on the same line.
+    const variantIds = [...new Set(items.map((i) => i.variant_id).filter((v): v is string => !!v))];
+    const variantMap = new Map<string, { product_id: string; price: number }>();
+    if (variantIds.length) {
+      const { data: vRows } = await supabase
+        .from("product_variants")
+        .select("id, product_id, price, is_active")
+        .in("id", variantIds);
+      for (const v of vRows ?? []) if (v.is_active !== false) variantMap.set(v.id, { product_id: v.product_id, price: Number(v.price) });
+    }
+    for (const item of items) {
+      if (!item.variant_id) continue;
+      const v = variantMap.get(item.variant_id);
+      if (!v || v.product_id !== item.product_id) {
+        return NextResponse.json({ error: "A selected option is no longer available" }, { status: 400 });
+      }
+    }
     const verifiedItems: CartItem[] = items.map((item) => ({
       ...item,
-      price: priceMap.get(item.product_id) ?? item.price,
+      price: item.variant_id
+        ? variantMap.get(item.variant_id)!.price
+        : (priceMap.get(item.product_id) ?? item.price),
     }));
 
     const subtotal = verifiedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);

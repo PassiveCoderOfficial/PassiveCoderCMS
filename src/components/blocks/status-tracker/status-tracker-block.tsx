@@ -13,9 +13,11 @@ type StatusResult = {
 };
 
 export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }) {
-  const { title, subtitle, placeholder, helpText, submitLabel, accentColor } = block.data;
-  const accent = accentColor ?? "#1e3a8a";
+  const { title, subtitle, placeholder, helpText, submitLabel, accentColor, mode, emailPlaceholder, contactUrl } = block.data;
+  const orderMode = mode === "order";
+  const accent = accentColor ?? (orderMode ? "hsl(var(--primary))" : "#1e3a8a");
   const [ref, setRef] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<StatusResult | null>(null);
 
@@ -25,7 +27,9 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch(`/api/visa-status?ref=${encodeURIComponent(ref.trim())}`);
+      const res = await fetch(orderMode
+        ? `/api/ecommerce/orders/track?order=${encodeURIComponent(ref.trim())}&email=${encodeURIComponent(email.trim())}`
+        : `/api/visa-status?ref=${encodeURIComponent(ref.trim())}`);
       const data = (await res.json()) as StatusResult;
       setResult(data);
     } catch {
@@ -35,7 +39,7 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4">
+    <div className={orderMode ? "max-w-3xl mx-auto px-4" : "max-w-2xl mx-auto px-4"}>
       {(title || subtitle) && (
         <div className="text-center mb-8">
           {title && <h2 className="text-3xl md:text-4xl font-bold text-foreground">{title}</h2>}
@@ -43,7 +47,26 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
         </div>
       )}
 
-      <div className="bg-card rounded-2xl border border-black/5 shadow-lg p-6 sm:p-8">
+      <div className={block.data.plain ? "" : "bg-card rounded-2xl border border-black/5 shadow-lg p-6 sm:p-8"}>
+        {orderMode ? (
+        <form onSubmit={check} className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
+          <label className="text-sm">
+            <span className="block mb-1.5">Order ID</span>
+            <input required value={ref} onChange={(e) => setRef(e.target.value)} placeholder={placeholder ?? "Found in your order confirmation email."}
+              className="w-full px-4 py-3 rounded border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+          </label>
+          <label className="text-sm">
+            <span className="block mb-1.5">Billing email</span>
+            <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={emailPlaceholder ?? "Email you used during checkout."}
+              className="w-full px-4 py-3 rounded border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+          </label>
+          <div>
+            <button type="submit" disabled={loading} className="px-8 py-3 rounded-full font-semibold uppercase text-sm text-white disabled:opacity-60" style={{ background: accent }}>
+              {loading ? "Checking…" : (submitLabel ?? "Track")}
+            </button>
+          </div>
+        </form>
+        ) : (
         <form onSubmit={check} className="flex flex-col sm:flex-row gap-3">
           <input
             value={ref}
@@ -58,6 +81,7 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
             {loading ? "Checking…" : (submitLabel ?? "Track Status")}
           </button>
         </form>
+        )}
         {helpText && <p className="text-xs text-muted-foreground/70 mt-3">{helpText}</p>}
 
         {result && (
@@ -87,14 +111,16 @@ export function StatusTrackerBlock({ block }: { block: StatusTrackerBlockProps }
               </div>
             ) : (
               <div className="text-center py-2">
-                <div className="text-4xl mb-3">🔎</div>
+                {!orderMode && <div className="text-4xl mb-3">🔎</div>}
                 <p className="text-muted-foreground">
                   {result.message ?? "No application found for that reference. Please double-check, or contact our team on WhatsApp for help."}
                 </p>
-                <a href="https://wa.me/8801711145428" target="_blank" rel="noopener noreferrer"
+                {(contactUrl || !orderMode) && (
+                <a href={contactUrl || "https://wa.me/8801711145428"} target="_blank" rel="noopener noreferrer"
                   className="inline-block mt-4 text-sm font-semibold underline" style={{ color: accent }}>
-                  Contact us on WhatsApp →
+                  {orderMode ? "Contact us" : "Contact us on WhatsApp →"}
                 </a>
+                )}
               </div>
             )}
           </div>

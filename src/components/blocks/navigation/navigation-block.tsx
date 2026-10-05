@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import type { NavigationBlockProps } from "@/types/cms";
 import Link from "next/link";
 import Image from "@/components/ui/smart-image";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, User, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart/cart-context";
 import { BrandLogo } from "@/components/site/brand-logo";
@@ -29,6 +29,7 @@ export function NavigationBlock({ block, identityLogo }: {
     logoHeight, showCta, ctaLabel, ctaUrl,
     colorMode, scrollAware, glass, ctaVariant, secondaryCtaLabel, secondaryCtaUrl,
     floating, showCart, logoCaption,
+    showSearch, searchPlaceholder, searchButtonLabel, showAccount, trackOrderUrl, topRowBackground, menuUppercase,
   } = data;
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -107,7 +108,7 @@ export function NavigationBlock({ block, identityLogo }: {
         boxShadow: solid && !floating ? "var(--shadow-sm)" : undefined,
       }}
     >
-      <div className={cn("mx-auto px-4 sm:px-6", floating ? "max-w-6xl pt-3" : "max-w-7xl")}>
+      <div className={cn("mx-auto", floating ? "max-w-6xl pt-3 px-4 sm:px-6" : logoCenter && topRowBackground ? "" : "max-w-7xl px-4 sm:px-6")}>
         <div
           className={cn(
             logoCenter
@@ -116,9 +117,24 @@ export function NavigationBlock({ block, identityLogo }: {
             floating && solid && "rounded-2xl px-5 border border-border/60 h-16 backdrop-blur-xl",
             style === "centered" && "justify-between",
           )}
-          style={floating && solid ? { background: glass ? "hsl(var(--card) / 0.8)" : "hsl(var(--card))", boxShadow: "var(--shadow-md)" } : undefined}
+          style={floating && solid
+            ? { background: glass ? "hsl(var(--card) / 0.8)" : "hsl(var(--card))", boxShadow: "var(--shadow-md)" }
+            : logoCenter && topRowBackground
+              // Full-bleed band; the padding keeps content on the same 80rem column as the menu row.
+              ? { background: topRowBackground, paddingInline: "max(1rem, calc((100% - 80rem) / 2 + 1.5rem))" }
+              : undefined}
         >
-          {logoCenter && <div aria-hidden />}
+          {logoCenter && (showSearch ? (
+            <form action="/shop" role="search" className="hidden md:flex items-center max-w-[24rem] w-full rounded-full bg-white border border-black/10 pl-4 pr-1 py-1 shadow-sm">
+              <Search className="h-4 w-4 shrink-0 text-neutral-500" />
+              <input name="q" placeholder={searchPlaceholder || "Search products"} aria-label="Search products"
+                className="flex-1 min-w-0 bg-transparent px-2.5 text-[0.9rem] text-neutral-800 placeholder:text-neutral-500 outline-none" />
+              <button className="rounded-full px-5 py-2 text-[0.78rem] font-semibold uppercase tracking-wide" style={{ background: BRAND_PRIMARY, color: "hsl(var(--primary-foreground))" }}>
+                {searchButtonLabel || "Search"}
+              </button>
+            </form>
+          ) : <div aria-hidden />)}
+          {logoCenter && showSearch && <div aria-hidden className="md:hidden" />}
           {/* Logo */}
           <Link href={logoUrl ?? "/"} className={cn("flex items-center gap-2 shrink-0", logoCenter && "justify-self-center")}>
             {logo ? (
@@ -174,6 +190,16 @@ export function NavigationBlock({ block, identityLogo }: {
               </Link>
             )}
 
+            {showAccount && (
+              <Link href="/account" aria-label="My account" className="p-2 rounded-lg hover:bg-current/10 transition-colors" style={{ color: fg }}>
+                <User className="h-5 w-5" />
+              </Link>
+            )}
+            {trackOrderUrl && (
+              <Link href={trackOrderUrl} aria-label="Track your order" className="hidden sm:inline-flex p-2 rounded-lg hover:bg-current/10 transition-colors" style={{ color: fg }}>
+                <Truck className="h-5 w-5" />
+              </Link>
+            )}
             {showCart !== false && (
               <button
                 onClick={openCart}
@@ -202,7 +228,7 @@ export function NavigationBlock({ block, identityLogo }: {
           </div>
         </div>
         {logoCenter && (
-          <ul className="hidden md:flex items-center justify-center gap-0.5 border-t border-border/60 py-1.5">
+          <ul className={cn("hidden md:flex items-center justify-center border-t border-border/60 py-1.5", menuUppercase ? "gap-6 uppercase tracking-[0.04em] text-[1.02rem]" : "gap-0.5", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
             {desktopItems}
           </ul>
         )}

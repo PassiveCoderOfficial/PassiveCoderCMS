@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, PackageSearch, Search, X } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/blocks/ecommerce/product-card";
+import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-card-data";
+import { ShopSortSelect } from "./shop-sort-select";
 
 export type SingleStoreShopParams = { q?: string; category?: string; sort?: string; page?: string };
 
@@ -24,6 +26,14 @@ const SORTS = [
 export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: SingleStoreShopParams }) {
   const admin = await createAdminClient();
 
+  // Per-tenant look (site_identity.design_overrides): card style for the grid,
+  // and "classic" = WooCommerce-style page (title, result count, sort menu,
+  // no category sidebar) for stores migrating from WordPress.
+  const { data: identity } = await admin.from("site_identity").select("design_overrides").eq("tenant_id", tenantId).maybeSingle();
+  const design = (identity?.design_overrides ?? {}) as { productCardStyle?: string; shopLayout?: string };
+  const cardStyle = (["default", "flat", "minimal", "shadow", "bordered", "boutique"].includes(design.productCardStyle ?? "") ? design.productCardStyle : "default") as "default";
+  const classic = design.shopLayout === "classic";
+
   const { data: categories } = await admin
     .from("categories")
     .select("id, name, slug, image_url")
@@ -40,10 +50,7 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
 
   let query = admin
     .from("products")
-    .select(
-      "id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity, dietary_info",
-      { count: "exact" },
-    )
+    .select(PRODUCT_CARD_SELECT, { count: "exact" })
     .eq("tenant_id", tenantId)
     .eq("status", "active")
     .is("vendor_id", null);
@@ -67,11 +74,7 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
 
   const { data: products, count } = await query.order("id").range(from, from + PAGE_SIZE - 1);
 
-  const items = (products ?? []).map((p) => ({
-    ...p,
-    images: Array.isArray(p.images) ? (p.images as string[]) : [],
-    inStock: !p.track_inventory || p.stock_quantity > 0,
-  }));
+  const items = (products ?? []).map(toProductCardData);
   const total = count ?? items.length;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -84,6 +87,55 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
   };
 
   const heading = term ? `Results for “${term}”` : activeCat ? activeCat.name : "All products";
+
+  if (classic) {
+    const first = total === 0 ? 0 : from + 1;
+    const last = Math.min(from + items.length, total);
+    return (
+      <div className="bg-background text-foreground min-h-[60vh]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <nav className="text-sm text-muted-foreground mb-5">
+            <Link href="/" className="hover:text-primary">Home</Link>
+            <span className="mx-1">/</span>
+            {activeCat || term ? (
+              <><Link href="/shop" className="hover:text-primary">Shop</Link><span className="mx-1">/</span><span>{heading}</span></>
+            ) : <span>Shop</span>}
+          </nav>
+          <h1 className="text-3xl sm:text-4xl mb-3" style={{ fontFamily: "var(--heading-font, inherit)" }}>{activeCat || term ? heading : "Shop"}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <p className="text-[0.95rem] text-muted-foreground">
+              {total === 0 ? "No products found" : total <= PAGE_SIZE && page === 1 ? `Showing all ${total} results` : `Showing ${first}–${last} of ${total} results`}
+            </p>
+            <ShopSortSelect value={sp.sort ?? ""} options={SORTS} />
+          </div>
+          {items.length === 0 ? (
+            <p className="py-16 text-center text-muted-foreground">No products were found matching your selection.</p>
+          ) : (
+            <div className="grid gap-5 sm:gap-7 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {items.map((p) => (
+                <ProductCard key={p.id} product={p} showDescription={false} cardStyle={cardStyle} />
+              ))}
+            </div>
+          )}
+          {pages > 1 && (
+            <div className="flex items-center gap-2 mt-12">
+              {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+                <Link key={n} href={buildHref({ page: n > 1 ? String(n) : undefined })}
+                  className={`min-w-9 h-9 px-2 inline-flex items-center justify-center border text-sm font-semibold ${n === page ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"}`}>
+                  {n}
+                </Link>
+              ))}
+              {page < pages && (
+                <Link href={buildHref({ page: String(page + 1) })} aria-label="Next page" className="w-9 h-9 inline-flex items-center justify-center border border-border hover:bg-muted">
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background text-foreground min-h-[60vh]">
@@ -208,7 +260,7 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
             ) : (
               <div className="grid gap-4 sm:gap-5 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                 {items.map((p) => (
-                  <ProductCard key={p.id} product={p} showDescription={false} cardStyle="default" />
+                  <ProductCard key={p.id} product={p} showDescription={false} cardStyle={cardStyle} />
                 ))}
               </div>
             )}

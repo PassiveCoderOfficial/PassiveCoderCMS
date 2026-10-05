@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ProductCard } from "./product-card";
 import { ProductCardMinimal } from "./product-card-minimal";
 import { ProductCardWide } from "./product-card-wide";
+import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-card-data";
 
 const PADDING = {
   none: "py-0",
@@ -51,7 +52,7 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
 
   let productsQuery = supabase
     .from("products")
-    .select("id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity, dietary_info")
+    .select(PRODUCT_CARD_SELECT)
     .eq("status", "active")
     .order(orderMap[sortBy] ?? "created_at", { ascending })
     .limit(displayCount);
@@ -72,11 +73,7 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
     );
   }
 
-  const normalizedProducts = products.map((p) => ({
-    ...p,
-    images: Array.isArray(p.images) ? p.images as string[] : [],
-    inStock: !p.track_inventory || p.stock_quantity > 0,
-  }));
+  const normalizedProducts = products.map(toProductCardData);
 
   const colMap: Record<number, string> = {
     2: "sm:grid-cols-2",

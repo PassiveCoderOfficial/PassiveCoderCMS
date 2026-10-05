@@ -192,12 +192,18 @@ export type SliderBlockProps = BlockBase & {
       buttonUrl?: string;
       textColor?: string;
       overlay?: boolean;
+      /** Makes the whole slide a link (image-only banners with no copy). */
+      linkUrl?: string;
     }>;
     autoPlay: boolean;
     autoPlayInterval: number;
     showArrows: boolean;
     showDots: boolean;
     height: string;
+    /** Height on phones (<768px); falls back to `height`. */
+    mobileHeight?: string;
+    /** Dot colour (e.g. brand gold); default white. */
+    dotColor?: string;
   };
 };
 
@@ -254,6 +260,17 @@ export type NavigationBlockProps = BlockBase & {
     /** Small caption rendered beside the logo (e.g. a business registration
      *  number). Purely cosmetic — omit for the old logo-only look. */
     logoCaption?: string;
+    /** Store header extras (used by the logo-center style): product search
+     *  box on the left, account / order-tracking icons beside the cart. */
+    showSearch?: boolean;
+    searchPlaceholder?: string;
+    searchButtonLabel?: string;
+    showAccount?: boolean;
+    trackOrderUrl?: string;
+    /** Background of the logo row only (logo-center); the menu row keeps the bar colour. */
+    topRowBackground?: string;
+    /** Upper-case, wider-spaced menu labels. */
+    menuUppercase?: boolean;
   };
 };
 
@@ -505,7 +522,7 @@ export type EcommerceProductsBlockProps = BlockBase & {
     showDescription: boolean;
     showBadges: boolean;
     showRating: boolean;
-    cardStyle: "default" | "flat" | "minimal" | "shadow" | "bordered";
+    cardStyle: "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique";
     imageRatio: "square" | "portrait" | "landscape" | "auto";
     sectionPadding: "none" | "sm" | "md" | "lg" | "xl";
     backgroundColor?: string;
@@ -658,6 +675,8 @@ export type ContactBlockProps = BlockBase & {
     title?: string;
     subtitle?: string;
     layout: "left" | "centered" | "split";
+    /** "filled": grey filled inputs with placeholders, no card frame. */
+    formStyle?: "card" | "filled";
     showMap: boolean;
     mapEmbedUrl?: string;
     fields: Array<{ id: string; label: string; type: "text" | "email" | "tel" | "textarea" | "select"; required: boolean; options?: string[] }>;
@@ -910,6 +929,13 @@ export type StatusTrackerBlockProps = BlockBase & {
     helpText?: string;
     submitLabel?: string;
     accentColor?: string;
+    /** "order" = storefront order tracking (order number + billing email). */
+    mode?: "visa" | "order";
+    emailPlaceholder?: string;
+    /** Help link shown when nothing is found (order mode). */
+    contactUrl?: string;
+    /** Card frame around the form; off for a flat page section. */
+    plain?: boolean;
   };
 };
 

@@ -189,6 +189,7 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
             <SelectItem value="flat" className="text-xs">Flat — subtle fill</SelectItem>
             <SelectItem value="shadow" className="text-xs">Shadow — elevated</SelectItem>
             <SelectItem value="bordered" className="text-xs">Bordered — accent on hover</SelectItem>
+            <SelectItem value="boutique" className="text-xs">Boutique — centred serif title, pill button</SelectItem>
             <SelectItem value="minimal" className="text-xs">Minimal — no border</SelectItem>
           </SelectContent>
         </Select>

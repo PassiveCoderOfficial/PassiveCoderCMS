@@ -32,8 +32,14 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
     }
   }
 
+  // "filled": WooCommerce/Divi-style form — grey filled boxes, placeholders
+  // instead of labels, no card frame, pill submit button on the right.
+  const filled = data.formStyle === "filled";
+  const inputCls = filled
+    ? "w-full border-0 bg-muted rounded-none px-4 py-3.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+    : "w-full border border-input bg-background rounded-lg px-3.5 py-2.5 text-sm transition-shadow focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15";
   const form = (
-    <div className="flex-1 rounded-2xl border bg-card text-card-foreground shadow-lg p-6 sm:p-8">
+    <div className={cn("flex-1", !filled && "rounded-2xl border bg-card text-card-foreground shadow-lg p-6 sm:p-8")}>
       {(data.title || data.subtitle) && data.layout !== "split" && (
         <div className={cn("mb-8", data.layout === "centered" ? "text-center" : "")}>
           {data.title && <h2 className="text-3xl font-bold mb-3">{data.title}</h2>}
@@ -46,24 +52,26 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
           <p className="font-semibold text-lg">{data.successMessage || "Message sent!"}</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="grid gap-4">
+        <form onSubmit={handleSubmit} className={cn("grid gap-4", filled && "sm:grid-cols-2")}>
           {data.fields.map(f => (
-            <div key={f.id}>
-              <label className="block text-sm font-medium mb-1">{f.label}{f.required && <span className="text-red-500 ml-0.5">*</span>}</label>
+            <div key={f.id} className={cn(filled && (f.type === "textarea" ? "sm:col-span-2" : ""))}>
+              {!filled && <label className="block text-sm font-medium mb-1">{f.label}{f.required && <span className="text-red-500 ml-0.5">*</span>}</label>}
               {f.type === "textarea" ? (
                 <textarea
                   required={f.required}
-                  rows={4}
+                  rows={filled ? 6 : 4}
+                  placeholder={filled ? f.label : undefined}
+                  aria-label={f.label}
                   value={values[f.id] ?? ""}
                   onChange={e => setValues(v => ({ ...v, [f.id]: e.target.value }))}
-                  className="w-full border border-input bg-background rounded-lg px-3.5 py-2.5 text-sm transition-shadow focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 resize-none"
+                  className={cn(inputCls, "resize-y")}
                 />
               ) : f.type === "select" ? (
                 <select
                   required={f.required}
                   value={values[f.id] ?? ""}
                   onChange={e => setValues(v => ({ ...v, [f.id]: e.target.value }))}
-                  className="w-full border border-input bg-background rounded-lg px-3.5 py-2.5 text-sm transition-shadow focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15"
+                  className={inputCls}
                 >
                   <option value="">Select…</option>
                   {f.options?.map(o => <option key={o} value={o}>{o}</option>)}
@@ -72,9 +80,11 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
                 <input
                   type={f.type}
                   required={f.required}
+                  placeholder={filled ? f.label : undefined}
+                  aria-label={f.label}
                   value={values[f.id] ?? ""}
                   onChange={e => setValues(v => ({ ...v, [f.id]: e.target.value }))}
-                  className="w-full border border-input bg-background rounded-lg px-3.5 py-2.5 text-sm transition-shadow focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15"
+                  className={inputCls}
                 />
               )}
             </div>
@@ -82,9 +92,12 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto justify-center flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3 rounded-lg font-semibold text-sm shadow-primary hover:-translate-y-0.5 transition-transform disabled:opacity-50"
+            className={cn(
+              "w-full sm:w-auto justify-center flex items-center gap-2 bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50",
+              filled ? "sm:col-span-2 sm:justify-self-end px-10 py-3.5 rounded-full uppercase tracking-wide hover:opacity-90" : "px-7 py-3 rounded-lg shadow-primary hover:-translate-y-0.5 transition-transform",
+            )}
           >
-            <Send className="w-4 h-4" />
+            {!filled && <Send className="w-4 h-4" />}
             {loading ? "Sending…" : data.submitLabel || "Send Message"}
           </button>
         </form>

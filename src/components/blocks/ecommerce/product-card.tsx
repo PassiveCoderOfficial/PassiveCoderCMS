@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart/cart-context";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type CardStyle = "default" | "flat" | "minimal" | "shadow" | "bordered";
+type CardStyle = "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique";
 type ImageRatio = "square" | "portrait" | "landscape" | "auto";
 
 const RATIO_CLASS: Record<ImageRatio, string> = {
@@ -28,6 +28,8 @@ const CARD_STYLE: Record<CardStyle, string> = {
   minimal:  "rounded-xl overflow-hidden",
   shadow:   "rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow bg-card text-card-foreground",
   bordered: "border-2 border-border rounded-xl overflow-hidden hover:border-primary transition-colors bg-background",
+  // Luxury-retail look: thin frame, centred heading-font title, full-width pill button.
+  boutique: "group border border-border rounded-md overflow-hidden bg-card text-card-foreground flex flex-col hover:shadow-md transition-shadow",
 };
 
 export interface ProductCardData {
@@ -42,6 +44,9 @@ export interface ProductCardData {
   /** Restaurant menu metadata (2026-09-12) — empty/absent on ordinary
    *  ecommerce products, so this renders nothing for non-menu catalogs. */
   dietary_info?: { diet?: "veg" | "non_veg" | "vegan"; spice_level?: number; tags?: string[] };
+  /** Variable products (sizes, colours): the card shows the price range and
+   *  links to the product page to choose, rather than adding the base price. */
+  variants?: { count: number; min: number; max: number; labels: string[] } | null;
 }
 
 const DIET_DOT: Record<string, string> = {
@@ -73,10 +78,12 @@ export function ProductCard({
   const { format } = useEcommerceCurrency();
   const firstImage = product.images[0] as string | undefined;
   const inStock = product.inStock !== false;
+  const variable = !!product.variants && product.variants.count > 0;
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
     if (!inStock) return;
+    if (variable) { window.location.href = `/products/${product.slug}`; return; }
     addItem({
       id: product.id,
       product_id: product.id,
@@ -94,6 +101,59 @@ export function ProductCard({
   const discount = product.compare_price && product.compare_price > product.price
     ? Math.round((1 - product.price / product.compare_price) * 100)
     : null;
+
+  if (cardStyle === "boutique") {
+    const v = product.variants;
+    const priceLabel = variable && v && v.min !== v.max ? `${format(v.min)} – ${format(v.max)}` : format(variable && v ? v.min : product.price);
+    const btn = "mt-auto w-full inline-flex items-center justify-center rounded-full px-4 py-3 text-[0.8rem] font-semibold uppercase tracking-wide transition-opacity hover:opacity-90";
+    const btnStyle: React.CSSProperties = { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" };
+    return (
+      <div className={cn(CARD_STYLE.boutique, featured && "h-full")}>
+        <Link href={`/products/${product.slug}`} className="block">
+          <div className={cn("relative overflow-hidden bg-muted", RATIO_CLASS[imageRatio])}>
+            {firstImage ? (
+              <Image src={firstImage} alt={product.name} fill className="object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground"><ShoppingCart className="h-12 w-12" /></div>
+            )}
+            {showBadges && discount && discount > 0 && (
+              <span className="absolute top-3 left-3 text-xs px-2.5 py-1 rounded font-semibold" style={btnStyle}>Sale!</span>
+            )}
+            {showBadges && !inStock && (
+              <span className="absolute top-3 right-3 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Out of Stock</span>
+            )}
+            {variable && v && v.labels.length > 0 && (
+              <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5 px-2 flex-wrap">
+                {v.labels.slice(0, 4).map((l) => (
+                  <span key={l} className="bg-white/95 text-[0.68rem] uppercase rounded-full px-3 py-0.5 text-neutral-800 shadow-sm">{l}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </Link>
+        <div className="flex flex-col flex-1 px-3 pt-5 pb-4 text-center gap-3">
+          <Link href={`/products/${product.slug}`}>
+            <h3 className="uppercase leading-snug tracking-wide text-[1.05rem] hover:opacity-75 transition-opacity" style={{ fontFamily: "var(--heading-font, inherit)" }}>
+              {product.name}
+            </h3>
+          </Link>
+          <div className="flex items-baseline justify-center gap-2 text-[0.95rem] font-semibold" style={{ color: "hsl(var(--primary))" }}>
+            {!variable && product.compare_price && product.compare_price > product.price && (
+              <span className="line-through opacity-70 font-normal">{format(product.compare_price)}</span>
+            )}
+            <span>{priceLabel}</span>
+          </div>
+          {showAddToCart && (variable ? (
+            <Link href={`/products/${product.slug}`} className={btn} style={btnStyle}>Select options</Link>
+          ) : (
+            <button onClick={handleAdd} disabled={!inStock} className={cn(btn, !inStock && "opacity-50 cursor-not-allowed")} style={btnStyle}>
+              {inStock ? "Add to cart" : "Sold out"}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn(CARD_STYLE[cardStyle], featured && "h-full")}>
