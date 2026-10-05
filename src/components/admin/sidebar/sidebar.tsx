@@ -238,7 +238,7 @@ export function AdminSidebar({ isSuperAdmin = false, isStaff = false, isVendor =
       filterItem={(item: ShellNavItem) => {
         if (item.saasOnly && !isSaaS) return false;
         if (item.standaloneOnly && isSaaS) return false;
-        // enabledModules is undefined for super admins (bypass) — only gate
+        // enabledModules is undefined when no site is selected — only gate
         // when it's actually resolved (regular tenants/agents).
         if (item.moduleKey && enabledModules && !enabledModules[item.moduleKey as ModuleKey]) return false;
         return true;

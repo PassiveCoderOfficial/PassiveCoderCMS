@@ -362,9 +362,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ?? currentSubdomainTenantId
     ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
     ?? (memberships ?? [])[0]?.tenant_id;
-  const enabledModules = (!sa && dashboardTenantId)
-    ? await resolveEnabledModules(dashboardTenantId)
-    : undefined;
+  // The sidebar always reflects the site's own module switches, super admins
+  // included — showing an SA every menu of a site with half its modules off
+  // made the dashboard look nothing like what the client sees. SAs still
+  // bypass the route guard below, so a direct URL keeps working for support.
+  const siteModules = dashboardTenantId ? await resolveEnabledModules(dashboardTenantId) : undefined;
+  const enabledModules = sa ? undefined : siteModules;
 
   // First-login setup wizard (logo, favicon, site details) — only for the
   // actual tenant owner/member on their own site, never for SA or staff
@@ -454,7 +457,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             isSuperAdmin={!!sa}
             isStaff={profile.role === "pc_staff"}
             isVendor={isVendorUser}
-            enabledModules={enabledModules}
+            enabledModules={siteModules}
             activeSite={userSites.find((s) => s.is_primary) ?? null}
           />
           <div className="flex flex-1 flex-col overflow-hidden">
