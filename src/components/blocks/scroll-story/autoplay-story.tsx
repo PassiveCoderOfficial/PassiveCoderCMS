@@ -86,7 +86,7 @@ export function AutoplayStory({ data, RotatingTitle }: {
       {data.portraitImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={data.portraitImage} alt={data.portraitAlt ?? ""}
-          className={`absolute bottom-0 z-[4] h-[60vh] sm:h-[78vh] lg:h-[86vh] w-auto max-w-none pointer-events-none ${right ? "left-[2%] sm:left-[8%]" : "right-[-12%] sm:right-[6%]"}`}
+          className={`absolute bottom-0 z-[4] h-[50vh] sm:h-[78vh] lg:h-[86vh] w-auto max-w-none pointer-events-none ${right ? "left-[2%] sm:left-[8%]" : "right-[-14%] sm:right-[6%]"}`}
           style={{
             opacity: loaded ? 1 : 0,
             animation: loaded ? "as-up 1.6s cubic-bezier(.2,.7,.2,1) both, as-float 7s ease-in-out 1.6s infinite" : undefined,
@@ -97,7 +97,7 @@ export function AutoplayStory({ data, RotatingTitle }: {
 
       {/* Copy */}
       {s && (
-        <div className={`absolute inset-0 z-[5] flex flex-col justify-end sm:justify-center px-6 pb-[42vh] sm:pb-0 sm:px-[7%] ${right ? "sm:items-end sm:text-right" : ""}`}
+        <div className={`absolute inset-0 z-[5] flex flex-col justify-start pt-24 sm:pt-0 sm:justify-center px-6 sm:px-[7%] ${right ? "sm:items-end sm:text-right" : ""}`}
           style={{ opacity: 1 - leave * 1.4, transform: `translateY(${-leave * 60}px)` }}>
           <div key={`s${n}`} className="max-w-[min(620px,90vw)]">
             {s.eyebrow && (
@@ -106,7 +106,7 @@ export function AutoplayStory({ data, RotatingTitle }: {
                 <span className="text-xs sm:text-sm font-semibold uppercase tracking-[0.3em]" style={{ color: accent }}>{s.eyebrow}</span>
               </div>
             )}
-            <h1 className="mt-4 text-4xl sm:text-6xl lg:text-7xl font-semibold leading-[1.02] tracking-tight"
+            <h1 className="mt-4 text-[2.1rem] sm:text-6xl lg:text-7xl font-semibold leading-[1.02] tracking-tight"
               style={{ fontFamily: "var(--heading-font, inherit)", textShadow: "0 8px 40px rgba(0,0,0,.6)", animation: "as-rise 1.2s cubic-bezier(.2,.7,.2,1) .15s both" }}>
               {s.rotateWords?.length ? <RotatingTitle title={s.title} words={s.rotateWords} color={accent} /> : s.title}
             </h1>
