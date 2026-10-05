@@ -197,7 +197,7 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
   if (!content) return null;
 
   return (
-    <div style={{ ...bgStyle, ...wrapStyle }} className={cn("w-full", bgClassName, wrapClassName, hideOnClasses(block.hideOn))}>
+    <div data-pc-block={block.type} style={{ ...bgStyle, ...wrapStyle }} className={cn("w-full", bgClassName, wrapClassName, hideOnClasses(block.hideOn))}>
       <div className={nested ? "w-full" : cn("w-full", getContainerClass(block.width))}>{content}</div>
     </div>
   );
