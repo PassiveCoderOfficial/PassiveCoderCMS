@@ -5,6 +5,7 @@ import { ArrowRight, LayoutGrid, Map as MapIcon, SlidersHorizontal, Building2, L
 import type { ReListingsBlockProps } from "@/types/cms";
 import { titleCase, priceLabel, type ReListingType } from "@/lib/real-estate/format";
 import { GenericMap, type MapPin } from "@/components/map/generic-map";
+import { PropertyShowcase } from "./showcase";
 import { PropertyCard, CardSkeleton, PrefsToggle, useDisplayPrefs, SectionHeading, type ReCardProperty } from "./shared";
 
 type Item = ReCardProperty & { lat: number | null; lng: number | null };
@@ -160,9 +161,11 @@ export function ReListingsBlock({ block }: { block: ReListingsBlockProps }) {
             <p className="font-medium">No properties match these filters</p>
             <p className="text-sm text-muted-foreground mt-1">Try widening your search, or message us — many deals never reach the public market.</p>
           </div>
+        ) : data.cardStyle === "showcase" ? (
+          <PropertyShowcase items={items} currency={prefs.currency} accent={data.accentColor} />
         ) : (
           <div className={`grid gap-6 ${gridCols}`}>
-            {items.map((p) => <PropertyCard key={p.id} p={p} currency={prefs.currency} unit={prefs.unit} variant={data.cardStyle} />)}
+            {items.map((p) => <PropertyCard key={p.id} p={p} currency={prefs.currency} unit={prefs.unit} variant={data.cardStyle === "editorial" ? "editorial" : "standard"} />)}
           </div>
         )}
 

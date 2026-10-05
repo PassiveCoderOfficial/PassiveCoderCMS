@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Lenis from "lenis";
 
 /**
  * Site-wide "cinematic" scroll motion, switched on per site with
@@ -23,10 +24,15 @@ const CSS = `
 .pcm-t.pcm-in{opacity:1;translate:0 0;filter:none}
 .pcm-i{clip-path:inset(18% 0 0 0 round 24px);opacity:.001;transition:clip-path 1.25s cubic-bezier(.2,.75,.15,1),opacity .8s ease;transition-delay:var(--pcm-d,0ms)}
 .pcm-i.pcm-in{clip-path:inset(0 0 0 0 round 0px);opacity:1}
-.pcm-i img,.pcm-i.pcm-img{will-change:translate}
+.pcm-i img{will-change:translate,scale;scale:1.32;transition:scale 1.9s cubic-bezier(.2,.7,.2,1)}
+.pcm-i.pcm-in img{scale:1.14}
+.pcm-h{clip-path:inset(0 0 100% 0);translate:0 .6em;transition:clip-path 1.1s cubic-bezier(.7,0,.2,1),translate 1.1s cubic-bezier(.2,.7,.2,1);transition-delay:var(--pcm-d,0ms)}
+.pcm-h.pcm-in{clip-path:inset(-0.2em -0.2em -0.3em -0.2em);translate:0 0}
+html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!important}
 `;
 
-const TEXT = "h1,h2,h3,h4,p,li,a.rounded-full,button.rounded-full,[class*='uppercase'][class*='tracking']";
+const HEAD = "h1,h2";
+const TEXT = "h3,h4,p,li,a.rounded-full,button.rounded-full,[class*='uppercase'][class*='tracking']";
 
 export function ScrollMotion() {
   const pathname = usePathname();
@@ -63,10 +69,17 @@ export function ScrollMotion() {
       sections.forEach((sec) => {
         if (excluded(sec)) return;
         let i = 0;
+        sec.querySelectorAll<HTMLElement>(HEAD).forEach((el) => {
+          if (tracked.has(el) || excluded(el) || el.closest(".pcm-i")) return;
+          el.classList.add("pcm-h");
+          el.style.setProperty("--pcm-d", `${Math.min(i++, 3) * 90}ms`);
+          tracked.add(el);
+          io.observe(el);
+        });
         sec.querySelectorAll<HTMLElement>(TEXT).forEach((el) => {
           if (tracked.has(el) || excluded(el)) return;
           // Skip text nested inside another animated text element.
-          if (el.parentElement?.closest(".pcm-t")) return;
+          if (el.parentElement?.closest(".pcm-t, .pcm-h")) return;
           if (el.closest(".pcm-i")) return;
           el.classList.add("pcm-t");
           el.style.setProperty("--pcm-d", `${Math.min(i++, 6) * 70}ms`);
@@ -98,10 +111,18 @@ export function ScrollMotion() {
         // -1 (entering from below) .. 1 (leaving at the top)
         const t = ((r.top + r.height / 2) - vh / 2) / (vh / 2 + r.height / 2);
         img.style.translate = `0 ${(t * -7).toFixed(2)}%`;
-        if (!img.style.scale) img.style.scale = "1.14";
       });
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+    // Inertial smooth scrolling on mouse/trackpad devices; touch keeps native.
+    let lenis: Lenis | null = null;
+    let lraf = 0;
+    if (window.matchMedia("(pointer: fine)").matches) {
+      lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.95 });
+      const loop = (t: number) => { lenis?.raf(t); lraf = requestAnimationFrame(loop); };
+      lraf = requestAnimationFrame(loop);
+    }
 
     scan();
     tick();
@@ -117,6 +138,8 @@ export function ScrollMotion() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
+      if (lraf) cancelAnimationFrame(lraf);
+      lenis?.destroy();
     };
   }, [pathname]);
 

@@ -42,6 +42,7 @@ import { BookingSettings } from "./booking-settings";
 import { MarketplaceBookingSettings } from "./marketplace-booking-settings";
 import { RealEstateSettings } from "./real-estate-settings";
 import { ScrollStorySettings } from "./scroll-story-settings";
+import { MarqueeSettings } from "./marquee-settings";
 import { DonorGroupCardsSettings, DonorListSettings, DonorMapSettings } from "./donor-settings";
 import { BlockLayoutSettings } from "./block-layout-settings";
 import { ContainerSettings } from "./container-settings";
@@ -140,6 +141,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "marketplace_booking": return <MarketplaceBookingSettings block={block} />;
     case "marketplace_request": return <MarketplaceBookingSettings block={block} />;
     case "marketplace_vendor_directory": return <MarketplaceBookingSettings block={block} />;
+    case "marquee": return <MarqueeSettings block={block} />;
     case "scroll_story": return <ScrollStorySettings block={block} />;
     case "re_search": return <RealEstateSettings block={block} />;
     case "re_listings": return <RealEstateSettings block={block} />;

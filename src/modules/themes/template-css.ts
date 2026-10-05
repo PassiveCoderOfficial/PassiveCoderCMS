@@ -125,8 +125,15 @@ export function buildTemplateCSSVars(
   // vars are scoped to the canvas wrapper, so the wrapper carries it.
   const bodySel = scopeSelector === ":root" ? "body" : scopeSelector;
 
+  // Cinematic sites open with a brand-colour curtain that lifts away. Pure
+  // CSS so it covers the very first paint (no flash of the page first).
+  const curtainCss = design?.motion === "cinematic" && scopeSelector === ":root"
+    ? `@keyframes pc-curtain{0%,35%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 100% 0)}}
+@media (prefers-reduced-motion:no-preference){body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;background:linear-gradient(160deg,hsl(var(--primary)),hsl(var(--secondary)));animation:pc-curtain 1.5s cubic-bezier(.7,0,.2,1) forwards}}
+`
+    : "";
   return `
-${fontsHref ? `@import url("${fontsHref}");\n` : ""}${scopeSelector} {
+${fontsHref ? `@import url("${fontsHref}");\n` : ""}${curtainCss}${scopeSelector} {
   --pc-motion: ${design?.motion ?? "none"};
   --background: ${p(palette.background)};
   --foreground: ${p(palette.foreground)};

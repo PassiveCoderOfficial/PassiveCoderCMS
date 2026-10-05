@@ -968,6 +968,19 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "marquee",
+    label: "Marquee",
+    description: "Endless band of large words that drifts and speeds up as visitors scroll",
+    icon: "〰️",
+    category: "media",
+    create: () => ({
+      ...baseBlock("marquee"),
+      type: "marquee" as const,
+      padding: { top: 32, right: 0, bottom: 32, left: 0 },
+      data: { items: ["Quality", "Trust", "Service"], separator: "✦", size: "lg", speed: 40, direction: "left", outlineAlternate: true, scrollBoost: true },
+    }),
+  },
+  {
     type: "scroll_story",
     label: "Scroll Story Hero",
     description: "Cinematic hero: photos zoom and cross-fade, a cut-out portrait and headlines animate as visitors scroll",

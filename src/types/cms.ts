@@ -75,6 +75,7 @@ export type BlockType =
   | "container"
   | "item_box"
   | "scroll_story"
+  | "marquee"
   // Header-only sub-blocks (2026-09-06): a header composes these as
   // independent, separately draggable blocks rather than one big Header
   // block with many settings sections — see project_block_editor_bugs memory
@@ -992,6 +993,7 @@ export type Block =
   | ContainerBlockProps
   | ItemBoxBlockProps
   | ScrollStoryBlockProps
+  | MarqueeBlockProps
   | HeaderLogoBlockProps
   | HeaderNavBlockProps
   | HeaderCtaBlockProps
@@ -1499,7 +1501,7 @@ export type ReSearchBlockProps = BlockBase & {
 
 export type ReListingsBlockProps = BlockBase & {
   type: "re_listings";
-  data: { cardStyle?: "standard" | "editorial"; /** Square-bullet label above a rule; switches the heading to the editorial style. */ eyebrow?: string;
+  data: { cardStyle?: "standard" | "editorial" | "showcase"; accentColor?: string; /** Square-bullet label above a rule; switches the heading to the editorial style. */ eyebrow?: string;
     title?: string;
     subtitle?: string;
     /** Preset filter. Empty = all listing types (buyer can switch). */
@@ -1573,5 +1575,20 @@ export type ScrollStoryBlockProps = BlockBase & {
     showLines?: boolean;
     primaryCta?: { label: string; url: string };
     secondaryCta?: { label: string; url: string };
+  };
+};
+
+export type MarqueeBlockProps = BlockBase & {
+  type: "marquee";
+  data: {
+    items: string[];
+    separator?: string;
+    size?: "sm" | "md" | "lg";
+    speed?: number;
+    direction?: "left" | "right";
+    outlineAlternate?: boolean;
+    scrollBoost?: boolean;
+    color?: string;
+    accentColor?: string;
   };
 };

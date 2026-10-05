@@ -221,7 +221,7 @@ export function SectionHeading({ title, subtitle, align = "center", eyebrow }: {
           <span className="w-2.5 h-2.5 rounded-[3px] bg-foreground" />
           <span className="text-xs font-semibold uppercase tracking-[0.12em]">{eyebrow}</span>
         </div>
-        {title && <h2 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.02] max-w-3xl">{title}</h2>}
+        {title && <h2 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.02] max-w-3xl"><TwoTone text={title} /></h2>}
         {subtitle && <p className="mt-5 text-lg text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
     );
@@ -229,7 +229,7 @@ export function SectionHeading({ title, subtitle, align = "center", eyebrow }: {
   if (!title && !subtitle) return null;
   return (
     <div className={align === "center" ? "text-center mb-10 max-w-2xl mx-auto" : "mb-8"}>
-      {title && <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">{title}</h2>}
+      {title && <h2 className="text-3xl sm:text-4xl font-bold tracking-tight"><TwoTone text={title} /></h2>}
       {subtitle && <p className="mt-3 text-muted-foreground">{subtitle}</p>}
     </div>
   );
@@ -272,4 +272,12 @@ function EditorialCard({ p, currency, unit }: { p: ReCardProperty; currency?: st
       </div>
     </a>
   );
+}
+
+/** "Main words | accent words": the part after the bar goes on its own line
+ *  in the theme accent colour (two-tone luxury headline). */
+export function TwoTone({ text }: { text: string }) {
+  const i = text.indexOf("|");
+  if (i < 0) return <>{text}</>;
+  return <>{text.slice(0, i).trim()}<span className="block" style={{ color: "hsl(var(--accent))" }}>{text.slice(i + 1).trim()}</span></>;
 }

@@ -40,6 +40,7 @@ import { MarketplaceBookingBlock } from "@/components/blocks/marketplace/marketp
 import { MarketplaceRequestBlock } from "@/components/blocks/marketplace/marketplace-request-block";
 import { MarketplaceVendorDirectoryBlock } from "@/components/blocks/marketplace/marketplace-vendor-directory-block";
 import { ScrollStoryBlock } from "@/components/blocks/scroll-story/scroll-story-block";
+import { MarqueeBlock } from "@/components/blocks/marquee/marquee-block";
 import { ReSearchBlock } from "@/components/blocks/real-estate/re-search-block";
 import { ReListingsBlock } from "@/components/blocks/real-estate/re-listings-block";
 import { ReCommunitiesBlock } from "@/components/blocks/real-estate/re-communities-block";
@@ -134,6 +135,7 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
       case "marketplace_booking": return <MarketplaceBookingBlock block={block} />;
       case "marketplace_request": return <MarketplaceRequestBlock block={block} />;
       case "marketplace_vendor_directory": return <MarketplaceVendorDirectoryBlock block={block} />;
+      case "marquee": return <MarqueeBlock block={block} />;
       case "scroll_story": return <ScrollStoryBlock block={block} />;
       case "re_search": return <ReSearchBlock block={block} />;
       case "re_listings": return <ReListingsBlock block={block} />;
