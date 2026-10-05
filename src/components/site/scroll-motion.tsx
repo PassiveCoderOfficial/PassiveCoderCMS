@@ -53,14 +53,19 @@ export function ScrollMotion() {
       !!el.closest("[data-site-chrome], nav, header, footer, [data-no-motion], .pcm-skip, [role='dialog']");
 
     const tracked = new Set<HTMLElement>();
+    const proxied = new Map<HTMLElement, HTMLElement[]>();
     const parallax = new Set<HTMLImageElement>();
 
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) {
         const el = e.target as HTMLElement;
-        if (e.isIntersecting) el.classList.add("pcm-in");
+        // A masked heading has zero visible area, so its parent is observed
+        // as a proxy and the class is applied to the heading(s) it carries.
+        const own = el.classList.contains("pcm-t") || el.classList.contains("pcm-i");
+        const targets = proxied.has(el) ? [...proxied.get(el)!, ...(own ? [el] : [])] : [el];
+        if (e.isIntersecting) targets.forEach((t) => t.classList.add("pcm-in"));
         // Reset once fully out of view so it replays when scrolled back to.
-        else if (e.boundingClientRect.top > window.innerHeight || e.boundingClientRect.bottom < 0) el.classList.remove("pcm-in");
+        else if (e.boundingClientRect.top > window.innerHeight || e.boundingClientRect.bottom < 0) targets.forEach((t) => t.classList.remove("pcm-in"));
       }
     }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
 
@@ -74,7 +79,9 @@ export function ScrollMotion() {
           el.classList.add("pcm-h");
           el.style.setProperty("--pcm-d", `${Math.min(i++, 3) * 90}ms`);
           tracked.add(el);
-          io.observe(el);
+          const host = el.parentElement ?? el;
+          const list = proxied.get(host);
+          if (list) list.push(el); else { proxied.set(host, [el]); io.observe(host); }
         });
         sec.querySelectorAll<HTMLElement>(TEXT).forEach((el) => {
           if (tracked.has(el) || excluded(el)) return;
