@@ -39,7 +39,7 @@ export function ContactBlock({ block }: { block: ContactBlockProps }) {
     ? "w-full border-0 bg-muted rounded-none px-4 py-3.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
     : "w-full border border-input bg-background rounded-lg px-3.5 py-2.5 text-sm transition-shadow focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15";
   const form = (
-    <div className={cn("flex-1", !filled && "rounded-2xl border bg-card text-card-foreground shadow-lg p-6 sm:p-8")}>
+    <div className={cn("flex-1 w-full", !filled && "rounded-2xl border bg-card text-card-foreground shadow-lg p-6 sm:p-8")}>
       {(data.title || data.subtitle) && data.layout !== "split" && (
         <div className={cn("mb-8", data.layout === "centered" ? "text-center" : "")}>
           {data.title && <h2 className="text-3xl font-bold mb-3">{data.title}</h2>}
