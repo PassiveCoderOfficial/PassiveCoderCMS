@@ -239,7 +239,10 @@ html {
 
 /* Section text colour (Style panel) — light surfaces inside the section keep
    their own card text colour instead of inheriting the section's. */
-.pc-tc :is(.bg-card, .bg-white, .bg-background) { color: hsl(var(--card-foreground)); }
+.pc-tc :is(.bg-card, .bg-white, .bg-background) { color: hsl(var(--card-foreground)); --foreground: var(--pc-fg-root); --muted-foreground: var(--pc-muted-root); --border: var(--pc-border-root); }
+/* Brand-coloured accents (numbers, rules) follow a recoloured section text. */
+.pc-tc .pc-rule { border-color: hsl(var(--foreground) / .35); }
+.pc-tc .pc-num { color: hsl(var(--foreground) / .75); }
 
 /* Stat values: never push the page sideways, whatever the owner typed. */
 .stat-value { overflow-wrap: anywhere; min-width: 0; }

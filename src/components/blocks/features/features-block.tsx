@@ -197,8 +197,8 @@ function FeaturesNumberedColumns({ data }: { data: FeaturesBlockProps["data"] })
       <FeaturesHead title={data.title} subtitle={data.subtitle} align="left" />
       <div className={cn("grid grid-cols-1 gap-8", colClass)}>
         {data.items.map((item, i) => (
-          <div key={item.id} className="border-t-2 border-primary pt-4">
-            <span className="text-xs font-bold text-primary tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+          <div key={item.id} className="pc-rule border-t-2 border-primary pt-4">
+            <span className="pc-num text-xs font-bold text-primary tabular-nums">{String(i + 1).padStart(2, "0")}</span>
             <h3 className="font-semibold text-lg mt-2 mb-1.5">{item.title}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
           </div>

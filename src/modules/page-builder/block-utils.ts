@@ -135,6 +135,12 @@ export function getBlockWrapperStyle(block: Block): { style: React.CSSProperties
     if (/^#[0-9a-f]{6}$/i.test(st.textColor)) {
       const hsl = hexToHSL(st.textColor);
       style["--foreground"] = hsl;
+      // Secondary text and dividers follow the section's text colour too,
+      // otherwise grey-on-navy descriptions and navy rules disappear.
+      const [h, s, l] = hsl.split(" ").map((v) => parseFloat(v));
+      const light = l > 55;
+      style["--muted-foreground"] = `${h} ${Math.min(s, 35)}% ${light ? Math.max(l - 22, 62) : Math.min(l + 30, 45)}%`;
+      style["--border"] = `${h} ${Math.min(s, 30)}% ${light ? 30 : 85}%`;
     }
     // Cards inside keep their own readable text (see .pc-tc in globals.css):
     // white text on a dark section must not turn white-card titles invisible.

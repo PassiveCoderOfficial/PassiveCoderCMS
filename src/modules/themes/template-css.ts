@@ -147,6 +147,9 @@ ${fontsHref ? `@import url("${fontsHref}");\n` : ""}${curtainCss}${scopeSelector
   --secondary-foreground: ${p(palette.primaryFg)};
   --muted: ${p(palette.muted)};
   --muted-foreground: ${p(palette.mutedFg)};
+  --pc-fg-root: ${p(palette.foreground)};
+  --pc-muted-root: ${p(palette.mutedFg)};
+  --pc-border-root: ${p(palette.border)};
   --accent: ${p(palette.accent)};
   --accent-foreground: ${p(palette.foreground)};
   --destructive: 0 84% 60%;
