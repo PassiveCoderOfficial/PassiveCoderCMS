@@ -67,6 +67,14 @@ export function ScrollStorySettings({ block }: { block: ScrollStoryBlockProps })
         </div>
       </div>
 
+      <div><Label className="text-xs">Playback</Label>
+        <select className={selectCls} value={d.mode ?? "scroll"} onChange={(e) => set("mode", e.target.value as D["mode"])}>
+          <option value="scroll">Scrolls with the page (scrub)</option>
+          <option value="autoplay">Plays like a film (one screen)</option>
+        </select>
+        {d.mode === "autoplay" && <Input type="number" value={d.slideMs ?? 6500} onChange={(e) => set("slideMs", Number(e.target.value))} className="h-8 text-xs mt-2" placeholder="Milliseconds per shot" />}
+      </div>
+
       <div className="grid grid-cols-2 gap-2">
         <div><Label className="text-xs">Height (vh)</Label><Input type="number" value={d.heightVh ?? 500} onChange={(e) => set("heightVh", Number(e.target.value))} className="h-8 text-xs mt-1" /></div>
         <div><Label className="text-xs">Darkness (0-1)</Label><Input type="number" step="0.05" value={d.overlayOpacity ?? 0.45} onChange={(e) => set("overlayOpacity", Number(e.target.value))} className="h-8 text-xs mt-1" /></div>

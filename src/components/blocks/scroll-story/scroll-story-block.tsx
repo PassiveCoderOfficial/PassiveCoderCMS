@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import type { ScrollStoryBlockProps } from "@/types/cms";
+import { AutoplayStory } from "./autoplay-story";
 
 /**
  * Scroll-driven cinematic hero. The section is several screens tall and pins
@@ -14,6 +15,11 @@ import type { ScrollStoryBlockProps } from "@/types/cms";
  * can make one from a few photos. Only transform/opacity/filter are animated.
  */
 export function ScrollStoryBlock({ block }: { block: ScrollStoryBlockProps }) {
+  if (block.data.mode === "autoplay") return <AutoplayStory data={block.data} RotatingTitle={RotatingTitle} />;
+  return <ScrollStoryScrub block={block} />;
+}
+
+function ScrollStoryScrub({ block }: { block: ScrollStoryBlockProps }) {
   const { data } = block;
   const backgrounds = (data.backgrounds ?? []).filter((b) => b?.imageUrl);
   const scenes = (data.scenes ?? []).filter((s) => s?.title);

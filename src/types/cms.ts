@@ -1561,6 +1561,9 @@ export type ScrollStoryBlockProps = BlockBase & {
   data: {
     /** Section height in vh; more = slower scrub. */
     heightVh?: number;
+    /** "autoplay": one-screen film that plays on its own; default scrubs with scroll. */
+    mode?: "scroll" | "autoplay";
+    slideMs?: number;
     backgrounds?: { imageUrl: string }[];
     /** Transparent cut-out (PNG/WebP) standing in front of the backgrounds. */
     portraitImage?: string;
