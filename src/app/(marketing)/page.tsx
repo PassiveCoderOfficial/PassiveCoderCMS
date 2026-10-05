@@ -17,7 +17,7 @@ import CtaSection from "@/components/marketing/cta";
 import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
-import { fetchGlobalLayout, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
+import { fetchGlobalLayout, withPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { fetchPublishedTemplates } from "@/lib/templates/published-templates";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
@@ -107,9 +107,7 @@ export default async function MarketingHomePage() {
       return true;
     });
 
-    const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
-      ? [...blocks, ...prefooter]
-      : blocks;
+    const body = withPrefooter(blocks, prefooter);
 
     if (rawBlocks.length > 0) {
       // Same cart setup as (site)/layout.tsx. The homepage renders here, not

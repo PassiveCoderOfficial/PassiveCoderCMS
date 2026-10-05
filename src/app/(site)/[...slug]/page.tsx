@@ -6,7 +6,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { recordPageView } from "@/lib/usage/record-page-view";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { MarketplaceHome } from "@/components/marketplace-ecom/marketplace-home";
-import { fetchGlobalLayout, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
+import { fetchGlobalLayout, withPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { isSaaS } from "@/lib/flags";
 import { resolveTenant } from "@/lib/tenant/resolve";
 import { publicUrl } from "@/lib/tenant/site-urls";
@@ -239,9 +239,7 @@ export default async function SitePage({ params }: Props) {
 
   // Global pre-footer (CTA + contact) — injected once site-wide, skipped on pages
   // that already have their own contact block.
-  const finalBlocks = !lang && prefooter.length > 0 && shouldInjectPrefooter(blocks)
-    ? [...blocks, ...prefooter]
-    : blocks;
+  const finalBlocks = !lang ? withPrefooter(blocks, prefooter) : blocks;
 
   if (lang) {
     return (

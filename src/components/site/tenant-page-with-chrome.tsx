@@ -1,6 +1,6 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
-import { fetchGlobalLayout, toBlocks, shouldInjectPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
+import { fetchGlobalLayout, toBlocks, withPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildSiteTheme, type SiteThemeInput } from "@/modules/themes/site-theme";
 import type { Block } from "@/types/cms";
@@ -57,9 +57,7 @@ export async function TenantPageWithChrome({ tenantId, slug }: { tenantId: strin
     if (hasGlobalFooter && isChromeBlock(b, "footer")) return false;
     return true;
   });
-  const body = prefooter.length > 0 && shouldInjectPrefooter(blocks)
-    ? [...blocks, ...prefooter]
-    : blocks;
+  const body = withPrefooter(blocks, prefooter);
   return (
     <div className="min-h-screen">
       <style precedence="pc-template" dangerouslySetInnerHTML={{ __html: templateCSSVars }} />

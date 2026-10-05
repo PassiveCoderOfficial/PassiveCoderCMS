@@ -74,3 +74,14 @@ export async function fetchGlobalLayout(tenantId: string | null | undefined): Pr
 export function shouldInjectPrefooter(pageBlocks: Block[]): boolean {
   return !pageBlocks.some((b) => b.type === "contact");
 }
+
+/**
+ * Append the pre-footer after the page body. The renderer sorts by `order`,
+ * and pre-footer blocks carry their own 0-based orders — appended as-is they
+ * sorted in right under the hero. Re-number them past the page's last block.
+ */
+export function withPrefooter(pageBlocks: Block[], prefooter: Block[]): Block[] {
+  if (prefooter.length === 0 || !shouldInjectPrefooter(pageBlocks)) return pageBlocks;
+  const maxOrder = pageBlocks.reduce((m, b) => Math.max(m, typeof b.order === "number" ? b.order : 0), 0);
+  return [...pageBlocks, ...prefooter.map((b, i) => ({ ...b, order: maxOrder + 1 + i }))];
+}
