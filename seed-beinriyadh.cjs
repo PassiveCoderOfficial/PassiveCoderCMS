@@ -45,9 +45,18 @@ const NAVY_CARD = "#13254F";
 const NAVY_DEEP = "#060E24";
 
 const STORAGE = `${SUPABASE_URL}/storage/v1/object/public/media/uploads/beinriyadh`;
-const LOGO_LIGHT = `${STORAGE}/logo-light.png`;
-const LOGO_DARK = `${STORAGE}/logo-dark.png`;
-const FAVICON_URL = `${STORAGE}/favicon.png`;
+// v2 logo (Oct 2026): vector redraw in the style Wali picked — heavy italic
+// wordmark, dish + signal top-left, swoosh arc, football, Arabic between rules.
+// Source SVGs + photos: clients/BeinSportsRiyadh/site-assets/
+const LOGO_LIGHT = `${STORAGE}/logo-v2-light.png`;
+const LOGO_DARK = `${STORAGE}/logo-v2-dark.png`;
+const FAVICON_URL = `${STORAGE}/favicon-v2.png`;
+const ASSET_DIR = require("path").join(__dirname, "..", "clients", "BeinSportsRiyadh", "site-assets");
+const ASSETS = {
+  "logo-v2-light.png": "logo-light.png", "logo-v2-dark.png": "logo-dark.png", "favicon-v2.png": "emblem.png",
+  "shop-front.jpg": "shop-front.jpg", "shop-inside.jpg": "shop-inside.jpg", "receiver-4k.jpg": "receiver-4k.jpg",
+  "receiver-card.jpg": "receiver-card.jpg", "cctv-kit.jpg": "cctv-kit.jpg",
+};
 
 // Pexels (free for commercial use). Stand-ins until the client's own shop photos arrive.
 const px = (id, w = 1600) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
@@ -62,6 +71,12 @@ const IMG = {
   dishes: px(11462618),
   dishBalcony: px(12625353),
   repair: px(31718639),
+  // client's own photos
+  shopFront: `${STORAGE}/shop-front.jpg`,
+  shopInside: `${STORAGE}/shop-inside.jpg`,
+  receiver4k: `${STORAGE}/receiver-4k.jpg`,
+  receiverCard: `${STORAGE}/receiver-card.jpg`,
+  cctv: `${STORAGE}/cctv-kit.jpg`,
 };
 
 // ─── Real Google reviews (from the GMB, Sep 2026) ───────────────────────────
@@ -107,11 +122,13 @@ const T = {
         ["Satellite", "Dish Installation", "Dish mounting and precise alignment for a clean, stable signal."],
         ["Settings", "Receiver Setup", "Channel scan, account pairing and TV setup done for you."],
         ["Wrench", "Repair & Troubleshooting", "No signal, frozen picture or error codes. We find the fault and fix it."],
+        ["Cctv", "CCTV Cameras", "HD camera kits for homes, shops and villas, with DVR recording and live view on your phone."],
+        ["Monitor", "TV Wall Mounting", "Strong wall brackets fitted level, with cables hidden neatly behind the screen."],
       ],
     },
     about: {
       title: "Your Local beIN Shop in Riyadh",
-      body: "Bein Sports Riyadh is a satellite TV shop in An Nasim Al Gharbi. We sell and renew beIN subscriptions, supply receivers, and install and align dishes for homes, shops and cafés across Riyadh.\n\nOur customers come back because we keep it simple: fair prices, honest advice on which package fits what you watch, and a shop that is open 24 hours when you need it.\n\n✓ All beIN packages in one place\n✓ Receivers, dishes and accessories in stock\n✓ Installation at your home or business\n✓ Rated 5.0 by 236+ customers on Google",
+      body: "Bein Sports Riyadh is a satellite TV shop in An Nasim Al Gharbi. We sell and renew beIN subscriptions, supply receivers, and install and align dishes for homes, shops and cafés across Riyadh.\n\nOur customers come back because we keep it simple: fair prices, honest advice on which package fits what you watch, and a shop that is open 24 hours when you need it.\n\n✓ All beIN packages in one place\n✓ Receivers, dishes and accessories in stock\n✓ Installation at your home or business\n✓ CCTV camera kits supplied and installed\n✓ Rated 5.0 by 236+ customers on Google",
     },
     why: {
       title: "Why Riyadh Chooses Us", subtitle: "Simple service, fair prices, open around the clock.",
@@ -137,7 +154,7 @@ const T = {
     packages: {
       heroBadge: "beIN Packages", heroTitle: "Packages & Prices", heroDesc: "Subscriptions, renewals, receivers and installation. Message us on WhatsApp to order or check today's offer.",
       subsTitle: "beIN Subscription Packages", subsSubtitle: "Prices in Saudi Riyal. Ask on WhatsApp for the latest offers.",
-      hwTitle: "Receivers & Installation", hwSubtitle: "Genuine hardware and professional setup",
+      hwTitle: "Receivers, CCTV & Installation", hwSubtitle: "Genuine hardware and professional setup",
       order: "Order on WhatsApp", popular: "Most Popular", note: "Prices may change with beIN offers. Message us to confirm today's price before you visit.",
       plans: [
         ["Monthly", "SAR 199", "/ month", "Flexible monthly sports package", ["beIN SPORTS channels", "Top leagues and tournaments", "Activation in minutes", "Renew any month"]],
@@ -148,10 +165,11 @@ const T = {
       hardware: [
         ["beIN 4K Receiver", "SAR 899", "", "Latest 4K receiver", ["4K HDR picture", "Wi-Fi and TOD built in", "Setup included in shop", "Warranty"]],
         ["Dish Installation", "From SAR 150", "", "Home, shop or café", ["Dish mounting", "Precise signal alignment", "Cable run to your TV", "Channel scan and test"], true],
+        ["CCTV Camera Kit", "Ask Us", "", "Home, shop or villa", ["HD cameras, indoor and outdoor", "DVR with hard drive recording", "Live view on your phone", "Installation and setup"]],
         ["Renewal & Repair", "Ask Us", "", "Keep your service running", ["Subscription renewal", "Error code fixes", "Signal problems", "Receiver reset and update"]],
       ],
     },
-    servicesPage: { heroBadge: "Our Services", heroTitle: "Satellite TV Services\nin Riyadh", heroDesc: "From a new subscription to a full dish installation, one shop handles it all." },
+    servicesPage: { heroBadge: "Our Services", heroTitle: "Satellite, TV & CCTV\nServices in Riyadh", heroDesc: "From a new subscription to dish installation and CCTV cameras, one shop handles it all." },
     aboutPage: { heroBadge: "About Us", heroTitle: "Your Neighbourhood\nbeIN Shop", heroDesc: "A trusted satellite TV shop in An Nasim Al Gharbi, open 24 hours." },
     faqPage: { heroBadge: "FAQ", heroTitle: "Questions? We Have Answers.", heroDesc: "Everything about packages, renewals and installation." },
     contactPage: {
@@ -171,6 +189,7 @@ const T = {
       ["Do you install dishes at home?", "Yes. We install and align dishes for homes, shops, cafés and compounds across Riyadh."],
       ["Do you sell 4K receivers?", "Yes, genuine beIN receivers including 4K models, with setup included."],
       ["My receiver shows an error code. Can you help?", "Send us a photo of the screen on WhatsApp. Most errors are fixed remotely in a few minutes. If not, bring the receiver to the shop."],
+      ["Do you install CCTV cameras?", "Yes. We supply and install HD camera kits for homes, shops and villas, with DVR recording and live view on your phone. Tell us how many cameras you need on WhatsApp for a quote."],
       ["What are your opening hours?", "We are open 24 hours, every day."],
       ["Where is the shop?", "An Nasim Al Gharbi, Riyadh. Tap Directions on our Contact page to open it in Google Maps."],
     ],
@@ -228,11 +247,13 @@ const T = {
         ["Satellite", "تركيب الدش", "تركيب الدش وضبط الإشارة بدقة لصورة ثابتة وواضحة."],
         ["Settings", "برمجة الرسيفر", "بحث القنوات وربط الحساب وضبط التلفزيون، نسويها لك."],
         ["Wrench", "الصيانة وحل الأعطال", "ما فيه إشارة، الصورة واقفة، أو رسالة خطأ؟ نحدد المشكلة ونحلها."],
+        ["Cctv", "كاميرات المراقبة", "أنظمة كاميرات بجودة عالية للبيوت والمحلات والفلل، مع تسجيل DVR ومشاهدة مباشرة من جوالك."],
+        ["Monitor", "تركيب شاشات على الجدار", "تثبيت قوي ومستوي للشاشة على الجدار، مع إخفاء الأسلاك بشكل مرتب."],
       ],
     },
     about: {
       title: "محل beIN القريب منك في الرياض",
-      body: "بين سبورت الرياض محل متخصص في أجهزة ستلايت التلفزيون في حي النسيم الغربي. نبيع ونجدد اشتراكات beIN، ونوفر الرسيفرات، ونركّب ونضبط الدشوش للبيوت والمحلات والمقاهي في كل الرياض.\n\nعملاؤنا يرجعون لنا لأننا نخليها بسيطة: أسعار مناسبة، نصيحة صادقة عن الباقة اللي تناسب اللي تتابعه، ومحل مفتوح 24 ساعة وقت ما تحتاجه.\n\n✓ جميع باقات beIN في مكان واحد\n✓ رسيفرات ودشوش وإكسسوارات متوفرة\n✓ تركيب في بيتك أو محلك\n✓ تقييم 5.0 من أكثر من 236 عميل على قوقل",
+      body: "بين سبورت الرياض محل متخصص في أجهزة ستلايت التلفزيون في حي النسيم الغربي. نبيع ونجدد اشتراكات beIN، ونوفر الرسيفرات، ونركّب ونضبط الدشوش للبيوت والمحلات والمقاهي في كل الرياض.\n\nعملاؤنا يرجعون لنا لأننا نخليها بسيطة: أسعار مناسبة، نصيحة صادقة عن الباقة اللي تناسب اللي تتابعه، ومحل مفتوح 24 ساعة وقت ما تحتاجه.\n\n✓ جميع باقات beIN في مكان واحد\n✓ رسيفرات ودشوش وإكسسوارات متوفرة\n✓ تركيب في بيتك أو محلك\n✓ توريد وتركيب كاميرات المراقبة\n✓ تقييم 5.0 من أكثر من 236 عميل على قوقل",
     },
     why: {
       title: "ليش أهل الرياض يختارونا", subtitle: "خدمة بسيطة، أسعار مناسبة، ومفتوحين على مدار الساعة.",
@@ -258,7 +279,7 @@ const T = {
     packages: {
       heroBadge: "باقات beIN", heroTitle: "الباقات والأسعار", heroDesc: "اشتراكات، تجديد، رسيفرات وتركيب. راسلنا على واتساب للطلب أو لمعرفة عرض اليوم.",
       subsTitle: "باقات اشتراك beIN", subsSubtitle: "الأسعار بالريال السعودي. اسألنا على واتساب عن آخر العروض.",
-      hwTitle: "الرسيفرات والتركيب", hwSubtitle: "أجهزة أصلية وتركيب احترافي",
+      hwTitle: "الرسيفرات وكاميرات المراقبة والتركيب", hwSubtitle: "أجهزة أصلية وتركيب احترافي",
       order: "اطلب عبر واتساب", popular: "الأكثر طلبًا", note: "الأسعار قد تتغير حسب عروض beIN. راسلنا لتأكيد سعر اليوم قبل زيارتك.",
       plans: [
         ["شهري", "199 ريال", "/ شهر", "باقة رياضية شهرية مرنة", ["قنوات beIN SPORTS", "أقوى الدوريات والبطولات", "تفعيل خلال دقائق", "جدّد أي شهر"]],
@@ -269,10 +290,11 @@ const T = {
       hardware: [
         ["رسيفر beIN 4K", "899 ريال", "", "أحدث رسيفر 4K", ["صورة 4K HDR", "واي فاي وTOD مدمج", "برمجة مجانية في المحل", "ضمان"]],
         ["تركيب الدش", "من 150 ريال", "", "للبيت أو المحل أو المقهى", ["تثبيت الدش", "ضبط الإشارة بدقة", "تمديد الكيبل للتلفزيون", "بحث القنوات والتجربة"], true],
+        ["نظام كاميرات مراقبة", "اسألنا", "", "للبيت أو المحل أو الفيلا", ["كاميرات داخلية وخارجية بجودة عالية", "جهاز تسجيل DVR مع هارديسك", "مشاهدة مباشرة من الجوال", "التركيب والبرمجة"]],
         ["التجديد والصيانة", "اسألنا", "", "خلّ خدمتك شغالة دائمًا", ["تجديد الاشتراك", "حل رسائل الخطأ", "مشاكل الإشارة", "تحديث وإعادة ضبط الرسيفر"]],
       ],
     },
-    servicesPage: { heroBadge: "خدماتنا", heroTitle: "خدمات الستلايت\nفي الرياض", heroDesc: "من اشتراك جديد إلى تركيب دش كامل، محل واحد يتكفل بكل شيء." },
+    servicesPage: { heroBadge: "خدماتنا", heroTitle: "خدمات الستلايت والشاشات\nوكاميرات المراقبة", heroDesc: "من اشتراك جديد إلى تركيب الدش وكاميرات المراقبة، محل واحد يتكفل بكل شيء." },
     aboutPage: { heroBadge: "من نحن", heroTitle: "محل beIN\nفي حيّك", heroDesc: "محل ستلايت موثوق في النسيم الغربي، مفتوح 24 ساعة." },
     faqPage: { heroBadge: "الأسئلة الشائعة", heroTitle: "عندك سؤال؟ عندنا الجواب.", heroDesc: "كل ما تحتاج تعرفه عن الباقات والتجديد والتركيب." },
     contactPage: {
@@ -292,6 +314,7 @@ const T = {
       ["تركّبون الدش في البيت؟", "نعم، نركّب ونضبط الدشوش للبيوت والمحلات والمقاهي والمجمعات في جميع أحياء الرياض."],
       ["عندكم رسيفرات 4K؟", "نعم، رسيفرات beIN أصلية ومنها موديلات 4K، والبرمجة علينا."],
       ["الرسيفر يطلع رسالة خطأ، تقدرون تساعدوني؟", "صوّر الشاشة وأرسلها لنا على واتساب. أغلب الأعطال نحلها عن بُعد خلال دقائق، وإذا ما انحلت جيب الرسيفر للمحل."],
+      ["تركّبون كاميرات مراقبة؟", "نعم، نوفر ونركّب أنظمة كاميرات بجودة عالية للبيوت والمحلات والفلل، مع تسجيل DVR ومشاهدة مباشرة من الجوال. قل لنا كم كاميرا تحتاج على واتساب ونعطيك السعر."],
       ["وش أوقات الدوام؟", "مفتوحين 24 ساعة، كل يوم."],
       ["وين موقع المحل؟", "في حي النسيم الغربي بالرياض. اضغط على الموقع في صفحة تواصل معنا ويفتح لك في خرائط قوقل."],
     ],
@@ -349,7 +372,7 @@ function header(L) {
     data: {
       logoText: L.siteName, logo: LOGO_LIGHT, items: navItems(L),
       sticky: true, transparent: false, style: "default", showCart: false,
-      backgroundColor: PURPLE_DEEP, textColor: "#ffffff", colorMode: "legacy", activeColor: GOLD, ctaVariant: "solid", logoHeight: 52, logoCaption: "",
+      backgroundColor: PURPLE_DEEP, textColor: "#ffffff", colorMode: "legacy", activeColor: GOLD, ctaVariant: "solid", logoHeight: 60, logoCaption: "",
       showCta: true, ctaLabel: L.nav.cta, ctaUrl: L.wa,
     },
   };
@@ -407,14 +430,14 @@ function stats(L) {
   };
 }
 
-const SERVICE_IMAGES = [IMG.fans, IMG.stadiumAerial, IMG.fans2, IMG.dishes, IMG.fans3, IMG.repair];
+const SERVICE_IMAGES = [IMG.receiverCard, IMG.stadiumAerial, IMG.receiver4k, IMG.dishes, IMG.shopInside, IMG.repair, IMG.cctv, IMG.fans2];
 
 function servicesGrid(L, bg = NAVY) {
   return {
     ...BASE, id: uid("svc"), type: "services", background: bgColor(bg),
     templateVariant: "program-cards-dark",
     data: {
-      title: L.services.title, subtitle: L.services.subtitle, layout: "grid", columns: 3, cardStyle: "elevated", source: "inline",
+      title: L.services.title, subtitle: L.services.subtitle, layout: "grid", columns: 4, cardStyle: "elevated", source: "inline",
       items: L.services.items.map(([icon, title, description], i) => ({
         id: uid("sv"), title, description, icon, iconType: "lucide",
         imageUrl: SERVICE_IMAGES[i].replace("w=1600", "w=900"),
@@ -563,7 +586,7 @@ function homePage(L) {
     servicesGrid(L, NAVY),
     pricing(L, L.packages.subsTitle, L.packages.subsSubtitle, L.packages.plans, LAVENDER),
     note(L.packages.note, LAVENDER),
-    aboutSplit(L, NAVY),
+    aboutSplit(L, NAVY, IMG.shopFront),
     whyUs(L, LAVENDER),
     steps(L, NAVY),
     ...reviews(L, LAVENDER),
@@ -600,10 +623,10 @@ function aboutPage(L) {
   const a = L.aboutPage;
   return [
     hero(L, { badge: a.heroBadge, title: a.heroTitle, subtitle: L.siteName, description: a.heroDesc, img: IMG.fans3, compact: true }),
-    aboutSplit(L, NAVY, IMG.fans),
+    aboutSplit(L, NAVY, IMG.shopFront),
     stats(L),
     whyUs(L, LAVENDER),
-    gallery(L.lang ? "من أجواء المشاهدة" : "Made for Match Day", [IMG.stadium2, IMG.fans2, IMG.stadiumAerial, IMG.dishBalcony, IMG.fans, IMG.stadiumDay], NAVY),
+    gallery(L.lang ? "داخل المحل" : "Inside the Shop", [IMG.shopFront, IMG.shopInside, IMG.receiver4k, IMG.receiverCard, IMG.cctv, IMG.dishes], NAVY),
     ...reviews(L, LAVENDER),
   ];
 }
@@ -661,8 +684,21 @@ async function ensureTenant() {
   return id;
 }
 
+async function uploadAssets() {
+  const fs = require("fs");
+  for (const [dest, src] of Object.entries(ASSETS)) {
+    const buf = fs.readFileSync(require("path").join(ASSET_DIR, src));
+    const type = dest.endsWith(".png") ? "image/png" : "image/jpeg";
+    const { error } = await sb.storage.from("media").upload(`uploads/beinriyadh/${dest}`, buf, { contentType: type, upsert: true });
+    console.log(error ? `✗ ${dest}: ${error.message}` : `  ↑ ${dest}`);
+  }
+}
+
 async function run() {
+  if (!process.argv.includes("--skip-assets")) await uploadAssets();
   const tenantId = await ensureTenant();
+  // Re-running the seed reopens the demo window (72h from now).
+  await sb.from("tenants").update({ demo_expires_at: new Date(Date.now() + DEMO_HOURS * 3600_000).toISOString() }).eq("id", tenantId);
   const now = new Date().toISOString();
   const { data: tpl } = await sb.from("templates").select("id").eq("slug", TEMPLATE_SLUG).single();
 

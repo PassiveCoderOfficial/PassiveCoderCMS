@@ -279,7 +279,7 @@ function ServicesImageTiles({ data }: { data: ServicesBlockProps["data"] }) {
 // ─── Variant: program-cards-dark ──────────────────────────────────────────
 // Dark cards with top image, orange accents, bold title — gym
 function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-3" }[data.columns] ?? "md:grid-cols-3";
+  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "md:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
