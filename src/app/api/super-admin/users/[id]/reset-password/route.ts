@@ -16,7 +16,11 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const admin = await createAdminClient();
 
   const tempPassword = generateTempPassword();
-  const { error } = await admin.auth.admin.updateUserById(targetId, { password: tempPassword });
+  // email_confirm too: a team invitee who never clicked the invite link is
+  // still unconfirmed, and GoTrue rejects their login with "Email not
+  // confirmed" no matter what password is set. A super admin handing out a
+  // password is vouching for the address.
+  const { error } = await admin.auth.admin.updateUserById(targetId, { password: tempPassword, email_confirm: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true, tempPassword });
