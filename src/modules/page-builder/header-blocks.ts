@@ -22,6 +22,7 @@ export const HEADER_BLOCK_TYPES: readonly BlockType[] = [
   "header_logo",
   "header_nav",
   "header_cta",
+  "header_booking",
   "header_cart",
   "header_account",
   "text",
@@ -61,6 +62,7 @@ type DisplayOverrides = Partial<Record<BlockType, Partial<Pick<BlockDefinition, 
 
 export const HEADER_BLOCK_DISPLAY: DisplayOverrides = {
   navigation: { label: "Nav Menu", description: "Logo, menu links and an optional button — the header itself." },
+  header_booking: { label: "Booking Button", description: "Opens your booking page (/book). Visible on phones too." },
   cta: { label: "Announcement Bar", description: "A slim banner above or below the nav — a promo, notice, or extra call-to-action." },
   columns: { label: "Side-by-Side Layout", description: "Two columns for arranging header content, e.g. a logo beside a phone number." },
   container: { label: "Grouping Box", description: "Groups other blocks together so they can be styled or aligned as one." },

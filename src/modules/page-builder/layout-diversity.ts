@@ -17,7 +17,7 @@ import type { BlockType } from "@/types/cms";
  */
 
 type Sectionish = { type: string; variant?: string | null };
-const CHROME = new Set(["navigation", "footer", "header_logo", "header_nav", "header_cta", "header_cart", "header_account"]);
+const CHROME = new Set(["navigation", "footer", "header_logo", "header_nav", "header_cta", "header_booking", "header_cart", "header_account"]);
 
 /** A homepage's layout as "type:variant" steps, chrome excluded. */
 export function layoutSignature(blocks: unknown[]): string[] {

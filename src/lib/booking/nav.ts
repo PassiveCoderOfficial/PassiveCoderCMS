@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Block } from "@/types/cms";
+import { createBlock } from "@/modules/page-builder/block-registry";
 
 /**
  * Turn on the header builder's "Booking button" (and, for new sites, the
@@ -19,9 +20,42 @@ type NavData = {
 };
 type FooterData = { showBooking?: boolean };
 
+type ContainerData = { columns?: { blocks?: Block[] }[]; bookingButtonAdded?: boolean };
+const HEADER_PARTS = new Set(["header_logo", "header_nav", "header_cta", "header_cart", "header_account"]);
+
+/**
+ * Header-builder layouts (a container of Logo / Menu / Button elements):
+ * add the Booking Button element next to the existing button, or in the last
+ * column. Marked once added, so an owner who deletes it isn't overridden.
+ */
+function patchContainer(b: Block): boolean {
+  const d = (b.data ?? {}) as ContainerData;
+  const cols = d.columns ?? [];
+  const parts = cols.flatMap((c) => c.blocks ?? []);
+  if (d.bookingButtonAdded || !parts.some((x) => HEADER_PARTS.has(x.type)) || parts.some((x) => x.type === "header_booking")) return false;
+  const btn = createBlock("header_booking")!;
+  const ctaCol = cols.find((c) => (c.blocks ?? []).some((x) => x.type === "header_cta")) ?? cols[cols.length - 1];
+  if (!ctaCol) return false;
+  const list = ctaCol.blocks ?? (ctaCol.blocks = []);
+  const ctaIdx = list.findIndex((x) => x.type === "header_cta");
+  // An existing header button that already goes to /book becomes the booking element.
+  const existing = list[ctaIdx] as Block | undefined;
+  const existingUrl = (existing?.data as { url?: string } | undefined)?.url;
+  if (existing && existingUrl === "/book") {
+    list[ctaIdx] = { ...btn, id: existing.id, data: { ...(btn.data as object), label: (existing.data as { label?: string }).label || "Book now", variant: (existing.data as { variant?: string }).variant ?? "gradient" } } as unknown as Block;
+  } else {
+    list.splice(ctaIdx >= 0 ? ctaIdx : list.length, 0, btn);
+  }
+  list.forEach((x, i) => { x.order = i; });
+  d.bookingButtonAdded = true;
+  b.data = d as typeof b.data;
+  return true;
+}
+
 function patch(blocks: Block[], footer: boolean): boolean {
   let changed = false;
   for (const b of blocks) {
+    if (b.type === "container" && patchContainer(b)) { changed = true; continue; }
     if (b.type === "navigation") {
       const d = (b.data ?? {}) as NavData;
       // Undo the hardcoded link from the first version of this helper.

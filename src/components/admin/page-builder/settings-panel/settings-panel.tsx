@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import type { HeaderCtaBlockProps } from "@/types/cms";
 import { useBuilderStore } from "@/lib/store/builder";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -121,6 +122,8 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "header_logo": return <HeaderLogoSettings block={block} />;
     case "header_nav": return <HeaderNavSettings block={block} />;
     case "header_cta": return <HeaderCtaSettings block={block} />;
+    // Same fields as the header Button (label, link, style); the link defaults to /book.
+    case "header_booking": return <HeaderCtaSettings block={block as unknown as HeaderCtaBlockProps} />;
     case "header_cart": return <HeaderCartSettings block={block} />;
     case "header_account": return <HeaderAccountSettings block={block} />;
     case "spacer": return <SpacerSettings block={block} />;

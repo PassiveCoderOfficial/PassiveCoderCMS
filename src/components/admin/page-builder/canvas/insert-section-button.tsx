@@ -45,7 +45,7 @@ type Tab = "sections" | "blocks" | "layout";
  * right thing to offer once you're inside a column.
  */
 const HEADER_SUB_BLOCK_TYPES: readonly BlockType[] = [
-  "header_logo", "header_nav", "header_cta", "header_cart", "header_account",
+  "header_logo", "header_nav", "header_cta", "header_booking", "header_cart", "header_account",
 ];
 
 /**

@@ -85,6 +85,7 @@ export type BlockType =
   | "header_logo"
   | "header_nav"
   | "header_cta"
+  | "header_booking"
   | "header_cart"
   | "header_account";
 
@@ -347,6 +348,16 @@ export type HeaderNavBlockProps = BlockBase & {
     style: "default" | "centered" | "split" | "minimal" | "logo-center";
     textColor?: string;
     activeColor?: string;
+  };
+};
+
+/** Header builder "Booking button" -> the site's booking page (/book). */
+export type HeaderBookingBlockProps = BlockBase & {
+  type: "header_booking";
+  data: {
+    label: string;
+    url: string;
+    variant: "solid" | "gradient" | "outline";
   };
 };
 
@@ -623,6 +634,16 @@ export type PricingPlan = {
   badge?: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  /** Spec Cards: crossed-out former price, e.g. "245". */
+  oldPrice?: string;
+  /** Spec Cards: small chip beside the name, e.g. "USA film". */
+  tag?: string;
+  /** Spec Cards: one-line spec under the price, e.g. the film type. */
+  spec?: string;
+  /** Spec Cards: labelled percentage bars (UV 99%, Speed 80%...). */
+  meters?: { id: string; label: string; value: number }[];
+  /** Spec Cards: items shown greyed out as not included. */
+  excludedFeatures?: string[];
 };
 
 export type PricingBlockProps = BlockBase & {
@@ -634,6 +655,18 @@ export type PricingBlockProps = BlockBase & {
     billingToggle: boolean;
     showCurrencyToggle?: boolean;
     plans: PricingPlan[];
+    /** Small label above the title (Spec Cards). */
+    eyebrow?: string;
+    /** Printed small before every price, e.g. "RM", "$", "QAR" (Spec Cards). */
+    currencyPrefix?: string;
+    /** Note under the grid (Spec Cards). */
+    footnote?: string;
+    /** Plan buttons open WhatsApp with a prefilled message (site WhatsApp number). */
+    whatsappCta?: boolean;
+    /** Prefilled WhatsApp text; {plan} and {price} are replaced. */
+    whatsappText?: string;
+    /** Optional colour overrides; theme colours when unset. */
+    colors?: { dark?: string; accent?: string };
   };
 };
 
@@ -1007,6 +1040,7 @@ export type Block =
   | HeaderLogoBlockProps
   | HeaderNavBlockProps
   | HeaderCtaBlockProps
+  | HeaderBookingBlockProps
   | HeaderCartBlockProps
   | HeaderAccountBlockProps;
 

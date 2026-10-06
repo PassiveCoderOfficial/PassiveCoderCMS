@@ -27,7 +27,7 @@ export function isChromeBlock(b: Block, kind: "header" | "footer"): boolean {
     container.data.columns?.flatMap((c) => c.blocks?.map((cb) => cb.type) ?? []) ?? [],
   );
   if (kind === "header") {
-    return subTypes.has("header_logo") || subTypes.has("header_nav") || subTypes.has("header_cta")
+    return subTypes.has("header_logo") || subTypes.has("header_nav") || subTypes.has("header_cta") || subTypes.has("header_booking")
       || subTypes.has("header_cart") || subTypes.has("header_account");
   }
   // No independent footer-column sub-blocks exist yet (only nav-shaped ones

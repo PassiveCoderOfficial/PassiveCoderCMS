@@ -1,4 +1,5 @@
 import React from "react";
+import { HeaderBookingBlock } from "@/components/blocks/header-booking/header-booking-block";
 import { headers } from "next/headers";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { Block } from "@/types/cms";
@@ -102,6 +103,7 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
     case "header_logo":      content = <HeaderLogoBlock block={block} identityLogo={identityLogo} identityLogoDark={identityLogoDark} />; break;
     case "header_nav":       content = <HeaderNavBlock block={block} />; break;
     case "header_cta":       content = <HeaderCtaBlock block={block} />; break;
+    case "header_booking":   content = <HeaderBookingBlock block={block} />; break;
     case "header_cart":      content = <HeaderCartBlock block={block} />; break;
     case "header_account": {
       // Only checked when this block type is actually on the page — avoids

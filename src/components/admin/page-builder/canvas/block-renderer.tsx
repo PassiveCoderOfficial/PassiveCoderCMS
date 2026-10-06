@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { HeaderBookingBlock } from "@/components/blocks/header-booking/header-booking-block";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
 import { HeroBlock } from "@/components/blocks/hero/hero-block";
@@ -98,6 +99,7 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
       case "header_logo": return <HeaderLogoBlock block={block} />;
       case "header_nav": return <HeaderNavBlock block={block} />;
       case "header_cta": return <HeaderCtaBlock block={block} />;
+      case "header_booking": return <HeaderBookingBlock block={block} />;
       case "header_cart": return <HeaderCartBlock block={block} />;
       // Editor canvas has no visitor session — always previews signed-out,
       // the correct default state for what a real visitor sees first.

@@ -191,6 +191,20 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "header_booking",
+    label: "Booking Button",
+    description: "Opens your booking page so visitors can pick a time. Shows on phones too.",
+    icon: "📅",
+    category: "layout",
+    moduleKey: "bookings",
+    create: () => ({
+      ...baseBlock("header_booking"),
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      type: "header_booking",
+      data: { label: "Book now", url: "/book", variant: "gradient" },
+    }),
+  },
+  {
     type: "header_cart",
     label: "Cart",
     description: "Shopping cart icon with live item count",

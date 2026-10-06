@@ -13,7 +13,7 @@ import type { Block } from "@/types/cms";
  * background, or uses a dark variant (which paints its own ground), keeps it.
  * Chrome (nav/footer/header parts) and spacers/dividers are left alone.
  */
-const SKIP = new Set(["navigation", "footer", "spacer", "divider", "header_logo", "header_nav", "header_cta", "header_cart", "header_account", "custom_html"]);
+const SKIP = new Set(["navigation", "footer", "spacer", "divider", "header_logo", "header_nav", "header_cta", "header_booking", "header_cart", "header_account", "custom_html"]);
 const TINT = "linear-gradient(180deg, hsl(var(--primary) / 0.06) 0%, hsl(var(--primary) / 0.03) 100%)";
 
 function paintsOwnGround(b: Block): boolean {
