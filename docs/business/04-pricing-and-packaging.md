@@ -370,3 +370,7 @@ decision is actually enforced, not just documented.
 ## Update 2026-10-04: platform launch offer (limited time)
 
 Yearly BDT prices cut: **Basic ৳32,000 -> ৳15,000**, **Pro ৳60,000 -> ৳30,000**, **Biz ৳1,20,000 -> ৳60,000** (Wali). USD prices unchanged. The regular price is stored in `plans.price_yearly_bdt_regular` and shown struck through with `plans.promo_label` ("Platform launch offer"). Checkout (shurjoPay/manual) charges `price_yearly_bdt`, i.e. the offer price. To end the offer, restore `price_yearly_bdt` from `price_yearly_bdt_regular` and clear both promo columns (see migration 125). **Ends 31 Dec 2026 23:59 BD time** (plans.promo_ends_at); /api/cron/end-promos restores regular prices automatically at 00:05 on 1 Jan, and the cards and Bangla landing page stop showing the offer by themselves.
+
+## Update 2026-10-06: online booking on every plan
+
+Booking is included on **Basic** as well as Pro, Biz and Custom (Wali). Every site ships with booking switched on and a built-in `/book` page (migration 126); migration 127 sets `plans.basic.modules.bookings` to included/on and adds "Online booking & appointment calendar" to Basic's pricing features.
