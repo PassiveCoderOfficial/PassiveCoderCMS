@@ -145,6 +145,8 @@ html {
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
+/* The page builder canvas has no observer: show everything while editing. */
+.cms-builder-canvas [data-reveal] { opacity: 1; transform: none; transition: none; }
 
 /* Shimmer for skeleton loaders */
 @keyframes pc-shimmer { 100% { transform: translateX(100%); } }
@@ -264,3 +266,29 @@ html {
   body:has(.order-print-root) header,
   body:has(.order-print-root) [data-sidebar] { display: none !important; }
 }
+
+/* ── Showcase variants (pricing spec-cards, hero spec-card, services bento…) ──
+   One set of utilities shared by every "showcase" block variant. Colours come
+   from the theme by default; a block can override via --sc-dark / --sc-accent
+   (set inline from its optional colour pickers). */
+.sc-root { --sc-dark-c: var(--sc-dark, hsl(var(--pc-fg-root, var(--foreground)))); --sc-accent-c: var(--sc-accent, hsl(var(--accent))); }
+.sc-dark-bg { background: var(--sc-dark-c); }
+.sc-dark-grad { background: linear-gradient(160deg, color-mix(in srgb, var(--sc-dark-c) 82%, hsl(var(--primary))), var(--sc-dark-c)); }
+.sc-accent { color: var(--sc-accent-c); }
+.sc-grad { background: linear-gradient(90deg, hsl(var(--primary)), var(--sc-accent-c)); }
+.sc-grad-text { background: linear-gradient(90deg, var(--sc-accent-c), color-mix(in srgb, var(--sc-accent-c) 45%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .08em; }
+.sc-btn { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; padding: .95rem 1.6rem; border-radius: calc(var(--radius) + 2px); font-weight: 700; font-size: .95rem; line-height: 1; text-decoration: none; transition: transform .2s, box-shadow .2s, border-color .2s, color .2s, background .2s; }
+.sc-btn-grad { background: linear-gradient(90deg, hsl(var(--primary)), var(--sc-accent-c)); color: #fff; box-shadow: 0 14px 34px -12px color-mix(in srgb, var(--sc-accent-c) 65%, transparent); }
+.sc-btn-grad:hover { transform: translateY(-2px); }
+.sc-btn-ghost-dark { border: 1.5px solid rgba(255,255,255,.35); color: #fff; }
+.sc-btn-ghost-dark:hover { border-color: var(--sc-accent-c); color: var(--sc-accent-c); }
+.sc-btn-ghost { border: 1.5px solid hsl(var(--border)); color: hsl(var(--foreground)); background: hsl(var(--card)); }
+.sc-btn-ghost:hover { border-color: hsl(var(--primary)); color: hsl(var(--primary)); }
+.sc-eyebrow { display: inline-block; font-size: .74rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: hsl(var(--primary)); }
+.sc-on-dark .sc-eyebrow { color: var(--sc-accent-c); }
+.sc-meter-track { height: 7px; border-radius: 99px; background: hsl(var(--muted)); overflow: hidden; }
+.sc-on-dark .sc-meter-track { background: rgba(255,255,255,.12); }
+.sc-meter-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, hsl(var(--primary)), var(--sc-accent-c)); }
+.sc-glass { background: color-mix(in srgb, var(--sc-dark-c) 55%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid color-mix(in srgb, var(--sc-accent-c) 28%, transparent); }
+.sc-zoom img { transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+.sc-zoom:hover img { transform: scale(1.06); }

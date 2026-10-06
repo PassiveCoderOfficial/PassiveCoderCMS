@@ -51,6 +51,7 @@ import { MarketplaceRequestBlock } from "@/components/blocks/marketplace/marketp
 import { MarketplaceVendorDirectoryBlock } from "@/components/blocks/marketplace/marketplace-vendor-directory-block";
 import { ScrollStoryBlock } from "@/components/blocks/scroll-story/scroll-story-block";
 import { MarqueeBlock } from "@/components/blocks/marquee/marquee-block";
+import { OptionPreviewBlock } from "@/components/blocks/option-preview/option-preview-block";
 import { ReSearchBlock } from "@/components/blocks/real-estate/re-search-block";
 import { ReListingsBlock } from "@/components/blocks/real-estate/re-listings-block";
 import { ReCommunitiesBlock } from "@/components/blocks/real-estate/re-communities-block";
@@ -150,6 +151,7 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
     case "marketplace_request": content = <MarketplaceRequestBlock block={block} />; break;
     case "marketplace_vendor_directory": content = <MarketplaceVendorDirectoryBlock block={block} />; break;
     case "marquee": content = <MarqueeBlock block={block} />; break;
+    case "option_preview": content = <OptionPreviewBlock block={block} />; break;
     case "scroll_story": content = <ScrollStoryBlock block={block} />; break;
     case "re_search": content = <ReSearchBlock block={block} />; break;
     case "re_listings": content = <ReListingsBlock block={block} />; break;

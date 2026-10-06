@@ -198,7 +198,8 @@ ${radiusVars}
    font-sans on <body>; a block's own inline font choice still wins. Weight
    and tracking sit in the base layer so a block's utility classes win. */
 ${bodySel} { font-family: var(--body-font); }
-${bodySel} :is(h1,h2,h3,h4,h5,h6) { font-family: var(--heading-font); }
+${bodySel} :is(h1,h2,h3,h4,h5,h6) { font-family: var(--heading-font); }${design?.headingStyle === "italic" ? `
+${bodySel} :is(h1,h2,h3,h4,h5,h6) { font-style: italic; }` : ""}
 @layer base {
   ${bodySel} :is(h1,h2,h3,h4,h5,h6) { font-weight: var(--heading-weight); letter-spacing: var(--letter-spacing-heading); }
 }

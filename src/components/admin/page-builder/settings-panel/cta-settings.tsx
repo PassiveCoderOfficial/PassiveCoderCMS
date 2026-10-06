@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CTABlockProps } from "@/types/cms";
+import { Switch } from "@/components/ui/switch";
+import { TextField, ShowcaseColorsEditor } from "./showcase-fields";
 
 export function CTASettings({ block }: { block: CTABlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -16,17 +18,35 @@ export function CTASettings({ block }: { block: CTABlockProps }) {
     update(btn, { ...ex, [f]: v });
   };
 
+  const visit = block.templateVariant === "visit-map";
+
   return (
     <div className="space-y-3">
+      {visit && <TextField label="Small label above title" value={block.data.eyebrow} onChange={(v) => update("eyebrow", v)} />}
       <div><Label className="text-xs">Title</Label><Input value={block.data.title} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div><Label className="text-xs">Description</Label><Textarea value={block.data.description ?? ""} onChange={(e) => update("description", e.target.value)} className="text-xs resize-none mt-1" rows={3} /></div>
-      <div>
+      {visit && (
+        <div className="space-y-2 border-t pt-2">
+          <p className="text-[10px] text-muted-foreground">Address and phone come from Contact details. Fill these only to show something different.</p>
+          <TextField label="Address" value={block.data.address} onChange={(v) => update("address", v)} multiline />
+          <TextField label="Phone" value={block.data.phone} onChange={(v) => update("phone", v)} />
+          <TextField label="Opening hours" value={block.data.hours} onChange={(v) => update("hours", v)} multiline placeholder="Mon-Sat 9am-7pm" />
+          <TextField label="Map search (optional)" value={block.data.mapQuery} onChange={(v) => update("mapQuery", v)} hint="Your Google Maps business name works best" />
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Show map</Label>
+            <Switch checked={block.data.showMap !== false} onCheckedChange={(v) => update("showMap", v)} />
+          </div>
+          <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />
+          <p className="text-[10px] text-muted-foreground">Button links left empty open WhatsApp (first) and map directions (second).</p>
+        </div>
+      )}
+      {!visit && <div>
         <Label className="text-xs">Layout</Label>
         <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
           <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
           <SelectContent>{["centered","left","split"].map((l) => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
         </Select>
-      </div>
+      </div>}
       <div className="border-t pt-2">
         <p className="text-[10px] text-muted-foreground font-semibold uppercase mb-2">Primary Button</p>
         <Input value={block.data.primaryButton?.label ?? ""} onChange={(e) => updateBtn("primaryButton", "label", e.target.value)} className="h-7 text-xs mb-1.5" placeholder="Label" />

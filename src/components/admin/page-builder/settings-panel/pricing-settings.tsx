@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import type { PricingBlockProps, PricingPlan } from "@/types/cms";
+import { TextField, LinesField, MetersEditor, ShowcaseColorsEditor } from "./showcase-fields";
 
 export function PricingSettings({ block }: { block: PricingBlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -28,8 +29,11 @@ export function PricingSettings({ block }: { block: PricingBlockProps }) {
 
   const removePlan = (id: string) => update("plans", block.data.plans.filter(p => p.id !== id));
 
+  const spec = block.templateVariant === "spec-cards";
+
   return (
     <div className="space-y-3">
+      {spec && <TextField label="Small label above title" value={block.data.eyebrow} onChange={v => update("eyebrow", v)} placeholder="Promo prices" />}
       <div><Label className="text-xs">Title</Label><Input value={block.data.title ?? ""} onChange={e => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={e => update("subtitle", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div className="flex items-center justify-between">
@@ -43,6 +47,24 @@ export function PricingSettings({ block }: { block: PricingBlockProps }) {
         </div>
         <Switch checked={block.data.showCurrencyToggle ?? false} onCheckedChange={v => update("showCurrencyToggle", v)} />
       </div>
+      {spec && (
+        <div className="space-y-2 border-t pt-3">
+          <TextField label="Currency before price" value={block.data.currencyPrefix} onChange={v => update("currencyPrefix", v)} placeholder="RM, $, QAR" />
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-xs">Buttons open WhatsApp</Label>
+              <p className="text-[10px] text-muted-foreground">Uses your site WhatsApp number from Contact details</p>
+            </div>
+            <Switch checked={block.data.whatsappCta ?? false} onCheckedChange={v => update("whatsappCta", v)} />
+          </div>
+          {block.data.whatsappCta && (
+            <TextField label="WhatsApp message" value={block.data.whatsappText} onChange={v => update("whatsappText", v)}
+              placeholder="Hi, I am interested in the {plan} package ({price})." hint="{plan} and {price} are filled in automatically" multiline />
+          )}
+          <TextField label="Note under the plans" value={block.data.footnote} onChange={v => update("footnote", v)} multiline />
+          <ShowcaseColorsEditor value={block.data.colors} onChange={v => update("colors", v)} />
+        </div>
+      )}
       <div className="border-t pt-3">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Plans</p>
@@ -72,9 +94,19 @@ export function PricingSettings({ block }: { block: PricingBlockProps }) {
                   />
                 </div>
               )}
+              {spec && (
+                <>
+                  <div className="flex gap-1">
+                    <Input value={plan.oldPrice ?? ""} onChange={e => updatePlan(plan.id, "oldPrice", e.target.value)} className="h-7 text-xs flex-1" placeholder="Old price (crossed out)" />
+                    <Input value={plan.tag ?? ""} onChange={e => updatePlan(plan.id, "tag", e.target.value)} className="h-7 text-xs flex-1" placeholder="Tag chip" />
+                  </div>
+                  <Input value={plan.spec ?? ""} onChange={e => updatePlan(plan.id, "spec", e.target.value)} className="h-7 text-xs" placeholder="Spec line (e.g. Nano Ceramic)" />
+                  <MetersEditor value={plan.meters} onChange={v => updatePlan(plan.id, "meters", v)} />
+                </>
+              )}
               <Input value={plan.badge ?? ""} onChange={e => updatePlan(plan.id, "badge", e.target.value)} className="h-7 text-xs" placeholder="Badge (e.g. Popular)" />
               <div className="flex items-center justify-between">
-                <Label className="text-xs">Highlighted</Label>
+                <Label className="text-xs">{spec ? "Highlighted (dark card)" : "Highlighted"}</Label>
                 <Switch checked={plan.highlighted ?? false} onCheckedChange={v => updatePlan(plan.id, "highlighted", v)} />
               </div>
               <div>
@@ -86,8 +118,9 @@ export function PricingSettings({ block }: { block: PricingBlockProps }) {
                   onChange={e => updatePlan(plan.id, "features", e.target.value.split("\n").filter(Boolean))}
                 />
               </div>
+              {spec && <LinesField label="Not included (shown greyed)" value={plan.excludedFeatures} onChange={v => updatePlan(plan.id, "excludedFeatures", v)} rows={2} />}
               <Input value={plan.ctaLabel ?? ""} onChange={e => updatePlan(plan.id, "ctaLabel", e.target.value)} className="h-7 text-xs" placeholder="CTA Label" />
-              <Input value={plan.ctaUrl ?? ""} onChange={e => updatePlan(plan.id, "ctaUrl", e.target.value)} className="h-7 text-xs" placeholder="CTA URL" />
+              {!(spec && block.data.whatsappCta) && <Input value={plan.ctaUrl ?? ""} onChange={e => updatePlan(plan.id, "ctaUrl", e.target.value)} className="h-7 text-xs" placeholder="CTA URL" />}
             </div>
           ))}
         </div>

@@ -5,6 +5,7 @@ import Image from "@/components/ui/smart-image";
 import * as LucideIcons from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ServicesBento, ServicesPhotoCards } from "./services-showcase";
 
 // ─── Group resolution ──────────────────────────────────────────────────────
 // When data.source === "group", items live in the service_groups/service_items
@@ -435,5 +436,7 @@ export function ServicesByVariant({ data, variant }: { data: ServicesBlockProps[
   if (variant === "menu-cards") return <ServicesMenuCards data={data} />;
   if (variant === "program-cards-dark") return <ServicesProgramCardsDark data={data} />;
   if (variant === "numbered") return <ServicesNumbered data={data} />;
+  if (variant === "bento") return <ServicesBento data={data} />;
+  if (variant === "photo-cards") return <ServicesPhotoCards data={data} />;
   return <ServicesLegacy data={data} />;
 }

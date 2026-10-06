@@ -20,6 +20,8 @@ import { BlockRenderer } from "./block-renderer";
 import { InsertSectionButton } from "./insert-section-button";
 import { InlineEditContext, type InlineEditContextValue } from "@/components/blocks/inline-text";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { SiteContactProvider, type SiteContact } from "@/components/site/site-contact-context";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
 /** Path to the ARRAY a block currently lives in — every ancestor container
@@ -42,6 +44,14 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
 } = {}) {
   const { blocks, mode, moveBlock, selectBlock, selectedBlockId, updateBlock } = useBuilderStore();
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
+  const tenantId = useBuilderStore((s) => s.tenantId);
+  const [siteContact, setSiteContact] = React.useState<SiteContact | null>(null);
+  React.useEffect(() => {
+    if (!tenantId) return;
+    createClient().from("contact_details").select("phone, whatsapp, email, address").eq("tenant_id", tenantId)
+      .order("is_primary", { ascending: false }).order("sort_order", { ascending: true }).limit(1).maybeSingle()
+      .then(({ data }) => setSiteContact((data as SiteContact | null) ?? null));
+  }, [tenantId]);
 
   const inlineEdit = React.useMemo<InlineEditContextValue>(() => ({
     updateField: (blockId, field, value) => {
@@ -168,6 +178,7 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
         if (e.target === e.currentTarget) selectBlock(undefined);
       }}
     >
+      <SiteContactProvider value={siteContact}>
       <InlineEditContext.Provider value={mode === "edit" ? inlineEdit : null}>
         <DndContext
           sensors={sensors}
@@ -193,6 +204,7 @@ export function BuilderCanvas({ surfaceClassName = "bg-white" }: {
           </DragOverlay>
         </DndContext>
       </InlineEditContext.Provider>
+      </SiteContactProvider>
     </div>
   );
 }

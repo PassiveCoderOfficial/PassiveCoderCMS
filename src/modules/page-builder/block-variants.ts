@@ -42,6 +42,8 @@ export type BlockVariant = {
   thumb: VariantThumbKind;
   /** Reads better on dark palettes — surfaced as a hint in the picker. */
   dark?: boolean;
+  /** Paints its own full-width band and spacing; picking it zeroes the section padding. */
+  edgeToEdge?: boolean;
 };
 
 /**
@@ -63,6 +65,8 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "centered-bold", label: "Centered Bold", description: "Large centered headline, no image — strong and typographic.", thumb: "centered" },
     { key: "dark-gradient-left", label: "Dark Gradient", description: "Dark gradient panel on the left, imagery bleeding right.", thumb: "gradient-left", dark: true },
     { key: "corporate", label: "Corporate", description: "Restrained, structured layout with a formal tone.", thumb: "corporate" },
+    { key: "spec-card", label: "Spec Card", description: "Dark photo hero, two-tone headline, glass card with spec bars and stats, link strip below.", thumb: "gradient-left", dark: true, edgeToEdge: true },
+    { key: "page-banner", label: "Page Banner", description: "Inner-page header: dark photo, automatic breadcrumb, label, title and buttons.", thumb: "fullscreen", dark: true, edgeToEdge: true },
   ],
 
   services: [
@@ -74,6 +78,8 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "menu-cards", label: "Menu Cards", description: "Compact price-led cards, styled like a menu.", thumb: "menu-list" },
     { key: "program-cards-dark", label: "Program Cards", description: "Bold dark cards for classes, programs or packages.", thumb: "cards-dark", dark: true },
     { key: "image-tiles", label: "Image Tiles", description: "Framed photo tiles with the title and an arrow button underneath — editorial and calm.", thumb: "cards-grid" },
+    { key: "bento", label: "Bento", description: "Photo tiles in mixed sizes: one big lead, one wide, the rest small. Fits any number of services.", thumb: "bento", dark: true },
+    { key: "photo-cards", label: "Photo Cards", description: "Tall photo cards with label and title over the image, plus a 'view all' link.", thumb: "grid-tight" },
   ],
 
   testimonials: [
@@ -103,6 +109,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "minimal-dark", label: "Minimal Dark", description: "Stripped-back dark pricing, typography-led.", thumb: "price-minimal", dark: true },
     { key: "membership-cards", label: "Membership", description: "Recurring-plan framing for gyms and clubs.", thumb: "price-cards" },
     { key: "menu-pricing", label: "Menu Pricing", description: "Itemised price list, restaurant style.", thumb: "price-minimal" },
+    { key: "spec-cards", label: "Spec Cards", description: "Old and new price, spec bars, included/excluded items, WhatsApp buttons. Highlighted plan turns dark.", thumb: "price-cards" },
   ],
 
   cta: [
@@ -111,6 +118,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "navy-banner", label: "Navy Banner", description: "Deep, calm banner for professional services.", thumb: "banner-dark", dark: true },
     { key: "warm-banner", label: "Warm Banner", description: "Softer, inviting banner treatment.", thumb: "banner" },
     { key: "dark-split", label: "Dark Split", description: "Text one side, actions the other, on dark.", thumb: "split-cta", dark: true },
+    { key: "visit-map", label: "Visit + Map", description: "Dark band with address, phone, hours, WhatsApp and directions buttons, and a live map. Uses your contact details.", thumb: "split-cta", dark: true, edgeToEdge: true },
   ],
 
   features: [
@@ -122,6 +130,9 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "split-list", label: "Split List", description: "Heading pinned left, features listed right.", thumb: "two-col" },
     { key: "alternating-media", label: "Alternating Media", description: "Wide alternating rows pairing each feature with an image.", thumb: "list-rows" },
     { key: "dark", label: "Dark Checklist", description: "Two-column checklist on a dark surface.", thumb: "list-rows", dark: true },
+    { key: "overview-quote", label: "Overview + Quote Card", description: "Intro text and tag chips beside a sticky card with photo, text and a (WhatsApp) button.", thumb: "two-col" },
+    { key: "numbered-grid", label: "Numbered Grid", description: "Numbered tiles (01, 02...) on a full-width dark band or a light bordered grid.", thumb: "numbered-list", dark: true, edgeToEdge: true },
+    { key: "image-stats", label: "Image + Stats", description: "Photo with a floating badge, heading, text, big-number tiles and buttons.", thumb: "split-image" },
   ],
 
   faq: [

@@ -240,11 +240,13 @@ function GalleryHeroMosaic({ block }: { block: GalleryBlockProps }) {
         >
           <Image src={lead.url} alt={lead.alt ?? ""} fill unoptimized className="object-cover" />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        {/* Two or fewer supporting shots stack beside the lead instead of
+            sitting as half-empty squares. */}
+        <div className={cn("grid gap-2", rest.length > 2 ? "grid-cols-2" : "grid-cols-1")}>
           {rest.slice(0, 4).map((image, i) => (
             <div
               key={image.id}
-              className="relative aspect-square overflow-hidden rounded-xl cursor-pointer"
+              className={cn("relative overflow-hidden rounded-xl cursor-pointer", rest.length > 2 ? "aspect-square" : "aspect-[16/9]")}
               onClick={() => lightbox && setLightboxIndex(i + 1)}
             >
               <Image src={image.url} alt={image.alt ?? ""} fill unoptimized className="object-cover" />

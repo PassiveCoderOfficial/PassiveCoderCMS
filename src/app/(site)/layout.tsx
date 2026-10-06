@@ -34,6 +34,8 @@ import { MARKETPLACE_TOKENS_CSS } from "@/lib/marketplace-ecom/brand-tokens";
 // tenant id. If more tenants want this, move to a site_settings toggle.
 const WHATSAPP_TENANT_ID = "72dd48ef-497c-4e22-9894-4d43a9a4556b";
 import type { Block } from "@/types/cms";
+import { SiteContactProvider } from "@/components/site/site-contact-context";
+import { getSiteContact } from "@/lib/site-contact";
 
 export async function generateMetadata(): Promise<Metadata> {
   const tenantId = (await headers()).get("x-tenant-id");
@@ -185,8 +187,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // rather than a hardcoded slug, so any future marketplace tenant picks it
   // up automatically.
   const marketplaceChrome = await getMarketplaceChrome(tenantId);
+  const siteContact = await getSiteContact(tenantId);
 
   return (
+    <SiteContactProvider value={siteContact}>
     <CartProvider>
       {/* The root layout mounts <ThemeProvider defaultTheme="system">, which
           adds .dark to <html> from the visitor's OS setting on mount — that
@@ -338,5 +342,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: settings.custom_js }} />
       )}
     </CartProvider>
+    </SiteContactProvider>
   );
 }

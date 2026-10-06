@@ -31,7 +31,11 @@ export function VariantPicker({ block }: { block: Block }) {
 
   const select = (key: string) => {
     if (!dataField) {
-      updateBlock(block.id, { templateVariant: key } as Partial<Block>);
+      // Edge-to-edge variants paint their own full-width band and spacing;
+      // the section padding would leave a rim of page colour around them.
+      const edge = variants.find((v) => v.key === key)?.edgeToEdge;
+      const zero = { top: 0, right: 0, bottom: 0, left: 0 };
+      updateBlock(block.id, (edge ? { templateVariant: key, padding: zero } : { templateVariant: key }) as Partial<Block>);
       return;
     }
     // `updateBlock` does a shallow Object.assign, so the whole data object has

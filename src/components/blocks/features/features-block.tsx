@@ -1,4 +1,5 @@
 import React from "react";
+import { FeaturesOverviewQuote, FeaturesNumberedGrid, FeaturesImageStats } from "./features-showcase";
 import type { FeaturesBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
@@ -289,6 +290,9 @@ export function FeaturesBlock({ block }: { block: FeaturesBlockProps }) {
     case "centered-icons": return <FeaturesCenteredIcons data={block.data} />;
     case "split-list": return <FeaturesSplitList data={block.data} />;
     case "highlight-cards": return <FeaturesHighlightCards data={block.data} />;
+    case "overview-quote": return <FeaturesOverviewQuote data={block.data} />;
+    case "numbered-grid": return <FeaturesNumberedGrid data={block.data} />;
+    case "image-stats": return <FeaturesImageStats data={block.data} />;
   }
   const { data } = block;
   const { title, subtitle, layout, columns, items, style } = data;

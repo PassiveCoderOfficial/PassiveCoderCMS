@@ -145,6 +145,11 @@ export function DesignClient({ initial, typography, palette, tenantId }: {
             render={(o) => <span style={{ fontFamily: q(headingFont), letterSpacing: o.value }}>{o.label}</span>} />
         </div>
         <div className="space-y-1.5">
+          <Label>Heading style</Label>
+          <Choice options={[{ value: "normal" as const, label: "Upright" }, { value: "italic" as const, label: "Italic" }]} value={d.headingStyle} onChange={(v) => set("headingStyle", v)}
+            render={(o) => <span style={{ fontFamily: q(headingFont), fontStyle: o.value }}>{o.label}</span>} />
+        </div>
+        <div className="space-y-1.5">
           <Label>Corners</Label>
           <Choice options={ROUNDNESS} value={d.roundness} onChange={(v) => set("roundness", v)}
             render={(o) => (
@@ -169,7 +174,7 @@ export function DesignClient({ initial, typography, palette, tenantId }: {
         <p className="text-xs text-muted-foreground mb-2">Preview</p>
         <div className="rounded-lg border p-6" style={{ background: palette.background, color: palette.foreground, fontFamily: q(bodyFont) }}>
           <div className="p-6 max-w-sm" style={{ background: palette.card, borderRadius: radius, boxShadow: shadow, border: `1px solid ${palette.border}` }}>
-            <h3 className="text-2xl mb-2" style={{ fontFamily: q(headingFont), fontWeight: Number(d.headingWeight ?? typography.headingWeight), letterSpacing: d.letterSpacing ?? typography.letterSpacing }}>
+            <h3 className="text-2xl mb-2" style={{ fontStyle: d.headingStyle ?? "normal", fontFamily: q(headingFont), fontWeight: Number(d.headingWeight ?? typography.headingWeight), letterSpacing: d.letterSpacing ?? typography.letterSpacing }}>
               Fresh, fast and local
             </h3>
             <p className="text-sm mb-4" style={{ color: palette.mutedFg }}>

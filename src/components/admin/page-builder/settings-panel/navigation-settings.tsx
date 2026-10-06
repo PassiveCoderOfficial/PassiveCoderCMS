@@ -10,6 +10,8 @@ import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { NavItemsEditor } from "./nav-items-editor";
 import type { NavigationBlockProps } from "@/types/cms";
+import { ItemsEditor, TextField } from "./showcase-fields";
+import { TOP_BAR_ICONS } from "@/components/blocks/navigation/nav-top-bar";
 
 export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -120,6 +122,62 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
       <div className="border-t pt-3">
         <NavItemsEditor items={block.data.items} onChange={(items) => update("items", items)} />
       </div>
+
+      <TopBarSettings block={block} update={update} />
+    </div>
+  );
+}
+
+function TopBarSettings({ block, update }: { block: NavigationBlockProps; update: (f: string, v: unknown) => void }) {
+  const bar = block.data.topBar ?? { show: false, items: [] };
+  const set = (patch: Partial<typeof bar>) => update("topBar", { ...bar, ...patch });
+  const on = !!block.data.topBar && bar.show !== false;
+  return (
+    <div className="border-t pt-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <div>
+          <Label className="text-xs">Top bar</Label>
+          <p className="text-[10px] text-muted-foreground">Thin strip above the menu: address, hours, offers, phone, WhatsApp</p>
+        </div>
+        <Switch checked={on} onCheckedChange={(v) => set({ show: v })} />
+      </div>
+      {on && (
+        <>
+          <ItemsEditor title="Info items" items={bar.items} onChange={(items) => set({ items })}
+            make={() => ({ text: "Your text", icon: "info", side: "left" as const })} itemLabel={(it) => it.text}
+            render={(it, up) => (
+              <div className="space-y-1">
+                <Input value={it.text} onChange={(e) => up({ text: e.target.value })} className="h-7 text-xs" placeholder="Text" />
+                <Input value={it.url ?? ""} onChange={(e) => up({ url: e.target.value })} className="h-7 text-xs" placeholder="Link (optional)" />
+                <div className="flex gap-1">
+                  <select value={it.icon ?? ""} onChange={(e) => up({ icon: e.target.value || undefined })} className="flex-1 h-7 text-xs rounded-md border bg-background px-1">
+                    <option value="">No icon</option>
+                    {TOP_BAR_ICONS.map((i) => <option key={i} value={i}>{i}</option>)}
+                  </select>
+                  <select value={it.side ?? "left"} onChange={(e) => up({ side: e.target.value as "left" | "right" })} className="flex-1 h-7 text-xs rounded-md border bg-background px-1">
+                    <option value="left">Left</option><option value="right">Right</option>
+                  </select>
+                </div>
+                <label className="flex items-center gap-2 text-[11px]">
+                  <input type="checkbox" checked={it.hideOnMobile ?? false} onChange={(e) => up({ hideOnMobile: e.target.checked })} /> Hide on phones
+                </label>
+              </div>
+            )} />
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Show phone (from Contact details)</Label>
+            <Switch checked={bar.showPhone !== false} onCheckedChange={(v) => set({ showPhone: v })} />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Show WhatsApp button</Label>
+            <Switch checked={bar.showWhatsapp !== false} onCheckedChange={(v) => set({ showWhatsapp: v })} />
+          </div>
+          {bar.showWhatsapp !== false && <TextField label="WhatsApp button text" value={bar.whatsappLabel} onChange={(v) => set({ whatsappLabel: v })} placeholder="WhatsApp" />}
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label className="text-[10px] text-muted-foreground">Background</Label><ColorPicker value={bar.background ?? ""} onChange={(v) => set({ background: v })} /></div>
+            <div><Label className="text-[10px] text-muted-foreground">Text</Label><ColorPicker value={bar.textColor ?? ""} onChange={(v) => set({ textColor: v })} /></div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

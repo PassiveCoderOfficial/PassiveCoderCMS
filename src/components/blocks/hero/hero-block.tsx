@@ -5,6 +5,7 @@ import Image from "@/components/ui/smart-image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { InlineText } from "../inline-text";
+import { HeroSpecCard, HeroPageBanner } from "./hero-showcase";
 
 interface HeroBlockComponentProps {
   block: HeroBlockProps;
@@ -510,5 +511,7 @@ export function HeroBlock({ block }: HeroBlockComponentProps) {
   if (variant === "centered-bold") return <HeroCenteredBold block={block} />;
   if (variant === "dark-gradient-left") return <HeroDarkGradientLeft block={block} />;
   if (variant === "corporate") return <HeroCorporate block={block} />;
+  if (variant === "spec-card") return <HeroSpecCard block={block} />;
+  if (variant === "page-banner") return <HeroPageBanner block={block} />;
   return <HeroLegacy block={block} />;
 }

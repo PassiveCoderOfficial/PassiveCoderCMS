@@ -134,6 +134,8 @@ export type SiteDesign = {
   bodyFont?: string;
   headingWeight?: string;
   letterSpacing?: string;
+  /** "italic" slants every heading (sporty / automotive brands). */
+  headingStyle?: "normal" | "italic";
   roundness?: "sharp" | "soft" | "rounded" | "extra";
   shadow?: "none" | "subtle" | "normal" | "bold";
   /** "cinematic": sections and photos animate in on scroll, both directions. */

@@ -11,6 +11,9 @@ import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { countVisit } from "@/lib/usage/count-visit";
 import { recordPageView } from "@/lib/usage/record-page-view";
 import { buildSiteMetadata } from "@/lib/site/site-metadata";
+import { SiteContactProvider } from "@/components/site/site-contact-context";
+import { getSiteContact } from "@/lib/site-contact";
+import { ScrollReveal } from "@/components/site/scroll-reveal";
 
 /** Root-domain requests carry no x-tenant-id (middleware only sets that on
  *  the subdomain-routing branch), but the platform's own marketing site is
@@ -138,8 +141,9 @@ export default async function MarketingLayout({ children }: { children: React.Re
     ? `document.documentElement.classList.add('${scheme}');document.documentElement.classList.remove('${scheme === "dark" ? "light" : "dark"}');document.documentElement.style.colorScheme='${scheme}';document.documentElement.dataset.themeLocked='${scheme}';`
     : null;
 
+  const siteContact = await getSiteContact(tenantId);
   return (
-    <>
+    <SiteContactProvider value={siteContact}>
       {themeLockScript && (
         <Script id="pc-theme-lock" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeLockScript }} />
       )}
@@ -181,6 +185,9 @@ export default async function MarketingLayout({ children }: { children: React.Re
       )}
       <GoogleTagManager id={gtmContainerId} />
       {!tenantId && <WhatsAppButton />}
+      {/* Tenant homepages render here, not in (site); without this every
+          data-reveal element on a tenant homepage stayed invisible. */}
+      {tenantId && <ScrollReveal />}
       {tenantId && <FloatingContactButtons tenantId={tenantId} />}
       <DemoBanner tenantId={tenantId} />
       {/* Business + website structured data for search and AI answer engines. */}
@@ -199,6 +206,6 @@ export default async function MarketingLayout({ children }: { children: React.Re
           ],
         }).replace(/</g, "\\u003c") }} />
       )}
-    </>
+    </SiteContactProvider>
   );
 }

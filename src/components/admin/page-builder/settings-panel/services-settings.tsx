@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Database, Pencil, ExternalLink } from "lucide-react";
 import { generateId } from "@/lib/utils";
+import { TextField, ImageField, ShowcaseColorsEditor } from "./showcase-fields";
+import { Switch } from "@/components/ui/switch";
 import type { ServicesBlockProps } from "@/types/cms";
 
 interface ServiceGroup {
@@ -44,8 +46,11 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
     update("items", block.data.items.filter((it) => it.id !== id));
   };
 
+  const showcase = block.templateVariant === "bento" || block.templateVariant === "photo-cards";
+
   return (
     <div className="space-y-4">
+      {showcase && <TextField label="Small label above title" value={block.data.eyebrow} onChange={(v) => update("eyebrow", v)} />}
       <div className="space-y-1.5"><Label className="text-xs">Section Title</Label><Input value={block.data.title ?? ""} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs" /></div>
       <div className="space-y-1.5"><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={(e) => update("subtitle", e.target.value)} className="h-8 text-xs" /></div>
 
@@ -131,11 +136,31 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
                 <Input value={item.title} onChange={(e) => updateItem(item.id, "title", e.target.value)} className="h-7 text-xs" placeholder="Title" />
                 <Textarea value={item.description} onChange={(e) => updateItem(item.id, "description", e.target.value)} className="text-xs resize-none" rows={2} placeholder="Description" />
                 <Input value={item.link ?? ""} onChange={(e) => updateItem(item.id, "link", e.target.value)} className="h-7 text-xs" placeholder="Link URL" />
+                <ImageField label="Image" value={item.imageUrl} onChange={(v) => updateItem(item.id, "imageUrl", v)} />
+                {showcase && (
+                  <div className="flex gap-1">
+                    <Input value={item.kicker ?? ""} onChange={(e) => updateItem(item.id, "kicker", e.target.value)} className="h-7 text-xs flex-1" placeholder="Small label" />
+                    <Input value={item.linkLabel ?? ""} onChange={(e) => updateItem(item.id, "linkLabel", e.target.value)} className="h-7 text-xs flex-1" placeholder="Link text (Explore)" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       )}
+      {block.templateVariant === "bento" && (
+        <div className="flex items-center justify-between border-t pt-3">
+          <Label className="text-xs">Hide text on small tiles</Label>
+          <Switch checked={block.data.hideSmallText ?? false} onCheckedChange={(v) => update("hideSmallText", v)} />
+        </div>
+      )}
+      {block.templateVariant === "photo-cards" && (
+        <div className="flex gap-1 border-t pt-3">
+          <Input value={block.data.allLink?.label ?? ""} onChange={(e) => update("allLink", { ...block.data.allLink, label: e.target.value })} className="h-7 text-xs flex-1" placeholder="'View all' text" />
+          <Input value={block.data.allLink?.url ?? ""} onChange={(e) => update("allLink", { ...block.data.allLink, url: e.target.value })} className="h-7 text-xs flex-1" placeholder="/services" />
+        </div>
+      )}
+      {showcase && <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />}
     </div>
   );
 }

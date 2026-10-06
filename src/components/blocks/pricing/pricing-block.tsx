@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import type { PricingBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { ScHeading, ScMeter, WaIcon, scStyle, isExternal } from "@/components/blocks/_primitives/showcase";
+import { useSiteContact, waLink } from "@/components/site/site-contact-context";
 
 // ─── Currency helpers ─────────────────────────────────────────────────────────
 
@@ -317,6 +319,76 @@ function PricingDark({ data }: { data: VariantData }) {
   );
 }
 
+// Spec cards: old/new price, spec line, % meter bars, included/excluded list,
+// WhatsApp-prefilled buttons; the highlighted plan becomes the dark "top" card.
+function PricingSpecCards({ data }: { data: VariantData }) {
+  const contact = useSiteContact();
+  const n = data.plans.length;
+  const ctaFor = (plan: Plan) => {
+    if (data.whatsappCta) {
+      const text = (data.whatsappText || "Hi, I am interested in the {plan} package ({price}).")
+        .replace(/\{plan\}/g, plan.name).replace(/\{price\}/g, `${data.currencyPrefix ?? ""}${plan.displayPrice}`);
+      const href = waLink(contact.whatsapp || contact.phone, text);
+      if (href) return href;
+    }
+    return plan.ctaUrl || "#";
+  };
+  return (
+    <div className="sc-root max-w-6xl mx-auto" style={scStyle(data.colors)}>
+      <ScHeading eyebrow={data.eyebrow} title={data.title} subtitle={data.subtitle} />
+      <div className={cn("grid gap-6", n >= 2 && "sm:grid-cols-2", n >= 3 && "lg:grid-cols-3", n === 4 && "xl:grid-cols-4")}>
+        {data.plans.map((plan) => {
+          const top = !!plan.highlighted;
+          const href = ctaFor(plan);
+          return (
+            <article key={plan.id} data-reveal className={cn(
+              "relative flex flex-col gap-3.5 rounded-[calc(var(--radius)+10px)] border p-6 transition-all hover:-translate-y-1",
+              top ? "sc-dark-grad sc-on-dark border-transparent text-white shadow-2xl" : "bg-card border-border hover:shadow-xl",
+            )}>
+              {plan.badge && <span className="sc-grad absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[.14em] text-white">{plan.badge}</span>}
+              <header className="flex items-center justify-between gap-2">
+                <h3 className={cn("text-xl font-extrabold", top ? "text-white" : "text-foreground")}>{plan.name}</h3>
+                {plan.tag && <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[.12em]", top ? "bg-white/10 sc-accent" : "bg-primary/10 text-primary")}>{plan.tag}</span>}
+              </header>
+              <div className="flex items-baseline gap-3 flex-wrap">
+                {plan.oldPrice && <s className={cn("text-sm", top ? "text-white/45" : "text-muted-foreground/70")}>{data.currencyPrefix}{plan.oldPrice}</s>}
+                <strong className={cn("text-5xl font-extrabold leading-none", top ? "text-white" : "text-foreground")} style={{ fontFamily: "var(--heading-font)" }}>
+                  {data.currencyPrefix && <small className="text-lg mr-1">{data.currencyPrefix}</small>}{plan.displayPrice}
+                </strong>
+                {plan.period && <span className={cn("text-sm", top ? "text-white/60" : "text-muted-foreground")}>/{plan.period}</span>}
+              </div>
+              {plan.spec && <p className={cn("font-bold", top ? "sc-accent" : "text-primary")}>{plan.spec}</p>}
+              {plan.description && <p className={cn("text-sm", top ? "text-white/70" : "text-muted-foreground")}>{plan.description}</p>}
+              {!!plan.meters?.length && (
+                <div className="grid gap-2.5">{plan.meters.map((m) => <ScMeter key={m.id} label={m.label} value={m.value} onDark={top} compact />)}</div>
+              )}
+              <ul className="grid gap-2 flex-1 my-1">
+                {plan.features.map((f, i) => (
+                  <li key={i} className={cn("flex items-center gap-2.5 text-sm", top ? "text-white/85" : "text-foreground/85")}>
+                    <Check className={cn("w-4 h-4 shrink-0", top ? "sc-accent" : "text-primary")} />{f}
+                  </li>
+                ))}
+                {(plan.excludedFeatures ?? []).map((f, i) => (
+                  <li key={`x${i}`} className={cn("flex items-center gap-2.5 text-sm line-through decoration-1", top ? "text-white/35" : "text-muted-foreground/60")}>
+                    <Check className="w-4 h-4 shrink-0 opacity-40" />{f}
+                  </li>
+                ))}
+              </ul>
+              {plan.ctaLabel && (
+                <a href={href} {...(isExternal(href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className={cn("sc-btn w-full", top ? "sc-btn-grad" : "sc-btn-ghost")}>
+                  {data.whatsappCta && <WaIcon />}{plan.ctaLabel}
+                </a>
+              )}
+            </article>
+          );
+        })}
+      </div>
+      {data.footnote && <p className="mt-7 text-center text-sm text-muted-foreground">{data.footnote}</p>}
+    </div>
+  );
+}
+
 function PricingLegacy({ data }: { data: VariantData }) {
   return (
     <div className="max-w-6xl mx-auto">
@@ -395,6 +467,7 @@ export function PricingBlock({ block }: { block: PricingBlockProps }) {
       {variant === "menu-pricing" && <PricingMenuPricing data={variantData} />}
       {variant === "membership-cards" && <PricingMembershipCards data={variantData} />}
       {variant === "dark" && <PricingDark data={variantData} />}
+      {variant === "spec-cards" && <PricingSpecCards data={variantData} />}
       {!variant && <PricingLegacy data={variantData} />}
     </div>
   );

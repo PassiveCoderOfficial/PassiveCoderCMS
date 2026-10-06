@@ -995,6 +995,33 @@ export const blockRegistry: BlockDefinition[] = [
     }),
   },
   {
+    type: "option_preview",
+    label: "Option Preview",
+    description: "Visitors tap an option and the photo changes: tint shades, colours, finishes, before/after. Optional side panel with rules or prices",
+    icon: "🎚️",
+    category: "media",
+    create: () => ({
+      ...baseBlock("option_preview"),
+      type: "option_preview" as const,
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      data: {
+        eyebrow: "Preview",
+        title: "See the difference",
+        subtitle: "Tap an option to preview it on the photo.",
+        imageUrl: "",
+        options: [
+          { id: "o1", label: "Light", sublabel: "", mode: "tint", color: "#06111F", strength: 20 },
+          { id: "o2", label: "Medium", sublabel: "", mode: "tint", color: "#06111F", strength: 45 },
+          { id: "o3", label: "Dark", sublabel: "", mode: "tint", color: "#06111F", strength: 75 },
+        ],
+        defaultIndex: 1,
+        showLabel: true,
+        tone: "dark",
+        panel: { show: false, rows: [] },
+      },
+    }),
+  },
+  {
     type: "scroll_story",
     label: "Scroll Story Hero",
     description: "Cinematic hero: photos zoom and cross-fade, a cut-out portrait and headlines animate as visitors scroll",

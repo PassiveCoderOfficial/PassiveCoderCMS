@@ -76,6 +76,7 @@ export type BlockType =
   | "item_box"
   | "scroll_story"
   | "marquee"
+  | "option_preview"
   // Header-only sub-blocks (2026-09-06): a header composes these as
   // independent, separately draggable blocks rather than one big Header
   // block with many settings sections — see project_block_editor_bugs memory
@@ -178,6 +179,21 @@ export type HeroBlockProps = BlockBase & {
     compact?: boolean;
     accentColor?: string;
     typography: { titleSize: string; titleColor: string; subtitleColor: string; descColor: string };
+    /** Spec Card / Page Banner: second headline line drawn in the accent gradient. */
+    titleAccent?: string;
+    /** Spec Card: glass card beside the headline. */
+    specCard?: {
+      label?: string;
+      title?: string;
+      meters?: { id: string; label: string; value: number }[];
+      stats?: { id: string; value: string; label: string }[];
+    };
+    /** Spec Card: link strip along the bottom of the hero. */
+    strip?: { id: string; title: string; subtitle?: string; url?: string }[];
+    /** Page Banner: breadcrumb built from the page address. */
+    showBreadcrumb?: boolean;
+    /** Spec Card / Page Banner colour overrides; theme colours when unset. */
+    colors?: { dark?: string; accent?: string };
   };
 };
 
@@ -277,6 +293,18 @@ export type NavigationBlockProps = BlockBase & {
     topRowBackground?: string;
     /** Upper-case, wider-spaced menu labels. */
     menuUppercase?: boolean;
+    /** Thin info strip above the header (address, hours, promo, phone, WhatsApp). */
+    topBar?: {
+      show?: boolean;
+      items: { id: string; text: string; icon?: string; url?: string; side?: "left" | "right"; hideOnMobile?: boolean }[];
+      /** Phone and WhatsApp come from Contact details. */
+      showPhone?: boolean;
+      showWhatsapp?: boolean;
+      whatsappLabel?: string;
+      whatsappText?: string;
+      background?: string;
+      textColor?: string;
+    };
   };
 };
 
@@ -409,6 +437,8 @@ export type ServiceItem = {
   description: string;
   link?: string;
   linkLabel?: string;
+  /** Bento / Photo Cards: small label above the title. */
+  kicker?: string;
 };
 
 export type ServicesBlockProps = BlockBase & {
@@ -422,6 +452,13 @@ export type ServicesBlockProps = BlockBase & {
     cardStyle: "flat" | "elevated" | "bordered" | "gradient";
     source?: "inline" | "group";
     source_group_id?: string;
+    /** Bento / Photo Cards: small label above the title. */
+    eyebrow?: string;
+    /** Bento: hide descriptions on the small tiles. */
+    hideSmallText?: boolean;
+    /** Photo Cards: "View all" link beside the title. */
+    allLink?: { label?: string; url?: string };
+    colors?: { dark?: string; accent?: string };
   };
 };
 
@@ -500,6 +537,16 @@ export type CTABlockProps = BlockBase & {
     primaryButton?: { label: string; url: string };
     secondaryButton?: { label: string; url: string };
     layout: "centered" | "left" | "split";
+    /** Visit + Map: small label above the title. */
+    eyebrow?: string;
+    /** Visit + Map: overrides for the site's contact details (empty = use them). */
+    address?: string;
+    phone?: string;
+    hours?: string;
+    /** Visit + Map: what to show on the map; defaults to the address. */
+    mapQuery?: string;
+    showMap?: boolean;
+    colors?: { dark?: string; accent?: string };
   };
 };
 
@@ -676,6 +723,8 @@ export type FeatureItem = {
   title: string;
   description: string;
   imageUrl?: string;
+  /** Image + Stats: small label under the big value (title). */
+  label?: string;
 };
 
 export type FeaturesBlockProps = BlockBase & {
@@ -689,6 +738,19 @@ export type FeaturesBlockProps = BlockBase & {
     columns: 2 | 3 | 4;
     items: FeatureItem[];
     style: "minimal" | "card" | "gradient";
+    /** Showcase variants: small label above the title. */
+    eyebrow?: string;
+    /** Overview + Quote Card: chips under the text. */
+    tags?: string[];
+    /** Overview + Quote Card: the sticky side card. */
+    card?: { imageUrl?: string; title?: string; text?: string; buttonLabel?: string; buttonUrl?: string; whatsapp?: boolean; whatsappText?: string };
+    /** Numbered Grid: dark band or light bordered grid. */
+    tone?: "dark" | "light";
+    /** Image + Stats: photo and the badge floating on it. */
+    imageUrl?: string;
+    badge?: { title?: string; text?: string };
+    buttons?: { id: string; label: string; url: string; style?: "solid" | "outline" }[];
+    colors?: { dark?: string; accent?: string };
   };
 };
 
@@ -1037,6 +1099,7 @@ export type Block =
   | ItemBoxBlockProps
   | ScrollStoryBlockProps
   | MarqueeBlockProps
+  | OptionPreviewBlockProps
   | HeaderLogoBlockProps
   | HeaderNavBlockProps
   | HeaderCtaBlockProps
@@ -1622,6 +1685,45 @@ export type ScrollStoryBlockProps = BlockBase & {
     showLines?: boolean;
     primaryCta?: { label: string; url: string };
     secondaryCta?: { label: string; url: string };
+  };
+};
+
+/** Tap an option, the photo shows it: tint shades, paint colours, finishes, before/after. */
+export type OptionPreviewBlockProps = BlockBase & {
+  type: "option_preview";
+  data: {
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+    /** Photo every "tint" option darkens/colours. */
+    imageUrl?: string;
+    options: {
+      id: string;
+      label: string;
+      sublabel?: string;
+      /** tint: colour overlay on the main photo. image: show this option's own photo. */
+      mode?: "tint" | "image";
+      color?: string;
+      /** 0-100 overlay strength for tint options. */
+      strength?: number;
+      imageUrl?: string;
+    }[];
+    defaultIndex?: number;
+    showLabel?: boolean;
+    /** Text before the option label on the photo, e.g. "VLT". */
+    labelPrefix?: string;
+    tone?: "dark" | "light";
+    panel?: {
+      show?: boolean;
+      title?: string;
+      rows?: { id: string; label: string; value: string }[];
+      text?: string;
+      buttonLabel?: string;
+      buttonUrl?: string;
+      whatsapp?: boolean;
+      whatsappText?: string;
+    };
+    colors?: { dark?: string; accent?: string };
   };
 };
 

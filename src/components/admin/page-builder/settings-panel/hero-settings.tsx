@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import type { HeroBlockProps } from "@/types/cms";
+import { Switch } from "@/components/ui/switch";
+import { TextField, ItemsEditor, MetersEditor, ShowcaseColorsEditor } from "./showcase-fields";
 
 export function HeroSettings({ block }: { block: HeroBlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -43,7 +45,11 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
   // designs by intent (no image split, no side-pinned text) — Layout has
   // nothing to control there, so hide it instead of showing a dropdown that
   // silently does nothing when changed.
-  const layoutApplies = !["centered-bold", "corporate"].includes(block.templateVariant ?? "");
+  const layoutApplies = !["centered-bold", "corporate", "spec-card", "page-banner"].includes(block.templateVariant ?? "");
+  const showcase = block.templateVariant === "spec-card" || block.templateVariant === "page-banner";
+  const specCard = block.templateVariant === "spec-card";
+  const card = block.data.specCard ?? {};
+  const setCard = (patch: Partial<NonNullable<HeroBlockProps["data"]["specCard"]>>) => update("specCard", { ...card, ...patch });
 
   return (
     <div className="space-y-4">
@@ -61,7 +67,7 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         </div>
       )}
 
-      <FieldGroup label="Badge text">
+      <FieldGroup label={block.templateVariant === "page-banner" ? "Small label above title" : "Badge text"}>
         <Input value={block.data.badge ?? ""} onChange={(e) => update("badge", e.target.value)} className="h-8 text-xs" placeholder="Optional badge" />
       </FieldGroup>
 
@@ -69,9 +75,13 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <Input value={block.data.title} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs" />
       </FieldGroup>
 
-      <FieldGroup label="Subtitle">
-        <Input value={block.data.subtitle ?? ""} onChange={(e) => update("subtitle", e.target.value)} className="h-8 text-xs" />
-      </FieldGroup>
+      {showcase ? (
+        <TextField label="Second title line (accent colour)" value={block.data.titleAccent} onChange={(v) => update("titleAccent", v)} placeholder="Optional" />
+      ) : (
+        <FieldGroup label="Subtitle">
+          <Input value={block.data.subtitle ?? ""} onChange={(e) => update("subtitle", e.target.value)} className="h-8 text-xs" />
+        </FieldGroup>
+      )}
 
       <FieldGroup label="Description">
         <Textarea value={block.data.description ?? ""} onChange={(e) => update("description", e.target.value)} className="text-xs resize-none" rows={3} />
@@ -104,6 +114,54 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
           Button colors are in the Style tab.
         </p>
       </div>
+
+      {block.templateVariant === "page-banner" && (
+        <div className="flex items-center justify-between pt-2 border-t">
+          <div>
+            <Label className="text-xs">Show breadcrumb</Label>
+            <p className="text-[10px] text-muted-foreground">Built automatically from the page address</p>
+          </div>
+          <Switch checked={block.data.showBreadcrumb !== false} onCheckedChange={(v) => update("showBreadcrumb", v)} />
+        </div>
+      )}
+
+      {specCard && (
+        <div className="pt-2 border-t space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Side card</p>
+          <TextField label="Card label" value={card.label} onChange={(v) => setCard({ label: v })} placeholder="Featured package" />
+          <TextField label="Card title" value={card.title} onChange={(v) => setCard({ title: v })} />
+          <MetersEditor value={card.meters} onChange={(v) => setCard({ meters: v })} />
+          <ItemsEditor title="Card stats (up to 3)" max={3} items={card.stats} onChange={(v) => setCard({ stats: v })}
+            make={() => ({ value: "10 yr", label: "warranty" })} itemLabel={(it) => `${it.value} ${it.label}`}
+            render={(it, set) => (
+              <div className="flex gap-1">
+                <Input value={it.value} onChange={(e) => set({ value: e.target.value })} className="h-7 text-xs w-20" placeholder="Value" />
+                <Input value={it.label} onChange={(e) => set({ label: e.target.value })} className="h-7 text-xs flex-1" placeholder="Label" />
+              </div>
+            )} />
+        </div>
+      )}
+
+      {specCard && (
+        <div className="pt-2 border-t">
+          <ItemsEditor title="Link strip (bottom)" items={block.data.strip} onChange={(v) => update("strip", v)}
+            make={() => ({ title: "Service", subtitle: "", url: "/services" })} itemLabel={(it) => it.title}
+            render={(it, set) => (
+              <div className="space-y-1">
+                <Input value={it.title} onChange={(e) => set({ title: e.target.value })} className="h-7 text-xs" placeholder="Title" />
+                <Input value={it.subtitle ?? ""} onChange={(e) => set({ subtitle: e.target.value })} className="h-7 text-xs" placeholder="Small text" />
+                <Input value={it.url ?? ""} onChange={(e) => set({ url: e.target.value })} className="h-7 text-xs" placeholder="Link, e.g. /services/car-tint" />
+              </div>
+            )} />
+        </div>
+      )}
+
+      {showcase && (
+        <div className="pt-2 border-t">
+          <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />
+          <p className="text-[10px] text-muted-foreground mt-1">Photo darkness: Style tab, Overlay Opacity.</p>
+        </div>
+      )}
 
     </div>
   );

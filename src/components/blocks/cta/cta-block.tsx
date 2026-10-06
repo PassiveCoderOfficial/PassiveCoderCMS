@@ -6,6 +6,7 @@ import Image from "@/components/ui/smart-image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { InlineText } from "../inline-text";
+import { CTAVisitMap } from "./cta-visit-map";
 
 function CTAButtons({ data, dark }: { data: CTABlockProps["data"]; dark?: boolean }) {
   const { primaryButton, secondaryButton } = data;
@@ -193,6 +194,7 @@ function CTALegacy({ block }: { block: CTABlockProps }) {
 
 export function CTABlock({ block }: { block: CTABlockProps }) {
   const variant = block.templateVariant;
+  if (variant === "visit-map") return <CTAVisitMap block={block} />;
   if (variant === "gradient-banner") return <CTAGradientBanner data={block.data} blockId={block.id} elements={block.elements} />;
   if (variant === "dark-split") return <CTADarkSplit data={block.data} blockId={block.id} elements={block.elements} />;
   if (variant === "navy-banner") return <CTANavyBanner data={block.data} blockId={block.id} elements={block.elements} />;

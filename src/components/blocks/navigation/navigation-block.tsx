@@ -1,4 +1,5 @@
 "use client";
+import { NavTopBar } from "./nav-top-bar";
 
 import React, { useState, useEffect } from "react";
 import type { NavigationBlockProps } from "@/types/cms";
@@ -94,7 +95,10 @@ export function NavigationBlock({ block, identityLogo }: {
   // on scroll — no layout jump. Pages using this must open with a full-height
   // hero (content flows under the fixed bar), which every marketplace page does.
   // Non-overlay navs stay plain sticky in flow.
+  const showTopBar = !!block.data.topBar && block.data.topBar.show !== false && !overlayHero;
   return (
+    <>
+    {showTopBar && <NavTopBar bar={block.data.topBar!} />}
     <nav
       className={cn(
         "relative w-full z-50 transition-all duration-300",
@@ -273,5 +277,6 @@ export function NavigationBlock({ block, identityLogo }: {
         </>
       )}
     </nav>
+    </>
   );
 }
