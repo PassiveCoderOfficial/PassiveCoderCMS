@@ -51,6 +51,7 @@ export default function UsersPage() {
   const [editRole, setEditRole] = useState<Role>("editor");
   const [canManage, setCanManage] = useState(false);
   const [me, setMe] = useState<string | null>(null);
+  const [siteUrl, setSiteUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -69,10 +70,11 @@ export default function UsersPage() {
   async function loadMembers() {
     setLoading(true);
     const res = await fetch("/api/users/members");
-    const data = await res.json().catch(() => ({})) as { members?: Member[]; canManage?: boolean; me?: string };
+    const data = await res.json().catch(() => ({})) as { members?: Member[]; canManage?: boolean; me?: string; siteUrl?: string | null };
     setMembers(data.members ?? []);
     setCanManage(!!data.canManage);
     setMe(data.me ?? null);
+    setSiteUrl(data.siteUrl ?? null);
     setLoading(false);
   }
 
@@ -239,12 +241,12 @@ export default function UsersPage() {
         {creds && (
           <div className="rounded-lg border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 p-4 space-y-2 text-sm">
             <p className="font-medium">{t("usersPage.loginDetails")}</p>
-            <pre className="font-mono text-xs whitespace-pre-wrap bg-background/70 rounded p-2 border">{`${t("usersPage.loginUrl")}: ${window.location.origin}/login
+            <pre className="font-mono text-xs whitespace-pre-wrap bg-background/70 rounded p-2 border">{`${t("usersPage.loginUrl")}: ${siteUrl ?? window.location.origin}/login
 Email: ${creds.email}
 ${t("usersPage.password")}: ${creds.password}`}</pre>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => {
-                navigator.clipboard.writeText(`${t("usersPage.loginUrl")}: ${window.location.origin}/login
+                navigator.clipboard.writeText(`${t("usersPage.loginUrl")}: ${siteUrl ?? window.location.origin}/login
 Email: ${creds.email}
 ${t("usersPage.password")}: ${creds.password}`)
                   .then(() => toast.success(t("usersPage.copied")));

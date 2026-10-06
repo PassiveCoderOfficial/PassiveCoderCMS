@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { teamAccess, type TeamAccess } from "@/lib/team/access";
+import { ROOT_DOMAIN } from "@/lib/flags";
 
 const ROLES = ["admin", "editor", "viewer"] as const;
 
@@ -18,7 +19,15 @@ export async function GET() {
     const p = byId.get(r.user_id);
     return { ...r, profiles: p ? { email: p.email, full_name: p.full_name, avatar_url: p.avatar_url } : null };
   });
-  return NextResponse.json({ members, canManage: a.manage, me: a.userId });
+  // Where this site's team signs in, for the "login details" handed over
+  // after creating a user: the live custom domain when there is one, not
+  // the platform subdomain the dashboard happens to be open on.
+  const { data: t } = await a.admin.from("tenants").select("slug, custom_domain, domain_status").eq("id", a.tenantId).maybeSingle();
+  const proto = ROOT_DOMAIN.includes("localhost") ? "http" : "https";
+  const siteUrl = t?.custom_domain && t.domain_status === "active"
+    ? `https://${t.custom_domain}`
+    : t?.slug ? `${proto}://${t.slug}.${ROOT_DOMAIN}` : null;
+  return NextResponse.json({ members, canManage: a.manage, me: a.userId, siteUrl });
 }
 
 async function target(a: TeamAccess, userId: string) {
