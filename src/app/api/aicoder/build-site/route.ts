@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { ensureBookingNav } from "@/lib/booking/nav";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { requireModule } from "@/lib/modules/resolve-modules";
 import { AiCoderError } from "@/lib/aicoder/generate";
@@ -120,6 +121,7 @@ export async function POST(req: Request) {
           url: p.isHome ? "/" : `/${p.slug}`,
         }));
         await rewireNavigation(all, navTargets).catch(() => {});
+        await ensureBookingNav(await createAdminClient(), tenantId).catch(() => {});
       }
     }
 

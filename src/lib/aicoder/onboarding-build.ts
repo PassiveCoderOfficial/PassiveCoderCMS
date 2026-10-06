@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ensureBookingNav } from "@/lib/booking/nav";
 import { createAdminClient } from "@/lib/supabase/server";
 import { parseBrief, planSite, type SitePlan } from "./plan";
 import { buildSitePage } from "./build-site";
@@ -333,6 +334,8 @@ async function finishJob(admin: SupabaseClient, tenantId: string, pagesDone: num
   await admin.from("tenants")
     .update({ ai_onboarding_build_at: new Date().toISOString(), ai_free_build_credits: 0 })
     .eq("id", tenantId);
+  // The AI-built header replaced the template's: link the booking page again.
+  await ensureBookingNav(admin, tenantId).catch(() => {});
 
   await admin.from("onboarding_build_jobs")
     .update({

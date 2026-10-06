@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { requireManagerOrSuperAdmin } from "@/lib/super-admin";
 import { verifyBearerManagerOrSuperAdminUser } from "@/lib/auth/verify-bearer";
 import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
+import { ensureBookingNav } from "@/lib/booking/nav";
 
 export async function GET(req: Request) {
   const caller = (await requireManagerOrSuperAdmin()) ?? (await verifyBearerManagerOrSuperAdminUser(req));
@@ -84,6 +85,9 @@ export async function POST(req: Request) {
     (template_mode as "theme" | "full") ?? "full",
     { siteName: name },
   ).catch(err => console.error(`[apply-template] tenant=${data.id} slug=${template_id ?? "blank"}`, err));
+
+  // Booking ready from day one (settings/hours come from migration 126); link /book in the header.
+  await ensureBookingNav(supabase, data.id).catch(err => console.error(`[booking-nav] tenant=${data.id}`, err));
 
   return NextResponse.json(data);
 }

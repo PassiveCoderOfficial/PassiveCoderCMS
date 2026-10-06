@@ -18,7 +18,8 @@ function iso(d: Date) {
 
 export function BookingBlock({ block }: { block: BookingBlockProps }) {
   const { data } = block;
-  const accent = data.accentColor || "#4f46e5";
+  // No colour set: use the site's brand colour (was a hardcoded purple on every site).
+  const accent = data.accentColor || "hsl(var(--primary))";
 
   const days = useMemo(() => {
     const out: Date[] = [];

@@ -1,4 +1,5 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { ensureBookingNav } from "@/lib/booking/nav";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { applyTemplateBySlug } from "@/modules/templates/apply-by-slug";
@@ -142,6 +143,13 @@ export async function POST(req: Request) {
     (templateMode as "theme" | "full") ?? "full",
     { siteName },
   ).catch(err => console.error(`[apply-template] tenant=${tenant.id} slug=${templateId ?? "blank"}`, err));
+
+  // Booking ready from day one (migration 126 seeds it on insert, before the
+  // timezone was known): redo the opening days now the country is set, and
+  // link /book from the header.
+  await supabase.from("booking_availability").delete().eq("tenant_id", tenant.id);
+  await supabase.rpc("ensure_booking_defaults", { p_tenant: tenant.id });
+  await ensureBookingNav(supabase, tenant.id).catch(err => console.error(`[booking-nav] tenant=${tenant.id}`, err));
 
   // ENM is deliberately NOT provisioned here. Creating an expert directory
   // account for everyone who signs up for a website produces listings nobody
