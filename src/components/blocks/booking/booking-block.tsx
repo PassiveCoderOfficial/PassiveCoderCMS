@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BookingBlockProps } from "@/types/cms";
 import { Calendar, Clock, Loader2, CheckCircle } from "lucide-react";
 
@@ -34,7 +34,7 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
 
   const [selectedDate, setSelectedDate] = useState<string>(iso(days[0]));
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(true); // true until the first fetch, so the auto-pick below waits for it
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -55,6 +55,17 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
   }, []);
 
   useEffect(() => { loadSlots(selectedDate); }, [selectedDate, loadSlots]);
+
+  // Open on the first day that still has free times (later today is often
+  // fully past the notice window, which read as "nothing available").
+  const autoPicked = useRef(false);
+  useEffect(() => {
+    if (autoPicked.current || loadingSlots) return;
+    if (slots.length) { autoPicked.current = true; return; }
+    const i = days.findIndex((d) => iso(d) === selectedDate);
+    if (i >= 0 && i < Math.min(days.length - 1, 6)) setSelectedDate(iso(days[i + 1]));
+    else autoPicked.current = true;
+  }, [slots, loadingSlots, selectedDate, days]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
