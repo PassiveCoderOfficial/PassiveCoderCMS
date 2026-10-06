@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
   const save = async (blocks: Block[], imported: Record<string, unknown>) => {
     const patch = live
-      ? { draft_blocks: blocks, has_draft: true, draft_rev: ((page.draft_rev as number) ?? 0) + 1 }
+      ? { draft_blocks: blocks, draft_rev: ((page.draft_rev as number) ?? 0) + 1 }
       : { blocks };
     const { error } = await admin.from("pages").update({ ...patch, settings: { ...settings, imported }, updated_at: new Date().toISOString() }).eq("id", page.id);
     if (error) throw new Error(error.message);

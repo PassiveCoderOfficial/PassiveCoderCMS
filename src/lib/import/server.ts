@@ -267,7 +267,7 @@ export async function applyItem(ctx: JobCtx, item: ImportItem): Promise<void> {
     if (existing && (isHome || (existing.settings as { imported?: unknown } | null)?.imported)) {
       const live = existing.status === "published";
       const { error } = await ctx.admin.from("pages").update({
-        ...(live ? { draft_blocks: blocks, has_draft: true, draft_rev: ((existing.draft_rev as number) ?? 0) + 1 } : { blocks }),
+        ...(live ? { draft_blocks: blocks, draft_rev: ((existing.draft_rev as number) ?? 0) + 1 } : { blocks }),
         settings: { ...((existing.settings as object) ?? {}), imported: importedMeta },
         updated_at: new Date().toISOString(),
       }).eq("id", existing.id);
