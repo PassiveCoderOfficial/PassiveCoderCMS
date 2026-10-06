@@ -1856,6 +1856,12 @@ export const en = {
   "usersPage.copy": "Copy",
   "usersPage.copied": "Copied",
   "usersPage.dismiss": "Done",
+  "usersPage.setPassword": "Set password",
+  "usersPage.newPasswordFor": "New password for {email}",
+  "usersPage.savePassword": "Save password",
+  "usersPage.cancel": "Cancel",
+  "usersPage.passwordChanged": "Password changed. It works right away.",
+  "usersPage.setPasswordHint": "Takes effect immediately. Share the new password with them yourself.",
 
   // ── Themes / Templates ───────────────────────────────────────────────────
   "themes.title": "Templates",

@@ -25,7 +25,7 @@ export async function teamAccess() {
     manage = !!t;
   }
   if (!manage && !me) return null;
-  return { admin, userId: user.id, tenantId, manage };
+  return { admin, userId: user.id, tenantId, manage, superAdmin: !!sa };
 }
 
 export type TeamAccess = NonNullable<Awaited<ReturnType<typeof teamAccess>>>;

@@ -44,6 +44,9 @@ export default function UsersPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [creds, setCreds] = useState<{ email: string; password: string } | null>(null);
+  const [pwFor, setPwFor] = useState<string | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRole, setEditRole] = useState<Role>("editor");
   const [canManage, setCanManage] = useState(false);
@@ -73,12 +76,41 @@ export default function UsersPage() {
     setLoading(false);
   }
 
-  function generatePassword() {
+  function makePassword() {
     // No look-alike characters (0/O, 1/l/I) since these get read out or typed.
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
     const bytes = crypto.getRandomValues(new Uint8Array(12));
-    setPassword(Array.from(bytes, (b) => chars[b % chars.length]).join("") + "!");
+    return Array.from(bytes, (b) => chars[b % chars.length]).join("") + "!";
   }
+  function generatePassword() { setPassword(makePassword()); }
+
+  async function savePassword(m: Member) {
+    if (pwValue.length < 8) { toast.error(t("usersPage.passwordTooShort")); return; }
+    setPwSaving(true);
+    try {
+      const res = await fetch("/api/users/password", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: m.user_id, password: pwValue }),
+      });
+      const data = await res.json().catch(() => ({})) as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? t("usersPage.failed"));
+      toast.success(t("usersPage.passwordChanged"));
+      setCreds({ email: m.profiles?.email ?? "", password: pwValue });
+      setPwFor(null); setPwValue("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("usersPage.failed"));
+    } finally {
+      setPwSaving(false);
+    }
+  }
+
+  const pwButton = (m: Member) => canManage && m.user_id !== me && (
+    <button onClick={() => { setPwFor(pwFor === m.user_id ? null : m.user_id); setPwValue(""); }}
+      className="text-muted-foreground hover:text-foreground" aria-label={t("usersPage.setPassword")} title={t("usersPage.setPassword")}>
+      <KeyRound className="w-3.5 h-3.5" />
+    </button>
+  );
 
   async function invite() {
     if (!inviteEmail.trim() || !tenantId) return;
@@ -248,7 +280,8 @@ ${t("usersPage.password")}: ${creds.password}`)
               const profile = m.profiles;
               const initials = (profile?.full_name ?? profile?.email ?? "?").slice(0, 2).toUpperCase();
               return (
-                <div key={m.user_id} className="flex items-center gap-4 px-4 py-3">
+                <div key={m.user_id}>
+                <div className="flex items-center gap-4 px-4 py-3">
                   <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                     {profile?.avatar_url
                       ? <img src={profile.avatar_url} className="w-9 h-9 rounded-full object-cover" alt="" />
@@ -276,9 +309,12 @@ ${t("usersPage.password")}: ${creds.password}`)
                     // The site owner: shown as such (it used to fall through to
                     // the "editor" label), and not editable or removable here —
                     // ownership only changes through "Transfer to client".
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                      {t("usersPage.roleOwner")}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        {t("usersPage.roleOwner")}
+                      </span>
+                      {pwButton(m)}
+                    </div>
                   ) : (
                     <div className="flex items-center gap-3">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[m.role as Role] ?? ""}`}>
@@ -289,6 +325,7 @@ ${t("usersPage.password")}: ${creds.password}`)
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                       )}
+                      {pwButton(m)}
                       {(canManage || m.user_id === me) && (
                         <button onClick={() => removeMember(m.user_id)} className="text-muted-foreground hover:text-red-500" aria-label={m.user_id === me ? t("usersPage.leaveSite") : t("usersPage.removeMember")}>
                           <Trash2 className="w-3.5 h-3.5" />
@@ -299,6 +336,23 @@ ${t("usersPage.password")}: ${creds.password}`)
                   <p className="text-xs text-muted-foreground hidden sm:block">
                     {t("usersPage.joined", { date: new Date(m.joined_at).toLocaleDateString() })}
                   </p>
+                </div>
+                {pwFor === m.user_id && (
+                  <div className="px-4 pb-4 pl-[4.25rem] space-y-2">
+                    <Label className="text-xs block">{t("usersPage.newPasswordFor", { email: m.profiles?.email ?? "" })}</Label>
+                    <div className="flex gap-2 flex-wrap">
+                      <Input type="text" autoComplete="new-password" spellCheck={false} className="font-mono flex-1 min-w-48"
+                        value={pwValue} onChange={e => setPwValue(e.target.value)} placeholder="min. 8 characters"
+                        onKeyDown={e => e.key === "Enter" && savePassword(m)} />
+                      <Button type="button" variant="outline" onClick={() => setPwValue(makePassword())}>{t("usersPage.generate")}</Button>
+                      <Button onClick={() => savePassword(m)} disabled={pwSaving || pwValue.length < 8}>
+                        {pwSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}{t("usersPage.savePassword")}
+                      </Button>
+                      <Button variant="ghost" onClick={() => setPwFor(null)}>{t("usersPage.cancel")}</Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("usersPage.setPasswordHint")}</p>
+                  </div>
+                )}
                 </div>
               );
             })}

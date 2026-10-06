@@ -1862,6 +1862,12 @@ export const bn = {
   "usersPage.copy": "কপি",
   "usersPage.copied": "কপি হয়েছে",
   "usersPage.dismiss": "ঠিক আছে",
+  "usersPage.setPassword": "পাসওয়ার্ড সেট করুন",
+  "usersPage.newPasswordFor": "{email} এর নতুন পাসওয়ার্ড",
+  "usersPage.savePassword": "পাসওয়ার্ড সেভ করুন",
+  "usersPage.cancel": "বাতিল",
+  "usersPage.passwordChanged": "পাসওয়ার্ড বদলানো হয়েছে। সাথে সাথে কাজ করবে।",
+  "usersPage.setPasswordHint": "সাথে সাথে কার্যকর হবে। নতুন পাসওয়ার্ড নিজে তাদের পাঠিয়ে দিন।",
 
   // ── Themes / Templates ───────────────────────────────────────────────────
   "themes.title": "টেমপ্লেটস",
