@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { UserPlus, Trash2, Shield, Edit2, Check, X, Loader2 } from "lucide-react";
+import { UserPlus, Trash2, Shield, Edit2, Check, X, Loader2, KeyRound, Copy, Mail } from "lucide-react";
 import { TransferSiteDialog } from "@/components/admin/transfer-site-dialog";
 import { useT } from "@/lib/i18n/language-provider";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
@@ -38,6 +38,12 @@ export default function UsersPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("editor");
   const [inviting, setInviting] = useState(false);
+  // "password" creates an account that is active immediately instead of
+  // emailing an invite; the details are shown once so they can be handed over.
+  const [mode, setMode] = useState<"invite" | "password">("invite");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [creds, setCreds] = useState<{ email: string; password: string } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRole, setEditRole] = useState<Role>("editor");
   const [canManage, setCanManage] = useState(false);
@@ -67,19 +73,38 @@ export default function UsersPage() {
     setLoading(false);
   }
 
+  function generatePassword() {
+    // No look-alike characters (0/O, 1/l/I) since these get read out or typed.
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(12));
+    setPassword(Array.from(bytes, (b) => chars[b % chars.length]).join("") + "!");
+  }
+
   async function invite() {
     if (!inviteEmail.trim() || !tenantId) return;
+    if (mode === "password" && password.length < 8) { toast.error(t("usersPage.passwordTooShort")); return; }
     setInviting(true);
     try {
       const res = await fetch("/api/users/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole }),
+        body: JSON.stringify({
+          email: inviteEmail.trim(), role: inviteRole,
+          ...(mode === "password" && { password, fullName: fullName.trim() }),
+        }),
       });
-      const data = await res.json() as { error?: string };
+      const data = await res.json() as { error?: string; existing?: boolean; created?: boolean };
       if (!res.ok) throw new Error(data.error ?? t("usersPage.failed"));
-      toast.success(t("usersPage.invitedEmail", { email: inviteEmail }));
-      setInviteEmail("");
+      const email = inviteEmail.trim();
+      if (data.created) {
+        toast.success(t("usersPage.userCreated", { email }));
+        setCreds({ email, password });
+      } else if (mode === "password" && data.existing) {
+        toast.success(t("usersPage.addedExisting", { email }));
+      } else {
+        toast.success(t("usersPage.invitedEmail", { email }));
+      }
+      setInviteEmail(""); setPassword(""); setFullName("");
       loadMembers();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("usersPage.inviteFailed"));
@@ -124,6 +149,14 @@ export default function UsersPage() {
       {/* Invite */}
       {canManage && <div className="rounded-xl border bg-card p-5 space-y-4">
         <h2 className="font-semibold flex items-center gap-2"><UserPlus className="w-4 h-4" /> {t("usersPage.inviteTeamMember")}</h2>
+        <div className="inline-flex rounded-lg border p-1 bg-muted/40 text-sm">
+          {([["invite", Mail, "usersPage.modeInvite"], ["password", KeyRound, "usersPage.modePassword"]] as const).map(([m, Icon, key]) => (
+            <button key={m} type="button" onClick={() => setMode(m)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${mode === m ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+              <Icon className="w-3.5 h-3.5" /> {t(key)}
+            </button>
+          ))}
+        </div>
         <div className="flex gap-3 flex-wrap">
           <div className="flex-1 min-w-48">
             <Label className="text-xs mb-1 block">{t("usersPage.emailAddress")}</Label>
@@ -135,6 +168,12 @@ export default function UsersPage() {
               onKeyDown={e => e.key === "Enter" && invite()}
             />
           </div>
+          {mode === "password" && (
+            <div className="flex-1 min-w-40">
+              <Label className="text-xs mb-1 block">{t("usersPage.fullName")}</Label>
+              <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jane Tan" />
+            </div>
+          )}
           <div>
             <Label className="text-xs mb-1 block">{t("usersPage.role")}</Label>
             <select
@@ -147,14 +186,41 @@ export default function UsersPage() {
               <option value="viewer">{t("usersPage.roleAuthorPosts")}</option>
             </select>
           </div>
+          {mode === "password" && (
+            <div className="flex-1 min-w-56 basis-full sm:basis-auto">
+              <Label className="text-xs mb-1 block">{t("usersPage.password")}</Label>
+              <div className="flex gap-2">
+                <Input type="text" autoComplete="new-password" spellCheck={false} className="font-mono"
+                  value={password} onChange={e => setPassword(e.target.value)} placeholder="min. 8 characters" />
+                <Button type="button" variant="outline" onClick={generatePassword}>{t("usersPage.generate")}</Button>
+              </div>
+            </div>
+          )}
           <div className="flex items-end">
-            <Button onClick={invite} disabled={inviting || !inviteEmail.trim()}>
+            <Button onClick={invite} disabled={inviting || !inviteEmail.trim() || (mode === "password" && password.length < 8)}>
               {inviting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
-              {t("usersPage.sendInvite")}
+              {t(mode === "password" ? "usersPage.createUser" : "usersPage.sendInvite")}
             </Button>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">{t("usersPage.inviteHint")}</p>
+        <p className="text-xs text-muted-foreground">{t(mode === "password" ? "usersPage.passwordHint" : "usersPage.inviteHint")}</p>
+        {creds && (
+          <div className="rounded-lg border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 p-4 space-y-2 text-sm">
+            <p className="font-medium">{t("usersPage.loginDetails")}</p>
+            <pre className="font-mono text-xs whitespace-pre-wrap bg-background/70 rounded p-2 border">{`${t("usersPage.loginUrl")}: ${window.location.origin}/login
+Email: ${creds.email}
+${t("usersPage.password")}: ${creds.password}`}</pre>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => {
+                navigator.clipboard.writeText(`${t("usersPage.loginUrl")}: ${window.location.origin}/login
+Email: ${creds.email}
+${t("usersPage.password")}: ${creds.password}`)
+                  .then(() => toast.success(t("usersPage.copied")));
+              }}><Copy className="w-3.5 h-3.5 mr-1.5" />{t("usersPage.copy")}</Button>
+              <Button size="sm" variant="ghost" onClick={() => setCreds(null)}>{t("usersPage.dismiss")}</Button>
+            </div>
+          </div>
+        )}
       </div>}
 
       {/* Role guide */}
