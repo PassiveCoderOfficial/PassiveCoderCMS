@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bot, Copy, Check, KeyRound, Plug, Trash2, Loader2 } from "lucide-react";
+import { Bot, Copy, Check, KeyRound, Plug, Trash2, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type Conn = { id: string; type: "token" | "app"; name: string; prefix: string | null; scope: "read" | "write"; created_at: string; last_used_at: string | null };
+type Conn = { id: string; type: "token" | "app"; name: string; app?: string | null; prefix: string | null; scope: "read" | "write"; created_at: string; last_used_at: string | null };
 type Activity = { tool: string; ok: boolean; error: string | null; created_at: string; mine: boolean };
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
@@ -82,7 +82,7 @@ const APPS: { key: string; label: string; oauth: boolean; steps: (token: string)
  * (app/api/mcp). Sign-in apps use OAuth; CLIs use a personal access token.
  */
 export default function AiConnectPage() {
-  const [data, setData] = useState<{ access: "read" | "write"; tokens: Conn[]; activity: Activity[] } | null>(null);
+  const [data, setData] = useState<{ access: "read" | "write"; siteName?: string | null; tokens: Conn[]; activity: Activity[] } | null>(null);
   const [app, setApp] = useState("claude");
   const [name, setName] = useState("");
   const [scope, setScope] = useState<"read" | "write">("write");
@@ -91,7 +91,12 @@ export default function AiConnectPage() {
 
   const load = useCallback(async () => {
     const r = await fetch("/api/mcp-tokens");
-    if (r.ok) setData(await r.json());
+    if (r.ok) {
+      const d = await r.json();
+      setData(d);
+      // New tokens default to the site's name; the user can change it.
+      if (d.siteName) setName((n) => n || d.siteName);
+    }
   }, []);
   useEffect(() => { void load(); }, [load]);
 
@@ -102,7 +107,17 @@ export default function AiConnectPage() {
     const d = await r.json().catch(() => ({}));
     setCreating(false);
     if (!r.ok) { toast.error(d.error ?? "Could not create token"); return; }
-    setNewToken(d.token); setName(""); void load();
+    setNewToken(d.token); setName(data?.siteName ?? ""); void load();
+  }
+
+  async function rename(t: Conn) {
+    const name = window.prompt("Name this connection (shown in your AI app):", t.name)?.trim();
+    if (!name || name === t.name) return;
+    const res = await fetch("/api/mcp-tokens", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: t.id, name }) });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { toast.error(json.error ?? "Couldn't rename"); return; }
+    toast.success(t.type === "app" ? "Renamed. Your AI app shows the new name after it reconnects." : "Renamed");
+    load();
   }
 
   async function revoke(id: string) {
@@ -187,11 +202,12 @@ export default function AiConnectPage() {
                 <li key={t.id} className="flex items-center gap-3 py-2.5 text-sm">
                   <span className="flex-1 min-w-0">
                     <span className="font-medium">{t.name}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{t.type === "app" ? "Signed-in app" : `Token ${t.prefix}…`} · {t.scope === "write" ? "view and edit" : "view only"}</span>
+                    <span className="text-xs text-muted-foreground ml-2">{t.type === "app" ? `Signed-in app${t.app ? ` (${t.app})` : ""}` : `Token ${t.prefix}…`} · {t.scope === "write" ? "view and edit" : "view only"}</span>
                     <span className="block text-xs text-muted-foreground">
                       Created {new Date(t.created_at).toLocaleDateString()} · {t.last_used_at ? `last used ${new Date(t.last_used_at).toLocaleString()}` : "never used"}
                     </span>
                   </span>
+                  <Button size="sm" variant="ghost" onClick={() => rename(t)} aria-label="Rename"><Pencil className="w-3.5 h-3.5" /></Button>
                   <Button size="sm" variant="outline" onClick={() => revoke(t.id)}><Trash2 className="w-3.5 h-3.5 mr-1" /> Disconnect</Button>
                 </li>
               ))}

@@ -15,9 +15,19 @@ async function params(req: Request): Promise<Record<string, string>> {
 
 type Admin = Awaited<ReturnType<typeof createAdminClient>>;
 
-async function pair(admin: Admin, userId: string, tenantId: string, scope: McpScope, clientId: string) {
-  const access = await issueToken(admin, { kind: "access", userId, tenantId, scope, clientId, ttlSeconds: ACCESS_TTL_S });
-  const refresh = await issueToken(admin, { kind: "refresh", userId, tenantId, scope, clientId, ttlSeconds: REFRESH_TTL_S });
+/**
+ * Issue an access + refresh pair. A new connection is named after its site
+ * (so several sites in one AI app are told apart); a refresh carries over the
+ * current name, including one the owner changed in AI Connect.
+ */
+async function pair(admin: Admin, userId: string, tenantId: string, scope: McpScope, clientId: string, name?: string | null) {
+  let label = name ?? null;
+  if (!label) {
+    const { data: t } = await admin.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+    label = (t?.name as string | undefined)?.slice(0, 60) ?? null;
+  }
+  const access = await issueToken(admin, { kind: "access", userId, tenantId, scope, clientId, name: label, ttlSeconds: ACCESS_TTL_S });
+  const refresh = await issueToken(admin, { kind: "refresh", userId, tenantId, scope, clientId, name: label, ttlSeconds: REFRESH_TTL_S });
   return NextResponse.json({
     access_token: access.token,
     token_type: "Bearer",
@@ -54,7 +64,7 @@ export async function POST(req: Request) {
     if (p.client_id && tok.client_id && p.client_id !== tok.client_id) return bad("invalid_grant", "Token was issued to another client");
     if (!(await siteAccess(admin, tok.user_id, tok.tenant_id))) return bad("invalid_grant", "You no longer have access to this site");
     await admin.from("mcp_tokens").update({ revoked_at: new Date().toISOString() }).eq("id", tok.id);
-    return pair(admin, tok.user_id, tok.tenant_id, tok.scope as McpScope, tok.client_id);
+    return pair(admin, tok.user_id, tok.tenant_id, tok.scope as McpScope, tok.client_id, tok.name);
   }
 
   return bad("unsupported_grant_type");

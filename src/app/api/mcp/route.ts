@@ -42,14 +42,16 @@ function unauthorized(req: Request) {
 const ok = (id: RpcReq["id"], result: unknown) => ({ jsonrpc: "2.0" as const, id: id ?? null, result });
 const err = (id: RpcReq["id"], code: number, message: string) => ({ jsonrpc: "2.0" as const, id: id ?? null, error: { code, message } });
 
-async function handle(msg: RpcReq, caller: McpCaller, siteName: string, links: SiteLinks | null) {
+async function handle(msg: RpcReq, caller: McpCaller, siteName: string, links: SiteLinks | null, connName: string | null) {
   switch (msg.method) {
     case "initialize": {
       const asked = String(msg.params?.protocolVersion ?? "");
       return ok(msg.id, {
         protocolVersion: SUPPORTED.includes(asked) ? asked : SUPPORTED[0],
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "passive-coder", title: "Passive Coder", version: process.env.NEXT_PUBLIC_APP_VERSION ?? "1" },
+        // Title = this connection's name (the site name unless renamed in AI Connect),
+        // so an AI app with several sites connected shows which is which.
+        serverInfo: { name: "passive-coder", title: connName ? `${connName} (Passive Coder)` : "Passive Coder", version: process.env.NEXT_PUBLIC_APP_VERSION ?? "1" },
         instructions:
           `You are connected to the Passive Coder dashboard for the website "${siteName}" with ${caller.scope === "write" ? "read and write" : "read-only"} access. ` +
           "Pages are built from blocks: call list_block_types and get_block_template before editing, read with get_page_blocks, save with save_page_blocks (published pages save as a draft), then publish_page when the user wants it live. " +
@@ -122,13 +124,15 @@ export async function POST(req: Request) {
   const admin = await createAdminClient();
   const links = await getSiteLinks(admin, caller.tenantId);
   const siteName = links?.name ?? "your site";
+  const { data: tokRow } = await admin.from("mcp_tokens").select("name").eq("id", caller.tokenId).maybeSingle();
+  const connName = (tokRow?.name as string | null) ?? siteName;
 
   const msgs = Array.isArray(body) ? body : [body];
   const out = [];
   for (const m of msgs) {
     if (!m || typeof m.method !== "string") { out.push(err(null, -32600, "Invalid request")); continue; }
     if (m.id === undefined || m.method.startsWith("notifications/")) continue; // notifications: no reply
-    out.push(await handle(m, caller, siteName, links));
+    out.push(await handle(m, caller, siteName, links, connName));
   }
   if (out.length === 0) return new NextResponse(null, { status: 202, headers: CORS });
   return NextResponse.json(Array.isArray(body) ? out : out[0], { headers: CORS });

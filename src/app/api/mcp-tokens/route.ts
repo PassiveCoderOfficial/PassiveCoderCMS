@@ -33,13 +33,16 @@ export async function GET() {
     c.admin.from("mcp_audit").select("tool, ok, error, created_at, user_id")
       .eq("tenant_id", c.tenantId).order("created_at", { ascending: false }).limit(30),
   ]);
+  const { data: site } = await c.admin.from("tenants").select("name").eq("id", c.tenantId).maybeSingle();
   const live = (tokens ?? []).filter((t) => !t.expires_at || new Date(t.expires_at).getTime() > Date.now());
   return NextResponse.json({
     access: c.access,
+    siteName: (site?.name as string | undefined) ?? null,
     tokens: live.map((t) => ({
       id: t.id,
       type: t.kind === "pat" ? "token" : "app",
-      name: t.kind === "pat" ? t.name : ((Array.isArray(t.mcp_oauth_clients) ? t.mcp_oauth_clients[0] : t.mcp_oauth_clients) as { client_name?: string } | null)?.client_name ?? "AI app",
+      name: t.name ?? ((Array.isArray(t.mcp_oauth_clients) ? t.mcp_oauth_clients[0] : t.mcp_oauth_clients) as { client_name?: string } | null)?.client_name ?? "AI app",
+      app: t.kind === "pat" ? null : ((Array.isArray(t.mcp_oauth_clients) ? t.mcp_oauth_clients[0] : t.mcp_oauth_clients) as { client_name?: string } | null)?.client_name ?? null,
       prefix: t.kind === "pat" ? t.prefix : null,
       scope: t.scope,
       created_at: t.created_at,
@@ -78,4 +81,25 @@ export async function DELETE(req: Request) {
     await c.admin.from("mcp_tokens").update({ revoked_at: now }).eq("id", tok.id);
   }
   return NextResponse.json({ ok: true });
+}
+
+/**
+ * Rename a connection. For an app connection the name lives on its token
+ * pair, so the live access token is renamed too (the AI app sees the new
+ * name the next time it connects or refreshes).
+ */
+export async function PATCH(req: Request) {
+  const c = await ctx();
+  if (!c) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const body = await req.json().catch(() => ({})) as { id?: string; name?: string };
+  const name = String(body.name ?? "").replace(/[<>\r\n]/g, "").trim().slice(0, 60);
+  if (!body.id || !name) return NextResponse.json({ error: "Give the connection a name" }, { status: 400 });
+  const { data: tok } = await c.admin.from("mcp_tokens").select("id, kind, client_id")
+    .eq("id", body.id).eq("tenant_id", c.tenantId).eq("user_id", c.user.id).maybeSingle();
+  if (!tok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  let q = c.admin.from("mcp_tokens").update({ name }).eq("tenant_id", c.tenantId).eq("user_id", c.user.id).is("revoked_at", null);
+  q = tok.kind === "pat" ? q.eq("id", tok.id) : q.eq("client_id", tok.client_id);
+  const { error } = await q;
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ ok: true, name });
 }
