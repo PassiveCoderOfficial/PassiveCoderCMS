@@ -26,7 +26,7 @@ export function NavigationBlock({ block, identityLogo }: {
   const {
     logoText, logoUrl, items, sticky, transparent, style,
     backgroundColor, textColor, activeColor,
-    logoHeight, showCta, ctaLabel, ctaUrl,
+    logoHeight, showCta, ctaLabel, ctaUrl, showBooking, bookingLabel, bookingUrl,
     colorMode, scrollAware, glass, ctaVariant, secondaryCtaLabel, secondaryCtaUrl,
     floating, showCart, logoCaption,
     showSearch, searchPlaceholder, searchButtonLabel, showAccount, trackOrderUrl, topRowBackground, menuUppercase,
@@ -184,9 +184,14 @@ export function NavigationBlock({ block, identityLogo }: {
                 {secondaryCtaLabel}
               </Link>
             )}
-            {showCta && ctaLabel && ctaUrl && (
+            {showCta && ctaLabel && ctaUrl && !(showBooking && ctaUrl === (bookingUrl || "/book")) && (
               <Link href={ctaUrl} className={cn("hidden md:inline-flex", ctaClasses)} style={ctaStyleObj}>
                 {ctaLabel}
+              </Link>
+            )}
+            {showBooking && (
+              <Link href={bookingUrl || "/book"} className={cn("hidden md:inline-flex", ctaClasses)} style={ctaStyleObj}>
+                {bookingLabel || "Book now"}
               </Link>
             )}
 
@@ -243,8 +248,13 @@ export function NavigationBlock({ block, identityLogo }: {
               items={items}
               onNavigate={() => setMobileOpen(false)}
               extraFooter={
-                (showCta && ctaLabel && ctaUrl) || (secondaryCtaLabel && secondaryCtaUrl) ? (
+                (showCta && ctaLabel && ctaUrl) || (secondaryCtaLabel && secondaryCtaUrl) || showBooking ? (
                   <>
+                    {showBooking && (
+                      <Link href={bookingUrl || "/book"} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold" style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))", color: "hsl(var(--primary-foreground))", boxShadow: "0 8px 20px -6px hsl(var(--primary) / 0.45)" }} onClick={() => setMobileOpen(false)}>
+                        {bookingLabel || "Book now"}
+                      </Link>
+                    )}
                     {showCta && ctaLabel && ctaUrl && (
                       <Link href={ctaUrl} className="flex items-center justify-center px-4 py-3 rounded-full text-[0.95rem] font-semibold" style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))", color: "hsl(var(--primary-foreground))", boxShadow: "0 8px 20px -6px hsl(var(--primary) / 0.45)" }} onClick={() => setMobileOpen(false)}>
                         {ctaLabel}

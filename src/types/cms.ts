@@ -233,6 +233,10 @@ export type NavigationBlockProps = BlockBase & {
     shadow?: boolean;
     borderBottom?: boolean;
     showCta?: boolean;
+    /** Header builder "Booking button": links to the site's booking page (/book by default). */
+    showBooking?: boolean;
+    bookingLabel?: string;
+    bookingUrl?: string;
     ctaLabel?: string;
     ctaUrl?: string;
     ctaStyle?: "solid" | "outline";
@@ -868,6 +872,12 @@ export type FooterBlockProps = BlockBase & {
     textColor?: string;
     accentColor?: string;
     showNewsletter?: boolean;
+    /** Footer "Booking" strip: a short invitation plus a button to the booking page. */
+    showBooking?: boolean;
+    bookingTitle?: string;
+    bookingText?: string;
+    bookingLabel?: string;
+    bookingUrl?: string;
     newsletterLabel?: string;
     newsletterPlaceholder?: string;
     bottomLinks?: FooterColumnLink[];

@@ -137,6 +137,18 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
 
       <div className="border-t pt-3 space-y-2">
         <div className="flex items-center justify-between">
+          <Label className="text-xs">Booking section</Label>
+          <Switch checked={!!block.data.showBooking} onCheckedChange={(v) => update("showBooking", v)} />
+        </div>
+        {block.data.showBooking && (
+          <>
+            <Input value={block.data.bookingTitle ?? ""} onChange={(e) => update("bookingTitle", e.target.value)} className="h-7 text-xs" placeholder="Book an appointment" />
+            <Input value={block.data.bookingText ?? ""} onChange={(e) => update("bookingText", e.target.value)} className="h-7 text-xs" placeholder="Pick a day and time that suits you." />
+            <Input value={block.data.bookingLabel ?? ""} onChange={(e) => update("bookingLabel", e.target.value)} className="h-7 text-xs" placeholder="Button label: Book now" />
+            <Input value={block.data.bookingUrl ?? ""} onChange={(e) => update("bookingUrl", e.target.value)} className="h-7 text-xs" placeholder="Booking page: /book" />
+          </>
+        )}
+        <div className="flex items-center justify-between">
           <Label className="text-xs">Show Newsletter Signup</Label>
           <Switch checked={!!block.data.showNewsletter} onCheckedChange={(v) => update("showNewsletter", v)} />
         </div>

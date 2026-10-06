@@ -24,6 +24,7 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
     copyrightText, copyrightYear = true,
     backgroundColor, textColor, accentColor,
     showNewsletter, newsletterLabel, newsletterPlaceholder,
+    showBooking, bookingTitle, bookingText, bookingLabel, bookingUrl,
     bottomLinks = [], style = "dark", logoCaption, wordmark,
   } = data;
   const [subscribed, setSubscribed] = useState(false);
@@ -82,6 +83,20 @@ export function FooterBlock({ block }: { block: FooterBlockProps }) {
 
       {/* Newsletter / CTA strip — separated visually from the link grid so the
           footer reads as "one more conversion moment", not just a link dump. */}
+      {showBooking && (
+        <div className="relative border-b" style={{ borderColor: borderCol }}>
+          <div className="max-w-7xl mx-auto px-6 py-9 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left">
+            <div>
+              <p className="text-lg font-semibold">{bookingTitle || "Book an appointment"}</p>
+              <p className="text-sm mt-1" style={{ color: mutedFg }}>{bookingText || "Pick a day and time that suits you. We'll confirm your booking shortly."}</p>
+            </div>
+            <a href={bookingUrl || "/book"} className="inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold shrink-0"
+              style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))", color: "hsl(var(--primary-foreground))" }}>
+              {bookingLabel || "Book now"}
+            </a>
+          </div>
+        </div>
+      )}
       {showNewsletter && (
         <div className="relative border-b" style={{ borderColor: borderCol }}>
           <div className="max-w-7xl mx-auto px-6 py-9 flex flex-col md:flex-row items-center justify-between gap-5">

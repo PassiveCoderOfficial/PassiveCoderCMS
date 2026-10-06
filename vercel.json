@@ -44,6 +44,10 @@
     {
       "path": "/api/cron/end-promos",
       "schedule": "5 18 * * *"
+    },
+    {
+      "path": "/api/cron/booking-chrome",
+      "schedule": "15 19 * * *"
     }
   ]
 }

@@ -84,6 +84,20 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
       </div>
 
       <div className="border-t pt-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Booking button</Label>
+          <Switch checked={!!block.data.showBooking} onCheckedChange={(v) => update("showBooking", v)} />
+        </div>
+        <p className="text-[11px] text-muted-foreground">Opens your booking page so visitors can pick a time. Set hours in Dashboard &gt; Bookings.</p>
+        {block.data.showBooking && (
+          <>
+            <div><Label className="text-xs">Button label</Label><Input value={block.data.bookingLabel ?? ""} placeholder="Book now" onChange={(e) => update("bookingLabel", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-xs">Booking page</Label><Input value={block.data.bookingUrl ?? ""} placeholder="/book" onChange={(e) => update("bookingUrl", e.target.value)} className="h-8 text-xs mt-1" /></div>
+          </>
+        )}
+      </div>
+
+      <div className="border-t pt-3 space-y-2">
         <div className="flex items-center justify-between"><Label className="text-xs">Show CTA Button</Label><Switch checked={!!block.data.showCta} onCheckedChange={(v) => update("showCta", v)} /></div>
         {block.data.showCta && (
           <>
