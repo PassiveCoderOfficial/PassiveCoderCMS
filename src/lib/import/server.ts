@@ -10,6 +10,28 @@ import { pathOf, slugify, type ImportItem } from "./parse";
 import { isJunk, layoutFromHtml, type LayoutContact } from "./layout";
 import { getSiteFacts } from "@/lib/seo/site-facts";
 
+/**
+ * Some sites carry their menu and footer as blocks on each page rather than
+ * as shared site chrome. Keep those around a regenerated layout so updating a
+ * page never drops its header/footer.
+ */
+function withChrome(blocks: Block[], from: Block[] | null): Block[] {
+  const src = from ?? [];
+  const head = src.filter((b, i) => b.type === "navigation" && i <= 1);
+  const foot = src.filter((b, i) => b.type === "footer" && i >= src.length - 2);
+  const body = blocks.filter((b) => b.type !== "navigation" && b.type !== "footer");
+  return [...head, ...body, ...foot].map((b, i) => ({ ...b, order: i }));
+}
+
+/** Menu/footer blocks to give a new page: none if the site has shared chrome, else the homepage's. */
+async function siteChrome(ctx: JobCtx): Promise<Block[] | null> {
+  const { data: si } = await ctx.admin.from("site_identity").select("global_header").eq("tenant_id", ctx.tenantId).maybeSingle();
+  const gh = si?.global_header;
+  if (gh && (!Array.isArray(gh) || gh.length)) return null;
+  const { data: home } = await ctx.admin.from("pages").select("blocks").eq("tenant_id", ctx.tenantId).eq("slug", "home").is("deleted_at", null).maybeSingle();
+  return (home?.blocks as Block[] | null) ?? null;
+}
+
 async function contactFor(ctx: JobCtx): Promise<LayoutContact> {
   const f = await getSiteFacts(ctx.tenantId).catch(() => null);
   const { data: contactPage } = await ctx.admin.from("pages").select("slug").eq("tenant_id", ctx.tenantId)
@@ -197,8 +219,13 @@ export function cleanHtml(html: string): string {
     allowedSchemes: ["http", "https", "mailto", "tel"],
     allowedIframeHostnames: ["www.youtube.com", "youtube.com", "www.youtube-nocookie.com", "player.vimeo.com", "www.google.com", "maps.google.com"],
     transformTags: { a: sanitizeHtml.simpleTransform("a", { rel: "noopener" }) },
-    exclusiveFilter: (f) => (f.tag === "div" || f.tag === "span" || f.tag === "p") && !f.text.trim() && !f.mediaChildren?.length,
-  }).replace(/(\s*\n){3,}/g, "\n\n").trim();
+  })
+    // Drop wrappers that are truly empty. (A sanitize-html exclusiveFilter on
+    // "no text" also removed divs whose images sit deeper inside figures,
+    // which wiped entire WordPress galleries.)
+    .replace(/<(div|span|p)>(?:\s|&nbsp;|<br \/>)*<\/\1>/g, "")
+    .replace(/<(div|span|p)>(?:\s|&nbsp;|<br \/>)*<\/\1>/g, "")
+    .replace(/(\s*\n){3,}/g, "\n\n").trim();
 }
 
 async function localizeHtml(ctx: JobCtx, html: string): Promise<string> {
@@ -262,10 +289,11 @@ export async function applyItem(ctx: JobCtx, item: ImportItem): Promise<void> {
     const wantSlug = slugify(item.slug || item.title);
     const isHome = item.kind === "page" && (wantSlug === "home" || /^home$/i.test(item.title.trim()));
     const { data: existing } = await ctx.admin.from("pages")
-      .select("id, status, settings, draft_rev").eq("tenant_id", ctx.tenantId).eq("slug", isHome ? "home" : wantSlug)
+      .select("id, status, settings, draft_rev, blocks").eq("tenant_id", ctx.tenantId).eq("slug", isHome ? "home" : wantSlug)
       .is("deleted_at", null).maybeSingle();
     if (existing && (isHome || (existing.settings as { imported?: unknown } | null)?.imported)) {
       const live = existing.status === "published";
+      if (!item.blocks) blocks = withChrome(blocks, existing.blocks as Block[] | null);
       const { error } = await ctx.admin.from("pages").update({
         ...(live ? { draft_blocks: blocks, draft_rev: ((existing.draft_rev as number) ?? 0) + 1 } : { blocks }),
         settings: { ...((existing.settings as object) ?? {}), imported: importedMeta },
@@ -276,6 +304,7 @@ export async function applyItem(ctx: JobCtx, item: ImportItem): Promise<void> {
       return;
     }
 
+    if (!item.blocks && item.kind === "page") blocks = withChrome(blocks, await siteChrome(ctx));
     const slug = await uniqueSlug(ctx, "pages", item.slug || item.title);
     const { error } = await ctx.admin.from("pages").insert({
       tenant_id: ctx.tenantId, title: item.title.slice(0, 300), slug, type: item.kind, status: "draft",
