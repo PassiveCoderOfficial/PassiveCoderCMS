@@ -54,7 +54,10 @@ export default async function AuthorizePage({ searchParams }: { searchParams: Pr
 
   const admin = await createAdminClient();
   const sites = await connectableSites(admin, user.id);
-  const wantsWrite = !q.scope || q.scope.split(" ").includes("write");
+  // Identity scopes (openid/profile/email) say nothing about access level;
+  // only an explicit "read" without "write" means the app asked for read-only.
+  const scopes = (q.scope ?? "").split(" ").filter(Boolean);
+  const wantsWrite = scopes.includes("write") || !scopes.includes("read");
 
   async function decide(formData: FormData) {
     "use server";

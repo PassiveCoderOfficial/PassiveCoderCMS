@@ -7,6 +7,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createBlock } from "@/modules/page-builder/block-registry";
 import type { Block } from "@/types/cms";
 import { pathOf, slugify, type ImportItem } from "./parse";
+import { isJunk, layoutFromHtml, type LayoutContact } from "./layout";
+import { getSiteFacts } from "@/lib/seo/site-facts";
+
+async function contactFor(ctx: JobCtx): Promise<LayoutContact> {
+  const f = await getSiteFacts(ctx.tenantId).catch(() => null);
+  const { data: contactPage } = await ctx.admin.from("pages").select("slug").eq("tenant_id", ctx.tenantId)
+    .in("slug", ["contact", "contact-us"]).is("deleted_at", null).limit(1).maybeSingle();
+  return { name: f?.name ?? null, phone: f?.phone ?? null, whatsapp: f?.whatsapp ?? null, email: f?.email ?? null, contactPath: contactPage ? `/${contactPage.slug}` : "/contact" };
+}
 
 /* ── Safe outbound fetch ───────────────────────────────────────────────
  * Import URLs come from users, so every fetch (site API and each image)
@@ -124,9 +133,11 @@ export async function fetchWordPressSite(input: string): Promise<{ items: Import
 }
 
 /* ── Apply one item ──────────────────────────────────────────────────── */
-export type JobResults = { created: number; skipped: number; failed: number; media: number; errors: string[] };
+export type JobResults = { created: number; skipped: number; failed: number; media: number; errors: string[]; updated?: number };
 export type JobCtx = {
   admin: SupabaseClient; tenantId: string; userId: string; source: string; sourceLabel?: string | null;
+  /** Business contact details for the generated call-to-action buttons (loaded once per job step). */
+  contact?: LayoutContact;
   /** Source image URL -> our URL, shared across the job so repeats download once. */
   mediaMap: Record<string, string>;
   results: JobResults;
@@ -221,21 +232,56 @@ export async function applyItem(ctx: JobCtx, item: ImportItem): Promise<void> {
   const imported = { source: ctx.source, from: ctx.sourceLabel ?? null, old_path: "old_path" in item ? item.old_path ?? null : null, at: new Date().toISOString() };
 
   if (item.kind === "page" || item.kind === "post") {
-    const slug = await uniqueSlug(ctx, "pages", item.slug || item.title);
+    const junk = isJunk(item.slug ?? "", item.title, item.html ?? "");
+    if (junk) {
+      ctx.results.skipped++;
+      if (ctx.results.errors.length < 50) ctx.results.errors.push(`Skipped "${item.title.slice(0, 60)}": ${junk}`);
+      return;
+    }
     let blocks: Block[];
+    let html = "";
     if (item.blocks) blocks = item.blocks;
     else {
-      const html = await localizeHtml(ctx, cleanHtml(item.html ?? ""));
-      const block = createBlock("text")!;
-      block.data = { ...(block.data as object), content: html || "<p></p>", typography: {} } as typeof block.data;
-      blocks = [block];
+      html = await localizeHtml(ctx, cleanHtml(item.html ?? ""));
+      if (item.kind === "page") {
+        // Pages get a designed layout (hero, cards, gallery, FAQ, CTA) built from their own structure.
+        if (!ctx.contact) ctx.contact = await contactFor(ctx);
+        blocks = layoutFromHtml(html || "<p></p>", { title: item.title, contact: ctx.contact });
+      } else {
+        // Blog posts stay as one article body.
+        const block = createBlock("text")!;
+        block.data = { ...(block.data as object), content: html || "<p></p>", typography: {} } as typeof block.data;
+        blocks = [block];
+      }
     }
     const featured = item.featured_image ? await localizeImage(ctx, item.featured_image) : null;
+    const importedMeta = { ...imported, ...(html ? { html: html.slice(0, 200000) } : {}) };
+
+    // Re-importing (or the old site's homepage): update the page that already
+    // has this address as a draft for review, instead of creating a duplicate.
+    const wantSlug = slugify(item.slug || item.title);
+    const isHome = item.kind === "page" && (wantSlug === "home" || /^home$/i.test(item.title.trim()));
+    const { data: existing } = await ctx.admin.from("pages")
+      .select("id, status, settings, draft_rev").eq("tenant_id", ctx.tenantId).eq("slug", isHome ? "home" : wantSlug)
+      .is("deleted_at", null).maybeSingle();
+    if (existing && (isHome || (existing.settings as { imported?: unknown } | null)?.imported)) {
+      const live = existing.status === "published";
+      const { error } = await ctx.admin.from("pages").update({
+        ...(live ? { draft_blocks: blocks, has_draft: true, draft_rev: ((existing.draft_rev as number) ?? 0) + 1 } : { blocks }),
+        settings: { ...((existing.settings as object) ?? {}), imported: importedMeta },
+        updated_at: new Date().toISOString(),
+      }).eq("id", existing.id);
+      if (error) throw new Error(error.message);
+      ctx.results.updated = (ctx.results.updated ?? 0) + 1;
+      return;
+    }
+
+    const slug = await uniqueSlug(ctx, "pages", item.slug || item.title);
     const { error } = await ctx.admin.from("pages").insert({
       tenant_id: ctx.tenantId, title: item.title.slice(0, 300), slug, type: item.kind, status: "draft",
       blocks, excerpt: item.excerpt?.slice(0, 1000) ?? null, featured_image: featured,
       seo: { ...(item.seo?.title ? { title: item.seo.title } : {}), ...(item.seo?.description ? { description: item.seo.description } : {}) },
-      settings: { show_header: true, show_footer: true, imported }, created_by: ctx.userId,
+      settings: { show_header: true, show_footer: true, imported: importedMeta }, created_by: ctx.userId,
     });
     if (error) throw new Error(error.message);
     await addRedirect(ctx, item.old_path, `/${slug}`);
