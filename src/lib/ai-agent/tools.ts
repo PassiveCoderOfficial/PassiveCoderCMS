@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getSiteLinks } from "@/lib/mcp/site-links";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isSupportedBlockType } from "@/lib/aicoder/schemas";
 import { generateBlockContent, AiCoderError } from "@/lib/aicoder/generate";
@@ -47,7 +49,7 @@ function describe(tool: string, args: Record<string, unknown>): string {
 export const AGENT_TOOLS: AgentTool[] = [
   {
     name: "get_tenant_settings",
-    description: "Get the caller's site/tenant settings: name, plan, status. No args.",
+    description: "Get the site's settings and addresses: name, plan, status, live URL, default subdomain URL (always works), custom domain and status, dashboard URL. No args.",
     argsSchema: z.object({}),
     readOnly: true,
     contexts: ["general", "editor"],
@@ -58,7 +60,8 @@ export const AGENT_TOOLS: AgentTool[] = [
         .eq("id", ctx.tenantId)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return data ?? null;
+      const links = await getSiteLinks(await createAdminClient(), ctx.tenantId);
+      return data ? { ...data, ...(links ?? {}) } : null;
     },
   },
   {
@@ -153,7 +156,7 @@ export const AGENT_TOOLS: AgentTool[] = [
   },
   {
     name: "get_domain_status",
-    description: "Get this site's custom domain and its connection status. No args.",
+    description: "Get this site's custom domain and connection status, plus the default subdomain URL that always works and the current live URL. No args.",
     argsSchema: z.object({}),
     readOnly: true,
     contexts: ["general", "editor"],
@@ -164,7 +167,8 @@ export const AGENT_TOOLS: AgentTool[] = [
         .eq("id", ctx.tenantId)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return data ?? null;
+      const links = await getSiteLinks(await createAdminClient(), ctx.tenantId);
+      return data ? { ...data, default_url: links?.defaultUrl ?? null, live_url: links?.liveUrl ?? null, dashboard_url: links?.dashboardUrl ?? null } : null;
     },
   },
   {

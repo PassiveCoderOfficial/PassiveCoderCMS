@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSiteLinks, linksBrief, withUrls, type SiteLinks } from "@/lib/mcp/site-links";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyMcpBearer, type McpCaller } from "@/lib/mcp/auth";
 import { MCP_TOOLS, findMcpTool, toolJsonSchema } from "@/lib/mcp/tools";
@@ -41,7 +42,7 @@ function unauthorized(req: Request) {
 const ok = (id: RpcReq["id"], result: unknown) => ({ jsonrpc: "2.0" as const, id: id ?? null, result });
 const err = (id: RpcReq["id"], code: number, message: string) => ({ jsonrpc: "2.0" as const, id: id ?? null, error: { code, message } });
 
-async function handle(msg: RpcReq, caller: McpCaller, siteName: string) {
+async function handle(msg: RpcReq, caller: McpCaller, siteName: string, links: SiteLinks | null) {
   switch (msg.method) {
     case "initialize": {
       const asked = String(msg.params?.protocolVersion ?? "");
@@ -52,23 +53,36 @@ async function handle(msg: RpcReq, caller: McpCaller, siteName: string) {
         instructions:
           `You are connected to the Passive Coder dashboard for the website "${siteName}" with ${caller.scope === "write" ? "read and write" : "read-only"} access. ` +
           "Pages are built from blocks: call list_block_types and get_block_template before editing, read with get_page_blocks, save with save_page_blocks (published pages save as a draft), then publish_page when the user wants it live. " +
-          "Prefer drafts and confirm with the user before publishing or changing orders/bookings.",
+          "Prefer drafts and confirm with the user before publishing or changing orders/bookings. " +
+          (links ? linksBrief(links) + " Call get_site_info for these details at any time." : ""),
       });
     }
     case "ping":
       return ok(msg.id, {});
     case "tools/list":
       return ok(msg.id, {
-        tools: MCP_TOOLS.filter((t) => caller.scope === "write" || !t.write).map((t) => ({
-          name: t.name,
-          title: t.title,
-          description: t.description,
-          inputSchema: toolJsonSchema(t),
-          annotations: { title: t.title, readOnlyHint: !t.write, destructiveHint: false, openWorldHint: false },
-        })),
+        tools: [
+          {
+            name: "get_site_info",
+            title: "Site info and addresses",
+            description: "The connected site's name, live URL, default subdomain URL (always works, even before a custom domain is connected), custom domain and its status, and the dashboard URL. No args.",
+            inputSchema: { type: "object", properties: {}, additionalProperties: false },
+            annotations: { title: "Site info and addresses", readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+          },
+          ...MCP_TOOLS.filter((t) => caller.scope === "write" || !t.write).map((t) => ({
+            name: t.name,
+            title: t.title,
+            description: t.description,
+            inputSchema: toolJsonSchema(t),
+            annotations: { title: t.title, readOnlyHint: !t.write, destructiveHint: false, openWorldHint: false },
+          })),
+        ],
       });
     case "tools/call": {
       const name = String(msg.params?.name ?? "");
+      if (name === "get_site_info") {
+        return ok(msg.id, { content: [{ type: "text", text: JSON.stringify(links ?? { error: "Site not found" }, null, 2) }] });
+      }
       const tool = findMcpTool(name);
       if (!tool) return err(msg.id, -32602, `Unknown tool: ${name}`);
       const admin = await createAdminClient();
@@ -85,7 +99,8 @@ async function handle(msg: RpcReq, caller: McpCaller, siteName: string) {
       try {
         const result = await tool.run(parsed.data as never, { tenantId: caller.tenantId, userId: caller.userId, supabase: admin });
         await audit(true, parsed.data);
-        return ok(msg.id, { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] });
+        const enriched = links ? withUrls(result, links, name) : result;
+        return ok(msg.id, { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] });
       } catch (e) {
         const message = e instanceof Error ? e.message : "Tool failed";
         await audit(false, parsed.data, message);
@@ -105,15 +120,15 @@ export async function POST(req: Request) {
   try { body = await req.json(); } catch { return NextResponse.json(err(null, -32700, "Parse error"), { status: 400, headers: CORS }); }
 
   const admin = await createAdminClient();
-  const { data: site } = await admin.from("tenants").select("name").eq("id", caller.tenantId).maybeSingle();
-  const siteName = (site?.name as string) ?? "your site";
+  const links = await getSiteLinks(admin, caller.tenantId);
+  const siteName = links?.name ?? "your site";
 
   const msgs = Array.isArray(body) ? body : [body];
   const out = [];
   for (const m of msgs) {
     if (!m || typeof m.method !== "string") { out.push(err(null, -32600, "Invalid request")); continue; }
     if (m.id === undefined || m.method.startsWith("notifications/")) continue; // notifications: no reply
-    out.push(await handle(m, caller, siteName));
+    out.push(await handle(m, caller, siteName, links));
   }
   if (out.length === 0) return new NextResponse(null, { status: 202, headers: CORS });
   return NextResponse.json(Array.isArray(body) ? out : out[0], { headers: CORS });
