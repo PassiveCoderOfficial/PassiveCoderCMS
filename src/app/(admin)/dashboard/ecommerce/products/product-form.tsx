@@ -27,7 +27,9 @@ import { uploadMediaFile } from "@/app/(admin)/dashboard/media/actions";
 import type { Product } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/language-provider";
-import { OptionsEditor, HighlightsEditor, loadOptions, saveOptions, type OptionRow, type Highlight } from "./product-extras";
+import { OptionsEditor, loadOptions, saveOptions, type OptionRow, type Highlight } from "./product-extras";
+import { ExtendedEditor } from "./extended-editor";
+import type { ExtendedKey, ProductExtended } from "@/lib/ecommerce/product-extended";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 
@@ -267,9 +269,17 @@ export function ProductForm({ product }: ProductFormProps) {
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   // Sizes/options (product_variants) and highlight facts (products.attributes).
   const [options, setOptions] = useState<OptionRow[]>([]);
-  const attrs = ((product as { attributes?: { highlights?: Highlight[]; highlightsTitle?: string } } | undefined)?.attributes ?? {});
-  const [highlights, setHighlights] = useState<Highlight[]>(attrs.highlights ?? []);
-  const [highlightsTitle, setHighlightsTitle] = useState<string>(attrs.highlightsTitle ?? "");
+  const attrs = ((product as { attributes?: { highlights?: Highlight[]; highlightsTitle?: string; extended?: ProductExtended } } | undefined)?.attributes ?? {});
+  const [extended, setExtended] = useState<ProductExtended>(attrs.extended ?? {});
+  const [storeDefaults, setStoreDefaults] = useState<ProductExtended>({});
+  const [makeDefault, setMakeDefault] = useState<Partial<Record<ExtendedKey, boolean>>>({});
+  useEffect(() => {
+    getClientTenantId().then((tid) => {
+      if (!tid) return;
+      createClient().from("site_settings").select("product_defaults").eq("tenant_id", tid).maybeSingle()
+        .then(({ data }) => setStoreDefaults(((data?.product_defaults ?? {}) as ProductExtended)));
+    });
+  }, []);
   useEffect(() => { if (product?.id) loadOptions(product.id).then(setOptions).catch(() => {}); }, [product?.id]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -405,10 +415,20 @@ export function ProductForm({ product }: ProductFormProps) {
     try {
       const supabase = createClient();
       const { seo_title, seo_description, ...rest } = values;
-      const cleanHighlights = highlights.filter((h) => h.label.trim() || h.value.trim());
+      // Sections ticked "Set as default" become the store default.
+      const promote = (Object.keys(makeDefault) as ExtendedKey[]).filter((k) => makeDefault[k] && extended[k]);
+      if (promote.length) {
+        const tid = await getClientTenantId();
+        const next = { ...storeDefaults };
+        for (const k of promote) (next as Record<string, unknown>)[k] = extended[k];
+        const { error: dErr } = await supabase.from("site_settings").update({ product_defaults: next }).eq("tenant_id", tid);
+        if (dErr) throw dErr;
+        setStoreDefaults(next);
+        setMakeDefault({});
+      }
       const payload = {
         ...rest, images,
-        attributes: { ...(attrs as object), highlights: cleanHighlights, highlightsTitle: highlightsTitle.trim() || null },
+        attributes: { ...(attrs as object), extended },
         type: options.some((o) => o.name.trim()) ? "variable" : (rest.type === "variable" ? "simple" : rest.type),
         seo: { title: seo_title?.trim() || null, description: seo_description?.trim() || null },
         category_ids: categoryIds,
@@ -565,7 +585,15 @@ export function ProductForm({ product }: ProductFormProps) {
             </Card>
 
             <OptionsEditor rows={options} onChange={setOptions} />
-            <HighlightsEditor title={highlightsTitle} items={highlights} onTitle={setHighlightsTitle} onItems={setHighlights} />
+            <Card>
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-sm">Extended (optional)</CardTitle>
+                <p className="text-xs text-muted-foreground">Extra sections on the product page. Leave a section empty to show the store default (Ecommerce → Product Defaults).</p>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <ExtendedEditor value={extended} onChange={setExtended} defaults={storeDefaults} makeDefault={makeDefault} onMakeDefault={(k, on) => setMakeDefault((m) => ({ ...m, [k]: on }))} />
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.inventory")}</CardTitle></CardHeader>

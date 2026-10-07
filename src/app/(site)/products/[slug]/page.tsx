@@ -12,6 +12,9 @@ import Link from "next/link";
 import { ProductCard } from "@/components/blocks/ecommerce/product-card";
 import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-card-data";
 import { productHtml, PRODUCT_HTML_CSS } from "@/lib/ecommerce/product-html";
+import { resolveExtended, type ProductExtended } from "@/lib/ecommerce/product-extended";
+import * as LucideIcons from "lucide-react";
+import React from "react";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -168,6 +171,21 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const highlightsTitle = attrs.highlightsTitle ?? "";
   const shortHtml = productHtml(product.short_description);
   const descHtml = productHtml(product.description);
+  // Optional sections: the product's own, else the store default.
+  const { data: settingsRow } = tenantId
+    ? await supabase.from("site_settings").select("product_defaults").eq("tenant_id", tenantId).maybeSingle()
+    : { data: null };
+  const ext = resolveExtended((product.attributes as { extended?: ProductExtended } | null)?.extended, (settingsRow?.product_defaults ?? {}) as ProductExtended);
+  const descText = ext.description?.text?.trim() || (descHtml && !descHtml.isHtml ? descHtml.html : "");
+  const accordions = [
+    ...(ext.description || (descText && (ext.details || ext.shipping)) ? [{ key: "d", title: ext.description?.title || "Description", body: <p className="whitespace-pre-line m-0">{descText}</p>, open: false }] : []),
+    ...(ext.details ? [{ key: "n", title: ext.details.title || "Details", open: true, body: (
+      <dl className="m-0 space-y-3">{(ext.details.rows ?? []).filter((r) => r.label || r.value).map((r, i) => (
+        <div key={i}><dt className="font-semibold">{r.label}</dt><dd className="m-0 mt-1">{r.value}</dd></div>))}</dl>
+    ) }] : []),
+    ...(ext.shipping ? [{ key: "s", title: ext.shipping.title || "Shipping and Delivery", body: <p className="whitespace-pre-line m-0">{ext.shipping.text}</p>, open: false }] : []),
+  ];
+  const useAccordions = accordions.length > 0;
   const inStock = !product.track_inventory || product.stock_quantity > 0;
 
   return (
@@ -233,7 +251,35 @@ export default async function ProductPage({ params, searchParams }: Props) {
               variants={variants}
             />
 
-            {descHtml && (descHtml.isHtml && /pd-(box|acc|grid)/.test(descHtml.html) && !/pd-(split|wide)/.test(descHtml.html)
+            {useAccordions && (
+              <div className="border-t-2 border-foreground">
+                {accordions.map((a) => (
+                  <details key={a.key} open={a.open} className="group border-b-2 border-foreground">
+                    <summary className="flex items-center justify-between py-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden uppercase text-[15px] tracking-wide">
+                      {a.title}
+                      <span className="text-xl leading-none group-open:hidden">+</span><span className="text-xl leading-none hidden group-open:inline">−</span>
+                    </summary>
+                    <div className="pb-6 text-[15px] leading-relaxed">{a.body}</div>
+                  </details>
+                ))}
+              </div>
+            )}
+
+            {ext.trust?.items?.length ? (
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 pt-2">
+                {ext.trust.items.map((t, i) => {
+                  const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>>)[t.icon] ?? LucideIcons.Check;
+                  return (
+                    <div key={i} className="flex flex-col items-center text-center gap-1.5">
+                      <Icon className="w-8 h-8" strokeWidth={1.2} />
+                      <span className="text-[11px] leading-tight">{t.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {!useAccordions && descHtml && (descHtml.isHtml && /pd-(box|acc|grid)/.test(descHtml.html) && !/pd-(split|wide)/.test(descHtml.html)
               ? <div className="pd-html text-[0.95rem]" dangerouslySetInnerHTML={{ __html: descHtml.html }} />
               : !descHtml.isHtml ? (
                 <div>
@@ -249,6 +295,24 @@ export default async function ProductPage({ params, searchParams }: Props) {
         {/* Long-form HTML description (images, video, story sections) runs full width under the fold */}
         {descHtml?.isHtml && !(/pd-(box|acc|grid)/.test(descHtml.html) && !/pd-(split|wide)/.test(descHtml.html)) && (
           <div className="pd-html mt-14 max-w-6xl mx-auto" dangerouslySetInnerHTML={{ __html: descHtml.html }} />
+        )}
+
+        {ext.story && (
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center mt-16">
+            {ext.story.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={ext.story.imageUrl} alt={ext.story.title || product.name} className="w-full rounded" loading="lazy" />
+            )}
+            <div>
+              {ext.story.title && <h2 className="text-2xl mb-4" style={{ fontFamily: "var(--heading-font, inherit)" }}>{ext.story.title}</h2>}
+              {ext.story.text && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{ext.story.text}</p>}
+            </div>
+          </div>
+        )}
+
+        {ext.banner?.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={ext.banner.imageUrl} alt={ext.banner.alt || ""} className="w-full mt-12 rounded" loading="lazy" />
         )}
 
         {templateBlocks.length > 0 && (

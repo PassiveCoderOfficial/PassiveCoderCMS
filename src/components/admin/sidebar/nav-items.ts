@@ -216,6 +216,7 @@ export const navSections: NavSection[] = [
           { label: "Add Single", href: "/dashboard/ecommerce/products/new", icon: Plus },
           { label: "Add Multiple", href: "/dashboard/ecommerce/products/bulk-upload", icon: Upload },
           { label: "Categories", href: "/dashboard/ecommerce/categories", icon: Tag },
+          { label: "Product Defaults", href: "/dashboard/ecommerce/product-defaults", icon: Package },
         ],
       },
       { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag, moduleKey: "ecommerce" },
