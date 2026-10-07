@@ -459,6 +459,8 @@ export type ServicesBlockProps = BlockBase & {
     /** Photo Cards: "View all" link beside the title. */
     allLink?: { label?: string; url?: string };
     colors?: { dark?: string; accent?: string };
+    /** Boutique Tiles: photo shape. Default landscape for 2 columns, square otherwise. */
+    tileRatio?: "landscape" | "square" | "portrait";
   };
 };
 
@@ -547,6 +549,10 @@ export type CTABlockProps = BlockBase & {
     mapQuery?: string;
     showMap?: boolean;
     colors?: { dark?: string; accent?: string };
+    /** Boutique Banner: copy centred (default) or pinned to the top of the photo. */
+    contentPosition?: "center" | "top";
+    /** Boutique Banner: light text for photos (default) or dark text for pale backgrounds. */
+    tone?: "light" | "dark";
   };
 };
 

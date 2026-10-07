@@ -14,6 +14,8 @@ import { buildSiteMetadata } from "@/lib/site/site-metadata";
 import { SiteContactProvider } from "@/components/site/site-contact-context";
 import { getSiteContact } from "@/lib/site-contact";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
+import { AdminEditWidget } from "@/components/site/admin-edit-widget";
+import { isTenantAdminViewer } from "@/lib/site/admin-viewer";
 
 /** Root-domain requests carry no x-tenant-id (middleware only sets that on
  *  the subdomain-routing branch), but the platform's own marketing site is
@@ -142,6 +144,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
     : null;
 
   const siteContact = await getSiteContact(tenantId);
+  const isAdminViewer = await isTenantAdminViewer(tenantId);
   return (
     <SiteContactProvider value={siteContact}>
       {themeLockScript && (
@@ -188,6 +191,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
       {/* Tenant homepages render here, not in (site); without this every
           data-reveal element on a tenant homepage stayed invisible. */}
       {tenantId && <ScrollReveal />}
+      {isAdminViewer && <AdminEditWidget />}
       {tenantId && <FloatingContactButtons tenantId={tenantId} />}
       <DemoBanner tenantId={tenantId} />
       {/* Business + website structured data for search and AI answer engines. */}

@@ -292,3 +292,19 @@ html {
 .sc-glass { background: color-mix(in srgb, var(--sc-dark-c) 55%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid color-mix(in srgb, var(--sc-accent-c) 28%, transparent); }
 .sc-zoom img { transition: transform .8s cubic-bezier(.2,.7,.2,1); }
 .sc-zoom:hover img { transform: scale(1.06); }
+
+/* ── Boutique variant family (luxury retail look: serif headings, thin
+   frames, pill buttons). Colours follow the theme; blocks can override
+   --bq-accent (buttons, eyebrows) and --bq-ink (text) via data.colors. ── */
+.bq { --bq-accent-c: var(--bq-accent, hsl(var(--primary))); --bq-ink-c: var(--bq-ink, hsl(var(--foreground))); color: var(--bq-ink-c); }
+.bq-wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+.bq-h { font-family: var(--heading-font, inherit); font-weight: 600; letter-spacing: .3px; line-height: 1.12; color: inherit; }
+.bq-upper { text-transform: uppercase; }
+.bq-eyebrow { display: block; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; }
+.bq-eyebrow-serif { display: block; font-family: var(--heading-font, inherit); font-weight: 600; font-size: 16px; letter-spacing: .3px; text-transform: uppercase; }
+.bq-btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--bq-accent-c); color: #fff; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; font-size: 10.5px; padding: 15px 32px; transition: opacity .2s; text-decoration: none; }
+.bq-btn:hover { opacity: .88; }
+.bq-rule { width: 54px; height: 1px; background: var(--bq-accent-c); opacity: .7; margin: 26px auto 28px; }
+.bq-prose p { margin: 0 0 1em; } .bq-prose p:last-child { margin-bottom: 0; }
+.bq-prose a { color: var(--bq-accent-c); text-decoration: underline; }
+.bq-prose ul { list-style: disc; padding-left: 1.2em; margin: 0 0 1em; }

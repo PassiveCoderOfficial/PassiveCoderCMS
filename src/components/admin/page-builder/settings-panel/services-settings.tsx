@@ -47,6 +47,7 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
   };
 
   const showcase = block.templateVariant === "bento" || block.templateVariant === "photo-cards";
+  const tiles = block.templateVariant === "boutique-tiles";
 
   return (
     <div className="space-y-4">
@@ -137,6 +138,9 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
                 <Textarea value={item.description} onChange={(e) => updateItem(item.id, "description", e.target.value)} className="text-xs resize-none" rows={2} placeholder="Description" />
                 <Input value={item.link ?? ""} onChange={(e) => updateItem(item.id, "link", e.target.value)} className="h-7 text-xs" placeholder="Link URL" />
                 <ImageField label="Image" value={item.imageUrl} onChange={(v) => updateItem(item.id, "imageUrl", v)} />
+                {tiles && (
+                  <Input value={item.linkLabel ?? ""} onChange={(e) => updateItem(item.id, "linkLabel", e.target.value)} className="h-7 text-xs" placeholder="Button text (empty = caption is the link)" />
+                )}
                 {showcase && (
                   <div className="flex gap-1">
                     <Input value={item.kicker ?? ""} onChange={(e) => updateItem(item.id, "kicker", e.target.value)} className="h-7 text-xs flex-1" placeholder="Small label" />
@@ -160,7 +164,20 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
           <Input value={block.data.allLink?.url ?? ""} onChange={(e) => update("allLink", { ...block.data.allLink, url: e.target.value })} className="h-7 text-xs flex-1" placeholder="/services" />
         </div>
       )}
-      {showcase && <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />}
+      {tiles && (
+        <div className="space-y-1.5 border-t pt-3">
+          <Label className="text-xs">Photo shape</Label>
+          <Select value={block.data.tileRatio ?? (block.data.columns === 2 ? "landscape" : "square")} onValueChange={(v) => update("tileRatio", v)}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="landscape" className="text-xs">Landscape</SelectItem>
+              <SelectItem value="square" className="text-xs">Square</SelectItem>
+              <SelectItem value="portrait" className="text-xs">Portrait</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      {(showcase || tiles) && <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />}
     </div>
   );
 }

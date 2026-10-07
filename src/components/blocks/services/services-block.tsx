@@ -6,6 +6,7 @@ import * as LucideIcons from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ServicesBento, ServicesPhotoCards } from "./services-showcase";
+import { ServicesBoutiqueTiles } from "./services-boutique";
 
 // ─── Group resolution ──────────────────────────────────────────────────────
 // When data.source === "group", items live in the service_groups/service_items
@@ -438,5 +439,6 @@ export function ServicesByVariant({ data, variant }: { data: ServicesBlockProps[
   if (variant === "numbered") return <ServicesNumbered data={data} />;
   if (variant === "bento") return <ServicesBento data={data} />;
   if (variant === "photo-cards") return <ServicesPhotoCards data={data} />;
+  if (variant === "boutique-tiles") return <ServicesBoutiqueTiles data={data} />;
   return <ServicesLegacy data={data} />;
 }

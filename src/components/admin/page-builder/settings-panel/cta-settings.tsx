@@ -19,10 +19,11 @@ export function CTASettings({ block }: { block: CTABlockProps }) {
   };
 
   const visit = block.templateVariant === "visit-map";
+  const banner = block.templateVariant === "boutique-banner";
 
   return (
     <div className="space-y-3">
-      {visit && <TextField label="Small label above title" value={block.data.eyebrow} onChange={(v) => update("eyebrow", v)} />}
+      {(visit || banner) && <TextField label="Small label above title" value={block.data.eyebrow} onChange={(v) => update("eyebrow", v)} />}
       <div><Label className="text-xs">Title</Label><Input value={block.data.title} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <div><Label className="text-xs">Description</Label><Textarea value={block.data.description ?? ""} onChange={(e) => update("description", e.target.value)} className="text-xs resize-none mt-1" rows={3} /></div>
       {visit && (
@@ -40,7 +41,27 @@ export function CTASettings({ block }: { block: CTABlockProps }) {
           <p className="text-[10px] text-muted-foreground">Button links left empty open WhatsApp (first) and map directions (second).</p>
         </div>
       )}
-      {!visit && <div>
+      {banner && (
+        <div className="space-y-2 border-t pt-2">
+          <p className="text-[10px] text-muted-foreground">The photo and its dark overlay are set under Layout → Background (Image). Height: Style → Minimum height.</p>
+          <div>
+            <Label className="text-xs">Text position</Label>
+            <Select value={block.data.contentPosition ?? "center"} onValueChange={(v) => update("contentPosition", v)}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="center" className="text-xs">Centred</SelectItem>
+                <SelectItem value="top" className="text-xs">Top of the photo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Dark text (for pale photos)</Label>
+            <Switch checked={block.data.tone === "dark"} onCheckedChange={(v) => update("tone", v ? "dark" : "light")} />
+          </div>
+          <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />
+        </div>
+      )}
+      {!visit && !banner && <div>
         <Label className="text-xs">Layout</Label>
         <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
           <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>

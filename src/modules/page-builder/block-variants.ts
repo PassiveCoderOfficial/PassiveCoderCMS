@@ -80,6 +80,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "image-tiles", label: "Image Tiles", description: "Framed photo tiles with the title and an arrow button underneath — editorial and calm.", thumb: "cards-grid" },
     { key: "bento", label: "Bento", description: "Photo tiles in mixed sizes: one big lead, one wide, the rest small. Fits any number of services.", thumb: "bento", dark: true },
     { key: "photo-cards", label: "Photo Cards", description: "Tall photo cards with label and title over the image, plus a 'view all' link.", thumb: "grid-tight" },
+    { key: "boutique-tiles", label: "Boutique Tiles", description: "Photo tiles with an upper-case serif caption and optional pill button. 2 columns = category banners.", thumb: "grid-tight" },
   ],
 
   testimonials: [
@@ -118,6 +119,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "navy-banner", label: "Navy Banner", description: "Deep, calm banner for professional services.", thumb: "banner-dark", dark: true },
     { key: "warm-banner", label: "Warm Banner", description: "Softer, inviting banner treatment.", thumb: "banner" },
     { key: "dark-split", label: "Dark Split", description: "Text one side, actions the other, on dark.", thumb: "split-cta", dark: true },
+    { key: "boutique-banner", label: "Boutique Banner", description: "Photo banner (section background + overlay) with spaced label, serif title and pill buttons, centred or pinned to the top.", thumb: "fullscreen", dark: true },
     { key: "visit-map", label: "Visit + Map", description: "Dark band with address, phone, hours, WhatsApp and directions buttons, and a live map. Uses your contact details.", thumb: "split-cta", dark: true, edgeToEdge: true },
   ],
 
