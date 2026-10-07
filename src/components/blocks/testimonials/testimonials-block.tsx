@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import type { TestimonialsBlockProps } from "@/types/cms";
+import { mapTestimonialRows, TESTIMONIAL_ROW_SELECT, type TestimonialRow } from "./testimonial-rows";
 import { Star, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SiteImage } from "@/components/blocks/_primitives/site-image";
@@ -434,20 +435,6 @@ function TestimonialsReviewCards({ data }: { data: TestimonialsBlockProps["data"
     </div>
   );
 }
-
-export type TestimonialRow = { id: string; name: string; role: string | null; company: string | null; avatar: string | null; avatar_url: string | null; image_url: string | null; title: string | null; content: string; rating: number | null; product_name: string | null; product_url: string | null; verified: boolean | null };
-
-/** Testimonials table rows -> block items. */
-export function mapTestimonialRows(rows: TestimonialRow[]): TestimonialsBlockProps["data"]["items"] {
-  return rows.map((r) => ({
-    id: r.id, name: r.name, role: r.role ?? undefined, company: r.company ?? undefined,
-    avatar: r.image_url || r.avatar_url || r.avatar || undefined, title: r.title ?? undefined,
-    content: r.content, rating: r.rating ?? 5, product: r.product_name ?? undefined,
-    productUrl: r.product_url ?? undefined, verified: r.verified ?? false,
-  }));
-}
-
-export const TESTIMONIAL_ROW_SELECT = "id, name, role, company, avatar, avatar_url, image_url, title, content, rating, product_name, product_url, verified";
 
 export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) {
   // Builder canvas: load the group in the browser (the live site resolves it on the server).

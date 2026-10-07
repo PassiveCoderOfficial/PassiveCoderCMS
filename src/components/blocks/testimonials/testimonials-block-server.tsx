@@ -1,6 +1,7 @@
 import type { TestimonialsBlockProps } from "@/types/cms";
 import { createAdminClient } from "@/lib/supabase/server";
-import { TestimonialsBlock as TestimonialsBlockClient, mapTestimonialRows, TESTIMONIAL_ROW_SELECT, type TestimonialRow } from "./testimonials-block";
+import { TestimonialsBlock as TestimonialsBlockClient } from "./testimonials-block";
+import { mapTestimonialRows, TESTIMONIAL_ROW_SELECT, type TestimonialRow } from "./testimonial-rows";
 
 /** Live site: resolves a "from group" testimonials block on the server. */
 export async function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) {
