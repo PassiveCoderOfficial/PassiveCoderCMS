@@ -238,7 +238,7 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
                     className={cn(
                       // Group titles: small dark pill with light text so groups read at a glance.
                       "w-full flex items-center justify-between px-2 py-1 mb-1 text-[10px] font-semibold uppercase tracking-widest rounded-md hover:opacity-90",
-                      isTools || dark ? "bg-white/10 text-gray-200" : "bg-foreground/85 text-background",
+                      isTools || dark ? "bg-white/10 text-gray-200" : "bg-muted text-foreground/70",
                     )}
                   >
                     <span>{section.label}</span>
@@ -247,7 +247,7 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
                 ) : (
                   <p className={cn(
                     "px-2 py-1 mb-1 text-[10px] font-semibold uppercase tracking-widest rounded-md",
-                    isBrand ? "bg-black/20 text-white" : isTools || dark ? "bg-white/10 text-gray-200" : "bg-foreground/85 text-background",
+                    isBrand ? "bg-black/20 text-white" : isTools || dark ? "bg-white/10 text-gray-200" : "bg-muted text-foreground/70",
                   )}>
                     {section.label}
                   </p>
