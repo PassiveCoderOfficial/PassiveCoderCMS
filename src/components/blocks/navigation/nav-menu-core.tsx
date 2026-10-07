@@ -113,6 +113,14 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns }:
   );
 }
 
+/** Highlighted menu items: a pill with gradient fill and outline. */
+const HIGHLIGHT_CLASS = "inline-flex items-center px-4 py-1.5 rounded-full text-[0.9rem] font-semibold whitespace-nowrap transition-transform hover:-translate-y-px";
+export const HIGHLIGHT_STYLE: Record<NonNullable<NavItem["highlight"]>, React.CSSProperties> = {
+  gold: { background: "linear-gradient(135deg, #f3e2b3 0%, #d4af6a 45%, #b8893f 100%)", color: "#2a1d0c", border: "1px solid #9c7330", boxShadow: "0 2px 8px -2px rgba(156,115,48,.55)" },
+  brand: { background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)", color: "hsl(var(--primary-foreground))", border: "1px solid hsl(var(--primary))" },
+  dark: { background: "#111", color: "#d4af6a", border: "1px solid #d4af6a" },
+};
+
 export function NavItemDesktop({ item, currentColor }: {
   item: NavItem; currentColor: string;
 }) {
@@ -138,6 +146,16 @@ export function NavItemDesktop({ item, currentColor }: {
   const closeSoon = () => { closeTimer.current = setTimeout(() => setOpen(false), 120); };
 
   const cell = "relative px-3.5 py-2 rounded-lg text-[0.9rem] font-medium transition-colors hover:bg-current/5";
+
+  if (!hasChildren && item.highlight) {
+    return (
+      <li>
+        <Link href={item.url} target={item.target} className={HIGHLIGHT_CLASS} style={HIGHLIGHT_STYLE[item.highlight]}>
+          {item.label}
+        </Link>
+      </li>
+    );
+  }
 
   if (!hasChildren) {
     return (
@@ -211,7 +229,9 @@ export function MobileNavList({
                 className="flex-1 block px-3.5 py-3 rounded-lg text-[0.95rem] font-medium text-foreground hover:bg-muted transition-colors"
                 onClick={() => { if (!hasChildren) onNavigate(); }}
               >
-                {item.label}
+                {item.highlight
+                  ? <span className="inline-flex px-3 py-1 rounded-full font-semibold" style={HIGHLIGHT_STYLE[item.highlight]}>{item.label}</span>
+                  : item.label}
               </Link>
               {hasChildren && (
                 <button

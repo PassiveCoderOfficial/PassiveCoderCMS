@@ -16,7 +16,7 @@ import { generateId } from "@/lib/utils";
 import type { NavItem } from "@/types/cms";
 
 export function NavItemsEditor({ items, onChange }: { items: NavItem[]; onChange: (items: NavItem[]) => void }) {
-  const updateItem = (id: string, field: "label" | "url", value: string) => {
+  const updateItem = (id: string, field: "label" | "url" | "highlight", value: string | undefined) => {
     onChange(items.map((it) => it.id === id ? { ...it, [field]: value } : it));
   };
   const addItem = () => onChange([...items, { id: generateId(), label: "New Link", url: "#" }]);
@@ -37,6 +37,12 @@ export function NavItemsEditor({ items, onChange }: { items: NavItem[]; onChange
             </div>
             <Input value={item.label} onChange={(e) => updateItem(item.id, "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
             <Input value={item.url} onChange={(e) => updateItem(item.id, "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
+            <select value={item.highlight ?? ""} onChange={(e) => updateItem(item.id, "highlight", e.target.value || undefined)} className="w-full h-7 text-xs rounded-md border bg-background px-2">
+              <option value="">Normal link</option>
+              <option value="gold">Highlight: gold pill</option>
+              <option value="brand">Highlight: brand-colour pill</option>
+              <option value="dark">Highlight: dark pill, gold outline</option>
+            </select>
           </div>
         ))}
       </div>

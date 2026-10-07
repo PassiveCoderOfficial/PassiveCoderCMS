@@ -16,6 +16,10 @@ export function CTABoutiqueBanner({ data }: { data: CTABlockProps["data"] }) {
     <div className={cn("bq w-full flex flex-col items-center text-center px-4", data.contentPosition === "top" ? "justify-start" : "justify-center")}
       style={bqStyle(data.colors, { color: data.colors?.dark ?? (light ? "#fff" : undefined), minHeight: "inherit" })}>
       <div className="max-w-3xl">
+        {data.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={data.logoUrl} alt={data.title || ""} className="mx-auto mb-6 w-auto object-contain" style={{ height: data.logoHeight ?? 110 }} />
+        )}
         {data.eyebrow && <span className="bq-eyebrow mb-4" style={{ opacity: .9 }}>{data.eyebrow}</span>}
         {data.title && <h2 className="bq-h m-0 text-[26px] sm:text-[34px]">{data.title}</h2>}
         {data.description && <p className={cn("mt-4 mb-0 text-[15px] leading-relaxed opacity-90 max-w-[34rem] mx-auto whitespace-pre-line", data.justify && "text-justify")}>{data.description}</p>}

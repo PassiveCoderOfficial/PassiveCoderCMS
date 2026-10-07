@@ -340,6 +340,8 @@ export type NavItem = {
   children?: NavItem[];
   /** Lucide icon name — shown next to the label in mega-menu group headers. */
   icon?: string;
+  /** Make a top-level item stand out as a pill (e.g. a house brand). */
+  highlight?: "gold" | "brand" | "dark";
   /** Render this item's dropdown as a full-width multi-column mega menu.
    *  When unset the renderer falls back to inferring it (any grandchildren =
    *  mega), which keeps existing menus behaving exactly as before. */
@@ -568,6 +570,9 @@ export type CTABlockProps = BlockBase & {
     buttonStyle?: "brand" | "light";
     /** Boutique Banner: justify the description text. */
     justify?: boolean;
+    /** Boutique Banner: logo / emblem above the title (e.g. a house brand). */
+    logoUrl?: string;
+    logoHeight?: number;
   };
 };
 

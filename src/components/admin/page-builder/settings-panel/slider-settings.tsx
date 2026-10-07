@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 import { generateId } from "@/lib/utils";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import type { SliderBlockProps } from "@/types/cms";
@@ -22,6 +22,16 @@ export function SliderSettings({ block }: { block: SliderBlockProps }) {
 
   const addSlide = () => {
     update("slides", [...block.data.slides, { id: generateId(), title: "New Slide", subtitle: "", imageUrl: "", buttonLabel: "Learn More", buttonUrl: "#", overlay: true }]);
+  };
+
+  // Reorder: drag a slide card onto another, or use the arrows.
+  const [dragId, setDragId] = React.useState<string | null>(null);
+  const moveTo = (from: number, to: number) => {
+    if (to < 0 || to >= block.data.slides.length || from === to) return;
+    const next = [...block.data.slides];
+    const [it] = next.splice(from, 1);
+    next.splice(to, 0, it);
+    update("slides", next);
   };
 
   const removeSlide = (id: string) => {
@@ -66,12 +76,22 @@ export function SliderSettings({ block }: { block: SliderBlockProps }) {
         </div>
         <div className="space-y-3">
           {block.data.slides.map((slide, i) => (
-            <div key={slide.id} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+            <div key={slide.id}
+              draggable
+              onDragStart={(e) => { setDragId(slide.id); e.dataTransfer.effectAllowed = "move"; }}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
+              onDrop={(e) => { e.preventDefault(); const from = block.data.slides.findIndex((x) => x.id === dragId); moveTo(from, i); setDragId(null); }}
+              onDragEnd={() => setDragId(null)}
+              className={`border rounded-lg p-3 space-y-2 bg-muted/20 ${dragId === slide.id ? "opacity-50" : ""}`}>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Slide {i + 1}</span>
-                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeSlide(slide.id)}>
-                  <Trash2 className="h-3 w-3 text-destructive" />
-                </Button>
+                <span className="flex items-center gap-1 text-xs font-medium cursor-grab active:cursor-grabbing"><GripVertical className="h-3.5 w-3.5 text-muted-foreground" />Slide {i + 1}</span>
+                <div className="flex items-center">
+                  <Button variant="ghost" size="icon" className="h-5 w-5" disabled={i === 0} onClick={() => moveTo(i, i - 1)} aria-label="Move up"><ChevronUp className="h-3 w-3" /></Button>
+                  <Button variant="ghost" size="icon" className="h-5 w-5" disabled={i === block.data.slides.length - 1} onClick={() => moveTo(i, i + 1)} aria-label="Move down"><ChevronDown className="h-3 w-3" /></Button>
+                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeSlide(slide.id)}>
+                    <Trash2 className="h-3 w-3 text-destructive" />
+                  </Button>
+                </div>
               </div>
               <Input value={slide.title} onChange={(e) => updateSlide(slide.id, "title", e.target.value)} className="h-7 text-xs" placeholder="Title" />
               <Input value={slide.subtitle ?? ""} onChange={(e) => updateSlide(slide.id, "subtitle", e.target.value)} className="h-7 text-xs" placeholder="Subtitle" />

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CTABlockProps } from "@/types/cms";
 import { Switch } from "@/components/ui/switch";
-import { TextField, ShowcaseColorsEditor } from "./showcase-fields";
+import { TextField, ShowcaseColorsEditor, ImageField } from "./showcase-fields";
 
 export function CTASettings({ block }: { block: CTABlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -43,6 +43,8 @@ export function CTASettings({ block }: { block: CTABlockProps }) {
       )}
       {banner && (
         <div className="space-y-2 border-t pt-2">
+          <ImageField label="Logo above the title (optional)" value={block.data.logoUrl} onChange={(v) => update("logoUrl", v)} />
+          {block.data.logoUrl && <TextField label="Logo height (px)" value={String(block.data.logoHeight ?? 110)} onChange={(v) => update("logoHeight", Number(v) || undefined)} />}
           <p className="text-[10px] text-muted-foreground">The photo and its dark overlay are set under Layout → Background (Image). Height: Style → Minimum height.</p>
           <div>
             <Label className="text-xs">Text position</Label>
