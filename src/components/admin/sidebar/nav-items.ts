@@ -54,6 +54,8 @@ export type NavItem = {
   href: string;
   icon: LucideIcon;
   badge?: string;
+  /** Highlight only on this exact path (e.g. /dashboard/settings, whose sub-pages are separate menu items). */
+  exact?: boolean;
   saasOnly?: boolean;
   standaloneOnly?: boolean;
   /** When set, this item only shows if tenants.enabled_modules[moduleKey] is
@@ -291,7 +293,7 @@ export const navSections: NavSection[] = [
   {
     label: "Settings",
     items: [
-      { label: "General Settings", href: "/dashboard/settings", icon: Settings },
+      { label: "General Settings", href: "/dashboard/settings", icon: Settings, exact: true },
       { label: "Business Profile", href: "/dashboard/business-profile", icon: Briefcase },
       { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },
       { label: "Business Email", href: "/dashboard/settings/email", icon: AtSign, saasOnly: true },
