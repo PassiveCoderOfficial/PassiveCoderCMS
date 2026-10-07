@@ -87,6 +87,26 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardContent>
           </Card>
 
+          {order.payment_proof && (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">Bank transfer details from customer</CardTitle></CardHeader>
+              <CardContent className="text-sm space-y-1.5">
+                {order.payment_proof.transaction_id && <p><span className="text-muted-foreground">Transaction ID:</span> <span className="font-medium">{order.payment_proof.transaction_id}</span></p>}
+                {order.payment_proof.bank && <p><span className="text-muted-foreground">Paid from:</span> {order.payment_proof.bank}</p>}
+                {order.payment_proof.note && <p className="whitespace-pre-wrap"><span className="text-muted-foreground">Note:</span> {order.payment_proof.note}</p>}
+                {order.payment_proof.file_url && (
+                  /\.pdf$/i.test(order.payment_proof.file_url)
+                    ? <a href={order.payment_proof.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Open transfer receipt (PDF)</a>
+                    : <a href={order.payment_proof.file_url} target="_blank" rel="noopener noreferrer" className="block w-fit">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={order.payment_proof.file_url} alt="Transfer receipt" className="max-h-72 rounded border" />
+                      </a>
+                )}
+                <p className="text-xs text-muted-foreground pt-1">Check the amount arrived in your bank, then set Payment to Paid.</p>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid sm:grid-cols-2 gap-6">
             <Card>
               <CardHeader><CardTitle className="text-sm">{sameAddress ? "Customer & delivery" : "Delivery address"}</CardTitle></CardHeader>

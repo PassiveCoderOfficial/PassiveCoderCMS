@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CartItem, Address } from "@/types/cms";
 import { upsertContact } from "@/lib/crm/upsertContact";
+import { getStorePaymentMethods } from "@/lib/ecommerce/payment-methods";
+import { getSiteCurrency } from "@/lib/currency/currency-server";
 
 type BillingAddress = Address & { email: string; phone?: string };
 
@@ -22,6 +24,8 @@ interface OrderPayload {
   /** Delivery zone picked at checkout (shipping_rates.id). Only the id is
    *  accepted — the charge is looked up and recalculated server-side. */
   shipping_rate_id?: string;
+  /** Bank transfer: what the shopper paid with. All optional. */
+  payment_proof?: { transaction_id?: string; bank?: string; note?: string; file_url?: string };
 }
 
 export async function POST(req: NextRequest) {
@@ -29,7 +33,7 @@ export async function POST(req: NextRequest) {
     const tenantId = req.headers.get("x-tenant-id");
     const body: OrderPayload = await req.json();
 
-    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time, table_qr_token, shipping_rate_id } = body;
+    const { items, billing_address, payment_method, notes, fulfillment_type, pickup_time, table_qr_token, shipping_rate_id, payment_proof } = body;
     const isDineIn = fulfillment_type === "dine_in";
 
     if (!items?.length) {
@@ -136,6 +140,28 @@ export async function POST(req: NextRequest) {
     const tax = 0;
     const total = subtotal + shipping_cost + tax;
 
+    {
+      const cfg = await getSiteCurrency(tenantId);
+      const offered = await getStorePaymentMethods(tenantId, cfg.currency);
+      if (!isDineIn && offered.length && !offered.some((m) => m.slug === payment_method)) {
+        return NextResponse.json({ error: "That payment method is not available" }, { status: 400 });
+      }
+    }
+
+    // Only keep a receipt the shopper actually uploaded to this store's folder.
+    let paymentProof: Record<string, string> | null = null;
+    if (payment_method === "bank_transfer" && payment_proof && tenantId) {
+      const clip = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+      const file = clip(payment_proof.file_url, 600);
+      paymentProof = {
+        transaction_id: clip(payment_proof.transaction_id, 120),
+        bank: clip(payment_proof.bank, 120),
+        note: clip(payment_proof.note, 1000),
+        file_url: file.includes(`/media/payment-proofs/${tenantId}/`) ? file : "",
+      };
+      if (!Object.values(paymentProof).some(Boolean)) paymentProof = null;
+    }
+
     const orderNumber = `ORD-${Date.now()}`;
 
     const orderRow: Record<string, unknown> = {
@@ -147,6 +173,7 @@ export async function POST(req: NextRequest) {
       payment_method,
       items: verifiedItems,
       billing_address,
+      payment_proof: paymentProof,
       subtotal,
       discount: 0,
       shipping_cost,

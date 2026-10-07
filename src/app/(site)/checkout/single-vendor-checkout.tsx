@@ -1,5 +1,7 @@
 "use client";
 
+import { BankTransferPanel, EMPTY_PROOF, type PaymentProof } from "./bank-transfer-panel";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -77,12 +79,14 @@ export default function SingleVendorCheckout({ shippingRates = [] }: { shippingR
     }
   }, []);
 
+  // The store's own payment methods, already filtered by its currency and
+  // stripped of any secret keys (see lib/ecommerce/payment-methods).
   useEffect(() => {
-    const supabase = createClient();
-    supabase.from("payment_gateways").select("id, name, slug, settings, supported_currencies").eq("is_enabled", true).then(({ data }) => {
-      setAllGateways((data as Gateway[]) ?? []);
-    });
+    fetch("/api/ecommerce/payment-methods").then((r) => r.json()).then((d) => {
+      setAllGateways(((d.methods ?? []) as Gateway[]).map((m) => ({ ...m, id: m.slug })));
+    }).catch(() => setAllGateways([]));
   }, []);
+  const [proof, setProof] = useState<PaymentProof>(EMPTY_PROOF);
 
   // Gateways are platform-wide rows, so a store only offers the ones that can
   // take its currency (a riyal store has no use for bKash). If none declare
@@ -143,6 +147,7 @@ export default function SingleVendorCheckout({ shippingRates = [] }: { shippingR
             country: form.country,
           },
           payment_method: selectedGateway,
+          ...(selectedGateway === "bank_transfer" ? { payment_proof: proof } : {}),
           notes: form.notes,
           fulfillment_type: fulfillmentType,
           shipping_rate_id: isDelivery && shippingRate ? shippingRate.id : undefined,
@@ -364,6 +369,10 @@ export default function SingleVendorCheckout({ shippingRates = [] }: { shippingR
                 <p className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
                   {isPickup ? "Pay when you collect your order." : "Pay in cash when your order is delivered."}
                 </p>
+              )}
+
+              {selectedGw?.slug === "bank_transfer" && (
+                <BankTransferPanel settings={(selectedGw.settings ?? {}) as Record<string, string>} total={format(total)} proof={proof} onChange={setProof} />
               )}
 
               {/* Manual gateway instructions */}
