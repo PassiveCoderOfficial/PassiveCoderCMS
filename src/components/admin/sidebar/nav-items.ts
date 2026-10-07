@@ -47,7 +47,7 @@
   Landmark,
   Inbox,
   UserCog,
-  type LucideIcon, ArrowLeftRight, SearchCheck, AtSign } from "lucide-react";
+  type LucideIcon, ArrowLeftRight, SearchCheck, AtSign, Megaphone, Receipt, LifeBuoy } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -131,34 +131,45 @@ export type NavSection = {
   variant?: "tools" | "brand";
 };
 
+// Reorganised 2026-10-07 by task (what am I trying to do?) instead of by
+// feature origin: build the website, serve customers, run the shop or
+// restaurant, manage the team, change settings. Every item keeps its exact
+// href and moduleKey: resolveModuleKeyForPath() below reads these entries to
+// block direct links to modules a plan doesn't include. Module-gated items
+// stay top-level in their group (children are not plan-filtered).
 export const navSections: NavSection[] = [
   {
     label: "Overview",
     items: [
-      // Dashboard + Analytics merged onto one page (2026-09-14) — /dashboard
-      // itself just redirects here now (page.tsx), one sidebar entry instead
-      // of two that used to split "site overview" from "traffic".
+      // Dashboard + Analytics merged onto one page (2026-09-14); /dashboard
+      // itself just redirects here now (page.tsx).
       { label: "Dashboard", href: "/dashboard/analytics", icon: LayoutDashboard },
+      { label: "Visit Site", href: "/", icon: Globe },
     ],
   },
   {
-    label: "Account",
-    variant: "brand",
-    items: [
-      { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard, saasOnly: true },
-      { label: "Support", href: "/dashboard/support", icon: BookMarked },
-    ],
-  },
-  {
-    label: "Content",
+    label: "Website",
     items: [
       { label: "Pages", href: "/dashboard/pages", icon: FileText },
       { label: "Posts", href: "/dashboard/posts", icon: BookOpen },
       { label: "Media", href: "/dashboard/media", icon: Image },
+      {
+        label: "Design",
+        href: "/dashboard/themes",
+        icon: Palette,
+        children: [
+          { label: "Browse Templates", href: "/dashboard/themes", icon: Palette },
+          { label: "Colors & Design", href: "/dashboard/templates/colors", icon: SlidersHorizontal },
+          { label: "Header Builder", href: "/dashboard/header-builder", icon: PanelTop },
+          { label: "Footer Builder", href: "/dashboard/header-builder?target=footer", icon: PanelBottom },
+          { label: "Navigation", href: "/dashboard/navigation", icon: Navigation },
+          { label: "Site Identity", href: "/dashboard/templates/header-footer", icon: Layers },
+        ],
+      },
     ],
   },
   {
-    label: "Site Sections",
+    label: "Site Content",
     items: [
       { label: "Services", href: "/dashboard/services", icon: Wrench, moduleKey: "services" },
       { label: "Features", href: "/dashboard/features", icon: Sparkles, moduleKey: "features" },
@@ -167,26 +178,71 @@ export const navSections: NavSection[] = [
       { label: "Testimonials", href: "/dashboard/testimonials", icon: Star, moduleKey: "testimonials" },
       { label: "Pricing", href: "/dashboard/pricing-manager", icon: PricingIcon, moduleKey: "pricing" },
       { label: "Contact", href: "/dashboard/contact", icon: Phone },
-      { label: "Bookings", href: "/dashboard/bookings", icon: Calendar, moduleKey: "bookings" },
-      { label: "Blood Donors", href: "/dashboard/donors", icon: Droplet, moduleKey: "blood_donation" },
     ],
   },
   {
-    label: "Appearance",
+    label: "Customers & Sales",
     items: [
+      { label: "Bookings", href: "/dashboard/bookings", icon: Calendar, moduleKey: "bookings" },
+      { label: "CRM", href: "/dashboard/crm", icon: Users, moduleKey: "crm" },
+      { label: "Marketing", href: "/dashboard/marketing", icon: Megaphone, moduleKey: "marketing" },
+      { label: "Invoices", href: "/dashboard/invoices", icon: Receipt, moduleKey: "invoices" },
       {
-        label: "Templates",
-        href: "/dashboard/themes",
-        icon: Palette,
+        label: "Accounting",
+        href: "/dashboard/accounting",
+        icon: BarChart3,
+        moduleKey: "accounting",
         children: [
-          { label: "Browse Templates", href: "/dashboard/themes", icon: Palette },
-          { label: "Colors & Design", href: "/dashboard/templates/colors", icon: SlidersHorizontal },
-          { label: "Navigation", href: "/dashboard/navigation", icon: Navigation },
-          { label: "Header Builder", href: "/dashboard/header-builder", icon: PanelTop },
-          { label: "Footer Builder", href: "/dashboard/header-builder?target=footer", icon: PanelBottom },
-          { label: "Site Identity", href: "/dashboard/templates/header-footer", icon: Layers },
+          { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
+          { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
+          { label: "Accounts", href: "/dashboard/accounting/accounts", icon: BookMarked },
+          { label: "P&L Report", href: "/dashboard/accounting/report", icon: BarChart3 },
         ],
       },
+    ],
+  },
+  {
+    label: "Shop",
+    items: [
+      {
+        label: "Products",
+        href: "/dashboard/ecommerce/products",
+        icon: Package,
+        moduleKey: "ecommerce",
+        children: [
+          { label: "All Products", href: "/dashboard/ecommerce/products", icon: Package },
+          { label: "Add Single", href: "/dashboard/ecommerce/products/new", icon: Plus },
+          { label: "Add Multiple", href: "/dashboard/ecommerce/products/bulk-upload", icon: Upload },
+          { label: "Categories", href: "/dashboard/ecommerce/categories", icon: Tag },
+        ],
+      },
+      { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag, moduleKey: "ecommerce" },
+      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },
+      { label: "Promotions", href: "/dashboard/ecommerce/promotions", icon: Tag, moduleKey: "ecommerce" },
+      { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard, moduleKey: "ecommerce" },
+      { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck, moduleKey: "ecommerce" },
+      {
+        label: "Sellers",
+        href: "/dashboard/ecommerce/sellers",
+        icon: Store,
+        moduleKey: "ecommerce",
+        children: [
+          { label: "All Sellers", href: "/dashboard/ecommerce/sellers", icon: Store },
+          { label: "Listing Review", href: "/dashboard/ecommerce/sellers/review", icon: BadgeCheck },
+          { label: "Payouts", href: "/dashboard/ecommerce/sellers/payouts", icon: Wallet },
+        ],
+      },
+    ],
+  },
+  {
+    // Restaurant vertical (docs/business/06-restaurant-vertical.md): all on
+    // the "pos" module gate, one operational surface rather than separate features.
+    label: "Restaurant",
+    items: [
+      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart, moduleKey: "pos" },
+      { label: "Kitchen", href: "/dashboard/kitchen", icon: ChefHat, moduleKey: "pos" },
+      { label: "Reservations", href: "/dashboard/reservations", icon: CalendarClock, moduleKey: "pos" },
+      { label: "Branches", href: "/dashboard/branches", icon: Store, moduleKey: "pos" },
     ],
   },
   {
@@ -209,62 +265,16 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Ecommerce",
+    label: "Blood Donation",
     items: [
-      {
-        label: "Products",
-        href: "/dashboard/ecommerce/products",
-        icon: Package,
-        moduleKey: "ecommerce",
-        children: [
-          { label: "All Products", href: "/dashboard/ecommerce/products", icon: Package },
-          { label: "Add Single", href: "/dashboard/ecommerce/products/new", icon: Plus },
-          { label: "Add Multiple", href: "/dashboard/ecommerce/products/bulk-upload", icon: Upload },
-          { label: "Categories", href: "/dashboard/ecommerce/categories", icon: Tag },
-        ],
-      },
-      { label: "Orders", href: "/dashboard/ecommerce/orders", icon: ShoppingBag, moduleKey: "ecommerce" },
-      {
-        label: "Sellers",
-        href: "/dashboard/ecommerce/sellers",
-        icon: Store,
-        moduleKey: "ecommerce",
-        children: [
-          { label: "All Sellers", href: "/dashboard/ecommerce/sellers", icon: Store },
-          { label: "Listing Review", href: "/dashboard/ecommerce/sellers/review", icon: BadgeCheck },
-          { label: "Payouts", href: "/dashboard/ecommerce/sellers/payouts", icon: Wallet },
-        ],
-      },
-      { label: "Promotions", href: "/dashboard/ecommerce/promotions", icon: Tag, moduleKey: "ecommerce" },
-      { label: "Payments", href: "/dashboard/ecommerce/payments", icon: CreditCard, moduleKey: "ecommerce" },
-      { label: "Delivery", href: "/dashboard/ecommerce/delivery", icon: Truck, moduleKey: "ecommerce" },
+      { label: "Blood Donors", href: "/dashboard/donors", icon: Droplet, moduleKey: "blood_donation" },
     ],
   },
   {
-    label: "System",
+    label: "Team & Planning",
     items: [
-      { label: "Business Profile", href: "/dashboard/business-profile", icon: Briefcase },
-      { label: "Modules", href: "/dashboard/modules", icon: ToggleLeft },
       { label: "Users", href: "/dashboard/users", icon: Users },
-      { label: "Backups", href: "/dashboard/backups", icon: Archive },
-      { label: "Import / Export", href: "/dashboard/import-export", icon: ArrowLeftRight },
-      { label: "Settings", href: "/dashboard/settings", icon: Settings },
-      { label: "SEO & AI Search", href: "/dashboard/settings/seo", icon: SearchCheck },
-      { label: "AI Connect", href: "/dashboard/ai-connect", icon: Bot },
-      { label: "API Keys", href: "/dashboard/settings/api-keys", icon: Puzzle },
-      { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },
-      { label: "Business Email", href: "/dashboard/settings/email", icon: AtSign, saasOnly: true },
-      { label: "Visit Site", href: "/", icon: Globe },
-      { label: "Docs", href: "/dashboard/docs", icon: BookOpen },
-    ],
-  },
-  {
-    label: "Business Tools",
-    variant: "tools",
-    items: [
-      { label: "CRM", href: "/dashboard/crm", icon: Users, moduleKey: "crm" },
-      { label: "Invoices", href: "/dashboard/invoices", icon: FileText, moduleKey: "invoices" },
-      { label: "Marketing", href: "/dashboard/marketing", icon: Sparkles, moduleKey: "marketing" },
+      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase, moduleKey: "jobs" },
       {
         label: "Content Scheduler",
         href: "/dashboard/scheduler",
@@ -276,30 +286,30 @@ export const navSections: NavSection[] = [
           { label: "Access", href: "/dashboard/scheduler/access", icon: Users },
         ],
       },
-      { label: "Jobs & Staff", href: "/dashboard/jobs", icon: Briefcase, moduleKey: "jobs" },
-      { label: "POS", href: "/dashboard/pos", icon: ShoppingCart, moduleKey: "pos" },
-      // Restaurant vertical (docs/business/06-restaurant-vertical.md phase 3).
-      // Rides on the same "pos" module gate rather than a new module key —
-      // this is the same operational surface (running the counter), not a
-      // separately-sellable feature. Page itself renders nothing for a
-      // tenant with no branches, so it costs a non-restaurant tenant one
-      // harmless sidebar link at worst.
-      { label: "Kitchen", href: "/dashboard/kitchen", icon: ChefHat, moduleKey: "pos" },
-      { label: "Branches", href: "/dashboard/branches", icon: Store, moduleKey: "pos" },
-      { label: "Reservations", href: "/dashboard/reservations", icon: CalendarClock, moduleKey: "pos" },
-      { label: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Package, moduleKey: "inventory" },
-      {
-        label: "Accounting",
-        href: "/dashboard/accounting",
-        icon: BarChart3,
-        moduleKey: "accounting",
-        children: [
-          { label: "Overview", href: "/dashboard/accounting", icon: BarChart3 },
-          { label: "Transactions", href: "/dashboard/accounting/transactions", icon: DollarSign },
-          { label: "Accounts", href: "/dashboard/accounting/accounts", icon: BookMarked },
-          { label: "P&L Report", href: "/dashboard/accounting/report", icon: BarChart3 },
-        ],
-      },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { label: "General Settings", href: "/dashboard/settings", icon: Settings },
+      { label: "Business Profile", href: "/dashboard/business-profile", icon: Briefcase },
+      { label: "Domain", href: "/dashboard/settings/domain", icon: Globe, saasOnly: true },
+      { label: "Business Email", href: "/dashboard/settings/email", icon: AtSign, saasOnly: true },
+      { label: "SEO & AI Search", href: "/dashboard/settings/seo", icon: SearchCheck },
+      { label: "Modules", href: "/dashboard/modules", icon: ToggleLeft },
+      { label: "Import / Export", href: "/dashboard/import-export", icon: ArrowLeftRight },
+      { label: "Backups", href: "/dashboard/backups", icon: Archive },
+      { label: "AI Connect", href: "/dashboard/ai-connect", icon: Bot },
+      { label: "API Keys", href: "/dashboard/settings/api-keys", icon: Puzzle },
+    ],
+  },
+  {
+    label: "Account & Help",
+    variant: "brand",
+    items: [
+      { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard, saasOnly: true },
+      { label: "Support", href: "/dashboard/support", icon: LifeBuoy },
+      { label: "Docs", href: "/dashboard/docs", icon: BookOpen },
     ],
   },
 ];

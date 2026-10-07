@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronDown, ExternalLink, Menu, Plus, X } from "lucide-react";
+import { ChevronDown, ExternalLink, Menu, Plus, Search, X } from "lucide-react";
 import type { ShellNavItem, ShellNavSection, ShellTheme } from "./types";
 import { LanguageSwitcher } from "./language-switcher";
 import { useT } from "@/lib/i18n/language-provider";
@@ -138,12 +138,55 @@ function NavRow({ item, pathname, onClose, dark, brand }: {
   );
 }
 
+const COLLAPSE_KEY = "pc-nav-collapsed";
+
+function itemMatches(item: ShellNavItem, q: string): boolean {
+  return item.label.toLowerCase().includes(q) || (item.children ?? []).some((c) => itemMatches(c, q));
+}
+
+/** Does this section contain the page being viewed? (Keeps it open.) */
+function sectionHasActive(items: ShellNavItem[], pathname: string): boolean {
+  const hit = (i: ShellNavItem): boolean =>
+    (i.href !== "/" && (pathname === i.href.split("?")[0] || pathname.startsWith(i.href.split("?")[0] + "/"))) || (i.children ?? []).some(hit);
+  return items.some(hit);
+}
+
 function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
   sections: ShellNavSection[]; dark: boolean; onClose?: () => void;
   header: React.ReactNode | ((onClose?: () => void) => React.ReactNode);
   footer?: React.ReactNode; filterItem?: (item: ShellNavItem) => boolean;
 }) {
   const pathname = usePathname();
+  const t = useT();
+  // Menu search: type part of a name ("email", "booking") to jump straight there.
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  // Collapsed groups, remembered per browser. The group holding the current
+  // page always shows, and searching opens everything.
+  const [collapsed, setCollapsed] = useState<string[]>([]);
+  useEffect(() => {
+    // Read once after mount (localStorage isn't available during server render).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    try { setCollapsed(JSON.parse(localStorage.getItem(COLLAPSE_KEY) ?? "[]")); } catch { /* storage blocked */ }
+  }, []);
+  const toggle = (label: string) => setCollapsed((prev) => {
+    const next = prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label];
+    try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next)); } catch { /* storage blocked */ }
+    return next;
+  });
+
+  const visible = sections.map((section) => {
+    let items = filterItem ? section.items.filter(filterItem) : section.items;
+    if (q) {
+      // Show matching items; a match inside a sub-menu shows that sub-item directly.
+      items = items.flatMap((it) =>
+        it.label.toLowerCase().includes(q) ? [it]
+          : (it.children ?? []).filter((c) => itemMatches(c, q)).map((c) => ({ ...c, children: undefined })),
+      );
+    }
+    return { section, items };
+  }).filter((v) => v.items.length > 0);
+
   return (
     <>
       {typeof header === "function" ? header(onClose) : header}
@@ -153,13 +196,30 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
       <div className="px-3 py-2 border-b flex justify-center">
         <LanguageSwitcher />
       </div>
+      <div className="px-3 pt-3">
+        <div className="relative">
+          <Search className={cn("absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5", dark ? "text-gray-500" : "text-muted-foreground")} />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Escape") setQuery(""); }}
+            placeholder={t("sidebar.searchMenu")}
+            aria-label={t("sidebar.searchMenu")}
+            className={cn(
+              "w-full rounded-md border pl-8 pr-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/40",
+              dark ? "bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500" : "bg-background border-input placeholder:text-muted-foreground",
+            )}
+          />
+        </div>
+      </div>
       <ScrollArea className="flex-1">
-        <nav className="px-2 py-3 space-y-4">
-          {sections.map((section) => {
+        <nav className="px-2 py-3 space-y-3">
+          {visible.map(({ section, items }) => {
             const isTools = section.variant === "tools";
             const isBrand = section.variant === "brand";
-            const items = filterItem ? section.items.filter(filterItem) : section.items;
-            if (items.length === 0) return null;
+            const canCollapse = !q && !isBrand && items.length > 1;
+            const isOpen = !canCollapse || !collapsed.includes(section.label) || sectionHasActive(items, pathname);
             return (
               <div
                 key={section.label}
@@ -169,20 +229,40 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
                 )}
                 style={isBrand ? { backgroundColor: "#C2410C" } : undefined}
               >
-                <p className={cn(
-                  "px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest",
-                  isTools ? "text-gray-500 pt-1" : isBrand ? "text-white/70 pt-1" : dark ? "text-gray-600" : "text-muted-foreground",
-                )}>
-                  {section.label}
-                </p>
-                <ul className="space-y-0.5">
-                  {items.map((item) => (
-                    <NavRow key={item.href} item={item} pathname={pathname} onClose={onClose} dark={dark || isTools} brand={isBrand} />
-                  ))}
-                </ul>
+                {canCollapse ? (
+                  <button
+                    type="button"
+                    onClick={() => toggle(section.label)}
+                    aria-expanded={isOpen}
+                    className={cn(
+                      "w-full flex items-center justify-between px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest rounded hover:opacity-80",
+                      isTools ? "text-gray-500 pt-1" : dark ? "text-gray-600" : "text-muted-foreground",
+                    )}
+                  >
+                    <span>{section.label}</span>
+                    <ChevronDown className={cn("h-3 w-3 transition-transform", !isOpen && "-rotate-90")} />
+                  </button>
+                ) : (
+                  <p className={cn(
+                    "px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest",
+                    isTools ? "text-gray-500 pt-1" : isBrand ? "text-white/70 pt-1" : dark ? "text-gray-600" : "text-muted-foreground",
+                  )}>
+                    {section.label}
+                  </p>
+                )}
+                {isOpen && (
+                  <ul className="space-y-0.5">
+                    {items.map((item) => (
+                      <NavRow key={item.href + item.label} item={item} pathname={pathname} onClose={() => { setQuery(""); onClose?.(); }} dark={dark || isTools} brand={isBrand} />
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}
+          {q && visible.length === 0 && (
+            <p className={cn("px-2 text-sm", dark ? "text-gray-500" : "text-muted-foreground")}>{t("sidebar.noMenuMatch")}</p>
+          )}
         </nav>
       </ScrollArea>
       {footer}

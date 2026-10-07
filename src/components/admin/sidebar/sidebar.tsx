@@ -22,6 +22,17 @@ import type { TranslationKey } from "@/lib/i18n/locales/en";
 // and the sidebar section labels below.
 const LABEL_KEY: Record<string, TranslationKey> = {
   "Overview": "sidebar.sectionOverview",
+  "Website": "sidebar.sectionWebsite",
+  "Site Content": "sidebar.sectionSiteContent",
+  "Customers & Sales": "sidebar.sectionCustomersSales",
+  "Shop": "sidebar.sectionShop",
+  "Restaurant": "sidebar.sectionRestaurant",
+  "Real Estate": "sidebar.sectionRealEstate",
+  "Blood Donation": "sidebar.sectionBloodDonation",
+  "Team & Planning": "sidebar.sectionTeamPlanning",
+  "Account & Help": "sidebar.sectionAccountHelp",
+  "Design": "sidebar.design",
+  "General Settings": "sidebar.generalSettings",
   "Account": "sidebar.sectionAccount",
   "Content": "sidebar.sectionContent",
   "Site Sections": "sidebar.sectionSiteSections",
