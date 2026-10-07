@@ -137,7 +137,7 @@ export default function BusinessEmailPage() {
 
           {prov && <p className="text-sm text-muted-foreground">{prov.help}</p>}
 
-          {p === "zoho" && <ZohoPanel onChanged={load} autoDns={!!data.autoDns} />}
+          {p === "zoho" && <ZohoPanel onChanged={load} autoDns={!!data.autoDns} domain={domain} />}
 
           {p === "zoho" && (
             <div className="space-y-1.5">

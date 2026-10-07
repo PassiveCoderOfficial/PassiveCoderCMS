@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, KeyRound, Loader2, Plug, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, ExternalLink, KeyRound, Loader2, Plug, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ async function post(body: Record<string, unknown>) {
  * without opening Zoho. `onChanged` refreshes the DNS records above (adding
  * the domain saves Zoho's verification code into them).
  */
-export function ZohoPanel({ onChanged, autoDns }: { onChanged: () => void; autoDns: boolean }) {
+export function ZohoPanel({ onChanged, autoDns, domain }: { onChanged: () => void; autoDns: boolean; domain?: string | null }) {
   const [s, setS] = useState<Status | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [local, setLocal] = useState("");
@@ -54,20 +54,41 @@ export function ZohoPanel({ onChanged, autoDns }: { onChanged: () => void; autoD
   }
 
   if (!s) return null;
-  if (!s.configured) {
-    return <p className="text-xs text-muted-foreground">Connect Zoho will be available once the platform&apos;s Zoho app is set up. Until then, follow the manual steps below.</p>;
-  }
-
   if (!s.connected) {
+    const Step = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
+      <li className="flex gap-3">
+        <span className="shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{n}</span>
+        <div className="space-y-1.5 min-w-0"><p className="text-sm font-medium">{title}</p>{children}</div>
+      </li>
+    );
     return (
-      <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
-        <p className="text-sm font-medium flex items-center gap-2"><Plug className="w-4 h-4" /> Manage Zoho from here</p>
-        <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-1">
-          <li>Sign up free at <a href="https://www.zoho.com/mail/zohomail-pricing.html" target="_blank" rel="noopener noreferrer" className="underline">zoho.com/mail</a> (Forever Free plan: up to 5 mailboxes) using your domain.</li>
-          <li>Click Connect Zoho and approve. You&apos;ll come straight back here.</li>
-          <li>We add and verify the domain and you create mailboxes below, without opening Zoho again.</li>
+      <div className="rounded-lg border p-4 space-y-4 bg-muted/30">
+        <p className="text-sm font-semibold flex items-center gap-2"><Plug className="w-4 h-4" /> Set up free Zoho Mail in 3 steps</p>
+        <ol className="space-y-4">
+          <Step n={1} title="Create your free Zoho Mail account">
+            <Button asChild size="sm" variant="outline">
+              <a href="https://www.zoho.com/mail/zohomail-pricing.html" target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4 mr-1" /> Open Zoho Mail sign-up</a>
+            </Button>
+            <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+              <li>Scroll to <strong>Forever Free</strong> (free for up to 5 mailboxes) and click <strong>Sign up now</strong>.</li>
+              <li>Choose &ldquo;Sign up with a domain I already own&rdquo; and type <strong>{domain ?? "your domain"}</strong>.</li>
+              <li>Fill in your name and a password. When Zoho asks you to <strong>verify the domain, stop and come back here</strong>: we do that part for you.</li>
+            </ul>
+          </Step>
+          <Step n={2} title="Connect Zoho to this dashboard">
+            {s.configured ? (
+              <>
+                <Button asChild size="sm"><a href="/api/email/zoho/connect"><Plug className="w-4 h-4 mr-1" /> Connect Zoho</a></Button>
+                <p className="text-xs text-muted-foreground">Sign in with the Zoho account from step 1 and click <strong>Accept</strong>. You&apos;ll come straight back here.</p>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">One-click connect is being switched on by Passive Coder and will appear here shortly. Meanwhile you can finish manually with the DNS records below.</p>
+            )}
+          </Step>
+          <Step n={3} title="Verify your domain and create mailboxes here">
+            <p className="text-xs text-muted-foreground">Once connected, this box shows buttons to verify {domain ?? "your domain"} and to create addresses like info@{domain ?? "yourdomain.com"}, without opening Zoho. Your current email keeps working until you choose to switch.</p>
+          </Step>
         </ol>
-        <Button asChild size="sm"><a href="/api/email/zoho/connect"><Plug className="w-4 h-4 mr-1" /> Connect Zoho</a></Button>
       </div>
     );
   }

@@ -36,7 +36,7 @@ export const PROVIDERS: Record<Provider, { label: string; help: string; dkimHelp
     dkimHelp: "In Google Admin go to Apps > Gmail > Authenticate email, generate a DKIM key and paste the TXT value here." },
   microsoft: { label: "Microsoft 365 (Outlook)", help: "Add this domain in the Microsoft 365 admin center, then add the records below.",
     dkimHelp: "In Microsoft Defender > Email authentication > DKIM, copy the two selector CNAME values." },
-  zoho: { label: "Zoho Mail (free plan available)", help: "Sign up at zoho.com/mail (the Forever Free plan covers up to 5 mailboxes), add this domain, paste Zoho's verification code below, then add the records.",
+  zoho: { label: "Zoho Mail (free plan available)", help: "Free for up to 5 mailboxes. Follow the 3 steps below.",
     dkimHelp: "In Zoho Mail admin > Domains > Email configuration > DKIM, copy the TXT value." },
   titan: { label: "Titan Email", help: "Add this domain in your Titan account, then add the records below." },
   forwarding: { label: "Free forwarding to your inbox", help: "Mail to info@, sales@ and so on is forwarded to an inbox you already use (Gmail, Outlook). Free, no mailbox to manage." },
