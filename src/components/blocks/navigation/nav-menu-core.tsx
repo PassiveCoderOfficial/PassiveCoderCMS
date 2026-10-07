@@ -58,7 +58,7 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, l
         // Anchored to the <nav> element (the nearest `relative` ancestor),
         // not the viewport — see navigation-block.tsx history for why this
         // must never go back to `fixed` with a hardcoded top offset.
-        className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-[9999] px-2 w-full max-w-[1120px] animate-in fade-in slide-in-from-top-2 duration-200"
+        className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-[9999] w-[min(1120px,calc(100vw-2rem))] animate-in fade-in slide-in-from-top-2 duration-200"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -72,7 +72,11 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, l
               ))}
             </div>
           )}
-          <div className={cn("grid grid-cols-2 gap-x-8 gap-y-7 p-7 max-h-[70vh] overflow-y-auto", MEGA_COL_CLASS[columns ?? 5] ?? MEGA_COL_CLASS[5])}>
+          <div
+            className={cn("grid grid-cols-2 gap-y-7 max-h-[70vh] overflow-y-auto", linksAs === "column" ? "gap-x-6 p-6 lg:[grid-template-columns:var(--mega-cols)]" : cn("gap-x-8 p-7", MEGA_COL_CLASS[columns ?? 5] ?? MEGA_COL_CLASS[5]))}
+            // Highlighted links column: equal group columns plus a wider last one.
+            style={linksAs === "column" ? { ["--mega-cols" as string]: `repeat(${groups.length}, minmax(0, 1fr)) minmax(15rem, 1.3fr)` } : undefined}
+          >
             {groups.map((group) => (
               <div key={group.id} className="min-w-0">
                 <Link href={group.url} className="flex items-center gap-2.5 mb-3 group/head">
@@ -92,7 +96,7 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, l
               </div>
             ))}
             {linksAs === "column" && standalone.length > 0 && (
-              <div className="min-w-0 rounded-2xl bg-primary/[0.07] border border-primary/15 p-5 -my-1">
+              <div className="min-w-0 rounded-2xl bg-primary/[0.07] border border-primary/15 p-5 -my-1 col-span-2 lg:col-span-1">
                 {linksTitle && <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary mb-3">{linksTitle}</p>}
                 <ul className="space-y-2.5">
                   {standalone.map((s) => (
@@ -261,17 +265,42 @@ export function MobileNavList({
                 </button>
               )}
             </div>
-            {hasChildren && isExpanded && (
-              <ul className="ml-4 mt-1 space-y-0.5 border-l-2 border-border pl-3">
-                {item.children!.map(child => (
-                  <li key={child.id}>
-                    <Link href={child.url} className="block px-2 py-2.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={onNavigate}>
-                      {child.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {hasChildren && isExpanded && (() => {
+              // Mega menus on phones: each group as a heading with its links,
+              // single links either listed or as the highlighted card.
+              const kids = item.children!;
+              const groups = kids.filter((c) => (c.children?.length ?? 0) > 0);
+              const singles = kids.filter((c) => (c.children?.length ?? 0) === 0);
+              const singleLink = (c: NavItem) => (
+                <li key={c.id}>
+                  <Link href={c.url} className="block px-2 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={onNavigate}>{c.label}</Link>
+                </li>
+              );
+              return (
+                <div className="ml-4 mt-1 border-l-2 border-border pl-3 space-y-3 pb-2">
+                  {groups.map((g) => (
+                    <div key={g.id}>
+                      <Link href={g.url} onClick={onNavigate} className="block px-2 pt-2 pb-1 text-[13px] font-semibold uppercase tracking-wide text-foreground">{g.label}</Link>
+                      <ul className="space-y-0.5">{g.children!.map(singleLink)}</ul>
+                    </div>
+                  ))}
+                  {singles.length > 0 && (item.megaLinksAs === "column" ? (
+                    <div className="rounded-xl bg-primary/[0.07] border border-primary/15 p-3">
+                      {item.megaLinksTitle && <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary mb-1.5 px-1">{item.megaLinksTitle}</p>}
+                      <ul>
+                        {singles.map((c) => (
+                          <li key={c.id}>
+                            <Link href={c.url} onClick={onNavigate} className="flex items-center justify-between px-1 py-2 text-sm font-semibold text-foreground">
+                              {c.label}<span aria-hidden className="text-primary">→</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : <ul className="space-y-0.5">{singles.map(singleLink)}</ul>)}
+                </div>
+              );
+            })()}
           </li>
         );
       })}
