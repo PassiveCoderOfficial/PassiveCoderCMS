@@ -26,9 +26,15 @@ export function zohoConfigured() {
   return !!(process.env.ZOHO_CLIENT_ID && process.env.ZOHO_CLIENT_SECRET);
 }
 
+/**
+ * Must match the redirect URI registered in the Zoho API console exactly.
+ * Fixed to the www host (NEXT_PUBLIC_APP_URL has no www, which Zoho rejected
+ * as "Invalid Redirect Uri"); ZOHO_REDIRECT_URI overrides it if ever needed.
+ */
 export function zohoRedirectUri() {
-  const base = (process.env.NEXT_PUBLIC_APP_URL || "https://www.passivecoder.com").replace(/\/$/, "");
-  return `${base}/api/email/zoho/callback`;
+  if (process.env.ZOHO_REDIRECT_URI) return process.env.ZOHO_REDIRECT_URI;
+  const root = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(":")[0];
+  return root.includes("localhost") ? `http://${root}/api/email/zoho/callback` : `https://www.${root}/api/email/zoho/callback`;
 }
 
 /* ── Signed OAuth state (tenant + user, 15 min) ──────────────────────── */
