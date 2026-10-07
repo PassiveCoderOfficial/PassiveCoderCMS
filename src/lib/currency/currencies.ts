@@ -20,7 +20,7 @@ const ALL_CURRENCIES: CurrencyDef[] = [
   { code: "PKR", symbol: "₨",  name: "Pakistani Rupee" },
   { code: "NPR", symbol: "₨",  name: "Nepalese Rupee" },
   { code: "LKR", symbol: "₨",  name: "Sri Lankan Rupee" },
-  { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
+  { code: "AED", symbol: "⃃", name: "UAE Dirham" },
   { code: "SAR", symbol: "﷼",  name: "Saudi Riyal" },
   { code: "QAR", symbol: "﷼",  name: "Qatari Riyal" },
   { code: "KWD", symbol: "د.ك", name: "Kuwaiti Dinar" },
@@ -97,8 +97,14 @@ export const DEFAULT_CURRENCY: CurrencyConfig = {
 };
 
 /** Format an amount with a currency config. Works with any code (falls back to symbol+number). */
+/** Official UAE Dirham sign (Unicode 17, U+20C3); globals.css ships a font for it. */
+export const DIRHAM_SIGN = "⃃";
+const AED_TEXT_SYMBOLS = new Set(["", "AED", "aed", "د.إ", "Dh", "DH", "Dhs"]);
+
 export function formatMoney(amount: number, cfg: CurrencyConfig): string {
-  const { currency, currency_symbol, currency_position } = cfg;
+  const { currency, currency_position } = cfg;
+  // Dirham prices use the new dirham sign instead of the "AED" / "د.إ" text.
+  const currency_symbol = currency === "AED" && AED_TEXT_SYMBOLS.has((cfg.currency_symbol ?? "").trim()) ? DIRHAM_SIGN : cfg.currency_symbol;
   try {
     const formatted = new Intl.NumberFormat("en-US", {
       style: "currency",

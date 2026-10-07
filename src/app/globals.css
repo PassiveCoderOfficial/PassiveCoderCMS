@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* UAE Dirham sign (U+20C3). Few fonts have it yet, so a one-glyph font is
+   put first in every font stack; unicode-range keeps it to that character. */
+@font-face { font-family: "AED Dirham"; src: url("/fonts/aed-dirham.otf") format("opentype"); unicode-range: U+20C3; font-display: block; }
+
 html {
   scroll-behavior: smooth;
 }
@@ -94,7 +98,7 @@ html {
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-sidebar: hsl(var(--sidebar));
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: "AED Dirham", var(--font-inter), system-ui, sans-serif;
   --radius: var(--radius);
 
   /* Extended design-system tokens — surfaces, soft fills, shadows.

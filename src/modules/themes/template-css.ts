@@ -158,8 +158,8 @@ ${fontsHref ? `@import url("${fontsHref}");\n` : ""}${curtainCss}${scopeSelector
   --input: ${p(palette.border)};
   --ring: ${p(palette.ring)};
   --radius: ${palette.borderRadius};
-  --heading-font: ${fontVal(typography.headingFont)}, sans-serif;
-  --body-font: ${fontVal(typography.bodyFont)}, sans-serif;
+  --heading-font: "AED Dirham", ${fontVal(typography.headingFont)}, sans-serif;
+  --body-font: "AED Dirham", ${fontVal(typography.bodyFont)}, sans-serif;
   --heading-weight: ${typography.headingWeight};
   --letter-spacing-heading: ${typography.letterSpacing};
 
