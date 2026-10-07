@@ -1,6 +1,6 @@
 {
   "name": "cms",
-  "version": "1.0.508",
+  "version": "1.0.509",
   "private": true,
   "scripts": {
     "dev": "next dev",

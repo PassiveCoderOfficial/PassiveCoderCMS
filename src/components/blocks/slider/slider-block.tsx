@@ -149,10 +149,10 @@ export function SliderBlock({ block }: { block: SliderBlockProps }) {
 
       {showArrows && slides.length > 1 && (
         <>
-          <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors">
+          <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 hidden sm:flex bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-colors">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors">
+          <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 hidden sm:flex bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-colors">
             <ChevronRight className="h-5 w-5" />
           </button>
         </>
