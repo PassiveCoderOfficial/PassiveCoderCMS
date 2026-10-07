@@ -67,12 +67,13 @@ export function ZohoPanel({ onChanged, autoDns, domain }: { onChanged: () => voi
         <ol className="space-y-4">
           <Step n={1} title="Create your free Zoho Mail account">
             <Button asChild size="sm" variant="outline">
-              <a href="https://www.zoho.com/mail/zohomail-pricing.html" target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4 mr-1" /> Open Zoho Mail sign-up</a>
+              <a href="https://mail.zoho.com/signup?type=org&plan=free" target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4 mr-1" /> Open Zoho Mail free sign-up</a>
             </Button>
             <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-              <li>Scroll to <strong>Forever Free</strong> (free for up to 5 mailboxes) and click <strong>Sign up now</strong>.</li>
+              <li>This opens Zoho&apos;s <strong>Forever Free</strong> plan sign-up directly (free for up to 5 mailboxes).</li>
               <li>Choose &ldquo;Sign up with a domain I already own&rdquo; and type <strong>{domain ?? "your domain"}</strong>.</li>
               <li>Fill in your name and a password. When Zoho asks you to <strong>verify the domain, stop and come back here</strong>: we do that part for you.</li>
+              <li>If Zoho says the free plan isn&apos;t available in your region, use <a href="https://mail.zoho.com/signup?type=org&plan=newMail5gb" target="_blank" rel="noopener noreferrer" className="underline">Mail Lite (about $1 per user per month)</a> instead; everything else works the same.</li>
             </ul>
           </Step>
           <Step n={2} title="Connect Zoho to this dashboard">
