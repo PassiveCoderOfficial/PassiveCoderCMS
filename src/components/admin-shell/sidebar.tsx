@@ -215,10 +215,11 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
       </div>
       <ScrollArea className="flex-1">
         <nav className="px-2 py-3 space-y-3">
-          {visible.map(({ section, items }) => {
+          {visible.map(({ section, items }, idx) => {
             const isTools = section.variant === "tools";
             const isBrand = section.variant === "brand";
-            const canCollapse = !q && !isBrand && items.length > 1;
+            // The first group (Dashboard, Visit Site) always stays open.
+            const canCollapse = !q && !isBrand && idx > 0 && items.length > 1;
             const isOpen = !canCollapse || !collapsed.includes(section.label) || sectionHasActive(items, pathname);
             return (
               <div
