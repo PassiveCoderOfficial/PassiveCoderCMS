@@ -302,6 +302,18 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
         </div>
       </div>
 
+      {/* Section anchor */}
+      <div className="space-y-1.5">
+        <Label className="text-xs">Section anchor</Label>
+        <Input
+          className="h-8 text-xs"
+          placeholder="e.g. plumbing-works"
+          value={block.anchor ?? ""}
+          onChange={(e) => update("anchor", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+/, ""))}
+        />
+        <p className="text-[11px] text-muted-foreground">Link to this section with /page-url#{block.anchor || "anchor"}.</p>
+      </div>
+
       {/* Animation */}
       <div className="space-y-1.5">
         <Label className="text-xs">Animation</Label>

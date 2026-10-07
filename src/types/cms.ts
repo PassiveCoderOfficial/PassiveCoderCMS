@@ -101,6 +101,9 @@ export type BlockBase = {
   /** Per-device hiding — CSS-driven (live site has no server-side viewport
    *  info), unlike `visible` which is a true hide on every device. */
   hideOn?: ("desktop" | "tablet" | "mobile")[];
+  /** Optional section anchor: rendered as the wrapper's id so links like
+   *  /services#plumbing jump here. Letters, digits and dashes only. */
+  anchor?: string;
   // Layout
   width: BlockWidth;
   padding: { top: number; right: number; bottom: number; left: number };
