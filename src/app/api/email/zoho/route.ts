@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { importAccess } from "@/lib/import/access";
 import { applyRecords, emailDomainFor, requiredRecords, weHostDns } from "@/lib/email/business-email";
 import {
-  createAccount, deleteAccount, ensureDomain, getConnection, listAccounts, listDomains,
+  createAccount, deleteAccount, zohoMail, ensureDomain, getConnection, listAccounts, listDomains,
   resetPassword, verificationTxt, verifyDomain, zohoConfigured,
 } from "@/lib/email/zoho";
 
@@ -48,6 +48,13 @@ export async function POST(req: Request) {
   const domain = await emailDomainFor(a.admin, a.tenantId);
   try {
     switch (body.action) {
+      case "diagnose": {
+        // What Zoho reports for the connected user: which organisation, and
+        // whether they're its admin. Ids and roles only, no tokens.
+        const accts = await zohoMail<Record<string, unknown>[]>(conn, "/accounts").catch((e) => String(e));
+        const pick = (x: Record<string, unknown>) => Object.fromEntries(Object.entries(x).filter(([k]) => /zoid|zuid|org|role|type|policy|accountName|primaryEmail|incoming|isOrg|domain/i.test(k)));
+        return NextResponse.json({ zoid: conn.zoid, accounts: Array.isArray(accts) ? accts.map(pick) : accts });
+      }
       case "add_domain": {
         if (!domain) return NextResponse.json({ error: "Connect your own domain first (Settings > Domain)." }, { status: 400 });
         const d = await ensureDomain(conn, domain);
