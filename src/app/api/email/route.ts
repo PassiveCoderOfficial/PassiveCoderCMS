@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { importAccess } from "@/lib/import/access";
 import {
-  PROVIDERS, applyRecords, checkRecords, cleanForwards, requiredRecords, weHostDns,
+  PROVIDERS, applyRecords, emailDomainFor, checkRecords, cleanForwards, requiredRecords, weHostDns,
   ZOHO_REGIONS, type DnsRecord, type Provider, type ZohoRegion,
 } from "@/lib/email/business-email";
 import { setupSendingDomain, verifySendingDomain } from "@/lib/email/sender";
@@ -14,11 +14,10 @@ async function context(need: "read" | "write"): Promise<{ error: NextResponse } 
   const a = await importAccess(need);
   if ("error" in a && a.error) return { error: a.error };
   if (!("admin" in a) || !a.admin) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  const [{ data: t }, { data: s }] = await Promise.all([
-    a.admin.from("tenants").select("custom_domain, domain_status").eq("id", a.tenantId).maybeSingle(),
+  const [domain, { data: s }] = await Promise.all([
+    emailDomainFor(a.admin, a.tenantId),
     a.admin.from("tenant_email_settings").select("*").eq("tenant_id", a.tenantId).maybeSingle(),
   ]);
-  const domain = t?.domain_status === "active" ? (t.custom_domain as string | null) : null;
   return { admin: a.admin, tenantId: a.tenantId, domain, settings: s };
 }
 

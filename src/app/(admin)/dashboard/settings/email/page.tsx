@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { ZohoPanel } from "./zoho-panel";
 
 type Rec = { type: string; name: string; value: string; priority?: number; purpose: string; ok: boolean };
 type Data = {
@@ -135,6 +136,8 @@ export default function BusinessEmailPage() {
           </div>
 
           {prov && <p className="text-sm text-muted-foreground">{prov.help}</p>}
+
+          {p === "zoho" && <ZohoPanel onChanged={load} autoDns={!!data.autoDns} />}
 
           {p === "zoho" && (
             <div className="space-y-1.5">

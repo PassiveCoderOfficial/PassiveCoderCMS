@@ -1,5 +1,21 @@
 import "server-only";
 import { Resolver } from "node:dns/promises";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(":")[0];
+
+/**
+ * The domain a site's email lives on: its connected custom domain once live,
+ * or the platform's own domain for the platform site (slug = first label of
+ * the root domain), which is served at the root without a custom_domain row.
+ */
+export async function emailDomainFor(admin: SupabaseClient, tenantId: string): Promise<string | null> {
+  const { data: t } = await admin.from("tenants").select("slug, custom_domain, domain_status").eq("id", tenantId).maybeSingle();
+  if (!t) return null;
+  if (t.custom_domain && t.domain_status === "active") return t.custom_domain as string;
+  if (t.slug === ROOT_DOMAIN.split(".")[0] && !ROOT_DOMAIN.includes("localhost")) return ROOT_DOMAIN;
+  return null;
+}
 
 /**
  * Business email for a site's own domain: which DNS records each mailbox
