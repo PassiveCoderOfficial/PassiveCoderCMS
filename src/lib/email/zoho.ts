@@ -115,6 +115,9 @@ export async function zohoMail<T = unknown>(c: ZohoConn, path: string, init: { m
     const d = j.data as { moreInfo?: string; errorCode?: string } | undefined;
     const detail = d?.moreInfo || d?.errorCode || j.status?.description || raw.slice(0, 160) || "no details";
     console.error("[zoho]", init.method ?? "GET", path, res.status, raw.slice(0, 400));
+    if (j.status?.description === "Invalid Access" && path.startsWith("/organization/")) {
+      throw new Error("The Zoho login you connected is a regular member of its organisation, not an admin, so Zoho won't let it manage domains or mailboxes. In Zoho Mail Admin Console > Users, make it an Admin (or Super Admin), or click Disconnect and connect again with the Zoho login that created the organisation.");
+    }
     throw new Error(`Zoho (${res.status} on ${path}): ${detail}`);
   }
   return j.data as T;
