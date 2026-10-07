@@ -594,6 +594,11 @@ export type TestimonialsBlockProps = BlockBase & {
       avatar?: string;
       /** Short headline above the quote (Photo Cards). */
       title?: string;
+      /** Review Cards: product the review is about (shown under the name) and its link. */
+      product?: string;
+      productUrl?: string;
+      /** Review Cards: show a verified-buyer tick after the name. */
+      verified?: boolean;
       content: string;
       rating?: number;
     }>;

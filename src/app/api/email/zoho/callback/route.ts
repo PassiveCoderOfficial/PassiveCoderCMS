@@ -18,6 +18,7 @@ export async function GET(req: Request) {
   try {
     const accountsServer = sp.get("accounts-server") || "https://accounts.zoho.com";
     if (!/^https:\/\/accounts\.zoho\.[a-z.]+$/.test(accountsServer)) throw new Error("Unexpected Zoho server");
+    console.log("[zoho-callback] location=%s accounts-server=%s", sp.get("location"), accountsServer);
     const tok = await exchangeCode(sp.get("code")!, accountsServer, sp.get("location") ?? "us");
     const conn: ZohoConn = { tenant_id: state.t, dc: tok.dc, accounts_server: accountsServer, refresh_token: tok.refreshToken, zoid: null, org_name: null };
     const org = await fetchOrg(conn, tok.accessToken);

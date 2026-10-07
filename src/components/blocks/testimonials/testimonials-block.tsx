@@ -389,11 +389,58 @@ function TestimonialsPhotoCards({ data }: { data: TestimonialsBlockProps["data"]
   );
 }
 
+/**
+ * Review Cards: square photo on top, quote clamped to four lines, gold
+ * stars, name with a verified tick and the product reviewed underneath.
+ * Four per row on desktop, swipeable on phones.
+ */
+function TestimonialsReviewCards({ data }: { data: TestimonialsBlockProps["data"] }) {
+  const items = data.items ?? [];
+  const card = data.cardColor || "#E3DCCB";
+  const star = data.starColor || "#D4A72C";
+  return (
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+      {(data.title || data.subtitle) && (
+        <div className="text-center mb-10">
+          {data.subtitle && <p className="text-[11px] tracking-[4px] uppercase mb-2.5">{data.subtitle}</p>}
+          {data.title && <h2 className="uppercase text-[24px] m-0">{data.title}</h2>}
+        </div>
+      )}
+      <div className="flex lg:grid lg:grid-cols-4 gap-8 overflow-x-auto lg:overflow-visible snap-x snap-mandatory pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((t) => (
+          <figure key={t.id} className="snap-start shrink-0 basis-[78%] sm:basis-[calc((100%-2rem)/2)] lg:basis-auto m-0 rounded-[14px] overflow-hidden flex flex-col" style={{ background: card }}>
+            {t.avatar
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={t.avatar} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+              : <div className="w-full aspect-square bg-black/10" />}
+            <div className="flex flex-col items-center text-center px-6 pt-7 pb-7 flex-1">
+              <blockquote className="m-0 text-[18px] leading-[1.4] text-[#5b4636] line-clamp-4 flex-1 flex items-center">{t.content}</blockquote>
+              <div className="flex gap-1 mt-6" aria-label={`${t.rating ?? 5} stars`}>
+                {Array.from({ length: t.rating ?? 5 }).map((_, k) => <Star key={k} className="w-8 h-8" style={{ color: star, fill: star }} strokeWidth={1} />)}
+              </div>
+              <figcaption className="mt-4 flex items-center justify-center gap-2 max-w-full text-[19px] font-bold text-[#5b4636]">
+                <span className="truncate">{t.name}</span>
+                {t.verified !== false && (
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 shrink-0" aria-label="Verified buyer"><circle cx="12" cy="12" r="11" fill="#5b4636" /><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                )}
+              </figcaption>
+              {t.product && (t.productUrl
+                ? <a href={t.productUrl} className="mt-3 text-[16px] text-[#8a7b6e] truncate max-w-full hover:underline">{t.product}</a>
+                : <p className="mt-3 mb-0 text-[16px] text-[#8a7b6e] truncate max-w-full">{t.product}</p>)}
+            </div>
+          </figure>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) {
   const variant = block.templateVariant;
   if (variant === "quote-cards") return <TestimonialsQuoteCards data={block.data} />;
   if (variant === "stars-quotes") return <TestimonialsStarsQuotes data={block.data} />;
   if (variant === "photo-cards") return <TestimonialsPhotoCards data={block.data} />;
+  if (variant === "review-cards") return <TestimonialsReviewCards data={block.data} />;
   if (variant === "minimal-quote") return <TestimonialsMinimalQuote data={block.data} />;
   if (variant === "formal-cards") return <TestimonialsFormalCards data={block.data} />;
   if (variant === "dark-quote-cards") return <TestimonialsDarkQuoteCards data={block.data} />;

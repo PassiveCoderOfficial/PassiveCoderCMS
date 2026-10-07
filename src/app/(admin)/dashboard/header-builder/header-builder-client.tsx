@@ -208,7 +208,7 @@ export default function HeaderBuilderClient({
 
       <div className="flex flex-1 overflow-hidden">
         {showBlocks && (
-          <div className="flex w-64 shrink-0 flex-col overflow-hidden border-r">
+          <div className="flex w-80 shrink-0 flex-col overflow-hidden border-r">
             <BlocksPanel
               initialTab="blocks"
               allowedBlockTypes={target === "header" ? HEADER_BLOCK_TYPES : FOOTER_BLOCK_TYPES}

@@ -105,10 +105,14 @@ export async function zohoMail<T = unknown>(c: ZohoConn, path: string, init: { m
     headers: { Authorization: `Zoho-oauthtoken ${token}`, "Content-Type": "application/json", Accept: "application/json" },
     ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
   });
-  const j = await res.json().catch(() => ({})) as { status?: { code?: number; description?: string }; data?: T & { moreInfo?: string } };
+  const raw = await res.text();
+  let j: { status?: { code?: number; description?: string }; data?: T & { moreInfo?: string; errorCode?: string } } = {};
+  try { j = JSON.parse(raw); } catch { /* not JSON */ }
   if (!res.ok || (j.status?.code && j.status.code >= 400)) {
-    const more = (j.data as { moreInfo?: string } | undefined)?.moreInfo;
-    throw new Error(`Zoho: ${more || j.status?.description || `request failed (${res.status})`}`);
+    const d = j.data as { moreInfo?: string; errorCode?: string } | undefined;
+    const detail = d?.moreInfo || d?.errorCode || j.status?.description || raw.slice(0, 160) || "no details";
+    console.error("[zoho]", init.method ?? "GET", path, res.status, raw.slice(0, 400));
+    throw new Error(`Zoho (${res.status} on ${path}): ${detail}`);
   }
   return j.data as T;
 }
@@ -119,9 +123,23 @@ export async function getConnection(admin: SupabaseClient, tenantId: string): Pr
 }
 
 /* ── Organisation, domain and mailbox operations ─────────────────────── */
+/**
+ * The organisation id (zoid). Tries the organisation endpoint first; if Zoho
+ * refuses it (some accounts only allow per-user calls), reads the signed-in
+ * user's own mail account, which carries its organisation id.
+ */
 export async function fetchOrg(c: ZohoConn, token?: string) {
-  const d = await zohoMail<{ zoid?: number; companyName?: string; orgName?: string }>(c, "/organization", { token });
-  return { zoid: d.zoid ?? null, name: d.companyName ?? d.orgName ?? null };
+  try {
+    const d = await zohoMail<{ zoid?: number; companyName?: string; orgName?: string }>(c, "/organization", { token });
+    if (d?.zoid) return { zoid: d.zoid, name: d.companyName ?? d.orgName ?? null };
+  } catch (e) {
+    console.error("[zoho] /organization failed, trying /accounts:", e instanceof Error ? e.message : e);
+  }
+  const accts = await zohoMail<{ zoid?: number; organizationId?: number; accountName?: string; primaryEmailAddress?: string }[]>(c, "/accounts", { token });
+  const a = Array.isArray(accts) ? accts[0] : undefined;
+  const zoid = a?.zoid ?? a?.organizationId ?? null;
+  if (!zoid) throw new Error("This Zoho account has no Zoho Mail organisation yet. Sign up for Zoho Mail with your domain first (step 1), then connect again.");
+  return { zoid, name: a?.accountName ?? a?.primaryEmailAddress ?? null };
 }
 
 type ZDomain = { domainName: string; verificationStatus?: boolean | string; mxstatus?: string; CNAMEVerificationCode?: string; HTMLVerificationCode?: string; isPrimary?: boolean };

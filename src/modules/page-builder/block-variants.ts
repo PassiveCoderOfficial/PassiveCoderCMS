@@ -79,6 +79,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "program-cards-dark", label: "Program Cards", description: "Bold dark cards for classes, programs or packages.", thumb: "cards-dark", dark: true },
     { key: "image-tiles", label: "Image Tiles", description: "Framed photo tiles with the title and an arrow button underneath — editorial and calm.", thumb: "cards-grid" },
     { key: "bento", label: "Bento", description: "Photo tiles in mixed sizes: one big lead, one wide, the rest small. Fits any number of services.", thumb: "bento", dark: true },
+    { key: "review-cards", label: "Review Cards", description: "Shop reviews: square photo, short quote, gold stars, name with verified tick and the product reviewed.", thumb: "quote-cards" },
     { key: "photo-cards", label: "Photo Cards", description: "Tall photo cards with label and title over the image, plus a 'view all' link.", thumb: "grid-tight" },
     { key: "boutique-tiles", label: "Boutique Tiles", description: "Photo tiles with an upper-case serif caption and optional pill button. 2 columns = category banners.", thumb: "grid-tight" },
   ],

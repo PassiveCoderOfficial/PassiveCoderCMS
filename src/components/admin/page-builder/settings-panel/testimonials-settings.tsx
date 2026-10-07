@@ -30,7 +30,7 @@ export function TestimonialsSettings({ block }: { block: TestimonialsBlockProps 
 
   return (
     <div className="space-y-3">
-      {block.templateVariant === "photo-cards" && (
+      {(block.templateVariant === "photo-cards" || block.templateVariant === "review-cards") && (
         <div className="grid grid-cols-2 gap-2">
           <div><Label className="text-[10px] text-muted-foreground">Card colour</Label><Input value={block.data.cardColor ?? ""} onChange={(e) => updateBlock(block.id, { data: { ...block.data, cardColor: e.target.value || undefined } })} className="h-7 text-xs" placeholder="#DDC69E" /></div>
           <div><Label className="text-[10px] text-muted-foreground">Star colour</Label><Input value={block.data.starColor ?? ""} onChange={(e) => updateBlock(block.id, { data: { ...block.data, starColor: e.target.value || undefined } })} className="h-7 text-xs" placeholder="#e00000" /></div>
@@ -71,6 +71,15 @@ export function TestimonialsSettings({ block }: { block: TestimonialsBlockProps 
               </div>
               <Input value={item.avatar ?? ""} onChange={(e) => updateItem(item.id, "avatar", e.target.value)} className="h-7 text-xs" placeholder="Avatar URL" />
               <Input value={item.title ?? ""} onChange={(e) => updateItem(item.id, "title", e.target.value)} className="h-7 text-xs" placeholder="Headline (optional, e.g. Unmatched Longevity)" />
+              {block.templateVariant === "review-cards" && (
+                <>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <Input value={item.product ?? ""} onChange={(e) => updateItem(item.id, "product", e.target.value)} className="h-7 text-xs" placeholder="Product reviewed" />
+                    <Input value={item.productUrl ?? ""} onChange={(e) => updateItem(item.id, "productUrl", e.target.value)} className="h-7 text-xs" placeholder="Product link" />
+                  </div>
+                  <label className="flex items-center gap-1.5 text-[11px]"><input type="checkbox" checked={item.verified !== false} onChange={(e) => updateItem(item.id, "verified", e.target.checked)} /> Verified buyer tick</label>
+                </>
+              )}
               <Textarea value={item.content} onChange={(e) => updateItem(item.id, "content", e.target.value)} className="text-xs min-h-16" placeholder="What they said" />
               <div className="flex items-center gap-1 pt-0.5">
                 {[1, 2, 3, 4, 5].map((n) => (
