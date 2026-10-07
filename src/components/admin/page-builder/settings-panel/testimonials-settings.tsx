@@ -27,9 +27,35 @@ export function TestimonialsSettings({ block }: { block: TestimonialsBlockProps 
     update("items", block.data.items.map((i) => (i.id === id ? { ...i, [f]: v } : i)));
   };
   const removeItem = (id: string) => update("items", block.data.items.filter((i) => i.id !== id));
+  const [groups, setGroups] = React.useState<{ id: string; name: string }[]>([]);
+  React.useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) =>
+      import("@/lib/tenant/client").then(({ getClientTenantId }) => getClientTenantId().then((tid) => {
+        if (!tid) return;
+        createClient().from("testimonial_groups").select("id, name").eq("tenant_id", tid).order("sort_order").then(({ data }) => setGroups(data ?? []));
+      })));
+  }, []);
+  const fromGroup = block.data.source === "group";
 
   return (
     <div className="space-y-3">
+      <div className="rounded-lg border p-2.5 space-y-2 bg-muted/20">
+        <Label className="text-xs">Where the reviews come from</Label>
+        <select value={block.data.source ?? "inline"} onChange={(e) => update("source", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2">
+          <option value="inline">Typed here, in this block</option>
+          <option value="group">A group in Testimonials (manual entries + featured product reviews)</option>
+        </select>
+        {fromGroup && (
+          <>
+            <select value={block.data.source_group_id ?? ""} onChange={(e) => update("source_group_id", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2">
+              <option value="">Choose a group…</option>
+              {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+            <Input type="number" min={1} max={30} value={block.data.limit ?? 12} onChange={(e) => update("limit", Number(e.target.value) || 12)} className="h-8 text-xs" />
+            <p className="text-[10px] text-muted-foreground">Manage entries in Dashboard → Testimonials. Product reviews appear here after you click "Show on homepage" in Ecommerce → Reviews.</p>
+          </>
+        )}
+      </div>
       {(block.templateVariant === "photo-cards" || block.templateVariant === "review-cards") && (
         <div className="grid grid-cols-2 gap-2">
           <div><Label className="text-[10px] text-muted-foreground">Card colour</Label><Input value={block.data.cardColor ?? ""} onChange={(e) => updateBlock(block.id, { data: { ...block.data, cardColor: e.target.value || undefined } })} className="h-7 text-xs" placeholder="#DDC69E" /></div>
@@ -56,7 +82,7 @@ export function TestimonialsSettings({ block }: { block: TestimonialsBlockProps 
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Testimonials</p>
           <Button size="sm" variant="outline" onClick={addItem} className="h-6 text-xs px-2 gap-1"><Plus className="w-3 h-3" /> Add</Button>
         </div>
-        <div className="space-y-3">
+        <div className={fromGroup ? "hidden" : "space-y-3"}>
           {block.data.items.map((item) => (
             <div key={item.id} className="border rounded-lg p-2 space-y-1.5 bg-muted/20">
               <div className="flex items-center gap-1">

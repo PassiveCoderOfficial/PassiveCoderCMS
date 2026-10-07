@@ -435,7 +435,32 @@ function TestimonialsReviewCards({ data }: { data: TestimonialsBlockProps["data"
   );
 }
 
+export type TestimonialRow = { id: string; name: string; role: string | null; company: string | null; avatar: string | null; avatar_url: string | null; image_url: string | null; title: string | null; content: string; rating: number | null; product_name: string | null; product_url: string | null; verified: boolean | null };
+
+/** Testimonials table rows -> block items. */
+export function mapTestimonialRows(rows: TestimonialRow[]): TestimonialsBlockProps["data"]["items"] {
+  return rows.map((r) => ({
+    id: r.id, name: r.name, role: r.role ?? undefined, company: r.company ?? undefined,
+    avatar: r.image_url || r.avatar_url || r.avatar || undefined, title: r.title ?? undefined,
+    content: r.content, rating: r.rating ?? 5, product: r.product_name ?? undefined,
+    productUrl: r.product_url ?? undefined, verified: r.verified ?? false,
+  }));
+}
+
+export const TESTIMONIAL_ROW_SELECT = "id, name, role, company, avatar, avatar_url, image_url, title, content, rating, product_name, product_url, verified";
+
 export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) {
+  // Builder canvas: load the group in the browser (the live site resolves it on the server).
+  const [groupItems, setGroupItems] = useState<TestimonialsBlockProps["data"]["items"] | null>(null);
+  const groupId = block.data.source === "group" ? block.data.source_group_id : undefined;
+  const preloaded = (block.data as { _resolved?: boolean })._resolved;
+  useEffect(() => {
+    if (!groupId || preloaded) return;
+    import("@/lib/supabase/client").then(({ createClient }) =>
+      createClient().from("testimonials").select(TESTIMONIAL_ROW_SELECT).eq("group_id", groupId).eq("published", true).order("sort_order").limit(block.data.limit ?? 12)
+        .then(({ data }) => setGroupItems(mapTestimonialRows((data ?? []) as TestimonialRow[]))));
+  }, [groupId, preloaded, block.data.limit]);
+  if (groupId && !preloaded && groupItems) block = { ...block, data: { ...block.data, items: groupItems } };
   const variant = block.templateVariant;
   if (variant === "quote-cards") return <TestimonialsQuoteCards data={block.data} />;
   if (variant === "stars-quotes") return <TestimonialsStarsQuotes data={block.data} />;

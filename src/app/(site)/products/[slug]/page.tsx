@@ -13,6 +13,7 @@ import { ProductCard } from "@/components/blocks/ecommerce/product-card";
 import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-card-data";
 import { productHtml, PRODUCT_HTML_CSS } from "@/lib/ecommerce/product-html";
 import { resolveExtended, type ProductExtended } from "@/lib/ecommerce/product-extended";
+import { ReviewForm } from "./review-form";
 import * as LucideIcons from "lucide-react";
 import React from "react";
 
@@ -178,7 +179,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const ext = resolveExtended((product.attributes as { extended?: ProductExtended } | null)?.extended, (settingsRow?.product_defaults ?? {}) as ProductExtended);
   const descText = ext.description?.text?.trim() || (descHtml && !descHtml.isHtml ? descHtml.html : "");
   const accordions = [
-    ...(ext.description || (descText && (ext.details || ext.shipping)) ? [{ key: "d", title: ext.description?.title || "Description", body: <p className="whitespace-pre-line m-0">{descText}</p>, open: false }] : []),
+    ...(ext.description || descText ? [{ key: "d", title: ext.description?.title || "Description", body: <p className="whitespace-pre-line m-0">{descText}</p>, open: false }] : []),
     ...(ext.details ? [{ key: "n", title: ext.details.title || "Details", open: true, body: (
       <dl className="m-0 space-y-3">{(ext.details.rows ?? []).filter((r) => r.label || r.value).map((r, i) => (
         <div key={i}><dt className="font-semibold">{r.label}</dt><dd className="m-0 mt-1">{r.value}</dd></div>))}</dl>
@@ -186,6 +187,39 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ...(ext.video?.url ? [{ key: "v", title: ext.video.title || "Video", open: true, body: <ProductVideo url={ext.video.url} title={product.name} /> }] : []),
     ...(ext.shipping ? [{ key: "s", title: ext.shipping.title || "Shipping and Delivery", body: <p className="whitespace-pre-line m-0">{ext.shipping.text}</p>, open: false }] : []),
   ];
+  // Reviews: the last accordion on single-store products. Approved ones only.
+  const { data: reviewRows } = await supabase.from("product_reviews")
+    .select("id, reviewer_name, rating, body, images, verified, created_at")
+    .eq("product_id", product.id).eq("status", "published").is("vendor_id", null)
+    .order("created_at", { ascending: false }).limit(20);
+  const reviewsList = reviewRows ?? [];
+  const avg = reviewsList.length ? reviewsList.reduce((n, r) => n + Number(r.rating), 0) / reviewsList.length : 0;
+  accordions.push({ key: "r", title: reviewsList.length ? `Reviews (${reviewsList.length})` : "Reviews", open: false, body: (
+    <div className="space-y-5">
+      {reviewsList.length > 0 ? (
+        <>
+          <p className="m-0 flex items-center gap-2"><StarRow value={Math.round(avg)} /> <span className="text-sm text-muted-foreground">{avg.toFixed(1)} out of 5</span></p>
+          <ul className="space-y-5 list-none p-0 m-0">
+            {reviewsList.map((r) => (
+              <li key={r.id} className="border-b pb-4">
+                <div className="flex items-center gap-2 flex-wrap"><StarRow value={Number(r.rating)} /><span className="font-semibold text-sm">{r.reviewer_name}</span>{r.verified && <span className="text-[11px] text-green-700">Verified buyer</span>}</div>
+                {r.body && <p className="mt-2 mb-0 text-[15px] whitespace-pre-line">{r.body}</p>}
+                {Array.isArray(r.images) && r.images.length > 0 && (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {(r.images as string[]).map((u) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <a key={u} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" className="w-16 h-16 object-cover rounded border" loading="lazy" /></a>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : <p className="m-0 text-sm text-muted-foreground">No reviews yet. Be the first to share yours.</p>}
+      <ReviewForm productId={product.id} />
+    </div>
+  ) });
   const useAccordions = accordions.length > 0;
   const inStock = !product.track_inventory || product.stock_quantity > 0;
 
@@ -344,4 +378,12 @@ function ProductVideo({ url, title }: { url: string; title: string }) {
     return <div className="aspect-video w-full"><iframe src={embed} title={title} className="w-full h-full rounded" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen loading="lazy" /></div>;
   }
   return <video src={url} controls playsInline preload="metadata" className="w-full rounded bg-black" />;
+}
+
+function StarRow({ value }: { value: number }) {
+  return (
+    <span className="inline-flex gap-0.5" aria-label={`${value} out of 5 stars`}>
+      {[1, 2, 3, 4, 5].map((n) => <LucideIcons.Star key={n} className="w-4 h-4" style={{ color: "#D4A72C", fill: n <= value ? "#D4A72C" : "transparent" }} />)}
+    </span>
+  );
 }

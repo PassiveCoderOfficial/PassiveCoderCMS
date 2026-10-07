@@ -18,6 +18,11 @@ interface Testimonial {
   content: string;
   rating: number | null;
   external_id: string | null;
+  image_url?: string | null;
+  title?: string | null;
+  product_name?: string | null;
+  product_url?: string | null;
+  verified?: boolean;
   published: boolean;
   sort_order: number;
 }
@@ -108,6 +113,27 @@ function ItemEditor({ item: initial, groupId, onSave, onCancel }: {
           <input value={item.company ?? ""} onChange={e => set("company", e.target.value)}
             className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
         </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <label className="block text-xs text-muted-foreground mb-1">Photo (shown on Review Cards / Photo Cards)</label>
+          <MediaPickerInput compact value={item.image_url ?? ""} onChange={(v) => set("image_url", v || null)} />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Headline (optional)</label>
+          <input value={item.title ?? ""} onChange={e => set("title", e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Product reviewed (optional)</label>
+          <input value={item.product_name ?? ""} onChange={e => set("product_name", e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Product link (optional)</label>
+          <input value={item.product_url ?? ""} onChange={e => set("product_url", e.target.value)} placeholder="/products/..." className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+        </div>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground self-end pb-2">
+          <input type="checkbox" checked={!!item.verified} onChange={e => set("verified", e.target.checked)} /> Verified buyer tick
+        </label>
       </div>
       <div>
         <label className="block text-xs text-muted-foreground mb-1">{t("testimonialsPage.review")}</label>

@@ -19,7 +19,7 @@ import { ItemBoxBlock } from "@/components/blocks/item-box/item-box-block-server
 import { BlogBlock } from "@/components/blocks/blog/blog-block";
 import { GalleryBlock } from "@/components/blocks/gallery/gallery-block";
 import { CTABlock } from "@/components/blocks/cta/cta-block";
-import { TestimonialsBlock } from "@/components/blocks/testimonials/testimonials-block";
+import { TestimonialsBlock } from "@/components/blocks/testimonials/testimonials-block-server";
 import { DividerBlock } from "@/components/blocks/divider/divider-block";
 import { SpacerBlock } from "@/components/blocks/spacer/spacer-block";
 import { CustomHtmlBlock } from "@/components/blocks/custom-html/custom-html-block";
@@ -120,7 +120,7 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
     case "blog":             content = await BlogBlock({ block }); break;
     case "gallery":          content = <GalleryBlock block={block} />; break;
     case "cta":              content = <CTABlock block={block} />; break;
-    case "testimonials":     content = <TestimonialsBlock block={block} />; break;
+    case "testimonials":     content = await TestimonialsBlock({ block: block as import("@/types/cms").TestimonialsBlockProps }); break;
     case "divider":          content = <DividerBlock block={block} />; break;
     case "spacer":           content = <SpacerBlock block={block} />; break;
     case "custom_html":      content = <CustomHtmlBlock block={block} />; break;

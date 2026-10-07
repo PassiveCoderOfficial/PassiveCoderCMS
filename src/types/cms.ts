@@ -592,6 +592,12 @@ export type TestimonialsBlockProps = BlockBase & {
     title?: string;
     subtitle?: string;
     layout: "grid" | "carousel" | "masonry";
+    /** "group": show the testimonials of a group from the Testimonials
+     *  dashboard (manual entries and product reviews featured there). */
+    source?: "inline" | "group";
+    source_group_id?: string;
+    /** Group source: how many to show (newest featured first by sort order). */
+    limit?: number;
     items: Array<{
       id: string;
       name: string;
