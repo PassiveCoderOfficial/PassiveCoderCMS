@@ -348,6 +348,10 @@ export type NavItem = {
   megaMenu?: boolean;
   /** Column count for the mega-menu grid on desktop. Defaults to 5. */
   megaColumns?: 2 | 3 | 4 | 5;
+  /** Mega menu: single links (no sub-items) as a top strip (default) or a highlighted last column. */
+  megaLinksAs?: "strip" | "column";
+  /** Heading over that highlighted column. */
+  megaLinksTitle?: string;
   /** Defaults to "manual" when unset, so existing menus are unaffected. */
   childSource?: NavChildSource;
   /** Cap on generated children, so a tenant with 200 products doesn't render

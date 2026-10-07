@@ -405,6 +405,16 @@ function ItemTree({ items, targets, onChange }: {
 
               {isOpen && (
                 <div className="space-y-2.5 border-t p-3">
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium">Look</label>
+                    <select className="w-full rounded border bg-background px-2 py-1.5 text-xs" value={item.highlight ?? ""}
+                      onChange={(e) => update(item.id, { highlight: (e.target.value || undefined) as NavItem["highlight"] })}>
+                      <option value="">Normal link</option>
+                      <option value="gold">Highlight: gold pill</option>
+                      <option value="brand">Highlight: brand-colour pill</option>
+                      <option value="dark">Highlight: dark pill, gold outline</option>
+                    </select>
+                  </div>
                   <div className="rounded border bg-muted/40 p-2.5">
                     <label className="flex cursor-pointer items-center gap-2 text-[11px] font-medium">
                       <input
@@ -430,6 +440,16 @@ function ItemTree({ items, targets, onChange }: {
                             <option key={n} value={n}>{t("navPage.columnsCount", { count: n })}</option>
                           ))}
                         </select>
+                        <label className="mb-1 mt-2 block text-[11px] font-medium">Single links (no sub-items)</label>
+                        <select className="w-full rounded border bg-background px-2 py-1.5 text-xs" value={item.megaLinksAs ?? "strip"}
+                          onChange={(e) => update(item.id, { megaLinksAs: e.target.value as "strip" | "column" })}>
+                          <option value="strip">Strip across the top</option>
+                          <option value="column">Highlighted last column</option>
+                        </select>
+                        {item.megaLinksAs === "column" && (
+                          <input className="mt-1.5 w-full rounded border bg-background px-2 py-1.5 text-xs" placeholder="Column heading (e.g. More to explore)"
+                            value={item.megaLinksTitle ?? ""} onChange={(e) => update(item.id, { megaLinksTitle: e.target.value })} />
+                        )}
                       </div>
                     )}
                   </div>

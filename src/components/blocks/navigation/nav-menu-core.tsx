@@ -35,7 +35,7 @@ const MEGA_COL_CLASS: Record<number, string> = {
   5: "sm:grid-cols-3 lg:grid-cols-5",
 };
 
-function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns }: {
+function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, linksAs, linksTitle }: {
   items: NavItem[];
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -44,6 +44,9 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns }:
    *  rendering the same way. */
   forceMega?: boolean;
   columns?: number;
+  /** Mega menu: single links (no sub-items) as a top strip, or as a highlighted last column. */
+  linksAs?: "strip" | "column";
+  linksTitle?: string;
 }) {
   const isMega = forceMega ?? items.some((i) => (i.children?.length ?? 0) > 0);
 
@@ -60,7 +63,7 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns }:
         onMouseLeave={onMouseLeave}
       >
         <div className="bg-popover text-popover-foreground shadow-[var(--shadow-xl)] rounded-[1.75rem] border border-border overflow-hidden">
-          {standalone.length > 0 && (
+          {standalone.length > 0 && linksAs !== "column" && (
             <div className="flex flex-wrap gap-x-6 gap-y-1 px-7 py-3.5 bg-muted/70 border-b border-border">
               {standalone.map((s) => (
                 <Link key={s.id} href={s.url} className="text-sm font-semibold text-primary hover:opacity-70">
@@ -88,6 +91,20 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns }:
                 </ul>
               </div>
             ))}
+            {linksAs === "column" && standalone.length > 0 && (
+              <div className="min-w-0 rounded-2xl bg-primary/[0.07] border border-primary/15 p-5 -my-1">
+                {linksTitle && <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary mb-3">{linksTitle}</p>}
+                <ul className="space-y-2.5">
+                  {standalone.map((s) => (
+                    <li key={s.id}>
+                      <Link href={s.url} target={s.target} className="flex items-center justify-between gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors">
+                        <span className="truncate">{s.label}</span><span aria-hidden className="text-primary">→</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -193,6 +210,8 @@ export function NavItemDesktop({ item, currentColor }: {
       </Link>
       {open && (
         <DropdownMenu
+          linksAs={item.megaLinksAs}
+          linksTitle={item.megaLinksTitle}
           items={item.children!}
           onMouseEnter={openNow}
           onMouseLeave={closeSoon}
