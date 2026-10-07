@@ -222,6 +222,8 @@ export type SliderBlockProps = BlockBase & {
     mobileHeight?: string;
     /** Dot colour (e.g. brand gold); default white. */
     dotColor?: string;
+    /** Slide button: white (default) or brand colour. */
+    buttonStyle?: "white" | "primary";
   };
 };
 
@@ -293,6 +295,10 @@ export type NavigationBlockProps = BlockBase & {
     topRowBackground?: string;
     /** Upper-case, wider-spaced menu labels. */
     menuUppercase?: boolean;
+    /** logo-center: "pill" (rounded box + button, default) or "plain" (icon + borderless field). */
+    searchStyle?: "pill" | "plain";
+    /** logo-center: full-width colour band behind the menu row, with a dark rule above it. */
+    menuRowBackground?: string;
     /** Thin info strip above the header (address, hours, promo, phone, WhatsApp). */
     topBar?: {
       show?: boolean;
@@ -304,6 +310,9 @@ export type NavigationBlockProps = BlockBase & {
       whatsappText?: string;
       background?: string;
       textColor?: string;
+      /** "center": one centred announcement line (items only, no phone/WhatsApp). */
+      align?: "split" | "center";
+      uppercase?: boolean;
     };
   };
 };
@@ -461,6 +470,8 @@ export type ServicesBlockProps = BlockBase & {
     colors?: { dark?: string; accent?: string };
     /** Boutique Tiles: photo shape. Default landscape for 2 columns, square otherwise. */
     tileRatio?: "landscape" | "square" | "portrait";
+    /** Boutique Tiles: caption under the photo (default) or on the photo with the button at its foot. */
+    tileStyle?: "below" | "overlay";
   };
 };
 
@@ -553,6 +564,10 @@ export type CTABlockProps = BlockBase & {
     contentPosition?: "center" | "top";
     /** Boutique Banner: light text for photos (default) or dark text for pale backgrounds. */
     tone?: "light" | "dark";
+    /** Boutique Banner: brand-colour button (default) or light grey pill. */
+    buttonStyle?: "brand" | "light";
+    /** Boutique Banner: justify the description text. */
+    justify?: boolean;
   };
 };
 
@@ -580,7 +595,7 @@ export type EcommerceProductsBlockProps = BlockBase & {
     title?: string;
     subtitle?: string;
     displayCount: number;
-    layout: "grid" | "list" | "featured" | "minimal" | "wide-cards";
+    layout: "grid" | "list" | "featured" | "minimal" | "wide-cards" | "carousel";
     columns: 2 | 3 | 4 | 5;
     /** @deprecated single-category selection — use categoryIds */
     categoryId?: string;
@@ -591,13 +606,17 @@ export type EcommerceProductsBlockProps = BlockBase & {
     showDescription: boolean;
     showBadges: boolean;
     showRating: boolean;
-    cardStyle: "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique";
+    cardStyle: "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique" | "retail";
     imageRatio: "square" | "portrait" | "landscape" | "auto";
     sectionPadding: "none" | "sm" | "md" | "lg" | "xl";
     backgroundColor?: string;
     titleAlignment: "left" | "center" | "right";
     ctaLabel?: string;
     ctaUrl?: string;
+    /** "compact": small upper-case title with an underlined link under it (shop look). */
+    headingStyle?: "default" | "compact";
+    /** Underlined link under a compact title (e.g. SHOP NOW). */
+    headerLink?: { label?: string; url?: string };
   };
 };
 
@@ -857,6 +876,8 @@ export type NewsletterBlockProps = BlockBase & {
     successMessage: string;
     provider?: "mailchimp" | "custom";
     webhookUrl?: string;
+    /** "underline": line field with a light pill button inside (shop footers). */
+    fieldStyle?: "box" | "underline";
   };
 };
 
@@ -951,7 +972,7 @@ export type FooterColumn = {
 };
 
 export type FooterSocial = {
-  platform: "facebook" | "instagram" | "twitter" | "linkedin" | "youtube" | "tiktok" | "whatsapp";
+  platform: "facebook" | "instagram" | "twitter" | "linkedin" | "youtube" | "tiktok" | "whatsapp" | "snapchat";
   url: string;
 };
 
@@ -982,10 +1003,16 @@ export type FooterBlockProps = BlockBase & {
     newsletterLabel?: string;
     newsletterPlaceholder?: string;
     bottomLinks?: FooterColumnLink[];
-    style?: "dark" | "light" | "colored";
+    style?: "dark" | "light" | "colored" | "retail";
     /** Small line rendered beneath the logo/tagline (e.g. a business
      *  registration number). Purely cosmetic — omit for the old look. */
     logoCaption?: string;
+    /** Retail: heading over the social icons column. */
+    followTitle?: string;
+    /** Retail: accepted-payments strip (image) beside the copyright. */
+    paymentImage?: string;
+    /** Retail: short line at the end of the bottom row. */
+    bottomNote?: string;
   };
 };
 

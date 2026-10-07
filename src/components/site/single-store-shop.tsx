@@ -31,7 +31,7 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
   // no category sidebar) for stores migrating from WordPress.
   const { data: identity } = await admin.from("site_identity").select("design_overrides").eq("tenant_id", tenantId).maybeSingle();
   const design = (identity?.design_overrides ?? {}) as { productCardStyle?: string; shopLayout?: string };
-  const cardStyle = (["default", "flat", "minimal", "shadow", "bordered", "boutique"].includes(design.productCardStyle ?? "") ? design.productCardStyle : "default") as "default";
+  const cardStyle = (["default", "flat", "minimal", "shadow", "bordered", "boutique", "retail"].includes(design.productCardStyle ?? "") ? design.productCardStyle : "default") as "default";
   const classic = design.shopLayout === "classic";
 
   const { data: categories } = await admin

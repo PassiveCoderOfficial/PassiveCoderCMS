@@ -85,6 +85,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
 
   testimonials: [
     { key: "quote-cards", label: "Quote Cards", description: "Cards with an avatar, name and star rating.", thumb: "quote-cards" },
+    { key: "stars-quotes", label: "Stars + Quotes", description: "Gold stars, centred quote and name; two per view, sliding with dots.", thumb: "quote-minimal" },
     { key: "dark-quote-cards", label: "Dark Quote Cards", description: "The same cards tuned for dark backgrounds.", thumb: "quote-dark", dark: true },
     { key: "full-width", label: "Full Width", description: "One large testimonial at a time, given real weight.", thumb: "quote-wide" },
     { key: "minimal-quote", label: "Minimal", description: "Just the words — no cards, no chrome.", thumb: "quote-minimal" },
@@ -232,6 +233,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
   footer: [
     { key: "dark", label: "Dark", description: "Dark ground with light text — the usual anchor.", thumb: "cards-dark", dark: true },
     { key: "light", label: "Light", description: "Keeps the page's light ground, separated by a rule.", thumb: "list-rows" },
+    { key: "retail", label: "Retail", description: "Shop footer: link columns, a Follow us icon column, copyright and payment logos.", thumb: "list-rows" },
   ],
 
   video: [
@@ -257,6 +259,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "featured", label: "Featured", description: "One large lead product above the rest.", thumb: "split-image" },
     { key: "minimal", label: "Minimal", description: "Image and price only, no extra chrome.", thumb: "grid-tight" },
     { key: "wide-cards", label: "Wide Cards", description: "Wider cards with more room for description.", thumb: "cards-grid" },
+    { key: "carousel", label: "Carousel", description: "One sliding row of products with arrows.", thumb: "grid-tight" },
   ],
 };
 

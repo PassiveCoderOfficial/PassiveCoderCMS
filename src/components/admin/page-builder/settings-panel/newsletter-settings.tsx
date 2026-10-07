@@ -25,6 +25,16 @@ export function NewsletterSettings({ block }: { block: NewsletterBlockProps }) {
           <SelectContent>{["inline","stacked","card"].map(l => <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>)}</SelectContent>
         </Select>
       </div>
+      <div>
+        <Label className="text-xs">Field style</Label>
+        <Select value={block.data.fieldStyle ?? "box"} onValueChange={v => update("fieldStyle", v)}>
+          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="box" className="text-xs">Box + button</SelectItem>
+            <SelectItem value="underline" className="text-xs">Underline + light pill</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div><Label className="text-xs">Webhook URL (optional)</Label><Input value={block.data.webhookUrl ?? ""} onChange={e => update("webhookUrl", e.target.value)} className="h-8 text-xs mt-1" placeholder="https://..." /></div>
     </div>
   );

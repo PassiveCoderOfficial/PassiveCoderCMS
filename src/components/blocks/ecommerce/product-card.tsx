@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart/cart-context";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type CardStyle = "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique";
+type CardStyle = "default" | "flat" | "minimal" | "shadow" | "bordered" | "boutique" | "retail";
 type ImageRatio = "square" | "portrait" | "landscape" | "auto";
 
 const RATIO_CLASS: Record<ImageRatio, string> = {
@@ -30,6 +30,8 @@ const CARD_STYLE: Record<CardStyle, string> = {
   bordered: "border-2 border-border rounded-xl overflow-hidden hover:border-primary transition-colors bg-background",
   // Luxury-retail look: thin frame, centred heading-font title, full-width pill button.
   boutique: "group border border-border rounded-md overflow-hidden bg-card text-card-foreground flex flex-col hover:shadow-md transition-shadow",
+  // Department-store look: no frame, small upper-case name, pill button, size chips.
+  retail: "group flex flex-col h-full",
 };
 
 export interface ProductCardData {
@@ -47,6 +49,8 @@ export interface ProductCardData {
   /** Variable products (sizes, colours): the card shows the price range and
    *  links to the product page to choose, rather than adding the base price. */
   variants?: { count: number; min: number; max: number; labels: string[] } | null;
+  /** Featured products get a "Best Seller" badge on the retail card. */
+  featured?: boolean | null;
 }
 
 const DIET_DOT: Record<string, string> = {
@@ -101,6 +105,60 @@ export function ProductCard({
   const discount = product.compare_price && product.compare_price > product.price
     ? Math.round((1 - product.price / product.compare_price) * 100)
     : null;
+
+  if (cardStyle === "retail") {
+    const v = product.variants;
+    const priceLabel = variable && v && v.min !== v.max ? `${format(v.min)} – ${format(v.max)}` : format(variable && v ? v.min : product.price);
+    const btn = "w-full max-w-[12rem] mx-auto inline-flex items-center justify-center rounded-full px-4 py-2.5 text-[15px] uppercase transition-opacity hover:opacity-90";
+    const btnStyle: React.CSSProperties = { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" };
+    return (
+      <div className={CARD_STYLE.retail}>
+        <Link href={`/products/${product.slug}`} className="block">
+          <div className={cn("relative overflow-hidden bg-white", RATIO_CLASS[imageRatio])}>
+            {firstImage ? (
+              <Image src={firstImage} alt={product.name} fill className="object-contain group-hover:scale-[1.03] transition-transform duration-500" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground"><ShoppingCart className="h-12 w-12" /></div>
+            )}
+            {showBadges && (
+              <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+                {discount && discount > 0 && <span className="bg-[#ff0000] text-white text-[13px] font-semibold px-2.5 py-1">SALE</span>}
+                {product.featured && <span className="bg-[#808080] text-white text-[10px] font-semibold px-2.5 py-1.5">Best Seller</span>}
+              </div>
+            )}
+            {showBadges && !inStock && (
+              <span className="absolute top-2 right-2 bg-black/75 text-white text-[11px] px-2 py-0.5">Out of Stock</span>
+            )}
+          </div>
+        </Link>
+        <div className="flex flex-col flex-1 pt-4 text-center gap-2.5">
+          <Link href={`/products/${product.slug}`} className="uppercase text-[13px] tracking-wide leading-snug hover:opacity-70 min-h-[2.5em]">{product.name}</Link>
+          <div className="flex items-baseline justify-center gap-2 text-[14px]">
+            {!variable && product.compare_price && product.compare_price > product.price && (
+              <span className="line-through text-muted-foreground">{format(product.compare_price)}</span>
+            )}
+            <span>{priceLabel}</span>
+          </div>
+          <div className="mt-auto pt-1">
+            {showAddToCart && (variable ? (
+              <Link href={`/products/${product.slug}`} className={btn} style={btnStyle}>Choose size</Link>
+            ) : (
+              <button onClick={handleAdd} disabled={!inStock} className={cn(btn, !inStock && "opacity-50 cursor-not-allowed")} style={btnStyle}>
+                {inStock ? "Add to cart" : "Sold out"}
+              </button>
+            ))}
+            {variable && v && v.labels.length > 0 && (
+              <div className="flex justify-center gap-1.5 mt-2.5 flex-wrap">
+                {v.labels.slice(0, 5).map((l) => (
+                  <Link key={l} href={`/products/${product.slug}`} className="border border-black/20 text-[12px] uppercase px-2.5 py-1 hover:border-black">{l}</Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (cardStyle === "boutique") {
     const v = product.variants;

@@ -49,6 +49,24 @@ export function NewsletterBlock({ block }: { block: NewsletterBlockProps }) {
     );
   }
 
+  if (data.fieldStyle === "underline") {
+    // Shop-style: small upper-case title, underlined field with a light pill button inside it.
+    return (
+      <div className="max-w-[600px] mx-auto text-center">
+        {data.title && <h2 className="uppercase text-[16px] font-normal m-0 mb-6">{data.title}</h2>}
+        {data.description && <p className="text-sm opacity-80 -mt-2 mb-6">{data.description}</p>}
+        <form onSubmit={handleSubmit} className="flex items-center border-b border-current/40 pb-2.5" style={{ borderColor: "rgba(0,0,0,.35)" }}>
+          <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={data.placeholder || "Email address"}
+            aria-label="Email address" className="flex-1 min-w-0 bg-transparent text-[15px] outline-none placeholder:text-current placeholder:opacity-70" />
+          <button type="submit" disabled={loading} className="rounded-full bg-[#EFEFEF] text-[#202020] px-11 py-3 text-[15px] hover:opacity-90 disabled:opacity-50">
+            {loading ? "…" : data.submitLabel || "Sign up"}
+          </button>
+        </form>
+        {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className={cn(
       "max-w-xl mx-auto",

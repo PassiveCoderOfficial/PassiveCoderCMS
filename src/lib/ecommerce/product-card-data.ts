@@ -6,7 +6,7 @@
  * price to the cart.
  */
 export const PRODUCT_CARD_SELECT =
-  "id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity, dietary_info, type, product_variants(name, price, compare_price, is_active, sort_order)";
+  "id, name, slug, price, compare_price, images, short_description, track_inventory, stock_quantity, dietary_info, type, featured, product_variants(name, price, compare_price, is_active, sort_order)";
 
 type VariantRow = { name: string | null; price: number | string | null; compare_price: number | string | null; is_active: boolean | null; sort_order: number | null };
 

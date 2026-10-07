@@ -18,10 +18,15 @@ export function CTABoutiqueBanner({ data }: { data: CTABlockProps["data"] }) {
       <div className="max-w-3xl">
         {data.eyebrow && <span className="bq-eyebrow mb-4" style={{ opacity: .9 }}>{data.eyebrow}</span>}
         {data.title && <h2 className="bq-h m-0 text-[26px] sm:text-[34px]">{data.title}</h2>}
-        {data.description && <p className="mt-4 mb-0 text-[15px] leading-relaxed opacity-90">{data.description}</p>}
+        {data.description && <p className={cn("mt-4 mb-0 text-[15px] leading-relaxed opacity-90 max-w-[34rem] mx-auto whitespace-pre-line", data.justify && "text-justify")}>{data.description}</p>}
         {(data.primaryButton?.label || data.secondaryButton?.label) && (
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
-            {data.primaryButton?.label && <BqLink href={data.primaryButton.url || "#"} className="bq-btn">{data.primaryButton.label}</BqLink>}
+            {data.primaryButton?.label && (
+              <BqLink href={data.primaryButton.url || "#"} className="bq-btn"
+                style={data.buttonStyle === "light" ? { background: "#EFEFEF", color: "#202020", letterSpacing: ".4px", fontSize: 16, fontWeight: 400, padding: "10px 22px" } : undefined}>
+                {data.primaryButton.label}
+              </BqLink>
+            )}
             {data.secondaryButton?.label && (
               <BqLink href={data.secondaryButton.url || "#"} className="bq-btn" style={{ background: "transparent", border: `1px solid ${light ? "#fff" : "currentColor"}`, color: "inherit" }}>{data.secondaryButton.label}</BqLink>
             )}

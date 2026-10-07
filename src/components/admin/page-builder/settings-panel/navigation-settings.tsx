@@ -123,7 +123,45 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
         <NavItemsEditor items={block.data.items} onChange={(items) => update("items", items)} />
       </div>
 
+      {block.data.style === "logo-center" && <StoreHeaderSettings block={block} update={update} />}
       <TopBarSettings block={block} update={update} />
+    </div>
+  );
+}
+
+/** Logo-centered shop header: search box, account / order-tracking icons, colour bands. */
+function StoreHeaderSettings({ block, update }: { block: NavigationBlockProps; update: (f: string, v: unknown) => void }) {
+  const d = block.data;
+  return (
+    <div className="border-t pt-3 space-y-2">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground">Shop header</p>
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Search box (left of logo)</Label>
+        <Switch checked={d.showSearch ?? false} onCheckedChange={(v) => update("showSearch", v)} />
+      </div>
+      {d.showSearch && (
+        <>
+          <select value={d.searchStyle ?? "pill"} onChange={(e) => update("searchStyle", e.target.value)} className="w-full h-7 text-xs rounded-md border bg-background px-2">
+            <option value="pill">Rounded box with button</option>
+            <option value="plain">Plain: icon + text</option>
+          </select>
+          <TextField label="Search placeholder" value={d.searchPlaceholder} onChange={(v) => update("searchPlaceholder", v)} placeholder="What are you looking for?" />
+          {(d.searchStyle ?? "pill") === "pill" && <TextField label="Search button text" value={d.searchButtonLabel} onChange={(v) => update("searchButtonLabel", v)} placeholder="Search" />}
+        </>
+      )}
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Account icon</Label>
+        <Switch checked={d.showAccount ?? false} onCheckedChange={(v) => update("showAccount", v)} />
+      </div>
+      <TextField label="Track-order icon link" value={d.trackOrderUrl} onChange={(v) => update("trackOrderUrl", v)} placeholder="/track-order (empty = hidden)" />
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Upper-case menu</Label>
+        <Switch checked={d.menuUppercase ?? false} onCheckedChange={(v) => update("menuUppercase", v)} />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div><Label className="text-[10px] text-muted-foreground">Logo row colour</Label><ColorPicker value={d.topRowBackground ?? ""} onChange={(v) => update("topRowBackground", v || undefined)} /></div>
+        <div><Label className="text-[10px] text-muted-foreground">Menu row colour</Label><ColorPicker value={d.menuRowBackground ?? ""} onChange={(v) => update("menuRowBackground", v || undefined)} /></div>
+      </div>
     </div>
   );
 }
@@ -143,6 +181,15 @@ function TopBarSettings({ block, update }: { block: NavigationBlockProps; update
       </div>
       {on && (
         <>
+          <select value={bar.align ?? "split"} onChange={(e) => set({ align: e.target.value as "split" | "center" })} className="w-full h-7 text-xs rounded-md border bg-background px-2">
+            <option value="split">Info left, phone + WhatsApp right</option>
+            <option value="center">One centred announcement</option>
+          </select>
+          {bar.align === "center" && (
+            <label className="flex items-center gap-2 text-[11px]">
+              <input type="checkbox" checked={bar.uppercase ?? false} onChange={(e) => set({ uppercase: e.target.checked })} /> Upper-case text
+            </label>
+          )}
           <ItemsEditor title="Info items" items={bar.items} onChange={(items) => set({ items })}
             make={() => ({ text: "Your text", icon: "info", side: "left" as const })} itemLabel={(it) => it.text}
             render={(it, up) => (

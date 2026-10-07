@@ -100,6 +100,19 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
         </Select>
       </div>
       <div>
+        <Label className="text-xs">Heading style</Label>
+        <select value={d.headingStyle ?? "default"} onChange={(e) => update("headingStyle", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2 mt-1">
+          <option value="default">Large title</option>
+          <option value="compact">Small upper-case title + link under it</option>
+        </select>
+      </div>
+      {d.headingStyle === "compact" && (
+        <div className="grid grid-cols-2 gap-2">
+          <Input value={d.headerLink?.label ?? ""} onChange={(e) => update("headerLink", { ...d.headerLink, label: e.target.value })} className="h-8 text-xs" placeholder="Link text (SHOP NOW)" />
+          <Input value={d.headerLink?.url ?? ""} onChange={(e) => update("headerLink", { ...d.headerLink, url: e.target.value })} className="h-8 text-xs" placeholder="/shop" />
+        </div>
+      )}
+      <div>
         <Label className="text-xs">CTA Button Label</Label>
         <Input value={d.ctaLabel ?? ""} onChange={(e) => update("ctaLabel", e.target.value)} className="h-8 text-xs mt-1" placeholder="View all products" />
       </div>
@@ -122,6 +135,7 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
             <SelectItem value="featured" className="text-xs">Featured — hero + grid</SelectItem>
             <SelectItem value="list" className="text-xs">List — horizontal rows</SelectItem>
             <SelectItem value="wide-cards" className="text-xs">Wide Cards — 2-col horizontal</SelectItem>
+            <SelectItem value="carousel" className="text-xs">Carousel — sliding row with arrows</SelectItem>
             <SelectItem value="minimal" className="text-xs">Minimal — compact list</SelectItem>
           </SelectContent>
         </Select>
@@ -190,6 +204,7 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
             <SelectItem value="shadow" className="text-xs">Shadow — elevated</SelectItem>
             <SelectItem value="bordered" className="text-xs">Bordered — accent on hover</SelectItem>
             <SelectItem value="boutique" className="text-xs">Boutique — centred serif title, pill button</SelectItem>
+            <SelectItem value="retail" className="text-xs">Retail — no frame, size chips, Best Seller badge</SelectItem>
             <SelectItem value="minimal" className="text-xs">Minimal — no border</SelectItem>
           </SelectContent>
         </Select>

@@ -34,6 +34,16 @@ export function SliderSettings({ block }: { block: SliderBlockProps }) {
         <Label className="text-xs">Slider Height</Label>
         <Input value={block.data.height} onChange={(e) => update("height", e.target.value)} className="h-8 text-xs" placeholder="600px" />
       </div>
+      <div className="space-y-2">
+        <Label className="text-xs">Height on phones</Label>
+        <Input value={block.data.mobileHeight ?? ""} onChange={(e) => update("mobileHeight", e.target.value || undefined)} className="h-8 text-xs" placeholder="Same as above" />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-xs">Button style</Label>
+        <select value={block.data.buttonStyle ?? "white"} onChange={(e) => update("buttonStyle", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2">
+          <option value="white">White</option><option value="primary">Brand colour</option>
+        </select>
+      </div>
       <div className="flex items-center justify-between">
         <Label className="text-xs">Auto Play</Label>
         <Switch checked={block.data.autoPlay} onCheckedChange={(v) => update("autoPlay", v)} />
@@ -68,6 +78,9 @@ export function SliderSettings({ block }: { block: SliderBlockProps }) {
               <MediaPickerInput compact value={slide.imageUrl ?? ""} onChange={(url) => updateSlide(slide.id, "imageUrl", url)} />
               <Input value={slide.buttonLabel ?? ""} onChange={(e) => updateSlide(slide.id, "buttonLabel", e.target.value)} className="h-7 text-xs" placeholder="Button Label" />
               <Input value={slide.buttonUrl ?? ""} onChange={(e) => updateSlide(slide.id, "buttonUrl", e.target.value)} className="h-7 text-xs" placeholder="Button URL" />
+              <Input value={slide.linkUrl ?? ""} onChange={(e) => updateSlide(slide.id, "linkUrl", e.target.value)} className="h-7 text-xs" placeholder="Whole-slide link (image-only slides)" />
+              <Input value={slide.textColor ?? ""} onChange={(e) => updateSlide(slide.id, "textColor", e.target.value)} className="h-7 text-xs" placeholder="Text colour (e.g. #202020; default white)" />
+              <label className="flex items-center gap-2 text-[11px]"><input type="checkbox" checked={slide.overlay ?? false} onChange={(e) => updateSlide(slide.id, "overlay", e.target.checked)} /> Darken photo</label>
             </div>
           ))}
         </div>

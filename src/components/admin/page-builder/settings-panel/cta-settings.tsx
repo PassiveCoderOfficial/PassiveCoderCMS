@@ -58,6 +58,20 @@ export function CTASettings({ block }: { block: CTABlockProps }) {
             <Label className="text-xs">Dark text (for pale photos)</Label>
             <Switch checked={block.data.tone === "dark"} onCheckedChange={(v) => update("tone", v ? "dark" : "light")} />
           </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Justify text</Label>
+            <Switch checked={block.data.justify ?? false} onCheckedChange={(v) => update("justify", v)} />
+          </div>
+          <div>
+            <Label className="text-xs">Button look</Label>
+            <Select value={block.data.buttonStyle ?? "brand"} onValueChange={(v) => update("buttonStyle", v)}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="brand" className="text-xs">Brand colour</SelectItem>
+                <SelectItem value="light" className="text-xs">Light grey pill</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <ShowcaseColorsEditor value={block.data.colors} onChange={(v) => update("colors", v)} />
         </div>
       )}

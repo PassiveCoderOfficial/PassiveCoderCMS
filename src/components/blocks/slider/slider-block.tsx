@@ -133,7 +133,10 @@ export function SliderBlock({ block }: { block: SliderBlockProps }) {
                 {slide.buttonLabel && slide.buttonUrl && (
                   <Link
                     href={slide.buttonUrl}
-                    className="inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                    className={data.buttonStyle === "primary"
+                      ? "inline-flex items-center px-4 py-2 uppercase text-[15px] tracking-wide transition-opacity hover:opacity-90"
+                      : "inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"}
+                    style={data.buttonStyle === "primary" ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" } : undefined}
                   >
                     {slide.buttonLabel}
                   </Link>

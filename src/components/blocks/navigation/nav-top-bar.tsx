@@ -41,6 +41,13 @@ export function NavTopBar({ bar }: { bar: TopBar }) {
       ? <a href={it.url} className={cn(cls, "hover:opacity-100 opacity-90")} {...(isExternal(it.url) ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{inner}</a>
       : <span className={cls}>{inner}</span>;
   };
+  if (bar.align === "center") {
+    return (
+      <div className={cn("w-full text-[14px] text-center", bar.uppercase && "uppercase tracking-[.03em]")} style={{ background: bar.background || "hsl(var(--primary))", color: bar.textColor || "rgba(255,255,255,.9)" }}>
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-6 flex-wrap">{items.map((it) => <Item key={it.id} it={it} />)}</div>
+      </div>
+    );
+  }
   return (
     <div className="w-full text-[12.5px]" style={{ background: bar.background || "hsl(var(--pc-fg-root, var(--foreground)))", color: bar.textColor || "rgba(255,255,255,.75)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-4">

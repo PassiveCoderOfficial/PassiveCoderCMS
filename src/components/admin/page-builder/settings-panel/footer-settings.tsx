@@ -50,7 +50,7 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
   };
 
   const socials = block.data.socials ?? [];
-  const SOCIAL_PLATFORMS: FooterSocial["platform"][] = ["facebook", "instagram", "twitter", "linkedin", "youtube", "tiktok", "whatsapp"];
+  const SOCIAL_PLATFORMS: FooterSocial["platform"][] = ["facebook", "instagram", "twitter", "linkedin", "youtube", "tiktok", "whatsapp", "snapchat"];
   const updateSocial = (i: number, patch: Partial<FooterSocial>) => {
     update("socials", socials.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
   };
@@ -66,6 +66,18 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
 
   return (
     <div className="space-y-4">
+      {block.data.style === "retail" && (
+        <div className="space-y-2 rounded-lg border p-2.5 bg-muted/20">
+          <p className="text-[10px] font-semibold uppercase text-muted-foreground">Retail footer</p>
+          <div className="space-y-1.5"><Label className="text-xs">Social column heading</Label><Input value={block.data.followTitle ?? ""} onChange={(e) => update("followTitle", e.target.value)} className="h-8 text-xs" placeholder="Follow us" /></div>
+          <div className="space-y-1.5"><Label className="text-xs">Payment logos image</Label><MediaPickerInput compact value={block.data.paymentImage ?? ""} onChange={(v) => update("paymentImage", v)} /></div>
+          <div className="space-y-1.5"><Label className="text-xs">Bottom note (optional)</Label><Input value={block.data.bottomNote ?? ""} onChange={(e) => update("bottomNote", e.target.value)} className="h-8 text-xs" /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label className="text-[10px] text-muted-foreground">Background</Label><ColorPicker value={block.data.backgroundColor ?? ""} onChange={(v) => update("backgroundColor", v || undefined)} /></div>
+            <div><Label className="text-[10px] text-muted-foreground">Text</Label><ColorPicker value={block.data.textColor ?? ""} onChange={(v) => update("textColor", v || undefined)} /></div>
+          </div>
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label className="text-xs">Logo Text</Label>
         <Input value={block.data.logoText ?? ""} onChange={(e) => update("logoText", e.target.value)} className="h-8 text-xs" />

@@ -8,6 +8,7 @@ import { ProductCard } from "./product-card";
 import { ProductCardMinimal } from "./product-card-minimal";
 import { ProductCardWide } from "./product-card-wide";
 import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-card-data";
+import { ProductCarousel } from "./product-carousel";
 
 const PADDING = {
   none: "py-0",
@@ -88,7 +89,13 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
     <div style={wrapStyle} className={cn(PADDING[sectionPadding])}>
       <div className="max-w-7xl mx-auto px-4">
         {/* Section header */}
-        {(title || subtitle) && (
+        {data.headingStyle === "compact" && (title || data.headerLink?.label) ? (
+          <div className={cn("mb-6", ALIGN[titleAlignment])}>
+            {title && <h2 className="text-[16px] uppercase tracking-wide font-normal m-0">{title}</h2>}
+            {subtitle && <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>}
+            {data.headerLink?.label && <Link href={data.headerLink.url || "/shop"} className="inline-block mt-3 text-[10px] uppercase underline underline-offset-2">{data.headerLink.label}</Link>}
+          </div>
+        ) : (title || subtitle) && (
           <div className={cn("mb-10", ALIGN[titleAlignment])}>
             {title && <h2 className="text-3xl font-bold tracking-tight">{title}</h2>}
             {subtitle && <p className="text-muted-foreground mt-2 text-base">{subtitle}</p>}
@@ -96,7 +103,16 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
         )}
 
         {/* ── Grid layout (default; also fallback for any unknown layout value) ── */}
-        {(layout === "grid" || !["list", "featured", "minimal", "wide-cards"].includes(layout)) && (
+        {layout === "carousel" && (
+          <ProductCarousel perView={columns}>
+            {normalizedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} showAddToCart={showAddToCart} showDescription={showDescription}
+                showBadges={showBadges} cardStyle={cardStyle} imageRatio={imageRatio} />
+            ))}
+          </ProductCarousel>
+        )}
+
+        {(layout === "grid" || !["list", "featured", "minimal", "wide-cards", "carousel"].includes(layout)) && (
           <div className={cn("grid grid-cols-1 gap-6", colMap[columns] ?? colMap[3])}>
             {normalizedProducts.map((product) => (
               <ProductCard

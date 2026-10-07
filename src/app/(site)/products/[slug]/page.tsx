@@ -150,7 +150,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ? await supabase.from("site_identity").select("design_overrides").eq("tenant_id", tenantId).maybeSingle()
     : { data: null };
   const design = (identity?.design_overrides ?? {}) as { productCardStyle?: string; featuredBadge?: string };
-  const relStyle = (design.productCardStyle === "boutique" ? "boutique" : "default") as "default";
+  const relStyle = (["boutique", "retail"].includes(design.productCardStyle ?? "") ? design.productCardStyle : "default") as "default";
 
   // Shared section under every product (size guide, brand story, video...):
   // the tenant's page with slug "product-template", edited in the page
@@ -163,6 +163,9 @@ export default async function ProductPage({ params, searchParams }: Props) {
     if (Array.isArray(tpl?.blocks)) templateBlocks = (tpl.blocks as Block[]).filter((b) => b.visible !== false);
   }
 
+  const attrs = (product.attributes ?? {}) as { highlights?: { label: string; value: string }[]; highlightsTitle?: string };
+  const highlights = (attrs.highlights ?? []).filter((h) => h.label || h.value);
+  const highlightsTitle = attrs.highlightsTitle ?? "";
   const shortHtml = productHtml(product.short_description);
   const descHtml = productHtml(product.description);
   const inStock = !product.track_inventory || product.stock_quantity > 0;
@@ -208,6 +211,15 @@ export default async function ProductPage({ params, searchParams }: Props) {
               <h1 className="text-3xl sm:text-5xl leading-tight" style={{ fontFamily: "var(--heading-font, inherit)" }}>{product.name}</h1>
               <WishlistButton productId={product.id} initiallySaved={wishlisted} isSignedIn={!!user} />
             </div>
+
+            {highlights.length > 0 && (
+              <div>
+                {highlightsTitle && <h3 className="text-xl mb-3" style={{ fontFamily: "var(--heading-font, inherit)" }}>{highlightsTitle}</h3>}
+                <div className="pd-grid">
+                  {highlights.map((h, i) => <div key={i}><h4>{h.label}</h4><p>{h.value}</p></div>)}
+                </div>
+              </div>
+            )}
 
             {shortHtml && (shortHtml.isHtml
               ? <div className="pd-html text-[0.95rem] text-muted-foreground" dangerouslySetInnerHTML={{ __html: shortHtml.html }} />

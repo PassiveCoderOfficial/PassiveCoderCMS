@@ -27,6 +27,7 @@ import { uploadMediaFile } from "@/app/(admin)/dashboard/media/actions";
 import type { Product } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/language-provider";
+import { OptionsEditor, HighlightsEditor, loadOptions, saveOptions, type OptionRow, type Highlight } from "./product-extras";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 
@@ -264,6 +265,12 @@ export function ProductForm({ product }: ProductFormProps) {
   const t = useT();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
+  // Sizes/options (product_variants) and highlight facts (products.attributes).
+  const [options, setOptions] = useState<OptionRow[]>([]);
+  const attrs = ((product as { attributes?: { highlights?: Highlight[]; highlightsTitle?: string } } | undefined)?.attributes ?? {});
+  const [highlights, setHighlights] = useState<Highlight[]>(attrs.highlights ?? []);
+  const [highlightsTitle, setHighlightsTitle] = useState<string>(attrs.highlightsTitle ?? "");
+  useEffect(() => { if (product?.id) loadOptions(product.id).then(setOptions).catch(() => {}); }, [product?.id]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [categoryIds, setCategoryIds] = useState<string[]>(product?.category_ids ?? []);
@@ -398,8 +405,11 @@ export function ProductForm({ product }: ProductFormProps) {
     try {
       const supabase = createClient();
       const { seo_title, seo_description, ...rest } = values;
+      const cleanHighlights = highlights.filter((h) => h.label.trim() || h.value.trim());
       const payload = {
         ...rest, images,
+        attributes: { ...(attrs as object), highlights: cleanHighlights, highlightsTitle: highlightsTitle.trim() || null },
+        type: options.some((o) => o.name.trim()) ? "variable" : (rest.type === "variable" ? "simple" : rest.type),
         seo: { title: seo_title?.trim() || null, description: seo_description?.trim() || null },
         category_ids: categoryIds,
         compare_price: values.compare_price || null,
@@ -411,13 +421,17 @@ export function ProductForm({ product }: ProductFormProps) {
         // Update the existing product OR the auto-saved draft row.
         const { error } = await supabase.from("products").update(payload).eq("id", existingId);
         if (error) throw error;
+        const minPrice = await saveOptions(existingId, options);
+        if (minPrice !== null) await supabase.from("products").update({ price: minPrice }).eq("id", existingId);
         toast.success(product?.id ? t("productForm.productUpdated") : t("productForm.productCreated"));
         if (!product?.id) router.push("/dashboard/ecommerce/products");
       } else {
         const tenantId = await getClientTenantId();
         if (!tenantId) throw new Error(t("productForm.noTenantFound"));
-        const { error } = await supabase.from("products").insert({ ...payload, tenant_id: tenantId });
+        const { data: created, error } = await supabase.from("products").insert({ ...payload, tenant_id: tenantId }).select("id").single();
         if (error) throw error;
+        const minPrice = await saveOptions(created.id, options);
+        if (minPrice !== null) await supabase.from("products").update({ price: minPrice }).eq("id", created.id);
         toast.success(t("productForm.productCreated"));
         router.push("/dashboard/ecommerce/products");
       }
@@ -549,6 +563,9 @@ export function ProductForm({ product }: ProductFormProps) {
                 <div className="space-y-1.5 max-w-xs"><Label>{t("productForm.weight")}</Label><Input type="number" step="0.001" {...form.register("weight")} /></div>
               </CardContent>
             </Card>
+
+            <OptionsEditor rows={options} onChange={setOptions} />
+            <HighlightsEditor title={highlightsTitle} items={highlights} onTitle={setHighlightsTitle} onItems={setHighlights} />
 
             <Card>
               <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-sm">{t("productForm.inventory")}</CardTitle></CardHeader>

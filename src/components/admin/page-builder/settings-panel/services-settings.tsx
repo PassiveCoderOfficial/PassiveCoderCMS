@@ -166,6 +166,14 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
       )}
       {tiles && (
         <div className="space-y-1.5 border-t pt-3">
+          <Label className="text-xs">Caption</Label>
+          <Select value={block.data.tileStyle ?? "below"} onValueChange={(v) => update("tileStyle", v)}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="below" className="text-xs">Under the photo</SelectItem>
+              <SelectItem value="overlay" className="text-xs">On the photo, button at the bottom</SelectItem>
+            </SelectContent>
+          </Select>
           <Label className="text-xs">Photo shape</Label>
           <Select value={block.data.tileRatio ?? (block.data.columns === 2 ? "landscape" : "square")} onValueChange={(v) => update("tileRatio", v)}>
             <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>

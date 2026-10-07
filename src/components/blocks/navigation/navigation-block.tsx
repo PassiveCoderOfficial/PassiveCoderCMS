@@ -31,6 +31,7 @@ export function NavigationBlock({ block, identityLogo }: {
     colorMode, scrollAware, glass, ctaVariant, secondaryCtaLabel, secondaryCtaUrl,
     floating, showCart, logoCaption,
     showSearch, searchPlaceholder, searchButtonLabel, showAccount, trackOrderUrl, topRowBackground, menuUppercase,
+    searchStyle, menuRowBackground,
   } = data;
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -128,7 +129,14 @@ export function NavigationBlock({ block, identityLogo }: {
               ? { background: topRowBackground, paddingInline: "max(1rem, calc((100% - 80rem) / 2 + 1.5rem))" }
               : undefined}
         >
-          {logoCenter && (showSearch ? (
+          {logoCenter && (showSearch ? searchStyle === "plain" ? (
+            // Plain: magnifier + borderless field, no button (Enter searches).
+            <form action="/shop" role="search" className="hidden md:flex items-center max-w-[22rem] w-full gap-3">
+              <Search className="h-6 w-6 shrink-0" style={{ color: fg }} />
+              <input name="q" placeholder={searchPlaceholder || "Search products"} aria-label="Search products"
+                className="flex-1 min-w-0 bg-transparent text-[0.95rem] outline-none placeholder:opacity-80" style={{ color: fg }} />
+            </form>
+          ) : (
             <form action="/shop" role="search" className="hidden md:flex items-center max-w-[24rem] w-full rounded-full bg-white border border-black/10 pl-4 pr-1 py-1 shadow-sm">
               <Search className="h-4 w-4 shrink-0 text-neutral-500" />
               <input name="q" placeholder={searchPlaceholder || "Search products"} aria-label="Search products"
@@ -237,9 +245,11 @@ export function NavigationBlock({ block, identityLogo }: {
           </div>
         </div>
         {logoCenter && (
-          <ul className={cn("hidden md:flex items-center justify-center border-t border-border/60 py-1.5", menuUppercase ? "gap-6 uppercase tracking-[0.04em] text-[1.02rem]" : "gap-0.5", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
-            {desktopItems}
-          </ul>
+          <div className={cn(menuRowBackground ? "hidden md:block border-t border-black/80" : "contents")} style={menuRowBackground ? { background: menuRowBackground } : undefined}>
+            <ul className={cn("hidden md:flex items-center justify-center py-1.5", !menuRowBackground && "border-t border-border/60", menuUppercase ? "gap-6 uppercase tracking-[0.04em] text-[1.02rem]" : "gap-0.5", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
+              {desktopItems}
+            </ul>
+          </div>
         )}
       </div>
 

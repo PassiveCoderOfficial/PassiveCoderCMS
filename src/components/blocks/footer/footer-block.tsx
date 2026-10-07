@@ -14,10 +14,71 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   linkedin: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>,
   youtube: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>,
   tiktok: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/></svg>,
+  snapchat: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M12 2.8c2.9 0 4.9 2.2 4.9 5v2.4l1.6-.5c.6 0 .9.6.4 1-.6.5-1.9.8-1.9 1.4.4 1.8 2 3.4 3.7 3.8.4.1.4.6 0 .8-.7.3-1.7.4-2.1.6-.3.4-.1 1.1-.7 1.1-.6 0-1.4-.3-2.4.1-1 .4-1.7 1.7-3.5 1.7s-2.5-1.3-3.5-1.7c-1-.4-1.8-.1-2.4-.1-.6 0-.4-.7-.7-1.1-.4-.2-1.4-.3-2.1-.6-.4-.2-.4-.7 0-.8 1.7-.4 3.3-2 3.7-3.8 0-.6-1.3-.9-1.9-1.4-.5-.4-.2-1 .4-1l1.6.5V7.8c0-2.8 2-5 4.9-5z"/></svg>,
   whatsapp: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>,
 };
 
 export function FooterBlock({ block }: { block: FooterBlockProps }) {
+  // Variants are separate components so switching one in the editor never
+  // changes the hook order inside a mounted footer.
+  if (block.data.style === "retail") return <FooterRetail block={block} />;
+  return <FooterClassic block={block} />;
+}
+
+/**
+ * Retail: department-store footer. Link columns with plain headings, a
+ * "Follow us" column of social icons, and a bottom line with the copyright
+ * and an accepted-payments image. Colours: Background colour / Text colour.
+ */
+function FooterRetail({ block }: { block: FooterBlockProps }) {
+  const d = block.data;
+  const bg = d.backgroundColor ?? (block.background?.type === "color" ? block.background.color : undefined) ?? "hsl(var(--muted))";
+  const fg = d.textColor ?? "#000000";
+  const year = new Date().getFullYear();
+  const copy = (d.copyrightText ?? "").replace("{year}", String(year));
+  const cols = d.columns ?? [];
+  return (
+    <footer className="w-full" style={{ background: bg, color: fg }}>
+      <div className="max-w-[1320px] mx-auto px-6 pt-9 pb-6">
+        <div className="border-t pt-9 grid grid-cols-2 lg:[grid-template-columns:repeat(var(--fc),minmax(0,1fr))] gap-x-8 gap-y-10"
+          style={{ borderColor: `${fg}33`, ["--fc" as string]: String(cols.length + ((d.socials?.length ?? 0) > 0 ? 1 : 0)) }}>
+          {cols.map((c) => (
+            <div key={c.id}>
+              <p className="uppercase text-[16px] font-medium m-0 mb-6">{c.heading}</p>
+              <ul className="list-none m-0 p-0 space-y-[11px]">
+                {c.links.map((l) => (
+                  <li key={l.id}><Link href={l.url} className="text-[16px] opacity-80 hover:opacity-100 hover:underline">{l.label}</Link></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {(d.socials?.length ?? 0) > 0 && (
+            <div>
+              <p className="uppercase text-[16px] font-medium m-0 mb-6">{d.followTitle || "Follow us"}</p>
+              <div className="flex flex-wrap gap-2.5">
+                {d.socials!.map((s, i) => (
+                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.platform} className="[&_svg]:h-6 [&_svg]:w-6 hover:opacity-70">
+                    {SOCIAL_ICONS[s.platform] ?? s.platform}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-2 text-[12px]">
+          {copy && <span>{copy}</span>}
+          {d.paymentImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={d.paymentImage} alt="Payment methods accepted" className="h-6 w-auto" />
+          )}
+          {d.bottomNote && <span className="sm:ml-auto">{d.bottomNote}</span>}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function FooterClassic({ block }: { block: FooterBlockProps }) {
   const { data } = block;
   const {
     logo, logoText, tagline, columns = [], socials = [],

@@ -14,6 +14,7 @@ export const FONT_OPTIONS: { name: string; category: "sans" | "serif" | "display
   { name: "Outfit", category: "sans" },
   { name: "Work Sans", category: "sans" },
   { name: "Nunito", category: "sans" },
+  { name: "Prompt", category: "sans" },
   { name: "Lato", category: "sans" },
   { name: "Open Sans", category: "sans" },
   { name: "Roboto", category: "sans" },

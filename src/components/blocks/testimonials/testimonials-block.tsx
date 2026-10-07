@@ -307,9 +307,48 @@ function TestimonialsLegacy({ data }: { data: TestimonialsBlockProps["data"] }) 
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
+/**
+ * Stars + Quotes: centred quotes under a row of gold stars, "— Name" below,
+ * two per view on desktop, one on phones, sliding with dots underneath.
+ */
+function TestimonialsStarsQuotes({ data }: { data: TestimonialsBlockProps["data"] }) {
+  const items = data.items ?? [];
+  const [page, setPage] = useState(0);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const goTo = (i: number) => { const el = ref.current; if (!el) return; el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); };
+  const pages = Math.max(1, Math.ceil(items.length / 2));
+  return (
+    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 text-center">
+      {data.title && <h2 className="uppercase text-[16px] font-normal m-0 mb-7">{data.title}</h2>}
+      {data.subtitle && <p className="text-sm text-muted-foreground -mt-4 mb-7">{data.subtitle}</p>}
+      <div ref={ref} onScroll={(e) => { const el = e.currentTarget; setPage(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))); }}
+        className="flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((t) => (
+          <figure key={t.id} className="snap-start shrink-0 basis-full md:basis-1/2 m-0 px-6 sm:px-10">
+            <div className="flex justify-center gap-1.5 mb-5" aria-label={`${t.rating ?? 5} stars`}>
+              {Array.from({ length: t.rating ?? 5 }).map((_, k) => <Star key={k} className="w-6 h-6 fill-[#FFD700] text-[#FFD700]" />)}
+            </div>
+            <blockquote className="m-0 text-[16px] leading-relaxed tracking-[.02em]">{t.content}</blockquote>
+            <figcaption className="mt-4 text-[14px] text-muted-foreground">— {t.name}{t.role ? `, ${t.role}` : ""}</figcaption>
+          </figure>
+        ))}
+      </div>
+      {pages > 1 && (
+        <div className="flex justify-center gap-3 mt-10">
+          {Array.from({ length: items.length }).map((_, i) => (
+            <button key={i} type="button" aria-label={`Show review ${i + 1}`} onClick={() => goTo(i)}
+              className={cn("rounded-full transition-all", i === page ? "w-3 h-3 border-2 border-foreground" : "w-1.5 h-1.5 bg-foreground mt-[3px]")} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) {
   const variant = block.templateVariant;
   if (variant === "quote-cards") return <TestimonialsQuoteCards data={block.data} />;
+  if (variant === "stars-quotes") return <TestimonialsStarsQuotes data={block.data} />;
   if (variant === "minimal-quote") return <TestimonialsMinimalQuote data={block.data} />;
   if (variant === "formal-cards") return <TestimonialsFormalCards data={block.data} />;
   if (variant === "dark-quote-cards") return <TestimonialsDarkQuoteCards data={block.data} />;
