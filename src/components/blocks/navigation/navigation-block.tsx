@@ -246,7 +246,7 @@ export function NavigationBlock({ block, identityLogo }: {
         </div>
         {logoCenter && (
           <div className={cn(menuRowBackground ? "hidden md:block border-t border-black/80" : "contents")} style={menuRowBackground ? { background: menuRowBackground } : undefined}>
-            <ul className={cn("hidden md:flex items-center justify-center py-1.5", !menuRowBackground && "border-t border-border/60", menuUppercase ? "gap-2 lg:gap-5 uppercase tracking-[0.02em] text-[14.5px] [&_a]:whitespace-nowrap [&_button]:whitespace-nowrap" : "gap-0.5", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
+            <ul className={cn("hidden md:flex items-center justify-center py-1.5", !menuRowBackground && "border-t border-border/60", menuUppercase ? "gap-1 xl:gap-3 uppercase tracking-[0.02em] text-[14px] [&_a]:whitespace-nowrap [&_button]:whitespace-nowrap" : "gap-0.5", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
               {desktopItems}
             </ul>
           </div>
