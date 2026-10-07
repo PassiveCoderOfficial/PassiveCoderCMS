@@ -79,7 +79,26 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
       </div>
 
       <div className="border-t pt-3 space-y-2">
-        <div className="flex items-center justify-between"><Label className="text-xs">Sticky</Label><Switch checked={block.data.sticky} onCheckedChange={(v) => update("sticky", v)} /></div>
+        <div className="flex items-center justify-between gap-2"><Label className="text-xs">Sticky (stays on screen when scrolling)</Label><Switch checked={!!block.data.sticky} onCheckedChange={(v) => update("sticky", v)} /></div>
+        {block.data.sticky && (
+          <div className="pl-3 border-l-2 space-y-2">
+            {block.data.style === "logo-center" && (
+              <div>
+                <Label className="text-xs">Which rows stay visible</Label>
+                <Select value={block.data.stickyRows ?? "all"} onValueChange={(v) => update("stickyRows", v)}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">Whole header (logo row + menu row)</SelectItem>
+                    <SelectItem value="menu" className="text-xs">Menu row only (logo row scrolls away)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {block.data.topBar && block.data.topBar.show !== false && (
+              <div className="flex items-center justify-between gap-2"><Label className="text-xs">Keep top bar visible too</Label><Switch checked={!!block.data.stickyTopBar} onCheckedChange={(v) => update("stickyTopBar", v)} /></div>
+            )}
+          </div>
+        )}
         <div className="flex items-center justify-between"><Label className="text-xs">Transparent</Label><Switch checked={!!block.data.transparent} onCheckedChange={(v) => update("transparent", v)} /></div>
         <div className="flex items-center justify-between"><Label className="text-xs">Shadow</Label><Switch checked={!!block.data.shadow} onCheckedChange={(v) => update("shadow", v)} /></div>
         <div className="flex items-center justify-between"><Label className="text-xs">Bottom Border</Label><Switch checked={!!block.data.borderBottom} onCheckedChange={(v) => update("borderBottom", v)} /></div>

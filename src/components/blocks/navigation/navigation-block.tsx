@@ -1,7 +1,7 @@
 "use client";
 import { NavTopBar } from "./nav-top-bar";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { NavigationBlockProps } from "@/types/cms";
 import Link from "next/link";
 import Image from "@/components/ui/smart-image";
@@ -36,6 +36,17 @@ export function NavigationBlock({ block, identityLogo }: {
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // "Menu row only" sticky: pin the header at minus the logo row's height,
+  // so the logo row scrolls away and the menu row stays on screen.
+  const topRowRef = useRef<HTMLDivElement>(null);
+  const [topRowH, setTopRowH] = useState(0);
+  useEffect(() => {
+    const el = topRowRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setTopRowH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const { itemCount, openCart } = useCart();
 
   const tokenMode = colorMode !== "legacy"; // default to modern token mode
@@ -97,24 +108,29 @@ export function NavigationBlock({ block, identityLogo }: {
   // hero (content flows under the fixed bar), which every marketplace page does.
   // Non-overlay navs stay plain sticky in flow.
   const showTopBar = !!block.data.topBar && block.data.topBar.show !== false && !overlayHero;
-  return (
+  const menuRowOnly = sticky && block.data.stickyRows === "menu" && style === "logo-center";
+  // Keeping the top bar pinned: the wrapper below is the sticky element instead of the nav.
+  const pinTopBar = sticky && showTopBar && !!block.data.stickyTopBar && !overlayHero;
+  const navSticky = sticky && !pinTopBar && !overlayHero;
+  const content = (
     <>
     {showTopBar && <NavTopBar bar={block.data.topBar!} />}
     <nav
       className={cn(
         "relative w-full z-50 transition-all duration-300",
-        overlayHero ? "fixed top-0 left-0 right-0" : sticky && "sticky top-0",
+        overlayHero ? "fixed top-0 left-0 right-0" : navSticky && "sticky",
         solid && !floating && "border-b border-border/60",
         solid && glass && "backdrop-blur-xl",
       )}
       style={{
+        ...(navSticky ? { top: menuRowOnly ? -topRowH : 0 } : {}),
         background: floating || !solid ? "transparent" : barBg,
         color: fg,
         boxShadow: solid && !floating ? "var(--shadow-sm)" : undefined,
       }}
     >
       <div className={cn("mx-auto", floating ? "max-w-6xl pt-3 px-4 sm:px-6" : logoCenter && topRowBackground ? "" : "max-w-7xl px-4 sm:px-6")}>
-        <div
+        <div ref={topRowRef}
           className={cn(
             logoCenter
               ? "grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3 min-h-[4.5rem] transition-all"
@@ -289,4 +305,5 @@ export function NavigationBlock({ block, identityLogo }: {
     </nav>
     </>
   );
+  return pinTopBar ? <div className="sticky top-0 z-50">{content}</div> : content;
 }

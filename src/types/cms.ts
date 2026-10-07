@@ -242,6 +242,12 @@ export type NavigationBlockProps = BlockBase & {
      *  header and footer holding diverging copies of the same links. */
     menuLocation?: "header" | "footer" | "footer_secondary" | "mobile" | "sidebar" | "legal";
     sticky: boolean;
+    /** Which rows stay pinned when sticky: the whole header (default) or,
+     *  for the two-row "logo-center" style, only the menu row (the logo row
+     *  scrolls away). */
+    stickyRows?: "all" | "menu";
+    /** Keep the announcement top bar pinned along with the header. */
+    stickyTopBar?: boolean;
     transparent: boolean;
     style: "default" | "centered" | "split" | "minimal" | "logo-center";
     backgroundColor?: string;
