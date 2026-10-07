@@ -18,6 +18,9 @@ export const ZOHO_SCOPES = [
   "ZohoMail.organization.ALL",
   "ZohoMail.organization.accounts.ALL",
   "ZohoMail.organization.domains.ALL",
+  // Reading the signed-in user's own mail account is how we learn the
+  // organisation id (zoid); without it Zoho answers INVALID_OAUTHSCOPE.
+  "ZohoMail.accounts.READ",
 ].join(",");
 
 const DC_FROM_LOCATION: Record<string, string> = { us: "com", in: "in", eu: "eu", au: "com.au", jp: "jp", ca: "ca", sa: "sa", uk: "uk" };
@@ -135,11 +138,27 @@ export async function fetchOrg(c: ZohoConn, token?: string) {
   } catch (e) {
     console.error("[zoho] /organization failed, trying /accounts:", e instanceof Error ? e.message : e);
   }
-  const accts = await zohoMail<{ zoid?: number; organizationId?: number; accountName?: string; primaryEmailAddress?: string }[]>(c, "/accounts", { token });
+  const accts = await zohoMail<{ accountName?: string; primaryEmailAddress?: string }[]>(c, "/accounts", { token });
   const a = Array.isArray(accts) ? accts[0] : undefined;
-  const zoid = a?.zoid ?? a?.organizationId ?? null;
+  const zoid = findZoid(a);
+  if (!zoid) console.error("[zoho] no zoid in /accounts:", JSON.stringify(accts).slice(0, 600));
   if (!zoid) throw new Error("This Zoho account has no Zoho Mail organisation yet. Sign up for Zoho Mail with your domain first (step 1), then connect again.");
   return { zoid, name: a?.accountName ?? a?.primaryEmailAddress ?? null };
+}
+
+/** Zoho nests the organisation id differently per account type; find it anywhere. */
+function findZoid(v: unknown, depth = 0): number | null {
+  if (!v || typeof v !== "object" || depth > 4) return null;
+  const o = v as Record<string, unknown>;
+  for (const k of ["zoid", "organizationId", "orgId"]) {
+    const n = Number(o[k]);
+    if (n > 0) return n;
+  }
+  for (const x of Object.values(o)) {
+    const n = findZoid(x, depth + 1);
+    if (n) return n;
+  }
+  return null;
 }
 
 type ZDomain = { domainName: string; verificationStatus?: boolean | string; mxstatus?: string; CNAMEVerificationCode?: string; HTMLVerificationCode?: string; isPrimary?: boolean };

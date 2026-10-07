@@ -116,7 +116,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // profiles.role alone locked every client out of their own dashboard.
   const { data: memberships } = await adminClient
     .from("tenant_members")
-    .select("tenant_id, role, is_primary, tenants(id, name, slug)")
+    .select("tenant_id, role, is_primary, tenants(id, name, slug, custom_domain)")
     .eq("user_id", user.id)
     .order("is_primary", { ascending: false });
 
@@ -310,9 +310,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
       ?? (memberships ?? [])[0]?.tenant_id;
     userSites = (memberships ?? []).map(m => {
-      const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string } | null;
-      return t ? { id: t.id, name: t.name, slug: t.slug, is_primary: t.id === viewingTenantId } : null;
-    }).filter(Boolean) as { id: string; name: string; slug: string; is_primary: boolean }[];
+      const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string; custom_domain: string | null } | null;
+      return t ? { id: t.id, name: t.name, slug: t.slug, custom_domain: t.custom_domain ?? undefined, is_primary: t.id === viewingTenantId } : null;
+    }).filter(Boolean) as { id: string; name: string; slug: string; custom_domain?: string; is_primary: boolean }[];
   }
 
   // Staff can own a site (tenant_members row, already in userSites above)

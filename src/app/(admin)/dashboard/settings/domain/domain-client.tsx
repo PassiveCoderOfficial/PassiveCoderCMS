@@ -146,8 +146,12 @@ export default function DomainSettingsClient({ tenant, savedDnsType }: {
           <Globe className="w-6 h-6" /> Domain Settings
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Your site is available at <strong>{tenant.slug}.{ROOT_DOMAIN}</strong> by default.
-          Connect a custom domain to use your own address.
+          {tenant.custom_domain && initialStatus === "active" ? (
+            <>Your site address is <strong>{tenant.custom_domain}</strong>.</>
+          ) : (
+            <>Your site is available at <strong>{tenant.slug}.{ROOT_DOMAIN}</strong> by default.
+            Connect a custom domain to use your own address.</>
+          )}
         </p>
       </div>
 

@@ -32,6 +32,9 @@ export interface SiteIdentity {
  *  where the session cookie actually lives, never the custom domain. */
 export function adminHost(site: SiteIdentity): string {
   if (site.slug === ROOT_SLUG) return ROOT;
+  // Logged in on the site's own custom domain: the session lives there too,
+  // so stay on it rather than bouncing the owner to the subdomain.
+  if (site.custom_domain && typeof window !== "undefined" && window.location.hostname.toLowerCase() === site.custom_domain.toLowerCase()) return site.custom_domain;
   return `${site.slug}.${ROOT}`;
 }
 
