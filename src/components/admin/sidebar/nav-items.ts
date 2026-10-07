@@ -155,19 +155,17 @@ export const navSections: NavSection[] = [
       { label: "Pages", href: "/dashboard/pages", icon: FileText },
       { label: "Posts", href: "/dashboard/posts", icon: BookOpen },
       { label: "Media", href: "/dashboard/media", icon: Image },
-      {
-        label: "Design",
-        href: "/dashboard/themes",
-        icon: Palette,
-        children: [
-          { label: "Browse Templates", href: "/dashboard/themes", icon: Palette },
-          { label: "Colors & Design", href: "/dashboard/templates/colors", icon: SlidersHorizontal },
-          { label: "Header Builder", href: "/dashboard/header-builder", icon: PanelTop },
-          { label: "Footer Builder", href: "/dashboard/header-builder?target=footer", icon: PanelBottom },
-          { label: "Navigation", href: "/dashboard/navigation", icon: Navigation },
-          { label: "Site Identity", href: "/dashboard/templates/header-footer", icon: Layers },
-        ],
-      },
+    ],
+  },
+  {
+    label: "Design",
+    items: [
+      { label: "Browse Templates", href: "/dashboard/themes", icon: Palette },
+      { label: "Colors & Design", href: "/dashboard/templates/colors", icon: SlidersHorizontal },
+      { label: "Header Builder", href: "/dashboard/header-builder", icon: PanelTop, exact: true },
+      { label: "Footer Builder", href: "/dashboard/header-builder?target=footer", icon: PanelBottom },
+      { label: "Navigation", href: "/dashboard/navigation", icon: Navigation },
+      { label: "Site Identity", href: "/dashboard/templates/header-footer", icon: Layers },
     ],
   },
   {

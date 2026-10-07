@@ -13,6 +13,7 @@ const TITLES: Record<ExtendedKey, string> = {
   description: "Description accordion",
   details: "Details accordion (e.g. Fragrance Notes)",
   shipping: "Shipping & delivery accordion",
+  video: "Video accordion (opens by itself)",
   trust: "Trust icons strip",
   story: "Story row (image + text, under the product)",
   banner: "Wide banner image (under the product)",
@@ -76,6 +77,11 @@ export function ExtendedEditor({ value, onChange, defaults, makeDefault, onMakeD
           </div>
         ))}
         <Button type="button" size="sm" variant="outline" className="gap-1" onClick={() => set("details", { ...d.details, rows: [...rows, { label: "", value: "" }] })}><Plus className="w-3 h-3" /> Add row</Button>
+      </Section>
+      <Section k="video" {...sp}>
+        <Input className="h-8 text-xs" placeholder="Heading (Video)" value={d.video?.title ?? ""} onChange={(e) => set("video", { ...d.video, title: e.target.value })} />
+        <MediaPickerInput compact value={d.video?.url ?? ""} onChange={(v) => set("video", { ...d.video, url: v })} />
+        <p className="text-[10px] text-muted-foreground">Upload an MP4, or paste a YouTube / Vimeo link.</p>
       </Section>
       <Section k="shipping" {...sp}>
         <Input className="h-8 text-xs" placeholder="Heading (Shipping and Delivery)" value={d.shipping?.title ?? ""} onChange={(e) => set("shipping", { ...d.shipping, title: e.target.value })} />

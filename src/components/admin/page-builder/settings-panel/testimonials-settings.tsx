@@ -30,6 +30,12 @@ export function TestimonialsSettings({ block }: { block: TestimonialsBlockProps 
 
   return (
     <div className="space-y-3">
+      {block.templateVariant === "photo-cards" && (
+        <div className="grid grid-cols-2 gap-2">
+          <div><Label className="text-[10px] text-muted-foreground">Card colour</Label><Input value={block.data.cardColor ?? ""} onChange={(e) => updateBlock(block.id, { data: { ...block.data, cardColor: e.target.value || undefined } })} className="h-7 text-xs" placeholder="#DDC69E" /></div>
+          <div><Label className="text-[10px] text-muted-foreground">Star colour</Label><Input value={block.data.starColor ?? ""} onChange={(e) => updateBlock(block.id, { data: { ...block.data, starColor: e.target.value || undefined } })} className="h-7 text-xs" placeholder="#e00000" /></div>
+        </div>
+      )}
       <div>
         <Label className="text-xs">Title</Label>
         <Input value={block.data.title ?? ""} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs mt-1" />
@@ -64,6 +70,7 @@ export function TestimonialsSettings({ block }: { block: TestimonialsBlockProps 
                 <Input value={item.company ?? ""} onChange={(e) => updateItem(item.id, "company", e.target.value)} className="h-7 text-xs" placeholder="Company" />
               </div>
               <Input value={item.avatar ?? ""} onChange={(e) => updateItem(item.id, "avatar", e.target.value)} className="h-7 text-xs" placeholder="Avatar URL" />
+              <Input value={item.title ?? ""} onChange={(e) => updateItem(item.id, "title", e.target.value)} className="h-7 text-xs" placeholder="Headline (optional, e.g. Unmatched Longevity)" />
               <Textarea value={item.content} onChange={(e) => updateItem(item.id, "content", e.target.value)} className="text-xs min-h-16" placeholder="What they said" />
               <div className="flex items-center gap-1 pt-0.5">
                 {[1, 2, 3, 4, 5].map((n) => (

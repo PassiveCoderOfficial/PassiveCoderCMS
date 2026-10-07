@@ -85,6 +85,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
 
   testimonials: [
     { key: "quote-cards", label: "Quote Cards", description: "Cards with an avatar, name and star rating.", thumb: "quote-cards" },
+    { key: "photo-cards", label: "Photo Cards", description: "Warm cards with round photo, headline, quote, name and outline stars; three per view.", thumb: "quote-cards" },
     { key: "stars-quotes", label: "Stars + Quotes", description: "Gold stars, centred quote and name; two per view, sliding with dots.", thumb: "quote-minimal" },
     { key: "dark-quote-cards", label: "Dark Quote Cards", description: "The same cards tuned for dark backgrounds.", thumb: "quote-dark", dark: true },
     { key: "full-width", label: "Full Width", description: "One large testimonial at a time, given real weight.", thumb: "quote-wide" },

@@ -236,8 +236,9 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
                     onClick={() => toggle(section.label)}
                     aria-expanded={isOpen}
                     className={cn(
-                      "w-full flex items-center justify-between px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest rounded hover:opacity-80",
-                      isTools ? "text-gray-500 pt-1" : dark ? "text-gray-600" : "text-muted-foreground",
+                      // Group titles: small dark pill with light text so groups read at a glance.
+                      "w-full flex items-center justify-between px-2 py-1 mb-1 text-[10px] font-semibold uppercase tracking-widest rounded-md hover:opacity-90",
+                      isTools || dark ? "bg-white/10 text-gray-200" : "bg-foreground/85 text-background",
                     )}
                   >
                     <span>{section.label}</span>
@@ -245,8 +246,8 @@ function SidebarBody({ sections, dark, onClose, header, footer, filterItem }: {
                   </button>
                 ) : (
                   <p className={cn(
-                    "px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest",
-                    isTools ? "text-gray-500 pt-1" : isBrand ? "text-white/70 pt-1" : dark ? "text-gray-600" : "text-muted-foreground",
+                    "px-2 py-1 mb-1 text-[10px] font-semibold uppercase tracking-widest rounded-md",
+                    isBrand ? "bg-black/20 text-white" : isTools || dark ? "bg-white/10 text-gray-200" : "bg-foreground/85 text-background",
                   )}>
                     {section.label}
                   </p>

@@ -345,10 +345,55 @@ function TestimonialsStarsQuotes({ data }: { data: TestimonialsBlockProps["data"
   );
 }
 
+/**
+ * Photo Cards: square-ish warm cards, round photo on top, headline, quote,
+ * name and outline stars; three per view on desktop, sliding with dots.
+ */
+function TestimonialsPhotoCards({ data }: { data: TestimonialsBlockProps["data"] }) {
+  const items = data.items ?? [];
+  const [page, setPage] = useState(0);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const card = data.cardColor || "#DDC69E";
+  const star = data.starColor || "#e00000";
+  return (
+    <div className="max-w-[1180px] mx-auto px-4 sm:px-6 text-center">
+      {data.subtitle && <p className="text-[11px] tracking-[4px] uppercase mb-2.5">{data.subtitle}</p>}
+      {data.title && <h2 className="uppercase text-[24px] m-0 mb-12">{data.title}</h2>}
+      <div ref={ref} onScroll={(e) => { const el = e.currentTarget; setPage(Math.round(el.scrollLeft / Math.max(1, el.clientWidth / 3))); }}
+        className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((t) => (
+          <figure key={t.id} className="snap-start shrink-0 basis-[88%] sm:basis-[calc((100%-1.25rem)/2)] lg:basis-[calc((100%-2.5rem)/3)] m-0 rounded-[14px] px-8 pt-2 pb-5 flex flex-col items-center" style={{ background: card }}>
+            {t.avatar
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={t.avatar} alt="" className="w-[100px] h-[100px] rounded-full object-cover" loading="lazy" />
+              : <div className="w-[100px] h-[100px]" />}
+            {t.title && <h3 className="text-[20px] mt-9 mb-9">{t.title}</h3>}
+            <blockquote className="m-0 text-[16px] leading-relaxed flex-1">{t.content}</blockquote>
+            <figcaption className="mt-9 mb-1 text-[16px] font-bold" style={{ fontFamily: "var(--heading-font, inherit)" }}>{t.name}</figcaption>
+            <div className="flex gap-1" aria-label={`${t.rating ?? 5} stars`}>
+              {Array.from({ length: t.rating ?? 5 }).map((_, k) => <Star key={k} className="w-[22px] h-[22px]" style={{ color: star }} strokeWidth={1.6} />)}
+            </div>
+          </figure>
+        ))}
+      </div>
+      {items.length > 3 && (
+        <div className="flex justify-center gap-2 mt-6">
+          {Array.from({ length: items.length }).map((_, i) => (
+            <button key={i} type="button" aria-label={`Show review ${i + 1}`}
+              onClick={() => { const el = ref.current; if (el) el.scrollTo({ left: (el.scrollWidth / items.length) * i, behavior: "smooth" }); }}
+              className={cn("w-2.5 h-2.5 rounded-full", i === page ? "bg-primary" : "bg-foreground/25")} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TestimonialsBlock({ block }: { block: TestimonialsBlockProps }) {
   const variant = block.templateVariant;
   if (variant === "quote-cards") return <TestimonialsQuoteCards data={block.data} />;
   if (variant === "stars-quotes") return <TestimonialsStarsQuotes data={block.data} />;
+  if (variant === "photo-cards") return <TestimonialsPhotoCards data={block.data} />;
   if (variant === "minimal-quote") return <TestimonialsMinimalQuote data={block.data} />;
   if (variant === "formal-cards") return <TestimonialsFormalCards data={block.data} />;
   if (variant === "dark-quote-cards") return <TestimonialsDarkQuoteCards data={block.data} />;

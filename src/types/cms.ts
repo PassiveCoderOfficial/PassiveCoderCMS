@@ -592,9 +592,14 @@ export type TestimonialsBlockProps = BlockBase & {
       role?: string;
       company?: string;
       avatar?: string;
+      /** Short headline above the quote (Photo Cards). */
+      title?: string;
       content: string;
       rating?: number;
     }>;
+    /** Photo Cards: card background (default warm sand) and star colour. */
+    cardColor?: string;
+    starColor?: string;
   };
 };
 

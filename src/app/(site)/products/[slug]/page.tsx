@@ -183,6 +183,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <dl className="m-0 space-y-3">{(ext.details.rows ?? []).filter((r) => r.label || r.value).map((r, i) => (
         <div key={i}><dt className="font-semibold">{r.label}</dt><dd className="m-0 mt-1">{r.value}</dd></div>))}</dl>
     ) }] : []),
+    ...(ext.video?.url ? [{ key: "v", title: ext.video.title || "Video", open: true, body: <ProductVideo url={ext.video.url} title={product.name} /> }] : []),
     ...(ext.shipping ? [{ key: "s", title: ext.shipping.title || "Shipping and Delivery", body: <p className="whitespace-pre-line m-0">{ext.shipping.text}</p>, open: false }] : []),
   ];
   const useAccordions = accordions.length > 0;
@@ -333,3 +334,14 @@ export default async function ProductPage({ params, searchParams }: Props) {
 }
 
 export const dynamic = "force-dynamic";
+
+/** Product video: an uploaded file plays inline; YouTube / Vimeo links embed. */
+function ProductVideo({ url, title }: { url: string; title: string }) {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/);
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  const embed = yt ? `https://www.youtube-nocookie.com/embed/${yt[1]}` : vimeo ? `https://player.vimeo.com/video/${vimeo[1]}` : null;
+  if (embed) {
+    return <div className="aspect-video w-full"><iframe src={embed} title={title} className="w-full h-full rounded" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen loading="lazy" /></div>;
+  }
+  return <video src={url} controls playsInline preload="metadata" className="w-full rounded bg-black" />;
+}

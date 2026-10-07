@@ -7,13 +7,15 @@ export type ProductExtended = {
   description?: { title?: string; text?: string };
   details?: { title?: string; rows?: { label: string; value: string }[] };
   shipping?: { title?: string; text?: string };
+  /** Video accordion (opens by itself): MP4 file or YouTube / Vimeo link. */
+  video?: { title?: string; url?: string };
   trust?: { items?: { icon: string; label: string }[] };
   story?: { imageUrl?: string; title?: string; text?: string };
   banner?: { imageUrl?: string; alt?: string };
 };
 
 export type ExtendedKey = keyof ProductExtended;
-export const EXTENDED_KEYS: ExtendedKey[] = ["description", "details", "shipping", "trust", "story", "banner"];
+export const EXTENDED_KEYS: ExtendedKey[] = ["description", "details", "video", "shipping", "trust", "story", "banner"];
 
 /** Icons offered for the trust strip (lucide names). */
 export const TRUST_ICONS = ["Truck", "RotateCcw", "ShieldCheck", "Gift", "Headphones", "BadgeCheck", "CreditCard", "Clock", "Sparkles", "Package"] as const;
@@ -33,6 +35,8 @@ export function sectionFilled(key: ExtendedKey, v: ProductExtended[ExtendedKey] 
       return !!((v as { imageUrl?: string }).imageUrl || (v as { text?: string }).text?.trim());
     case "banner":
       return !!(v as { imageUrl?: string }).imageUrl;
+    case "video":
+      return !!(v as { url?: string }).url?.trim();
   }
 }
 
