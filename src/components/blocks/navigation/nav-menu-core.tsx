@@ -62,7 +62,7 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, l
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        <div className="bg-popover text-popover-foreground shadow-[var(--shadow-xl)] rounded-[1.75rem] border border-border overflow-hidden">
+        <div className="bg-popover text-popover-foreground shadow-[var(--shadow-xl)] rounded-[1.75rem] border border-border overflow-hidden normal-case tracking-normal">
           {standalone.length > 0 && linksAs !== "column" && (
             <div className="flex flex-wrap gap-x-6 gap-y-1 px-7 py-3.5 bg-muted/70 border-b border-border">
               {standalone.map((s) => (
@@ -77,13 +77,13 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, l
               <div key={group.id} className="min-w-0">
                 <Link href={group.url} className="flex items-center gap-2.5 mb-3 group/head">
                   <GroupIcon name={group.icon} />
-                  <span className="text-sm font-semibold text-foreground group-hover/head:text-primary transition-colors truncate">{group.label}</span>
+                  <span className="text-sm font-semibold uppercase tracking-wide text-foreground group-hover/head:text-primary transition-colors">{group.label}</span>
                 </Link>
-                <ul className="space-y-1.5 pl-[calc(2rem+0.625rem)]">
+                <ul className={cn("space-y-1.5", group.icon && "pl-[calc(2rem+0.625rem)]")}>
                   {(group.children ?? []).map((child) => (
                     <li key={child.id}>
                       <Link href={child.url} target={child.target}
-                        className="block text-sm text-muted-foreground hover:text-primary transition-colors truncate">
+                        className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                         {child.label}
                       </Link>
                     </li>
@@ -98,7 +98,7 @@ function DropdownMenu({ items, onMouseEnter, onMouseLeave, forceMega, columns, l
                   {standalone.map((s) => (
                     <li key={s.id}>
                       <Link href={s.url} target={s.target} className="flex items-center justify-between gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors">
-                        <span className="truncate">{s.label}</span><span aria-hidden className="text-primary">→</span>
+                        <span>{s.label}</span><span aria-hidden className="text-primary shrink-0">→</span>
                       </Link>
                     </li>
                   ))}
