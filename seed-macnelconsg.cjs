@@ -952,12 +952,12 @@ function toiletIntro() {
 }
 
 function toiletProcess() {
-  return block("steps", "dark-cards", {
-    title: "Six stages, done properly", subtitle: "Our toilet renovation process",
+  return block("features", "numbered-grid", {
+    eyebrow: "Our toilet renovation process", title: "Six stages, done properly",
     description: "Waterproofing is one of the most important stages of any toilet renovation. Poor waterproofing can result in water leakage, damp walls, mould, and damage to surrounding areas or the unit below.",
-    layout: "horizontal", style: "connected",
-    items: TOILET_STEPS.map(([title, description], i) => ({ id: `ts${i}`, step: NUM(i), title, description })),
-  }, { background: bgColor(NAVY) });
+    tone: "dark", layout: "grid", columns: 3, style: "minimal", colors: COLORS,
+    items: TOILET_STEPS.map(([title, description], i) => ({ id: `ts${i}`, title, description })),
+  }, { padding: ZERO });
 }
 
 function toiletScope() {
