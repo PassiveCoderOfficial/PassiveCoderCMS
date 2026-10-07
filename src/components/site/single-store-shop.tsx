@@ -59,7 +59,12 @@ export async function SingleStoreShop({ tenantId, sp }: { tenantId: string; sp: 
   if (term) {
     // Commas and parentheses are PostgREST filter syntax inside .or().
     const safe = term.replace(/[,()%]/g, " ").trim();
-    if (safe) query = query.or(`name.ilike.%${safe}%,sku.ilike.%${safe}%,brand.ilike.%${safe}%`);
+    // A category whose name contains the search as a whole word ("men" ->
+    // Men, not Women) also brings in every product filed under it.
+    const escaped = safe.replace(/[.*+?^${}|[\]\\]/g, "\\$&");
+    const word = new RegExp(`\\b${escaped}\\b`, "i");
+    const catHits = cats.filter((c) => word.test(c.name)).map((c) => `category_ids.cs.["${c.id}"]`);
+    if (safe) query = query.or([`name.ilike.%${safe}%`, `sku.ilike.%${safe}%`, `brand.ilike.%${safe}%`, ...catHits].join(","));
   }
   if (activeCat) query = query.contains("category_ids", JSON.stringify([activeCat.id]));
 

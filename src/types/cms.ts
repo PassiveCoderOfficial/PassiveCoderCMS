@@ -303,6 +303,10 @@ export type NavigationBlockProps = BlockBase & {
     menuUppercase?: boolean;
     /** logo-center: "pill" (rounded box + button, default) or "plain" (icon + borderless field). */
     searchStyle?: "pill" | "plain";
+    /** What the search box looks in. Only "products" -> /shop; otherwise /search. Default products. */
+    searchScope?: ("products" | "categories" | "pages" | "posts")[];
+    /** Category dropdown inside the search box (shop sites). */
+    searchCategoryFilter?: boolean;
     /** logo-center: full-width colour band behind the menu row, with a dark rule above it. */
     menuRowBackground?: string;
     /** Thin info strip above the header (address, hours, promo, phone, WhatsApp). */

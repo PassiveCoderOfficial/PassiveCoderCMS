@@ -31,7 +31,7 @@ export function NavigationBlock({ block, identityLogo }: {
     colorMode, scrollAware, glass, ctaVariant, secondaryCtaLabel, secondaryCtaUrl,
     floating, showCart, logoCaption,
     showSearch, searchPlaceholder, searchButtonLabel, showAccount, trackOrderUrl, topRowBackground, menuUppercase,
-    searchStyle, menuRowBackground,
+    searchStyle, menuRowBackground, searchScope, searchCategoryFilter,
   } = data;
   const logo = data.logo || identityLogo || null;
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -62,6 +62,30 @@ export function NavigationBlock({ block, identityLogo }: {
 
   // Solid = not in transparent-over-hero state.
   const solid = !overlayHero || scrolled;
+  // Search target: only products -> the shop page; anything else -> /search.
+  const scope = searchScope?.length ? searchScope : ["products"];
+  const searchAction = scope.length === 1 && scope[0] === "products" ? "/shop" : "/search";
+  const [searchCats, setSearchCats] = useState<{ slug: string; name: string }[]>([]);
+  useEffect(() => {
+    if (!showSearch || !searchCategoryFilter) return;
+    import("@/lib/supabase/client").then(({ createClient }) => import("@/lib/tenant/client").then(({ getClientTenantId }) =>
+      getClientTenantId().then((tid) => {
+        if (!tid) return;
+        createClient().from("categories").select("slug, name").eq("tenant_id", tid).eq("type", "product").is("parent_id", null).order("order_index")
+          .then(({ data }) => setSearchCats(data ?? []));
+      })));
+  }, [showSearch, searchCategoryFilter]);
+  const searchExtras = (
+    <>
+      {searchAction === "/search" && <input type="hidden" name="in" value={scope.join(",")} />}
+      {searchCategoryFilter && searchCats.length > 0 && (
+        <select name="category" aria-label="Category" defaultValue="" className="max-w-[8.5rem] bg-transparent text-[0.8rem] outline-none border-l border-current/20 pl-2 opacity-80" style={{ color: "inherit" }}>
+          <option value="">All</option>
+          {searchCats.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+        </select>
+      )}
+    </>
+  );
   const logoH = logoHeight ?? 34;
   // "logo-center": logo sits in the middle of the top row, menu on its own
   // centered row underneath (desktop). Mobile keeps logo centered + toggle right.
@@ -147,16 +171,18 @@ export function NavigationBlock({ block, identityLogo }: {
         >
           {logoCenter && (showSearch ? searchStyle === "plain" ? (
             // Plain: magnifier + borderless field, no button (Enter searches).
-            <form action="/shop" role="search" className="hidden md:flex items-center max-w-[22rem] w-full gap-3">
-              <Search className="h-6 w-6 shrink-0" style={{ color: fg }} />
-              <input name="q" placeholder={searchPlaceholder || "Search products"} aria-label="Search products"
-                className="flex-1 min-w-0 bg-transparent text-[0.95rem] outline-none placeholder:opacity-80" style={{ color: fg }} />
+            <form action={searchAction} role="search" className="hidden md:flex items-center max-w-[24rem] w-full gap-3" style={{ color: fg }}>
+              <Search className="h-6 w-6 shrink-0" />
+              <input name="q" placeholder={searchPlaceholder || "Search"} aria-label="Search"
+                className="flex-1 min-w-0 bg-transparent text-[0.95rem] outline-none placeholder:opacity-80" />
+              {searchExtras}
             </form>
           ) : (
-            <form action="/shop" role="search" className="hidden md:flex items-center max-w-[24rem] w-full rounded-full bg-white border border-black/10 pl-4 pr-1 py-1 shadow-sm">
+            <form action={searchAction} role="search" className="hidden md:flex items-center max-w-[26rem] w-full rounded-full bg-white border border-black/10 pl-4 pr-1 py-1 shadow-sm text-neutral-800">
               <Search className="h-4 w-4 shrink-0 text-neutral-500" />
-              <input name="q" placeholder={searchPlaceholder || "Search products"} aria-label="Search products"
+              <input name="q" placeholder={searchPlaceholder || "Search"} aria-label="Search"
                 className="flex-1 min-w-0 bg-transparent px-2.5 text-[0.9rem] text-neutral-800 placeholder:text-neutral-500 outline-none" />
+              {searchExtras}
               <button className="rounded-full px-5 py-2 text-[0.78rem] font-semibold uppercase tracking-wide" style={{ background: BRAND_PRIMARY, color: "hsl(var(--primary-foreground))" }}>
                 {searchButtonLabel || "Search"}
               </button>
@@ -274,6 +300,13 @@ export function NavigationBlock({ block, identityLogo }: {
         <>
           <div className="md:hidden fixed inset-0 top-[4.5rem] bg-black/40 z-40 animate-in fade-in" onClick={() => setMobileOpen(false)} />
           <div className="md:hidden absolute left-0 right-0 top-full z-50 border-t border-border shadow-2xl animate-in slide-in-from-top-2 duration-200" style={{ backgroundColor: "hsl(var(--card))", color: "hsl(var(--card-foreground))" }}>
+            {showSearch && (
+              <form action={searchAction} role="search" className="mx-4 mt-4 flex items-center gap-2 rounded-full border border-border px-4 py-2">
+                <Search className="h-4 w-4 shrink-0 opacity-60" />
+                <input name="q" placeholder={searchPlaceholder || "Search"} aria-label="Search" className="flex-1 min-w-0 bg-transparent text-sm outline-none" />
+                {searchExtras}
+              </form>
+            )}
             <MobileNavList
               items={items}
               onNavigate={() => setMobileOpen(false)}

@@ -165,6 +165,24 @@ function StoreHeaderSettings({ block, update }: { block: NavigationBlockProps; u
             <option value="plain">Plain: icon + text</option>
           </select>
           <TextField label="Search placeholder" value={d.searchPlaceholder} onChange={(v) => update("searchPlaceholder", v)} placeholder="What are you looking for?" />
+          <div className="space-y-1">
+            <Label className="text-xs">Search in</Label>
+            {(["products", "categories", "pages", "posts"] as const).map((k) => {
+              const cur = d.searchScope?.length ? d.searchScope : ["products"];
+              return (
+                <label key={k} className="flex items-center gap-2 text-[11px] capitalize">
+                  <input type="checkbox" checked={cur.includes(k)} onChange={(e) => {
+                    const next = e.target.checked ? [...cur, k] : cur.filter((x) => x !== k);
+                    update("searchScope", next.length ? next : ["products"]);
+                  }} /> {k === "posts" ? "Blog posts" : k}
+                </label>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Category dropdown in the search box</Label>
+            <Switch checked={d.searchCategoryFilter ?? false} onCheckedChange={(v) => update("searchCategoryFilter", v)} />
+          </div>
           {(d.searchStyle ?? "pill") === "pill" && <TextField label="Search button text" value={d.searchButtonLabel} onChange={(v) => update("searchButtonLabel", v)} placeholder="Search" />}
         </>
       )}
