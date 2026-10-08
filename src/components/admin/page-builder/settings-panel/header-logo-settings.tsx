@@ -4,6 +4,7 @@ import React from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import type { HeaderLogoBlockProps } from "@/types/cms";
 
@@ -20,6 +21,16 @@ export function HeaderLogoSettings({ block }: { block: HeaderLogoBlockProps }) {
         <p className="text-[10px] text-muted-foreground">Leave empty to use your site's uploaded logo automatically.</p>
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={(url) => update("imageUrl", url)} />
       </div>
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Show business name beside logo</Label>
+        <Switch checked={!!block.data.showName} onCheckedChange={(v) => update("showName", v)} />
+      </div>
+      {block.data.showName && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Business name</Label>
+          <Input value={block.data.text ?? ""} onChange={(e) => update("text", e.target.value)} className="h-8 text-xs" />
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label className="text-xs">Height (px)</Label>
         <Input type="number" value={block.data.height ?? 34} onChange={(e) => update("height", Number(e.target.value))} className="h-8 text-xs" min={16} />

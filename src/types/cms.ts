@@ -401,6 +401,8 @@ export type HeaderLogoBlockProps = BlockBase & {
      *  same pattern the existing navigation block's data.logo already uses. */
     imageUrl?: string;
     imageDarkUrl?: string;
+    /** Show data.text as a wordmark beside an image logo (emblem-only logos). */
+    showName?: boolean;
     /** Shown when there is no uploaded logo at all (neither an override nor
      *  a tenant logo) — same BrandLogo coded-SVG fallback nav already uses. */
     text?: string;
@@ -817,6 +819,8 @@ export type FeaturesBlockProps = BlockBase & {
     columns: 2 | 3 | 4;
     items: FeatureItem[];
     style: "minimal" | "card" | "gradient";
+    /** alternating-media: show each image whole (no crop) at its natural height — for documents, certificates, tall photos. */
+    fullImage?: boolean;
     /** Showcase variants: small label above the title. */
     eyebrow?: string;
     /** Overview + Quote Card: chips under the text. */

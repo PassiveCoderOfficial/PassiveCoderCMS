@@ -16,7 +16,7 @@ export function HeaderBookingBlock({ block }: { block: HeaderBookingBlockProps }
     <Link
       href={data.url || "/book"}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 rounded-full font-semibold transition-opacity hover:opacity-90 shrink-0",
+        "inline-flex items-center justify-center gap-1.5 rounded-full font-semibold whitespace-nowrap transition-opacity hover:opacity-90 shrink-0",
         "px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm",
         data.variant === "outline" ? "border-2 border-primary text-primary" : "text-primary-foreground",
       )}

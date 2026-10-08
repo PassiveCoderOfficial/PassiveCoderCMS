@@ -171,7 +171,7 @@ function FeaturesAlternatingMedia({ data }: { data: FeaturesBlockProps["data"] }
           <div key={item.id} className={cn("flex flex-col gap-8 sm:flex-row sm:items-center", i % 2 === 1 && "sm:flex-row-reverse")}>
             {item.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <SiteImage src={item.imageUrl} alt={item.title} sizes="(min-width: 640px) 50vw, 100vw" className="w-full sm:w-1/2 h-60 object-cover rounded-2xl" />
+              <SiteImage src={item.imageUrl} alt={item.title} sizes="(min-width: 640px) 50vw, 100vw" className={cn("w-full sm:w-1/2 rounded-2xl", data.fullImage ? "h-auto object-contain shadow-md" : "h-60 object-cover")} />
             ) : (
               <div className="w-full sm:w-1/2 h-60 rounded-2xl bg-primary/5 flex items-center justify-center">
                 <DynIcon name={item.icon} className="h-12 w-12 text-primary/40" />

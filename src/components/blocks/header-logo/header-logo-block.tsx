@@ -53,7 +53,7 @@ export function HeaderLogoBlock({
             width={height * 3.4}
             height={height}
             style={{ height }}
-            className={cn("w-auto object-contain", logoDark && "dark:hidden")}
+            className={cn("w-auto object-contain shrink-0", logoDark && "dark:hidden")}
           />
           {logoDark && (
             <Image
@@ -62,8 +62,17 @@ export function HeaderLogoBlock({
               width={height * 3.4}
               height={height}
               style={{ height }}
-              className="w-auto object-contain hidden dark:block"
+              className="w-auto object-contain shrink-0 hidden dark:block"
             />
+          )}
+          {data.showName && data.text && (
+            // Wordmark for emblem-only logos. Heading font + primary colour so
+            // it follows the site theme; truncates instead of pushing the
+            // header row wider than the viewport on phones.
+            <span className="ml-2.5 min-w-0 truncate font-semibold leading-tight text-primary text-[15px] sm:text-lg max-w-[46vw] sm:max-w-none"
+              style={{ fontFamily: "var(--heading-font, inherit)" }}>
+              {data.text}
+            </span>
           )}
         </>
       ) : (

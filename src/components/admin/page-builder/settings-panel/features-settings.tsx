@@ -76,6 +76,10 @@ export function FeaturesSettings({ block }: { block: FeaturesBlockProps }) {
           <TextField label="Card text" value={card.text} onChange={x => setCard({ text: x })} multiline />
           <TextField label="Button text" value={card.buttonLabel} onChange={x => setCard({ buttonLabel: x })} placeholder="Quote on WhatsApp" />
           <div className="flex items-center justify-between">
+            <Label className="text-xs">Show full image (no crop)</Label>
+            <Switch checked={!!block.data.fullImage} onCheckedChange={v => update("fullImage", v)} />
+          </div>
+          <div className="flex items-center justify-between">
             <Label className="text-xs">Button opens WhatsApp</Label>
             <Switch checked={card.whatsapp ?? false} onCheckedChange={x => setCard({ whatsapp: x })} />
           </div>
