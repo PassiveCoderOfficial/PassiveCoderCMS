@@ -100,6 +100,16 @@ export function EcommerceProductsSettings({ block }: { block: EcommerceProductsB
         </Select>
       </div>
       <div>
+        <Label className="text-xs">Show</Label>
+        <select value={d.showAs ?? "products"} onChange={(e) => update("showAs", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2 mt-1">
+          <option value="products">Products</option>
+          <option value="categories">Categories as photo tiles (pick them under Categories)</option>
+        </select>
+        {d.showAs === "categories" && (
+          <Input value={d.categoryButtonLabel ?? ""} onChange={(e) => update("categoryButtonLabel", e.target.value)} className="h-8 text-xs mt-1.5" placeholder="Button text (Shop now; '-' hides it)" />
+        )}
+      </div>
+      <div>
         <Label className="text-xs">Heading style</Label>
         <select value={d.headingStyle ?? "default"} onChange={(e) => update("headingStyle", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2 mt-1">
           <option value="default">Large title</option>

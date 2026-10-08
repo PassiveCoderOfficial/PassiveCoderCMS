@@ -14,6 +14,7 @@ import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-
 import { productHtml, PRODUCT_HTML_CSS } from "@/lib/ecommerce/product-html";
 import { resolveExtended, type ProductExtended } from "@/lib/ecommerce/product-extended";
 import { ReviewForm } from "./review-form";
+import { ProductGallery } from "./product-gallery";
 import * as LucideIcons from "lucide-react";
 import React from "react";
 
@@ -241,18 +242,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               <span className="inline-block text-sm px-3 py-1.5 rounded-full bg-muted text-muted-foreground">{design.featuredBadge}</span>
             )}
             {images.length > 0 ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={images[0]} alt={product.name} className="w-full aspect-square object-contain" />
-                {images.length > 1 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {images.slice(1).map((img: string, i: number) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={img} alt={`${product.name} ${i + 2}`} className="aspect-square object-cover rounded border" />
-                    ))}
-                  </div>
-                )}
-              </>
+              <ProductGallery images={images} name={product.name} />
             ) : (
               <div className="w-full aspect-square bg-muted rounded-xl border flex items-center justify-center text-muted-foreground text-sm">No image</div>
             )}

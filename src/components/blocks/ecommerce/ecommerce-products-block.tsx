@@ -4,7 +4,7 @@ import type { EcommerceProductsBlockProps } from "@/types/cms";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ProductCard } from "./product-card";
+import { EcommerceProductsView, type CategoryTile } from "./ecommerce-products-view";
 import { ProductCardMinimal } from "./product-card-minimal";
 import { ProductCardWide } from "./product-card-wide";
 import { PRODUCT_CARD_SELECT, toProductCardData } from "@/lib/ecommerce/product-card-data";
@@ -64,156 +64,13 @@ export async function EcommerceProductsBlock({ block }: { block: EcommerceProduc
     );
   }
   const { data: products } = await productsQuery;
-
-  if (!products?.length) {
-    return (
-      <div className={cn("max-w-7xl mx-auto px-4", PADDING[sectionPadding])}>
-        {title && <h2 className={cn("text-3xl font-bold mb-10", ALIGN[titleAlignment])}>{title}</h2>}
-        <p className="text-center text-muted-foreground py-12">No products available.</p>
-      </div>
-    );
+  if (data.showAs === "categories") {
+    let cq = supabase.from("categories").select("id, name, slug, image_url").eq("type", "product").order("order_index");
+    if (tenantId) cq = cq.eq("tenant_id", tenantId);
+    if (selectedCategories.length) cq = cq.in("id", selectedCategories);
+    const { data: cats } = await cq;
+    const ordered = selectedCategories.length ? selectedCategories.map((id) => (cats ?? []).find((c) => c.id === id)).filter(Boolean) : cats ?? [];
+    return <EcommerceProductsView data={data} products={[]} categories={ordered as CategoryTile[]} />;
   }
-
-  const normalizedProducts = products.map(toProductCardData);
-
-  const colMap: Record<number, string> = {
-    2: "sm:grid-cols-2",
-    3: "sm:grid-cols-2 lg:grid-cols-3",
-    4: "sm:grid-cols-2 lg:grid-cols-4",
-    5: "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5",
-  };
-
-  const wrapStyle: React.CSSProperties = backgroundColor ? { backgroundColor } : {};
-
-  return (
-    <div style={wrapStyle} className={cn(PADDING[sectionPadding])}>
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Section header */}
-        {data.headingStyle === "compact" && (title || data.headerLink?.label) ? (
-          <div className={cn("mb-6", ALIGN[titleAlignment])}>
-            {title && <h2 className="text-[16px] uppercase tracking-wide font-normal m-0">{title}</h2>}
-            {subtitle && <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>}
-            {data.headerLink?.label && <Link href={data.headerLink.url || "/shop"} className="inline-block mt-3 text-[10px] uppercase underline underline-offset-2">{data.headerLink.label}</Link>}
-          </div>
-        ) : (title || subtitle) && (
-          <div className={cn("mb-10", ALIGN[titleAlignment])}>
-            {title && <h2 className="text-3xl font-bold tracking-tight">{title}</h2>}
-            {subtitle && <p className="text-muted-foreground mt-2 text-base">{subtitle}</p>}
-          </div>
-        )}
-
-        {/* ── Grid layout (default; also fallback for any unknown layout value) ── */}
-        {layout === "carousel" && (
-          <ProductCarousel perView={columns}>
-            {normalizedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} showAddToCart={showAddToCart} showDescription={showDescription}
-                showBadges={showBadges} cardStyle={cardStyle} imageRatio={imageRatio} />
-            ))}
-          </ProductCarousel>
-        )}
-
-        {(layout === "grid" || !["list", "featured", "minimal", "wide-cards", "carousel"].includes(layout)) && (
-          <div className={cn("grid grid-cols-1 gap-6", colMap[columns] ?? colMap[3])}>
-            {normalizedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                showAddToCart={showAddToCart}
-                showDescription={showDescription}
-                showBadges={showBadges}
-                cardStyle={cardStyle}
-                imageRatio={imageRatio}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* ── Wide cards (horizontal cards) ── */}
-        {layout === "wide-cards" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {normalizedProducts.map((product) => (
-              <ProductCardWide
-                key={product.id}
-                product={product}
-                showAddToCart={showAddToCart}
-                showDescription={showDescription}
-                cardStyle={cardStyle}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* ── List layout ── */}
-        {layout === "list" && (
-          <div className="flex flex-col divide-y border rounded-xl overflow-hidden">
-            {normalizedProducts.map((product) => (
-              <ProductCardWide
-                key={product.id}
-                product={product}
-                showAddToCart={showAddToCart}
-                showDescription={showDescription}
-                cardStyle="flat"
-                listMode
-              />
-            ))}
-          </div>
-        )}
-
-        {/* ── Featured layout (first item large, rest small) ── */}
-        {layout === "featured" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Hero card */}
-            <ProductCard
-              product={normalizedProducts[0]}
-              showAddToCart={showAddToCart}
-              showDescription={showDescription}
-              showBadges={showBadges}
-              cardStyle={cardStyle}
-              imageRatio="portrait"
-              featured
-            />
-            {/* Side grid */}
-            <div className="grid grid-cols-2 gap-4 content-start">
-              {normalizedProducts.slice(1).map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  showAddToCart={showAddToCart}
-                  showDescription={false}
-                  showBadges={showBadges}
-                  cardStyle={cardStyle}
-                  imageRatio="square"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Minimal layout (name + price row, no image frame) ── */}
-        {layout === "minimal" && (
-          <div className={cn("grid grid-cols-1 gap-3", colMap[columns] ?? colMap[3])}>
-            {normalizedProducts.map((product) => (
-              <ProductCardMinimal
-                key={product.id}
-                product={product}
-                showAddToCart={showAddToCart}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* CTA */}
-        {ctaLabel && ctaUrl && (
-          <div className={cn("mt-10", ALIGN[titleAlignment])}>
-            <Link
-              href={ctaUrl}
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              {ctaLabel} →
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <EcommerceProductsView data={data} products={(products ?? []).map(toProductCardData)} />;
 }

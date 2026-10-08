@@ -1,5 +1,6 @@
 "use client";
 
+import { EcommerceProductsPreview } from "@/components/blocks/ecommerce/ecommerce-products-preview";
 import React from "react";
 import { HeaderBookingBlock } from "@/components/blocks/header-booking/header-booking-block";
 import { cn } from "@/lib/utils";
@@ -158,7 +159,7 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
       case "blog":
         return <DataBlockPlaceholder icon={BookOpen} label="Blog Posts Block — live data in preview" />;
       case "ecommerce_products":
-        return <DataBlockPlaceholder icon={ShoppingBag} label="Products Block — live data in preview" />;
+        return <EcommerceProductsPreview block={block as import("@/types/cms").EcommerceProductsBlockProps} />;
       case "accounting_feed":
         return <DataBlockPlaceholder icon={Heart} label="Donation / Transaction Feed — live data in preview" />;
       default:

@@ -17,6 +17,7 @@ import CtaSection from "@/components/marketing/cta";
 import FooterSection from "@/components/marketing/footer";
 import AnnouncementBar from "@/components/marketing/announcement-bar";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { SiteHeaderChrome } from "@/components/site/site-header-chrome";
 import { fetchGlobalLayout, withPrefooter, isChromeBlock } from "@/lib/site/global-blocks";
 import { fetchPublishedTemplates } from "@/lib/templates/published-templates";
 import { DonorSiteHeader } from "@/components/donors/donor-site-header";
@@ -142,7 +143,7 @@ export default async function MarketingHomePage() {
               <LocationConsent />
               <PushConsent />
             </>
-          ) : globalHeader.length > 0 && <PageRenderer blocks={globalHeader} />}
+          ) : globalHeader.length > 0 && <SiteHeaderChrome blocks={globalHeader} />}
           {(() => { const faq = faqJsonLd(body); return faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(faq) }} />; })()}
           <PageRenderer blocks={body} />
           {globalFooter.length > 0 && <PageRenderer blocks={globalFooter} />}

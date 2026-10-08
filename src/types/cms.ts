@@ -655,6 +655,9 @@ export type EcommerceProductsBlockProps = BlockBase & {
     headingStyle?: "default" | "compact";
     /** Underlined link under a compact title (e.g. SHOP NOW). */
     headerLink?: { label?: string; url?: string };
+    /** "categories": show the chosen categories as photo tiles (name under the photo, Shop now button). */
+    showAs?: "products" | "categories";
+    categoryButtonLabel?: string;
   };
 };
 

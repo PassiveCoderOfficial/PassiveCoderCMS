@@ -11,6 +11,7 @@ import { buildTemplateBodyScript } from "@/modules/themes/template-css";
 import { buildSiteTheme } from "@/modules/themes/site-theme";
 import Script from "next/script";
 import { PageRenderer } from "@/components/site/page-renderer";
+import { SiteHeaderChrome } from "@/components/site/site-header-chrome";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { CartDrawer } from "@/components/site/cart-drawer";
 import { MaintenanceScreen } from "@/components/site/maintenance-screen";
@@ -274,9 +275,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       ) : globalHeader.length > 0 ? (
         // display:contents keeps a sticky nav sticky; the attribute lets a
         // translated page (seo.lang) swap in its own localized chrome.
-        <div data-site-chrome="header" style={{ display: "contents" }}>
-          <PageRenderer blocks={globalHeader} />
-        </div>
+        <SiteHeaderChrome blocks={globalHeader} />
       ) : null}
 
       {/* Business + website structured data for search and AI answer engines. */}
