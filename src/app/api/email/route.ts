@@ -27,7 +27,8 @@ export async function GET() {
   if ("error" in c) return c.error;
   if (!c.domain) return NextResponse.json({ domain: null });
   const s = c.settings;
-  const provider = (s?.provider ?? null) as Provider | null;
+  // Zoho is the default choice until the owner picks another provider.
+  const provider = (s?.provider ?? "zoho") as Provider;
   const forwards = cleanForwards(s?.forwards);
   const mail = requiredRecords(c.domain, provider, forwards, (s?.dkim as { name: string; value: string }[]) ?? [],
     { verification: (s?.provider_verification as string | null) ?? null, zohoRegion: ((s?.zoho_region as ZohoRegion) ?? "com") });
