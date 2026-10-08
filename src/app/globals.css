@@ -317,3 +317,6 @@ html {
    own position: sticky is relative to the page, not a box its own height. */
 [data-site-chrome="header"] > [data-pc-block="navigation"],
 [data-site-chrome="header"] > [data-pc-block="navigation"] > div { display: contents; }
+/* Body is h-full (dashboard panes need it), which ends a sticky header after
+   one screen. Site pages let the body grow with the content instead. */
+body:has([data-site-chrome="header"]) { height: auto; min-height: 100%; }
