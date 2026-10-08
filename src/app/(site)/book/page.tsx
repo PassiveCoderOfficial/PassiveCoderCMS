@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { createBlock } from "@/modules/page-builder/block-registry";
 import type { Block } from "@/types/cms";
+import { getFallbackHeader } from "@/lib/site/fallback-header";
 
 export const dynamic = "force-dynamic";
 
@@ -22,14 +23,15 @@ export default async function BookPage() {
   const tenantId = (await headers()).get("x-tenant-id");
   if (!tenantId) notFound();
   const admin = await createAdminClient();
-  const [{ data: custom }, { data: settings }] = await Promise.all([
+  const [{ data: custom }, { data: settings }, header] = await Promise.all([
     admin.from("pages").select("blocks").eq("tenant_id", tenantId).eq("slug", "book").eq("status", "published").is("deleted_at", null).maybeSingle(),
     admin.from("booking_settings").select("enabled, service_name").eq("tenant_id", tenantId).maybeSingle(),
+    getFallbackHeader(admin, tenantId),
   ]);
 
   if (custom?.blocks && (custom.blocks as Block[]).length) {
     const blocks = (custom.blocks as Block[]).filter((b) => b.type !== "navigation" && b.type !== "footer");
-    return <div className="min-h-screen"><PageRenderer blocks={blocks} /></div>;
+    return <div className="min-h-screen"><PageRenderer blocks={[...header, ...blocks]} /></div>;
   }
   if (!settings?.enabled) notFound();
 
@@ -42,5 +44,5 @@ export default async function BookPage() {
   } as typeof booking.data;
   booking.padding = { top: 96, bottom: 96, left: 16, right: 16 } as typeof booking.padding;
 
-  return <div className="min-h-[70vh]"><PageRenderer blocks={[booking]} /></div>;
+  return <div className="min-h-[70vh]"><PageRenderer blocks={[...header, { ...booking, order: 1 }]} /></div>;
 }

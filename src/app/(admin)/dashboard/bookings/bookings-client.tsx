@@ -20,6 +20,7 @@ interface BookingSettings {
   confirmation_mode: "auto" | "manual";
   success_message: string;
   notify_email: string | null;
+  contact_requirement: "either" | "both";
 }
 
 interface Availability {
@@ -42,7 +43,7 @@ interface Appointment {
   start_time: string;
   end_time: string;
   customer_name: string;
-  customer_email: string;
+  customer_email: string | null;
   customer_phone: string | null;
   message: string | null;
   status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
@@ -76,12 +77,14 @@ function SettingsTab({ settings: initial, onSave }: {
   onSave: (s: BookingSettings) => void;
 }) {
   const t = useT();
-  const [s, setS] = useState<BookingSettings>(initial ?? {
+  const [s, setS] = useState<BookingSettings>({
     enabled: false, service_name: "Appointment",
     slot_duration_mins: 60, buffer_mins: 15, advance_days: 30,
     min_notice_hours: 2, confirmation_mode: "manual",
     success_message: "Your appointment request has been received!",
     notify_email: null,
+    contact_requirement: "either",
+    ...(initial ?? {}),
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -152,6 +155,18 @@ function SettingsTab({ settings: initial, onSave }: {
               <label key={mode} className="flex items-center gap-2 cursor-pointer">
                 <input type="radio" value={mode} checked={s.confirmation_mode === mode} onChange={() => set("confirmation_mode", mode)} className="w-4 h-4" />
                 <span className="text-sm text-foreground/80">{mode === "auto" ? t("bookings.modeAuto") : t("bookings.modeManual")} — {mode === "auto" ? t("bookings.modeAutoHint") : t("bookings.modeManualHint")}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">{t("bookings.requiredContact")}</label>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {(["either", "both"] as const).map(req => (
+              <label key={req} className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" value={req} checked={s.contact_requirement === req} onChange={() => set("contact_requirement", req)} className="w-4 h-4" />
+                <span className="text-sm text-foreground/80">{req === "either" ? t("bookings.contactEither") : t("bookings.contactBoth")}</span>
               </label>
             ))}
           </div>
@@ -317,7 +332,7 @@ function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: 
             <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(appt.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{appt.start_time} – {appt.end_time}</span>
-              <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{appt.customer_email}</span>
+              {appt.customer_email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{appt.customer_email}</span>}
               {appt.customer_phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{appt.customer_phone}</span>}
             </div>
           </div>

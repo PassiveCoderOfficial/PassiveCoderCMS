@@ -69,8 +69,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
 
-  const { slots, error } = await computeSlots(tenantId, date);
-  return NextResponse.json({ slots, ...(error ? { error } : {}) });
+  const [{ slots, error }, contactRequirement] = await Promise.all([
+    computeSlots(tenantId, date),
+    getContactRequirement(tenantId),
+  ]);
+  return NextResponse.json({ slots, contactRequirement, ...(error ? { error } : {}) });
+}
+
+type ContactRequirement = "either" | "both";
+
+async function getContactRequirement(tenantId: string): Promise<ContactRequirement> {
+  const supabase = await createAdminClient();
+  const { data } = await supabase.from("booking_settings")
+    .select("contact_requirement").eq("tenant_id", tenantId).maybeSingle();
+  return data?.contact_requirement === "both" ? "both" : "either";
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Email OR phone by default; both when the site requires it. */
+function contactError(req: ContactRequirement, email: string, phone: string): string | null {
+  if (email && !EMAIL_RE.test(email)) return "Please enter a valid email address";
+  if (phone && phone.replace(/\D/g, "").length < 6) return "Please enter a valid phone / WhatsApp number";
+  if (req === "both" && (!email || !phone)) return "Please enter both your email and phone / WhatsApp number";
+  if (!email && !phone) return "Please enter your email or phone / WhatsApp number";
+  return null;
 }
 
 /** POST — create an appointment from the public widget. */
@@ -79,10 +102,14 @@ export async function POST(req: NextRequest) {
   if (!tenantId) return NextResponse.json({ error: "Tenant not resolved" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
-  const { date, start, name, email, phone, message } = body ?? {};
-  if (!date || !start || !name?.trim() || !email?.trim()) {
+  const { date, start, name, message } = body ?? {};
+  const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+  const phone = typeof body?.phone === "string" ? body.phone.trim() : "";
+  if (!date || !start || !name?.trim()) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+  const contactErr = contactError(await getContactRequirement(tenantId), email, phone);
+  if (contactErr) return NextResponse.json({ error: contactErr }, { status: 400 });
 
   // Server-side slot validation — never trust the widget
   const { slots, error } = await computeSlots(tenantId, date);
@@ -104,8 +131,8 @@ export async function POST(req: NextRequest) {
       start_time: slot.start,
       end_time: slot.end,
       customer_name: name.trim(),
-      customer_email: email.trim().toLowerCase(),
-      customer_phone: phone?.trim() || null,
+      customer_email: email || null,
+      customer_phone: phone || null,
       message: message?.trim() || null,
       status,
     })
@@ -117,8 +144,8 @@ export async function POST(req: NextRequest) {
   // CRM: booking auto-creates/updates a contact with a timeline event
   await upsertContact({
     tenantId,
-    email,
-    phone,
+    email: email || undefined,
+    phone: phone || undefined,
     name,
     source: "booking",
     event: {
@@ -137,7 +164,8 @@ export async function POST(req: NextRequest) {
       text: [
         `Service: ${settings.service_name ?? "Appointment"}`,
         `When: ${date} ${slot.start}–${slot.end}`,
-        `Name: ${name}`, `Email: ${email}`,
+        `Name: ${name}`,
+        email ? `Email: ${email}` : null,
         phone ? `Phone: ${phone}` : null,
         message ? `Message: ${message}` : null,
         `Status: ${status}`,
@@ -145,8 +173,8 @@ export async function POST(req: NextRequest) {
     }).catch(() => null);
   }
 
-  // Confirmation to the customer
-  sendEmail({
+  // Confirmation to the customer (phone-only bookings get none).
+  if (email) sendEmail({
     ...(await getSiteSender(tenantId)),
     to: email,
     subject: status === "confirmed"
@@ -165,5 +193,6 @@ export async function POST(req: NextRequest) {
     ok: true,
     status,
     message: settings?.success_message ?? "Your appointment request has been received!",
+    emailed: !!email,
   });
 }

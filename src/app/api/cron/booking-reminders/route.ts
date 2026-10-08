@@ -23,6 +23,7 @@ async function handle(authorized: boolean) {
     .eq("date", date)
     .eq("status", "confirmed")
     .is("reminder_sent_at", null)
+    .not("customer_email", "is", null) // phone-only bookings have no email to remind
     .limit(200);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

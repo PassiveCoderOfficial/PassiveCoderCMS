@@ -38,8 +38,10 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<string | null>(null);
+  const [done, setDone] = useState<{ message: string; emailed: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Site setting: "either" = email or phone, "both" = both required.
+  const [contactReq, setContactReq] = useState<"either" | "both">("either");
 
   const loadSlots = useCallback(async (date: string) => {
     setLoadingSlots(true);
@@ -48,6 +50,7 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
       const res = await fetch(`/api/bookings/public?date=${date}`);
       const d = await res.json();
       setSlots(res.ok ? d.slots ?? [] : []);
+      if (d.contactRequirement === "both" || d.contactRequirement === "either") setContactReq(d.contactRequirement);
     } catch {
       setSlots([]);
     }
@@ -70,6 +73,10 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedSlot) return;
+    if (contactReq === "either" && !form.email.trim() && !form.phone.trim()) {
+      setError("Please enter your email or phone / WhatsApp number.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -83,7 +90,7 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
         setError(d.error ?? "Something went wrong — please try again.");
         if (res.status === 409) loadSlots(selectedDate);
       } else {
-        setDone(d.message ?? "Your appointment request has been received!");
+        setDone({ message: d.message ?? "Your appointment request has been received!", emailed: d.emailed !== false });
       }
     } catch {
       setError("Something went wrong — please try again.");
@@ -95,8 +102,10 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
     return (
       <div className="max-w-xl mx-auto text-center py-12 flex flex-col items-center gap-3">
         <CheckCircle className="w-12 h-12" style={{ color: accent }} />
-        <p className="font-semibold text-lg">{done}</p>
-        <p className="text-sm text-muted-foreground">A confirmation email is on its way to you.</p>
+        <p className="font-semibold text-lg">{done.message}</p>
+        <p className="text-sm text-muted-foreground">
+          {done.emailed ? "A confirmation email is on its way to you." : "We will contact you on the number you gave us."}
+        </p>
       </div>
     );
   }
@@ -165,15 +174,17 @@ export function BookingBlock({ block }: { block: BookingBlockProps }) {
             <input required placeholder="Your name" value={form.name}
               onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <input required type="email" placeholder="Email" value={form.email}
+            <input required={contactReq === "both"} type="email" placeholder={contactReq === "both" ? "Email" : "Email (or phone)"} value={form.email}
               onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
-          {data.showPhone && (
-            <input placeholder="Phone / WhatsApp" value={form.phone}
-              onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-          )}
+          {/* Always shown: phone can be the only contact the customer gives. */}
+          <input required={contactReq === "both"} type="tel" placeholder={contactReq === "both" ? "Phone / WhatsApp" : "Phone / WhatsApp (or email)"} value={form.phone}
+            onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          <p className="text-xs text-muted-foreground -mt-1">
+            {contactReq === "both" ? "Email and phone / WhatsApp are both required." : "Give us an email or a phone / WhatsApp number, at least one."}
+          </p>
           {data.showMessage && (
             <textarea rows={3} placeholder="Anything we should know?" value={form.message}
               onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))}
