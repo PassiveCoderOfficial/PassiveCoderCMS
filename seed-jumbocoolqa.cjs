@@ -495,6 +495,13 @@ const BRANDS = [
   { name: "DynaFlo", line: "Refrigerant gas", url: "/shop?q=dynaflo", cta: "View products" },
   { name: "Total", line: "Tools", url: waText("Hi Jumbo Cool, which Total tools do you have in stock?"), cta: "Ask availability" },
   { name: "Galaxy", line: "Refrigerant gas", url: waText("Hi Jumbo Cool, do you have Galaxy refrigerant in stock?"), cta: "Ask availability" },
+  { name: "Honeywell", line: "Genetron refrigerant", url: "/shop?q=honeywell", cta: "View products" },
+  { name: "Refron", line: "Refrigerant gas", url: "/shop?q=refron", cta: "View products" },
+  { name: "Vertron", line: "Refrigerant gas", url: "/shop?q=vertron", cta: "View products" },
+  { name: "Danfoss", line: "Compressors", url: "/shop?q=danfoss", cta: "View products" },
+  { name: "Bristol", line: "Compressors", url: "/shop?q=bristol", cta: "View products" },
+  { name: "Midea", line: "Air conditioners", url: "/shop?q=midea", cta: "View products" },
+  { name: "Bitop Chem", line: "AC cleaning", url: "/shop?q=bitop", cta: "View products" },
 ];
 
 function brandTiles({ heading = "", bg = SURFACE } = {}) {
@@ -645,9 +652,9 @@ function galleryPage() {
       img: "hero-gallery", compact: true,
     }),
     gallery(
-      ["shop-front", "shop-inside", "shop-shelves", "shop-copper-racks", "p-floron-r410a", "p-compressors"],
+      ["shop-front", "shop-inside", "shop-tools-wall-1", "shop-tools-wall-2", "shop-shelves-2", "p-capacitors-shelf", "p-copper-coils-2", "p-floron-r410a", "p-compressors"],
       "Our Shop in Najma", SURFACE,
-      ["Shop front, Najma Souq Al Haraj", "Inside the shop", "Tools and parts wall", "Copper coils on the racks", "Refrigerant gas", "Compressors"],
+      ["Shop front, Najma Souq Al Haraj", "Inside the shop", "Tools wall", "Hand tools and gauges", "Parts and consumables", "Capacitors", "Copper coils", "Refrigerant gas", "Compressors"],
     ),
     gallery(
       ["svc-maint-2", "svc-pcb-1", "svc-rewinding-1", "cat-copper", "svc-bearing-2", "svc-pcb-3", "svc-ac-sales-1", "svc-rewinding-3"],
@@ -953,7 +960,7 @@ async function run() {
     site_description: SEO_DESC,
     meta_title: `${LEGAL_NAME} | AC Spare Parts, Compressors, Motors & Refrigeration Components in Qatar`,
     meta_description: SEO_DESC,
-    site_url: `https://${SLUG}.passivecoder.com`, timezone: "Asia/Qatar", language: "en", maintenance_mode: false,
+    site_url: "https://jumbocoolqa.com", timezone: "Asia/Qatar", language: "en", maintenance_mode: false,
     site_theme: "dark",
     currency: "QAR", currency_symbol: "QAR", currency_position: "before",
     logo_url: LOGO_PLATE, favicon_url: FAVICON, updated_at: now,
