@@ -320,3 +320,21 @@ html {
 /* Body is h-full (dashboard panes need it), which ends a sticky header after
    one screen. Site pages let the body grow with the content instead. */
 body:has([data-site-chrome="header"]) { height: auto; min-height: 100%; }
+
+/* ── Block Style: typography & alignment (block-utils getBlockWrapperStyle) ──
+   Overrides whatever sizes/alignment a block variant hard-codes, so one set of
+   controls works on every block. h1/h2 = section heading, h3/h4 = card titles. */
+.pc-hf :is(h1, h2, h3, h4) { font-family: var(--pc-hf) !important; }
+.pc-h2 :is(h1, h2) { font-size: var(--pc-h2) !important; line-height: 1.15 !important; }
+.pc-h3 :is(h3, h4) { font-size: var(--pc-h3) !important; line-height: 1.25 !important; }
+.pc-tx :is(p, li, dd) { font-size: var(--pc-tx) !important; }
+.pc-tt :is(h3, h4) { text-transform: var(--pc-tt) !important; }
+.pc-al-left :is(h1, h2), .pc-al-left :is(h1, h2) ~ p { text-align: left !important; margin-left: 0 !important; margin-right: auto !important; }
+.pc-al-center :is(h1, h2), .pc-al-center :is(h1, h2) ~ p, .pc-al-center :is(h1, h2) + * > p { text-align: center !important; margin-left: auto !important; margin-right: auto !important; }
+.pc-al-right :is(h1, h2), .pc-al-right :is(h1, h2) ~ p { text-align: right !important; margin-left: auto !important; margin-right: 0 !important; }
+.pc-al-left :has(> h2), .pc-al-left :has(> div > h2) { text-align: left !important; justify-content: flex-start !important; }
+.pc-al-center :has(> h2), .pc-al-center :has(> div > h2) { text-align: center !important; justify-content: center !important; }
+.pc-al-right :has(> h2), .pc-al-right :has(> div > h2) { text-align: right !important; justify-content: flex-end !important; }
+.pc-ca-left :has(> :is(h3, h4)) { text-align: left !important; align-items: flex-start !important; }
+.pc-ca-center :has(> :is(h3, h4)) { text-align: center !important; align-items: center !important; }
+.pc-ca-right :has(> :is(h3, h4)) { text-align: right !important; align-items: flex-end !important; }

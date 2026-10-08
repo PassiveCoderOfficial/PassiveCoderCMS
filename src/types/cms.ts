@@ -143,6 +143,19 @@ export type BlockStyle = {
   /** Vertical padding overrides for smaller screens (px). Unset = desktop value. */
   paddingTablet?: { top?: number; bottom?: number };
   paddingMobile?: { top?: number; bottom?: number };
+  /** Typography & alignment, applied to whatever the block renders (see
+   *  .pc-ty rules in globals.css), so every block type gets them for free. */
+  /** Section heading + intro alignment. */
+  align?: "left" | "center" | "right";
+  /** Text alignment inside each card/item (anything holding an h3/h4). */
+  cardAlign?: "left" | "center" | "right";
+  /** Google font for headings in this section (FONT_OPTIONS name). */
+  headingFont?: string;
+  /** px sizes; unset = the block's own size. */
+  headingSize?: number;
+  cardTitleSize?: number;
+  textSize?: number;
+  cardTitleCase?: "none" | "uppercase" | "capitalize";
 };
 
 export type BlockBackground = {

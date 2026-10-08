@@ -114,9 +114,9 @@ export function ServicesPhotoCards({ data }: { data: D }) {
                 <img src={item.imageUrl} alt={item.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
               )}
               <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.45) 35%, transparent 62%)" }} />
-              <span className="absolute inset-x-4 bottom-4 z-[1] text-white">
+              <span className="absolute inset-x-4 bottom-4 z-[1] text-white flex flex-col">
                 {item.kicker && <small className="block text-[10px] font-bold uppercase tracking-[.16em] sc-accent mb-1">{item.kicker}</small>}
-                <b className="text-lg font-extrabold leading-tight" style={{ fontFamily: "var(--heading-font)" }}>{item.title}</b>
+                <h3 className="m-0 text-lg font-extrabold leading-tight" style={{ fontFamily: "var(--heading-font)" }}>{item.title}</h3>
               </span>
             </>
           );

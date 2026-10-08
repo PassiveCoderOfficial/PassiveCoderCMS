@@ -163,6 +163,15 @@ export function getBlockWrapperStyle(block: Block): { style: React.CSSProperties
     style.justifyContent = st.verticalAlign === "bottom" ? "flex-end" : st.verticalAlign === "top" ? "flex-start" : "center";
   }
 
+  // Typography & alignment — CSS variables + marker classes, rules in globals.css.
+  if (st.align) classes.push(`pc-al-${st.align}`);
+  if (st.cardAlign) classes.push(`pc-ca-${st.cardAlign}`);
+  if (st.headingFont) { style["--pc-hf"] = `"${st.headingFont}", var(--heading-font, inherit)`; classes.push("pc-hf"); }
+  if (st.headingSize) { style["--pc-h2"] = `${st.headingSize}px`; classes.push("pc-h2"); }
+  if (st.cardTitleSize) { style["--pc-h3"] = `${st.cardTitleSize}px`; classes.push("pc-h3"); }
+  if (st.textSize) { style["--pc-tx"] = `${st.textSize}px`; classes.push("pc-tx"); }
+  if (st.cardTitleCase) { style["--pc-tt"] = st.cardTitleCase; classes.push("pc-tt"); }
+
   return { style: style as React.CSSProperties, className: classes.join(" ") };
 }
 

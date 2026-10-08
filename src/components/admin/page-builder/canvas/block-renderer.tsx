@@ -60,6 +60,7 @@ import { HeaderNavBlock } from "@/components/blocks/header-nav/header-nav-block"
 import { HeaderCtaBlock } from "@/components/blocks/header-cta/header-cta-block";
 import { HeaderCartBlock } from "@/components/blocks/header-cart/header-cart-block";
 import { HeaderAccountBlock } from "@/components/blocks/header-account/header-account-block";
+import { googleFontsHref } from "@/modules/themes/fonts";
 import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
 import type { ContainerPath } from "@/lib/store/builder";
@@ -173,6 +174,9 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
 
   return (
     <div style={{ ...bgStyle, ...wrapStyle }} className={cn("w-full", bgClassName, wrapClassName)}>
+      {block.style?.headingFont && googleFontsHref([block.style.headingFont]) && (
+        <link rel="stylesheet" href={googleFontsHref([block.style.headingFont])!} precedence="pc-block-font" />
+      )}
       <div className={cn("w-full", getContainerClass(block.width))}>{renderBlock()}</div>
     </div>
   );

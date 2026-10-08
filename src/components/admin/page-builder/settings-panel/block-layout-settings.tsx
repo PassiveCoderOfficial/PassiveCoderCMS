@@ -1,5 +1,7 @@
 "use client";
 
+import { AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { FONT_OPTIONS } from "@/modules/themes/fonts";
 import React from "react";
 import { useBuilderStore } from "@/lib/store/builder";
 import { Label } from "@/components/ui/label";
@@ -252,6 +254,66 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
               </SelectContent>
             </Select>
           </div>
+        </div>
+      </div>
+
+      {/* Typography & alignment — shared by every block (globals.css .pc-* rules) */}
+      <div className="space-y-3 border-t pt-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs font-semibold">Typography &amp; alignment</Label>
+          {(st.align || st.cardAlign || st.headingFont || st.headingSize || st.cardTitleSize || st.textSize || st.cardTitleCase) && (
+            <button type="button" className="text-[10px] text-muted-foreground underline"
+              onClick={() => updateStyle({ align: undefined, cardAlign: undefined, headingFont: undefined, headingSize: undefined, cardTitleSize: undefined, textSize: undefined, cardTitleCase: undefined })}>reset</button>
+          )}
+        </div>
+        {([["align", "Section heading"], ["cardAlign", "Inside cards"]] as const).map(([key, label]) => (
+          <div key={key} className="flex items-center justify-between gap-2">
+            <Label className="text-[11px] text-muted-foreground">{label}</Label>
+            <div className="flex rounded-md border overflow-hidden">
+              {(["left", "center", "right"] as const).map((a) => {
+                const Icon = a === "left" ? AlignLeft : a === "center" ? AlignCenter : AlignRight;
+                const on = st[key] === a;
+                return (
+                  <button key={a} type="button" title={a} onClick={() => updateStyle({ [key]: on ? undefined : a })}
+                    className={`h-7 w-8 flex items-center justify-center ${on ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+                    <Icon className="h-3.5 w-3.5" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Heading font</Label>
+          <Select value={st.headingFont ?? "__site"} onValueChange={(v) => updateStyle({ headingFont: v === "__site" ? undefined : v })}>
+            <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__site" className="text-xs">Site default</SelectItem>
+              {FONT_OPTIONS.map((f) => <SelectItem key={f.name} value={f.name} className="text-xs">{f.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {([["headingSize", "Heading px", 14, 96], ["cardTitleSize", "Card title px", 10, 48], ["textSize", "Text px", 10, 28]] as const).map(([key, label, min, max]) => (
+            <div key={key}>
+              <Label className="text-[10px] text-muted-foreground">{label}</Label>
+              <Input type="number" min={min} max={max} placeholder="auto" value={st[key] ?? ""}
+                onChange={(e) => { const n = Number(e.target.value); updateStyle({ [key]: n ? Math.min(max, Math.max(min, n)) : undefined }); }}
+                className="h-7 text-xs" />
+            </div>
+          ))}
+        </div>
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Card title case</Label>
+          <Select value={st.cardTitleCase ?? "__auto"} onValueChange={(v) => updateStyle({ cardTitleCase: v === "__auto" ? undefined : v as BlockStyle["cardTitleCase"] })}>
+            <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__auto" className="text-xs">As designed</SelectItem>
+              <SelectItem value="none" className="text-xs">Normal</SelectItem>
+              <SelectItem value="uppercase" className="text-xs">UPPERCASE</SelectItem>
+              <SelectItem value="capitalize" className="text-xs">Capitalize Each Word</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

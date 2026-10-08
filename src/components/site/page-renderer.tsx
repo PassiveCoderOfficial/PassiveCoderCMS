@@ -63,6 +63,7 @@ import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
 import { DonorRequestsBlock } from "@/components/blocks/donors/donor-requests-block";
 import { ContainerBlock } from "@/components/blocks/container/container-block";
+import { googleFontsHref } from "@/modules/themes/fonts";
 import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 
@@ -201,9 +202,15 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
   if (!content) return null;
 
   return (
+    <>
+    {block.style?.headingFont && googleFontsHref([block.style.headingFont]) && (
+      // React hoists <link precedence> into <head> once per href.
+      <link rel="stylesheet" href={googleFontsHref([block.style.headingFont])!} precedence="pc-block-font" />
+    )}
     <div data-pc-block={block.type} id={block.anchor || undefined} style={{ ...bgStyle, ...wrapStyle, ...(block.anchor ? { scrollMarginTop: 110 } : {}) }} className={cn("w-full", bgClassName, wrapClassName, hideOnClasses(block.hideOn))}>
       <div className={nested ? "w-full" : cn("w-full", getContainerClass(block.width))}>{content}</div>
     </div>
+    </>
   );
 }
 
