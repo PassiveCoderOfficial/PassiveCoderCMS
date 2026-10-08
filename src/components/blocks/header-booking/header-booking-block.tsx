@@ -15,9 +15,10 @@ export function HeaderBookingBlock({ block }: { block: HeaderBookingBlockProps }
   return (
     <Link
       href={data.url || "/book"}
+      aria-label={data.label || "Book now"}
       className={cn(
         "inline-flex items-center justify-center gap-1.5 rounded-full font-semibold whitespace-nowrap transition-opacity hover:opacity-90 shrink-0",
-        "px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm",
+        "px-2.5 py-2 min-[420px]:px-3 min-[420px]:py-1.5 text-xs md:px-4 md:py-2 md:text-sm",
         data.variant === "outline" ? "border-2 border-primary text-primary" : "text-primary-foreground",
       )}
       style={data.variant === "solid"
@@ -26,8 +27,10 @@ export function HeaderBookingBlock({ block }: { block: HeaderBookingBlockProps }
           ? undefined
           : { backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))" }}
     >
-      <CalendarCheck className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden />
-      {data.label || "Book now"}
+      <CalendarCheck className="w-4 h-4" aria-hidden />
+      {/* Icon-only on narrow phones: logo + wordmark + hamburger + a full
+          label pill overflowed a 390px header row. */}
+      <span className="hidden min-[420px]:inline">{data.label || "Book now"}</span>
     </Link>
   );
 }
