@@ -1,4 +1,5 @@
 import React from "react";
+import { WIDE_COLS } from "./wide-cols";
 import type { ServicesBlockProps, ServiceItem } from "@/types/cms";
 import Link from "next/link";
 import Image from "@/components/ui/smart-image";
@@ -65,7 +66,7 @@ function ServiceIcon({ item, size = "md" }: { item: ServiceItem; size?: "sm" | "
 // ─── Variant: icon-cards-grid ──────────────────────────────────────────────
 // White cards, top border accent, icon + title + description + price + link
 function ServicesIconCardsGrid({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "md:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "md:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
@@ -99,7 +100,7 @@ function ServicesIconCardsGrid({ data }: { data: ServicesBlockProps["data"] }) {
 // ─── Variant: image-cards-dark ────────────────────────────────────────────
 // Dark cards with top image, gold title — luxury / spa aesthetic
 function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "md:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "md:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
@@ -170,7 +171,7 @@ function ServicesBorderedList({ data }: { data: ServicesBlockProps["data"] }) {
 // ─── Variant: dark-grid-cards ──────────────────────────────────────────────
 // Dark bg cards with lucide icons, gradient icon bg — tech/agency
 function ServicesDarkGridCards({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-3" }[data.columns] ?? "md:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-3" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "md:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
@@ -202,7 +203,7 @@ function ServicesDarkGridCards({ data }: { data: ServicesBlockProps["data"] }) {
 // ─── Variant: menu-cards ────────────────────────────────────────────────────
 // Food menu style — image top, category label, price — restaurant
 function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "md:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "md:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
@@ -240,7 +241,7 @@ function ServicesMenuCards({ data }: { data: ServicesBlockProps["data"] }) {
 // Framed photo tiles, title with a small arrow chip underneath. The whole
 // tile links when an item has a link. Editorial / real estate.
 function ServicesImageTiles({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-2 lg:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "sm:grid-cols-2 lg:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
@@ -281,7 +282,7 @@ function ServicesImageTiles({ data }: { data: ServicesBlockProps["data"] }) {
 // ─── Variant: program-cards-dark ──────────────────────────────────────────
 // Dark cards with top image, orange accents, bold title — gym
 function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "md:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "md:grid-cols-3";
   return (
     <div className="max-w-7xl mx-auto">
       {(data.title || data.subtitle) && (
@@ -320,7 +321,7 @@ function ServicesProgramCardsDark({ data }: { data: ServicesBlockProps["data"] }
 // Full-bleed brand-color section, glassy translucent cards, large ghost number
 // badge — manufacturing/corporate/B2B.
 function ServicesNumbered({ data }: { data: ServicesBlockProps["data"] }) {
-  const colMap = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "sm:grid-cols-3";
+  const colMap = ({ ...{ 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "sm:grid-cols-3";
   return (
     <div className="w-full bg-primary">
       <div className="max-w-6xl mx-auto px-4 py-4">
@@ -362,7 +363,7 @@ function ServicesNumbered({ data }: { data: ServicesBlockProps["data"] }) {
 
 function ServicesLegacy({ data }: { data: ServicesBlockProps["data"] }) {
   const { title, subtitle, layout, columns, items, cardStyle } = data;
-  const colMap = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-4" }[columns] ?? "md:grid-cols-3";
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[columns] ?? "md:grid-cols-3";
   const cardClass = {
     flat: "bg-transparent",
     elevated: "bg-card shadow-lg rounded-xl p-6",

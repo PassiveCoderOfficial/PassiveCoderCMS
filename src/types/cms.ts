@@ -475,7 +475,7 @@ export type ServicesBlockProps = BlockBase & {
     title?: string;
     subtitle?: string;
     layout: "grid" | "list" | "cards" | "icon-list";
-    columns: 2 | 3 | 4;
+    columns: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     items: ServiceItem[];
     cardStyle: "flat" | "elevated" | "bordered" | "gradient";
     source?: "inline" | "group";

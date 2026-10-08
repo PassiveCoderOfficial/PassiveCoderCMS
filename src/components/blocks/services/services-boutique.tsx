@@ -1,4 +1,5 @@
 import React from "react";
+import { WIDE_COLS } from "./wide-cols";
 import type { ServicesBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { BqLink, bqStyle } from "@/components/blocks/_primitives/boutique";
@@ -14,7 +15,7 @@ export function ServicesBoutiqueTiles({ data }: { data: ServicesBlockProps["data
   const cols = data.columns ?? 3;
   const ratio = RATIO[data.tileRatio ?? (cols === 2 ? "landscape" : "square")];
   if (data.tileStyle === "overlay") return <OverlayTiles data={data} />;
-  const grid = cols === 2 ? "sm:grid-cols-2 gap-9 lg:gap-[70px] max-w-[1168px]" : cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-[1240px]" : "sm:grid-cols-2 lg:grid-cols-3 gap-x-[35px] gap-y-14 max-w-[1152px]";
+  const grid = cols === 2 ? "sm:grid-cols-2 gap-9 lg:gap-[70px] max-w-[1168px]" : cols > 4 ? `${WIDE_COLS[cols]} gap-6 max-w-[1320px]` : cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-[1240px]" : "sm:grid-cols-2 lg:grid-cols-3 gap-x-[35px] gap-y-14 max-w-[1152px]";
   return (
     <div className="bq" style={bqStyle(data.colors)}>
       <div className="bq-wrap">
@@ -51,7 +52,7 @@ export function ServicesBoutiqueTiles({ data }: { data: ServicesBlockProps["data
 function OverlayTiles({ data }: { data: ServicesBlockProps["data"] }) {
   const cols = data.columns ?? 4;
   const ratio = RATIO[data.tileRatio ?? "portrait"];
-  const grid = cols === 2 ? "sm:grid-cols-2" : cols === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4";
+  const grid = cols > 4 ? WIDE_COLS[cols] : cols === 2 ? "sm:grid-cols-2" : cols === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4";
   return (
     <div className="bq" style={bqStyle(data.colors)}>
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6">

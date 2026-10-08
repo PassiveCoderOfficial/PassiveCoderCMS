@@ -74,7 +74,7 @@ export function ServicesSettings({ block }: { block: ServicesBlockProps }) {
         <Label className="text-xs">Columns</Label>
         <Select value={String(block.data.columns)} onValueChange={(v) => update("columns", Number(v))}>
           <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>{["2","3","4"].map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}</SelectContent>
+          <SelectContent>{["2","3","4","5","6","7","8","9","10"].map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}</SelectContent>
         </Select>
       </div>
 

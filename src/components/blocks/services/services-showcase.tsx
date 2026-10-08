@@ -1,4 +1,5 @@
 import React from "react";
+import { WIDE_COLS } from "./wide-cols";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ServicesBlockProps, ServiceItem } from "@/types/cms";
@@ -87,7 +88,7 @@ export function ServicesBento({ data }: { data: D }) {
 /** Portrait photo cards with kicker and title overlaid — a "more services" row. */
 export function ServicesPhotoCards({ data }: { data: D }) {
   const items = data.items ?? [];
-  const cols = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[data.columns] ?? "grid-cols-2 lg:grid-cols-4";
+  const cols = ({ ...{ 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "grid-cols-2 lg:grid-cols-4";
   return (
     <div className="sc-root max-w-7xl mx-auto" style={scStyle(data.colors)}>
       {(data.title || data.eyebrow) && (
@@ -112,7 +113,7 @@ export function ServicesPhotoCards({ data }: { data: D }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.imageUrl} alt={item.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
               )}
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, color-mix(in srgb, var(--sc-dark-c) 92%, transparent), transparent 58%)" }} />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.45) 35%, transparent 62%)" }} />
               <span className="absolute inset-x-4 bottom-4 z-[1] text-white">
                 {item.kicker && <small className="block text-[10px] font-bold uppercase tracking-[.16em] sc-accent mb-1">{item.kicker}</small>}
                 <b className="text-lg font-extrabold leading-tight" style={{ fontFamily: "var(--heading-font)" }}>{item.title}</b>
