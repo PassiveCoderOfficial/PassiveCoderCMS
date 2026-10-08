@@ -55,7 +55,11 @@ function route(src: ImageProps["src"]): Route {
   } catch {
     return { unoptimized: true };
   }
-  if (host === OWN_STORAGE_HOST) return {};
+  // Served straight from storage. The Vercel optimizer quota ran out
+  // (2026-10-08: /_next/image answered 402 for every uncached image, so new
+  // uploads showed as broken on every client site); storage files are
+  // already sized at upload, and Supabase image transforms are not on our plan.
+  if (host === OWN_STORAGE_HOST) return { unoptimized: true };
   if (host === "images.unsplash.com") return { loader: unsplashLoader };
   if (host === "images.pexels.com") return { loader: pexelsLoader };
   return { unoptimized: true };
