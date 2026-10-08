@@ -193,7 +193,12 @@ function CTALegacy({ block }: { block: CTABlockProps }) {
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
-export function CTABlock({ block }: { block: CTABlockProps }) {
+export function CTABlock({ block: raw }: { block: CTABlockProps }) {
+  // Booking toggle: the Book button takes the second button slot, which every
+  // variant already renders, so no variant needs its own booking code.
+  const block: CTABlockProps = raw.data.showBooking
+    ? { ...raw, data: { ...raw.data, secondaryButton: { label: raw.data.bookingLabel || "Book now", url: raw.data.bookingUrl || "/book" } } }
+    : raw;
   const variant = block.templateVariant;
   if (variant === "visit-map") return <CTAVisitMap block={block} />;
   if (variant === "boutique-banner") return <CTABoutiqueBanner data={block.data} />;

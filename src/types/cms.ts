@@ -583,6 +583,10 @@ export type CTABlockProps = BlockBase & {
     description?: string;
     primaryButton?: { label: string; url: string };
     secondaryButton?: { label: string; url: string };
+    /** Book button next to the main button; fills the second button slot. */
+    showBooking?: boolean;
+    bookingLabel?: string;
+    bookingUrl?: string;
     layout: "centered" | "left" | "split";
     /** Visit + Map: small label above the title. */
     eyebrow?: string;

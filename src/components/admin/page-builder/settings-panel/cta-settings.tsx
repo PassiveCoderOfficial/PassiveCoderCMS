@@ -89,11 +89,24 @@ export function CTASettings({ block }: { block: CTABlockProps }) {
         <Input value={block.data.primaryButton?.label ?? ""} onChange={(e) => updateBtn("primaryButton", "label", e.target.value)} className="h-7 text-xs mb-1.5" placeholder="Label" />
         <Input value={block.data.primaryButton?.url ?? ""} onChange={(e) => updateBtn("primaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
       </div>
-      <div className="border-t pt-2">
+      <div className="border-t pt-2 space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Booking button</Label>
+          <Switch checked={!!block.data.showBooking} onCheckedChange={(v) => update("showBooking", v)} />
+        </div>
+        <p className="text-[11px] text-muted-foreground">Shows a Book button next to the main button, opening your booking page. Set hours in Dashboard &gt; Bookings.</p>
+        {block.data.showBooking && (
+          <>
+            <div><Label className="text-xs">Button label</Label><Input value={block.data.bookingLabel ?? ""} placeholder="Book now" onChange={(e) => update("bookingLabel", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-xs">Booking page</Label><Input value={block.data.bookingUrl ?? ""} placeholder="/book" onChange={(e) => update("bookingUrl", e.target.value)} className="h-8 text-xs mt-1" /></div>
+          </>
+        )}
+      </div>
+      {!block.data.showBooking && <div className="border-t pt-2">
         <p className="text-[10px] text-muted-foreground font-semibold uppercase mb-2">Secondary Button</p>
         <Input value={block.data.secondaryButton?.label ?? ""} onChange={(e) => updateBtn("secondaryButton", "label", e.target.value)} className="h-7 text-xs mb-1.5" placeholder="Label" />
         <Input value={block.data.secondaryButton?.url ?? ""} onChange={(e) => updateBtn("secondaryButton", "url", e.target.value)} className="h-7 text-xs" placeholder="URL" />
-      </div>
+      </div>}
     </div>
   );
 }

@@ -155,6 +155,8 @@ export async function buildDemoBlocks(input: DemoInput, category: string): Promi
       description: "Message us now. We usually reply within minutes.",
       layout: "centered",
       primaryButton: { label: "Chat on WhatsApp", url: wa },
+      // Booking is on for every new site (migration 126).
+      showBooking: true, bookingLabel: "Book now", bookingUrl: "/book",
     },
   } as unknown as Block);
 
