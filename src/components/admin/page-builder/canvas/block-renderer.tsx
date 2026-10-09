@@ -29,6 +29,7 @@ import { TimelineBlock } from "@/components/blocks/timeline/timeline-block";
 import { ColumnsBlock } from "@/components/blocks/columns/columns-block";
 import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block";
 import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
+import { PricingCatalogCanvas } from "@/components/blocks/pricing-catalog/pricing-catalog-canvas";
 import { StepsBlock } from "@/components/blocks/steps/steps-block";
 import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
@@ -128,6 +129,7 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
       case "columns": return <ColumnsBlock block={block} />;
       case "newsletter": return <NewsletterBlock block={block} />;
       case "countdown": return <CountdownBlock block={block} />;
+      case "pricing_catalog": return <PricingCatalogCanvas block={block} />;
       case "steps": return <StepsBlock block={block} />;
       case "icon_grid": return <IconGridBlock block={block} />;
       case "enm_lead_form": return <EnmLeadFormBlock block={block} />;

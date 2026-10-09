@@ -35,6 +35,7 @@ import { TimelineSettings } from "./timeline-settings";
 import { ColumnsSettings } from "./columns-settings";
 import { NewsletterSettings } from "./newsletter-settings";
 import { CountdownSettings } from "./countdown-settings";
+import { PricingCatalogSettings } from "./pricing-catalog-settings";
 import { StepsSettings } from "./steps-settings";
 import { IconGridSettings } from "./icon-grid-settings";
 import { EnmLeadFormSettings } from "./enm-lead-form-settings";
@@ -158,6 +159,7 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "donor_list": return <DonorListSettings block={block} />;
     case "donor_map": return <DonorMapSettings block={block} />;
     case "countdown": return <CountdownSettings block={block} />;
+    case "pricing_catalog": return <PricingCatalogSettings block={block} />;
     case "steps": return <StepsSettings block={block} />;
     case "icon_grid": return <IconGridSettings block={block} />;
     case "enm_lead_form": return <EnmLeadFormSettings block={block} />;

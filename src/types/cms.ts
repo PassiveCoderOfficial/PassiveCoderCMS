@@ -49,6 +49,7 @@ export type BlockType =
   | "columns"
   | "newsletter"
   | "countdown"
+  | "pricing_catalog"
   | "steps"
   | "icon_grid"
   | "video"
@@ -943,6 +944,26 @@ export type NewsletterBlockProps = BlockBase & {
   };
 };
 
+/** Passive Coder's own packages and Care plans, read live from the pricing
+ *  catalog (plans + care_plans). Meant for the platform's root site. */
+export type PricingCatalogBlockProps = BlockBase & {
+  type: "pricing_catalog";
+  data: {
+    mode: "packages" | "care" | "both";
+    title?: string;
+    subtitle?: string;
+    eyebrow?: string;
+    language: "en" | "bn";
+    defaultCurrency: "USD" | "BDT";
+    showCurrencyToggle: boolean;
+    showBdPrompt: boolean;
+    bdPromptUrl?: string;
+    careLinkUrl?: string;
+    tone: "dark" | "light";
+    ctaBaseUrl?: string;
+  };
+};
+
 export type CountdownBlockProps = BlockBase & {
   type: "countdown";
   data: {
@@ -1167,6 +1188,7 @@ export type Block =
   | ColumnsBlockProps
   | NewsletterBlockProps
   | CountdownBlockProps
+  | PricingCatalogBlockProps
   | StepsBlockProps
   | IconGridBlockProps
   | VideoBlockProps

@@ -37,6 +37,7 @@ import { TimelineBlock } from "@/components/blocks/timeline/timeline-block";
 import { ColumnsBlock } from "@/components/blocks/columns/columns-block";
 import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block";
 import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
+import { PricingCatalogBlock } from "@/components/blocks/pricing-catalog/pricing-catalog-block";
 import { StepsBlock } from "@/components/blocks/steps/steps-block";
 import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
 import { EnmLeadFormBlock } from "@/components/blocks/enm/enm-lead-form-block";
@@ -139,6 +140,7 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
     case "columns":          content = <ColumnsBlock block={block} />; break;
     case "newsletter":       content = <NewsletterBlock block={block} />; break;
     case "countdown":        content = <CountdownBlock block={block} />; break;
+    case "pricing_catalog":  content = <PricingCatalogBlock block={block} />; break;
     case "steps":            content = <StepsBlock block={block} />; break;
     case "icon_grid":        content = <IconGridBlock block={block} />; break;
     case "enm_lead_form":    content = <EnmLeadFormBlock block={block} />; break;
