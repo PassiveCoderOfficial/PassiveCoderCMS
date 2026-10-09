@@ -156,9 +156,11 @@ function BuyDialog({ open, onOpenChange, tenantId, init, packages, care, payment
 
   useEffect(() => {
     if (!init) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- sync form to the action that opened the dialog */
     setKind(init.kind);
     if (init.planId) setPlanId(init.planId);
     if (init.careId) setCareId(init.careId);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [init]);
 
   const currency: Currency = method === "dodo" ? "USD" : "BDT";
