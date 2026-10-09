@@ -57,14 +57,6 @@ export function PricingCatalogView({ data, packages, care }: { data: Data; packa
     ? { text: "text-white", muted: "text-slate-400", body: "text-slate-300", card: "border-white/10 bg-white/[0.03]", hi: "border-orange-500/60 bg-gradient-to-b from-orange-500/[0.12] to-white/[0.02] shadow-[0_30px_80px_-30px_rgba(255,118,0,0.45)]", pill: "bg-white/[0.06] border-white/10", on: "bg-white text-slate-950", off: "text-slate-400 hover:text-white", btn: "bg-white/[0.08] text-white hover:bg-white/[0.14]", sub: "border-white/[0.06] bg-black/20" }
     : { text: "text-slate-900", muted: "text-slate-500", body: "text-slate-700", card: "border-slate-200 bg-white", hi: "border-orange-500 bg-gradient-to-b from-orange-50 to-white shadow-[0_30px_80px_-30px_rgba(255,118,0,0.35)]", pill: "bg-slate-100 border-slate-200", on: "bg-slate-900 text-white", off: "text-slate-500 hover:text-slate-900", btn: "bg-slate-900 text-white hover:bg-slate-800", sub: "border-slate-200 bg-slate-50" };
 
-  const Toggle = <V extends string>({ value, set, opts }: { value: V; set: (v: V) => void; opts: [V, string][] }) => (
-    <div className={`inline-flex items-center gap-1 rounded-full border p-1 ${c.pill}`}>
-      {opts.map(([v, l]) => (
-        <button key={v} type="button" onClick={() => set(v)} className={`px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all ${value === v ? c.on : c.off}`}>{l}</button>
-      ))}
-    </div>
-  );
-
   const showPackages = data.mode !== "care";
   const showCareFull = data.mode === "care";
   const showCareTeaser = data.mode === "both";
@@ -80,8 +72,8 @@ export function PricingCatalogView({ data, packages, care }: { data: Data; packa
       )}
 
       <div className="flex flex-wrap justify-center gap-3 mb-10">
-        {showCareFull && <Toggle value={cycle} set={setCycle} opts={[["monthly", t.monthly], ["yearly", t.yearly]]} />}
-        {data.showCurrencyToggle && <Toggle value={currency} set={setCurrency} opts={[["USD", "USD $"], ["BDT", "BDT ৳"]]} />}
+        {showCareFull && <Toggle cls={c} value={cycle} set={setCycle} opts={[["monthly", t.monthly], ["yearly", t.yearly]]} />}
+        {data.showCurrencyToggle && <Toggle cls={c} value={currency} set={setCurrency} opts={[["USD", "USD $"], ["BDT", "BDT ৳"]]} />}
       </div>
 
       {showPackages && (
@@ -202,5 +194,15 @@ function Li({ children, strong }: { children: React.ReactNode; strong?: string }
       </span>
       <span className={strong ? `font-semibold ${strong}` : undefined}>{children}</span>
     </li>
+  );
+}
+
+function Toggle<V extends string>({ cls, value, set, opts }: { cls: { pill: string; on: string; off: string }; value: V; set: (v: V) => void; opts: [V, string][] }) {
+  return (
+    <div className={`inline-flex items-center gap-1 rounded-full border p-1 ${cls.pill}`}>
+      {opts.map(([v, l]) => (
+        <button key={v} type="button" onClick={() => set(v)} className={`px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all ${value === v ? cls.on : cls.off}`}>{l}</button>
+      ))}
+    </div>
   );
 }
