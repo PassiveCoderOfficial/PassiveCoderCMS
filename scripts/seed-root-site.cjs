@@ -52,7 +52,7 @@ const CLIENTS = [
   ["Advance Construction", "Construction · Singapore", "advanceconstructionsg.com"],
   ["Aircon Interior Service", "HVAC & interior · Singapore", "airconinteriorservicesg.com"],
   ["Hasan Flooring KL", "Flooring · Malaysia", "hasanflooringkl.com"],
-  ["Al Madhhar Paints", "Paints & coatings · Saudi Arabia", "almadhharpaints.com"],
+  ["SB Fit-out", "Fit-out & design · UAE", "sbfitout.com"],
   ["Anamika Global", "Business services · Malaysia", "anamikaglobal.com"],
 ];
 
@@ -185,7 +185,7 @@ function home() {
       secondaryButton: { label: "Talk to us on WhatsApp", url: WA, variant: "outline" },
       imageUrl: U("photo-1556740738-b6a63e27c4df", 1400),
       imageAlt: "Small business owner serving a customer",
-      typography: typo("7xl"),
+      typography: typo("6xl"),
     }, { templateVariant: "dark-gradient-left", padding: pad(140, 120) }),
 
     block("stats", {
@@ -207,7 +207,7 @@ function home() {
         id: uid("c"), title: name, kicker, description: domain,
         imageUrl: `/images/clients/${domain}.jpg`, link: `https://${domain}`, linkLabel: "Visit site",
       })),
-    }, { templateVariant: "image-cards-dark" }),
+    }, { templateVariant: "site-showcase" }),
 
     block("services", {
       eyebrow: "Industries",
@@ -237,7 +237,7 @@ function home() {
       subtitle: "No plugins, no add-ons, no surprise bills.",
       layout: "grid", columns: 3, style: "card",
       items: [
-        { id: uid("ft"), icon: "MessageCircle", title: "WhatsApp enquiries", description: "Every button can open a WhatsApp chat with you, with the service already filled in." },
+        { id: uid("ft"), icon: "MessageCircle", title: "WhatsApp enquiries", description: "Every button can open a WhatsApp chat with you, with the service already filled in.", imageUrl: U("photo-1611746872915-64382b5c76da", 1000) },
         { id: uid("ft"), icon: "CalendarCheck", title: "Online booking", description: "Customers book a time on your site. You confirm from the dashboard or your phone." },
         { id: uid("ft"), icon: "ShoppingBag", title: "Online shop", description: "Sell products with cash on delivery or online payment, on the Business package." },
         { id: uid("ft"), icon: "Users", title: "CRM for leads", description: "Every form and booking lands in one list, so no enquiry gets lost." },
@@ -376,7 +376,7 @@ function bangladeshPage() {
         id: uid("c"), title: name, kicker, description: domain,
         imageUrl: `/images/clients/${domain}.jpg`, link: `https://${domain}`, linkLabel: "সাইট দেখুন",
       })),
-    }, { templateVariant: "image-cards-dark" }),
+    }, { templateVariant: "site-showcase" }),
     faq(FAQ_BN, "সাধারণ প্রশ্ন", "আরো কিছু জানতে চাইলে WhatsApp করুন।", "split-heading", BG2),
     finalCta("আজই শুরু করুন", "ব্যবসার নাম আর সার্ভিস পাঠান, আমরা আগে হোমপেজ বানিয়ে দেখাব।",
       { label: "WhatsApp-এ মেসেজ দিন", url: WA_BN }, { label: "প্রাইস দেখুন", url: "#pricing" }),

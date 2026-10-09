@@ -135,6 +135,54 @@ function ServicesImageCardsDark({ data }: { data: ServicesBlockProps["data"] }) 
   );
 }
 
+// ─── Variant: site-showcase ───────────────────────────────────────────────
+// Live websites as browser windows: screenshot pinned to the top (where the
+// hero is), category chip, domain, whole card clickable.
+function ServicesSiteShowcase({ data }: { data: ServicesBlockProps["data"] }) {
+  const colMap = ({ ...{ 2: "md:grid-cols-2", 3: "md:grid-cols-2 lg:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }, ...WIDE_COLS } as Record<number, string>)[data.columns] ?? "md:grid-cols-2 lg:grid-cols-3";
+  return (
+    <div className="max-w-7xl mx-auto">
+      {(data.eyebrow || data.title || data.subtitle) && (
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          {data.eyebrow && <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">{data.eyebrow}</p>}
+          {data.title && <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">{data.title}</h2>}
+          {data.subtitle && <p className="mt-4 text-lg text-muted-foreground">{data.subtitle}</p>}
+        </div>
+      )}
+      <div className={cn("grid grid-cols-1 gap-6", colMap)}>
+        {data.items.map((item) => (
+          <div key={item.id} className="service-card relative group rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_24px_60px_-24px_hsl(var(--primary)/0.45)]">
+            <div className="flex items-center gap-1.5 px-3 h-8 border-b border-border bg-muted/60">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+              {item.description && (
+                <span className="ml-2 flex-1 truncate rounded-md bg-background/70 px-2 py-0.5 text-[11px] text-muted-foreground">{item.description}</span>
+              )}
+            </div>
+            {item.imageUrl && (
+              <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                <Image src={item.imageUrl} alt={item.title} fill className="object-cover object-top transition-transform duration-[1200ms] group-hover:scale-[1.04]" />
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-3 p-5">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-base truncate">{item.title}</h3>
+                {item.kicker && <span className="mt-1.5 inline-block rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground">{item.kicker}</span>}
+              </div>
+              {item.link && (
+                <Link href={item.link} target={item.link.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="after:absolute after:inset-0 after:content-[''] shrink-0 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  {item.linkLabel ?? "Visit"} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Variant: bordered-list ────────────────────────────────────────────────
 // Left border accent, horizontal list layout — law firm / formal
 function ServicesBorderedList({ data }: { data: ServicesBlockProps["data"] }) {
@@ -433,6 +481,7 @@ export function ServicesByVariant({ data, variant }: { data: ServicesBlockProps[
   if (variant === "icon-cards-grid") return <ServicesIconCardsGrid data={data} />;
   if (variant === "image-tiles") return <ServicesImageTiles data={data} />;
   if (variant === "image-cards-dark") return <ServicesImageCardsDark data={data} />;
+  if (variant === "site-showcase") return <ServicesSiteShowcase data={data} />;
   if (variant === "bordered-list") return <ServicesBorderedList data={data} />;
   if (variant === "dark-grid-cards") return <ServicesDarkGridCards data={data} />;
   if (variant === "menu-cards") return <ServicesMenuCards data={data} />;

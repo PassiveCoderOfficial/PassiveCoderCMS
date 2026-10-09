@@ -72,6 +72,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
   services: [
     { key: "icon-cards-grid", label: "Icon Cards", description: "Icon-led cards in a grid — no photography needed.", thumb: "cards-grid" },
     { key: "dark-grid-cards", label: "Dark Cards", description: "Same grid on a dark surface with accent top borders.", thumb: "cards-dark", dark: true },
+    { key: "site-showcase", label: "Website Showcase", description: "Screenshots in browser frames with a category chip and domain. For portfolios of live websites or apps.", thumb: "cards-dark", dark: true },
     { key: "image-cards-dark", label: "Image Cards (Dark)", description: "Photo-first cards on dark — good for trades and automotive.", thumb: "cards-dark", dark: true },
     { key: "bordered-list", label: "Bordered List", description: "Full-width rows separated by rules, easy to scan.", thumb: "list-rows" },
     { key: "numbered", label: "Numbered", description: "Sequentially numbered services — reads as a process.", thumb: "numbered-list" },
