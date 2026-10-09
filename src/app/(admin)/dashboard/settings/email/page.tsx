@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Mail, CheckCircle2, Circle, Copy, Check, Loader2, Plus, Trash2, Send, AlertTriangle, RefreshCw } from "lucide-react";
+import { Mail, CheckCircle2, Circle, Copy, Check, Loader2, Plus, Trash2, Send, AlertTriangle, RefreshCw, LogIn, Settings2, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,17 @@ type Data = {
   mail?: { records: Rec[]; strayMx: string[] };
   sender?: { status: string; local: string; name: string; records: Rec[] };
 };
+
+/** Webmail sign-in page per provider (Zoho by account region). */
+function webmailUrl(provider: string | null, zohoRegion?: string): string | null {
+  switch (provider) {
+    case "google": return "https://mail.google.com/";
+    case "microsoft": return "https://outlook.office.com/mail/";
+    case "zoho": return `https://mail.zoho.${zohoRegion || "com"}/`;
+    case "titan": return "https://app.titan.email/";
+    default: return null;
+  }
+}
 
 async function post(body: Record<string, unknown>) {
   const res = await fetch("/api/email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -68,6 +79,8 @@ export default function BusinessEmailPage() {
   const [senderLocal, setSenderLocal] = useState("hello");
   const [senderName, setSenderName] = useState("");
   const [verification, setVerification] = useState("");
+  // Once mail is working the setup is folded away behind a sign-in CTA.
+  const [reconfigure, setReconfigure] = useState(false);
 
   const load = useCallback(async () => {
     const d = await fetch("/api/email").then((r) => r.json()).catch(() => null) as Data | null;
@@ -107,6 +120,9 @@ export default function BusinessEmailPage() {
   const prov = p && data.providers ? data.providers[p] : null;
   const mailOk = !!data.mail?.records.length && data.mail.records.every((r) => r.ok);
   const sender = data.sender!;
+  const configured = !!p && mailOk;
+  const showSetup = !configured || reconfigure;
+  const loginUrl = webmailUrl(p, data.zohoRegion);
 
   return (
     <div className="p-6 max-w-3xl space-y-6">
@@ -121,9 +137,31 @@ export default function BusinessEmailPage() {
             <span>1. Email addresses at {domain}</span>
             {p && <span className={cn("text-xs rounded-full px-2.5 py-0.5", mailOk ? "bg-green-500/15 text-green-700 dark:text-green-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400")}>{mailOk ? "Working" : "Setup needed"}</span>}
           </CardTitle>
-          <CardDescription>Choose how you want to receive email. Free forwarding sends it to an inbox you already use; or connect a mailbox provider.</CardDescription>
+          {showSetup && <CardDescription>Choose how you want to receive email. Free forwarding sends it to an inbox you already use; or connect a mailbox provider.</CardDescription>}
         </CardHeader>
-        <CardContent className="space-y-5">
+        {configured && (
+          <CardContent className={cn(showSetup && "pb-0")}>
+            <div className="rounded-xl border bg-primary/5 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+              <div className="space-y-1">
+                <p className="font-semibold flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-600" /> Your email at {domain} is working</p>
+                <p className="text-sm text-muted-foreground">
+                  {p === "forwarding" ? "Messages to your addresses are forwarded to your inbox." : `Provider: ${prov?.label ?? p}.`}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {loginUrl && (
+                  <Button asChild size="lg" className="h-12 px-6 text-base font-semibold">
+                    <a href={loginUrl} target="_blank" rel="noopener noreferrer"><LogIn className="w-5 h-5 mr-2" /> Login to E-mail Account!</a>
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setReconfigure(!reconfigure)}>
+                  {reconfigure ? <><ChevronUp className="w-4 h-4 mr-1" /> Hide setup</> : <><Settings2 className="w-4 h-4 mr-1" /> Reconfigure</>}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        )}
+        {showSetup && <CardContent className={cn("space-y-5", configured && "pt-6")}>
           <div className="grid sm:grid-cols-2 gap-2">
             {data.providers && Object.entries(data.providers).map(([key, v]) => (
               <button key={key} type="button" disabled={!!busy}
@@ -239,7 +277,7 @@ export default function BusinessEmailPage() {
               </p>
             </div>
           )}
-        </CardContent>
+        </CardContent>}
       </Card>
 
       <Card>
