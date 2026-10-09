@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { faqJsonLd, ldScript } from "@/lib/seo/jsonld";
+import { rootBuilderTenantFor } from "@/lib/site/root-builder";
+import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 import { headers } from "next/headers";
 import MarketingNav from "@/components/marketing/nav";
 import HeroSection from "@/components/marketing/hero";
@@ -230,6 +232,9 @@ export default async function MarketingHomePage() {
   }
 
   // ── Root domain: marketing homepage ───────────────────────────────────────
+  const rootTenant = await rootBuilderTenantFor("home");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="home" />;
+
   const [{ data: settings }, { data: plans }, { data: rootPage }, showcaseTemplates, catalog] = await Promise.all([
     supabase.from("homepage_settings").select("*").single(),
     supabase.from("plans").select("*").eq("is_active", true).order("sort_order"),

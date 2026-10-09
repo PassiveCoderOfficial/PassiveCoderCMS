@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import type { Metadata } from "next";
+import { rootBuilderTenantFor } from "@/lib/site/root-builder";
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
 import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
 export default async function WebsiteMaintenancePage() {
   const tenantId = (await headers()).get("x-tenant-id");
   if (tenantId) return <TenantPageWithChrome tenantId={tenantId} slug="website-maintenance" />;
+  const rootTenant = await rootBuilderTenantFor("website-maintenance");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="website-maintenance" />;
   const { care } = await loadCatalog();
   return (
     <div className="min-h-screen bg-[#05060a]">

@@ -1,5 +1,6 @@
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
+import { rootBuilderTenantFor } from "@/lib/site/root-builder";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
@@ -9,6 +10,8 @@ export const metadata = { title: "Privacy Policy — Passive Coder" };
 export default async function PrivacyPage() {
   const tenantId = (await headers()).get("x-tenant-id");
   if (tenantId) return <TenantPageWithChrome tenantId={tenantId} slug="privacy" />;
+  const rootTenant = await rootBuilderTenantFor("privacy");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="privacy" />;
   return (
     <div className="min-h-screen bg-white">
       <MarketingNav />

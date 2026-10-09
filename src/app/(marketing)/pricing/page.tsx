@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { rootBuilderTenantFor } from "@/lib/site/root-builder";
 import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 
 export const metadata = { title: "Pricing — Passive Coder" };
@@ -10,5 +11,7 @@ export const metadata = { title: "Pricing — Passive Coder" };
 export default async function PricingPage() {
   const tenantId = (await headers()).get("x-tenant-id");
   if (tenantId) return <TenantPageWithChrome tenantId={tenantId} slug="pricing" />;
+  const rootTenant = await rootBuilderTenantFor("pricing");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="pricing" />;
   redirect("/#pricing");
 }

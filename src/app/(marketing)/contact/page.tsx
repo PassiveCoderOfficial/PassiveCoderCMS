@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 import ContactForm from "./contact-form";
+import { rootBuilderTenantFor } from "@/lib/site/root-builder";
 import MarketingNav from "@/components/marketing/nav";
 import FooterSection from "@/components/marketing/footer";
 import type { Page } from "@/types/cms";
@@ -41,6 +42,8 @@ export default async function ContactPage() {
   if (tenantId) {
     return <TenantPageWithChrome tenantId={tenantId} slug="contact" />;
   }
+  const rootTenant = await rootBuilderTenantFor("contact");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="contact" />;
 
   return (
     <div className="min-h-screen bg-white">

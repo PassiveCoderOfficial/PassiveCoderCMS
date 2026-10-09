@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { rootBuilderTenantFor } from "@/lib/site/root-builder";
+import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 import { BdLeadForm } from "@/components/marketing/bd-lead-form";
 import Image from "@/components/ui/smart-image";
 import { Hind_Siliguri } from "next/font/google";
@@ -190,7 +192,9 @@ const chapters = [
 ];
 
 
-export default function BangladeshiExpatLandingPage() {
+export default async function BangladeshiExpatLandingPage() {
+  const rootTenant = await rootBuilderTenantFor("bangladesh");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="bangladesh" />;
   return (
     <div className={`${bangla.variable} font-[family-name:var(--font-bangla)] bg-white text-slate-900`}>
       {/* ── Header ───────────────────────────────────────────────────── */}
