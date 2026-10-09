@@ -38,7 +38,7 @@ export async function GET() {
     { key: "google", ok: !!settings?.google_site_verification, label: "Connected to Google Search Console",
       fix: "Click Connect Google in the Google Search Console box above: we verify the site and submit the sitemap. Powers Google and Gemini answers.", href: "/dashboard/settings/seo" },
     { key: "bing", ok: !!settings?.bing_site_verification, label: "Connected to Bing Webmaster Tools",
-      fix: "Verify your site in Bing Webmaster Tools (Settings > General). ChatGPT search and Copilot use Bing.", href: "/dashboard/settings/general" },
+      fix: "Click Connect Bing in the Bing Webmaster Tools box above: we add and verify the site and submit the sitemap. ChatGPT search and Copilot use Bing.", href: "/dashboard/settings/seo" },
   ];
 
   return NextResponse.json({

@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { publicUrl } from "@/lib/tenant/site-urls";
 import { submitIndexNow } from "@/lib/seo/indexnow";
 import { resubmitSitemap } from "@/lib/seo/search-console";
+import { bingSubmitSitemap } from "@/lib/seo/bing";
 
 export const maxDuration = 120;
 
@@ -39,7 +40,7 @@ async function handle(req: Request) {
     ? await admin.from("tenants").select("id, slug, custom_domain, domain_status, demo_expires_at").in("id", ids)
     : { data: [] };
 
-  const summary: { sites: number; urls: number; failed: number; google?: number } = { sites: 0, urls: 0, failed: 0 };
+  const summary: { sites: number; urls: number; failed: number; google?: number; bing?: number } = { sites: 0, urls: 0, failed: 0 };
   for (const t of tenants ?? []) {
     if (t.demo_expires_at) continue;
     const site = { slug: t.slug as string, custom_domain: t.domain_status === "active" ? (t.custom_domain as string | null) : null };
@@ -60,6 +61,17 @@ async function handle(req: Request) {
           summary.google = (summary.google ?? 0) + 1;
         }
       } catch (e) { console.warn("[gsc] sitemap", g.gsc_site_url, e instanceof Error ? e.message : e); }
+    }
+  }
+  // Bing: same for sites connected through Bing Webmaster Tools.
+  if (ids.length) {
+    const { data: bs } = await admin.from("tenant_integrations").select("tenant_id, bing_site_url").in("tenant_id", ids).not("bing_site_url", "is", null);
+    for (const b of bs ?? []) {
+      try {
+        await bingSubmitSitemap(b.tenant_id as string, b.bing_site_url as string);
+        await admin.from("tenant_integrations").update({ bing_sitemap_at: new Date().toISOString() }).eq("tenant_id", b.tenant_id);
+        summary.bing = (summary.bing ?? 0) + 1;
+      } catch (e) { console.warn("[bing] sitemap", b.bing_site_url, e instanceof Error ? e.message : e); }
     }
   }
   console.log("[indexnow]", JSON.stringify(summary));

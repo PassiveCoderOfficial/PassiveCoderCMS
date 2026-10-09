@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { AiVisibilityCard } from "@/components/admin/ai-visibility-card";
 import { SearchConsoleCard } from "@/components/admin/search-console-card";
 import { AiSeoCard } from "@/components/admin/ai-seo-card";
+import { BingCard } from "@/components/admin/bing-card";
 
 export default function SeoSettingsPage() {
   const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
@@ -53,6 +54,8 @@ export default function SeoSettingsPage() {
       <h1 className="text-2xl font-bold">SEO Settings</h1>
 
       <SearchConsoleCard />
+
+      <BingCard />
 
       <AiVisibilityCard />
 
