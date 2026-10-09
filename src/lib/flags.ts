@@ -12,3 +12,8 @@ export const flags = {
 
 export const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3000";
 export const APP_URL     = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+/** Slug of the platform's own tenant (the root site). Its subdomain is the
+ *  preview of the root site's builder pages (beta.passivecoder.com). Was
+ *  derived from ROOT_DOMAIN ("passivecoder"); renamed to "beta" 2026-10-10. */
+export const ROOT_TENANT_SLUG = process.env.ROOT_TENANT_SLUG ?? "beta";

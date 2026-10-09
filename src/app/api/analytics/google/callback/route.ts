@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyState } from "@/lib/analytics/google-oauth-state";
 import { hasGscScopes, setupSearchConsole } from "@/lib/seo/search-console";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 
 function backToAnalytics(root: string, proto: string, hostAndPath: string, query: string) {
   return NextResponse.redirect(`${proto}://${hostAndPath}?${query}`);
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
   if (!tenant) {
     return NextResponse.redirect(`${proto}://${root}/dashboard/analytics?ga_error=tenant_not_found`);
   }
-  const tenantHost = tenant.custom_domain || (tenant.slug === root.split(".")[0] ? root : `${tenant.slug}.${root}`);
+  const tenantHost = tenant.custom_domain || (tenant.slug === ROOT_TENANT_SLUG ? root : `${tenant.slug}.${root}`);
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;

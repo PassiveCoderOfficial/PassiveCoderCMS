@@ -16,6 +16,7 @@ import { getSiteContact } from "@/lib/site-contact";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { AdminEditWidget } from "@/components/site/admin-edit-widget";
 import { isTenantAdminViewer } from "@/lib/site/admin-viewer";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 
 /** Root-domain requests carry no x-tenant-id (middleware only sets that on
  *  the subdomain-routing branch), but the platform's own marketing site is
@@ -25,7 +26,7 @@ import { isTenantAdminViewer } from "@/lib/site/admin-viewer";
  *  tracking to the right tenant; never for auth or ownership decisions. */
 async function resolveRootTenantId(): Promise<string | null> {
   const admin = await createAdminClient();
-  const rootSlug = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(".")[0];
+  const rootSlug = ROOT_TENANT_SLUG;
   const { data } = await admin.from("tenants").select("id").eq("slug", rootSlug).maybeSingle();
   return data?.id ?? null;
 }

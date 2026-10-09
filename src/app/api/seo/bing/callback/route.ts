@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyState } from "@/lib/analytics/google-oauth-state";
 import { bingExchangeCode, setupBing } from "@/lib/seo/bing";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 
 export const maxDuration = 60;
 
@@ -19,7 +20,7 @@ export async function GET(req: Request) {
 
   const admin = await createAdminClient();
   const { data: t } = await admin.from("tenants").select("slug, custom_domain, domain_status").eq("id", state.tenantId).maybeSingle();
-  const host = t?.custom_domain && t.domain_status === "active" ? t.custom_domain : t?.slug === root.split(".")[0] ? root : `${t?.slug}.${root}`;
+  const host = t?.custom_domain && t.domain_status === "active" ? t.custom_domain : t?.slug === ROOT_TENANT_SLUG ? root : `${t?.slug}.${root}`;
   const back = (q: string) => NextResponse.redirect(`${proto}://${host}/dashboard/settings/seo?${q}`);
   if (sp.get("error") || !sp.get("code")) return back("bing=cancelled");
 

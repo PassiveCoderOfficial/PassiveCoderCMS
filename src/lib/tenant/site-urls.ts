@@ -18,8 +18,9 @@
  * subdomain — see (admin)/layout.tsx's identical rootSlug logic.
  */
 
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 export const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
-const ROOT_SLUG = ROOT.split(".")[0];
+const ROOT_SLUG = ROOT_TENANT_SLUG;
 export const isLocal = ROOT.includes("localhost");
 export const proto = isLocal ? "http" : "https";
 

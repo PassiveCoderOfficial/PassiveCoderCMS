@@ -1,6 +1,7 @@
 import "server-only";
 import { Resolver } from "node:dns/promises";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 
 const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(":")[0];
 
@@ -13,7 +14,7 @@ export async function emailDomainFor(admin: SupabaseClient, tenantId: string): P
   const { data: t } = await admin.from("tenants").select("slug, custom_domain, domain_status").eq("id", tenantId).maybeSingle();
   if (!t) return null;
   if (t.custom_domain && t.domain_status === "active") return t.custom_domain as string;
-  if (t.slug === ROOT_DOMAIN.split(".")[0] && !ROOT_DOMAIN.includes("localhost")) return ROOT_DOMAIN;
+  if (t.slug === ROOT_TENANT_SLUG && !ROOT_DOMAIN.includes("localhost")) return ROOT_DOMAIN;
   return null;
 }
 

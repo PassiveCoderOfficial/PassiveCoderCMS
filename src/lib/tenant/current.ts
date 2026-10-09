@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 
 export const SA_VIEWING_COOKIE = "sa_viewing_tenant";
 export const STAFF_VIEWING_COOKIE = "staff_viewing_tenant";
@@ -37,7 +38,7 @@ export async function getCurrentTenantId(): Promise<string> {
     // ownership meant an SA who didn't own it fell through to "oldest tenant
     // I own" and landed on an unrelated site (the reported bug — /dashboard
     // on the root domain showing a demo tenant's data).
-    const rootSlug = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(".")[0];
+    const rootSlug = ROOT_TENANT_SLUG;
     const { data: rootTenant } = await adminClient
       .from("tenants")
       .select("id")

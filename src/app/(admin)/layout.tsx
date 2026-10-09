@@ -19,6 +19,7 @@ import { crossPortalAccess } from "@/lib/admin-shell/cross-portal-access";
 import { LanguageProvider } from "@/lib/i18n/language-provider";
 import type { CMSUser } from "@/types/cms";
 import type { Metadata } from "next";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
 
 // Every dashboard page's tab read as just the tenant name, with no way to
 // tell pages apart across tabs. A `template` here means any child route's
@@ -265,7 +266,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // the root domain (e.g. "passivecoder" for passivecoder.com) identifies
     // the actual root site, since an SA can own many demo/test tenants
     // created before it (oldest-first alone picked a random demo tenant).
-    const rootSlug = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com").split(".")[0];
+    const rootSlug = ROOT_TENANT_SLUG;
     const { data: rootTenant } = await adminClient
       .from("tenants")
       .select("id")
