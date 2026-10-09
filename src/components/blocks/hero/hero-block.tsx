@@ -336,6 +336,18 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
             title: <>
             <h1 className={cn("font-black tracking-tight leading-[1.05]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
               <InlineText blockId={block.id} field="title" value={data.title} />
+              {data.titleAccent && (
+                <>
+                  <br />
+                  {/* Second line in the brand gradient (primary -> accent). */}
+                  <span
+                    className="bg-clip-text text-transparent"
+                    style={{ backgroundImage: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }}
+                  >
+                    <InlineText blockId={block.id} field="titleAccent" value={data.titleAccent} />
+                  </span>
+                </>
+              )}
             </h1>
             </>,
             subtitle: <>
