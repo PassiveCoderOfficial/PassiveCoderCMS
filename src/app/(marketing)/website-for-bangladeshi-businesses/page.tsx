@@ -4,6 +4,7 @@ import { BdLeadForm } from "@/components/marketing/bd-lead-form";
 import Image from "@/components/ui/smart-image";
 import { Hind_Siliguri } from "next/font/google";
 import { LightboxImage } from "./image-lightbox";
+import BdPricing from "./bd-pricing";
 
 const bangla = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -18,15 +19,11 @@ const LOGO =
 export const metadata: Metadata = {
   title: "প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট | Passive Coder",
   description:
-    "কনস্ট্রাকশন, HVAC, MEP, হ্যান্ডিম্যান, রেনোভেশন ব্যবসার জন্য প্রফেশনাল ওয়েবসাইট — প্ল্যাটফর্ম লঞ্চ অফারে বছরে পেমেন্ট করলে ৬০%-এর বেশি সাশ্রয়। UAE, সৌদি আরব, ওমান, কাতার, মালয়েশিয়া, সিঙ্গাপুর প্রবাসীদের জন্য।",
+    "কনস্ট্রাকশন, HVAC, MEP, হ্যান্ডিম্যান, রেনোভেশন ব্যবসার জন্য প্রফেশনাল ওয়েবসাইট — একবার পেমেন্টে ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। UAE, সৌদি আরব, ওমান, কাতার, মালয়েশিয়া, সিঙ্গাপুর প্রবাসীদের জন্য।",
   robots: { index: true, follow: true },
 };
 
-// Platform launch offer: 31 Dec 2026 23:59 Bangladesh time (same as plans.promo_ends_at).
-// The page re-renders hourly, so the offer copy switches off by itself.
 export const revalidate = 3600;
-const OFFER_ENDS = Date.UTC(2026, 11, 31, 18, 0, 0);
-const offerOn = () => Date.now() < OFFER_ENDS;
 
 const WA_NUMBER = "8801678669699";
 const WA_TEXT = encodeURIComponent(
@@ -56,27 +53,6 @@ const countries = [
   { code: "sg", name: "সিঙ্গাপুর" },
 ];
 
-const basicFeatures = [
-  "প্রফেশনাল ডিজাইন — ফুল সাইট বিল্ড",
-  "সার্ভিস শোকেস, পোর্টফোলিও গ্যালারি, টেস্টিমোনিয়াল",
-  "অনলাইন বুকিং — অ্যাপয়েন্টমেন্ট ক্যালেন্ডার, রেডি টু ইউজ",
-  "ফ্রি ডোমেইন (.com/.org/.net) — ১ বছর",
-  "SSL, ডেইলি ব্যাকআপ, আপটাইম মনিটরিং",
-  "১০ GB স্টোরেজ",
-  "ইমেইল সাপোর্ট",
-];
-
-const proFeatures = [
-  "Basic-এর সব ফিচার",
-  "CRM — লিড ও কাস্টমার ম্যানেজমেন্ট",
-  "অ্যাপয়েন্টমেন্ট / বুকিং সিস্টেম",
-  "ইনভয়েসিং ও একাউন্টিং টুলস",
-  "প্রাইসিং টেবিল ও প্যাকেজ শোকেস",
-  "ই-কমার্স ফিচার",
-  "সারা বছর ফ্রি আপডেট ও মেইনটেন্যান্স সাপোর্ট — আমাদের টিম থেকে",
-  "VIP প্রায়োরিটি সাপোর্ট",
-];
-
 const trustPoints = [
   { icon: "📜", title: "বৈধ ট্রেড লাইসেন্স", desc: "সরকার-নিবন্ধিত ব্যবসা, লুকানোর কিছু নেই" },
   { icon: "🏢", title: "ফিজিক্যাল অফিস", desc: "কাগজে-কলমে নয়, সত্যিকারের অফিস আছে" },
@@ -98,8 +74,8 @@ const faqs = [
     a: "না। আপনি যেখানেই থাকুন — UAE, সৌদি, মালয়েশিয়া, সিঙ্গাপুর — আমরা রিমোটলি পুরো সেটআপ করে দিই। শুধু WhatsApp-এ যোগাযোগ রাখলেই চলবে।",
   },
   {
-    q: "ইয়ারলি প্যাকেজে আসলে কত সাশ্রয় হয়?",
-    a: "OFFER_FAQ",
+    q: "খরচ কত? প্রতি মাসে কি টাকা দিতে হবে?",
+    a: "না। ওয়েবসাইট বানাতে একবারই পেমেন্ট: Basic ৳১২,০০০, Pro ৳২৫,০০০, Business ৳৫০,০০০। প্রথম ১২ মাসের হোস্টিং, SSL, ব্যাকআপ আর ডোমেইন এর মধ্যেই। দ্বিতীয় বছর থেকে শুধু ইয়ারলি প্ল্যাটফর্ম ফি (৳৮,০০০ থেকে শুরু)। চাইলে Care প্যাকেজ নিতে পারেন, তখন প্ল্যাটফর্ম ফি আলাদা লাগবে না।",
   },
   {
     q: "সাইট তৈরি হতে কতদিন লাগে?",
@@ -213,11 +189,8 @@ const chapters = [
   ["14:17", "আজই শুরু করুন"],
 ];
 
-const FAQ_OFFER = "প্ল্যাটফর্ম লঞ্চ অফার চলছে ৩১ ডিসেম্বর পর্যন্ত। Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০; ইয়ারলি নিলে এখন মাত্র ৳৩০,০০০ (নিয়মিত মূল্য ৳৬০,০০০)। Basic মাসিক ৳৪,০০০, ইয়ারলি এখন মাত্র ৳১৫,০০০ (নিয়মিত মূল্য ৳৩২,০০০)। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।";
-const FAQ_REGULAR = "Pro প্ল্যান মাসিক ৳৭,৫০০, অর্থাৎ ১২ মাসে ৳৯০,০০০। ইয়ারলি নিলে দিতে হবে ৳৬০,০০০ — মানে ৪ মাস একদম ফ্রি। Basic মাসিক ৳৪,০০০, ইয়ারলি ৳৩২,০০০। মাসিক পেমেন্টও নিতে পারেন, যেকোনো সময় বন্ধ করা যাবে।";
 
 export default function BangladeshiExpatLandingPage() {
-  const offer = offerOn();
   return (
     <div className={`${bangla.variable} font-[family-name:var(--font-bangla)] bg-white text-slate-900`}>
       {/* ── Header ───────────────────────────────────────────────────── */}
@@ -402,7 +375,7 @@ export default function BangladeshiExpatLandingPage() {
         </div>
         <div className="flex justify-center mt-10">
           <Link
-            href="/onboarding?plan=basic&currency=bdt"
+            href="/onboarding?package=basic&currency=BDT"
             className="inline-flex items-center gap-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <DashboardIcon />
@@ -411,84 +384,11 @@ export default function BangladeshiExpatLandingPage() {
         </div>
       </section>
 
-      {/* ── Pricing ──────────────────────────────────────────────────── */}
-      <section className="bg-gray-950 text-white">
-        <div className="mx-auto max-w-4xl px-5 py-16 sm:py-20 text-center">
-          <span className="inline-block rounded-full bg-orange-500/10 text-orange-400 text-xs sm:text-sm font-bold px-4 py-1.5 border border-orange-500/20 mb-5">
-            মাসিক পেমেন্ট — যেকোনো সময় বন্ধ করতে পারবেন
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-bold mb-10">
-            আপনার বাজেট যা-ই হোক, একটা প্যাকেজ আছে
-          </h2>
-
-          <div className="grid sm:grid-cols-2 gap-6 text-left">
-            {/* Basic — primary */}
-            <div className="rounded-2xl border border-gray-800 bg-gray-900/60 p-6 sm:p-8 flex flex-col">
-              <span className="text-sm font-bold text-gray-400 mb-1">Basic প্যাকেজ</span>
-              <div className="flex items-end gap-3 mb-1">
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৪,০০০</span>
-                <span className="text-gray-400 text-sm mb-1">/মাস</span>
-              </div>
-              <p className="text-orange-400 text-sm font-semibold mb-6">
-                {offer ? (<>
-                  অথবা বছরে মাত্র ৳১৫,০০০ <span className="line-through text-gray-500 font-normal">৳৩২,০০০</span>
-                  <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, ৩১ ডিসেম্বর পর্যন্ত</span>
-                </>) : "অথবা বছরে ৳৩২,০০০ — ৪ মাস ফ্রি"}
-              </p>
-              <div className="space-y-2.5 mb-8 flex-1">
-                {basicFeatures.map((f) => (
-                  <div key={f} className="flex items-start gap-2.5">
-                    <CheckIcon className="fill-orange-400" />
-                    <span className="text-sm text-gray-300">{f}</span>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/onboarding?plan=basic&currency=bdt"
-                className="inline-flex items-center justify-center gap-2 bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors"
-              >
-                Basic শুরু করুন
-              </Link>
-            </div>
-
-            {/* Pro — highlighted */}
-            <div className="relative rounded-2xl border-2 border-orange-500 bg-gradient-to-b from-orange-500/10 to-rose-500/5 p-6 sm:p-8 flex flex-col shadow-2xl shadow-orange-900/30">
-              <span className="absolute -top-3 left-6 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                সবচেয়ে জনপ্রিয়
-              </span>
-              <span className="text-sm font-bold text-orange-300 mb-1">Pro প্যাকেজ</span>
-              <div className="flex items-end gap-3 mb-1">
-                <span className="text-3xl sm:text-4xl font-extrabold text-white">৳৭,৫০০</span>
-                <span className="text-gray-400 text-sm mb-1">/মাস</span>
-              </div>
-              <p className="text-orange-300 text-sm font-semibold mb-6">
-                {offer ? (<>
-                  অথবা বছরে মাত্র ৳৩০,০০০ <span className="line-through text-gray-500 font-normal">৳৬০,০০০</span>
-                  <span className="block text-xs text-emerald-400 mt-1">প্ল্যাটফর্ম লঞ্চ অফার, ৩১ ডিসেম্বর পর্যন্ত</span>
-                </>) : "অথবা বছরে ৳৬০,০০০ — ৪ মাস ফ্রি"}
-              </p>
-              <div className="space-y-2.5 mb-8 flex-1">
-                {proFeatures.map((f) => (
-                  <div key={f} className="flex items-start gap-2.5">
-                    <CheckIcon className="fill-orange-400" />
-                    <span className="text-sm text-gray-200">{f}</span>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/onboarding?plan=pro&currency=bdt"
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-400 hover:to-rose-400 text-white font-bold px-6 py-3 rounded-xl transition-all"
-              >
-                Pro শুরু করুন
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex justify-center mt-10">
-            <CtaButtons dark />
-          </div>
-        </div>
-      </section>
+      {/* ── Pricing (model v2, from the DB) ── */}
+      <BdPricing />
+      <div className="bg-gray-950 flex justify-center pb-14">
+        <CtaButtons dark />
+      </div>
 
       {/* ── Trust section ────────────────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-5 py-14 sm:py-20">
@@ -569,7 +469,7 @@ export default function BangladeshiExpatLandingPage() {
           সাধারণ জিজ্ঞাসা
         </h2>
         <div className="space-y-4">
-          {faqs.map((f0) => ({ ...f0, a: f0.a === "OFFER_FAQ" ? (offer ? FAQ_OFFER : FAQ_REGULAR) : f0.a })).map((f) => (
+          {faqs.map((f) => (
             <div key={f.q} className="rounded-2xl border border-slate-200 p-5 sm:p-6">
               <h3 className="font-bold text-base sm:text-lg mb-2">{f.q}</h3>
               <div className={f.img ? "flex flex-col sm:grid sm:grid-cols-2 gap-4 items-start" : ""}>
@@ -627,7 +527,7 @@ export default function BangladeshiExpatLandingPage() {
       {/* ── Sticky mobile CTA bar ────────────────────────────────────── */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-50 flex shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
         <Link
-          href="/onboarding?plan=basic&currency=bdt"
+          href="/onboarding?package=basic&currency=BDT"
           className="flex-1 bg-gray-900 text-white font-bold text-center py-3.5 flex items-center justify-center gap-1.5 text-sm"
         >
           এখনই শুরু করুন
@@ -651,7 +551,7 @@ function CtaButtons({ dark = false }: { dark?: boolean }) {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-3">
       <Link
-        href="/onboarding?plan=basic&currency=bdt"
+        href="/onboarding?package=basic&currency=BDT"
         className={
           dark
             ? "inline-flex items-center gap-2.5 bg-white text-gray-900 font-bold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"

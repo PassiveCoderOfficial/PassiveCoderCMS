@@ -11,6 +11,7 @@ import TemplatesShowcase from "@/components/marketing/templates-showcase";
 import HowItWorksSection from "@/components/marketing/how-it-works";
 import ClientsSection from "@/components/marketing/clients";
 import PricingSection from "@/components/marketing/pricing";
+import { loadCatalog } from "@/lib/pricing/load";
 import TestimonialsSection from "@/components/marketing/testimonials";
 import FaqSection from "@/components/marketing/faq";
 import CtaSection from "@/components/marketing/cta";
@@ -229,7 +230,7 @@ export default async function MarketingHomePage() {
   }
 
   // ── Root domain: marketing homepage ───────────────────────────────────────
-  const [{ data: settings }, { data: plans }, { data: rootPage }, showcaseTemplates] = await Promise.all([
+  const [{ data: settings }, { data: plans }, { data: rootPage }, showcaseTemplates, catalog] = await Promise.all([
     supabase.from("homepage_settings").select("*").single(),
     supabase.from("plans").select("*").eq("is_active", true).order("sort_order"),
     supabase
@@ -240,6 +241,7 @@ export default async function MarketingHomePage() {
       .is("tenant_id", null)
       .maybeSingle(),
     fetchPublishedTemplates(),
+    loadCatalog(),
   ]);
 
   if (rootPage?.blocks && Array.isArray(rootPage.blocks) && rootPage.blocks.length > 0) {
@@ -270,7 +272,7 @@ export default async function MarketingHomePage() {
         <HowItWorksSection />
         <FeaturesSection />
         <TemplatesShowcase extraTemplates={showcaseTemplates} />
-        <PricingSection plans={plans ?? []} />
+        <PricingSection packages={catalog.packages} care={catalog.care} />
         <GuaranteeSection />
         <TestimonialsSection testimonials={settings?.testimonials ?? []} />
         <FaqSection faq={settings?.faq ?? []} />
