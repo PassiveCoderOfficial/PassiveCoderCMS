@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyState } from "@/lib/analytics/google-oauth-state";
+import { hasGscScopes, setupSearchConsole } from "@/lib/seo/search-console";
 
-function backToAnalytics(root: string, proto: string, tenantSlugOrRoot: string, query: string) {
-  return NextResponse.redirect(`${proto}://${tenantSlugOrRoot}/dashboard/analytics?${query}`);
+function backToAnalytics(root: string, proto: string, hostAndPath: string, query: string) {
+  return NextResponse.redirect(`${proto}://${hostAndPath}?${query}`);
 }
 
 /**
@@ -30,6 +31,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${proto}://${root}/dashboard/analytics?ga_error=invalid_state`);
   }
 
+  const returnPath = state.ret === "seo" ? "/dashboard/settings/seo" : "/dashboard/analytics";
   const admin = await createAdminClient();
   const { data: tenant } = await admin.from("tenants").select("id, slug, custom_domain").eq("id", state.tenantId).maybeSingle();
   if (!tenant) {
@@ -40,7 +42,7 @@ export async function GET(req: Request) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
-    return backToAnalytics(root, proto, tenantHost, "ga_error=not_configured");
+    return backToAnalytics(root, proto, tenantHost + returnPath, "ga_error=not_configured");
   }
 
   const redirectUri = `${proto}://${root}/api/analytics/google/callback`;
@@ -58,11 +60,11 @@ export async function GET(req: Request) {
   });
   const tokenJson = await tokenRes.json();
   if (!tokenRes.ok || !tokenJson.access_token) {
-    return backToAnalytics(root, proto, tenantHost, "ga_error=token_exchange_failed");
+    return backToAnalytics(root, proto, tenantHost + returnPath, "ga_error=token_exchange_failed");
   }
 
-  const { access_token, refresh_token, expires_in } = tokenJson as {
-    access_token: string; refresh_token?: string; expires_in: number;
+  const { access_token, refresh_token, expires_in, scope } = tokenJson as {
+    access_token: string; refresh_token?: string; expires_in: number; scope?: string;
   };
 
   // Google only returns refresh_token on the FIRST consent (or with
@@ -70,7 +72,7 @@ export async function GET(req: Request) {
   // — a missing one here means Google didn't grant offline access, not that
   // it's safe to proceed without it.
   if (!refresh_token) {
-    return backToAnalytics(root, proto, tenantHost, "ga_error=no_refresh_token");
+    return backToAnalytics(root, proto, tenantHost + returnPath, "ga_error=no_refresh_token");
   }
 
   // Which Google account this is, purely for display on the Analytics page
@@ -97,11 +99,12 @@ export async function GET(req: Request) {
       ga_oauth_access_token: access_token,
       ga_oauth_expires_at: expiresAt,
       ga_oauth_connected_email: connectedEmail,
+      google_scopes: scope ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: "tenant_id" });
 
   if (dbError) {
-    return backToAnalytics(root, proto, tenantHost, "ga_error=save_failed");
+    return backToAnalytics(root, proto, tenantHost + returnPath, "ga_error=save_failed");
   }
 
   // A fresh connect always clears any previously-picked property — the
@@ -113,8 +116,16 @@ export async function GET(req: Request) {
     .upsert({ tenant_id: state.tenantId, ga_property_id: null }, { onConflict: "tenant_id" });
 
   if (settingsError) {
-    return backToAnalytics(root, proto, tenantHost, "ga_error=save_failed");
+    return backToAnalytics(root, proto, tenantHost + returnPath, "ga_error=save_failed");
   }
 
-  return backToAnalytics(root, proto, tenantHost, "ga_connected=1");
+  // Search Console granted too: verify, add and submit the sitemap now, so
+  // the owner lands on a finished setup. A failure is recorded and shown
+  // with a retry button; it never undoes the Google connection.
+  if (hasGscScopes(scope)) {
+    try { await setupSearchConsole(admin, state.tenantId); }
+    catch (e) { console.error("[gsc] setup after connect", e instanceof Error ? e.message : e); }
+  }
+
+  return backToAnalytics(root, proto, tenantHost + returnPath, "ga_connected=1");
 }

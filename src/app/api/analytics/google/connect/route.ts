@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
 import { canWriteSite } from "@/lib/auth/site-write";
 import { signState } from "@/lib/analytics/google-oauth-state";
+import { GSC_SCOPES } from "@/lib/seo/search-console";
 
 /**
  * Kicks off real Google OAuth for "Connect Google Analytics" (2026-09-14,
@@ -19,7 +20,7 @@ import { signState } from "@/lib/analytics/google-oauth-state";
  * tenant id and where to bounce back to, signed so a forged state can't
  * attach someone else's Google grant to a different tenant.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,14 +41,16 @@ export async function GET() {
   const proto = root.includes("localhost") ? "http" : "https";
   const redirectUri = `${proto}://${root}/api/analytics/google/callback`;
 
-  const state = signState({ tenantId, userId: user.id, ts: Date.now() });
+  const ret = new URL(req.url).searchParams.get("return") === "seo" ? "seo" as const : undefined;
+  const state = signState({ tenantId, userId: user.id, ts: Date.now(), ret });
 
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("response_type", "code");
-  authUrl.searchParams.set("scope", "https://www.googleapis.com/auth/analytics.readonly email");
+  authUrl.searchParams.set("scope", ["https://www.googleapis.com/auth/analytics.readonly", ...GSC_SCOPES, "email"].join(" "));
   authUrl.searchParams.set("access_type", "offline"); // needed to get a refresh_token back
+  authUrl.searchParams.set("include_granted_scopes", "true");
   authUrl.searchParams.set("prompt", "consent"); // forces a refresh_token even on a repeat connect
   authUrl.searchParams.set("state", state);
 

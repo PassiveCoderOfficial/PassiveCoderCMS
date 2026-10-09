@@ -36,7 +36,7 @@ export async function GET() {
     { key: "descriptions", ok: published.length > 0 && withDesc / published.length >= 0.8, label: `Search descriptions on pages (${withDesc}/${published.length})`,
       fix: "Give each page a search description in its page settings.", href: "/dashboard/pages" },
     { key: "google", ok: !!settings?.google_site_verification, label: "Connected to Google Search Console",
-      fix: "Verify your site in Google Search Console (Settings > General). Powers Google and Gemini answers.", href: "/dashboard/settings/general" },
+      fix: "Click Connect Google in the Google Search Console box above: we verify the site and submit the sitemap. Powers Google and Gemini answers.", href: "/dashboard/settings/seo" },
     { key: "bing", ok: !!settings?.bing_site_verification, label: "Connected to Bing Webmaster Tools",
       fix: "Verify your site in Bing Webmaster Tools (Settings > General). ChatGPT search and Copilot use Bing.", href: "/dashboard/settings/general" },
   ];

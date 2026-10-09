@@ -4,6 +4,8 @@ export interface GaOAuthState {
   tenantId: string;
   userId: string;
   ts: number;
+  /** Where to land after consent: the Analytics page (default) or SEO settings. */
+  ret?: "seo";
 }
 
 /** HMAC-signed OAuth state shared between connect/route.ts (signs) and

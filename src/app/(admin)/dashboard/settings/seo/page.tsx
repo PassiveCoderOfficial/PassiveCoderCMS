@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { AiVisibilityCard } from "@/components/admin/ai-visibility-card";
+import { SearchConsoleCard } from "@/components/admin/search-console-card";
 
 export default function SeoSettingsPage() {
   const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
@@ -49,6 +50,8 @@ export default function SeoSettingsPage() {
   return (
     <div className="p-6 max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">SEO Settings</h1>
+
+      <SearchConsoleCard />
 
       <AiVisibilityCard />
 
