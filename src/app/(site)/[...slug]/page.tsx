@@ -10,6 +10,7 @@ import { fetchGlobalLayout, withPrefooter, isChromeBlock } from "@/lib/site/glob
 import { isSaaS } from "@/lib/flags";
 import { resolveTenant } from "@/lib/tenant/resolve";
 import { publicUrl } from "@/lib/tenant/site-urls";
+import { firstParagraph } from "@/lib/seo/auto-meta";
 import type { Block, Page } from "@/types/cms";
 import type { Metadata } from "next";
 
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient();
   let metaQuery = supabase
     .from("pages")
-    .select("title, seo")
+    .select("title, seo, blocks")
     .eq("slug", pageSlug)
     .eq("status", "published");
   if (tenantId) {
@@ -43,7 +44,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ne = (v: string | null | undefined) =>
     typeof v === "string" && v.trim().length > 0 ? v.trim() : undefined;
 
-  const pageDescription = ne(seo?.description);
+  // No description written: the page's own first paragraph, never blank.
+  const pageDescription = ne(seo?.description) ?? firstParagraph(page.blocks) ?? undefined;
   const ogDescription = ne(seo?.og_description) ?? pageDescription;
   const ogTitle = ne(seo?.og_title) ?? ne(seo?.title) ?? page.title;
   const ogImage = ne(seo?.og_image);

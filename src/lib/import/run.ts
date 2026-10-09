@@ -1,5 +1,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { autoFillSeo } from "@/lib/seo/ai-meta";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyItem, type JobCtx, type JobResults } from "./server";
 import type { ImportItem } from "./parse";
@@ -58,6 +60,10 @@ export async function runJobStep(w: Who, id: string, budgetMs = BUDGET_MS) {
     cursor, status, results: ctx.results, options: { ...(job.options as object), mediaMap: ctx.mediaMap },
     updated_at: new Date().toISOString(),
   }).eq("id", id);
-  if (status === "done") { revalidatePath("/dashboard/pages"); revalidatePath("/dashboard/posts"); }
+  if (status === "done") {
+    revalidatePath("/dashboard/pages"); revalidatePath("/dashboard/posts");
+    // Imported pages rarely carry usable meta: fill the empty ones (free).
+    after(() => autoFillSeo(w.admin, w.tenantId).then(() => undefined).catch((e) => console.error("[seo] autofill", e instanceof Error ? e.message : e)));
+  }
   return { status, cursor, total: items.length, results: ctx.results };
 }

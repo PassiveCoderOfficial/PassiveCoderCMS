@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
+import { getSiteFacts } from "@/lib/seo/site-facts";
+import { autoSiteDescription, autoSiteTitle } from "@/lib/seo/auto-meta";
 
 /** The one real Passive Coder icon file. Every CMS-own surface (dashboard,
  *  login, staff/super-admin panels — none of which are tenant-facing) uses
@@ -36,6 +38,8 @@ export const PLATFORM_ICONS = { icon: PLATFORM_FAVICON, shortcut: PLATFORM_FAVIC
 
 export interface ResolvedSiteMetadata {
   siteName: string;
+  /** Homepage title: the owner's default meta title, else built from the business profile. */
+  homeTitle?: string;
   description: string | undefined;
   faviconUrl: string;
   ogImage: string | undefined;
@@ -80,7 +84,7 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
 
   const admin = await createAdminClient();
   const [{ data: settings }, { data: identity }] = await Promise.all([
-    admin.from("site_settings").select("site_name, meta_description, site_description, favicon_url, google_site_verification, bing_site_verification").eq("tenant_id", tenantId).maybeSingle(),
+    admin.from("site_settings").select("site_name, meta_title, meta_description, site_description, favicon_url, google_site_verification, bing_site_verification").eq("tenant_id", tenantId).maybeSingle(),
     admin.from("site_identity").select("site_name, favicon_url, logo_url, tagline").eq("tenant_id", tenantId).maybeSingle(),
   ]);
 
@@ -104,6 +108,13 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
     description = firstNonEmpty(heroData?.description, heroData?.subtitle);
   }
 
+  // Nothing written anywhere: build one from the business profile, and the
+  // homepage title from name + main service + area, so no site ships blank.
+  const ownTitle = firstNonEmpty(settings?.meta_title as string | null | undefined);
+  const facts = !description || !ownTitle ? await getSiteFacts(tenantId).catch(() => null) : null;
+  if (!description && facts) description = autoSiteDescription(facts) ?? undefined;
+  const homeTitle = ownTitle ?? (facts ? autoSiteTitle(facts) : undefined);
+
   const uploadedFavicon = firstNonEmpty(identity?.favicon_url, settings?.favicon_url);
   const faviconUrl = uploadedFavicon ?? autoFavicon(siteName);
   const ogImage = firstNonEmpty(identity?.logo_url, uploadedFavicon);
@@ -111,7 +122,7 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
   const googleVerification = firstNonEmpty(settings?.google_site_verification as string | null | undefined);
   // Bing Webmaster Tools: ChatGPT search and Copilot answer from Bing's index.
   const bingVerification = firstNonEmpty(settings?.bing_site_verification as string | null | undefined);
-  return { siteName, description, faviconUrl, ogImage, googleVerification, bingVerification };
+  return { siteName, homeTitle, description, faviconUrl, ogImage, googleVerification, bingVerification };
 }
 
 /** Builds the full Metadata object from a resolved tenant, including
@@ -121,7 +132,7 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
  *  complete version instead of a partial one. */
 export async function buildSiteMetadata(tenantId: string | null | undefined): Promise<Metadata> {
   const resolved = await resolveSiteMetadata(tenantId);
-  const { siteName, description, faviconUrl, ogImage, googleVerification, bingVerification } = resolved;
+  const { siteName, homeTitle, description, faviconUrl, ogImage, googleVerification, bingVerification } = resolved;
 
   const reqHeaders = await headers();
   const host = reqHeaders.get("host");
@@ -130,7 +141,7 @@ export async function buildSiteMetadata(tenantId: string | null | undefined): Pr
 
   return {
     metadataBase,
-    title: { default: siteName, template: `%s | ${siteName}` },
+    title: { default: homeTitle ?? siteName, template: `%s | ${siteName}` },
     description,
     icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
     ...(googleVerification || bingVerification ? {

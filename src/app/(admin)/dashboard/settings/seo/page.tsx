@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { AiVisibilityCard } from "@/components/admin/ai-visibility-card";
 import { SearchConsoleCard } from "@/components/admin/search-console-card";
+import { AiSeoCard } from "@/components/admin/ai-seo-card";
 
 export default function SeoSettingsPage() {
   const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
@@ -54,6 +55,8 @@ export default function SeoSettingsPage() {
       <SearchConsoleCard />
 
       <AiVisibilityCard />
+
+      <AiSeoCard onSaved={() => window.location.reload()} />
 
       <Card>
         <CardHeader><CardTitle className="text-sm">Default Meta Tags</CardTitle></CardHeader>

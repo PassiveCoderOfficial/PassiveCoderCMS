@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { autoFillSeo } from "@/lib/seo/ai-meta";
 import { ensureBookingNav } from "@/lib/booking/nav";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { apiTenantId } from "@/lib/tenant/api";
@@ -123,6 +124,7 @@ export async function POST(req: Request) {
         await rewireNavigation(all, navTargets).catch(() => {});
         await ensureBookingNav(await createAdminClient(), tenantId).catch(() => {});
       }
+      after(async () => { await autoFillSeo(await createAdminClient(), tenantId).catch((e) => console.error("[seo] autofill", e instanceof Error ? e.message : e)); });
     }
 
     return NextResponse.json({

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureBookingNav } from "@/lib/booking/nav";
+import { autoFillSeo } from "@/lib/seo/ai-meta";
 import { createAdminClient } from "@/lib/supabase/server";
 import { parseBrief, planSite, type SitePlan } from "./plan";
 import { buildSitePage } from "./build-site";
@@ -336,6 +337,8 @@ async function finishJob(admin: SupabaseClient, tenantId: string, pagesDone: num
     .eq("id", tenantId);
   // The AI-built header replaced the template's: link the booking page again.
   await ensureBookingNav(admin, tenantId).catch(() => {});
+  // Search titles/descriptions for the new pages (free; fills empty fields only).
+  if (pagesDone > 0) await autoFillSeo(admin, tenantId).catch((e) => console.error("[seo] autofill", e instanceof Error ? e.message : e));
 
   await admin.from("onboarding_build_jobs")
     .update({
