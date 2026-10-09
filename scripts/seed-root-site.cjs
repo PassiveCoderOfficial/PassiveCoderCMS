@@ -177,10 +177,10 @@ const finalCta = (title, description, primary, secondary) => block("cta", {
   primaryButton: primary, secondaryButton: secondary,
 }, { templateVariant: "dark-split", padding: pad(40, 104) });
 
-const pageHero = (badge, title, accent, subtitle, buttons = {}) => block("hero", {
-  layout: "centered", badge, title, titleAccent: accent, subtitle, compact: true,
-  typography: typo("6xl"), ...buttons,
-}, { templateVariant: "page-banner", padding: pad(120, 72), background: color(BG) });
+const pageHero = (badge, title, accent, subtitle, buttons = {}, image = "photo-1497366216548-37526070297c") => block("hero", {
+  layout: "left", badge, title, titleAccent: accent || undefined, subtitle, compact: true,
+  imageUrl: U(image, 1400), imageAlt: "", typography: typo("6xl"), ...buttons,
+}, { templateVariant: "dark-gradient-left", padding: pad(110, 80), background: color(BG) });
 
 // ─── pages ──────────────────────────────────────────────────────────────────
 function home() {
@@ -289,7 +289,8 @@ function home() {
 function pricingPage() {
   return [
     pageHero("Pricing", "Pay once for your website.", "Keep it looked after.",
-      "A one-time build price with the first year of hosting, SSL, backups and domain included. Add a Care plan when you want our team to keep improving it."),
+      "A one-time build price with the first year of hosting, SSL, backups and domain included. Add a Care plan when you want our team to keep improving it.",
+      {}, "photo-1460925895917-afdab827c52f"),
     pricing("packages", { eyebrow: "", title: "", subtitle: "" }),
     pricing("care", {
       eyebrow: "Care plans", title: "Want us to look after it?",
@@ -306,7 +307,7 @@ function carePage() {
   return [
     pageHero("Website Care Plans", "Website maintenance,", "done for you.",
       "Our team keeps your website updated, fast and secure every month. Hosting, SSL, backups and domain renewal are included in every plan.",
-      { primaryButton: { label: "See Care plans", url: "#care", variant: "primary" }, secondaryButton: { label: "Ask on WhatsApp", url: WA, variant: "outline" } }),
+      { primaryButton: { label: "Ask on WhatsApp", url: WA, variant: "primary" } }, "photo-1551434678-e076c223a692"),
     pricing("care", { eyebrow: "", title: "", subtitle: "", showBdPrompt: false }),
     block("features", {
       eyebrow: "What you get",
@@ -442,7 +443,7 @@ function contactPage() {
   return [
     pageHero("Contact", "Talk to a real person.", "We reply fast.",
       "WhatsApp is the quickest way to reach us. Or send the form and we will get back to you within a day.",
-      { primaryButton: { label: "WhatsApp us", url: WA, variant: "primary" } }),
+      { primaryButton: { label: "WhatsApp us", url: WA, variant: "primary" } }, "photo-1521791136064-7986c2920216"),
     block("contact", {
       title: "Send us a message", subtitle: "Tell us about your business and what you need.",
       layout: "split", showMap: false, showContactInfo: true,
@@ -503,11 +504,11 @@ async function preserveLegal(slug) {
   await sb.from("nav_menus").delete().eq("tenant_id", TENANT_ID);
 
   const seo = (title, description) => ({ title, description });
-  await upsertPage("home", "Home", home(), seo("Passive Coder — Professional Websites for Local Businesses", "We build and run professional websites for local service businesses, with WhatsApp enquiries, booking and a shop built in. Pay once, see it first."), 0);
-  await upsertPage("pricing", "Pricing", pricingPage(), seo("Website Pricing — Passive Coder", "One-time website packages with the first year of hosting, SSL, backups and domain included. Optional monthly or yearly Care plans."), 1);
-  await upsertPage("website-maintenance", "Website Care Plans", carePage(), seo("Website Maintenance & Care Plans — Passive Coder", "Website maintenance with hosting, domain renewal, monthly updates, new pages, SEO checks and priority support."), 2);
-  await upsertPage("website-for-bangladeshi-businesses", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট | Passive Coder", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। আগে দেখুন, পরে পেমেন্ট।"), 3);
-  await upsertPage("contact", "Contact", contactPage(), seo("Contact — Passive Coder", "Talk to the Passive Coder team on WhatsApp or send us a message."), 4);
-  await upsertPage("refund", "Refund Policy", legalPage("Refund policy", REFUND), seo("Refund Policy — Passive Coder", "Our refund policy for website builds, Care plans and platform renewals."), 7);
+  await upsertPage("home", "Home", home(), seo("Professional Websites for Local Businesses", "We build and run professional websites for local service businesses, with WhatsApp enquiries, booking and a shop built in. Pay once, see it first."), 0);
+  await upsertPage("pricing", "Pricing", pricingPage(), seo("Website Pricing", "One-time website packages with the first year of hosting, SSL, backups and domain included. Optional monthly or yearly Care plans."), 1);
+  await upsertPage("website-maintenance", "Website Care Plans", carePage(), seo("Website Maintenance & Care Plans", "Website maintenance with hosting, domain renewal, monthly updates, new pages, SEO checks and priority support."), 2);
+  await upsertPage("website-for-bangladeshi-businesses", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। আগে দেখুন, পরে পেমেন্ট।"), 3);
+  await upsertPage("contact", "Contact", contactPage(), seo("Contact", "Talk to the Passive Coder team on WhatsApp or send us a message."), 4);
+  await upsertPage("refund", "Refund Policy", legalPage("Refund policy", REFUND), seo("Refund Policy", "Our refund policy for website builds, Care plans and platform renewals."), 7);
   console.log("done");
 })().catch((e) => { console.error(e); process.exit(1); });

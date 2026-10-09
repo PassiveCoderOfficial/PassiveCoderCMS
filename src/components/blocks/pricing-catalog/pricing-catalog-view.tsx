@@ -127,7 +127,8 @@ export function PricingCatalogView({ data, packages, care }: { data: Data; packa
           {care.map((cp) => {
             const popular = cp.id === "care_pro";
             const price = currency === "USD" ? (cycle === "monthly" ? cp.monthly_usd_cents : cp.yearly_usd_cents) : cycle === "monthly" ? cp.monthly_bdt : cp.yearly_bdt;
-            const perMonth = cycle === "yearly" ? Math.round(price / 12) : price;
+            // Whole dollars / taka: "$199.33/month" reads as a calculator, not a price.
+            const perMonth = cycle === "yearly" ? (currency === "USD" ? Math.round(price / 1200) * 100 : Math.round(price / 12)) : price;
             return (
               <div key={cp.id} className={`relative flex flex-col rounded-3xl border p-8 ${popular ? c.hi : c.card}`}>
                 {popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-1 text-xs font-bold text-white">{t.popular}</div>}
