@@ -3,7 +3,7 @@
 Decisions carried over from planning sessions in the Claude app, so Claude Code
 sessions in this repo start from the same picture.
 
-Last updated: 2026-10-09
+Last updated: 2026-10-10
 
 Two items below are marked **unconfirmed** — do not put them in anything a
 customer sees until they are settled.
@@ -43,56 +43,114 @@ Products:
 
 ---
 
-## Pricing — Bangladesh channel
+## Pricing — DRAFT v2 (2026-10-10, agreed in principle, not yet public)
 
-Changed October 2026: development is a **one-time** charge, not a monthly
-subscription. Monthly pricing no longer covers development.
+Supersedes the Bangladesh-channel tables that were here. Nothing below is on
+the live site yet. Do not quote to customers until Wali marks it final.
+
+### Model: three layers
+
+1. **Development** — one-time build.
+2. **Platform** — hosting, SSL, storage, backups, domain renewal, dashboard,
+   CRM, booking. Development includes 12 months. Renewed **yearly only**
+   (no monthly platform billing anywhere).
+3. **Care** — people doing the work (changes, pages, support). Monthly or
+   yearly. **Care includes the platform** for as long as it runs.
+
+A site stays online while **either** the platform or Care is paid. Cancelling
+Care falls back to the platform renewal; the site never disappears just
+because Care ended.
+
+### Currencies
+
+- Public pricing is **USD** (passivecoder.com default, English).
+- A section near the pricing asks "Bangladeshi? / বাংলাদেশ থেকে?" and leads
+  to a dedicated Bangladesh landing page with **BDT** pricing.
+- Bangla language switch shows BDT by default; English shows USD.
+- USD price is ~3x the BDT price at 1 USD = 125 BDT, rounded to clean numbers.
+  Bangladeshi expats abroad see USD publicly; deals happen in WhatsApp chat.
 
 ### Development (one-time)
 
-| Package  | Price      | Pages we build | Maintenance included |
-|----------|------------|----------------|----------------------|
-| Basic    | BDT 12,000 | up to 6        | none                 |
-| Pro      | BDT 25,000 | up to 15       | none                 |
-| Business | BDT 50,000 | up to 30       | 1 year               |
+| | Basic | Pro | Business |
+|---|---|---|---|
+| BDT | 12,000 | 25,000 | 50,000 |
+| USD | 299 | 599 | 1,199 |
+| Pages we build | 6 | 15 | 30 |
+| Page limit on the site | none | none | none |
+| Storage | 2 GB | 10 GB | 50 GB |
+| Platform included | 12 months | 12 months | 12 months |
+| Free Care | 3 months Care Basic | 3 months Care Pro | 12 months Care Pro |
 
-- Extra pages: the client can build their own, or BDT 1,000 per page.
-- Basic is design + development only.
+Extra page built by us: BDT 1,000 / USD 29. Client-built pages are free.
 
-### Care packages (recurring) — **unconfirmed**
+### Platform renewal (yearly only, from year 2, only if no Care)
 
-| Package       | Monthly   | Annual     |
-|---------------|-----------|------------|
-| Care Basic    | BDT 1,500 | BDT 12,000 |
-| Care Pro      | BDT 2,500 | BDT 20,000 |
-| Care Business | BDT 4,000 | BDT 32,000 |
+| | Basic | Pro | Business |
+|---|---|---|---|
+| BDT / year | 8,000 | 12,000 | 20,000 |
+| USD / year | 199 | 299 | 499 |
 
-- Annual = 8 x monthly, marketed as "৪ মাস ফ্রি" (4 months free). Never use
-  percentage framing. Any recalculation keeps the 8-month formula.
-- Care is now the only recurring revenue line. It is sold as the default at
-  handover, not as an optional add-on.
-- Gulf / Singapore pricing is separate and is NOT derived from these numbers.
+Domain renewal is included in the platform fee and in every Care tier.
+
+### Care
+
+| | Care Basic | Care Pro | Care Business |
+|---|---|---|---|
+| BDT / month | 5,000 | 12,000 | 18,000 |
+| BDT / year (8x, "৪ মাস ফ্রি") | 40,000 | 96,000 | 144,000 |
+| USD / month | 129 | 299 | 449 |
+| USD / year (8x) | 1,032 | 2,392 | 3,592 |
+| Platform + hosting + SSL + backups + domain renewal | yes | yes | yes |
+| Content/design changes per month | 3 | 10 | fair use |
+| New pages per month | 0 | 2 | 5 |
+| Response time | 48h | 24h | same day, dedicated WhatsApp |
+| Monthly report | no | yes | yes + call |
+| Search Console / schema / SEO checks | no | yes | yes |
+| Blog posts written per month | 0 | 2 | 4 |
+| Ad landing pages per month | 0 | 0 | 1 |
+
+- Google Business Profile management is **not** offered on any tier.
+- Search Console and SEO tooling exist on the platform for everyone, but
+  hands-on support for them starts at Care Pro.
+- Unused changes do not roll over.
+
+**Fair use (Care Business, and the definition of "one change" for all tiers),
+draft wording:**
+- One change = one edit request on one page that takes up to 30 minutes
+  (text, image, section reorder, colour, a form field). Bigger requests
+  count as several changes or are quoted as a new page.
+- Fair use = up to ~20 hours of team time per month. Above that we talk
+  first, we never silently bill.
+- Not included in any tier: a full redesign, new custom features or
+  integrations, paid stock media, ad spend.
+
+### Care without development
+
+Allowed (existing Passive Coder sites, migrated WordPress sites). Care then
+includes the platform for its term. Draft rule: a migrated site pays a
+one-time onboarding/migration fee or commits to yearly Care; to be decided.
+
+### How it is sold
+
+- Care is offered as an **add-on at development checkout**, preselected to
+  the matching tier, free months applied.
+- **Bundle:** development + 1 year Care in one payment, ~10% off.
+- A dedicated Care landing page (SEO slug TBD, e.g.
+  `/website-maintenance` / `/website-care-plans`) for Care-only buyers.
 
 ### Superseded — do not quote
 
-The earlier monthly SaaS model (Basic BDT 4,000/mo, Pro BDT 7,500/mo, annual
-BDT 32,000 / 60,000) and its launch offer at BDT 15,000 / 30,000 per year with
-lifetime renewal lock-in. Older figures still on the live Bangladeshi landing
-page (BDT 42,000 / 84,000) were never transacted and are simply wrong.
+The monthly SaaS model (BDT 4,000 / 7,500 per month, BDT 32,000 / 60,000 per
+year), the launch offer BDT 15,000 / 30,000 per year, the first one-time draft
+(Care BDT 1,500 / 2,500 / 4,000), and the old landing page figures
+(BDT 42,000 / 84,000).
 
-### Open question — **unconfirmed**
+### Watch
 
-The page counts above were given alongside a statement that Pro and Business
-have no page limit. Assumed reading: the counts are what Passive Coder builds;
-the site itself has no technical page limit. Needs confirming.
-
-### Known pricing inconsistency
-
-Basic works out to BDT 2,000 per page while extra pages are BDT 1,000. Clients
-will notice. Either raise extra pages to BDT 1,500, or state that the first
-package includes design setup.
-
----
+- Basic platform renewal (BDT 8,000) is 67% of the Basic build price; some
+  clients will balk in year 2. Care Basic must look like the obvious upgrade.
+- Existing monthly clients: migration path not decided.
 
 ## Sales model
 
