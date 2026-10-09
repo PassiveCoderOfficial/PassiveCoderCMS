@@ -5,6 +5,8 @@ import { makePayment, resolveSpConfig } from "@/lib/billing/shurjopay";
 import { getDodoClient, getDodoProductId, resolveDodoConfig, resolveCustomerName } from "@/lib/billing/dodo";
 import { verifyBearerUser } from "@/lib/auth/verify-bearer";
 import { isSuperAdmin } from "@/lib/super-admin";
+import { checkoutV2 } from "@/lib/billing/checkout-v2";
+import type { QuoteKind } from "@/lib/pricing/catalog";
 
 const MANUAL_METHODS = ["bkash", "nagad", "bank"] as const;
 
@@ -38,7 +40,8 @@ export async function POST(req: Request) {
   };
   const billingCycle: "monthly" | "yearly" =
     body.billingCycle === "monthly" ? "monthly" : "yearly";
-  if (!tenantId || !planId || !method) {
+  const kind = body.kind as QuoteKind | undefined;
+  if (!tenantId || !method || (!kind && !planId)) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
@@ -53,6 +56,17 @@ export async function POST(req: Request) {
     .maybeSingle();
   if (!membership && !(await isSuperAdmin(user.id))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Pricing v2 (development / platform / care / bundle)
+  if (kind) {
+    return checkoutV2(req, admin, user, {
+      tenantId, kind, method, txnRef, senderNumber,
+      planId: planId || null,
+      careId: (body.careId as string | undefined) ?? null,
+      careCycle: body.careCycle === "monthly" ? "monthly" : "yearly",
+      returnUrlOverride, cancelUrlOverride,
+    });
   }
 
   const [{ data: plan }, { data: ps }] = await Promise.all([

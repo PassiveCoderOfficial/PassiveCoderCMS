@@ -8,6 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CheckoutDialog, type CheckoutPlan, type PaymentConfig } from "./checkout-dialog";
+import { SiteBillingV2, type V2Sub } from "./billing-v2";
 import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { ENMOptInCard } from "@/components/enm/enm-optin-card";
 import { enmTierForPlan } from "@/lib/enm-tier";
@@ -192,13 +193,11 @@ export default function SubscriptionPage() {
       </div>
 
       {subs.length === 0 ? (
-        <NoSubscription
-          plans={plans}
-          discountPct={discountPct}
-          currency={currency}
-          bdtRate={bdtRate}
-          onChoose={primaryTenantId ? (plan) => setCheckout({ tenantId: primaryTenantId, plan }) : undefined}
-        />
+        primaryTenantId ? (
+          <div className="rounded-xl border p-5">
+            <SiteBillingV2 tenantId={primaryTenantId} sub={null} paymentConfig={paymentConfig} />
+          </div>
+        ) : null
       ) : (
         <div className="space-y-3">
           {subs.map(sub => (
@@ -211,6 +210,7 @@ export default function SubscriptionPage() {
               bdtRate={bdtRate}
               profileComplete={profileComplete}
               onChoose={(plan) => setCheckout({ tenantId: sub.tenant_id, plan })}
+              paymentConfig={paymentConfig}
             />
           ))}
         </div>
@@ -325,7 +325,7 @@ function CancelTrialButton({ tenantId }: { tenantId: string }) {
   );
 }
 
-function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, onChoose }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; profileComplete: boolean; onChoose: (plan: CheckoutPlan) => void }) {
+function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, onChoose, paymentConfig }: { sub: Subscription; plans: Plan[]; discountPct: number; currency: Currency; bdtRate: number; profileComplete: boolean; onChoose: (plan: CheckoutPlan) => void; paymentConfig: PaymentConfig }) {
   const t = useT();
   const cfg = statusConfig(t)[sub.status] ?? statusConfig(t).cancelled;
   const tenant = sub.tenants;
@@ -458,21 +458,10 @@ function SubCard({ sub, plans, discountPct, currency, bdtRate, profileComplete, 
         )}
       </div>
 
-      {sub.status !== "active" && plans.length > 0 && (
-        <div className="pt-2 border-t">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            {sub.status === "pending" ? t("sub.changePlanOrPay") : t("sub.chooseAPlan")}
-          </p>
-          <PlanGrid
-            plans={plans}
-            currentPlanId={sub.plan_id}
-            discountPct={discountPct}
-            currency={currency}
-            bdtRate={bdtRate}
-            onChoose={onChoose}
-          />
-        </div>
-      )}
+      {/* Pricing v2: website (one-time), platform (yearly), Care */}
+      <div className="pt-3 border-t">
+        <SiteBillingV2 tenantId={sub.tenant_id} sub={sub as unknown as V2Sub} paymentConfig={paymentConfig} />
+      </div>
     </div>
   );
 }

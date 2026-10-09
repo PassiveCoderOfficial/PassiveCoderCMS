@@ -1,3 +1,4 @@
+import { activateSubscription } from "@/lib/billing/activate";
 import { NextResponse } from "next/server";
 import { getDodoClient, resolveDodoConfig } from "@/lib/billing/dodo";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -60,6 +61,20 @@ export async function POST(req: Request) {
         // Non-2xx makes Dodo retry — which is safe now, and what we want if
         // the credit genuinely failed.
         if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    // Pricing v2 payments (development / platform / care) carry `kind`; the
+    // pending row recordCheckout wrote says what to grant.
+    if (payment.metadata?.kind && tenantId) {
+      const { data: sub } = await admin.from("subscriptions").select("id, pending_kind").eq("tenant_id", tenantId).maybeSingle();
+      if (sub?.pending_kind) {
+        await activateSubscription(admin, sub.id as string);
+        await admin.from("subscription_dunning")
+          .update({ resolved_at: new Date().toISOString(), stage: 0 })
+          .eq("tenant_id", tenantId)
+          .is("resolved_at", null);
       }
       return NextResponse.json({ ok: true });
     }

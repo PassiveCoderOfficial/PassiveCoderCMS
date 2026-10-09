@@ -40,8 +40,16 @@ export async function recordCheckout(
     payment_provider: string;
     shurjopay_order_id?: string;
     manual_ticket_id?: string;
+    /** Pricing v2 checkouts: what this payment is for. */
+    kind?: "development" | "platform" | "care" | "bundle";
+    care_plan_id?: string | null;
+    care_cycle?: "monthly" | "yearly" | null;
   },
 ): Promise<{ error: string | null }> {
+  const v2 = fields.kind
+    ? { pending_kind: fields.kind, pending_care_plan_id: fields.care_plan_id ?? null, pending_care_cycle: fields.care_cycle ?? null }
+    : { pending_kind: null, pending_care_plan_id: null, pending_care_cycle: null };
+  const { kind: _k, care_plan_id: _c, care_cycle: _cc, ...base } = fields;
   const { data: existing } = await admin
     .from("subscriptions")
     .select("status")
@@ -54,6 +62,7 @@ export async function recordCheckout(
       pending_billing_cycle: fields.billing_cycle,
       pending_amount_cents: fields.amount_cents,
       pending_currency: fields.currency,
+      ...v2,
       ...(fields.shurjopay_order_id ? { shurjopay_order_id: fields.shurjopay_order_id } : {}),
       ...(fields.manual_ticket_id ? { manual_ticket_id: fields.manual_ticket_id } : {}),
     }).eq("tenant_id", tenantId);
@@ -61,7 +70,9 @@ export async function recordCheckout(
   }
 
   const { error } = await admin.from("subscriptions").upsert(
-    { tenant_id: tenantId, status: "pending", ...fields },
+    // v2 checkouts always park in pending_* so activation knows the kind,
+    // even on a brand-new row.
+    { tenant_id: tenantId, status: "pending", ...base, ...v2, ...(fields.kind ? { pending_plan_id: fields.plan_id, pending_billing_cycle: fields.billing_cycle, pending_amount_cents: fields.amount_cents, pending_currency: fields.currency } : {}) },
     { onConflict: "tenant_id" },
   );
   return { error: error?.message ?? null };
@@ -78,10 +89,12 @@ export async function activateSubscription(
 ): Promise<{ tenantId: string; planId: string; cycle: string; amountCents: number | null } | null> {
   const { data: sub } = await admin
     .from("subscriptions")
-    .select("id, tenant_id, plan_id, billing_cycle, amount_cents, currency, pending_plan_id, pending_billing_cycle, pending_amount_cents, pending_currency")
+    .select("id, tenant_id, plan_id, billing_cycle, amount_cents, currency, pending_plan_id, pending_billing_cycle, pending_amount_cents, pending_currency, pending_kind, pending_care_plan_id, pending_care_cycle, platform_paid_until, care_paid_until")
     .eq("id", subId)
     .maybeSingle();
   if (!sub) return null;
+
+  if (sub.pending_kind) return activateV2(admin, sub as V2Row);
 
   const planId = (sub.pending_plan_id ?? sub.plan_id) as string;
   const cycle = (sub.pending_billing_cycle ?? sub.billing_cycle ?? "yearly") as string;
@@ -106,4 +119,89 @@ export async function activateSubscription(
   await admin.from("tenants").update({ status: "active", plan: planId }).eq("id", sub.tenant_id);
 
   return { tenantId: sub.tenant_id as string, planId, cycle, amountCents };
+}
+
+
+/* ── Pricing v2 (migration 137): development / platform / care / bundle ── */
+
+interface V2Row {
+  id: string;
+  tenant_id: string;
+  plan_id: string | null;
+  amount_cents: number | null;
+  currency: string | null;
+  pending_plan_id: string | null;
+  pending_amount_cents: number | null;
+  pending_currency: string | null;
+  pending_kind: "development" | "platform" | "care" | "bundle";
+  pending_care_plan_id: string | null;
+  pending_care_cycle: "monthly" | "yearly" | null;
+  platform_paid_until: string | null;
+  care_paid_until: string | null;
+}
+
+const plusMonths = (from: Date, m: number) => { const d = new Date(from); d.setMonth(d.getMonth() + m); return d; };
+/** Extend from whichever is later: now, or the still-running paid date. */
+const extend = (current: string | null, months: number, now: Date) => {
+  const base = current && new Date(current) > now ? new Date(current) : now;
+  return plusMonths(base, months);
+};
+
+async function activateV2(admin: Admin, sub: V2Row) {
+  const now = new Date();
+  const kind = sub.pending_kind;
+  const planId = (sub.pending_plan_id ?? sub.plan_id ?? "basic") as string;
+  const patch: Record<string, unknown> = {
+    status: "active",
+    trial_converted: true,
+    amount_cents: sub.pending_amount_cents ?? sub.amount_cents,
+    currency: sub.pending_currency ?? sub.currency,
+    current_period_start: now.toISOString(),
+    pending_plan_id: null, pending_billing_cycle: null, pending_amount_cents: null, pending_currency: null,
+    pending_kind: null, pending_care_plan_id: null, pending_care_cycle: null,
+  };
+  let platformUntil = sub.platform_paid_until;
+  let careUntil = sub.care_paid_until;
+
+  if (kind === "development" || kind === "bundle") {
+    patch.plan_id = planId;
+    patch.development_paid_at = now.toISOString();
+    platformUntil = extend(sub.platform_paid_until, 12, now).toISOString();
+    if (kind === "development") {
+      const { data: pkg } = await admin.from("plans").select("free_care_plan_id, free_care_months").eq("id", planId).maybeSingle();
+      if (pkg?.free_care_plan_id && (pkg.free_care_months ?? 0) > 0) {
+        patch.care_plan_id = pkg.free_care_plan_id;
+        patch.care_cycle = "monthly";
+        patch.care_is_free = true;
+        careUntil = extend(sub.care_paid_until, pkg.free_care_months as number, now).toISOString();
+      }
+    } else {
+      patch.care_plan_id = sub.pending_care_plan_id;
+      patch.care_cycle = "yearly";
+      patch.care_is_free = false;
+      careUntil = extend(sub.care_paid_until, 12, now).toISOString();
+    }
+  } else if (kind === "platform") {
+    patch.plan_id = planId;
+    platformUntil = extend(sub.platform_paid_until, 12, now).toISOString();
+  } else if (kind === "care") {
+    const cycle = sub.pending_care_cycle === "monthly" ? "monthly" : "yearly";
+    patch.care_plan_id = sub.pending_care_plan_id;
+    patch.care_cycle = cycle;
+    patch.care_is_free = false;
+    careUntil = extend(sub.care_paid_until, cycle === "monthly" ? 1 : 12, now).toISOString();
+  }
+
+  patch.platform_paid_until = platformUntil;
+  patch.care_paid_until = careUntil;
+  patch.billing_cycle = "yearly";
+  // The single date dunning/suspension read: online while either is paid.
+  const ends = [platformUntil, careUntil].filter(Boolean).map((d) => new Date(d as string).getTime());
+  if (ends.length) patch.current_period_end = new Date(Math.max(...ends)).toISOString();
+
+  await admin.from("subscriptions").update(patch).eq("id", sub.id);
+  const effectivePlan = (patch.plan_id as string | undefined) ?? sub.plan_id ?? planId;
+  await admin.from("tenants").update({ status: "active", plan: effectivePlan }).eq("id", sub.tenant_id);
+
+  return { tenantId: sub.tenant_id, planId: effectivePlan, cycle: "yearly", amountCents: (patch.amount_cents as number | null) ?? null };
 }
