@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { rootBuilderTenantFor } from "@/lib/site/root-builder";
@@ -193,8 +194,11 @@ const chapters = [
 
 
 export default async function BangladeshiExpatLandingPage() {
-  const rootTenant = await rootBuilderTenantFor("bangladesh");
-  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="bangladesh" />;
+  // Tenant host (incl. the root tenant's beta preview): its own builder page.
+  const tenantId = (await headers()).get("x-tenant-id");
+  if (tenantId) return <TenantPageWithChrome tenantId={tenantId} slug="website-for-bangladeshi-businesses" />;
+  const rootTenant = await rootBuilderTenantFor("website-for-bangladeshi-businesses");
+  if (rootTenant) return <TenantPageWithChrome tenantId={rootTenant} slug="website-for-bangladeshi-businesses" />;
   return (
     <div className={`${bangla.variable} font-[family-name:var(--font-bangla)] bg-white text-slate-900`}>
       {/* ── Header ───────────────────────────────────────────────────── */}

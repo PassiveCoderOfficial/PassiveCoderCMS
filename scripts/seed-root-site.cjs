@@ -44,17 +44,27 @@ const block = (type, data, extra = {}) => ({
 const typo = (size = "6xl") => ({ titleSize: size, titleColor: "", subtitleColor: "", descColor: "" });
 
 // ─── content ────────────────────────────────────────────────────────────────
+// Sites built on the Passive Coder CMS itself. [name, category · country, slug, live host]
 const CLIENTS = [
-  ["Dream Arabia", "Real estate · UAE", "dreamarabiasa.com"],
-  ["Emirates Curtain", "Interior fit-out · UAE", "emiratescurtain.com"],
-  ["Everyday Renovations", "Renovation · UAE", "everydayrenovations.com"],
-  ["Dubai Deep Cleaning", "Cleaning · UAE", "dubaideepcleaning.ae"],
-  ["Advance Construction", "Construction · Singapore", "advanceconstructionsg.com"],
-  ["Aircon Interior Service", "HVAC & interior · Singapore", "airconinteriorservicesg.com"],
-  ["Hasan Flooring KL", "Flooring · Malaysia", "hasanflooringkl.com"],
-  ["SB Fit-out", "Fit-out & design · UAE", "sbfitout.com"],
-  ["Anamika Global", "Business services · Malaysia", "anamikaglobal.com"],
+  ["Diesel Power Engineering", "Marine engineering · Singapore", "dieselpower", "dieselpower.passivecoder.com"],
+  ["AMK General Cleaning", "Cleaning · Qatar", "amkcleaning", "amkcleaning.passivecoder.com"],
+  ["BSC Trading Company", "Manpower supply · Saudi Arabia", "bsctrading", "bsctrading.passivecoder.com"],
+  ["Spring Bay", "Real estate · Saudi Arabia", "springbay", "springbay.passivecoder.com"],
+  ["Jumbo Cool Trading", "AC spare parts shop · Qatar", "jumbocoolqa", "jumbocoolqa.com"],
+  ["Marinex Solution SPC", "Commercial diving · Oman", "marinex", "marinexoman.com"],
+  ["SG Painting Service", "Painting · Singapore", "sgpainting", "sgpainting.passivecoder.com"],
+  ["LEW Electrician SG", "Electrical · Singapore", "sgelectrical", "lewelectriciansg.com"],
+  ["Alif Tours & Cargo", "Travel & cargo · UAE", "aliftours", "aliftours.passivecoder.com"],
+  ["Buy Sell Moving Shifting", "Movers · Qatar", "buysellqa", "buysellqa.passivecoder.com"],
+  ["Moon Carpets", "Interiors · UAE", "mooncarpets", "mooncarpets.passivecoder.com"],
+  ["Tofazzal Construction", "Home repair · Singapore", "tofazzalcon", "tofazzalcon.passivecoder.com"],
+  ["Al Hasu Online", "Hall rental & events · Bangladesh", "alhasu", "alhasu.passivecoder.com"],
+  ["Bein Sports Riyadh", "Satellite TV · Saudi Arabia", "beinriyadh", "beinriyadh.passivecoder.com"],
 ];
+const showcaseItem = (label) => ([name, kicker, slug, host]) => ({
+  id: uid("c"), title: name, kicker, description: host,
+  imageUrl: `/images/showcase/${slug}.jpg`, link: `https://${host}`, linkLabel: label,
+});
 
 const INDUSTRIES = [
   ["Restaurants & cafes", "photo-1555396273-367ea4eb4db5"],
@@ -191,28 +201,25 @@ function home() {
     block("stats", {
       layout: "row", columns: 4, style: "plain", animate: true,
       items: [
-        { id: uid("s"), value: "17", suffix: "+", label: "Live client websites" },
+        { id: uid("s"), value: "17+", label: "Live client websites" },
         { id: uid("s"), value: "8", label: "Countries" },
-        { id: uid("s"), value: "24", suffix: "h", label: "Average time to go live" },
-        { id: uid("s"), value: "99.9", suffix: "%", label: "Uptime" },
+        { id: uid("s"), value: "24h", label: "Average time to go live" },
+        { id: uid("s"), value: "99.9%", label: "Uptime" },
       ],
     }, { templateVariant: "gradient-numbers", padding: pad(56), background: color(BG2) }),
 
     block("services", {
       eyebrow: "Real client websites",
       title: "Live right now. Click any of them.",
-      subtitle: "Every site below was built and is run on Passive Coder.",
+      subtitle: "Every site below was built on our own platform and is live right now.",
       layout: "cards", columns: 3, cardStyle: "elevated", source: "inline",
-      items: CLIENTS.map(([name, kicker, domain]) => ({
-        id: uid("c"), title: name, kicker, description: domain,
-        imageUrl: `/images/clients/${domain}.jpg`, link: `https://${domain}`, linkLabel: "Visit site",
-      })),
+      items: CLIENTS.slice(0, 12).map(showcaseItem("Visit site")),
     }, { templateVariant: "site-showcase" }),
 
     block("services", {
       eyebrow: "Industries",
       title: "Built for businesses like yours",
-      subtitle: "Start from a design made for your trade: the right pages, the right photos, and buttons that bring in enquiries.",
+      subtitle: "Designs made for your trade",
       layout: "grid", columns: 4, cardStyle: "flat", source: "inline",
       items: INDUSTRIES.map(([label, photo]) => ({
         id: uid("i"), title: label, description: "", imageUrl: U(photo, 700), link: "/pricing", linkLabel: "Get started",
@@ -327,35 +334,82 @@ function carePage() {
   ];
 }
 
+const video = (id, caption, variant = "framed", bg = BG) => block("video", {
+  url: `https://www.youtube.com/watch?v=${id}`, videoType: "youtube", autoplay: false, muted: false, loop: false,
+  controls: true, aspectRatio: "16:9", caption, maxWidth: "960px",
+}, { templateVariant: variant, background: color(bg), padding: pad(24, 72) });
+
+const DASHBOARD = [
+  ["dashboard-home.png", "সাইনআপের পরই আপনার নিজের ড্যাশবোর্ড", "পেজ, অর্ডার, ইউজার, সব একনজরে"],
+  ["page-block-editor.png", "ড্র্যাগ-ড্রপ পেজ বিল্ডার", "রেডিমেড সেকশন বসিয়ে নিজের মতো সাজান, কোড লাগে না"],
+  ["crm.png", "বিল্ট-ইন CRM", "লিড ও কাস্টমার এক জায়গায় ট্র্যাক করুন"],
+  ["bookings.png", "বুকিং সিস্টেম", "কাস্টমার সরাসরি অ্যাপয়েন্টমেন্ট নিতে পারবে"],
+  ["invoices.png", "ইনভয়েসিং", "প্রফেশনাল ইনভয়েস বানান কয়েক ক্লিকে"],
+  ["scheduler-calendar.png", "কন্টেন্ট শিডিউলার", "সোশ্যাল মিডিয়া পোস্ট মাসের জন্য প্ল্যান করুন"],
+];
+
+const TRUST = [
+  ["FileBadge", "বৈধ ট্রেড লাইসেন্স", "সরকার-নিবন্ধিত ব্যবসা, লুকানোর কিছু নেই"],
+  ["Building2", "ফিজিক্যাল অফিস", "কাগজে-কলমে নয়, সত্যিকারের অফিস আছে"],
+  ["Landmark", "বিজনেস ব্যাংক অ্যাকাউন্ট", "ব্যক্তিগত bKash নয়, কর্পোরেট একাউন্টে পেমেন্ট"],
+  ["Users", "রিয়েল ডেভেলপার টিম", "একজন ফ্রিল্যান্সার নয়, পূর্ণাঙ্গ টিম কাজ করে"],
+  ["BadgeCheck", "CEO-র ভেরিফায়েড প্রোফাইল", "ফেসবুক ও লিংকডইনে ভেরিফায়েড, রিয়েল আইডেন্টিটি"],
+  ["Youtube", "১২,০০০+ সাবস্ক্রাইবার", "২০০+ পাবলিক ভিডিও, কাজ আর প্রসেস সব স্বচ্ছ"],
+];
+
+const TRADES = [
+  ["HardHat", "কন্সট্রাকশন"], ["Wrench", "মেইনটেন্যান্স"], ["Snowflake", "HVAC / MEP"], ["Hammer", "হ্যান্ডিম্যান"],
+  ["Home", "রেনোভেশন"], ["Truck", "মুভার্স ও কার্গো"], ["Sparkles", "ক্লিনিং"], ["Paintbrush", "ইন্টেরিয়র ও পেইন্টিং"],
+];
+
 function bangladeshPage() {
   return [
     block("hero", {
       layout: "left",
       badge: "প্রবাসী ব্যবসায়ীদের জন্য",
-      title: "আপনার ব্যবসার প্রফেশনাল ওয়েবসাইট,",
-      titleAccent: "একবার পেমেন্টে।",
-      subtitle: "UAE, সৌদি, কাতার, ওমান, মালয়েশিয়া, সিঙ্গাপুরে যেখানেই থাকুন, WhatsApp-এ সব কাজ। আগে হোমপেজ দেখবেন, পছন্দ হলে পেমেন্ট।",
+      title: "প্রবাসে বসে ব্যবসা করেন?",
+      titleAccent: "ওয়েবসাইটটাও থাকুক প্রফেশনাল।",
+      subtitle: "UAE, সৌদি, কাতার, ওমান, মালয়েশিয়া, সিঙ্গাপুরে যেখানেই থাকুন, সব কাজ WhatsApp-এ। আগে হোমপেজ দেখবেন, পছন্দ হলে একবার পেমেন্ট।",
       primaryButton: { label: "প্রাইস দেখুন", url: "#pricing", variant: "primary" },
       secondaryButton: { label: "WhatsApp-এ কথা বলুন", url: WA_BN, variant: "outline" },
       imageUrl: U("photo-1504307651254-35680f356dfd", 1400),
       imageAlt: "Construction business owner",
       typography: typo("6xl"),
-    }, { templateVariant: "dark-gradient-left", padding: pad(130, 110) }),
+    }, { templateVariant: "dark-gradient-left", padding: pad(130, 96) }),
+    video("085_ItLW4jY", "ওয়েবসাইট ডেভেলপমেন্ট প্রসেস, সিকিউরিটি আর প্রয়োজনীয় ইনফর্মেশন: পুরো ভিডিওতে সব বলা আছে।", "framed", BG),
     block("stats", {
       layout: "row", columns: 4, style: "plain", animate: true,
       items: [
-        { id: uid("s"), value: "17", suffix: "+", label: "লাইভ ক্লায়েন্ট ওয়েবসাইট" },
-        { id: uid("s"), value: "8", label: "দেশে" },
-        { id: uid("s"), value: "24", suffix: "h", label: "গড়ে লাইভ হতে সময়" },
-        { id: uid("s"), value: "0", label: "আগে টাকা দিতে হয় না" },
+        { id: uid("s"), value: "20+", label: "লাইভ ক্লায়েন্ট ওয়েবসাইট" },
+        { id: uid("s"), value: "8", label: "দেশে ক্লায়েন্ট" },
+        { id: uid("s"), value: "24h", label: "গড়ে লাইভ হতে সময়" },
+        { id: uid("s"), value: "12,000+", label: "ইউটিউব সাবস্ক্রাইবার" },
       ],
     }, { templateVariant: "gradient-numbers", padding: pad(56), background: color(BG2) }),
+    block("icon_grid", {
+      title: "যেসব ব্যবসার জন্য বানাই",
+      subtitle: "কন্সট্রাকশন থেকে কার্গো, প্রতিটা ট্রেডের জন্য আলাদা ডিজাইন।",
+      columns: 4, style: "card", iconSize: "md",
+      items: TRADES.map(([icon, label]) => ({ id: uid("tr"), icon, label })),
+    }),
+    block("services", {
+      eyebrow: "আমাদের কাজ",
+      title: "এখনই লাইভ, নিজে দেখে নিন",
+      subtitle: "নিচের প্রতিটি সাইট আমাদের নিজেদের প্ল্যাটফর্মে বানানো।",
+      layout: "cards", columns: 3, cardStyle: "elevated", source: "inline",
+      items: CLIENTS.slice(0, 9).map(showcaseItem("সাইট দেখুন")),
+    }, { templateVariant: "site-showcase", background: color(BG2) }),
+    block("gallery", {
+      title: "আপনার ড্যাশবোর্ড, আপনার হাতে",
+      layout: "grid", columns: 3, gap: "md", lightbox: true,
+      images: DASHBOARD.map(([f, t, d]) => ({ id: uid("g"), url: `/dashboard-shots/${f}`, alt: t, caption: `${t}: ${d}` })),
+    }, { templateVariant: "captioned-cards" }),
     block("pricing_catalog", {
       mode: "both", language: "bn", defaultCurrency: "BDT", showCurrencyToggle: false, showBdPrompt: false,
       careLinkUrl: "/website-maintenance", tone: "dark", ctaBaseUrl: "/onboarding",
       eyebrow: "প্রাইস", title: "ওয়েবসাইট বানাতে একবারই পেমেন্ট",
       subtitle: "প্রথম ১২ মাসের হোস্টিং, SSL, ব্যাকআপ আর ডোমেইন প্যাকেজের সাথেই। মাসে মাসে কোনো চার্জ নেই।",
-    }, { padding: pad(104) }),
+    }, { padding: pad(104), background: color(BG2) }),
     block("steps", {
       title: "কীভাবে কাজ হয়",
       subtitle: "কোনো ফর্ম নেই, কোনো টেকনিক্যাল ঝামেলা নেই।",
@@ -366,18 +420,19 @@ function bangladeshPage() {
         { id: uid("st"), icon: "BadgeCheck", title: "কনফার্ম করে পেমেন্ট", description: "bKash, Nagad, ব্যাংক অথবা কার্ডে একবার পেমেন্ট।" },
         { id: uid("st"), icon: "Rocket", title: "সাইট লাইভ", description: "ডোমেইন, হোস্টিং, SSL সব সেটআপ করে আপনার সাইট লাইভ।" },
       ],
-    }, { templateVariant: "timeline-connected", background: color(BG2) }),
-    block("services", {
-      eyebrow: "আমাদের কাজ",
-      title: "এখনই লাইভ, নিজে দেখে নিন",
-      subtitle: "নিচের প্রতিটি সাইট Passive Coder-এ বানানো এবং চালানো।",
-      layout: "cards", columns: 3, cardStyle: "elevated", source: "inline",
-      items: CLIENTS.slice(0, 6).map(([name, kicker, domain]) => ({
-        id: uid("c"), title: name, kicker, description: domain,
-        imageUrl: `/images/clients/${domain}.jpg`, link: `https://${domain}`, linkLabel: "সাইট দেখুন",
-      })),
-    }, { templateVariant: "site-showcase" }),
-    faq(FAQ_BN, "সাধারণ প্রশ্ন", "আরো কিছু জানতে চাইলে WhatsApp করুন।", "split-heading", BG2),
+    }, { templateVariant: "timeline-connected" }),
+    block("features", {
+      eyebrow: "কেন আমাদের বিশ্বাস করবেন",
+      title: "টাকা দিয়ে প্রতারিত হওয়ার ভয়? আমরা বুঝি।",
+      subtitle: "তাই আমাদের ব্যবসার সব প্রমাণ খোলাখুলি দিচ্ছি।",
+      layout: "grid", columns: 3, style: "card",
+      items: TRUST.map(([icon, title, description]) => ({ id: uid("tp"), icon, title, description })),
+    }, { templateVariant: "highlight-cards", background: color(BG2) }),
+    video("XqPdLxdG_gI", "আমাদের টিম আর কাজের প্রসেস নিজের চোখে দেখুন।", "framed", BG),
+    faq([
+      ["টাকা দেওয়ার পর যদি যোগাযোগ বন্ধ করে দেয়?", "আমাদের বৈধ ট্রেড লাইসেন্স, ফিজিক্যাল অফিস, বিজনেস ব্যাংক অ্যাকাউন্ট এবং ১২,০০০+ সাবস্ক্রাইবারের পাবলিক ইউটিউব চ্যানেল আছে, লুকিয়ে থাকার কোনো সুযোগ নেই। তাছাড়া আগে হোমপেজ দেখে তারপর পেমেন্ট করবেন।"],
+      ...FAQ_BN,
+    ], "সাধারণ প্রশ্ন", "আরো কিছু জানতে চাইলে WhatsApp করুন।", "split-heading", BG2),
     finalCta("আজই শুরু করুন", "ব্যবসার নাম আর সার্ভিস পাঠান, আমরা আগে হোমপেজ বানিয়ে দেখাব।",
       { label: "WhatsApp-এ মেসেজ দিন", url: WA_BN }, { label: "প্রাইস দেখুন", url: "#pricing" }),
   ];
@@ -451,7 +506,7 @@ async function preserveLegal(slug) {
   await upsertPage("home", "Home", home(), seo("Passive Coder — Professional Websites for Local Businesses", "We build and run professional websites for local service businesses, with WhatsApp enquiries, booking and a shop built in. Pay once, see it first."), 0);
   await upsertPage("pricing", "Pricing", pricingPage(), seo("Website Pricing — Passive Coder", "One-time website packages with the first year of hosting, SSL, backups and domain included. Optional monthly or yearly Care plans."), 1);
   await upsertPage("website-maintenance", "Website Care Plans", carePage(), seo("Website Maintenance & Care Plans — Passive Coder", "Website maintenance with hosting, domain renewal, monthly updates, new pages, SEO checks and priority support."), 2);
-  await upsertPage("bangladesh", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট | Passive Coder", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। আগে দেখুন, পরে পেমেন্ট।"), 3);
+  await upsertPage("website-for-bangladeshi-businesses", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট | Passive Coder", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। আগে দেখুন, পরে পেমেন্ট।"), 3);
   await upsertPage("contact", "Contact", contactPage(), seo("Contact — Passive Coder", "Talk to the Passive Coder team on WhatsApp or send us a message."), 4);
   await upsertPage("refund", "Refund Policy", legalPage("Refund policy", REFUND), seo("Refund Policy — Passive Coder", "Our refund policy for website builds, Care plans and platform renewals."), 7);
   console.log("done");
