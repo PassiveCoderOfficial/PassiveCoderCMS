@@ -142,6 +142,7 @@ export function NavigationBlock({ block, identityLogo }: {
     <nav
       className={cn(
         "relative w-full z-50 transition-all duration-300",
+        block.data.menuFontSize && "pc-nav-fs", block.data.menuFontWeight && "pc-nav-fw", block.data.ctaFontSize && "pc-nav-cta",
         overlayHero ? "fixed top-0 left-0 right-0" : navSticky && "sticky",
         solid && !floating && "border-b border-border/60",
         solid && glass && "backdrop-blur-xl",
