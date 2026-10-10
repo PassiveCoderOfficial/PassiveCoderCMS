@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { Inter, Poppins, Anek_Bangla } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -7,6 +7,10 @@ import { Toaster } from "sonner";
 import { ScrollMotion } from "@/components/site/scroll-motion";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// Bangla script everywhere (sites, dashboard, marketing). Bengali subset only,
+// so its unicode-range covers Bangla glyphs and Latin falls through to the
+// site's own font in every stack that lists it.
+const anek = Anek_Bangla({ subsets: ["bengali"], variable: "--font-anek", display: "swap" });
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-poppins" });
 
 // No static icons here on purpose. This root metadata is the outermost
@@ -27,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className="h-full" data-suppress-hydration-warning>
+    <html lang="en" suppressHydrationWarning className={anek.variable + " h-full"} data-suppress-hydration-warning>
       <body className={inter.variable + " " + poppins.variable + " font-sans antialiased h-full"} suppressHydrationWarning>
         <ThemeProvider defaultTheme="system">
           <QueryProvider>

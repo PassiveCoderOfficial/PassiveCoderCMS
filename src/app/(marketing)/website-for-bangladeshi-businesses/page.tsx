@@ -5,13 +5,12 @@ import { rootBuilderTenantFor } from "@/lib/site/root-builder";
 import { TenantPageWithChrome } from "@/components/site/tenant-page-with-chrome";
 import { BdLeadForm } from "@/components/marketing/bd-lead-form";
 import Image from "@/components/ui/smart-image";
-import { Hind_Siliguri } from "next/font/google";
+import { Anek_Bangla } from "next/font/google";
 import { LightboxImage } from "./image-lightbox";
 import BdPricing from "./bd-pricing";
 
-const bangla = Hind_Siliguri({
+const bangla = Anek_Bangla({
   subsets: ["bengali", "latin"],
-  weight: ["400", "500", "600", "700"],
   variable: "--font-bangla",
 });
 

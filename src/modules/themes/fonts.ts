@@ -18,6 +18,7 @@ export const FONT_OPTIONS: { name: string; category: "sans" | "serif" | "display
   { name: "Lato", category: "sans" },
   { name: "Open Sans", category: "sans" },
   { name: "Roboto", category: "sans" },
+  { name: "Anek Bangla", category: "sans" },
   { name: "Hind Siliguri", category: "sans" },
   { name: "Raleway", category: "sans" },
   { name: "Source Sans 3", category: "sans" },
