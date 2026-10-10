@@ -124,6 +124,14 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
         title: <>
         <h1 className={cn("font-bold tracking-tight leading-[1.1]", titleSize)} style={{ color: data.typography?.titleColor || undefined }}>
           <InlineText blockId={block.id} field="title" value={data.title} />
+          {data.titleAccent && (
+            <>
+              <br />
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }}>
+                <InlineText blockId={block.id} field="titleAccent" value={data.titleAccent} />
+              </span>
+            </>
+          )}
         </h1>
         </>,
         subtitle: <>
@@ -156,7 +164,7 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
   }
 
   return (
-    <div className={cn("max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[70vh] py-8")}>
+    <div className={cn("max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[70vh] py-4 lg:py-8")}>
       {imageFirst && data.imageUrl && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] lg:aspect-[5/4] order-first lg:order-none">
           <Image src={data.imageUrl} alt={data.imageAlt ?? data.title} fill className="object-cover" style={{ objectPosition: data.imagePosition ?? "center" }} priority />

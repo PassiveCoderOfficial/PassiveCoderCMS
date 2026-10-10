@@ -65,9 +65,10 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <Input value={block.data.title} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs" />
       </FieldGroup>
 
-      {showcase ? (
+      {(showcase || ["dark-gradient-left", "split-image-right"].includes(block.templateVariant ?? "")) && (
         <TextField label="Second title line (accent colour)" value={block.data.titleAccent} onChange={(v) => update("titleAccent", v)} placeholder="Optional" />
-      ) : (
+      )}
+      {!showcase && (
         <FieldGroup label="Subtitle">
           <Input value={block.data.subtitle ?? ""} onChange={(e) => update("subtitle", e.target.value)} className="h-8 text-xs" />
         </FieldGroup>

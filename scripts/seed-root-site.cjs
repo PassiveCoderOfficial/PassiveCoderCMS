@@ -8,8 +8,8 @@
  * Native blocks only, no custom_html. Prices come from the live catalog via
  * the "pricing_catalog" block, never typed into a page.
  *
- * Safe to re-run: pages with the same slug are replaced (old versions are
- * archived, never deleted).
+ * Safe to re-run: pages with the same slug are updated in place. Overwrites
+ * any edits made to these pages in the dashboard.
  *   node scripts/seed-root-site.cjs
  */
 const { createClient } = require("@supabase/supabase-js");
@@ -24,8 +24,16 @@ const uid = (p) => `${p}-${(++_c).toString(36)}-${Math.random().toString(36).sli
 
 // ─── brand ──────────────────────────────────────────────────────────────────
 const LOGO = "https://mljchiaabgvdzdsfobxs.supabase.co/storage/v1/object/public/media/uploads/1777257556858_Passive_Coder_Web_logo.png";
-const BG = "#05060a";
-const BG2 = "#0a0c12";
+// Light design (Oct 2026): white + warm off-white sections, dark only for the
+// final call to action and the footer.
+const BG = "#ffffff";
+const BG2 = "#f7f4ef";
+const DARK = "#0b1020";
+const THEME = {
+  primary: "#ff7600", primaryFg: "#ffffff", accent: "#ff914d", ring: "#ff7600",
+  background: "#ffffff", foreground: "#0f172a", card: "#ffffff", muted: "#f4f1ec", mutedFg: "#526074",
+  secondary: "#f4f1ec", border: "#e8e3db", borderRadius: "18",
+};
 const ORANGE = "#ff7600";
 const WA_NUMBER = "8801678669699";
 const wa = (t) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
@@ -120,7 +128,7 @@ function header() {
       logo: LOGO, logoText: "Passive Coder", logoHeight: 34,
       items: NAV.map(([label, url], i) => ({ id: `n${i}`, label, url, children: [] })),
       sticky: true, transparent: false, style: "default",
-      backgroundColor: "rgba(5,6,10,0.88)", textColor: "#e2e8f0", activeColor: ORANGE,
+      backgroundColor: "rgba(255,255,255,0.92)", textColor: "#1e293b", activeColor: ORANGE,
       colorMode: "legacy", ctaVariant: "solid",
       showCta: true, ctaLabel: "Get my website", ctaUrl: "/pricing", showCart: false,
     },
@@ -130,11 +138,11 @@ function header() {
 function footer() {
   return {
     id: uid("footer"), type: "footer", order: 1, visible: true, width: "full",
-    padding: ZERO, margin: ZERO, background: color("#030407"),
+    padding: ZERO, margin: ZERO, background: color(DARK),
     data: {
       logo: LOGO, logoText: "Passive Coder",
       tagline: "Websites for local service businesses, built and looked after by a real team. Live in 17+ businesses across 8 countries.",
-      style: "dark", backgroundColor: "#030407", accentColor: ORANGE, textColor: "#94a3b8",
+      style: "dark", backgroundColor: DARK, accentColor: ORANGE, textColor: "#94a3b8",
       copyrightText: "© {year} Passive Coder. All rights reserved.", copyrightYear: true, showNewsletter: false,
       socials: [{ platform: "whatsapp", url: WA }],
       columns: [
@@ -164,7 +172,7 @@ function footer() {
 const pricing = (mode, extra = {}) => block("pricing_catalog", {
   mode, language: "en", defaultCurrency: "USD", showCurrencyToggle: true, showBdPrompt: true,
   bdPromptUrl: "/website-for-bangladeshi-businesses#pricing", careLinkUrl: "/website-maintenance",
-  tone: "dark", ctaBaseUrl: "/onboarding", ...extra,
+  tone: "light", ctaBaseUrl: "/onboarding", ...extra,
 }, { padding: pad(104) });
 
 const faq = (items, title, subtitle, variant = "split-heading", bg = BG) => block("faq", {
@@ -175,12 +183,12 @@ const faq = (items, title, subtitle, variant = "split-heading", bg = BG) => bloc
 const finalCta = (title, description, primary, secondary) => block("cta", {
   title, description, layout: "split",
   primaryButton: primary, secondaryButton: secondary,
-}, { templateVariant: "dark-split", padding: pad(40, 104) });
+}, { templateVariant: "dark-split", padding: pad(40, 104), background: color(BG) });
 
 const pageHero = (badge, title, accent, subtitle, buttons = {}, image = "photo-1497366216548-37526070297c") => block("hero", {
   layout: "left", badge, title, titleAccent: accent || undefined, subtitle, compact: true,
-  imageUrl: U(image, 1400), imageAlt: "", typography: typo("6xl"), ...buttons,
-}, { templateVariant: "dark-gradient-left", padding: pad(110, 80), background: color(BG) });
+  imageUrl: U(image, 1200), imageAlt: "", typography: typo("5xl"), ...buttons,
+}, { templateVariant: "split-image-right", padding: pad(72, 56), background: color(BG2) });
 
 // ─── pages ──────────────────────────────────────────────────────────────────
 function home() {
@@ -193,13 +201,13 @@ function home() {
       subtitle: "We build and run a professional website for your business, with WhatsApp enquiries, online booking and a shop built in. You serve customers. We handle the tech.",
       primaryButton: { label: "See packages", url: "/pricing", variant: "primary" },
       secondaryButton: { label: "Talk to us on WhatsApp", url: WA, variant: "outline" },
-      imageUrl: "/images/hero-platform.jpg",
+      imageUrl: "/images/hero-platform-light.jpg",
       imageAlt: "Passive Coder page builder, product editor and SEO settings",
       showCountries: true,
       countries: ["us", "ae", "bd", "sg", "qa", "sa", "om", "my", "eu"],
       countriesLabel: "Serving businesses in",
-      typography: typo("6xl"),
-    }, { templateVariant: "dark-gradient-left", padding: pad(140, 120) }),
+      typography: typo("5xl"),
+    }, { templateVariant: "split-image-right", padding: pad(72, 64), background: color(BG2) }),
 
     block("stats", {
       layout: "row", columns: 4, style: "plain", animate: true,
@@ -209,7 +217,7 @@ function home() {
         { id: uid("s"), value: "24h", label: "Average time to go live" },
         { id: uid("s"), value: "99.9%", label: "Uptime" },
       ],
-    }, { templateVariant: "gradient-numbers", padding: pad(56), background: color(BG2) }),
+    }, { templateVariant: "gradient-numbers", padding: pad(56), background: color(BG) }),
 
     block("services", {
       eyebrow: "Real client websites",
@@ -217,7 +225,7 @@ function home() {
       subtitle: "Every site below was built on our own platform and is live right now.",
       layout: "cards", columns: 3, cardStyle: "elevated", source: "inline",
       items: CLIENTS.slice(0, 12).map(showcaseItem("Visit site")),
-    }, { templateVariant: "site-showcase" }),
+    }, { templateVariant: "site-showcase", background: color(BG2) }),
 
     block("services", {
       eyebrow: "Industries",
@@ -227,7 +235,7 @@ function home() {
       items: INDUSTRIES.map(([label, photo]) => ({
         id: uid("i"), title: label, description: "", imageUrl: U(photo, 700), link: "/pricing", linkLabel: "Get started",
       })),
-    }, { templateVariant: "image-tiles", background: color(BG2) }),
+    }, { templateVariant: "image-tiles", background: color(BG) }),
 
     block("steps", {
       title: "From first message to live website",
@@ -239,7 +247,7 @@ function home() {
         { id: uid("st"), icon: "MessageCircle", title: "Send us your details", description: "Business name, logo, photos and services, on WhatsApp. We build it." },
         { id: uid("st"), icon: "Rocket", title: "Go live", description: "Your domain, hosting and SSL set up. Customers can find you." },
       ],
-    }, { templateVariant: "timeline-connected" }),
+    }, { templateVariant: "timeline-connected", background: color(BG2) }),
 
     block("features", {
       eyebrow: "Everything included",
@@ -254,7 +262,7 @@ function home() {
         { id: uid("ft"), icon: "Search", title: "Built for Google", description: "Fast, mobile-first pages with titles, descriptions and structured data." },
         { id: uid("ft"), icon: "ShieldCheck", title: "Hosting, SSL, backups", description: "Secure hosting, a free SSL certificate and daily backups. Nothing to set up." },
       ],
-    }, { templateVariant: "bento-grid", background: color(BG2) }),
+    }, { templateVariant: "bento-grid", background: color(BG) }),
 
     pricing("both", {
       eyebrow: "Pricing",
@@ -272,14 +280,14 @@ function home() {
         { id: uid("g"), icon: "RotateCcw", title: "14-day money back", description: "Not happy in the first 14 days after paying? Ask for a full refund." },
         { id: uid("g"), icon: "LifeBuoy", title: "Real people on support", description: "A team that knows your site answers on WhatsApp, not a chatbot." },
       ],
-    }, { templateVariant: "highlight-cards" }),
+    }, { templateVariant: "highlight-cards", background: color(BG) }),
 
     block("testimonials", {
       title: "Real businesses, real results",
       subtitle: "Business owners across the Gulf and Southeast Asia run their websites on Passive Coder.",
       layout: "grid", source: "inline",
       items: TESTIMONIALS.map(([name, company, content]) => ({ id: uid("t"), name, company, content, rating: 5 })),
-    }, { templateVariant: "dark-quote-cards", background: color(BG2) }),
+    }, { templateVariant: "stars-quotes", background: color(BG2) }),
 
     faq(FAQ_EN, "Questions, answered", "Still unsure? Message us on WhatsApp and a real person will reply."),
 
@@ -376,10 +384,10 @@ function bangladeshPage() {
       subtitle: "UAE, সৌদি, কাতার, ওমান, মালয়েশিয়া, সিঙ্গাপুরে যেখানেই থাকুন, সব কাজ WhatsApp-এ। চাইলে আগে ফ্রি Google Meet-এ পুরো সিস্টেম দেখে নিন।",
       primaryButton: { label: "প্রাইস দেখুন", url: "#pricing", variant: "primary" },
       secondaryButton: { label: "WhatsApp-এ কথা বলুন", url: WA_BN, variant: "outline" },
-      imageUrl: U("photo-1504307651254-35680f356dfd", 1400),
+      imageUrl: U("photo-1504307651254-35680f356dfd", 1200),
       imageAlt: "Construction business owner",
-      typography: typo("6xl"),
-    }, { templateVariant: "dark-gradient-left", padding: pad(130, 96) }),
+      typography: typo("5xl"),
+    }, { templateVariant: "split-image-right", padding: pad(72, 64), background: color(BG2) }),
     video("085_ItLW4jY", "ওয়েবসাইট ডেভেলপমেন্ট প্রসেস, সিকিউরিটি আর প্রয়োজনীয় ইনফর্মেশন: পুরো ভিডিওতে সব বলা আছে।", "framed", BG),
     block("stats", {
       layout: "row", columns: 4, style: "plain", animate: true,
@@ -410,7 +418,7 @@ function bangladeshPage() {
     }, { templateVariant: "captioned-cards" }),
     block("pricing_catalog", {
       mode: "both", language: "bn", defaultCurrency: "BDT", showCurrencyToggle: false, showBdPrompt: false,
-      careLinkUrl: "/website-maintenance", tone: "dark", ctaBaseUrl: "/onboarding",
+      careLinkUrl: "/website-maintenance", tone: "light", ctaBaseUrl: "/onboarding",
       eyebrow: "প্রাইস", title: "ওয়েবসাইট বানাতে একবারই পেমেন্ট",
       subtitle: "প্রথম ১২ মাসের হোস্টিং, SSL, ব্যাকআপ আর ডোমেইন প্যাকেজের সাথেই। মাসে মাসে কোনো চার্জ নেই।",
     }, { padding: pad(104), background: color(BG2) }),
@@ -501,7 +509,7 @@ async function preserveLegal(slug) {
 
 (async () => {
   const { error: idErr } = await sb.from("site_identity").update({
-    global_header: [header()], global_footer: [footer()], global_prefooter: [], updated_at: new Date().toISOString(),
+    global_header: [header()], global_footer: [footer()], global_prefooter: [], color_overrides: THEME, updated_at: new Date().toISOString(),
   }).eq("tenant_id", TENANT_ID);
   if (idErr) throw idErr;
   await sb.from("nav_menus").delete().eq("tenant_id", TENANT_ID);
