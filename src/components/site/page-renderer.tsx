@@ -59,6 +59,10 @@ import { ReCommunitiesBlock } from "@/components/blocks/real-estate/re-communiti
 import { ReDevelopersBlock } from "@/components/blocks/real-estate/re-developers-block";
 import { ReCalculatorBlock } from "@/components/blocks/real-estate/re-calculator-block";
 import { ReLeadFormBlock } from "@/components/blocks/real-estate/re-lead-form-block";
+import { TableBlock } from "@/components/blocks/table/table-block";
+import { ResultsAlumniBlock } from "@/components/blocks/results/results-alumni-block";
+import { ResultsSearchBlock } from "@/components/blocks/results/results-search-block";
+import { ResultsCoursesBlock } from "@/components/blocks/results/results-courses-block";
 import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
@@ -162,6 +166,10 @@ async function ServerBlockInner({ block, identityLogo, identityLogoDark, nested,
     case "re_developers": content = <ReDevelopersBlock block={block} />; break;
     case "re_calculator": content = <ReCalculatorBlock block={block} />; break;
     case "re_lead_form": content = <ReLeadFormBlock block={block} />; break;
+    case "table": content = <TableBlock block={block} />; break;
+    case "results_search": content = <ResultsSearchBlock block={block} />; break;
+    case "results_alumni": content = <ResultsAlumniBlock block={block} />; break;
+    case "results_courses": content = <ResultsCoursesBlock block={block} />; break;
     case "donor_group_cards": content = <DonorGroupCardsBlock block={block} />; break;
     case "donor_list":       content = <DonorListBlock block={block} />; break;
     case "donor_map":        content = <DonorMapBlock block={block} />; break;

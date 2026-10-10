@@ -69,6 +69,10 @@ export type BlockType =
   | "re_developers"
   | "re_calculator"
   | "re_lead_form"
+  | "results_search"
+  | "table"
+  | "results_courses"
+  | "results_alumni"
   | "donor_group_cards"
   | "donor_list"
   | "donor_map"
@@ -998,14 +1002,14 @@ export type StepsBlockProps = BlockBase & {
   };
 };
 
-export type IconGridItem = { id: string; icon: string; label: string; description?: string; url?: string; color?: string };
+export type IconGridItem = { id: string; icon: string; label: string; description?: string; url?: string; color?: string; /** Image shown instead of the icon (logo, badge). */ imageUrl?: string };
 
 export type IconGridBlockProps = BlockBase & {
   type: "icon_grid";
   data: {
     title?: string;
     subtitle?: string;
-    columns: 3 | 4 | 5 | 6;
+    columns: 2 | 3 | 4 | 5 | 6;
     items: IconGridItem[];
     style: "plain" | "card" | "colored";
     iconSize: "sm" | "md" | "lg";
@@ -1217,6 +1221,10 @@ export type Block =
   | ReDevelopersBlockProps
   | ReCalculatorBlockProps
   | ReLeadFormBlockProps
+  | ResultsSearchBlockProps
+  | TableBlockProps
+  | ResultsCoursesBlockProps
+  | ResultsAlumniBlockProps
   | DonorGroupCardsBlockProps
   | DonorListBlockProps
   | DonorMapBlockProps
@@ -1787,6 +1795,67 @@ export type ReLeadFormBlockProps = BlockBase & {
     image?: string;
     bullets?: string[];
   };
+
+};
+
+// ─── Table block ─────────────────────────────────────────────────────────────
+export type TableBlockProps = BlockBase & {
+  type: "table";
+  data: {
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+    columns: string[];
+    rows: string[][];
+    /** First column styled as the row label (bold, sticky when scrolling). */
+    firstColumnHeader?: boolean;
+    striped?: boolean;
+    /** Phones: scroll sideways, or turn each row into a labelled card. */
+    mobileLayout?: "scroll" | "cards";
+    /** Header background (blank = theme primary). */
+    headerColor?: string;
+    note?: string;
+  };
+};
+
+// ─── Results module blocks ───────────────────────────────────────────────────
+// Data lives in results / results_courses (migration 140); lookups go through
+// /api/results/lookup so result rows are never publicly listable.
+
+export type ResultsSearchBlockProps = BlockBase & {
+  type: "results_search";
+  data: {
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+    /** card = centred search card; banner = full-width band with inline form;
+     *  split = text + image beside the search card. */
+    layout?: "card" | "banner" | "split";
+    placeholder?: string;
+    buttonLabel?: string;
+    backgroundImage?: string;
+    sideImage?: string;
+    accentColor?: string;
+    showPrint?: boolean;
+    /** Short trust lines under the form, e.g. "Results since 2008". */
+    notes?: string[];
+  };
+};
+
+export type ResultsCoursesBlockProps = BlockBase & {
+  type: "results_courses";
+  data: {
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+    /** cards = photo cards; list = compact rows with level + duration. */
+    style?: "cards" | "list";
+    featuredOnly?: boolean;
+    limit?: number;
+    columns?: 2 | 3 | 4;
+    linkLabel?: string;
+    accentColor?: string;
+  };
 };
 
 export type ScrollStoryBlockProps = BlockBase & {
@@ -1864,6 +1933,18 @@ export type MarqueeBlockProps = BlockBase & {
     outlineAlternate?: boolean;
     scrollBoost?: boolean;
     color?: string;
+    accentColor?: string;
+  };
+};
+
+export type ResultsAlumniBlockProps = BlockBase & {
+  type: "results_alumni";
+  data: {
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+    limit?: number;
+    columns?: 3 | 4;
     accentColor?: string;
   };
 };

@@ -4,7 +4,10 @@ import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
 import { Box } from "lucide-react";
 
-function DynIcon({ name, className }: { name?: string; className?: string }) {
+/** Lucide icon by name, or the item's own image (logo, badge) when set. */
+function DynIcon({ name, image, className }: { name?: string; image?: string; className?: string }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  if (image) return <img src={image} alt="" className={cn(className, "object-contain")} />;
   if (!name) return <Box className={className} />;
   const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name];
   return Icon ? <Icon className={className} /> : <Box className={className} />;
@@ -30,8 +33,9 @@ const TILE_FALLBACK_COLORS = [
  *  (grid-cols-2 tiles, grid-cols-1 numbered rows); this used to return an
  *  unprefixed "grid-cols-3" that overrode it, forcing 3 cramped columns on a
  *  390px phone for every 3-column icon grid. */
-function colClassFor(columns: 3 | 4 | 5 | 6): string {
+function colClassFor(columns: 2 | 3 | 4 | 5 | 6): string {
   const colClass: Record<number, string> = {
+    2: "sm:grid-cols-2",
     3: "sm:grid-cols-3",
     4: "sm:grid-cols-2 lg:grid-cols-4",
     5: "sm:grid-cols-3 lg:grid-cols-5",
@@ -65,7 +69,7 @@ function IconGridColoredTiles({ block }: { block: IconGridBlockProps }) {
                 )}
                 style={item.color ? { backgroundColor: item.color } : undefined}
               >
-                <DynIcon name={item.icon} className={cn(TILE_ICON_INNER[iconSize], "text-white")} />
+                <DynIcon name={item.icon} image={item.imageUrl} className={cn(TILE_ICON_INNER[iconSize], "text-white")} />
               </div>
               <p className="text-sm font-bold text-center text-white">{item.label}</p>
               {item.description && (
@@ -112,7 +116,7 @@ function IconGridMinimalInline({ block }: { block: IconGridBlockProps }) {
           const content = (
             <>
               <span style={item.color ? { color: item.color } : undefined}>
-                <DynIcon name={item.icon} className={cn(INLINE_ICON_SIZE[iconSize], !item.color && "text-primary")} />
+                <DynIcon name={item.icon} image={item.imageUrl} className={cn(INLINE_ICON_SIZE[iconSize], !item.color && "text-primary")} />
               </span>
               <span className="text-sm font-medium">{item.label}</span>
             </>
@@ -158,7 +162,7 @@ function IconGridLegacy({ block }: { block: IconGridBlockProps }) {
                 style={style === "colored" ? { backgroundColor: iconBg } : undefined}
               >
                 <span style={{ color: iconColor }}>
-                  <DynIcon name={item.icon} className={cn(ICON_SIZE[iconSize])} />
+                  <DynIcon name={item.icon} image={item.imageUrl} className={cn(ICON_SIZE[iconSize])} />
                 </span>
               </div>
               <p className="text-sm font-semibold text-center">{item.label}</p>
@@ -215,7 +219,7 @@ function IconGridOutlinedCards({ block }: { block: IconGridBlockProps }) {
       <div className={cn("grid grid-cols-2 gap-3", colClassFor(columns))}>
         {items.map((item) => (
           <MaybeLink key={item.id} url={item.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50">
-            <DynIcon name={item.icon} className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+            <DynIcon name={item.icon} image={item.imageUrl} className="h-5 w-5 shrink-0 text-primary mt-0.5" />
             <div className="min-w-0">
               <p className="font-semibold text-sm leading-tight">{item.label}</p>
               {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
@@ -241,7 +245,7 @@ function IconGridCircleIcons({ block }: { block: IconGridBlockProps }) {
               className="mb-3 flex h-16 w-16 items-center justify-center rounded-full transition-transform group-hover:scale-105"
               style={{ backgroundColor: item.color ? `${item.color}1a` : undefined }}
             >
-              <DynIcon name={item.icon} className={cn("h-7 w-7", !item.color && "text-primary")} />
+              <DynIcon name={item.icon} image={item.imageUrl} className={cn("h-7 w-7", !item.color && "text-primary")} />
             </span>
             <p className="font-semibold text-sm">{item.label}</p>
             {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
@@ -262,7 +266,7 @@ function IconGridDarkTiles({ block }: { block: IconGridBlockProps }) {
       <div className={cn("grid grid-cols-2 gap-2.5", colClassFor(columns))}>
         {items.map((item) => (
           <MaybeLink key={item.id} url={item.url} className="rounded-xl bg-foreground/5 p-5 text-center transition-colors hover:bg-foreground/10">
-            <DynIcon name={item.icon} className="h-6 w-6 mx-auto mb-2.5 text-primary" />
+            <DynIcon name={item.icon} image={item.imageUrl} className="h-6 w-6 mx-auto mb-2.5 text-primary" />
             <p className="font-medium text-sm">{item.label}</p>
             {item.description && <p className="text-xs text-muted-foreground leading-relaxed mt-1">{item.description}</p>}
           </MaybeLink>
@@ -283,7 +287,7 @@ function IconGridBorderedMatrix({ block }: { block: IconGridBlockProps }) {
       <div className={cn("grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border", colClassFor(columns))}>
         {items.map((item) => (
           <MaybeLink key={item.id} url={item.url} className="bg-card p-5 text-center transition-colors hover:bg-muted/50">
-            <DynIcon name={item.icon} className="h-5 w-5 mx-auto mb-2 text-primary" />
+            <DynIcon name={item.icon} image={item.imageUrl} className="h-5 w-5 mx-auto mb-2 text-primary" />
             <p className="text-xs font-medium leading-tight">{item.label}</p>
           </MaybeLink>
         ))}
@@ -307,7 +311,7 @@ function IconGridPillRow({ block }: { block: IconGridBlockProps }) {
             url={item.url}
             className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm transition-colors hover:border-primary/50"
           >
-            <DynIcon name={item.icon} className="h-3.5 w-3.5 text-primary" />
+            <DynIcon name={item.icon} image={item.imageUrl} className="h-3.5 w-3.5 text-primary" />
             <span className="font-medium">{item.label}</span>
           </MaybeLink>
         ))}
@@ -341,8 +345,41 @@ function IconGridNumberedFeatures({ block }: { block: IconGridBlockProps }) {
   );
 }
 
+/** Logo strip: partner / accreditation logos at a readable size, label under
+ *  each. Uses the item image; falls back to the icon when no image is set. */
+function IconGridLogoStrip({ block }: { block: IconGridBlockProps }) {
+  const { title, subtitle, columns, items } = block.data;
+  return (
+    <div className="max-w-6xl mx-auto">
+      {(title || subtitle) && (
+        <div className="text-center mb-10">
+          {title && <h2 className="text-3xl font-bold mb-3">{title}</h2>}
+          {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+        </div>
+      )}
+      <div className={cn("grid grid-cols-2 gap-6 items-start", colClassFor(columns))}>
+        {items.map((item) => {
+          const inner = (
+            <>
+              <div className="h-24 sm:h-28 flex items-center justify-center rounded-2xl bg-white border border-border/60 p-4">
+                <DynIcon name={item.icon} image={item.imageUrl} className={item.imageUrl ? "max-h-full max-w-full" : "h-10 w-10 text-primary"} />
+              </div>
+              {item.label && <p className="mt-3 text-sm font-semibold text-center">{item.label}</p>}
+              {item.description && <p className="mt-1 text-xs text-muted-foreground text-center">{item.description}</p>}
+            </>
+          );
+          return item.url
+            ? <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className="block hover:opacity-90 transition-opacity">{inner}</a>
+            : <div key={item.id}>{inner}</div>;
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function IconGridBlock({ block }: { block: IconGridBlockProps }) {
   switch (block.templateVariant) {
+    case "logo-strip": return <IconGridLogoStrip block={block} />;
     case "colored-tiles": return <IconGridColoredTiles block={block} />;
     case "minimal-inline": return <IconGridMinimalInline block={block} />;
     case "outlined-cards": return <IconGridOutlinedCards block={block} />;

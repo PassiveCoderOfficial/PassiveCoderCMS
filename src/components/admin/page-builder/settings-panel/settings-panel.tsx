@@ -43,6 +43,8 @@ import { EnmBookingWidgetSettings } from "./enm-booking-widget-settings";
 import { BookingSettings } from "./booking-settings";
 import { MarketplaceBookingSettings } from "./marketplace-booking-settings";
 import { RealEstateSettings } from "./real-estate-settings";
+import { ResultsBlockSettings } from "./results-settings";
+import { TableSettings } from "./table-settings";
 import { ScrollStorySettings } from "./scroll-story-settings";
 import { MarqueeSettings } from "./marquee-settings";
 import { OptionPreviewSettings } from "./option-preview-settings";
@@ -155,6 +157,10 @@ function BlockContentSettings({ block }: { block: Block }) {
     case "re_developers": return <RealEstateSettings block={block} />;
     case "re_calculator": return <RealEstateSettings block={block} />;
     case "re_lead_form": return <RealEstateSettings block={block} />;
+    case "table": return <TableSettings block={block} />;
+    case "results_search":
+    case "results_alumni":
+    case "results_courses": return <ResultsBlockSettings block={block} />;
     case "donor_group_cards": return <DonorGroupCardsSettings block={block} />;
     case "donor_list": return <DonorListSettings block={block} />;
     case "donor_map": return <DonorMapSettings block={block} />;

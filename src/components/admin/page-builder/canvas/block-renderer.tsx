@@ -51,6 +51,10 @@ import { ReCommunitiesBlock } from "@/components/blocks/real-estate/re-communiti
 import { ReDevelopersBlock } from "@/components/blocks/real-estate/re-developers-block";
 import { ReCalculatorBlock } from "@/components/blocks/real-estate/re-calculator-block";
 import { ReLeadFormBlock } from "@/components/blocks/real-estate/re-lead-form-block";
+import { TableBlock } from "@/components/blocks/table/table-block";
+import { ResultsAlumniBlock } from "@/components/blocks/results/results-alumni-block";
+import { ResultsSearchBlock } from "@/components/blocks/results/results-search-block";
+import { ResultsCoursesBlock } from "@/components/blocks/results/results-courses-block";
 import { DonorGroupCardsBlock } from "@/components/blocks/donors/donor-group-cards-block";
 import { DonorListBlock } from "@/components/blocks/donors/donor-list-block";
 import { DonorMapBlock } from "@/components/blocks/donors/donor-map-block";
@@ -151,6 +155,10 @@ export function BlockRenderer({ block, isPreview = false, path }: BlockRendererP
       case "re_developers": return <ReDevelopersBlock block={block} />;
       case "re_calculator": return <ReCalculatorBlock block={block} />;
       case "re_lead_form": return <ReLeadFormBlock block={block} />;
+      case "table": return <TableBlock block={block} />;
+      case "results_search": return <ResultsSearchBlock block={block} />;
+      case "results_alumni": return <ResultsAlumniBlock block={block} />;
+      case "results_courses": return <ResultsCoursesBlock block={block} />;
       case "donor_group_cards": return <DonorGroupCardsBlock block={block} />;
       case "donor_list": return <DonorListBlock block={block} />;
       case "donor_map": return <DonorMapBlock block={block} />;

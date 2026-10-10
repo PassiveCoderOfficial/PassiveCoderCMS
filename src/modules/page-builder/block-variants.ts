@@ -194,6 +194,7 @@ export const BLOCK_VARIANTS: Partial<Record<BlockType, BlockVariant[]>> = {
     { key: "numbered-features", label: "Numbered", description: "Numbered instead of iconed — reads as ordered reasons.", thumb: "numbered-list" },
     { key: "pill-row", label: "Pill Row", description: "Wrapping pills — compact, reads as tags.", thumb: "inline-icons" },
     { key: "minimal-inline", label: "Minimal Inline", description: "Icons and labels inline, no tile background.", thumb: "inline-icons" },
+    { key: "logo-strip", label: "Logo Strip", description: "Partner or accreditation logos on white tiles with a label under each. Set an image per item.", thumb: "tiles" },
   ],
 
   // --- Blocks below drive their layout from a `data` field, not

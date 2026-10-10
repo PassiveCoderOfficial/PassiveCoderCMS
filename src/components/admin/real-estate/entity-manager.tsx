@@ -27,7 +27,9 @@ export interface FieldGroup { title: string; fields: FieldDef[] }
 type Row = Record<string, unknown> & { id: string };
 
 export interface EntityManagerProps {
-  entity: "properties" | "communities" | "developers";
+  entity: string;
+  /** API collection base; the entity is appended. Default: real estate. */
+  apiBase?: string;
   title: string;
   singular: string;
   initial: Row[];
@@ -47,6 +49,7 @@ const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text
 
 export function EntityManager(props: EntityManagerProps) {
   const { entity, title, singular, groups, defaults } = props;
+  const api = `${props.apiBase ?? "/api/real-estate"}/${entity}`;
   const [rows, setRows] = useState<Row[]>(props.initial);
   const [editing, setEditing] = useState<Record<string, unknown> | null>(null);
   const [saving, setSaving] = useState(false);
@@ -63,7 +66,7 @@ export function EntityManager(props: EntityManagerProps) {
     setSaving(true);
     setError("");
     const isNew = !editing.id;
-    const res = await fetch(`/api/real-estate/${entity}`, {
+    const res = await fetch(api, {
       method: isNew ? "POST" : "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editing),
@@ -77,12 +80,12 @@ export function EntityManager(props: EntityManagerProps) {
 
   const remove = async (id: string) => {
     if (!confirm(`Delete this ${singular.toLowerCase()}? This cannot be undone.`)) return;
-    const res = await fetch(`/api/real-estate/${entity}?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`${api}?id=${id}`, { method: "DELETE" });
     if (res.ok) { setRows((prev) => prev.filter((r) => r.id !== id)); setEditing(null); }
   };
 
   const quickToggle = async (r: Row, key: string) => {
-    const res = await fetch(`/api/real-estate/${entity}`, {
+    const res = await fetch(api, {
       method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: r.id, [key]: !r[key] }),
     });
     if (res.ok) { const d = await res.json(); setRows((prev) => prev.map((x) => (x.id === d.id ? d : x))); }

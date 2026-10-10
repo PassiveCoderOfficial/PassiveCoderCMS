@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Plus } from "lucide-react";
 import { generateId } from "@/lib/utils";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import type { IconGridBlockProps, IconGridItem } from "@/types/cms";
 
 export function IconGridSettings({ block }: { block: IconGridBlockProps }) {
@@ -31,7 +32,7 @@ export function IconGridSettings({ block }: { block: IconGridBlockProps }) {
         <Label className="text-xs">Columns</Label>
         <Select value={String(block.data.columns)} onValueChange={v => update("columns", Number(v))}>
           <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>{[3,4,5,6].map(c => <SelectItem key={c} value={String(c)} className="text-xs">{c}</SelectItem>)}</SelectContent>
+          <SelectContent>{[2,3,4,5,6].map(c => <SelectItem key={c} value={String(c)} className="text-xs">{c}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
@@ -61,6 +62,7 @@ export function IconGridSettings({ block }: { block: IconGridBlockProps }) {
                 <Button size="icon" variant="ghost" onClick={() => update("items", block.data.items.filter(i => i.id !== item.id))} className="h-7 w-7 shrink-0 text-destructive"><Trash2 className="w-3 h-3" /></Button>
               </div>
               <Input value={item.icon} onChange={e => updateItem(item.id, "icon", e.target.value)} className="h-7 text-xs" placeholder="Lucide icon (e.g. Star)" />
+              <MediaPickerInput compact value={item.imageUrl ?? ""} onChange={v => updateItem(item.id, "imageUrl", v)} placeholder="Image instead of icon (logo)" />
               <Input value={item.description ?? ""} onChange={e => updateItem(item.id, "description", e.target.value)} className="h-7 text-xs" placeholder="Optional description" />
               <Input value={item.url ?? ""} onChange={e => updateItem(item.id, "url", e.target.value)} className="h-7 text-xs" placeholder="Link URL" />
               <Input value={item.color ?? ""} onChange={e => updateItem(item.id, "color", e.target.value)} className="h-7 text-xs" placeholder="Color (#hex)" />

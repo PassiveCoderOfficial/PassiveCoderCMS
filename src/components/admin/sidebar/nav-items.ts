@@ -47,7 +47,7 @@
   Landmark,
   Inbox,
   UserCog,
-  type LucideIcon, ArrowLeftRight, SearchCheck, AtSign, Megaphone, Receipt, LifeBuoy } from "lucide-react";
+  type LucideIcon, ArrowLeftRight, SearchCheck, AtSign, Megaphone, Receipt, LifeBuoy, Award, GraduationCap } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -71,7 +71,7 @@ export type NavItem = {
 export const MODULE_KEYS = [
   "services", "features", "portfolio", "sliders", "testimonials", "pricing", "bookings",
   "ecommerce", "crm", "invoices", "marketing", "jobs", "pos", "inventory", "accounting",
-  "visa_tour", "blood_donation", "marketplace", "content_scheduler", "ai_coder", "ai_agent", "real_estate",
+  "visa_tour", "blood_donation", "marketplace", "content_scheduler", "ai_coder", "ai_agent", "real_estate", "results",
 ] as const;
 export type ModuleKey = typeof MODULE_KEYS[number];
 
@@ -98,6 +98,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   ai_coder: "AiCoder",
   ai_agent: "AI Agent",
   real_estate: "Real Estate",
+  results: "Results & Certificates",
 };
 
 export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
@@ -123,6 +124,7 @@ export const MODULE_DESCRIPTIONS: Record<ModuleKey, string> = {
   ai_coder: "AI-assisted page content — generate section copy in the page builder",
   ai_agent: "Floating AI assistant for site management, leads, and page content",
   real_estate: "Property listings, off-plan projects, area guides, developers and property leads",
+  results: "Student results and certificates with public lookup, QR verification, printable result cards and courses",
 };
 
 export type NavSection = {
@@ -255,6 +257,14 @@ export const navSections: NavSection[] = [
       { label: "Developers", href: "/dashboard/real-estate/developers", icon: Landmark, moduleKey: "real_estate" },
       { label: "Property Leads", href: "/dashboard/real-estate/leads", icon: Inbox, moduleKey: "real_estate" },
       { label: "Agent Settings", href: "/dashboard/real-estate/settings", icon: UserCog, moduleKey: "real_estate" },
+    ],
+  },
+  {
+    label: "Results",
+    items: [
+      { label: "Results", href: "/dashboard/results", icon: Award, moduleKey: "results" },
+      { label: "Courses", href: "/dashboard/results/courses", icon: GraduationCap, moduleKey: "results" },
+      { label: "Results Settings", href: "/dashboard/results/settings", icon: UserCog, moduleKey: "results" },
     ],
   },
   {
