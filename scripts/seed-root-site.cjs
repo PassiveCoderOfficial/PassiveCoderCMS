@@ -100,7 +100,7 @@ const FAQ_EN = [
 const FAQ_BN = [
   ["ওয়েবসাইট বানাতে কত খরচ?", "একবারই পেমেন্ট: Basic, Pro অথবা Business। প্রথম ১২ মাসের হোস্টিং, SSL, ব্যাকআপ আর ডোমেইন এর মধ্যেই। দ্বিতীয় বছর থেকে ছোট একটা ইয়ারলি প্ল্যাটফর্ম ফি, অথবা Care নিলে আলাদা কিছু লাগবে না।"],
   ["প্রতি মাসে কি টাকা দিতে হবে?", "না। প্ল্যাটফর্ম বছরে একবার রিনিউ হয়। শুধু Care প্যাকেজ মাসে মাসে নেওয়া যায়, সেটাও ঐচ্ছিক।"],
-  ["আগে টাকা দিতে হবে?", "না। আপনার ব্যবসার নাম, লোগো, কয়েকটা ছবি আর সার্ভিসের তালিকা পাঠান। আমরা আগে হোমপেজ বানিয়ে দেখাব, পছন্দ হলে কনফার্ম করে পেমেন্ট করবেন।"],
+  ["পেমেন্টের আগে সিস্টেমটা দেখতে পারব?", "অবশ্যই। ফ্রি Google Meet সেশনে আমরা ড্যাশবোর্ড আর আমাদের বানানো লাইভ ক্লায়েন্ট সাইটগুলো দেখাব। সন্তুষ্ট হলে পেমেন্ট করবেন, তারপর আমরা কাজ শুরু করব।"],
   ["কীভাবে পেমেন্ট করব?", "bKash, Nagad, ব্যাংক ট্রান্সফার, shurjoPay অথবা কার্ড।"],
   ["আমাকে কি বাংলাদেশে থাকতে হবে?", "না। আপনি UAE, সৌদি, কাতার, মালয়েশিয়া, সিঙ্গাপুর যেখানেই থাকুন, সব কাজ WhatsApp-এ হয়।"],
   ["Care বন্ধ করলে সাইটের কী হবে?", "সাইট চালু থাকবে। আপনার প্যাকেজের ইয়ারলি প্ল্যাটফর্ম রিনিউতে চলে যাবে, সব পেজ আর ডেটা যেমন আছে তেমনই থাকবে।"],
@@ -372,7 +372,7 @@ function bangladeshPage() {
       badge: "প্রবাসী ব্যবসায়ীদের জন্য",
       title: "প্রবাসে বসে ব্যবসা করেন?",
       titleAccent: "ওয়েবসাইটটাও থাকুক প্রফেশনাল।",
-      subtitle: "UAE, সৌদি, কাতার, ওমান, মালয়েশিয়া, সিঙ্গাপুরে যেখানেই থাকুন, সব কাজ WhatsApp-এ। আগে হোমপেজ দেখবেন, পছন্দ হলে একবার পেমেন্ট।",
+      subtitle: "UAE, সৌদি, কাতার, ওমান, মালয়েশিয়া, সিঙ্গাপুরে যেখানেই থাকুন, সব কাজ WhatsApp-এ। চাইলে আগে ফ্রি Google Meet-এ পুরো সিস্টেম দেখে নিন।",
       primaryButton: { label: "প্রাইস দেখুন", url: "#pricing", variant: "primary" },
       secondaryButton: { label: "WhatsApp-এ কথা বলুন", url: WA_BN, variant: "outline" },
       imageUrl: U("photo-1504307651254-35680f356dfd", 1400),
@@ -418,9 +418,9 @@ function bangladeshPage() {
       subtitle: "কোনো ফর্ম নেই, কোনো টেকনিক্যাল ঝামেলা নেই।",
       layout: "horizontal", style: "connected",
       items: [
-        { id: uid("st"), icon: "MessageCircle", title: "তথ্য পাঠান", description: "ব্যবসার নাম, লোগো, কয়েকটা ছবি আর সার্ভিসের তালিকা WhatsApp-এ।" },
-        { id: uid("st"), icon: "LayoutTemplate", title: "হোমপেজ দেখুন", description: "আমরা আগে হোমপেজ বানিয়ে দেখাই, তখনো কোনো টাকা লাগে না।" },
-        { id: uid("st"), icon: "BadgeCheck", title: "কনফার্ম করে পেমেন্ট", description: "bKash, Nagad, ব্যাংক অথবা কার্ডে একবার পেমেন্ট।" },
+        { id: uid("st"), icon: "Video", title: "ফ্রি Google Meet", description: "ড্যাশবোর্ড আর আমাদের বানানো লাইভ সাইটগুলো আমাদের টিমের সাথে দেখুন।" },
+        { id: uid("st"), icon: "BadgeCheck", title: "প্যাকেজ বেছে পেমেন্ট", description: "bKash, Nagad, ব্যাংক অথবা কার্ডে একবার পেমেন্ট।" },
+        { id: uid("st"), icon: "MessageCircle", title: "তথ্য পাঠান", description: "ব্যবসার নাম, লোগো, ছবি আর সার্ভিসের তালিকা WhatsApp-এ। বাকিটা আমরা বানাই।" },
         { id: uid("st"), icon: "Rocket", title: "সাইট লাইভ", description: "ডোমেইন, হোস্টিং, SSL সব সেটআপ করে আপনার সাইট লাইভ।" },
       ],
     }, { templateVariant: "timeline-connected" }),
@@ -433,10 +433,10 @@ function bangladeshPage() {
     }, { templateVariant: "highlight-cards", background: color(BG2) }),
     video("XqPdLxdG_gI", "আমাদের টিম আর কাজের প্রসেস নিজের চোখে দেখুন।", "framed", BG),
     faq([
-      ["টাকা দেওয়ার পর যদি যোগাযোগ বন্ধ করে দেয়?", "আমাদের বৈধ ট্রেড লাইসেন্স, ফিজিক্যাল অফিস, বিজনেস ব্যাংক অ্যাকাউন্ট এবং ১২,০০০+ সাবস্ক্রাইবারের পাবলিক ইউটিউব চ্যানেল আছে, লুকিয়ে থাকার কোনো সুযোগ নেই। তাছাড়া আগে হোমপেজ দেখে তারপর পেমেন্ট করবেন।"],
+      ["টাকা দেওয়ার পর যদি যোগাযোগ বন্ধ করে দেয়?", "আমাদের বৈধ ট্রেড লাইসেন্স, ফিজিক্যাল অফিস, বিজনেস ব্যাংক অ্যাকাউন্ট এবং ১২,০০০+ সাবস্ক্রাইবারের পাবলিক ইউটিউব চ্যানেল আছে, লুকিয়ে থাকার কোনো সুযোগ নেই। তাছাড়া ১৪ দিনের মানি-ব্যাক গ্যারান্টি তো আছেই।"],
       ...FAQ_BN,
     ], "সাধারণ প্রশ্ন", "আরো কিছু জানতে চাইলে WhatsApp করুন।", "split-heading", BG2),
-    finalCta("আজই শুরু করুন", "ব্যবসার নাম আর সার্ভিস পাঠান, আমরা আগে হোমপেজ বানিয়ে দেখাব।",
+    finalCta("আজই শুরু করুন", "ফ্রি Google Meet বুক করুন, অথবা প্যাকেজ বেছে নিন, আজই কাজ শুরু।",
       { label: "WhatsApp-এ মেসেজ দিন", url: WA_BN }, { label: "প্রাইস দেখুন", url: "#pricing" }),
   ];
 }
@@ -508,7 +508,7 @@ async function preserveLegal(slug) {
   await upsertPage("home", "Home", home(), seo("Professional Websites for Local Businesses", "We build and run professional websites for local service businesses, with WhatsApp enquiries, booking and a shop built in. Pay once, own it."), 0);
   await upsertPage("pricing", "Pricing", pricingPage(), seo("Website Pricing", "One-time website packages with the first year of hosting, SSL, backups and domain included. Optional monthly or yearly Care plans."), 1);
   await upsertPage("website-maintenance", "Website Care Plans", carePage(), seo("Website Maintenance & Care Plans", "Website maintenance with hosting, domain renewal, monthly updates, new pages, SEO checks and priority support."), 2);
-  await upsertPage("website-for-bangladeshi-businesses", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। আগে দেখুন, পরে পেমেন্ট।"), 3);
+  await upsertPage("website-for-bangladeshi-businesses", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। ফ্রি Google Meet-এ সিস্টেম দেখে নিন।"), 3);
   await upsertPage("contact", "Contact", contactPage(), seo("Contact", "Talk to the Passive Coder team on WhatsApp or send us a message."), 4);
   await upsertPage("refund", "Refund Policy", legalPage("Refund policy", REFUND), seo("Refund Policy", "Our refund policy for website builds, Care plans and platform renewals."), 7);
   console.log("done");
