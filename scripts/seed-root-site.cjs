@@ -195,7 +195,8 @@ function home() {
       secondaryButton: { label: "Talk to us on WhatsApp", url: WA, variant: "outline" },
       imageUrl: "/images/hero-platform.jpg",
       imageAlt: "Passive Coder page builder, product editor and SEO settings",
-      countries: ["bd", "sg", "qa", "sa", "ae", "om"],
+      showCountries: true,
+      countries: ["us", "ae", "bd", "sg", "qa", "sa", "om", "my", "eu"],
       countriesLabel: "Serving businesses in",
       typography: typo("6xl"),
     }, { templateVariant: "dark-gradient-left", padding: pad(140, 120) }),
@@ -480,13 +481,14 @@ const REFUND = [
 
 // ─── write ──────────────────────────────────────────────────────────────────
 async function upsertPage(slug, title, blocks, seo, order) {
+  // Update the live row in place. Never archive + insert: that piled up
+  // duplicate archived copies in the dashboard Pages list on every re-run.
   const now = new Date().toISOString();
-  await sb.from("pages").update({ status: "archived", updated_at: now })
-    .eq("tenant_id", TENANT_ID).eq("slug", slug).is("deleted_at", null).neq("status", "archived");
-  const { error } = await sb.from("pages").insert({
-    tenant_id: TENANT_ID, template_id: null, title, slug, type: "page", status: "published",
-    blocks: blocks.map((b, i) => ({ ...b, order: i })), seo, order_index: order, created_at: now, updated_at: now,
-  });
+  const row = { title, blocks: blocks.map((b, i) => ({ ...b, order: i })), seo, order_index: order, status: "published", updated_at: now };
+  const { data: existing } = await sb.from("pages").select("id").eq("tenant_id", TENANT_ID).eq("slug", slug).eq("status", "published").is("deleted_at", null).maybeSingle();
+  const { error } = existing
+    ? await sb.from("pages").update(row).eq("id", existing.id)
+    : await sb.from("pages").insert({ ...row, tenant_id: TENANT_ID, template_id: null, slug, type: "page", created_at: now });
   if (error) throw new Error(`${slug}: ${error.message}`);
   console.log("page", slug, blocks.length, "blocks");
 }

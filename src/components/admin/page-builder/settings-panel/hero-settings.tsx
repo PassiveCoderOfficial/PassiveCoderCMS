@@ -10,6 +10,10 @@ import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import type { HeroBlockProps } from "@/types/cms";
 import { Switch } from "@/components/ui/switch";
+import { AlignLeft, AlignCenter, AlignRight, Columns2 } from "lucide-react";
+import { CountryMultiPicker } from "@/components/admin/country-multi-picker";
+import { MultiImagePicker } from "@/components/admin/multi-image-picker";
+import { cn } from "@/lib/utils";
 import { TextField, ItemsEditor, MetersEditor, ShowcaseColorsEditor } from "./showcase-fields";
 
 export function HeroSettings({ block }: { block: HeroBlockProps }) {
@@ -45,7 +49,6 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
   // designs by intent (no image split, no side-pinned text) — Layout has
   // nothing to control there, so hide it instead of showing a dropdown that
   // silently does nothing when changed.
-  const layoutApplies = !["centered-bold", "corporate", "spec-card", "page-banner"].includes(block.templateVariant ?? "");
   const showcase = block.templateVariant === "spec-card" || block.templateVariant === "page-banner";
   const specCard = block.templateVariant === "spec-card";
   const card = block.data.specCard ?? {};
@@ -53,19 +56,6 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
 
   return (
     <div className="space-y-4">
-      {layoutApplies && (
-        <div className="space-y-1.5">
-          <Label className="text-xs">Layout</Label>
-          <Select value={block.data.layout} onValueChange={(v) => update("layout", v)}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {["centered", "left", "right", "split"].map((l) => (
-                <SelectItem key={l} value={l} className="text-xs capitalize">{l}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
 
       <FieldGroup label={block.templateVariant === "page-banner" ? "Small label above title" : "Badge text"}>
         <Input value={block.data.badge ?? ""} onChange={(e) => update("badge", e.target.value)} className="h-8 text-xs" placeholder="Optional badge" />
@@ -87,16 +77,7 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <Textarea value={block.data.description ?? ""} onChange={(e) => update("description", e.target.value)} className="text-xs resize-none" rows={3} />
       </FieldGroup>
 
-      {block.templateVariant === "dark-gradient-left" && (
-        <>
-          <FieldGroup label="Countries served (flags)">
-            <Input value={(block.data.countries ?? []).join(", ")} onChange={(e) => update("countries", e.target.value.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean))} className="h-8 text-xs" placeholder="bd, sg, qa, sa, ae, om" />
-          </FieldGroup>
-          <FieldGroup label="Flags label">
-            <Input value={block.data.countriesLabel ?? ""} onChange={(e) => update("countriesLabel", e.target.value)} className="h-8 text-xs" placeholder="Serving businesses in" />
-          </FieldGroup>
-        </>
-      )}
+      <HeroTrustFields data={block.data} update={update} />
 
       <FieldGroup label="Image">
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={updateImage} />
@@ -194,8 +175,32 @@ export function HeroStyleSettings({ block }: { block: HeroBlockProps }) {
     updateBlock(block.id, { data: { ...block.data, [btn]: { ...existing, [field]: value } } });
   };
 
+  const layoutApplies = !["centered-bold", "corporate", "spec-card", "page-banner"].includes(block.templateVariant ?? "");
+  const ALIGN = [
+    { v: "left", icon: AlignLeft, label: "Left" },
+    { v: "centered", icon: AlignCenter, label: "Center" },
+    { v: "right", icon: AlignRight, label: "Right" },
+    { v: "split", icon: Columns2, label: "Split" },
+  ] as const;
+
   return (
     <div className="space-y-4">
+      {layoutApplies && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Align</Label>
+          <div className="grid grid-cols-4 gap-1 rounded-lg bg-muted p-1">
+            {ALIGN.map(({ v, icon: Icon, label }) => (
+              <button key={v} type="button" title={label} aria-label={label} onClick={() => update("layout", v)}
+                className={cn("flex flex-col items-center gap-0.5 rounded-md py-1.5 text-[10px] transition-colors",
+                  (block.data.layout ?? "left") === v ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}>
+                <Icon className="h-4 w-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-2">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Badge Style</p>
         <div className="grid grid-cols-2 gap-2">
@@ -280,6 +285,65 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
     <div>
       <Label className="text-[10px] text-muted-foreground">{label}</Label>
       <ColorPicker value={value} onChange={onChange} className="h-7 mt-0.5" />
+    </div>
+  );
+}
+
+const RATING_STYLES = [
+  { v: "stars", label: "Stars + score" },
+  { v: "pill", label: "Pill" },
+  { v: "google", label: "Google badge" },
+  { v: "big", label: "Big score" },
+] as const;
+
+/** Trust signals under the hero buttons: countries, logos, rating. */
+function HeroTrustFields({ data, update }: { data: HeroBlockProps["data"]; update: (field: string, value: unknown) => void }) {
+  const rating = data.rating ?? { value: 4.9, count: "", label: "", style: "stars" as const };
+  const setRating = (patch: Partial<typeof rating>) => update("rating", { ...rating, ...patch });
+  const toggle = (label: string, field: "showCountries" | "showTrustLogos" | "showRating") => (
+    <div className="flex items-center justify-between">
+      <Label className="text-xs">{label}</Label>
+      <Switch checked={!!data[field]} onCheckedChange={(v) => update(field, v)} />
+    </div>
+  );
+  return (
+    <div className="space-y-3 rounded-lg border p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Trust signals</p>
+
+      {toggle("Show countries served", "showCountries")}
+      {data.showCountries && (
+        <div className="space-y-2 pl-1">
+          <CountryMultiPicker value={data.countries ?? []} onChange={(v) => update("countries", v)} />
+          <Input value={data.countriesLabel ?? ""} onChange={(e) => update("countriesLabel", e.target.value)} className="h-8 text-xs" placeholder="Label, e.g. Serving businesses in" />
+        </div>
+      )}
+
+      {toggle("Show logos (partners, certifications)", "showTrustLogos")}
+      {data.showTrustLogos && (
+        <div className="space-y-2 pl-1">
+          <MultiImagePicker value={data.trustLogos ?? []} onChange={(v) => update("trustLogos", v)} />
+          <Input value={data.trustLogosLabel ?? ""} onChange={(e) => update("trustLogosLabel", e.target.value)} className="h-8 text-xs" placeholder="Label, e.g. Certified by" />
+        </div>
+      )}
+
+      {toggle("Show star rating", "showRating")}
+      {data.showRating && (
+        <div className="space-y-2 pl-1">
+          <div className="grid grid-cols-2 gap-1">
+            {RATING_STYLES.map((r) => (
+              <button key={r.v} type="button" onClick={() => setRating({ style: r.v })}
+                className={cn("rounded-md border px-2 py-1.5 text-[11px]", (rating.style ?? "stars") === r.v ? "border-primary bg-primary/5 font-medium" : "hover:bg-muted")}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="number" min={1} max={5} step={0.1} value={rating.value} onChange={(e) => setRating({ value: Math.min(5, Math.max(1, Number(e.target.value) || 5)) })} className="h-8 text-xs" placeholder="4.9" />
+            <Input value={rating.count ?? ""} onChange={(e) => setRating({ count: e.target.value })} className="h-8 text-xs" placeholder="Reviews, e.g. 120+" />
+          </div>
+          <Input value={rating.label ?? ""} onChange={(e) => setRating({ label: e.target.value })} className="h-8 text-xs" placeholder="Custom text (optional)" />
+        </div>
+      )}
     </div>
   );
 }

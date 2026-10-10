@@ -6,11 +6,16 @@ import { usePathname } from "next/navigation";
 import type { HeroBlockProps } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { InlineText } from "../inline-text";
+import { HeroTrust } from "./hero-trust";
 import { ScMeter, scStyle, isExternal } from "@/components/blocks/_primitives/showcase";
 
 type D = HeroBlockProps["data"];
 
 function Buttons({ data }: { data: D }) {
+  return <><Ctas data={data} /><HeroTrust data={data} onDark /></>;
+}
+
+function Ctas({ data }: { data: D }) {
   const b = [data.primaryButton, data.secondaryButton];
   if (!b[0]?.label && !b[1]?.label) return null;
   return (

@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroTrust } from "./hero-trust";
 import { orderElements } from "@/components/blocks/_primitives/ordered-elements";
 import type { HeroBlockProps } from "@/types/cms";
 import Image from "@/components/ui/smart-image";
@@ -24,7 +25,16 @@ function badgeStyle(data: HeroBlockProps["data"]): React.CSSProperties | undefin
   return { backgroundColor: data.badgeBgColor || undefined, color: data.badgeTextColor || undefined, borderColor: data.badgeTextColor || undefined };
 }
 
-function HeroButtons({ data, centered, onDark }: { data: HeroBlockProps["data"]; centered?: boolean; onDark?: boolean }) {
+function HeroButtons({ data, centered, right, onDark }: { data: HeroBlockProps["data"]; centered?: boolean; right?: boolean; onDark?: boolean }) {
+  return (
+    <>
+      <HeroCtas data={data} centered={centered} right={right} onDark={onDark} />
+      <HeroTrust data={data} centered={centered} right={right} onDark={onDark} />
+    </>
+  );
+}
+
+function HeroCtas({ data, centered, right, onDark }: { data: HeroBlockProps["data"]; centered?: boolean; right?: boolean; onDark?: boolean }) {
   const { primaryButton, secondaryButton } = data;
   if (!primaryButton && !secondaryButton) return null;
   // Outline/secondary buttons need white-glass treatment on dark image
@@ -36,7 +46,7 @@ function HeroButtons({ data, centered, onDark }: { data: HeroBlockProps["data"];
     ? "bg-white/15 text-white hover:bg-white/25 backdrop-blur-sm"
     : "bg-muted text-foreground hover:bg-muted/70";
   return (
-    <div className={cn("flex flex-wrap gap-3 mt-2", centered && "justify-center")}>
+    <div className={cn("flex flex-wrap gap-3 mt-2", centered && "justify-center", right && "justify-end")}>
       {primaryButton && (
         <Link
           href={primaryButton.url}
@@ -230,7 +240,7 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
           )}
           </>,
           buttons: <>
-          <HeroButtons data={data} centered={!isPinned} onDark />
+          <HeroButtons data={data} centered={!isPinned} right={isRight} onDark />
           </>,
         })}
       </div>
@@ -286,11 +296,6 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
     </div>
   );
 }
-
-const COUNTRY_NAMES: Record<string, string> = {
-  bd: "Bangladesh", sg: "Singapore", qa: "Qatar", sa: "Saudi Arabia", ae: "United Arab Emirates",
-  om: "Oman", my: "Malaysia", kw: "Kuwait", bh: "Bahrain", us: "United States", gb: "United Kingdom", in: "India",
-};
 
 // ─── Variant: dark-gradient-left ─────────────────────────────────────────────
 // Text over a dark gradient with a full-bleed background image — agencies.
@@ -370,20 +375,9 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
             )}
             </>,
             buttons: <>
-            <HeroButtons data={data} centered={isCentered} onDark />
+            <HeroButtons data={data} centered={isCentered} right={isRight} onDark />
             </>,
           })}
-          {data.countries && data.countries.length > 0 && (
-            <div className={cn("flex flex-wrap items-center gap-3 pt-2", isCentered && "justify-center", isRight && "justify-end")}>
-              {data.countriesLabel && <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{data.countriesLabel}</span>}
-              <div className="flex items-center gap-2">
-                {data.countries.map((c) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={c} src={`https://flagcdn.com/${c}.svg`} alt={c.toUpperCase()} title={COUNTRY_NAMES[c] ?? c.toUpperCase()} className="h-6 w-9 rounded-[4px] object-cover ring-1 ring-white/15 shadow-sm" loading="lazy" />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { StatusTabs } from "./status-tabs";
 import type React from "react";
 import { PagesTable, PagesToolbar } from "./pages-table";
 
-const TABS = ["all", "published", "draft", "scheduled", "trash"] as const;
+const TABS = ["all", "published", "draft", "scheduled", "archived", "trash"] as const;
 type Tab = (typeof TABS)[number];
 
 /**
@@ -40,7 +40,9 @@ export async function ContentList({
     query = query.not("deleted_at", "is", null);
   } else {
     query = query.is("deleted_at", null);
-    if (tab !== "all") query = query.eq("status", tab);
+    // Archived pages live in their own tab only, never mixed into All.
+    if (tab === "all") query = query.neq("status", "archived");
+    else query = query.eq("status", tab);
   }
   if (search) query = query.or(`title.ilike.%${search}%,slug.ilike.%${search}%`);
 
@@ -53,10 +55,11 @@ export async function ContentList({
 
   const live = (all ?? []).filter((p) => !p.deleted_at);
   const counts: Record<string, number> = {
-    all: live.length,
+    all: live.filter((p) => p.status !== "archived").length,
     published: live.filter((p) => p.status === "published").length,
     draft: live.filter((p) => p.status === "draft").length,
     scheduled: live.filter((p) => p.status === "scheduled").length,
+    archived: live.filter((p) => p.status === "archived").length,
     trash: (all ?? []).length - live.length,
   };
 

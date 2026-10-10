@@ -10,6 +10,7 @@ const TABS: { key: string; labelKey: TranslationKey }[] = [
   { key: "published", labelKey: "pages.statusPublished" },
   { key: "draft", labelKey: "pages.statusDraft" },
   { key: "scheduled", labelKey: "pages.statusScheduled" },
+  { key: "archived", labelKey: "pages.statusArchived" },
   { key: "trash", labelKey: "pages.tabTrash" },
 ];
 
