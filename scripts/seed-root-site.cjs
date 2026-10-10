@@ -183,10 +183,10 @@ const faq = (items, title, subtitle, variant = "split-heading", bg = BG) => bloc
 const finalCta = (title, description, primary, secondary) => block("cta", {
   title, description, layout: "split",
   primaryButton: primary, secondaryButton: secondary,
-}, { templateVariant: "dark-split", padding: pad(40, 104), background: color(BG) });
+}, { templateVariant: "dark-split", padding: pad(88, 88), background: color(DARK), style: { textColor: "#ffffff" } });
 
 const pageHero = (badge, title, accent, subtitle, buttons = {}, image = "photo-1497366216548-37526070297c") => block("hero", {
-  layout: "left", badge, title, titleAccent: accent || undefined, subtitle, compact: true,
+  layout: "right", badge, title, titleAccent: accent || undefined, subtitle, compact: true,
   imageUrl: U(image, 1200), imageAlt: "", typography: typo("5xl"), ...buttons,
 }, { templateVariant: "split-image-right", padding: pad(72, 56), background: color(BG2) });
 
@@ -194,7 +194,7 @@ const pageHero = (badge, title, accent, subtitle, buttons = {}, image = "photo-1
 function home() {
   return [
     block("hero", {
-      layout: "left",
+      layout: "right",
       badge: "Websites for local service businesses",
       title: "More customers from Google and WhatsApp.",
       titleAccent: "Your website, done for you.",
@@ -377,7 +377,7 @@ const TRADES = [
 function bangladeshPage() {
   return [
     block("hero", {
-      layout: "left",
+      layout: "right",
       badge: "প্রবাসী ব্যবসায়ীদের জন্য",
       title: "প্রবাসে বসে ব্যবসা করেন?",
       titleAccent: "ওয়েবসাইটটাও থাকুক প্রফেশনাল।",
