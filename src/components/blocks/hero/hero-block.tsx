@@ -13,11 +13,12 @@ interface HeroBlockComponentProps {
 }
 
 const titleSizeMap: Record<string, string> = {
-  "3xl": "text-3xl",
-  "4xl": "text-4xl",
-  "5xl": "text-5xl md:text-6xl",
-  "6xl": "text-5xl md:text-7xl",
-  "7xl": "text-6xl md:text-8xl",
+  // Phone sizes step down so long headlines fit one screen; desktop unchanged.
+  "3xl": "text-2xl sm:text-3xl",
+  "4xl": "text-3xl sm:text-4xl",
+  "5xl": "text-[2.125rem] leading-[1.1] sm:text-5xl md:text-6xl",
+  "6xl": "text-[2.375rem] leading-[1.08] sm:text-5xl md:text-7xl",
+  "7xl": "text-[2.625rem] leading-[1.05] sm:text-6xl md:text-8xl",
 };
 
 function badgeStyle(data: HeroBlockProps["data"]): React.CSSProperties | undefined {
@@ -106,7 +107,7 @@ function hexToRgba(hex: string, alpha: number): string {
 
 function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
   const { data } = block;
-  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-6xl";
+  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-[2.125rem] leading-[1.1] sm:text-5xl md:text-6xl";
   const isCentered = data.layout === "centered";
   const imageFirst = data.layout === "left";
 
@@ -180,7 +181,7 @@ function HeroSplitImageRight({ block }: HeroBlockComponentProps) {
 // "right" pin it to that edge, "centered" / "split" (default) keep it centered.
 function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
   const { data } = block;
-  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
+  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-[2.375rem] leading-[1.08] sm:text-5xl md:text-7xl";
   const opacity = data.overlayOpacity ?? 0.55;
   const overlayFrom = hexToRgba(data.overlayColor ?? "#000000", opacity);
   const overlayTo = data.overlayColorTo ? hexToRgba(data.overlayColorTo, opacity) : overlayFrom;
@@ -254,7 +255,7 @@ function HeroFullscreenOverlay({ block }: HeroBlockComponentProps) {
 // not apply here; the settings panel hides the Layout control for this variant.
 function HeroCenteredBold({ block }: HeroBlockComponentProps) {
   const { data } = block;
-  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
+  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-[2.375rem] leading-[1.08] sm:text-5xl md:text-7xl";
   return (
     <div className="max-w-5xl mx-auto text-center flex flex-col items-center gap-6 py-12">
       {orderElements(block.elements, {
@@ -304,14 +305,14 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
 // column instead of pinning it to an edge.
 function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
   const { data } = block;
-  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl md:text-7xl";
+  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-[2.375rem] leading-[1.08] sm:text-5xl md:text-7xl";
   const isRight = data.layout === "right";
   const isCentered = data.layout === "centered";
   const gradientDir = isCentered ? "bg-gradient-to-t" : isRight ? "bg-gradient-to-l" : "bg-gradient-to-r";
 
   return (
     <div
-      className="relative min-h-[80vh] flex items-center overflow-hidden"
+      className="relative py-12 sm:py-0 sm:min-h-[80vh] flex items-center overflow-hidden"
       // Without a photo this variant used to render on the page's plain
       // (usually white) ground — nothing "dark gradient" about it. Give it
       // its own deep gradient and light text tokens in that case; with a
@@ -391,7 +392,7 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
 // settings panel hides the Layout control for this variant.
 function HeroCorporate({ block }: HeroBlockComponentProps) {
   const { data } = block;
-  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-5xl";
+  const titleSize = titleSizeMap[data.typography?.titleSize] ?? "text-[2.125rem] leading-[1.1] sm:text-5xl";
   // overlayColor/overlayColorTo are always literal hex (seeded from the
   // template palette) — hexToRgba needs a real hex, not a CSS var() reference.
   const from = data.overlayColor ?? "#1a5c38";
@@ -455,7 +456,7 @@ function HeroLegacy({ block }: HeroBlockComponentProps) {
   // unguarded and crashed on any hero predating this field. Found live: 12
   // real pages have a hero block with no typography object at all.
   const typography = data.typography ?? { titleSize: "5xl", titleColor: "", subtitleColor: "", descColor: "" };
-  const titleSize = titleSizeMap[typography.titleSize] ?? "text-5xl md:text-6xl";
+  const titleSize = titleSizeMap[typography.titleSize] ?? "text-[2.125rem] leading-[1.1] sm:text-5xl md:text-6xl";
 
   const textContent = (
     <div className={cn(layout === "centered" && "text-center items-center", "flex flex-col gap-4")}>

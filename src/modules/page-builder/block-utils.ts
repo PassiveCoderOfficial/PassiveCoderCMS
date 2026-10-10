@@ -114,13 +114,18 @@ export function getBlockWrapperStyle(block: Block): { style: React.CSSProperties
   };
 
   const t = st.paddingTablet, m = st.paddingMobile;
-  const responsive = [t?.top, t?.bottom, m?.top, m?.bottom].some((v) => typeof v === "number");
+  // Large desktop padding (hero sections often use 120px+) wastes most of a
+  // phone screen. Without explicit overrides, cap it per device: 96px on
+  // tablet, 48px on phone. Desktop keeps the exact value.
+  const big = pad.top > 64 || pad.bottom > 64;
+  const responsive = big || [t?.top, t?.bottom, m?.top, m?.bottom].some((v) => typeof v === "number");
   if (responsive) {
-    const tTop = t?.top ?? pad.top, tBottom = t?.bottom ?? pad.bottom;
+    const tTop = t?.top ?? Math.min(pad.top, 96), tBottom = t?.bottom ?? Math.min(pad.bottom, 96);
+    const mTop = m?.top ?? Math.min(tTop, 48), mBottom = m?.bottom ?? Math.min(tBottom, 48);
     Object.assign(style, {
       "--pc-pt": `${pad.top}px`, "--pc-pb": `${pad.bottom}px`,
       "--pc-pt-t": `${tTop}px`, "--pc-pb-t": `${tBottom}px`,
-      "--pc-pt-m": `${m?.top ?? tTop}px`, "--pc-pb-m": `${m?.bottom ?? tBottom}px`,
+      "--pc-pt-m": `${mTop}px`, "--pc-pb-m": `${mBottom}px`,
     });
     classes.push("pc-rpad");
   } else {
