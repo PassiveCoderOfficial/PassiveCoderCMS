@@ -119,7 +119,8 @@ export function publicView(row: ResultRow, s: ResultsSettings, mode: "full" | "v
   const fields = mode === "verify" ? VERIFY_FIELDS : RESULT_FIELDS;
   for (const f of fields) {
     if (mode === "full" && !isPublic(s, f)) continue;
-    let v: string | null = f === "course_name" ? (row.course?.name ?? row.course_name) : (row[f] as string | null);
+    // The course text printed on the certificate wins; the linked course only supplies the link.
+    let v: string | null = f === "course_name" ? (row.course_name || row.course?.name || null) : (row[f] as string | null);
     if (v == null || String(v).trim() === "") continue;
     v = String(v).trim();
     if (f === "passport_no" && s.mask_passport) v = maskPassport(v);
