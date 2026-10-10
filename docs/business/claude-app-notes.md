@@ -5,8 +5,7 @@ sessions in this repo start from the same picture.
 
 Last updated: 2026-10-10
 
-Two items below are marked **unconfirmed** — do not put them in anything a
-customer sees until they are settled.
+Pricing v2 is live as of 2026-10-10 — see below.
 
 ---
 
@@ -43,10 +42,10 @@ Products:
 
 ---
 
-## Pricing — DRAFT v2 (2026-10-10, agreed in principle, not yet public)
+## Pricing — v2, LIVE (2026-10-10)
 
-Supersedes the Bangladesh-channel tables that were here. Nothing below is on
-the live site yet. Do not quote to customers until Wali marks it final.
+Supersedes the Bangladesh-channel tables that were here. These prices are on
+the live site and are the ones to quote to customers.
 
 ### Model: three layers
 
