@@ -87,6 +87,17 @@ export function HeroSettings({ block }: { block: HeroBlockProps }) {
         <Textarea value={block.data.description ?? ""} onChange={(e) => update("description", e.target.value)} className="text-xs resize-none" rows={3} />
       </FieldGroup>
 
+      {block.templateVariant === "dark-gradient-left" && (
+        <>
+          <FieldGroup label="Countries served (flags)">
+            <Input value={(block.data.countries ?? []).join(", ")} onChange={(e) => update("countries", e.target.value.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean))} className="h-8 text-xs" placeholder="bd, sg, qa, sa, ae, om" />
+          </FieldGroup>
+          <FieldGroup label="Flags label">
+            <Input value={block.data.countriesLabel ?? ""} onChange={(e) => update("countriesLabel", e.target.value)} className="h-8 text-xs" placeholder="Serving businesses in" />
+          </FieldGroup>
+        </>
+      )}
+
       <FieldGroup label="Image">
         <MediaPickerInput compact value={block.data.imageUrl ?? ""} onChange={updateImage} />
         {block.data.imageUrl && (

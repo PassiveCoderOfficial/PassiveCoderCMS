@@ -193,8 +193,10 @@ function home() {
       subtitle: "We build and run a professional website for your business, with WhatsApp enquiries, online booking and a shop built in. You serve customers. We handle the tech.",
       primaryButton: { label: "See packages", url: "/pricing", variant: "primary" },
       secondaryButton: { label: "Talk to us on WhatsApp", url: WA, variant: "outline" },
-      imageUrl: U("photo-1556740738-b6a63e27c4df", 1400),
-      imageAlt: "Small business owner serving a customer",
+      imageUrl: "/images/hero-platform.jpg",
+      imageAlt: "Passive Coder page builder, product editor and SEO settings",
+      countries: ["bd", "sg", "qa", "sa", "ae", "om"],
+      countriesLabel: "Serving businesses in",
       typography: typo("6xl"),
     }, { templateVariant: "dark-gradient-left", padding: pad(140, 120) }),
 

@@ -207,6 +207,9 @@ export type HeroBlockProps = BlockBase & {
     };
     /** Spec Card: link strip along the bottom of the hero. */
     strip?: { id: string; title: string; subtitle?: string; url?: string }[];
+    /** Dark Gradient: row of country flags (ISO 3166 alpha-2 codes) under the buttons. */
+    countries?: string[];
+    countriesLabel?: string;
     /** Page Banner: breadcrumb built from the page address. */
     showBreadcrumb?: boolean;
     /** Spec Card / Page Banner colour overrides; theme colours when unset. */

@@ -287,6 +287,11 @@ function HeroCenteredBold({ block }: HeroBlockComponentProps) {
   );
 }
 
+const COUNTRY_NAMES: Record<string, string> = {
+  bd: "Bangladesh", sg: "Singapore", qa: "Qatar", sa: "Saudi Arabia", ae: "United Arab Emirates",
+  om: "Oman", my: "Malaysia", kw: "Kuwait", bh: "Bahrain", us: "United States", gb: "United Kingdom", in: "India",
+};
+
 // ─── Variant: dark-gradient-left ─────────────────────────────────────────────
 // Text over a dark gradient with a full-bleed background image — agencies.
 // data.layout controls which side the text panel sits on: "left" (default) /
@@ -368,6 +373,17 @@ function HeroDarkGradientLeft({ block }: HeroBlockComponentProps) {
             <HeroButtons data={data} centered={isCentered} onDark />
             </>,
           })}
+          {data.countries && data.countries.length > 0 && (
+            <div className={cn("flex flex-wrap items-center gap-3 pt-2", isCentered && "justify-center", isRight && "justify-end")}>
+              {data.countriesLabel && <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{data.countriesLabel}</span>}
+              <div className="flex items-center gap-2">
+                {data.countries.map((c) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={c} src={`https://flagcdn.com/${c}.svg`} alt={c.toUpperCase()} title={COUNTRY_NAMES[c] ?? c.toUpperCase()} className="h-6 w-9 rounded-[4px] object-cover ring-1 ring-white/15 shadow-sm" loading="lazy" />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
