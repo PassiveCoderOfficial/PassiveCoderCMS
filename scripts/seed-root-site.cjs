@@ -91,7 +91,7 @@ const FAQ_EN = [
   ["Is there a monthly fee?", "No. The platform renews once a year. Care plans are the only thing you can pay monthly, and they are optional."],
   ["What is a Care plan?", "Our team looks after your site every month: content and design changes, new pages, reports, SEO checks and priority support. Hosting and domain renewal are included, so you never pay the platform fee while Care is active."],
   ["What happens if I stop Care?", "Your website stays online. It moves to the yearly platform renewal for your package, with your pages and data kept exactly as they are."],
-  ["Do I pay before I see anything?", "No. Send us your business name, logo, a few photos and your services. We build your homepage first, you see it, and then you confirm and pay."],
+  ["Can I see the system before I pay?", "Yes. Book a free Google Meet session and we walk you through the dashboard and real sites we have already built. Once you are happy, you pay and we start building."],
   ["How do I pay?", "Card (USD), shurjoPay, bKash, Nagad or bank transfer. Bangladeshi clients can pay in taka."],
   ["Can I use my own domain?", "Yes. Connect a domain you already own, or we register one for you. Domain renewal is included in the platform fee and every Care plan."],
   ["Will my site show up on Google?", "Every page is built search-ready: fast, mobile-first, with titles, descriptions and structured data. Care Pro and above include Search Console and SEO checks."],
@@ -231,9 +231,9 @@ function home() {
       subtitle: "No forms, no tech. Most sites are live within a day.",
       layout: "horizontal", style: "connected",
       items: [
-        { id: uid("st"), icon: "MessageCircle", title: "Send us your details", description: "Business name, logo, a few photos and your services, on WhatsApp." },
-        { id: uid("st"), icon: "LayoutTemplate", title: "See your homepage", description: "We build your homepage first. You see it before you pay anything." },
-        { id: uid("st"), icon: "BadgeCheck", title: "Confirm and pay once", description: "Card, bKash, Nagad or bank. One payment for the build." },
+        { id: uid("st"), icon: "Video", title: "Free Google Meet walkthrough", description: "See the dashboard and live client sites with our team. Ask anything." },
+        { id: uid("st"), icon: "BadgeCheck", title: "Pick a plan and pay once", description: "Card, bKash, Nagad or bank. One payment for the build." },
+        { id: uid("st"), icon: "MessageCircle", title: "Send us your details", description: "Business name, logo, photos and services, on WhatsApp. We build it." },
         { id: uid("st"), icon: "Rocket", title: "Go live", description: "Your domain, hosting and SSL set up. Customers can find you." },
       ],
     }, { templateVariant: "timeline-connected" }),
@@ -265,7 +265,7 @@ function home() {
       subtitle: "We only do well when your website brings you customers, so the risk sits with us.",
       layout: "grid", columns: 3, style: "card",
       items: [
-        { id: uid("g"), icon: "Eye", title: "See it before you pay", description: "We build your homepage first. If you do not like it, you owe nothing." },
+        { id: uid("g"), icon: "Video", title: "See it live first", description: "Free Google Meet session: we show you the dashboard and sites we have already built." },
         { id: uid("g"), icon: "RotateCcw", title: "14-day money back", description: "Not happy in the first 14 days after paying? Ask for a full refund." },
         { id: uid("g"), icon: "LifeBuoy", title: "Real people on support", description: "A team that knows your site answers on WhatsApp, not a chatbot." },
       ],
@@ -281,7 +281,7 @@ function home() {
     faq(FAQ_EN, "Questions, answered", "Still unsure? Message us on WhatsApp and a real person will reply."),
 
     finalCta("Ready to get more customers online?",
-      "Send us your business name and services. We build your homepage first, and you only pay when you like it.",
+      "Book a free Google Meet walkthrough, or pick a plan and we start building today.",
       { label: "Get my website", url: "/pricing" }, { label: "WhatsApp us", url: WA }),
   ];
 }
@@ -470,7 +470,6 @@ function legalPage(title, sections) {
 }
 
 const REFUND = [
-  ["See it before you pay", "We build your homepage before you pay anything. If you do not like it, you owe nothing."],
   ["14-day money-back guarantee", "If you are not satisfied, you can ask for a full refund of your website build within 14 days of payment."],
   ["Care plans", "Monthly Care can be stopped at any time and runs until the end of the paid month. Yearly Care is refundable within 14 days of payment."],
   ["Platform renewals", "Yearly platform renewals are refundable within 14 days of the renewal date."],
@@ -504,7 +503,7 @@ async function preserveLegal(slug) {
   await sb.from("nav_menus").delete().eq("tenant_id", TENANT_ID);
 
   const seo = (title, description) => ({ title, description });
-  await upsertPage("home", "Home", home(), seo("Professional Websites for Local Businesses", "We build and run professional websites for local service businesses, with WhatsApp enquiries, booking and a shop built in. Pay once, see it first."), 0);
+  await upsertPage("home", "Home", home(), seo("Professional Websites for Local Businesses", "We build and run professional websites for local service businesses, with WhatsApp enquiries, booking and a shop built in. Pay once, own it."), 0);
   await upsertPage("pricing", "Pricing", pricingPage(), seo("Website Pricing", "One-time website packages with the first year of hosting, SSL, backups and domain included. Optional monthly or yearly Care plans."), 1);
   await upsertPage("website-maintenance", "Website Care Plans", carePage(), seo("Website Maintenance & Care Plans", "Website maintenance with hosting, domain renewal, monthly updates, new pages, SEO checks and priority support."), 2);
   await upsertPage("website-for-bangladeshi-businesses", "Bangladesh", bangladeshPage(), seo("প্রবাসী ব্যবসায়ীদের জন্য প্রফেশনাল ওয়েবসাইট", "একবার পেমেন্টে প্রফেশনাল ওয়েবসাইট, প্রথম বছরের হোস্টিং আর ডোমেইন সহ। আগে দেখুন, পরে পেমেন্ট।"), 3);
