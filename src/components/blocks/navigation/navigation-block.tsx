@@ -116,7 +116,7 @@ export function NavigationBlock({ block, identityLogo }: {
   // (e.g. "hidden md:inline-flex"). Including `inline-flex` made tailwind-merge
   // drop the `hidden`, so the desktop CTA rendered on mobile and overflowed
   // the header.
-  const ctaClasses = "items-center px-5 py-2.5 text-[0.9rem] font-semibold rounded-full transition-all hover:-translate-y-0.5";
+  const ctaClasses = "items-center px-5 py-2.5 text-[length:var(--nav-cta-fs,0.9rem)] font-semibold rounded-full transition-all hover:-translate-y-0.5";
   const ctaShadow = "0 8px 20px -6px hsl(var(--primary) / 0.45)";
   const ctaStyleObj: React.CSSProperties =
     ctaV === "outline"
@@ -148,6 +148,10 @@ export function NavigationBlock({ block, identityLogo }: {
       )}
       style={{
         ...(navSticky ? { top: menuRowOnly ? -topRowH : 0 } : {}),
+        ...(block.data.menuFontSize ? { ["--nav-fs" as string]: `${block.data.menuFontSize}px` } : {}),
+        ...(block.data.menuFontWeight ? { ["--nav-fw" as string]: block.data.menuFontWeight } : {}),
+        ...(block.data.menuGap !== undefined ? { ["--nav-gap" as string]: `${block.data.menuGap}px` } : {}),
+        ...(block.data.ctaFontSize ? { ["--nav-cta-fs" as string]: `${block.data.ctaFontSize}px` } : {}),
         background: floating || !solid ? "transparent" : barBg,
         color: fg,
         boxShadow: solid && !floating ? "var(--shadow-sm)" : undefined,
@@ -224,7 +228,7 @@ export function NavigationBlock({ block, identityLogo }: {
           {/* Desktop nav */}
           {!logoCenter && (
             <ul className={cn(
-              "hidden md:flex items-center gap-0.5",
+              "hidden md:flex items-center gap-[var(--nav-gap,2px)]",
               style === "centered" ? "mx-auto" : "ml-4 flex-1",
             )}>
               {desktopItems}
@@ -288,7 +292,7 @@ export function NavigationBlock({ block, identityLogo }: {
         </div>
         {logoCenter && (
           <div className={cn(menuRowBackground ? "hidden md:block border-t border-black/80" : "contents")} style={menuRowBackground ? { background: menuRowBackground } : undefined}>
-            <ul className={cn("hidden md:flex flex-wrap items-center justify-center py-1.5", !menuRowBackground && "border-t border-border/60", menuUppercase ? "gap-1 xl:gap-3 uppercase tracking-[0.02em] text-[14px] [&_a]:whitespace-nowrap [&_button]:whitespace-nowrap" : "gap-0.5", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
+            <ul className={cn("hidden md:flex flex-wrap items-center justify-center py-1.5", !menuRowBackground && "border-t border-border/60", menuUppercase ? "gap-[var(--nav-gap,4px)] xl:gap-[var(--nav-gap,12px)] uppercase tracking-[0.02em] [&_a]:whitespace-nowrap [&_button]:whitespace-nowrap [--nav-fs-d:14px]" : "gap-[var(--nav-gap,2px)]", topRowBackground && "max-w-7xl mx-auto px-4 sm:px-6")}>
               {desktopItems}
             </ul>
           </div>

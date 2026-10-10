@@ -331,6 +331,11 @@ export type NavigationBlockProps = BlockBase & {
     topRowBackground?: string;
     /** Upper-case, wider-spaced menu labels. */
     menuUppercase?: boolean;
+    /** Menu text (desktop). px / weight / gap between items; unset = design default. */
+    menuFontSize?: number;
+    menuFontWeight?: number;
+    menuGap?: number;
+    ctaFontSize?: number;
     /** logo-center: "pill" (rounded box + button, default) or "plain" (icon + borderless field). */
     searchStyle?: "pill" | "plain";
     /** What the search box looks in. Only "products" -> /shop; otherwise /search. Default products. */

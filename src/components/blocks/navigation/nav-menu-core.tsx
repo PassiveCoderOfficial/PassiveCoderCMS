@@ -166,7 +166,7 @@ export function NavItemDesktop({ item, currentColor }: {
   const openNow = () => { if (closeTimer.current) clearTimeout(closeTimer.current); setOpen(true); };
   const closeSoon = () => { closeTimer.current = setTimeout(() => setOpen(false), 120); };
 
-  const cell = "relative px-3.5 py-2 rounded-lg text-[0.9rem] font-medium transition-colors hover:bg-current/5";
+  const cell = "relative px-3.5 py-2 rounded-lg text-[length:var(--nav-fs,var(--nav-fs-d,0.9rem))] [font-weight:var(--nav-fw,500)] transition-colors hover:bg-current/5";
 
   if (!hasChildren && item.highlight) {
     return (

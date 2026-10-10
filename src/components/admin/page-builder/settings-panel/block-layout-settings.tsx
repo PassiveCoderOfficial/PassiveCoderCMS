@@ -257,7 +257,11 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
         </div>
       </div>
 
-      {/* Typography & alignment — shared by every block (globals.css .pc-* rules) */}
+      {block.type === "navigation" && <NavTypography block={block} />}
+
+      {/* Typography & alignment — shared by content blocks (globals.css .pc-* rules).
+          Not shown for the header/footer: they have no section heading or cards. */}
+      {block.type !== "navigation" && block.type !== "footer" && (
       <div className="space-y-3 border-t pt-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs font-semibold">Typography &amp; alignment</Label>
@@ -316,6 +320,8 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
           </Select>
         </div>
       </div>
+
+      )}
 
       {/* Per-device — padding overrides + hide switches */}
       <div className="space-y-3 border-t pt-4">
@@ -388,6 +394,56 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
           </SelectContent>
         </Select>
       </div>
+    </div>
+  );
+}
+
+/** Header menu text: size, weight, spacing, button text. Writes block.data. */
+function NavTypography({ block }: { block: Block }) {
+  const { updateBlock } = useBuilderStore();
+  const d = block.data as { menuFontSize?: number; menuFontWeight?: number; menuGap?: number; ctaFontSize?: number };
+  const set = (patch: Partial<typeof d>) => updateBlock(block.id, { data: { ...block.data, ...patch } } as Partial<Block>);
+  const num = (key: "menuFontSize" | "menuGap" | "ctaFontSize", min: number, max: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    set({ [key]: raw === "" ? undefined : Math.min(max, Math.max(min, Number(raw))) });
+  };
+  return (
+    <div className="space-y-3 border-t pt-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-semibold">Menu text</Label>
+        {(d.menuFontSize || d.menuFontWeight || d.menuGap !== undefined || d.ctaFontSize) && (
+          <button type="button" className="text-[10px] text-muted-foreground underline"
+            onClick={() => set({ menuFontSize: undefined, menuFontWeight: undefined, menuGap: undefined, ctaFontSize: undefined })}>reset</button>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Menu size (px)</Label>
+          <Input type="number" min={11} max={24} placeholder="14" value={d.menuFontSize ?? ""} onChange={num("menuFontSize", 11, 24)} className="h-7 text-xs" />
+        </div>
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Menu weight</Label>
+          <Select value={String(d.menuFontWeight ?? "__auto")} onValueChange={(v) => set({ menuFontWeight: v === "__auto" ? undefined : Number(v) })}>
+            <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__auto" className="text-xs">Default</SelectItem>
+              <SelectItem value="400" className="text-xs">Regular</SelectItem>
+              <SelectItem value="500" className="text-xs">Medium</SelectItem>
+              <SelectItem value="600" className="text-xs">Semibold</SelectItem>
+              <SelectItem value="700" className="text-xs">Bold</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Space between items (px)</Label>
+          <Input type="number" min={0} max={48} placeholder="auto" value={d.menuGap ?? ""} onChange={num("menuGap", 0, 48)} className="h-7 text-xs" />
+        </div>
+        <div>
+          <Label className="text-[10px] text-muted-foreground">Button text (px)</Label>
+          <Input type="number" min={11} max={22} placeholder="14" value={d.ctaFontSize ?? ""} onChange={num("ctaFontSize", 11, 22)} className="h-7 text-xs" />
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground">Applies to the desktop menu. Upper-case and colours are in the Content tab.</p>
     </div>
   );
 }
