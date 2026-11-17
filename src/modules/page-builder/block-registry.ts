@@ -79,7 +79,9 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "navigation",
-    label: "Menu Bar",
+    // Renamed 2026-11-17: the whole classic header (logo, links,
+    // button) in one block. "Menu" is the block that shows a menu.
+    label: "Classic header",
     description: "The strip at the very top with your logo and page links",
     icon: "🧭",
     category: "layout",
@@ -123,8 +125,12 @@ export const blockRegistry: BlockDefinition[] = [
   },
   {
     type: "header_nav",
-    label: "Nav Links",
-    description: "The menu links themselves — dropdowns, mega menus, mobile menu",
+    // Menus P2: the one block that shows a menu, anywhere (header row, page
+    // section, sidebar). A new one shows a saved menu (by id) in the new menu
+    // renderer; blocks saved before P2 (no layout) keep their own links and
+    // the classic look.
+    label: "Menu",
+    description: "One of your saved menus: a bar, sidebar list, inline links, folding list or menu button",
     icon: "🧭",
     category: "layout",
     create: () => ({
@@ -132,13 +138,9 @@ export const blockRegistry: BlockDefinition[] = [
       padding: { top: 0, right: 0, bottom: 0, left: 0 },
       type: "header_nav",
       data: {
-        items: [
-          { id: generateId(), label: "Home", url: "/" },
-          { id: generateId(), label: "About", url: "/about" },
-          { id: generateId(), label: "Services", url: "/services" },
-          { id: generateId(), label: "Contact", url: "/contact" },
-        ],
+        items: [],
         style: "default",
+        layout: "bar",
       },
     }),
   },

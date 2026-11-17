@@ -12,13 +12,24 @@
  * All editing operations are the tested pure functions in
  * modules/header-studio/model.ts; storage rules in doc.ts.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
   ArrowLeft, ArrowUp, ArrowDown, Trash2, Settings2, Monitor, Tablet, Smartphone, Loader2,
-  Save, Rocket, History, RotateCcw, Check, AlertTriangle,
+  Save, Rocket, History, RotateCcw, Check, AlertTriangle, GripVertical, PanelRightOpen,
 } from "lucide-react";
+import { MenuEditDrawer } from "@/components/admin/menus/menu-edit-drawer";
+import { materializeMenu, saveMenuItems, useMenuPlaces } from "@/components/admin/menus/menu-edit-client";
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { SavedMenuSelect, type PickableMenu } from "@/components/admin/menus/saved-menu-select";
+import { MenuStyleEditor } from "@/components/admin/menus/menu-style-editor";
+import { normalizeMenu, updateItem } from "@/modules/navigation/menu-model";
+import { locatePreviewClick } from "@/modules/header-studio/preview-click";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +39,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 import { useT } from "@/lib/i18n/language-provider";
 import { useUnsavedGuard } from "@/lib/hooks/use-unsaved-guard";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
@@ -37,14 +50,139 @@ import { SiteContactProvider, type SiteContact } from "@/components/site/site-co
 import { usePanelDates } from "@/components/providers/panel-time-zone";
 import { StudioHeader, type PreviewDevice } from "@/components/site/header-studio/studio-header";
 import {
-  HEADER_ELEMENT_TYPES, MOBILE_BAR_TYPES, MAX_MOBILE_ICONS, MAX_ZONE_ELEMENTS, ROW_KEYS, ZONES,
-  addElement, defaultConfig, findElement, makeElement, moveElement, removeElement, updateElement, transparentOn,
+  HEADER_ELEMENT_TYPES, MOBILE_BAR_TYPES, MAX_MOBILE_ICONS, MAX_ZONE_ELEMENTS, ROW_KEYS, ZONES, TEXT_ICONS,
+  addElement, defaultConfig, findElement, makeElement, moveElement, placeElement, removeElement, updateElement, transparentOn,
   type HeaderConfig, type HeaderElement, type HeaderElementType, type HeaderRowKey, type HeaderZone, type MobileBarType,
 } from "@/modules/header-studio/model";
 import { HEADER_PRESETS, buildPreset, type SiteFacts } from "@/modules/header-studio/presets";
 import { hasUnpublishedChanges, resolveEditorHeader, type HeaderStudioDoc } from "@/modules/header-studio/doc";
 
 export type StudioMenu = { id: string; name: string; location: string | null; items: NavItem[] };
+
+const NO_ITEMS: NavItem[] = [];
+
+/** Menus P3: what the menu element shows when it names no menu, and a way to reload the menus after a save. */
+const StudioMenuContext = createContext<{ fallbackItems: NavItem[]; fallbackKind: "inline" | "auto"; reload: () => void }>({ fallbackItems: NO_ITEMS, fallbackKind: "auto", reload: () => {} });
+
+/**
+ * The menu a Studio menu element edits (menus P3): the element's menu, else
+ * the header menu, else the first menu, as the site picks it. With no menu
+ * at all, the first save creates "Main menu" from the links shown and points
+ * the element at it (onPoint).
+ */
+function useStudioMenuEdit(menuId: string | undefined, menus: StudioMenu[], onPoint: (id: string) => void) {
+  const t = useT();
+  const ctx = useContext(StudioMenuContext);
+  const target = (menuId ? menus.find((m) => m.id === menuId) : undefined)
+    ?? menus.find((m) => m.location === "header")
+    ?? (ctx.fallbackKind === "inline" ? undefined : menus[0]);
+  const items = target ? target.items : ctx.fallbackItems;
+  const places = useMenuPlaces(target?.id, menus);
+  const name = target ? (target.name || t("menuPlace.unnamed")) : t("menuEdit.mainMenuName");
+  const notice = target ? t("menuEdit.sharedHint") : ctx.fallbackKind === "inline" ? t("menuEdit.inlineHint") : t("menuEdit.autoHint");
+  async function save(next: NavItem[]): Promise<boolean> {
+    if (target) {
+      const ok = !!(await saveMenuItems(target.id, next, t("menuEdit.saveFailed")));
+      if (ok) toast.success(t("menuEdit.saved"));
+      ctx.reload();
+      return ok;
+    }
+    const created = await materializeMenu(next, t("menuEdit.mainMenuName"), "header", menus, t("menuEdit.saveFailed"));
+    if (!created) return false;
+    onPoint(created.id);
+    toast.success(t("menuEdit.savedNew", { name: created.name || t("menuEdit.mainMenuName") }));
+    ctx.reload();
+    return true;
+  }
+  return { target, items, places, name, notice, save };
+}
+
+/** "Edit full menu" for a Studio menu element (menus P3): the full menu editor in a side drawer, on this screen. */
+function StudioMenuEditButton({ menuId, menus, onPoint }: { menuId?: string; menus: StudioMenu[]; onPoint: (id: string) => void }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const m = useStudioMenuEdit(menuId, menus, onPoint);
+  return (
+    <>
+      <Button type="button" size="sm" variant="outline" className="w-full justify-center gap-1.5" onClick={() => setOpen(true)}>
+        <PanelRightOpen className="h-3.5 w-3.5" aria-hidden />{t("menuEdit.editFull")}
+      </Button>
+      {!m.target && <p className="text-[11px] text-muted-foreground">{m.notice}</p>}
+      <MenuEditDrawer open={open} onOpenChange={setOpen} name={m.name} menuId={m.target?.id} items={m.items} places={m.places}
+        notice={m.notice} onSave={m.save} />
+    </>
+  );
+}
+
+/** A menu item clicked in the preview: which element shows it, and where the edit box goes. */
+type QuickEditAt = { elementId: string; menuId?: string; itemId: string; label: string; left: number; top: number };
+
+/**
+ * Click-to-edit in the preview (menus P4): a small box under the clicked
+ * menu item to rename it right there (saved to the menu at once, like the
+ * builder's in-place editing), open it in the full menu editor, or select
+ * its menu element in the Layout panel.
+ */
+function StudioQuickEdit({ at, menus, onPoint, onSelectElement, onClose }: {
+  at: QuickEditAt;
+  menus: StudioMenu[];
+  onPoint: (id: string) => void;
+  onSelectElement: () => void;
+  onClose: () => void;
+}) {
+  const t = useT();
+  const m = useStudioMenuEdit(at.menuId, menus, onPoint);
+  const [value, setValue] = useState(at.label);
+  const [drawer, setDrawer] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Clicks in the box, in the drawer, or on another preview link (which opens a new box) keep it.
+      if (drawer || boxRef.current?.contains(target) || target.closest?.("[data-studio-preview]")) return;
+      onClose();
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [drawer, onClose]);
+  async function rename() {
+    const clean = value.trim();
+    if (!clean || clean === at.label) { onClose(); return; }
+    setBusy(true);
+    const ok = await m.save(updateItem(m.items, at.itemId, { label: clean }));
+    setBusy(false);
+    if (ok) onClose();
+  }
+  return (
+    <div ref={boxRef} data-studio-quick-edit="" role="dialog" aria-label={t("headerStudio.quickEditTitle", { name: at.label })}
+      className="absolute z-[70] w-64 space-y-2 rounded-lg border bg-popover p-2.5 text-xs text-popover-foreground shadow-xl"
+      style={{ left: Math.max(4, at.left), top: at.top }}>
+      <p className="font-semibold">{t("headerStudio.quickEditTitle", { name: at.label })}</p>
+      <form className="flex gap-1.5" onSubmit={(e) => { e.preventDefault(); void rename(); }}>
+        <Input autoFocus value={value} maxLength={80} aria-label={t("menuEdit.rename", { name: at.label })} className="h-8 text-xs"
+          onFocus={(e) => e.currentTarget.select()}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); onClose(); } }} />
+        <Button type="submit" size="sm" className="h-8 px-2.5" disabled={busy}>
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+          <span className="sr-only">{t("headerStudio.quickEditSave")}</span>
+        </Button>
+      </form>
+      <p className="text-[11px] text-muted-foreground">{m.notice}</p>
+      <div className="flex flex-wrap gap-1.5">
+        <Button type="button" size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => setDrawer(true)}>
+          <PanelRightOpen className="h-3.5 w-3.5" aria-hidden />{t("menuEdit.editFull")}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={onSelectElement}>
+          {t("headerStudio.quickEditSelect")}
+        </Button>
+      </div>
+      <MenuEditDrawer open={drawer} onOpenChange={(o) => { setDrawer(o); if (!o) onClose(); }} name={m.name} menuId={m.target?.id}
+        items={m.items} places={m.places} notice={m.notice} onSave={m.save} />
+    </div>
+  );
+}
 
 type Tab = "presets" | "layout" | "phone" | "behaviour" | "history";
 const TABS: Tab[] = ["presets", "layout", "phone", "behaviour", "history"];
@@ -57,13 +195,15 @@ function k(key: string): TranslationKey {
 }
 
 export default function HeaderStudioClient({
-  initialDoc, unavailable, menus, classicItems, pages, facts, contact, logoUrl, logoDarkUrl, siteName,
+  initialDoc, unavailable, menus: initialMenus, classicItems, defaultItems = NO_ITEMS, pages, facts, contact, logoUrl, logoDarkUrl, siteName,
 }: {
   initialDoc: HeaderStudioDoc;
   unavailable: boolean;
   menus: StudioMenu[];
   /** The classic header links: the menu when no saved menu is in the header. */
   classicItems: NavItem[] | null;
+  /** The site's automatic menu (its pages, menus P3): shown when there is no menu and no classic links. */
+  defaultItems?: NavItem[];
   pages: { path: string; title: string }[];
   facts: SiteFacts;
   contact: SiteContact | null;
@@ -72,12 +212,28 @@ export default function HeaderStudioClient({
   siteName: string;
 }) {
   const t = useT();
+  // Saved menus, refreshed when this tab gets focus again, so a menu edited
+  // or created in the Navigation tab shows in the preview at once (menus P2).
+  const [menus, setMenus] = useState<StudioMenu[]>(initialMenus);
+  const reloadMenus = useCallback(() => {
+    fetch("/api/navigation").then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (!Array.isArray(j?.menus)) return;
+      setMenus((j.menus as { id: string; name: string; location: string | null; items: unknown }[])
+        .map((m) => ({ id: m.id, name: m.name, location: m.location, items: normalizeMenu(m.items) })));
+    }).catch(() => {});
+  }, []);
+  useEffect(() => {
+    window.addEventListener("focus", reloadMenus);
+    return () => window.removeEventListener("focus", reloadMenus);
+  }, [reloadMenus]);
+  const addMenu = (m: PickableMenu) => setMenus((list) => (list.some((x) => x.id === m.id) ? list : [...list, { id: m.id, name: m.name ?? "", location: m.location ?? null, items: [] }]));
   const [doc, setDoc] = useState<HeaderStudioDoc>(initialDoc);
   const [config, setConfig] = useState<HeaderConfig | null>(() => resolveEditorHeader(initialDoc));
   const [savedJson, setSavedJson] = useState(() => JSON.stringify(resolveEditorHeader(initialDoc)));
   const [tab, setTab] = useState<Tab>(() => (resolveEditorHeader(initialDoc) ? "layout" : "presets"));
   const [device, setDevice] = useState<PreviewDevice>("desktop");
   const [selected, setSelected] = useState<string | null>(null);
+  const [quick, setQuick] = useState<QuickEditAt | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [pendingPreset, setPendingPreset] = useState<string | null>(null);
 
@@ -88,10 +244,17 @@ export default function HeaderStudioClient({
   const previewMenus = useMemo(() => {
     const out: Record<string, NavItem[]> = {};
     // Same order as the site: header menu, classic header links, any menu.
-    out[""] = menus.find((m) => m.location === "header")?.items ?? classicItems ?? menus[0]?.items ?? [];
+    // Nothing at all: the automatic menu from the site's pages (menus P3).
+    out[""] = menus.find((m) => m.location === "header")?.items ?? classicItems ?? menus[0]?.items ?? defaultItems;
     for (const m of menus) out[m.id] = m.items;
     return out;
-  }, [menus, classicItems]);
+  }, [menus, classicItems, defaultItems]);
+  // What the "Edit full menu" drawer edits for an element that names no menu.
+  const menuCtx = useMemo(() => ({
+    fallbackItems: classicItems ?? defaultItems,
+    fallbackKind: (classicItems ? "inline" : "auto") as "inline" | "auto",
+    reload: reloadMenus,
+  }), [classicItems, defaultItems, reloadMenus]);
 
   const call = useCallback(async (action: string, extra: Record<string, unknown> = {}, label = action) => {
     setBusy(label);
@@ -193,6 +356,13 @@ export default function HeaderStudioClient({
         </div>
       )}
 
+      {/* Menus P5: this draft came from the classic header; compare, publish, or drop it and keep the classic one. */}
+      {doc.switched && !live && (
+        <div className="border-b px-3 py-2 shrink-0">
+          <SwitchToStudioButton area="header" variant="banner" text={t("studioSwitch.studioDraftNote")} actionLabel={t("studioSwitch.compare")} />
+        </div>
+      )}
+
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* Panel */}
         <div className="flex w-full shrink-0 flex-col border-b lg:w-[400px] lg:border-b-0 lg:border-e min-h-0">
@@ -218,7 +388,9 @@ export default function HeaderStudioClient({
               </div>
             )}
             {tab === "layout" && config && (
-              <LayoutPanel config={config} onChange={setConfig} selected={selected} onSelect={setSelected} menus={menus} contact={contact} />
+              <StudioMenuContext.Provider value={menuCtx}>
+                <LayoutPanel config={config} onChange={setConfig} selected={selected} onSelect={setSelected} menus={menus} onMenuCreated={addMenu} contact={contact} />
+              </StudioMenuContext.Provider>
             )}
             {tab === "phone" && config && <PhonePanel config={config} menus={menus} onChange={setConfig} />}
             {tab === "behaviour" && config && <BehaviourPanel config={config} onChange={setConfig} pages={pages} />}
@@ -252,7 +424,38 @@ export default function HeaderStudioClient({
           <div className="min-h-0 flex-1 overflow-auto p-4">
             {config ? (
               <div className="cms-canvas-light relative mx-auto overflow-hidden rounded-lg border bg-background text-foreground shadow-sm transition-[width]"
-                style={{ width: width ? `${width}px` : "100%", maxWidth: "100%", minHeight: device === "desktop" ? 420 : 640 }}>
+                style={{ width: width ? `${width}px` : "100%", maxWidth: "100%", minHeight: device === "desktop" ? 420 : 640 }}
+                data-studio-preview=""
+                onClickCapture={(e) => {
+                  const el = e.target as HTMLElement;
+                  if (el.closest("[data-studio-quick-edit]")) return;
+                  const link = el.closest<HTMLElement>("a, button");
+                  if (!link) return;
+                  // The preview never leaves the editor (Next's Link navigates in its own click handler).
+                  if (link.tagName === "A") e.preventDefault();
+                  // Click a menu item to rename it or open it in the full menu editor (menus P4).
+                  const hit = locatePreviewClick(config, previewMenus, {
+                    row: link.closest("[data-hs-row]")?.getAttribute("data-hs-row"),
+                    zone: link.closest("[data-hs-zone]")?.getAttribute("data-hs-zone"),
+                    inDrawer: !link.closest("[data-hs-row]"),
+                    inNav: !!link.closest("nav"),
+                    text: (link.textContent ?? "").trim() || link.getAttribute("aria-label") || "",
+                    href: link.getAttribute("href") ?? "",
+                  });
+                  if (!hit) { setQuick(null); return; }
+                  const box = e.currentTarget.getBoundingClientRect();
+                  const r = link.getBoundingClientRect();
+                  setQuick({ elementId: hit.element.id, menuId: hit.element.menuId, itemId: hit.item.id, label: hit.item.label,
+                    left: Math.min(r.left - box.left, box.width - 264), top: r.bottom - box.top + 6 });
+                }}>
+                {quick && (
+                  <StudioMenuContext.Provider value={menuCtx}>
+                    <StudioQuickEdit key={`${quick.elementId}-${quick.itemId}`} at={quick} menus={menus}
+                      onPoint={(id) => setConfig((c) => (c ? updateElement(c, quick.elementId, { menuId: id }) : c))}
+                      onSelectElement={() => { setSelected(quick.elementId); setTab("layout"); setQuick(null); }}
+                      onClose={() => setQuick(null)} />
+                  </StudioMenuContext.Provider>
+                )}
                 <SiteContactProvider value={contact}>
                   <CartProvider>
                     <div className={cn(overlayHome && "absolute inset-x-0 top-0 z-10")}>
@@ -265,7 +468,7 @@ export default function HeaderStudioClient({
             ) : (
               <div className="mx-auto mt-10 max-w-md text-center text-sm text-muted-foreground">{t("headerStudio.previewEmpty")}</div>
             )}
-            <p className="mt-3 text-center text-[11px] text-muted-foreground">{t("headerStudio.previewNote")}</p>
+            <p className="mt-3 text-center text-[11px] text-muted-foreground">{t("headerStudio.previewNote")} {config && t("headerStudio.previewClickHint")}</p>
           </div>
         </div>
       </div>
@@ -363,12 +566,45 @@ function Field({ label, children, hint }: { label: string; children: React.React
   );
 }
 
-function LayoutPanel({ config, onChange, selected, onSelect, menus, contact }: {
+/** An optional own colour (menus P5): empty = the default colour. */
+function ColorField({ label, value, onChange }: { label: string; value?: string; onChange: (v: string | undefined) => void }) {
+  const t = useT();
+  return (
+    <div className="space-y-1">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <ColorPicker value={value ?? ""} onChange={(v) => onChange(v || undefined)} className="min-w-0 flex-1" />
+        {value && <Button type="button" size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={() => onChange(undefined)}>{t("headerStudio.colorDefault")}</Button>}
+      </div>
+    </div>
+  );
+}
+
+const zoneDropId = (row: HeaderRowKey, zone: HeaderZone) => `zone:${row}:${zone}`;
+
+function LayoutPanel({ config, onChange, selected, onSelect, menus, onMenuCreated, contact }: {
   config: HeaderConfig; onChange: (c: HeaderConfig) => void; selected: string | null; onSelect: (id: string | null) => void;
-  menus: StudioMenu[]; contact: SiteContact | null;
+  menus: StudioMenu[]; onMenuCreated: (m: PickableMenu) => void; contact: SiteContact | null;
 }) {
   const t = useT();
   const sel = selected ? findElement(config, selected) : null;
+  // Drag elements within and between zones (menus P2). Dropping on an
+  // element puts the dragged one in its place; on a zone, at its end.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const overId = String(over.id);
+    if (overId.startsWith("zone:")) {
+      const [, row, zone] = overId.split(":") as [string, HeaderRowKey, HeaderZone];
+      onChange(placeElement(config, String(active.id), { row, zone, index: config.rows[row].zones[zone].length }));
+      return;
+    }
+    const target = findElement(config, overId);
+    if (target) onChange(placeElement(config, String(active.id), { row: target.row, zone: target.zone, index: target.index }));
+  };
   const setRow = (key: HeaderRowKey, patch: Partial<HeaderConfig["rows"][HeaderRowKey]>) =>
     onChange({ ...config, rows: { ...config.rows, [key]: { ...config.rows[key], ...patch } } });
   return (
@@ -384,6 +620,8 @@ function LayoutPanel({ config, onChange, selected, onSelect, menus, contact }: {
         <Toggle label={t("headerStudio.uppercase")} checked={config.style.uppercase} onChange={(v) => onChange({ ...config, style: { ...config.style, uppercase: v } })} />
       </section>
 
+      <p className="text-[11px] text-muted-foreground">{t("menuPlace.dragHint")}</p>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       {ROW_KEYS.map((key) => {
         const row = config.rows[key];
         return (
@@ -406,6 +644,10 @@ function LayoutPanel({ config, onChange, selected, onSelect, menus, contact }: {
                     </select>
                   </Field>
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <ColorField label={t("headerStudio.rowBgColor")} value={row.bgColor} onChange={(v) => setRow(key, { bgColor: v })} />
+                  <ColorField label={t("headerStudio.rowFgColor")} value={row.fgColor} onChange={(v) => setRow(key, { fgColor: v })} />
+                </div>
                 <Toggle label={t("headerStudio.border")} checked={row.border} onChange={(v) => setRow(key, { border: v })} />
                 <div className="grid grid-cols-3 gap-1.5">
                   {ZONES.map((zone) => (
@@ -417,9 +659,10 @@ function LayoutPanel({ config, onChange, selected, onSelect, menus, contact }: {
           </section>
         );
       })}
+      </DndContext>
 
       {sel && (
-        <ElementEditor key={sel.element.id} config={config} element={sel.element} onChange={onChange} onClose={() => onSelect(null)} menus={menus} contact={contact} />
+        <ElementEditor key={sel.element.id} config={config} element={sel.element} onChange={onChange} onClose={() => onSelect(null)} menus={menus} onMenuCreated={onMenuCreated} contact={contact} />
       )}
     </div>
   );
@@ -432,20 +675,17 @@ function ZoneBox({ config, row, zone, selected, onSelect, onChange }: {
   const t = useT();
   const list = config.rows[row].zones[zone];
   const full = list.length >= MAX_ZONE_ELEMENTS;
+  const { setNodeRef, isOver } = useDroppable({ id: zoneDropId(row, zone) });
   return (
-    <div className="min-w-0 rounded-md border border-dashed bg-muted/30 p-1.5">
+    <div ref={setNodeRef} className={cn("min-w-0 rounded-md border border-dashed bg-muted/30 p-1.5 transition-colors", isOver && "border-primary bg-primary/5")}>
       <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{t(k(`headerStudio.zone.${zone}`))}</p>
-      <ul className="space-y-1">
-        {list.map((e) => (
-          <li key={e.id}>
-            <button type="button" onClick={() => onSelect(selected === e.id ? null : e.id)} aria-pressed={selected === e.id}
-              className={cn("flex w-full items-center gap-1 truncate rounded border bg-background px-1.5 py-1 text-start text-[11px]", selected === e.id && "border-primary text-primary")}>
-              <Settings2 className="h-3 w-3 shrink-0 opacity-60" />
-              <span className="truncate">{t(k(`headerStudio.el.${e.type}`))}{e.label && e.type !== "menu" ? `: ${e.label}` : ""}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <SortableContext items={list.map((e) => e.id)} strategy={verticalListSortingStrategy}>
+        <ul className="min-h-[1.5rem] space-y-1">
+          {list.map((e) => (
+            <ZoneChip key={e.id} e={e} selected={selected === e.id} onSelect={() => onSelect(selected === e.id ? null : e.id)} />
+          ))}
+        </ul>
+      </SortableContext>
       <select className="mt-1 h-7 w-full rounded border border-input bg-background px-1 text-[11px]" value="" disabled={full}
         aria-label={`${t("headerStudio.add")} (${t(k(`headerStudio.zone.${zone}`))})`}
         onChange={(ev) => {
@@ -462,6 +702,25 @@ function ZoneBox({ config, row, zone, selected, onSelect, onChange }: {
   );
 }
 
+function ZoneChip({ e, selected, onSelect }: { e: HeaderElement; selected: boolean; onSelect: () => void }) {
+  const t = useT();
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: e.id });
+  const name = `${t(k(`headerStudio.el.${e.type}`))}${e.label && e.type !== "menu" ? `: ${e.label}` : ""}`;
+  return (
+    <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className={cn("flex items-center gap-0.5", isDragging && "relative z-10 opacity-60")}>
+      <button type="button" {...attributes} {...listeners} aria-label={t("menuPlace.dragElement", { name })} title={t("menuPlace.drag")}
+        className="shrink-0 cursor-grab touch-none rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground active:cursor-grabbing">
+        <GripVertical className="h-3 w-3" aria-hidden />
+      </button>
+      <button type="button" onClick={onSelect} aria-pressed={selected}
+        className={cn("flex min-w-0 flex-1 items-center gap-1 truncate rounded border bg-background px-1.5 py-1 text-start text-[11px]", selected && "border-primary text-primary")}>
+        <Settings2 className="h-3 w-3 shrink-0 opacity-60" />
+        <span className="truncate">{name}</span>
+      </button>
+    </li>
+  );
+}
+
 function defaultsFor(type: HeaderElementType): Partial<HeaderElement> {
   switch (type) {
     case "button": return { label: "Contact us", url: "/contact", variant: "solid" };
@@ -471,9 +730,9 @@ function defaultsFor(type: HeaderElementType): Partial<HeaderElement> {
   }
 }
 
-function ElementEditor({ config, element: e, onChange, onClose, menus, contact }: {
+function ElementEditor({ config, element: e, onChange, onClose, menus, onMenuCreated, contact }: {
   config: HeaderConfig; element: HeaderElement; onChange: (c: HeaderConfig) => void; onClose: () => void;
-  menus: StudioMenu[]; contact: SiteContact | null;
+  menus: StudioMenu[]; onMenuCreated: (m: PickableMenu) => void; contact: SiteContact | null;
 }) {
   const t = useT();
   const set = (patch: Partial<HeaderElement>) => onChange(updateElement(config, e.id, patch));
@@ -507,16 +766,18 @@ function ElementEditor({ config, element: e, onChange, onClose, menus, contact }
             <Input type="number" min={16} max={120} value={e.height ?? 36} onChange={(ev) => set({ height: Number(ev.target.value) || undefined })} />
           </Field>
           <Toggle label={t("headerStudio.showName")} checked={!!e.showName} onChange={(v) => set({ showName: v })} />
+          <Toggle label={t("headerStudio.logoShrink")} checked={!!e.shrink} onChange={(v) => set({ shrink: v })} />
+          <Field label={t("headerStudio.logoText")} hint={t("headerStudio.logoTextHint")}>
+            <Input value={e.label ?? ""} onChange={(ev) => set({ label: ev.target.value })} />
+          </Field>
         </>
       )}
       {e.type === "menu" && (
         <>
-          <Field label={t("headerStudio.menu")} hint={menus.length ? undefined : t("headerStudio.noMenus")}>
-            <select className={SELECT} value={e.menuId ?? ""} onChange={(ev) => set({ menuId: ev.target.value || undefined })}>
-              <option value="">{t("headerStudio.menuDefault")}</option>
-              {menus.map((m) => <option key={m.id} value={m.id}>{m.name}{m.location ? ` (${m.location})` : ""}</option>)}
-            </select>
-          </Field>
+          <SavedMenuSelect menus={menus} value={e.menuId} onChange={(id) => set({ menuId: id })} onCreated={onMenuCreated}
+            label={t("headerStudio.menu")} defaultLabel={t("headerStudio.menuDefault")} />
+          <StudioMenuEditButton menuId={e.menuId} menus={menus} onPoint={(id) => set({ menuId: id })} />
+          <Toggle label={t("headerStudio.menuNoWrap")} checked={!!e.noWrap} onChange={(v) => set({ noWrap: v })} />
           <Field label={t("headerStudio.menuPart")}>
             <select className={SELECT} value={e.menuPart ?? ""} onChange={(ev) => set({ menuPart: (ev.target.value || undefined) as HeaderElement["menuPart"] })}>
               <option value="">{t("headerStudio.menuPartAll")}</option>
@@ -524,7 +785,13 @@ function ElementEditor({ config, element: e, onChange, onClose, menus, contact }
               <option value="second">{t("headerStudio.menuPartSecond")}</option>
             </select>
           </Field>
-          <a href="/dashboard/navigation" target="_blank" rel="noopener" title={t("headerStudio.editMenusHint")} className="text-xs text-primary underline-offset-4 hover:underline">{t("headerStudio.editMenus")}</a>
+          <div className="space-y-2 rounded-md border p-2">
+            <Toggle label={t("menuPlace.styleThis")} checked={!!e.menuStyle}
+              onChange={(v) => set({ menuStyle: v ? { preset: "plain", ...(config.style.uppercase ? { uppercase: true } : {}) } : undefined })} />
+            {e.menuStyle
+              ? <MenuStyleEditor value={e.menuStyle} onChange={(menuStyle) => set({ menuStyle: menuStyle ?? { preset: "plain" } })} showPhone />
+              : <p className="text-[11px] text-muted-foreground">{t("menuPlace.styleThisHint")}</p>}
+          </div>
         </>
       )}
       {(e.type === "button" || e.type === "booking" || e.type === "text" || e.type === "account" || e.type === "search") && (
@@ -544,6 +811,20 @@ function ElementEditor({ config, element: e, onChange, onClose, menus, contact }
         <Field label={t("headerStudio.variant")}>
           <select className={SELECT} value={e.variant ?? "solid"} onChange={(ev) => set({ variant: ev.target.value as HeaderElement["variant"] })}>
             {(["solid", "outline", "gradient", "ghost"] as const).map((v) => <option key={v} value={v}>{t(k(`headerStudio.variant.${v}`))}</option>)}
+          </select>
+        </Field>
+      )}
+      {(e.type === "button" || e.type === "booking") && (
+        <div className="grid grid-cols-2 gap-2">
+          <ColorField label={t("headerStudio.buttonColor")} value={e.color} onChange={(v) => set({ color: v })} />
+          <ColorField label={t("headerStudio.buttonTextColor")} value={e.textColor} onChange={(v) => set({ textColor: v })} />
+        </div>
+      )}
+      {e.type === "text" && (
+        <Field label={t("headerStudio.textIcon")}>
+          <select className={SELECT} value={e.icon ?? ""} onChange={(ev) => set({ icon: (ev.target.value || undefined) as HeaderElement["icon"] })}>
+            <option value="">{t("headerStudio.textIconNone")}</option>
+            {TEXT_ICONS.map((v) => <option key={v} value={v}>{t(k(`headerStudio.textIcon.${v}`))}</option>)}
           </select>
         </Field>
       )}
@@ -575,6 +856,11 @@ function ElementEditor({ config, element: e, onChange, onClose, menus, contact }
             </select>
           </Field>
         </div>
+      )}
+      {e.type === "language" && e.langMode === "native" && (
+        <Field label={t("headerStudio.langUrl")} hint={t("headerStudio.langUrlHint")}>
+          <Input value={e.url ?? ""} placeholder={`/${e.lang || "bn"}`} onChange={(ev) => set({ url: ev.target.value })} />
+        </Field>
       )}
       {e.type === "socials" && <p className="text-xs text-muted-foreground">{t("headerStudio.socialsHint")}</p>}
       {e.type === "booking" && <p className="text-xs text-muted-foreground">{t("headerStudio.bookingHint")}</p>}
@@ -628,6 +914,9 @@ function PhonePanel({ config, menus, onChange }: { config: HeaderConfig; menus: 
           {(["side", "full", "dropdown"] as const).map((v) => <option key={v} value={v}>{t(k(`headerStudio.drawer.${v}`))}</option>)}
         </select>
       </Field>
+      {config.rows.top.enabled && (
+        <Toggle label={t("headerStudio.phoneTopBar")} checked={!!m.topBar} onChange={(v) => set({ topBar: v || undefined })} />
+      )}
       <Field label={t("headerStudio.breakpoint")} hint={t("headerStudio.breakpointHint")}>
         <select className={SELECT} value={m.breakpoint} onChange={(e) => set({ breakpoint: e.target.value as typeof m.breakpoint })}>
           <option value="lg">{t("headerStudio.breakpoint.lg")}</option>
@@ -660,6 +949,9 @@ function BehaviourPanel({ config, onChange, pages }: { config: HeaderConfig; onC
   return (
     <div className="space-y-3">
       <Toggle label={t("headerStudio.sticky")} checked={b.sticky} onChange={(v) => set({ sticky: v })} />
+      {b.sticky && config.rows.top.enabled && (
+        <Toggle label={t("headerStudio.topScrolls")} checked={!!b.topScrolls} onChange={(v) => set({ topScrolls: v || undefined })} />
+      )}
       <Toggle label={t("headerStudio.shrink")} checked={b.shrink} onChange={(v) => set({ shrink: v })} />
       <Toggle label={t("headerStudio.hideOnScroll")} checked={b.hideOnScroll} onChange={(v) => set({ hideOnScroll: v })} />
       <Field label={t("headerStudio.transparent")} hint={t("headerStudio.transparentHint")}>

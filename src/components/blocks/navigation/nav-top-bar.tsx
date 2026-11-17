@@ -22,6 +22,8 @@ export type TopBar = NonNullable<NavigationBlockProps["data"]["topBar"]>;
 
 const ICONS = { pin: MapPin, phone: Phone, clock: Clock, mail: Mail, facebook: Facebook, instagram: Instagram, info: Info } as const;
 export const TOP_BAR_ICONS = Object.keys(ICONS) as (keyof typeof ICONS)[];
+/** The same icons for the Header Studio text element (menus P5: a converted top bar keeps its icons). */
+export const TOP_BAR_ICON_COMPONENTS: Record<keyof typeof ICONS, React.ComponentType<{ className?: string }>> = ICONS;
 
 /**
  * Thin strip above the header: short info items on the left (address, hours,

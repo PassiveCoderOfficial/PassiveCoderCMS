@@ -41,7 +41,7 @@ export async function RootBuilderPage({ slug, previewToken }: { slug: string; pr
   return <TenantPageWithChrome tenantId={root} slug={slug} root />;
 }
 
-type Seo = { title?: string; description?: string; lang?: string; alternates?: Record<string, string>; image?: string };
+type Seo = { title?: string; description?: string; lang?: string; alternates?: Record<string, string>; image?: string; no_index?: boolean };
 
 /** `describe`: with no SEO description, fall back to the excerpt or the
  *  first paragraph (blog posts rarely have one written). */
@@ -90,6 +90,8 @@ export async function rootBuilderMetadata(slug: string, { describe = false }: { 
       canonical: abs(path),
       ...(Object.keys(languages).length > 1 ? { languages } : {}),
     },
+    // The page's "hide from search engines" switch (also drops it from the sitemap).
+    ...(seo.no_index ? { robots: { index: false, follow: true } } : {}),
     // Full OG + twitter set per page. Without url/siteName/image here the
     // page's openGraph replaced the layout's wholesale (no og:image or og:url
     // on any inner page) and twitter:* fell back to the homepage defaults, so

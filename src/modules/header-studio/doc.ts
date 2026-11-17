@@ -12,6 +12,7 @@
  * Pure functions only.
  */
 import { normalizeHeaderConfig, type HeaderConfig } from "./model";
+import { normalizeOrigin, type SwitchOrigin } from "@/modules/studio-switch/types";
 
 /** Published versions kept for restore. */
 export const HISTORY_LIMIT = 10;
@@ -32,7 +33,8 @@ export interface HeaderStudioDoc {
   publishedAt?: string | null;
   publishedBy?: string | null;
   /** Earlier published versions, newest first (the live one is not in here). */
-  history: HeaderVersion[];
+  history: HeaderVersion[];  /** Set when the draft was converted from the classic header ("Switch to Studio", menus P5). */
+  switched?: SwitchOrigin;
 }
 
 export function emptyDoc(): HeaderStudioDoc {
@@ -59,6 +61,8 @@ export function normalizeDoc(raw: unknown): HeaderStudioDoc {
     publishedAt: iso(raw.publishedAt),
     publishedBy: typeof raw.publishedBy === "string" ? raw.publishedBy : null,
     history,
+    // Only when present, so documents saved before P5 come back unchanged.
+    ...(normalizeOrigin(raw.switched) ? { switched: normalizeOrigin(raw.switched)! } : {}),
   };
 }
 
@@ -126,7 +130,10 @@ export function switchToStudio(doc: HeaderStudioDoc): HeaderStudioDoc {
 
 /** Drops the draft (back to the live version). */
 export function discardDraft(doc: HeaderStudioDoc): HeaderStudioDoc {
-  return { ...doc, draft: null, draftSavedAt: null };
+  const next: HeaderStudioDoc = { ...doc, draft: null, draftSavedAt: null };
+  // A converted draft that never went live: dropping it undoes the switch.
+  if (!doc.published) delete next.switched;
+  return next;
 }
 
 /**

@@ -14,7 +14,8 @@
  * every other nested block comes back as the very same object, so its HTML
  * cannot change. Top-level blocks keep their exact old treatment.
  */
-import type { Block, ContainerBlockProps, NavItem } from "@/types/cms";
+import type { Block, ContainerBlockProps, FooterBlockProps, NavItem } from "@/types/cms";
+import { isEmptyMenuData } from "./default-menu";
 
 export type NavBlockType = "navigation" | "header_nav";
 
@@ -37,11 +38,48 @@ export function hasAutoChildren(items: unknown): boolean {
   });
 }
 
-/** A nested menu block only needs resolving when it names a menu or holds an auto list. */
+/**
+ * A nested menu block only needs resolving when it names a menu (by location
+ * or id), holds an auto list, or (menus P3) has nothing at all, so it shows
+ * the site's automatic menu. No live block was empty when P3 shipped.
+ */
 export function nestedNeedsResolve(b: Block): boolean {
   if (!isNavBlock(b)) return false;
-  const data = (b.data ?? {}) as { items?: unknown; menuLocation?: string };
-  return !!data.menuLocation || hasAutoChildren(data.items);
+  const data = (b.data ?? {}) as { items?: unknown; menuLocation?: string; menuId?: string };
+  return !!data.menuLocation || !!data.menuId || hasAutoChildren(data.items) || isEmptyMenuData(data);
+}
+
+/**
+ * A page-builder "Menu" block (menus P2): a `header_nav` drawn by the new
+ * menu renderer (`layout` set). It is content, not site chrome: it never
+ * makes a container count as a header (lib/site/global-blocks isChromeBlock)
+ * and never triggers the header logo lookup in the page renderer.
+ */
+export function isMenuPlacement(b: unknown): boolean {
+  if (!b || typeof b !== "object") return false;
+  const blk = b as { type?: unknown; data?: { layout?: unknown } };
+  return blk.type === "header_nav" && typeof blk.data?.layout === "string" && !!blk.data.layout;
+}
+
+/** Saved menu ids the columns of a classic footer block show (menus P2). Empty for every footer saved before P2. */
+export function footerColumnMenuIds(b: unknown): string[] {
+  if (!b || typeof b !== "object" || (b as { type?: unknown }).type !== "footer") return [];
+  const cols = (b as FooterBlockProps).data?.columns;
+  if (!Array.isArray(cols)) return [];
+  return cols.map((c) => (c && typeof c.menuId === "string" ? c.menuId : "")).filter(Boolean);
+}
+
+/** Every classic footer block in the tree (top level or inside containers). */
+export function collectFooterBlocks(blocks: unknown, depth = 0, out: Block[] = []): Block[] {
+  if (!Array.isArray(blocks) || depth > MAX_NAV_WALK_DEPTH) return out;
+  for (const b of blocks as Block[]) {
+    if (!b || typeof b !== "object") continue;
+    if (b.type === "footer") out.push(b);
+    else if (b.type === "container") {
+      for (const col of ((b as ContainerBlockProps).data?.columns ?? [])) collectFooterBlocks(col?.blocks, depth + 1, out);
+    }
+  }
+  return out;
 }
 
 /** Every menu block in the tree, top level first, with how deep it sits (0 = top level). */
@@ -67,17 +105,47 @@ export function locationsReadBy(trees: unknown[]): Set<string> {
   return out;
 }
 
+/** Saved menu ids read by any menu block (by id) or classic footer column in these trees (menus P2). */
+export function menuIdsReadBy(trees: unknown[]): Set<string> {
+  const out = new Set<string>();
+  for (const t of trees) {
+    for (const { block } of collectNavBlocks(t)) {
+      const id = (block.data as { menuId?: string } | undefined)?.menuId;
+      if (id) out.add(id);
+    }
+    for (const f of collectFooterBlocks(t)) for (const id of footerColumnMenuIds(f)) out.add(id);
+  }
+  return out;
+}
+
 /** True when a nested menu block somewhere in these blocks has a menu location or an auto list. */
 export function hasNestedNavToResolve(blocks: Block[]): boolean {
   return collectNavBlocks(blocks).some(({ block, depth }) => depth > 0 && nestedNeedsResolve(block));
 }
 
 /**
- * The items a menu block shows: the saved menu at its location, else its own
- * links. (A location with no saved menu keeps the block's own links: a bar
- * with slightly stale links beats an empty one.)
+ * True when these (visible, top-level) blocks hold anything the page renderer
+ * must fill from saved menus WITHOUT the header logo lookup: a nested menu
+ * block that names a menu or holds an auto list (P0), a page "Menu" block at
+ * the top level, or a classic footer column that shows a saved menu (P2).
+ * Blocks saved before P2 only ever match the first case, as before.
  */
-export function pickNavItems(data: { items?: NavItem[]; menuLocation?: string }, byLocation: Map<string, NavItem[]>): NavItem[] | undefined {
+export function hasMenusToResolve(blocks: Block[]): boolean {
+  if (hasNestedNavToResolve(blocks)) return true;
+  return blocks.some((b) => isMenuPlacement(b)) || collectFooterBlocks(blocks).some((f) => footerColumnMenuIds(f).length > 0);
+}
+
+/**
+ * The items a menu block shows: the saved menu it names by id (menus P2),
+ * else the saved menu at its location, else its own links. (A menu that is
+ * missing keeps the block's own links: a bar with slightly stale links beats
+ * an empty one.) Blocks without `menuId` resolve exactly as before P2.
+ */
+export function pickNavItems(data: { items?: NavItem[]; menuLocation?: string; menuId?: string }, byLocation: Map<string, NavItem[]>, byId?: Map<string, NavItem[]>): NavItem[] | undefined {
+  if (data.menuId && byId) {
+    const own = byId.get(data.menuId);
+    if (own) return own;
+  }
   return data.menuLocation ? byLocation.get(data.menuLocation) ?? data.items : data.items;
 }
 
@@ -89,7 +157,7 @@ type Fill = (block: Block) => Promise<Block>;
  * nestedNeedsResolve; containers are copied only when something inside them
  * changed, so untouched branches keep object identity.
  */
-export async function mapNavBlocks(blocks: Block[], fill: Fill, depth = 0): Promise<Block[]> {
+export async function mapNavBlocks(blocks: Block[], fill: Fill, depth = 0, fillFooter?: Fill): Promise<Block[]> {
   let changed = false;
   const out = await Promise.all(blocks.map(async (b) => {
     if (!b || typeof b !== "object") return b;
@@ -98,6 +166,13 @@ export async function mapNavBlocks(blocks: Block[], fill: Fill, depth = 0): Prom
       changed = true;
       return fill(b);
     }
+    // Classic footer columns that show a saved menu (menus P2). Footers
+    // without one (every footer saved before P2) are not touched.
+    if (fillFooter && b.type === "footer") {
+      if (!footerColumnMenuIds(b).length) return b;
+      changed = true;
+      return fillFooter(b);
+    }
     if (b.type === "container" && depth < MAX_NAV_WALK_DEPTH) {
       const c = b as ContainerBlockProps;
       const cols = c.data?.columns;
@@ -105,7 +180,7 @@ export async function mapNavBlocks(blocks: Block[], fill: Fill, depth = 0): Prom
       let colsChanged = false;
       const nextCols = await Promise.all(cols.map(async (col) => {
         if (!col || !Array.isArray(col.blocks)) return col;
-        const next = await mapNavBlocks(col.blocks, fill, depth + 1);
+        const next = await mapNavBlocks(col.blocks, fill, depth + 1, fillFooter);
         if (next === col.blocks) return col;
         colsChanged = true;
         return { ...col, blocks: next };
@@ -130,7 +205,9 @@ export function findImportableNav(
   savedLocations: Set<string>,
 ): { block: Block; items: NavItem[]; pointsAt?: string } | null {
   for (const { block } of collectNavBlocks(blocks)) {
-    const data = (block.data ?? {}) as { items?: NavItem[]; menuLocation?: string };
+    const data = (block.data ?? {}) as { items?: NavItem[]; menuLocation?: string; menuId?: string };
+    // A Menu block that shows a saved menu by id (menus P2): nothing to import.
+    if (data.menuId) continue;
     if (!Array.isArray(data.items) || data.items.length === 0) continue;
     // A block that reads a saved menu which exists: nothing to import.
     if (data.menuLocation && savedLocations.has(data.menuLocation)) return null;
@@ -156,9 +233,9 @@ export function pointNavBlocksAt(blocks: Block[], items: NavItem[], location: st
   const walk = (list: Block[], d: number): Block[] => list.map((b) => {
     if (!b || typeof b !== "object") return b;
     if (isNavBlock(b)) {
-      const data = (b.data ?? {}) as { items?: NavItem[]; menuLocation?: string };
-      // Already pointing at `location` (whose menu was missing): nothing to change.
-      if (!data.menuLocation && sameJson(data.items ?? [], items)) {
+      const data = (b.data ?? {}) as { items?: NavItem[]; menuLocation?: string; menuId?: string };
+      // Already pointing at `location` (whose menu was missing), or at a menu by id: nothing to change.
+      if (!data.menuLocation && !data.menuId && sameJson(data.items ?? [], items)) {
         count++;
         return { ...b, data: { ...b.data, menuLocation: location } } as Block;
       }

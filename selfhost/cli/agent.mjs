@@ -43,7 +43,14 @@ export async function runAgentCommand(command, ctx) {
 
   /** Run a CLI with its output captured (never shown as is). */
   function capture(cmd, cmdArgs, { input, known = [] } = {}) {
-    const [bin, ...pre] = cmd;
+    let [bin, ...pre] = cmd;
+    // On Windows `npx` is a .cmd file that needs a shell, and a shell joins the
+    // arguments (a password among them) into one command line. Run npm's own
+    // npx script with node instead, so no shell is involved.
+    if (isWin && bin === "npx") {
+      const npxCli = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npx-cli.js");
+      if (existsSync(npxCli)) { pre = [npxCli, ...pre]; bin = process.execPath; }
+    }
     const res = spawnSync(bin, [...pre, ...cmdArgs], {
       cwd: root, encoding: "utf8", input, maxBuffer: 20 * 1024 * 1024,
       shell: isWin && bin !== process.execPath && bin !== "node",
@@ -123,7 +130,10 @@ export async function runAgentCommand(command, ctx) {
       env = readEnv();
     }
     step(`Creating Supabase project "${name}" (${region})`);
-    const res = capture(supabaseCmd(), ["projects", "create", name, "--org-id", org, "--region", region, "--db-password", env.SUPABASE_DB_PASSWORD, "-o", "json"], { known: [env.SUPABASE_DB_PASSWORD] });
+    const res = capture(supabaseCmd(), ["projects", "create", name, "--org-id", org, "--region", region, "--db-password", env.SUPABASE_DB_PASSWORD, "-o", "json",
+      // The user already confirmed with --confirm; newer Supabase CLIs ask again
+      // when they detect an AI agent, and only accept --yes for hosted changes.
+      "--yes"], { known: [env.SUPABASE_DB_PASSWORD] });
     if (res.status !== 0) stop(`supabase projects create failed${res.shown ? `:\n${res.shown}` : ""}\nIf it says you are not logged in, ask the user to run \`supabase login\` and finish the login in the browser.`);
     const ref = agent.parseProjectRef(res.stdout.trim());
     if (!ref) stop("The project may have been created, but its ref could not be read. Run `supabase projects list` and pass the ref to supabase-keys --ref.");

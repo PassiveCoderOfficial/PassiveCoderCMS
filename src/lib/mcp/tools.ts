@@ -10,6 +10,8 @@ import { uiTextDoc } from "@/modules/page-builder/ui-text";
 import type { Block, BlockType } from "@/types/cms";
 import { SITE_TOOLS } from "@/lib/ai-agent/site-tools";
 import { SETUP_TOOLS } from "@/lib/mcp/setup-tools";
+import { MENU_PLACE_TOOLS } from "@/lib/mcp/menu-place-tools";
+import { STUDIO_SWITCH_TOOLS } from "@/lib/mcp/studio-switch-tools";
 import { SUPERADMIN_TOOLS } from "@/lib/mcp/superadmin-tools";
 import { ADMIN_TOOLS } from "@/lib/mcp/admin-tools";
 import { SHOP_TOOLS } from "@/lib/mcp/shop-tools";
@@ -123,7 +125,8 @@ const BLOCK_OPTIONS: Record<string, string> = {
   country_grid: "linkLabel (card link, empty = \"View details\"); otherRegionLabel (heading for countries without a region, empty = \"Other\").",
   pricing: "plans[].description (all designs except dark); spec-cards: oldPrice, tag, spec, excludedFeatures, currencyPrefix, whatsappCta + whatsappText ({plan}, {price}), footnote.",
   pricing_catalog: "Wording overrides (empty = built-in text of the language): popularLabel, oneTimeLabel, perMonthLabel, monthlyLabel, yearlyLabel, billedMonthlyText, infoCards [{title,text}] x3, careTitle, careText, compareLabel, bdTitle, bdText, bdButtonLabel.",
-  footer: "columns[].text: plain text under a column heading (address, phone, hours); autoLightLogo: true (dark footer shows the site's logo for dark backgrounds); logoCaption: small line under the tagline; copyrightText replaces the whole copyright line ({year} = current year).",
+  header_nav: "The Menu block: menuId = a saved menu by id (list_menus; place_menu does this for you); layout bar|vertical|inline|accordion|drawer (unset = the classic header links with their own items); menuStyle {preset plain|underline|pill|boxed|brand|caps|bold|soft, fontSize, fontWeight, gap, color, hover, active, dropdown{look}...}; align start|center|end; phoneLayout \"same\" keeps the bar on phones (default: a menu button); levels 1-3 (lists); buttonLabel; label (name for screen readers).",
+  footer: "columns[].menuId: the column shows that saved menu's links instead of its typed links (columns[].menuLevels 2 = with sub-links); columns[].text: plain text under a column heading (address, phone, hours); autoLightLogo: true (dark footer shows the site's logo for dark backgrounds); logoCaption: small line under the tagline; copyrightText replaces the whole copyright line ({year} = current year).",
   navigation: "style \"logo-center-inline\": one row, menu left, logo centre, site social icons right; logoCaption: small text beside the logo; secondaryCtaLabel + secondaryCtaUrl: plain text link beside the button; ctaVariant: gradient|solid|outline (button look); colorMode \"legacy\" = use backgroundColor/textColor instead of theme colours.",
   stats: "items[].prefix / suffix are shown before / after the number (not doubled when the value already has them); every design shows title/subtitle when set.",
   countdown: "title is shown above the clock; layout boxes|minimal.",
@@ -538,7 +541,7 @@ const REUSED: McpTool[] = AGENT_TOOLS.map((t) => ({
   run: (args: never, ctx: McpCtx) => t.run(args, ctx),
 }));
 
-export const MCP_TOOLS: McpTool[] = [...REUSED, ...NEW_TOOLS, ...SHOP_TOOLS, ...SITE_TOOLS, ...SETUP_TOOLS, ...SITE_CHROME_TOOLS, ...SUPERADMIN_TOOLS, ...ADMIN_TOOLS];
+export const MCP_TOOLS: McpTool[] = [...REUSED, ...NEW_TOOLS, ...SHOP_TOOLS, ...SITE_TOOLS, ...SETUP_TOOLS, ...MENU_PLACE_TOOLS, ...STUDIO_SWITCH_TOOLS, ...SITE_CHROME_TOOLS, ...SUPERADMIN_TOOLS, ...ADMIN_TOOLS];
 
 export function findMcpTool(name: string): McpTool | undefined {
   return MCP_TOOLS.find((t) => t.name === name);

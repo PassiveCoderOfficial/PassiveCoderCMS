@@ -362,6 +362,9 @@ export type NavigationBlockProps = BlockBase & {
      *  Keeping the menu in nav_menus and referencing it here is what stops the
      *  header and footer holding diverging copies of the same links. */
     menuLocation?: "header" | "footer" | "footer_secondary" | "mobile" | "sidebar" | "legal";
+    /** Saved menu (nav_menus.id) to show; wins over menuLocation. Set when
+     *  the owner first edits the menu on the builder canvas (menus P3). */
+    menuId?: string;
     sticky: boolean;
     /** Which rows stay pinned when sticky: the whole header (default) or,
      *  for the two-row "logo-center" style, only the menu row (the logo row
@@ -535,7 +538,12 @@ export type NavMegaFeatured = {
 
 /** Extra settings of a Menu Studio mega menu. Present = the item renders with the studio renderer. */
 export type NavMegaConfig = {
+  /** The single featured card (Menu Studio phase 1). Still read when `cards` is unset. */
   featured?: NavMegaFeatured;
+  /** Mega builder (menus P4): 0 to 2 featured cards. When set (even empty) it replaces `featured`. */
+  cards?: NavMegaFeatured[];
+  /** Mega builder (menus P4): panel as wide as the content (default, up to 1120px) or the whole window. */
+  width?: "container" | "full";
 };
 
 export type NavItem = {
@@ -555,8 +563,8 @@ export type NavItem = {
    *  When unset the renderer falls back to inferring it (any grandchildren =
    *  mega), which keeps existing menus behaving exactly as before. */
   megaMenu?: boolean;
-  /** Column count for the mega-menu grid on desktop. Defaults to 5. */
-  megaColumns?: 2 | 3 | 4 | 5;
+  /** Column count for the mega-menu grid on desktop. Defaults to 5. 6 is mega builder only (menus P4). */
+  megaColumns?: 2 | 3 | 4 | 5 | 6;
   /** Mega menu: single links (no sub-items) as a top strip (default) or a highlighted last column. */
   megaLinksAs?: "strip" | "column";
   /** Heading over that highlighted column. */
@@ -586,10 +594,36 @@ export type NavItem = {
   mega?: NavMegaConfig;
   /** Auto lists: hand-picked record ids for childSource (in this order). Empty/unset = latest. */
   childIds?: string[];
+  // Mega builder (menus P4): on a mega menu's second-level items (its columns).
+  /** Drawn as a column even with no links yet (an image or heading only, or an auto list that came back empty). */
+  megaColumn?: true;
+  /** Column width: 2 = twice as wide as the others on desktop. Unset = 1. */
+  megaSpan?: 2;
+  /** Image at the top of the column (from the site's media library). */
+  megaImage?: string;
   /** Set by the Menu Studio editor when the item needs the studio renderer
    *  for something legacy can't draw (third level under a plain dropdown). */
   studio?: true;
+
+  // ── Menu engine (menus P1, Nov 2026) ─────────────────────────────────────
+  // All optional. Absent on every menu saved before P1, which therefore
+  // renders exactly as before.
+  /** What the link points at. With `ref` set, the live URL is looked up at
+   *  render time (modules/navigation/menu-refs), so renaming a page, product
+   *  or category never breaks the menu; `url` stays as the last known URL
+   *  and the fallback when the record is gone. "custom" / unset = `url` as typed. */
+  kind?: NavLinkKind;
+  /** Record id for `kind` (pages.id, products.id, service_items.id, service_groups.id, categories.id). */
+  ref?: string;
+  /** Who sees the item: everyone (unset), visitors who are not signed in, or signed-in customers. Hidden in the browser. */
+  audience?: NavAudience;
+  /** Label per language code (e.g. { bn: "...", ar: "..." }). Pages in that language show it; others fall back to `label`. */
+  labels?: Record<string, string>;
 };
+
+/** Menu item link kinds (menus P1). */
+export type NavLinkKind = "custom" | "page" | "post" | "product" | "service" | "service_group" | "category";
+export type NavAudience = "guests" | "members";
 
 /**
  * Header-only sub-blocks (2026-09-06). A header composes these as
@@ -633,6 +667,28 @@ export type HeaderNavBlockProps = BlockBase & {
     menuFontSize?: number;
     menuFontWeight?: number;
     menuGap?: number;
+
+    // ── Menu block (menus P2, Nov 2026) ───────────────────────────────────
+    // The page builder's "Menu" block is this block. All optional and absent
+    // on every block saved before P2, which therefore renders exactly as
+    // before (the legacy links + hamburger markup above).
+    /** Saved menu (nav_menus.id) to show. Wins over menuLocation; a deleted menu falls back to `items`. */
+    menuId?: string;
+    /** Set = the new menu renderer (components/blocks/navigation/menu-renderer)
+     *  with this layout; unset = the legacy header links look. */
+    layout?: import("@/modules/navigation/menu-style").MenuLayout;
+    /** Look of the menu (preset + overrides). Only read when `layout` is set. */
+    menuStyle?: import("@/modules/navigation/menu-style").MenuStyle;
+    /** Where the menu sits in its row / column. Default start. */
+    align?: "start" | "center" | "end";
+    /** vertical / inline: how many levels to show (1-3). */
+    levels?: number;
+    /** bar: what phones get. Default "drawer" (a menu button); "same" keeps the bar. */
+    phoneLayout?: "drawer" | "same";
+    /** drawer: text beside the menu icon (unset = icon only). */
+    buttonLabel?: string;
+    /** Accessible name of the menu ("Main menu", "Services"). */
+    label?: string;
   };
 };
 
@@ -1579,6 +1635,13 @@ export type FooterColumn = {
   links: FooterColumnLink[];
   /** Plain text under the heading (address, phone, hours), line breaks kept. */
   text?: string;
+  /** Menus P2: show this saved menu (nav_menus.id) instead of `links`. Unset =
+   *  the typed links, exactly as before. A deleted menu falls back to `links`. */
+  menuId?: string;
+  /** How deep the menu goes in this column (1 or 2). Default 1. */
+  menuLevels?: number;
+  /** Filled at render time from `menuId` (never saved). */
+  menuItems?: NavItem[];
 };
 
 export type FooterSocial = {

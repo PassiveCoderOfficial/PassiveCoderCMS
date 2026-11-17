@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./worlds.css";
 @import "./pro.css";
+@import "./menus.css";
 
 /* dark: utilities. Inside the admin worlds they follow the world's own toggle
    (class on <html>), so a dark: colour can't fire on a light panel or the other

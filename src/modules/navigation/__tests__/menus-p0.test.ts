@@ -130,8 +130,9 @@ test("tree editor confirms before removing an item with a sub-menu", () => {
 
 test("link picker: Custom URL opens the text box even when the link matches a page", () => {
   const src = read("src/app/(admin)/dashboard/navigation/menu-tree-editor.tsx");
-  assert.ok(src.includes('if (e.target.value === "__custom__") { setCustomOpen(true); return; }'));
-  assert.ok(src.includes("const known = !customOpen && targets.some"));
+  // P1: choosing Custom URL also drops the by-id link, so the typed URL is what shows.
+  assert.ok(src.includes('if (e.target.value === "__custom__") { setCustomOpen(true); onChange(value, null); return; }'));
+  assert.ok(src.includes("const current = customOpen ? undefined"));
 });
 
 // ── MCP: a flat list never silently wipes a structured menu ──────────────
@@ -149,10 +150,14 @@ test("structureLostByFlatReplace", () => {
 test("Studio 'Edit menus' opens a new tab and both studios guard unsaved work", () => {
   for (const f of ["src/app/(admin)/dashboard/header-builder/studio/studio-client.tsx", "src/app/(admin)/dashboard/header-builder/footer-studio/studio-client.tsx"]) {
     const src = read(f);
-    assert.ok(/<a href="\/dashboard\/navigation" target="_blank"/.test(src), `${f}: new tab`);
-    assert.ok(!/<Link href="\/dashboard\/navigation"/.test(src), `${f}: no same-tab link`);
+    // P2: "Edit this menu" / "Create a menu" live in the shared saved-menu picker.
+    assert.ok(src.includes("<SavedMenuSelect"), `${f}: saved-menu picker`);
+    assert.ok(!/<Link href="\/dashboard\/navigation/.test(src), `${f}: no same-tab link`);
     assert.ok(src.includes("useUnsavedGuard(dirty"), `${f}: guard`);
   }
+  const picker = read("src/components/admin/menus/saved-menu-select.tsx");
+  assert.ok(/href=\{editMenuHref\(chosen\?\.id\)\} target="_blank"/.test(picker), "picker: new tab");
+  assert.ok(picker.includes('window.open(editMenuHref(menu.id), "_blank"'), "picker: a created menu opens in a new tab");
 });
 
 test("classic header builder warns when a Studio header/footer is live", () => {

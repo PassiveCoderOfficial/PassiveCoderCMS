@@ -17,6 +17,7 @@
  * the API and the site renderer share them.
  */
 import type { MapLocation } from "@/lib/maps/location";
+import { normalizeMenuStyle, safeColor, type MenuStyle } from "@/modules/navigation/menu-style";
 
 export const FOOTER_WIDGET_TYPES = [
   "about", "menu", "links", "contact", "hours", "socials", "newsletter", "map",
@@ -73,6 +74,8 @@ export interface FooterWidget {
   text?: string;
   /** about: show the logo (default on). */
   hideLogo?: boolean;
+  /** about (menus P5): a text logo shown instead of a logo image (the classic footer's text logo). Unset = the logo image, else the site name. */
+  name?: string;
   /** about: own logo image (unset = Site Identity logo). payments: own badges image. */
   imageUrl?: string;
   /** about: logo height in px. */
@@ -81,8 +84,11 @@ export interface FooterWidget {
   menuId?: string;
   /** menu / links: how deep a menu goes (1 or 2). */
   levels?: number;
-  /** menu / links: stacked list or one inline row. */
-  layout?: "list" | "inline";
+  /** menu / links: stacked list or one inline row; menu: also a 2-column list (menus P2). */
+  layout?: "list" | "inline" | "columns";
+  /** menu (menus P2): the menu's look here (preset + overrides, modules/navigation/menu-style).
+   *  Unset = the footer's own link look, as before P2. */
+  menuStyle?: MenuStyle;
   /** links: own links. */
   links?: FooterLink[];
   /** contact: which details to show (unset = all the site has). */
@@ -106,7 +112,12 @@ export interface FooterWidget {
   methods?: PaymentMethod[];
   /** text: link the text. */
   url?: string;
+  /** socials (menus P5): own social links, e.g. a converted classic footer's. Unset = the site's social links. */
+  socials?: FooterSocialLink[];
 }
+
+/** A social link of the widget's own list. Any short network name: known ones get their icon, others their first letter (as the classic footer). */
+export type FooterSocialLink = { platform: string; url: string };
 
 export interface FooterColumn {
   id: string;
@@ -134,6 +145,14 @@ export interface FooterStyle {
   uppercase: boolean;
   /** Thin line above the footer. */
   topBorder: boolean;
+  /** Own background colour (menus P5, e.g. a classic footer's colour). Wins over `background`. */
+  bgColor?: string;
+  /** Own text colour (menus P5). */
+  fgColor?: string;
+  /** Column heading colour (menus P5, the classic footer's accent colour). Unset = the text colour. */
+  accentColor?: string;
+  /** Theme gradient over the background (menus P5, the classic footer's look): "dark" secondary to primary, "light" muted to card. */
+  gradient?: "dark" | "light";
 }
 
 export interface FooterMobile {
@@ -224,7 +243,8 @@ export function safeUrl(v: unknown): string | undefined {
 
 function normalizeLink(raw: unknown): FooterLink | null {
   if (!isObj(raw)) return null;
-  const label = str(raw.label, 80);
+  // 240: classic footer columns hold address lines as links (menus P5 keeps them whole).
+  const label = str(raw.label, 240);
   const url = safeUrl(raw.url);
   if (!label || !url) return null;
   const l: FooterLink = { id: str(raw.id, 40) ?? newId("fl"), label, url };
@@ -256,6 +276,10 @@ export function normalizeWidget(raw: unknown): FooterWidget | null {
   const body = text(raw.text, 600);
   if (body) w.text = body;
   if (raw.hideLogo === true) w.hideLogo = true;
+  if (raw.type === "about") {
+    const name = str(raw.name, 80);
+    if (name) w.name = name;
+  }
   const imageUrl = safeUrl(raw.imageUrl);
   if (imageUrl) w.imageUrl = imageUrl;
   const height = num(raw.height, 16, 160);
@@ -264,8 +288,12 @@ export function normalizeWidget(raw: unknown): FooterWidget | null {
   if (menuId) w.menuId = menuId;
   const levels = num(raw.levels, 1, 2);
   if (levels !== undefined && levels > 1) w.levels = levels;
-  const layout = optOneOf(raw.layout, ["list", "inline"] as const);
-  if (layout === "inline") w.layout = layout;
+  const layout = optOneOf(raw.layout, ["list", "inline", "columns"] as const);
+  if (layout === "inline" || (layout === "columns" && raw.type === "menu")) w.layout = layout;
+  if (raw.type === "menu") {
+    const menuStyle = normalizeMenuStyle(raw.menuStyle);
+    if (menuStyle) w.menuStyle = menuStyle;
+  }
   if (Array.isArray(raw.links)) {
     const links = raw.links.map(normalizeLink).filter((x): x is FooterLink => !!x).slice(0, MAX_LINKS);
     if (links.length || raw.type === "links") w.links = links;
@@ -299,6 +327,13 @@ export function normalizeWidget(raw: unknown): FooterWidget | null {
   }
   const url = safeUrl(raw.url);
   if (url) w.url = url;
+  if (raw.type === "socials" && Array.isArray(raw.socials)) {
+    const list = raw.socials.filter(isObj)
+      .map((x) => ({ platform: typeof x.platform === "string" && /^[a-z][a-z0-9-]{0,19}$/.test(x.platform) ? x.platform : undefined, url: safeUrl(x.url) }))
+      .filter((x): x is FooterSocialLink => !!x.platform && !!x.url && /^https?:\/\//i.test(x.url))
+      .slice(0, 12);
+    if (list.length) w.socials = list;
+  }
   return w;
 }
 
@@ -354,6 +389,15 @@ export function normalizeFooterConfig(input: unknown): FooterConfig {
     },
     mobile: { accordion: m.accordion !== false, center: m.center === true },
   };
+  // Own colours only when set, so footers saved before P5 come back unchanged.
+  const bgColor = safeColor(s.bgColor);
+  if (bgColor) out.style.bgColor = bgColor;
+  const fgColor = safeColor(s.fgColor);
+  if (fgColor) out.style.fgColor = fgColor;
+  const accentColor = safeColor(s.accentColor);
+  if (accentColor) out.style.accentColor = accentColor;
+  const gradient = optOneOf(s.gradient, ["dark", "light"] as const);
+  if (gradient) out.style.gradient = gradient;
   if (isObj(input.credit)) {
     const c: FooterCreditChoice = {};
     if (input.credit.show === false) c.show = false;
@@ -508,6 +552,29 @@ export function updateWidget(cfg: FooterConfig, id: string, patch: Partial<Foote
   for (const k of Object.keys(merged)) if (merged[k] === undefined || merged[k] === "" || merged[k] === false) delete merged[k];
   listAt(next, at)![at.index] = merged;
   return next;
+}
+
+/**
+ * "Save as menu" (menus P2): a links widget becomes a menu widget showing the
+ * saved menu `menuId` (made from its links), in the same place, with the same
+ * id, heading, depth and layout. Same config back for any other widget.
+ */
+export function linksToMenuWidget(cfg: FooterConfig, id: string, menuId: string): FooterConfig {
+  const at = findWidget(cfg, id);
+  if (!at || at.widget.type !== "links" || !menuId) return cfg;
+  const next = clone(cfg);
+  const w = at.widget;
+  const menu: FooterWidget = { id: w.id, type: "menu", menuId: menuId.slice(0, 60) };
+  if (w.title) menu.title = w.title;
+  if (w.levels) menu.levels = w.levels;
+  if (w.layout === "inline") menu.layout = "inline";
+  listAt(next, at)![at.index] = menu;
+  return next;
+}
+
+/** The links of a links widget as menu items (for "Save as menu"). */
+export function linksAsMenuItems(w: FooterWidget): { id: string; label: string; url: string; target?: "_blank" }[] {
+  return (w.links ?? []).filter((l) => l.label && l.url).map((l) => ({ id: l.id, label: l.label, url: l.url, ...(l.newTab ? { target: "_blank" as const } : {}) }));
 }
 
 /** Moves a widget within its place (dir -1/1) or to another column / zone (appended). */

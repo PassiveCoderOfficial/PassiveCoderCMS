@@ -1,9 +1,16 @@
 "use client";
 
 import React from "react";
-import { useSavedMenus } from "../saved-menus";
+import { refreshSavedMenus, useSavedMenus } from "../saved-menus";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
+import { SavedMenuSelect } from "@/components/admin/menus/saved-menu-select";
+import { LAYOUT_KEY, MENU_LAYOUTS, MenuStyleEditor } from "@/components/admin/menus/menu-style-editor";
+import type { MenuLayout } from "@/modules/navigation/menu-style";
 import Link from "next/link";
 import { useBuilderStore } from "@/lib/store/builder";
+import { usePathname } from "next/navigation";
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ColorPicker } from "@/components/ui/color-picker";
@@ -77,12 +84,109 @@ export function MenuLocationPicker({ value, onChange }: { value?: MenuLocation; 
   );
 }
 
-export function HeaderNavSettings({ block }: { block: HeaderNavBlockProps }) {
-  const { updateBlock } = useBuilderStore();
-  const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
+const FIELD = "h-8 w-full rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring";
+const k = (key: string) => key as TranslationKey;
 
+/**
+ * The page "Menu" block (menus P2): which saved menu, its layout, its look.
+ * Blocks saved before P2 keep the classic panel below (their own links and
+ * the classic look) until the owner switches them over.
+ */
+function MenuBlockSettings({ block }: { block: HeaderNavBlockProps }) {
+  const t = useT();
+  const { updateBlock } = useBuilderStore();
+  const menus = useSavedMenus();
+  const d = block.data;
+  const set = (patch: Partial<HeaderNavBlockProps["data"]>) => {
+    const data = { ...block.data, ...patch } as Record<string, unknown>;
+    for (const key of Object.keys(patch)) if (data[key] === undefined || data[key] === "") delete data[key];
+    updateBlock(block.id, { data: data as HeaderNavBlockProps["data"] });
+  };
+  const layout = d.layout ?? "bar";
+  const barWithButton = layout === "bar" && d.phoneLayout !== "same";
+  const ownLinks = !d.menuId && !d.menuLocation && (d.items?.length ?? 0) > 0;
   return (
     <div className="space-y-3">
+      <SavedMenuSelect menus={menus} value={d.menuId} onChange={(id) => set({ menuId: id })} onCreated={() => refreshSavedMenus()}
+        defaultLabel={ownLinks ? t("menuPlace.ownLinks") : undefined} />
+      <label className="block space-y-1">
+        <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.layout")}</span>
+        <select className={FIELD} value={layout} onChange={(e) => set({ layout: e.target.value as MenuLayout })}>
+          {MENU_LAYOUTS.map((l) => <option key={l} value={l}>{t(LAYOUT_KEY[l])}</option>)}
+        </select>
+        <span className="block text-[10px] text-muted-foreground">{t(k(`menuPlace.layoutHint.${layout}`))}</span>
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        {(layout === "bar" || layout === "inline" || layout === "drawer") && (
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.align")}</span>
+            <select className={FIELD} value={d.align ?? "start"} onChange={(e) => set({ align: e.target.value === "start" ? undefined : (e.target.value as "center" | "end") })}>
+              {(["start", "center", "end"] as const).map((a) => <option key={a} value={a}>{t(k(`menuPlace.align.${a}`))}</option>)}
+            </select>
+          </label>
+        )}
+        {layout === "bar" && (
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.onPhones")}</span>
+            <select className={FIELD} value={d.phoneLayout ?? "drawer"} onChange={(e) => set({ phoneLayout: e.target.value === "same" ? "same" : undefined })}>
+              <option value="drawer">{t("menuPlace.onPhonesButton")}</option>
+              <option value="same">{t("menuPlace.onPhonesSame")}</option>
+            </select>
+          </label>
+        )}
+        {(layout === "vertical" || layout === "inline") && (
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.levels")}</span>
+            <select className={FIELD} value={d.levels ?? (layout === "inline" ? 1 : 3)} onChange={(e) => set({ levels: Number(e.target.value) })}>
+              {[1, 2, 3].map((n) => <option key={n} value={n}>{t(k(`menuPlace.levels${n}`))}</option>)}
+            </select>
+          </label>
+        )}
+      </div>
+      {(layout === "drawer" || barWithButton) && (
+        <label className="block space-y-1">
+          <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.buttonLabel")}</span>
+          <input className={FIELD} value={d.buttonLabel ?? ""} placeholder={t("menuPlace.buttonLabelPlaceholder")} maxLength={40} onChange={(e) => set({ buttonLabel: e.target.value || undefined })} />
+        </label>
+      )}
+      <label className="block space-y-1">
+        <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.ariaLabel")}</span>
+        <input className={FIELD} value={d.label ?? ""} placeholder={t("menuPlace.ariaLabelPlaceholder")} maxLength={60} onChange={(e) => set({ label: e.target.value || undefined })} />
+      </label>
+      <div className="border-t pt-3">
+        <p className="mb-2 text-xs font-semibold">{t("menuPlace.lookTitle")}</p>
+        <MenuStyleEditor value={d.menuStyle} onChange={(menuStyle) => set({ menuStyle })}
+          showDropdown={layout === "bar"} showPhone={layout === "accordion" || layout === "drawer" || barWithButton} />
+      </div>
+    </div>
+  );
+}
+
+export function HeaderNavSettings({ block }: { block: HeaderNavBlockProps }) {
+  if (block.data.layout) return <MenuBlockSettings block={block} />;
+  return <LegacyHeaderNavSettings block={block} />;
+}
+
+function LegacyHeaderNavSettings({ block }: { block: HeaderNavBlockProps }) {
+  const t = useT();
+  const { updateBlock } = useBuilderStore();
+  const menus = useSavedMenus(!!block.data.menuLocation);
+  const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
+  // Opt in to the new Menu look: same links (or the saved menu it reads, now by id).
+  const upgrade = () => {
+    const byLocation = block.data.menuLocation ? menus?.find((m) => m.location === block.data.menuLocation) : undefined;
+    updateBlock(block.id, { data: { ...block.data, layout: "bar", ...(byLocation ? { menuId: byLocation.id } : {}) } });
+  };
+
+  // Menus P5: a container header in the Header Builder can move to the Studio.
+  const inHeaderBuilder = (usePathname() ?? "").startsWith("/dashboard/header-builder");
+  return (
+    <div className="space-y-3">
+      {inHeaderBuilder && <SwitchToStudioButton area="header" variant="inline" />}
+      <div className="rounded-md border border-primary/30 bg-primary/[0.04] p-2 text-[11px]">
+        <p>{t("menuPlace.upgradeHint")}</p>
+        <button type="button" onClick={upgrade} className="mt-1 font-medium text-primary hover:underline">{t("menuPlace.upgrade")}</button>
+      </div>
       <div>
         <Label className="text-xs">Links position</Label>
         {/* The links render either spread from the start (every value but

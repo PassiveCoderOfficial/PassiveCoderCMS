@@ -12,6 +12,14 @@
  * Tree operations live in modules/navigation/menu-model.ts (tested). Defaults
  * are never written (device "all", open on hover), so an item the owner only
  * looks at keeps the legacy renderer.
+ *
+ * Menus P4 (Nov 2026): a mega menu item gets the visual mega builder
+ * (mega-builder.tsx): columns, images, featured cards, live preview.
+ *
+ * Menus P1 (Nov 2026): picking a page, post, product, service or category
+ * links the item by id (kind + ref), so renaming it never breaks the menu;
+ * "Add pages" adds several pages at once; "Who sees it" shows an item only
+ * to visitors who are not signed in, or only to signed-in customers.
  */
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -23,16 +31,17 @@ import { SortableContext, verticalListSortingStrategy, useSortable, sortableKeyb
 import { CSS } from "@dnd-kit/utilities";
 import {
   Plus, Trash2, ChevronRight, ChevronDown, GripVertical, Link2, Sparkles,
-  ArrowUp, ArrowDown, IndentIncrease, IndentDecrease, Monitor, Smartphone, LayoutGrid, Loader2,
+  ArrowUp, ArrowDown, IndentIncrease, IndentDecrease, Monitor, Smartphone, LayoutGrid, Loader2, FilePlus2, AlertTriangle, Columns3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { NavItem, NavChildSource, NavMegaFeatured } from "@/types/cms";
+import type { NavItem, NavChildSource } from "@/types/cms";
 import type { LinkTarget } from "@/app/api/navigation/link-targets/route";
 import type { AutoPickItem } from "@/app/api/navigation/auto-items/route";
 import { useT } from "@/lib/i18n/language-provider";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 import { IconPicker } from "@/components/ui/icon-picker";
-import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { MegaBuilder } from "./mega-builder";
+import { newMegaColumn } from "@/modules/navigation/mega";
 import {
   MAX_MENU_DEPTH, flattenTree, projectDrop, moveItem, removeItem, updateItem, indentItem, outdentItem,
   shiftItem, isMegaItem, newNavId, findItem, isFirstAmongSiblings, type FlatNavItem,
@@ -40,8 +49,8 @@ import {
 
 const INDENT = 28;
 
-const SOURCES: NavChildSource[] = ["manual", "services", "service_groups", "products", "product_categories", "posts", "pages"];
-const SOURCE_KEY: Record<NavChildSource, TranslationKey> = {
+export const SOURCES: NavChildSource[] = ["manual", "services", "service_groups", "products", "product_categories", "posts", "pages"];
+export const SOURCE_KEY: Record<NavChildSource, TranslationKey> = {
   manual: "navPage.srcManual",
   services: "navPage.srcServices",
   service_groups: "navPage.srcServiceGroups",
@@ -54,6 +63,23 @@ const SOURCE_KEY: Record<NavChildSource, TranslationKey> = {
 
 export function newMenuItem(label: string): NavItem {
   return { id: newNavId(), label, url: "/", children: [] };
+}
+
+/** Option key of a link target: by id when it has one, else by URL. */
+const targetKey = (tg: { url: string; kind?: string; ref?: string }) => (tg.kind && tg.ref ? `${tg.kind}:${tg.ref}` : `url:${tg.url}`);
+
+const GROUP_KEY: Record<LinkTarget["group"], TranslationKey> = {
+  Special: "navPage.groupSpecial",
+  Pages: "navPage.groupPages",
+  Posts: "navPage.groupPosts",
+  Services: "navPage.groupServices",
+  Shop: "navPage.groupShop",
+  Products: "navPage.groupProducts",
+};
+
+/** Patch for an item linked to a picked target (by id when the target has one). */
+function linkPatch(url: string, tg?: LinkTarget | null): Partial<NavItem> {
+  return { url, kind: tg?.kind && tg.ref ? tg.kind : undefined, ref: tg?.kind && tg.ref ? tg.ref : undefined };
 }
 
 export function MenuTreeEditor({ items, targets, onChange }: {
@@ -116,14 +142,18 @@ export function MenuTreeEditor({ items, targets, onChange }: {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-semibold">{t("navPage.menuItems")}</p>
-        <button
-          onClick={() => onChange([...items, newMenuItem(t("navPage.newLinkLabel"))])}
-          className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:border-primary"
-        >
-          <Plus className="h-3 w-3" /> {t("navPage.addItem")}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <AddPagesButton targets={targets} items={items}
+            onAdd={(picked) => onChange([...items, ...picked.map((tg) => ({ ...newMenuItem(tg.label), ...linkPatch(tg.url, tg) }))])} />
+          <button
+            onClick={() => onChange([...items, newMenuItem(t("navPage.newLinkLabel"))])}
+            className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:border-primary"
+          >
+            <Plus className="h-3 w-3" /> {t("navPage.addItem")}
+          </button>
+        </div>
       </div>
       <p className="text-[11px] text-muted-foreground">{t("navPage.dragHint")}</p>
 
@@ -199,6 +229,8 @@ function TreeRow({ flat, depth, targets, open, onToggle, onPatch, onRemove, onUp
   if (item.device === "desktop") tags.push(t("navPage.deviceDesktop"));
   if (item.device === "mobile") tags.push(t("navPage.devicePhone"));
   if (item.badge) tags.push(item.badge);
+  if (item.audience === "guests") tags.push(t("navPage.audienceGuests"));
+  if (item.audience === "members") tags.push(t("navPage.audienceMembers"));
 
   return (
     <li ref={setNodeRef} style={style} className={cn("rounded-lg border bg-card", isDragging && "z-10 opacity-80 shadow-lg ring-1 ring-primary/40")}>
@@ -221,7 +253,8 @@ function TreeRow({ flat, depth, targets, open, onToggle, onPatch, onRemove, onUp
           onChange={(e) => onPatch({ label: e.target.value })}
           placeholder={t("navPage.labelPlaceholder")}
         />
-        <LinkField value={item.url} targets={targets} onChange={(url) => onPatch({ url })} />
+        <LinkField value={item.url} linkedTo={item.kind && item.ref ? targetKey(item as { url: string; kind: string; ref: string }) : undefined}
+          targets={targets} onChange={(url, tg) => onPatch(linkPatch(url, tg))} />
 
         {tags.length > 0 && (
           <span className="hidden flex-wrap gap-1 sm:flex">
@@ -271,12 +304,6 @@ function ItemSettings({ item, depth, targets, onPatch, onAddChild }: {
   const top = depth === 0;
   const mega = isMegaItem(item);
   const hasSub = (item.children?.length ?? 0) > 0 || source !== "manual";
-  const featured = item.mega?.featured ?? {};
-  const setFeatured = (p: Partial<NavMegaFeatured>) => {
-    const next = { ...featured, ...p };
-    for (const k of Object.keys(next) as (keyof NavMegaFeatured)[]) if (!next[k]) delete next[k];
-    onPatch({ mega: { ...(item.mega ?? {}), featured: next }, megaMenu: true });
-  };
 
   return (
     <div className="grid gap-3 border-t p-3 sm:grid-cols-2">
@@ -321,6 +348,16 @@ function ItemSettings({ item, depth, targets, onPatch, onAddChild }: {
           {t("navPage.openInNewTab")}
         </label>
       </div>
+      <div className="sm:col-span-2">
+        <label className={labelCls}>{t("navPage.audience")}</label>
+        <select className={fieldCls} value={item.audience ?? ""}
+          onChange={(e) => onPatch({ audience: (e.target.value || undefined) as NavItem["audience"] })}>
+          <option value="">{t("navPage.audienceAll")}</option>
+          <option value="guests">{t("navPage.audienceGuests")}</option>
+          <option value="members">{t("navPage.audienceMembers")}</option>
+        </select>
+        <p className="mt-1 text-[10px] text-muted-foreground">{t("navPage.audienceHint")}</p>
+      </div>
 
       {top && (
         <div>
@@ -357,58 +394,17 @@ function ItemSettings({ item, depth, targets, onPatch, onAddChild }: {
               </select>
             </div>
           </div>
-          {mega && (
-            <>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div>
-                  <label className={labelCls}>{t("navPage.columns")}</label>
-                  <select className={fieldCls} value={String(item.megaColumns ?? 5)}
-                    onChange={(e) => onPatch({ megaColumns: Number(e.target.value) as 2 | 3 | 4 | 5 })}>
-                    {[2, 3, 4, 5].map((n) => <option key={n} value={n}>{t("navPage.columnsCount", { count: n })}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>{t("navPage.singleLinks")}</label>
-                  <select className={fieldCls} value={item.megaLinksAs ?? "strip"}
-                    onChange={(e) => onPatch({ megaLinksAs: e.target.value as "strip" | "column" })}>
-                    <option value="strip">{t("navPage.singleStrip")}</option>
-                    <option value="column">{t("navPage.singleColumn")}</option>
-                  </select>
-                  {item.megaLinksAs === "column" && (
-                    <input className={cn(fieldCls, "mt-1.5")} placeholder={t("navPage.singleColumnTitle")}
-                      value={item.megaLinksTitle ?? ""} onChange={(e) => onPatch({ megaLinksTitle: e.target.value })} />
-                  )}
-                </div>
-              </div>
-              <p className="text-[10px] text-muted-foreground">{t("navPage.megaColumnsHint")}</p>
-              <div className="space-y-2 rounded border bg-background p-2.5">
-                <p className="text-[11px] font-semibold">{t("navPage.featured")}</p>
-                <p className="text-[10px] text-muted-foreground">{t("navPage.featuredHint")}</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <label className={labelCls}>{t("navPage.featuredImage")}</label>
-                    <MediaPickerInput compact value={featured.image ?? ""} onChange={(url) => setFeatured({ image: url })} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t("navPage.featuredTitle")}</label>
-                    <input className={fieldCls} value={featured.title ?? ""} onChange={(e) => setFeatured({ title: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t("navPage.featuredCta")}</label>
-                    <input className={fieldCls} value={featured.ctaLabel ?? ""} onChange={(e) => setFeatured({ ctaLabel: e.target.value })} />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className={labelCls}>{t("navPage.featuredText")}</label>
-                    <textarea className={fieldCls} rows={2} value={featured.text ?? ""} onChange={(e) => setFeatured({ text: e.target.value })} />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className={labelCls}>{t("navPage.featuredLink")}</label>
-                    <LinkField value={featured.url ?? ""} targets={targets} small onChange={(url) => setFeatured({ url })} />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+          {mega && <MegaBuilder item={item} targets={targets} onPatch={onPatch} />}
+        </div>
+      )}
+
+      {/* A plain top-level link can start a mega menu in one click (menus P4). */}
+      {top && !hasSub && (
+        <div className="sm:col-span-2">
+          <button type="button" onClick={() => onPatch({ megaMenu: true, children: [newMegaColumn(t("navPage.megaNewColumn"))] })}
+            className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-primary/50 px-2.5 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/5">
+            <Columns3 className="h-3.5 w-3.5" aria-hidden />{t("navPage.megaStart")}
+          </button>
         </div>
       )}
 
@@ -440,7 +436,7 @@ function ItemSettings({ item, depth, targets, onPatch, onAddChild }: {
   );
 }
 
-function AutoListSettings({ item, onPatch }: { item: NavItem; onPatch: (p: Partial<NavItem>) => void }) {
+export function AutoListSettings({ item, onPatch }: { item: NavItem; onPatch: (p: Partial<NavItem>) => void }) {
   const t = useT();
   const source = item.childSource ?? "manual";
   const picked = item.childIds ?? [];
@@ -502,50 +498,111 @@ function AutoListSettings({ item, onPatch }: { item: NavItem; onPatch: (p: Parti
 }
 
 /** URL field that offers real destinations, while still allowing a custom
- *  value for external links and anchors. */
-export function LinkField({ value, targets, onChange, small }: {
+ *  value for external links and anchors. Picking a page (or post, product,
+ *  service, category) links by id: `linkedTo` is that id's option key. */
+export function LinkField({ value, linkedTo, targets, onChange, small }: {
   value: string;
+  linkedTo?: string;
   targets: LinkTarget[];
-  onChange: (url: string) => void;
+  onChange: (url: string, target?: LinkTarget | null) => void;
   small?: boolean;
 }) {
   const t = useT();
   // "Custom URL" chosen while the link still matches a page: keep the text
   // box open so the URL can be edited (before P0 the choice did nothing).
   const [customOpen, setCustomOpen] = useState(false);
-  const known = !customOpen && targets.some((tg) => tg.url === value);
+  const byKey = new Map(targets.map((tg) => [targetKey(tg), tg]));
+  const linked = linkedTo ? byKey.get(linkedTo) : undefined;
+  const byUrl = targets.find((tg) => tg.url === value);
+  const current = customOpen ? undefined : linkedTo ? linked : byUrl;
+  // Linked by id, but that record is gone or unpublished (targets loaded): the menu keeps its last address.
+  const missing = !!linkedTo && targets.length > 0 && !linked;
   const groups = Array.from(new Set(targets.map((tg) => tg.group)));
 
   return (
-    <div className={cn("flex min-w-0 flex-1 items-center gap-1.5")}>
-      <select
-        className={cn("min-w-0 flex-1 rounded border bg-background px-2 text-xs", small ? "py-1" : "py-1.5")}
-        value={known ? value : "__custom__"}
-        aria-label={t("navPage.linkTo")}
-        onChange={(e) => {
-          if (e.target.value === "__custom__") { setCustomOpen(true); return; }
-          setCustomOpen(false);
-          onChange(e.target.value);
-        }}
-      >
-        {groups.map((g) => (
-          <optgroup key={g} label={g}>
-            {targets.filter((tg) => tg.group === g).map((tg) => (
-              <option key={tg.url} value={tg.url}>{tg.label}</option>
-            ))}
-          </optgroup>
-        ))}
-        <option value="__custom__">{t("navPage.customUrl")}</option>
-      </select>
-      {!known && (
-        <div className="flex min-w-0 flex-1 items-center gap-1">
-          <Link2 className="h-3 w-3 shrink-0 text-muted-foreground" />
-          <input
-            className={cn("min-w-0 flex-1 rounded border bg-background px-2 font-mono text-xs", small ? "py-1" : "py-1.5")}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={t("navPage.urlPlaceholder")}
-          />
+    <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className={cn("flex min-w-0 flex-1 items-center gap-1.5")}>
+        <select
+          className={cn("min-w-0 flex-1 rounded border bg-background px-2 text-xs", small ? "py-1" : "py-1.5")}
+          value={current ? targetKey(current) : "__custom__"}
+          aria-label={t("navPage.linkTo")}
+          onChange={(e) => {
+            if (e.target.value === "__custom__") { setCustomOpen(true); onChange(value, null); return; }
+            const tg = byKey.get(e.target.value);
+            if (!tg) return;
+            setCustomOpen(false);
+            onChange(tg.url, tg);
+          }}
+        >
+          {groups.map((g) => (
+            <optgroup key={g} label={GROUP_KEY[g] ? t(GROUP_KEY[g]) : g}>
+              {targets.filter((tg) => tg.group === g).map((tg) => (
+                <option key={targetKey(tg)} value={targetKey(tg)}>{tg.label}</option>
+              ))}
+            </optgroup>
+          ))}
+          <option value="__custom__">{t("navPage.customUrl")}</option>
+        </select>
+        {!current && (
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            <Link2 className="h-3 w-3 shrink-0 text-muted-foreground" />
+            <input
+              className={cn("min-w-0 flex-1 rounded border bg-background px-2 font-mono text-xs", small ? "py-1" : "py-1.5")}
+              value={value}
+              onChange={(e) => onChange(e.target.value, null)}
+              placeholder={t("navPage.urlPlaceholder")}
+            />
+          </div>
+        )}
+      </div>
+      {missing && (
+        <p className="flex items-start gap-1 text-[10px] text-amber-700 dark:text-amber-400">
+          <AlertTriangle className="mt-0.5 h-2.5 w-2.5 shrink-0" />{t("navPage.linkMissing")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** "Add pages": tick several pages (or posts) and add them as menu items in one go. */
+function AddPagesButton({ targets, items, onAdd }: { targets: LinkTarget[]; items: NavItem[]; onAdd: (picked: LinkTarget[]) => void }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [picked, setPicked] = useState<string[]>([]);
+  const pages = targets.filter((tg) => (tg.group === "Pages" || tg.group === "Posts" || tg.group === "Special") && tg.kind && tg.ref);
+  const inMenu = useMemo(() => new Set(flattenTree(items).map((f) => (f.item.kind && f.item.ref ? `${f.item.kind}:${f.item.ref}` : `url:${f.item.url}`))), [items]);
+  if (!pages.length) return null;
+  const has = (tg: LinkTarget) => inMenu.has(targetKey(tg)) || inMenu.has(`url:${tg.url}`);
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => { setOpen((o) => !o); setPicked([]); }} aria-expanded={open}
+        className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:border-primary">
+        <FilePlus2 className="h-3 w-3" /> {t("navPage.addPages")}
+      </button>
+      {open && (
+        <div className="absolute end-0 top-full z-20 mt-1 w-72 rounded-lg border bg-popover p-2 shadow-lg" role="dialog" aria-label={t("navPage.addPages")}>
+          <p className="px-1 pb-1.5 text-[11px] text-muted-foreground">{t("navPage.addPagesHint")}</p>
+          <div className="max-h-64 overflow-y-auto">
+            {pages.map((tg) => {
+              const k = targetKey(tg);
+              return (
+                <label key={k} className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-xs hover:bg-muted">
+                  <input type="checkbox" className="rounded" checked={picked.includes(k)}
+                    onChange={() => setPicked((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]))} />
+                  <span className="min-w-0 flex-1 truncate">{tg.label}</span>
+                  {has(tg) && <span className="shrink-0 text-[10px] text-muted-foreground">{t("navPage.alreadyInMenu")}</span>}
+                </label>
+              );
+            })}
+          </div>
+          <div className="mt-2 flex justify-end gap-1.5">
+            <button type="button" onClick={() => setOpen(false)} className="rounded px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">{t("navPage.cancel")}</button>
+            <button type="button" disabled={!picked.length}
+              onClick={() => { onAdd(pages.filter((tg) => picked.includes(targetKey(tg)))); setOpen(false); }}
+              className="rounded bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50">
+              {t("navPage.addPagesCount", { count: picked.length })}
+            </button>
+          </div>
         </div>
       )}
     </div>

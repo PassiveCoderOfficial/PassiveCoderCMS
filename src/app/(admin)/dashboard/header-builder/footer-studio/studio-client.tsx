@@ -29,6 +29,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 import { MapLocationInput, MAP_LOCATION_LABELS, MAP_LOCATION_LABELS_BN } from "@/components/map/map-location-input";
 import { loadSiteBusinessAddress } from "@/components/map/business-address";
 import { useLanguage, useT } from "@/lib/i18n/language-provider";
@@ -38,12 +40,16 @@ import type { NavItem } from "@/types/cms";
 import { SiteContactProvider, type SiteContact } from "@/components/site/site-contact-context";
 import { usePanelDates } from "@/components/providers/panel-time-zone";
 import { StudioFooter } from "@/components/site/footer-studio/studio-footer";
+import { SavedMenuSelect, type PickableMenu } from "@/components/admin/menus/saved-menu-select";
+import { MenuStyleEditor } from "@/components/admin/menus/menu-style-editor";
+import { normalizeMenu } from "@/modules/navigation/menu-model";
 import type { FooterDevice } from "@/components/site/footer-studio/footer-widgets";
 import {
   BOTTOM_WIDGET_TYPES, BOTTOM_ZONES, COLUMN_WIDGET_TYPES, CONTACT_FIELDS, MAX_COLUMNS, MAX_COLUMN_WIDGETS, MAX_LINKS,
   MAX_ZONE_WIDGETS, PAYMENT_LABELS, PAYMENT_METHODS,
   addColumn, addWidget, allowedInBottom, allowedInColumn, defaultFooterConfig, findWidget, makeColumn, makeLink, makeWidget,
   moveColumn, moveWidget, removeColumn, removeWidget, updateColumn, updateWidget,
+  linksAsMenuItems, linksToMenuWidget,
   type FooterConfig, type FooterWidget, type FooterWidgetType, type FooterZone, type Target,
 } from "@/modules/footer-studio/model";
 import { FOOTER_PRESETS, buildFooterPreset, type FooterFacts } from "@/modules/footer-studio/presets";
@@ -62,7 +68,7 @@ function k(key: string): TranslationKey {
 }
 
 export default function FooterStudioClient({
-  initialDoc, unavailable, menus, defaultItems, facts, contact, hours, siteMap, tenantId, logoUrl, logoDarkUrl, siteName,
+  initialDoc, unavailable, menus: initialMenus, defaultItems, facts, contact, hours, siteMap, tenantId, logoUrl, logoDarkUrl, siteName,
 }: {
   initialDoc: FooterStudioDoc;
   unavailable: boolean;
@@ -79,6 +85,21 @@ export default function FooterStudioClient({
   siteName: string;
 }) {
   const t = useT();
+  // Saved menus, refreshed when this tab gets focus again, so a menu edited
+  // or created in the Navigation tab shows in the preview at once (menus P2).
+  const [menus, setMenus] = useState<StudioMenu[]>(initialMenus);
+  useEffect(() => {
+    const reload = () => {
+      fetch("/api/navigation").then((r) => (r.ok ? r.json() : null)).then((j) => {
+        if (!Array.isArray(j?.menus)) return;
+        setMenus((j.menus as { id: string; name: string; location: string | null; items: unknown }[])
+          .map((m) => ({ id: m.id, name: m.name, location: m.location, items: normalizeMenu(m.items) })));
+      }).catch(() => {});
+    };
+    window.addEventListener("focus", reload);
+    return () => window.removeEventListener("focus", reload);
+  }, []);
+  const addMenu = (m: PickableMenu) => setMenus((list) => (list.some((x) => x.id === m.id) ? list : [...list, { id: m.id, name: m.name ?? "", location: m.location ?? null, items: [] }]));
   const [doc, setDoc] = useState<FooterStudioDoc>(initialDoc);
   const [config, setConfig] = useState<FooterConfig | null>(() => resolveEditorFooter(initialDoc));
   const [savedJson, setSavedJson] = useState(() => JSON.stringify(resolveEditorFooter(initialDoc)));
@@ -197,6 +218,13 @@ export default function FooterStudioClient({
         </div>
       )}
 
+      {/* Menus P5: this draft came from the classic footer; compare, publish, or drop it and keep the classic one. */}
+      {doc.switched && !live && (
+        <div className="border-b px-3 py-2 shrink-0">
+          <SwitchToStudioButton area="footer" variant="banner" text={t("studioSwitch.studioDraftNoteFooter")} actionLabel={t("studioSwitch.compare")} />
+        </div>
+      )}
+
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* Panel */}
         <div className="flex w-full shrink-0 flex-col border-b lg:w-[400px] lg:border-b-0 lg:border-e min-h-0">
@@ -222,7 +250,7 @@ export default function FooterStudioClient({
               </div>
             )}
             {tab === "layout" && config && (
-              <LayoutPanel config={config} onChange={setConfig} selected={selected} onSelect={setSelected} menus={menus} contact={contact} hours={hours} tenantId={tenantId} />
+              <LayoutPanel config={config} onChange={setConfig} selected={selected} onSelect={setSelected} menus={menus} onMenuCreated={addMenu} contact={contact} hours={hours} tenantId={tenantId} />
             )}
             {tab === "style" && config && <StylePanel config={config} onChange={setConfig} creditEditable={!!contact?.creditEditable} />}
             {tab === "history" && (
@@ -338,6 +366,20 @@ function Toggle({ label, checked, onChange, disabled }: { label: string; checked
   );
 }
 
+/** An optional own colour (menus P5): empty = the default colour. */
+function ColorField({ label, value, onChange }: { label: string; value?: string; onChange: (v: string | undefined) => void }) {
+  const t = useT();
+  return (
+    <div className="space-y-1">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <ColorPicker value={value ?? ""} onChange={(v) => onChange(v || undefined)} className="min-w-0 flex-1" />
+        {value && <Button type="button" size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={() => onChange(undefined)}>{t("headerStudio.colorDefault")}</Button>}
+      </div>
+    </div>
+  );
+}
+
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
     <label className="block space-y-1">
@@ -381,9 +423,9 @@ function AddWidget({ types, full, label, onAdd }: { types: readonly FooterWidget
 
 // ── Layout: columns, bottom bar, widgets ────────────────────────────────
 
-function LayoutPanel({ config, onChange, selected, onSelect, menus, contact, hours, tenantId }: {
+function LayoutPanel({ config, onChange, selected, onSelect, menus, onMenuCreated, contact, hours, tenantId }: {
   config: FooterConfig; onChange: (c: FooterConfig) => void; selected: string | null; onSelect: (id: string | null) => void;
-  menus: StudioMenu[]; contact: SiteContact | null; hours: string | null; tenantId: string;
+  menus: StudioMenu[]; onMenuCreated: (m: PickableMenu) => void; contact: SiteContact | null; hours: string | null; tenantId: string;
 }) {
   const t = useT();
   const sel = selected ? findWidget(config, selected) : null;
@@ -461,19 +503,20 @@ function LayoutPanel({ config, onChange, selected, onSelect, menus, contact, hou
 
       {sel && (
         <WidgetEditor key={sel.widget.id} config={config} widget={sel.widget} onChange={onChange} onClose={() => onSelect(null)}
-          menus={menus} contact={contact} hours={hours} tenantId={tenantId} />
+          menus={menus} onMenuCreated={onMenuCreated} contact={contact} hours={hours} tenantId={tenantId} />
       )}
     </div>
   );
 }
 
-function WidgetEditor({ config, widget: w, onChange, onClose, menus, contact, hours, tenantId }: {
+function WidgetEditor({ config, widget: w, onChange, onClose, menus, onMenuCreated, contact, hours, tenantId }: {
   config: FooterConfig; widget: FooterWidget; onChange: (c: FooterConfig) => void; onClose: () => void;
-  menus: StudioMenu[]; contact: SiteContact | null; hours: string | null; tenantId: string;
+  menus: StudioMenu[]; onMenuCreated: (m: PickableMenu) => void; contact: SiteContact | null; hours: string | null; tenantId: string;
 }) {
   const t = useT();
   const { language } = useLanguage();
   const set = (patch: Partial<FooterWidget>) => onChange(updateWidget(config, w.id, patch));
+  const [saving, setSaving] = useState(false);
   const at = findWidget(config, w.id)!;
   const posValue = at.where === "column" ? `c:${at.column}` : `b:${at.zone}`;
   const inColumn = at.where === "column";
@@ -512,6 +555,9 @@ function WidgetEditor({ config, widget: w, onChange, onClose, menus, contact, ho
               <Field label={t("footerStudio.logoImage")} hint={t("footerStudio.logoImageHint")}>
                 <MediaPickerInput value={w.imageUrl ?? ""} onChange={(v) => set({ imageUrl: v || undefined })} compact />
               </Field>
+              <Field label={t("footerStudio.textLogo")} hint={t("footerStudio.textLogoHint")}>
+                <Input value={w.name ?? ""} onChange={(ev) => set({ name: ev.target.value || undefined })} />
+              </Field>
               <Field label={t("footerStudio.logoHeight")}>
                 <Input type="number" min={16} max={160} value={w.height ?? 40} onChange={(ev) => set({ height: Number(ev.target.value) || undefined })} />
               </Field>
@@ -524,28 +570,33 @@ function WidgetEditor({ config, widget: w, onChange, onClose, menus, contact, ho
       )}
       {w.type === "menu" && (
         <>
-          <Field label={t("footerStudio.menu")} hint={menus.length ? t("footerStudio.menuDefaultHint") : t("footerStudio.noMenus")}>
-            <select className={SELECT} value={w.menuId ?? ""} onChange={(ev) => set({ menuId: ev.target.value || undefined })}>
-              <option value="">{t("footerStudio.menuDefault")}</option>
-              {menus.map((m) => <option key={m.id} value={m.id}>{m.name}{m.location ? ` (${m.location})` : ""}</option>)}
-            </select>
-          </Field>
+          <SavedMenuSelect menus={menus} value={w.menuId} onChange={(id) => set({ menuId: id })} onCreated={onMenuCreated}
+            label={t("footerStudio.menu")} defaultLabel={t("footerStudio.menuDefault")} />
+          {!w.menuId && <p className="text-[11px] text-muted-foreground">{t("footerStudio.menuDefaultHint")}</p>}
           <Field label={t("footerStudio.levels")}>
             <select className={SELECT} value={w.levels ?? 1} onChange={(ev) => set({ levels: Number(ev.target.value) > 1 ? 2 : undefined })}>
               <option value={1}>{t("footerStudio.levels1")}</option>
               <option value={2}>{t("footerStudio.levels2")}</option>
             </select>
           </Field>
-          <a href="/dashboard/navigation" target="_blank" rel="noopener" title={t("headerStudio.editMenusHint")} className="text-xs text-primary underline-offset-4 hover:underline">{t("footerStudio.editMenus")}</a>
         </>
       )}
       {(w.type === "menu" || w.type === "links") && inColumn && (
         <Field label={t("footerStudio.linkLayout")}>
-          <select className={SELECT} value={w.layout ?? "list"} onChange={(ev) => set({ layout: ev.target.value === "inline" ? "inline" : undefined })}>
+          <select className={SELECT} value={w.layout ?? "list"} onChange={(ev) => set({ layout: ev.target.value === "inline" || ev.target.value === "columns" ? ev.target.value : undefined })}>
             <option value="list">{t("footerStudio.layoutList")}</option>
             <option value="inline">{t("footerStudio.layoutInline")}</option>
+            {w.type === "menu" && <option value="columns">{t("menuPlace.layoutColumns")}</option>}
           </select>
         </Field>
+      )}
+      {w.type === "menu" && (
+        <div className="space-y-2 rounded-md border p-2">
+          <Toggle label={t("menuPlace.styleThis")} checked={!!w.menuStyle} onChange={(v) => set({ menuStyle: v ? { preset: "plain" } : undefined })} />
+          {w.menuStyle
+            ? <MenuStyleEditor value={w.menuStyle} onChange={(menuStyle) => set({ menuStyle: menuStyle ?? { preset: "plain" } })} showDropdown={false} />
+            : <p className="text-[11px] text-muted-foreground">{t("menuPlace.styleThisFooterHint")}</p>}
+        </div>
       )}
       {w.type === "links" && (
         <fieldset className="space-y-2">
@@ -575,6 +626,24 @@ function WidgetEditor({ config, widget: w, onChange, onClose, menus, contact, ho
           <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" disabled={links.length >= MAX_LINKS}
             onClick={() => setLinks([...links, makeLink("New link", "/")])}><Plus className="h-3 w-3" />{t("footerStudio.addLink")}</Button>
           <p className="text-[11px] text-muted-foreground">{t("footerStudio.linksHint")}</p>
+          {/* Menus P2: these links become a saved menu, so the same links can be shown anywhere and edited in one place. */}
+          <Button size="sm" variant="ghost" className="h-7 gap-1 px-1 text-xs text-primary" disabled={!linksAsMenuItems(w).length || saving}
+            onClick={async () => {
+              setSaving(true);
+              try {
+                const res = await fetch("/api/navigation", { method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: w.title || t("menuPlace.footerLinksName"), location: "none", items: linksAsMenuItems(w) }) });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok || !json.menu) throw new Error(json.error || t("menuPlace.saveAsMenuFailed"));
+                onMenuCreated({ ...json.menu, items: linksAsMenuItems(w) });
+                onChange(linksToMenuWidget(config, w.id, json.menu.id));
+                toast.success(t("menuPlace.savedAsMenu"));
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : t("menuPlace.saveAsMenuFailed"));
+              } finally {
+                setSaving(false);
+              }
+            }}>{t("menuPlace.saveAsMenu")}</Button>
         </fieldset>
       )}
       {w.type === "contact" && (
@@ -610,7 +679,28 @@ function WidgetEditor({ config, widget: w, onChange, onClose, menus, contact, ho
           <Textarea rows={4} value={w.hours ?? ""} placeholder={hours ?? "Mon - Fri: 9am - 6pm\nSat: 10am - 2pm"} onChange={(ev) => set({ hours: ev.target.value })} />
         </Field>
       )}
-      {w.type === "socials" && <p className="text-xs text-muted-foreground">{t("footerStudio.socialsHint")}</p>}
+      {w.type === "socials" && (
+        // Menus P5: an own list (a converted classic footer keeps its links); empty = the site's social links.
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">{w.socials?.length ? t("footerStudio.socialsOwnHint") : t("footerStudio.socialsHint")}</p>
+          {(w.socials ?? []).map((sl, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <Input aria-label={t("footerStudio.socialNetwork")} className="h-8 w-28 text-xs" value={sl.platform} placeholder="facebook"
+                onChange={(ev) => set({ socials: (w.socials ?? []).map((x, j) => (j === i ? { ...x, platform: ev.target.value.trim().toLowerCase() } : x)) })} />
+              <Input aria-label={t("footerStudio.socialUrl")} className="h-8 min-w-0 flex-1 text-xs" value={sl.url} placeholder="https://"
+                onChange={(ev) => set({ socials: (w.socials ?? []).map((x, j) => (j === i ? { ...x, url: ev.target.value } : x)) })} />
+              <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label={t("footerStudio.socialRemove")}
+                onClick={() => { const next = (w.socials ?? []).filter((_, j) => j !== i); set({ socials: next.length ? next : undefined }); }}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ))}
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={() => set({ socials: [...(w.socials ?? []), { platform: "facebook", url: "" }] })}>{t("footerStudio.socialAdd")}</Button>
+            {!!w.socials?.length && <Button type="button" size="sm" variant="ghost" className="h-7 text-xs" onClick={() => set({ socials: undefined })}>{t("footerStudio.socialUseSite")}</Button>}
+          </div>
+        </div>
+      )}
       {w.type === "newsletter" && (
         <>
           <Field label={t("footerStudio.newsletterText")}>
@@ -709,6 +799,18 @@ function StylePanel({ config, onChange, creditEditable }: { config: FooterConfig
           <select className={SELECT} value={s.align} onChange={(e) => setStyle({ align: e.target.value as typeof s.align })}>
             <option value="start">{t("footerStudio.align.start")}</option>
             <option value="center">{t("footerStudio.align.center")}</option>
+          </select>
+        </Field>
+        <div className="grid grid-cols-2 gap-2">
+          <ColorField label={t("footerStudio.bgColor")} value={s.bgColor} onChange={(v) => setStyle({ bgColor: v })} />
+          <ColorField label={t("footerStudio.fgColor")} value={s.fgColor} onChange={(v) => setStyle({ fgColor: v })} />
+          <ColorField label={t("footerStudio.headingColor")} value={s.accentColor} onChange={(v) => setStyle({ accentColor: v })} />
+        </div>
+        <Field label={t("footerStudio.gradient")}>
+          <select className={SELECT} value={s.gradient ?? ""} onChange={(e) => setStyle({ gradient: (e.target.value || undefined) as typeof s.gradient })}>
+            <option value="">{t("footerStudio.gradientNone")}</option>
+            <option value="dark">{t("footerStudio.gradientDark")}</option>
+            <option value="light">{t("footerStudio.gradientLight")}</option>
           </select>
         </Field>
         <Toggle label={t("footerStudio.uppercase")} checked={s.uppercase} onChange={(v) => setStyle({ uppercase: v })} />

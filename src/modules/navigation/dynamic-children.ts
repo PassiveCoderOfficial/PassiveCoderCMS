@@ -11,7 +11,8 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { NavItem, NavChildSource } from "@/types/cms";
-import { autoRowsToItems, type AutoRow } from "./menu-model";
+import { autoRowsToItems, localizeMenu, type AutoRow } from "./menu-model";
+import { resolveMenuRefs } from "./menu-refs";
 
 const DEFAULT_LIMIT = 12;
 
@@ -182,12 +183,29 @@ async function fetchStudioChildren(
 }
 
 /**
+ * Everything a menu needs at render time, in one call (every site renderer
+ * goes through here): id links get their live address (menus P1), auto lists
+ * are filled, and with `lang` the per-language labels are used. A menu that
+ * uses none of these comes back with the same links and labels as before P1.
+ */
+export async function expandDynamicChildren(
+  supabase: SupabaseClient,
+  tenantId: string,
+  items: NavItem[],
+  opts: { lang?: string | null } = {},
+): Promise<NavItem[]> {
+  const linked = await resolveMenuRefs(supabase, tenantId, items);
+  const expanded = await expandTree(supabase, tenantId, linked);
+  return opts.lang ? localizeMenu(expanded, opts.lang) : expanded;
+}
+
+/**
  * Resolves dynamic children across a whole menu tree.
  *
  * Failures are swallowed per item: a menu must still render if one collection
  * query fails, rather than taking the site's navigation down with it.
  */
-export async function expandDynamicChildren(
+async function expandTree(
   supabase: SupabaseClient,
   tenantId: string,
   items: NavItem[],
@@ -198,7 +216,7 @@ export async function expandDynamicChildren(
 
       if (source === "manual") {
         return item.children?.length
-          ? { ...item, children: await expandDynamicChildren(supabase, tenantId, item.children) }
+          ? { ...item, children: await expandTree(supabase, tenantId, item.children) }
           : item;
       }
 

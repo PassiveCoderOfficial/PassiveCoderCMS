@@ -13,6 +13,7 @@
  * Pure functions only.
  */
 import { normalizeFooterConfig, type FooterConfig } from "./model";
+import { normalizeOrigin, type SwitchOrigin } from "@/modules/studio-switch/types";
 
 /** Published versions kept for restore. */
 export const HISTORY_LIMIT = 10;
@@ -32,7 +33,8 @@ export interface FooterStudioDoc {
   publishedAt?: string | null;
   publishedBy?: string | null;
   /** Earlier published versions, newest first (the live one is not in here). */
-  history: FooterVersion[];
+  history: FooterVersion[];  /** Set when the draft was converted from the classic footer ("Switch to Studio", menus P5). */
+  switched?: SwitchOrigin;
 }
 
 export function emptyDoc(): FooterStudioDoc {
@@ -59,6 +61,8 @@ export function normalizeDoc(raw: unknown): FooterStudioDoc {
     publishedAt: iso(raw.publishedAt),
     publishedBy: typeof raw.publishedBy === "string" ? raw.publishedBy : null,
     history,
+    // Only when present, so documents saved before P5 come back unchanged.
+    ...(normalizeOrigin(raw.switched) ? { switched: normalizeOrigin(raw.switched)! } : {}),
   };
 }
 
@@ -122,7 +126,10 @@ export function switchToStudio(doc: FooterStudioDoc): FooterStudioDoc {
 
 /** Drops the draft (back to the live version). */
 export function discardDraft(doc: FooterStudioDoc): FooterStudioDoc {
-  return { ...doc, draft: null, draftSavedAt: null };
+  const next: FooterStudioDoc = { ...doc, draft: null, draftSavedAt: null };
+  // A converted draft that never went live: dropping it undoes the switch.
+  if (!doc.published) delete next.switched;
+  return next;
 }
 
 /**

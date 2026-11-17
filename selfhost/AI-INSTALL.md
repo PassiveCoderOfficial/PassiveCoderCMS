@@ -202,10 +202,11 @@ For `server`, skip this: `install.sh` loads the database on the server.
 ### 7L. local
 
 ```bash
-node selfhost/cli/index.mjs start --no-open
+node selfhost/cli/index.mjs start --no-open --detach
 ```
 
-Run it in the background (it keeps running). The first start builds the app:
+`--detach` starts the site in its own background process and returns once it
+answers, so your shell does not wait forever (log: `selfhost/site.log`). The first start builds the app:
 10 to 20 minutes. Check: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/login`
 (Windows: `curl.exe ...`). Expected: `200` or `307`. Then go to section 8.
 

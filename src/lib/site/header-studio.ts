@@ -5,6 +5,7 @@ import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 import { normalizeMenu } from "@/modules/navigation/menu-model";
 import { resolveLiveHeader } from "@/modules/header-studio/doc";
 import { classicHeaderItems } from "@/modules/header-studio/classic-links";
+import { getDefaultMenu } from "@/lib/site/default-menu";
 import { menuRefs, type HeaderConfig } from "@/modules/header-studio/model";
 import type { NavItem } from "@/types/cms";
 
@@ -42,7 +43,9 @@ export async function loadHeaderMenus(tenantId: string, config: HeaderConfig): P
   await Promise.all(refs.map(async (ref) => {
     const row = pickMenu(rows, ref);
     const items = row ? normalizeMenu(row.items) : classic ?? (rows[0] ? normalizeMenu(rows[0].items) : null);
-    out[ref] = items ? await expandDynamicChildren(admin, tenantId, items) : [];
+    // Nothing at all (no saved menu, no classic links): the site's automatic
+    // menu from its published pages (menus P3).
+    out[ref] = items ? await expandDynamicChildren(admin, tenantId, items) : await getDefaultMenu(tenantId);
   }));
   return out;
 }

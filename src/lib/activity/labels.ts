@@ -81,7 +81,7 @@ const nounPrefixes = (nouns: Record<string, string>) => Object.keys(nouns);
 
 const PAGE_TOOLS = ["save_page_blocks", "publish_page", "create_page", "create_post", "update_page_meta", "trash_page", "schedule_post", "find_replace_text", "set_block_image"];
 const SITE_TOOLS = ["create_site", "delete_site", "set_site_status", "set_site_dates", "transfer_site_ownership"];
-const SETTING_TOOLS = ["set_site_header", "set_site_branding", "update_business_profile", "upsert_menu", "upsert_redirect"];
+const SETTING_TOOLS = ["set_site_header", "set_site_branding", "update_business_profile", "upsert_menu", "restore_menu_version", "place_menu", "switch_to_studio", "upsert_redirect"];
 const BILLING_TOOLS = ["set_site_plan", "set_ai_credits"];
 const SHOP_TOOLS = ["upsert_product", "upsert_category", "update_order_status"];
 const LEAD_TOOLS = ["add_lead_note", "change_lead_stage", "add_chat_training", "delete_chat_training"];
@@ -128,6 +128,8 @@ const LABELS: Record<string, string> = {
   "site.schedule_delete": "Scheduled a site for deletion", "site.cancel_delete": "Cancelled a site's scheduled deletion",
   "site.plan": "Changed a site's plan", "site.status": "Changed a site's status", "site.assign": "Changed who is responsible for a site",
   "site.domain": "Changed a site's domain", "site.layout_lock": "Changed a site's layout lock",
+  "site.studio_review": "Reviewed a site's switch to the Studio", "site.studio_prepare": "Prepared Studio drafts from a site's classic header/footer",
+  "site.studio_publish": "Published a site's approved Studio header/footer", "site.studio_switch_back": "Switched a site back to its classic header/footer",
 
   "billing.create": "Added a subscription", "billing.delete": "Removed a subscription", "billing.plan": "Changed a subscription's plan",
   "billing.status": "Changed a subscription's status", "billing.edit": "Changed billing details",
@@ -188,7 +190,7 @@ const TOOL_LABELS: Record<string, string> = {
   update_page_meta: "Changed a page's details", trash_page: "Moved a page to the trash", schedule_post: "Scheduled a blog post", find_replace_text: "Replaced text on the site",
   set_block_image: "Changed an image on a page", upload_media: "Uploaded media", upsert_product: "Saved a product", upsert_category: "Saved a category",
   set_site_header: "Changed the site's header", set_site_branding: "Changed the site's branding", update_business_profile: "Changed the business profile",
-  upsert_menu: "Saved a menu", upsert_redirect: "Saved a redirect", create_site: "Created a site", delete_site: "Deleted a site", set_site_status: "Changed a site's status",
+  upsert_menu: "Saved a menu", restore_menu_version: "Restored an earlier menu version", place_menu: "Placed a menu", switch_to_studio: "Switched the header/footer to the Studio", upsert_redirect: "Saved a redirect", create_site: "Created a site", delete_site: "Deleted a site", set_site_status: "Changed a site's status",
   set_site_dates: "Changed a site's dates", set_site_plan: "Changed a site's plan", set_ai_credits: "Set a site's AI credits", transfer_site_ownership: "Transferred a site to a new owner",
   create_user: "Created a user account", add_site_member: "Added a team member", remove_site_member: "Removed a team member", confirm_user_email: "Confirmed a user's email",
   set_user_password: "Set a user's password", send_password_reset: "Sent a password reset", set_user_active: "Activated or deactivated a user", delete_user: "Deleted a user account",

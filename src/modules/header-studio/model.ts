@@ -16,6 +16,8 @@
  * the API and the site renderer share them.
  */
 
+import { normalizeMenuStyle, safeColor, type MenuStyle } from "@/modules/navigation/menu-style";
+
 export const HEADER_ELEMENT_TYPES = [
   "logo", "menu", "button", "phone", "whatsapp", "email", "search", "cart",
   "account", "booking", "language", "socials", "text", "divider",
@@ -52,6 +54,9 @@ export interface HeaderElement {
   menuId?: string;
   /** menu: show only one half of the top-level items (split-menu headers). */
   menuPart?: "first" | "second";
+  /** menu (menus P2): the menu's look here (preset + overrides, modules/navigation/menu-style).
+   *  Unset = the look every Studio header had before P2 (HeaderStyle.uppercase only). */
+  menuStyle?: MenuStyle;
   /** phone / whatsapp / email: own value. Unset = the site's contact details. */
   value?: string;
   /** phone / whatsapp / email / account / cart: show the text next to the icon. */
@@ -68,7 +73,21 @@ export interface HeaderElement {
   lang?: string;
   /** language: "google" (translate widget) or "native" (link to the translated page). */
   langMode?: "google" | "native";
+  /** button / booking (menus P5): own colour (any CSS colour). Unset = the variant's brand colours. */
+  color?: string;
+  /** button / booking (menus P5): own text colour. Unset = white (or the button colour for outline). */
+  textColor?: string;
+  /** logo (menus P5): may shrink to make room for the menu (the classic header's behaviour). Unset = always full size. */
+  shrink?: boolean;
+  /** menu (menus P5): keep the menu on one line (the classic header's behaviour). Unset = wraps onto a second line when full. */
+  noWrap?: boolean;
+  /** text (menus P5): small icon before the text, the classic top bar's set (pin, phone, clock, mail, info, facebook, instagram). */
+  icon?: TextIcon;
 }
+
+/** Icons a text element may show (the classic top bar's icon set, so a converted top bar keeps them). */
+export const TEXT_ICONS = ["pin", "phone", "clock", "mail", "info", "facebook", "instagram"] as const;
+export type TextIcon = (typeof TEXT_ICONS)[number];
 
 export interface HeaderRow {
   enabled: boolean;
@@ -78,6 +97,10 @@ export interface HeaderRow {
   /** Thin line under the row. */
   border: boolean;
   zones: Record<HeaderZone, HeaderElement[]>;
+  /** Own background colour (menus P5, e.g. a classic header's bar colour). Wins over `background`. */
+  bgColor?: string;
+  /** Own text colour (menus P5). Wins over the background's text colour. */
+  fgColor?: string;
 }
 
 export interface HeaderMobile {
@@ -92,6 +115,8 @@ export interface HeaderMobile {
    *  first menu in the main bar, then the menu row, then the top bar (P0:
    *  before, a top-bar utility menu could replace the main menu). */
   drawerMenu?: string;
+  /** Show the top bar row above the phone bar (menus P5; unset = desktop only, as before). */
+  topBar?: boolean;
 }
 
 export interface HeaderBehaviour {
@@ -104,6 +129,8 @@ export interface HeaderBehaviour {
   transparent: "off" | "home" | "all" | "selected";
   /** transparent "selected": page paths ("/", "/about"). */
   transparentPages: string[];
+  /** Sticky header: the top bar scrolls away and the rows below stay pinned (menus P5; unset = all pinned, as before). */
+  topScrolls?: boolean;
 }
 
 export interface HeaderStyle {
@@ -186,6 +213,10 @@ export function normalizeElement(raw: unknown): HeaderElement | null {
   if (menuId) e.menuId = menuId;
   const menuPart = optOneOf(raw.menuPart, ["first", "second"] as const);
   if (menuPart) e.menuPart = menuPart;
+  if (raw.type === "menu") {
+    const menuStyle = normalizeMenuStyle(raw.menuStyle);
+    if (menuStyle) e.menuStyle = menuStyle;
+  }
   const value = str(raw.value, 160);
   if (value) e.value = value;
   if (raw.showLabel === true) e.showLabel = true;
@@ -199,6 +230,14 @@ export function normalizeElement(raw: unknown): HeaderElement | null {
   if (lang) e.lang = lang;
   const langMode = optOneOf(raw.langMode, ["google", "native"] as const);
   if (langMode) e.langMode = langMode;
+  const color = safeColor(raw.color);
+  if (color) e.color = color;
+  const textColor = safeColor(raw.textColor);
+  if (textColor) e.textColor = textColor;
+  if (raw.type === "logo" && raw.shrink === true) e.shrink = true;
+  if (raw.type === "menu" && raw.noWrap === true) e.noWrap = true;
+  const icon = optOneOf(raw.icon, TEXT_ICONS);
+  if (icon) e.icon = icon;
   return e;
 }
 
@@ -210,13 +249,19 @@ function normalizeRow(raw: unknown, fallback: HeaderRow): HeaderRow {
     const list = Array.isArray(zonesIn[z]) ? (zonesIn[z] as unknown[]) : [];
     zones[z] = list.map(normalizeElement).filter((x): x is HeaderElement => !!x).slice(0, MAX_ZONE_ELEMENTS);
   }
-  return {
+  const row: HeaderRow = {
     enabled: raw.enabled === true,
     background: oneOf(raw.background, ["default", "muted", "primary", "dark", "transparent"] as const, fallback.background),
     size: oneOf(raw.size, ["sm", "md", "lg"] as const, "md"),
     border: raw.border === true,
     zones,
   };
+  // Own colours only when set, so rows saved before P5 come back unchanged.
+  const bgColor = safeColor(raw.bgColor);
+  if (bgColor) row.bgColor = bgColor;
+  const fgColor = safeColor(raw.fgColor);
+  if (fgColor) row.fgColor = fgColor;
+  return row;
 }
 
 /**
@@ -258,6 +303,7 @@ export function normalizeHeaderConfig(input: unknown): HeaderConfig {
       icons: [...new Set(icons)].slice(0, MAX_MOBILE_ICONS),
       breakpoint: oneOf(m.breakpoint, ["md", "lg"] as const, "lg"),
       ...(typeof m.drawerMenu === "string" && seen.has(m.drawerMenu) ? { drawerMenu: m.drawerMenu } : {}),
+      ...(m.topBar === true ? { topBar: true } : {}),
     },
     behaviour: {
       sticky: b.sticky !== false,
@@ -265,6 +311,7 @@ export function normalizeHeaderConfig(input: unknown): HeaderConfig {
       hideOnScroll: b.hideOnScroll === true,
       transparent: oneOf(b.transparent, ["off", "home", "all", "selected"] as const, "off"),
       transparentPages: [...new Set(pages)],
+      ...(b.topScrolls === true ? { topScrolls: true } : {}),
     },
     style: {
       container: oneOf(s.container, ["full", "boxed", "floating"] as const, "full"),
@@ -423,8 +470,54 @@ export function moveElement(cfg: HeaderConfig, id: string, to: { row: HeaderRowK
   return next;
 }
 
+/**
+ * Puts an element at an exact place (drag and drop between and within
+ * zones, menus P2). `index` is the position in the destination zone as the
+ * editor shows it (the element itself still in its old place); it is
+ * clamped. Same config back when nothing moves or the destination is full.
+ */
+export function placeElement(cfg: HeaderConfig, id: string, to: { row: HeaderRowKey; zone: HeaderZone; index: number }): HeaderConfig {
+  const at = findElement(cfg, id);
+  if (!at) return cfg;
+  const same = at.row === to.row && at.zone === to.zone;
+  if (!same && cfg.rows[to.row].zones[to.zone].length >= MAX_ZONE_ELEMENTS) return cfg;
+  const next = cloneRows(cfg);
+  const from = next.rows[at.row].zones[at.zone];
+  from.splice(at.index, 1);
+  const dest = next.rows[to.row].zones[to.zone];
+  const index = Math.max(0, Math.min(Math.round(to.index), dest.length));
+  if (same && index === at.index) return cfg;
+  dest.splice(index, 0, at.element);
+  return next;
+}
+
 /** LanguageSwitcher "chrome" for a studio header: native mode when its language element asks for it. */
 export function studioLangChrome(config: HeaderConfig): { languageSwitchMode: "native" } | null {
   const native = allElements(config, { enabledOnly: true }).some((e) => e.type === "language" && e.langMode === "native");
   return native ? { languageSwitchMode: "native" } : null;
+}
+
+/**
+ * Is this CSS colour dark (light text reads on it)? Hex and rgb() only;
+ * null when it cannot tell (theme variables, hsl()), so callers keep their
+ * own default. Menus P5: rows and footers with their own colour.
+ */
+export function colorIsDark(c: string | undefined | null): boolean | null {
+  if (!c) return null;
+  const s = c.trim().toLowerCase();
+  let rgb: number[] | null = null;
+  const hex = /^#([0-9a-f]{3,8})$/.exec(s);
+  if (hex) {
+    const h = hex[1];
+    if (h.length === 3 || h.length === 4) rgb = [0, 1, 2].map((i) => parseInt(h[i] + h[i], 16));
+    else if (h.length === 6 || h.length === 8) rgb = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  } else {
+    const m = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(s);
+    if (m) rgb = [m[1], m[2], m[3]].map(Number);
+    else if (s === "black") rgb = [0, 0, 0];
+    else if (s === "white") rgb = [255, 255, 255];
+  }
+  if (!rgb || rgb.some((n) => !Number.isFinite(n))) return null;
+  const [r, g, b] = rgb.map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.4;
 }

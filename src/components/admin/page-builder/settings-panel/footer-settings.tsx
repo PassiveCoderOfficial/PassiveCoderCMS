@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { useBuilderStore } from "@/lib/store/builder";
+import { usePathname } from "next/navigation";
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +18,9 @@ import { generateId } from "@/lib/utils";
 import { CREDIT_TEXT_MAX, DEFAULT_CREDIT_TEXT, DEFAULT_CREDIT_URL, sanitizeCreditText, sanitizeCreditUrl } from "@/lib/site/footer-credit-shared";
 import type { FooterBlockProps, FooterColumn, FooterSocial, FooterColumnLink } from "@/types/cms";
 import { UiTextFields } from "./ui-text-fields";
+import { useT } from "@/lib/i18n/language-provider";
+import { refreshSavedMenus, useSavedMenus } from "../saved-menus";
+import { SavedMenuSelect } from "@/components/admin/menus/saved-menu-select";
 
 /**
  * The footer block's own settings — never existed until now (2026-09-12,
@@ -26,10 +31,41 @@ import { UiTextFields } from "./ui-text-fields";
  * copyright text through the UI. Pre-existing since the footer block type
  * was added, not a regression from recent work.
  */
+/**
+ * Menus P2: a column can show one of the site's saved menus instead of its
+ * typed links (unset = the typed links, exactly as before). The typed links
+ * are kept, and come back if the menu is removed.
+ */
+function FooterColumnMenu({ col, onChange }: { col: FooterColumn; onChange: (patch: Partial<FooterColumn>) => void }) {
+  const t = useT();
+  const menus = useSavedMenus();
+  return (
+    <div className="space-y-1 rounded-md border bg-background p-1.5">
+      <SavedMenuSelect menus={menus} value={col.menuId} label={t("menuPlace.columnLinks")} defaultLabel={t("menuPlace.columnTyped")}
+        onChange={(id) => onChange({ menuId: id, ...(id ? {} : { menuLevels: undefined }) })} onCreated={() => refreshSavedMenus()} />
+      {col.menuId && (
+        <>
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium text-muted-foreground">{t("menuPlace.levels")}</span>
+            <select className="h-7 w-full rounded-md border border-input bg-background px-2 text-[11px]" value={col.menuLevels ?? 1}
+              onChange={(e) => onChange({ menuLevels: Number(e.target.value) > 1 ? Number(e.target.value) : undefined })}>
+              <option value={1}>{t("menuPlace.levels1")}</option>
+              <option value={2}>{t("menuPlace.levels2")}</option>
+            </select>
+          </label>
+          {col.links.length > 0 && <p className="text-[10px] text-muted-foreground">{t("menuPlace.columnKept", { count: col.links.length })}</p>}
+        </>
+      )}
+    </div>
+  );
+}
+
 export function FooterSettings({ block }: { block: FooterBlockProps }) {
   const { updateBlock } = useBuilderStore();
   const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
 
+  // Menus P5: the site footer (Header Builder, not a page) can move to the Footer Studio.
+  const inHeaderBuilder = (usePathname() ?? "").startsWith("/dashboard/header-builder");
   const columns = block.data.columns ?? [];
   const updateColumn = (id: string, patch: Partial<FooterColumn>) => {
     update("columns", columns.map((c) => (c.id === id ? { ...c, ...patch } : c)));
@@ -76,6 +112,7 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
 
   return (
     <div className="space-y-4">
+      {inHeaderBuilder && <SwitchToStudioButton area="footer" variant="inline" />}
       {block.data.style === "retail" && (
         <div className="space-y-2 rounded-lg border p-2.5 bg-muted/20">
           <p className="text-[10px] font-semibold uppercase text-muted-foreground">Retail footer</p>
@@ -150,7 +187,8 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeColumn(col.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
               </div>
               <Textarea value={col.text ?? ""} onChange={(e) => updateColumn(col.id, { text: e.target.value || undefined })} className="text-[11px] resize-none min-h-0" rows={2} placeholder="Plain text, e.g. address, phone, opening hours (optional)" />
-              <div className="pl-2 space-y-1">
+              <FooterColumnMenu col={col} onChange={(patch) => updateColumn(col.id, patch)} />
+              {!col.menuId && <div className="pl-2 space-y-1">
                 {col.links.map((link) => (
                   <div key={link.id} className="flex items-center gap-1">
                     <Input value={link.label} onChange={(e) => updateColumnLink(col.id, link.id, { label: e.target.value })} className="h-6 text-[11px] flex-1" placeholder="Label" />
@@ -160,7 +198,7 @@ export function FooterSettings({ block }: { block: FooterBlockProps }) {
                   </div>
                 ))}
                 <button onClick={() => addColumnLink(col.id)} className="text-[11px] text-primary hover:underline">+ Add link</button>
-              </div>
+              </div>}
             </div>
           ))}
         </div>

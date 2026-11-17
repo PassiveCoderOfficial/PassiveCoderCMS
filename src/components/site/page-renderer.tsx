@@ -6,7 +6,9 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { Block } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { toFamilyBlock } from "@/lib/blocks/cards";
-import { resolveCollectionBlock } from "@/lib/collections/render";
+import { renderLang, resolveCollectionBlock } from "@/lib/collections/render";
+import { getDefaultMenu } from "@/lib/site/default-menu";
+import { wantsDefaultMenu } from "@/modules/navigation/default-menu";
 import { BlockErrorBoundary } from "./block-error-boundary";
 import { siteCodeBlocked } from "@/lib/security/untrusted-viewer";
 import { sanitizeTrialContent } from "@/lib/security/trial-html";
@@ -75,7 +77,7 @@ import { ContainerBlock } from "@/components/blocks/container/container-block";
 import { googleFontsHref } from "@/modules/themes/fonts";
 import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
-import { collectNavBlocks, hasNestedNavToResolve, mapNavBlocks, pickNavItems } from "@/modules/navigation/nav-blocks";
+import { collectFooterBlocks, collectNavBlocks, footerColumnMenuIds, hasMenusToResolve, isMenuPlacement, mapNavBlocks, pickNavItems } from "@/modules/navigation/nav-blocks";
 
 interface PageBlockProps {
   block: Block;
@@ -317,8 +319,10 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
   // it after the migration to container-based headers (2026-09-06), so a
   // migrated header's logo silently fell back to the BrandLogo placeholder
   // everywhere instead of the tenant's real uploaded logo.
+  // A page "Menu" block (menus P2, header_nav with a layout) is content, not
+  // the header: it does not trigger the logo lookup (resolved below instead).
   const hasNav = visible.some((b) =>
-    b.type === "navigation" || b.type === "header_nav" ||
+    b.type === "navigation" || (b.type === "header_nav" && !isMenuPlacement(b)) ||
     (b.type === "footer" && !!(b as import("@/types/cms").FooterBlockProps).data.autoLightLogo) ||
     (b.type === "container" && (b as import("@/types/cms").ContainerBlockProps).data.columns?.some(
       (c) => c.blocks?.some((cb) => cb.type === "header_logo"),
@@ -339,9 +343,10 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
 
       resolved = await resolveNavBlocks(admin, tenantId, visible);
     }
-  } else if (hasNestedNavToResolve(visible)) {
+  } else if (hasMenusToResolve(visible)) {
     // A container header or page section whose menu block names a saved
-    // menu or holds an auto list (P0, 2026-11-17: these were ignored). The
+    // menu or holds an auto list (P0, 2026-11-17: these were ignored), a
+    // page Menu block, or a footer column showing a saved menu (P2). The
     // identity logo is deliberately not fetched here, so logo fallbacks on
     // pages without a top-level header block stay exactly as they were.
     const tenantId = (await headers()).get("x-tenant-id");
@@ -372,30 +377,58 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
  *
  * Dynamic sub-menus (all services, product categories) are expanded here as
  * well, which is why this runs server-side per request rather than at save time.
+ * So are links stored by page/product id (menus P1): their address is looked
+ * up now, so a renamed page never breaks the menu.
  */
 async function resolveNavBlocks(
   admin: Awaited<ReturnType<typeof createAdminClient>>,
   tenantId: string,
   blocks: Block[],
 ): Promise<Block[]> {
+  type NavItem = import("@/types/cms").NavItem;
   const navBlocks = collectNavBlocks(blocks);
-  if (navBlocks.length === 0) return blocks;
+  // Classic footer columns that show a saved menu (menus P2).
+  const footerIds = collectFooterBlocks(blocks).flatMap(footerColumnMenuIds);
+  if (navBlocks.length === 0 && footerIds.length === 0) return blocks;
 
-  // Saved menus are only read when some block asks for one.
-  const byLocation = new Map<string, import("@/types/cms").NavItem[]>();
-  if (navBlocks.some(({ block }) => !!(block.data as { menuLocation?: string }).menuLocation)) {
+  // Saved menus are only read when some block asks for one (by location, or by id since P2).
+  const byLocation = new Map<string, NavItem[]>();
+  const byId = new Map<string, NavItem[]>();
+  if (footerIds.length || navBlocks.some(({ block }) => {
+    const d = block.data as { menuLocation?: string; menuId?: string };
+    return !!d.menuLocation || !!d.menuId;
+  })) {
     const { data: menus } = await admin
       .from("nav_menus")
-      .select("location, items")
+      .select("id, location, items")
       .eq("tenant_id", tenantId);
     for (const m of menus ?? []) {
-      byLocation.set(m.location as string, (m.items ?? []) as import("@/types/cms").NavItem[]);
+      byLocation.set(m.location as string, (m.items ?? []) as NavItem[]);
+      byId.set(m.id as string, (m.items ?? []) as NavItem[]);
     }
   }
 
+  // Translated pages: items with a label in the page's language show it (menus P1).
+  const lang = renderLang();
   return mapNavBlocks(blocks, async (block) => {
     const nav = block as import("@/types/cms").NavigationBlockProps | import("@/types/cms").HeaderNavBlockProps;
-    const items = await expandDynamicChildren(admin, tenantId, pickNavItems(nav.data, byLocation) ?? []);
+    // No saved menu and no typed links: the site's automatic menu (its
+    // published pages, menus P3). Built fresh from the pages, so its links
+    // need no further lookup.
+    if (wantsDefaultMenu(nav.data, byLocation, byId)) {
+      return { ...nav, data: { ...nav.data, items: await getDefaultMenu(tenantId) } } as Block;
+    }
+    const items = await expandDynamicChildren(admin, tenantId, pickNavItems(nav.data, byLocation, byId) ?? [], { lang });
     return { ...nav, data: { ...nav.data, items } } as Block;
+  }, 0, async (block) => {
+    // Footer columns: the saved menu's links replace the typed ones; a
+    // deleted menu leaves the typed links (menuItems unset).
+    const footer = block as import("@/types/cms").FooterBlockProps;
+    const columns = await Promise.all((footer.data.columns ?? []).map(async (col) => {
+      const own = col?.menuId ? byId.get(col.menuId) : undefined;
+      if (!own) return col;
+      return { ...col, menuItems: await expandDynamicChildren(admin, tenantId, own, { lang }) };
+    }));
+    return { ...footer, data: { ...footer.data, columns } } as Block;
   });
 }

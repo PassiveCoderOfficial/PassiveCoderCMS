@@ -5,6 +5,11 @@ import { mergeFooterForm, mergePrefooterForm, parseFooterFormSave, parsePrefoote
 import { createClient } from "@/lib/supabase/server";
 import { getApiCaller } from "@/lib/auth/api-caller";
 import { generateId } from "@/lib/utils";
+import { createAdminClient } from "@/lib/supabase/server";
+import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
+import { normalizeMenu } from "@/modules/navigation/menu-model";
+import { recordNewMenu, saveMenuWithHistory, type MenuRow } from "@/modules/navigation/menu-versions";
+import type { NavItem } from "@/types/cms";
 
 /** nav_menus columns a "menu" save may write (never tenant_id / template_id). */
 const MENU_FIELDS = ["name", "slug", "items", "location"] as const;
@@ -14,6 +19,19 @@ function pickMenuFields(body: Record<string, unknown>): Record<string, unknown> 
   return out;
 }
 
+/**
+ * Menu saves through this older route (the mobile app's site identity path)
+ * go through the same history as the Navigation screen (menus P2): an edit
+ * access check, then the service-role client, so every save keeps a version
+ * that can be restored or undone. Null = not allowed.
+ */
+async function menuWriter(caller: Awaited<ReturnType<typeof getApiCaller>>) {
+  if (!caller?.tenantId || !caller.userId) return null;
+  const admin = await createAdminClient();
+  const access = await checkTenantEditAccess(admin, caller.tenantId, caller.userId);
+  if (!access.allowed) return null;
+  return { admin, tenantId: caller.tenantId, userId: caller.userId, source: caller.via === "bearer" ? "app" as const : "dashboard" as const };
+}
 
 export async function GET() {
   const caller = await getApiCaller();
@@ -83,10 +101,15 @@ export async function POST(req: Request) {
   }
 
   if (body._type === "menu") {
+    const w = await menuWriter(caller);
+    if (!w) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const fields = pickMenuFields(body);
-    const { data, error } = await supabase.from("nav_menus")
-      .insert({ ...fields, tenant_id: tenantId }).select().single();
+    if (fields.items !== undefined) fields.items = normalizeMenu(fields.items);
+    const { data, error } = await w.admin.from("nav_menus")
+      .insert({ ...fields, tenant_id: w.tenantId, template_id: null }).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    // First version, so the menu's first edit can be undone.
+    await recordNewMenu(w.admin, data as MenuRow, w.userId, w.source);
     return NextResponse.json(data);
   }
 
@@ -95,15 +118,25 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const caller = await getApiCaller();
-  const supabase = caller?.supabase ?? (await createClient());
   const tenantId = caller?.tenantId ?? null;
   if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { _type, id, ...rest } = await req.json();
 
   if (_type === "menu") {
-    await supabase.from("nav_menus").update({ ...pickMenuFields(rest), updated_at: new Date().toISOString() })
-      .eq("id", id).eq("tenant_id", tenantId);
+    const w = await menuWriter(caller);
+    if (!w) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (typeof id !== "string" || !id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    const fields = pickMenuFields(rest);
+    const patch: { name?: string; slug?: string; location?: string; items?: NavItem[] } = {};
+    if (typeof fields.name === "string") patch.name = fields.name;
+    if (typeof fields.slug === "string") patch.slug = fields.slug;
+    if (typeof fields.location === "string") patch.location = fields.location;
+    if (fields.items !== undefined) patch.items = normalizeMenu(fields.items);
+    // Live on save, with a version kept for restore and undo.
+    const res = await saveMenuWithHistory(w.admin, { tenantId: w.tenantId, menuId: id, patch, userId: w.userId, source: w.source });
+    if (!res.menu) return NextResponse.json({ error: res.error ?? "Failed to save menu" }, { status: res.error === "Menu not found" ? 404 : 400 });
+    return NextResponse.json({ ok: true, history: res.history });
   }
 
   return NextResponse.json({ ok: true });

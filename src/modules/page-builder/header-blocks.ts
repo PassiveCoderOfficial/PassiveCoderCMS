@@ -65,7 +65,7 @@ export const FOOTER_BLOCK_TYPES: readonly BlockType[] = [
 type DisplayOverrides = Partial<Record<BlockType, Partial<Pick<BlockDefinition, "label" | "description" | "icon">>>>;
 
 export const HEADER_BLOCK_DISPLAY: DisplayOverrides = {
-  navigation: { label: "Nav Menu", description: "Logo, menu links and an optional button — the header itself." },
+  navigation: { label: "Classic header", description: "Logo, menu links and an optional button — the header itself." },
   header_booking: { label: "Booking Button", description: "Opens your booking page (/book). Visible on phones too." },
   cta: { label: "Announcement Bar", description: "A slim banner above or below the nav — a promo, notice, or extra call-to-action." },
   columns: { label: "Side-by-Side Layout", description: "Two columns for arranging header content, e.g. a logo beside a phone number." },

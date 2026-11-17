@@ -3,9 +3,11 @@
 import React from "react";
 import { ChevronRight, LayoutGrid } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/builder";
+import { useBlockNamer } from "../block-display-name";
 
 export function SettingsBreadcrumb({ blockId }: { blockId: string }) {
   const { getBlockPath, selectBlock } = useBuilderStore();
+  const blockName = useBlockNamer();
   const path = getBlockPath(blockId);
   if (!path) return null;
 
@@ -15,7 +17,7 @@ export function SettingsBreadcrumb({ blockId }: { blockId: string }) {
   // level instead of the breadcrumb only ever supporting a single container.
   const crumbs = path.flatMap((entry, i) => {
     const isLast = i === path.length - 1;
-    const own = { key: entry.id, label: entry.type.replace(/_/g, " "), onClick: () => selectBlock(entry.id) };
+    const own = { key: entry.id, label: blockName(entry.type), onClick: () => selectBlock(entry.id) };
     if (isLast) return [own];
     return [
       own,

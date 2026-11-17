@@ -16,9 +16,13 @@ import { TOP_BAR_ICONS } from "@/components/blocks/navigation/nav-top-bar";
 import { TRANSLATE_LANGS } from "@/components/site/language-switch";
 import { UiTextFields } from "./ui-text-fields";
 import { ManagedMenuNote, MenuLocationPicker } from "./header-nav-settings";
+import { usePathname } from "next/navigation";
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 
 export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
   const { updateBlock } = useBuilderStore();
+  // Menus P5: the site header (Header Builder, not a page) can move to the Studio.
+  const inHeaderBuilder = (usePathname() ?? "").startsWith("/dashboard/header-builder");
   const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
 
   const PRESETS: Array<{ label: string; bg: string; gradientTo?: string; fg: string; accent: string }> = [
@@ -43,6 +47,7 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
 
   return (
     <div className="space-y-3">
+      {inHeaderBuilder && <SwitchToStudioButton area="header" variant="inline" />}
       <div><Label className="text-xs">Logo Text</Label><Input value={block.data.logoText ?? ""} onChange={(e) => update("logoText", e.target.value)} className="h-8 text-xs mt-1" /></div>
       <TextField label="Small text beside the logo (optional)" value={block.data.logoCaption} onChange={(v) => update("logoCaption", v || undefined)} placeholder="e.g. a registration number" hint="Hidden on small phones." />
       <div><Label className="text-xs">Logo Icon (before text)</Label><div className="mt-1"><MediaPickerInput compact value={block.data.logoIconUrl ?? ""} onChange={(v) => update("logoIconUrl", v)} /></div></div>

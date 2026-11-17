@@ -10,9 +10,21 @@ import { BlockToolbar } from "./block-toolbar";
 import { BlockContextMenu } from "./block-context-menu";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
+import { useBlockDisplayName } from "../block-display-name";
+import type { ClickedMenuLink } from "./menu-canvas-editor";
+
+// The in-place menu editor (menus P3) loads only when a menu block is
+// selected: it brings the full menu tree editor with it.
+const MenuCanvasEditor = React.lazy(() => import("./menu-canvas-editor").then((m) => ({ default: m.MenuCanvasEditor })));
+const isCanvasMenuBlock = (b: Block) => b.type === "navigation" || b.type === "header_nav";
 
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+
+/** Below this height the block toolbar sits outside the block (it would cover it). */
+const SHORT_BLOCK_PX = 120;
+/** Room the toolbar needs above a block inside the canvas. */
+const TOOLBAR_ROOM_PX = 44;
 
 interface SortableBlockWrapperProps {
   block: Block;
@@ -61,6 +73,37 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
     if (!enoughVisible) el.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [isSelected]);
 
+  // Short blocks (a Menu bar is about 35px tall) were hidden completely under
+  // their own toolbar. Below this height the toolbar sits flush against the
+  // block's outer edge: above it when the canvas has room there, else below
+  // (the first block). Taller blocks keep the toolbar inside, as before.
+  const toolbarShown = isEditing && (isSelected || isHovered);
+  const [placement, setPlacement] = React.useState<"inside" | "above" | "below">("inside");
+  React.useLayoutEffect(() => {
+    if (!toolbarShown) return;
+    const el = elRef.current;
+    if (!el) return;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.height >= SHORT_BLOCK_PX) { setPlacement("inside"); return; }
+      let top = 0;
+      for (let p = el.parentElement; p; p = p.parentElement) {
+        if (/(auto|scroll|hidden)/.test(getComputedStyle(p).overflowY)) { top = p.getBoundingClientRect().top; break; }
+      }
+      setPlacement(rect.top - top >= TOOLBAR_ROOM_PX ? "above" : "below");
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [toolbarShown]);
+  const name = useBlockDisplayName(block.type);
+
+  // Menus P3: a selected menu block gets the in-place menu editor under it;
+  // a click on one of its links opens the rename box right on that link.
+  const menuEditing = isEditing && isSelected && isCanvasMenuBlock(block);
+  const [clickedLink, setClickedLink] = React.useState<ClickedMenuLink | null>(null);
+
   const clearLongPress = () => {
     if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
   };
@@ -103,6 +146,9 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
         )}
         onClickCapture={(e) => {
           if (!isEditing) return;
+          // The in-place menu editor (and its drawer, portalled but still a
+          // React child) handles its own clicks: links there must work.
+          if ((e.target as HTMLElement).closest?.("[data-menu-canvas-editor]")) return;
           // Inline-editable text stops its click from bubbling, so a tap on a
           // heading never selected its block (the phone editor's Edit tab
           // stayed disabled). Capture runs outer -> inner, so the innermost
@@ -119,6 +165,17 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
           // fired and pushed the route by the time it got here.
           const link = (e.target as HTMLElement).closest("a");
           if (link) e.preventDefault();
+          // A link inside a menu block (not in the editor's own controls):
+          // rename it in place (menus P3).
+          if (link && isCanvasMenuBlock(block)) {
+            const r = link.getBoundingClientRect();
+            setClickedLink({
+              text: (link.textContent ?? "").trim(),
+              href: link.getAttribute("href") ?? "",
+              rect: { left: r.left, top: r.top, width: r.width, height: r.height },
+              at: Date.now(),
+            });
+          }
         }}
         onClick={(e) => {
           if (!isEditing) return;
@@ -131,12 +188,26 @@ export function SortableBlockWrapper({ block, isEditing, path }: SortableBlockWr
         onTouchMove={clearLongPress}
         onTouchEnd={clearLongPress}
       >
-        {isEditing && (isSelected || isHovered) && (
-          <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} />
+        {toolbarShown && placement !== "below" && (
+          <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} placement={placement} />
         )}
+        {(toolbarShown && placement === "below") || menuEditing ? (
+          // Below the block: the toolbar (first, short blocks) and the menu
+          // editor, stacked, flush with the block's bottom edge.
+          <div className="absolute left-0 right-0 top-full z-30 flex flex-col items-start" onClick={(e) => e.stopPropagation()}>
+            {toolbarShown && placement === "below" && (
+              <BlockToolbar block={block} dragListeners={listeners ?? undefined} dragAttributes={attributes} path={path} pinned={isSelected} placement="flow" />
+            )}
+            {menuEditing && (
+              <React.Suspense fallback={null}>
+                <MenuCanvasEditor block={block} path={path} clicked={clickedLink} onClickedDone={() => setClickedLink(null)} />
+              </React.Suspense>
+            )}
+          </div>
+        ) : null}
         {isEditing && !isSelected && (
-          <span data-block-label className="lg:hidden absolute top-1 left-1 z-10 rounded-md bg-black/40 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none capitalize">
-            {block.type.replace(/_/g, " ")}
+          <span data-block-label className="lg:hidden absolute top-1 left-1 z-10 rounded-md bg-black/40 text-white text-[10px] font-medium px-1.5 py-0.5 select-none pointer-events-none">
+            {name}
           </span>
         )}
         {isHiddenInEditor && (

@@ -95,7 +95,9 @@ export function InsertSectionButton({ afterId, path, allowedBlockTypes, compact,
         if (b.moduleKey && !moduleInstalled(b.moduleKey)) return false;
         // See HEADER_SUB_BLOCK_TYPES above — these compose inside a
         // container's column only, never loose at root.
-        if (!path && HEADER_SUB_BLOCK_TYPES.includes(b.type)) return false;
+        // Exception (menus P2): the Menu block is a page block too, so the
+        // page builder (no restricted palette) offers it at the top level.
+        if (!path && HEADER_SUB_BLOCK_TYPES.includes(b.type) && !(b.type === "header_nav" && !allowedBlockTypes)) return false;
         const allowed = !allowedBlockTypes || allowedBlockTypes.includes(b.type);
         const matches = !q || b.label.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
         return allowed && matches;

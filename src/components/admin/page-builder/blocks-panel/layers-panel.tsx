@@ -9,6 +9,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, ChevronDown, ChevronUp, GripVertical, Monitor, Tablet, Smartphone } from "lucide-react";
 import { useBuilderStore, type ContainerPath } from "@/lib/store/builder";
 import { cn } from "@/lib/utils";
+import { useBlockNamer } from "../block-display-name";
 import type { Block, ContainerBlockProps } from "@/types/cms";
 
 type Device = "desktop" | "tablet" | "mobile";
@@ -105,6 +106,7 @@ function LayerRow({
   const idx = siblings.findIndex((b) => b.id === block.id);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
+  const blockName = useBlockNamer();
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
@@ -135,8 +137,8 @@ function LayerRow({
           <span className="w-3 shrink-0" />
         )}
 
-        <button onClick={() => onSelect(block.id)} className="flex-1 min-w-0 text-left truncate capitalize">
-          {block.type.replace(/_/g, " ")}
+        <button onClick={() => onSelect(block.id)} className="flex-1 min-w-0 text-left truncate">
+          {blockName(block.type)}
         </button>
 
         <div className="flex items-center gap-0.5 shrink-0">

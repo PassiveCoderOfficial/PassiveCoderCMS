@@ -7,38 +7,12 @@
  * drifting from each other.
  */
 import { NextResponse } from "next/server";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { getCurrentTenantId } from "@/lib/tenant/current";
-import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
-import { getApiCaller } from "@/lib/auth/api-caller";
+import { requireTenantAccess } from "./access";
 import type { NavItem } from "@/types/cms";
 import { normalizeMenu } from "@/modules/navigation/menu-model";
+import { recordNewMenu, saveMenuWithHistory, type MenuRow } from "@/modules/navigation/menu-versions";
 
 const VALID_LOCATIONS = ["none", "header", "footer", "footer_secondary", "mobile", "sidebar", "legal"];
-
-async function requireTenantAccess() {
-  // Mobile app: Bearer token + X-Tenant-Id (membership verified by
-  // getApiCaller), then the same edit-access check. Web keeps its cookie path.
-  const caller = await getApiCaller();
-  if (caller?.via === "bearer") {
-    const admin = await createAdminClient();
-    const access = await checkTenantEditAccess(admin, caller.tenantId, caller.userId);
-    return access.allowed ? { tenantId: caller.tenantId, admin } : null;
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const tenantId = await getCurrentTenantId();
-  if (!tenantId) return null;
-
-  const admin = await createAdminClient();
-  const access = await checkTenantEditAccess(admin, tenantId, user.id);
-  if (!access.allowed) return null;
-
-  return { tenantId, admin };
-}
 
 export async function GET() {
   const ctx = await requireTenantAccess();
@@ -89,6 +63,8 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // First version, so the menu's first edit can be undone (menus P1).
+  await recordNewMenu(ctx.admin, data as MenuRow, ctx.userId, "dashboard");
   return NextResponse.json({ menu: data });
 }
 
@@ -103,7 +79,7 @@ export async function PATCH(req: Request) {
     .from("nav_menus").select("id").eq("id", body.id).eq("tenant_id", ctx.tenantId).maybeSingle();
   if (!existing) return NextResponse.json({ error: "Menu not found" }, { status: 404 });
 
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const patch: { name?: string; slug?: string; location?: string; items?: NavItem[] } = {};
   if (body.name?.trim()) {
     patch.name = body.name.trim();
     patch.slug = body.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -129,11 +105,10 @@ export async function PATCH(req: Request) {
     patch.location = body.location;
   }
 
-  const { data, error } = await ctx.admin
-    .from("nav_menus").update(patch).eq("id", body.id).select("*").single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ menu: data });
+  // Live on save, with a version kept for undo (menus P1).
+  const res = await saveMenuWithHistory(ctx.admin, { tenantId: ctx.tenantId, menuId: body.id, patch, userId: ctx.userId, source: "dashboard" });
+  if (!res.menu) return NextResponse.json({ error: res.error ?? "Failed to save menu" }, { status: 500 });
+  return NextResponse.json({ menu: res.menu, history: res.history });
 }
 
 export async function DELETE(req: Request) {

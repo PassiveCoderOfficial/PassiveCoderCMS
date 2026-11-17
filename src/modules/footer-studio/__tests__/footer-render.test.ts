@@ -172,8 +172,14 @@ test("contact / pricing / legal pages: classic footer unless a studio footer is 
 });
 
 test("404 page: classic footer unless a studio footer is live", () => {
-  const src = read("src/app/not-found.tsx");
-  assert.ok(src.includes("{chrome?.studioFooter ? <StudioSiteFooter tenantId={chrome.tenantId} data={chrome.studioFooter} /> : chrome && chrome.footer.length > 0 && <PageRenderer blocks={chrome.footer} />}"));
+  // The 404 wraps its content in the shared site chrome (lib/site/site-chrome),
+  // which picks the Studio footer exactly like normal pages: live = studio, else classic blocks.
+  const page = read("src/app/not-found.tsx");
+  assert.ok(page.includes("const chrome = await chromeFor(tenantId);"), "a client site's 404 loads that site's chrome");
+  assert.match(page, /<Shell chrome=\{chrome\}>/);
+  const chrome = read("src/lib/site/site-chrome.tsx");
+  assert.ok(chrome.includes("getStudioFooter(tenantId)"), "loads the live Studio footer (null unless published and enabled)");
+  assert.ok(chrome.includes("{chrome?.studioFooter ? <StudioSiteFooter tenantId={chrome.tenantId} data={chrome.studioFooter} /> : chrome && chrome.footer.length > 0 && <PageRenderer blocks={chrome.footer} />}"));
 });
 
 test("translated pages hide the studio footer exactly like the classic one", () => {

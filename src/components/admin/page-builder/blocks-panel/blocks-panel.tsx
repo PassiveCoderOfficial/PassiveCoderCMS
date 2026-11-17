@@ -17,7 +17,7 @@ import { usePreviewHover, type HoverPreviewPayload } from "../previews/preview-h
 import { PresetThumbnail } from "./preset-thumbnail";
 import { deepClone, generateId } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import type { Block, BlockType, ContainerBlockProps, NavigationBlockProps } from "@/types/cms";
+import type { Block, BlockType, ContainerBlockProps, HeaderNavBlockProps, NavigationBlockProps } from "@/types/cms";
 import type { ModuleKey } from "@/components/admin/sidebar/nav-items";
 import { blockInstalled, moduleInstalled } from "@/modules/registry/installed";
 
@@ -86,6 +86,18 @@ export function BlocksPanel({
         }
       } catch {
         // Fall through with the placeholder items — never block adding the section.
+      }
+    }
+    // A new Menu block (menus P2) starts on the site's header menu, by id,
+    // when there is one with links; otherwise its placeholder offers a choice.
+    if (block.type === "header_nav" && (block as HeaderNavBlockProps).data.layout && tenantId) {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.from("nav_menus").select("id, items")
+          .eq("tenant_id", tenantId).eq("location", "header").maybeSingle();
+        if (data?.id && Array.isArray(data.items) && data.items.length > 0) (block as HeaderNavBlockProps).data.menuId = data.id as string;
+      } catch {
+        // Placeholder it is.
       }
     }
     addBlock(block, afterId, path);

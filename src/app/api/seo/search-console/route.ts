@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { importAccess } from "@/lib/import/access";
-import { hasGscScopes, inspectPages, resubmitSitemap, searchPerformance, setupSearchConsole, siteHomeUrl } from "@/lib/seo/search-console";
+import { hasGscScopes, inspectPages, platformGoogleReady, resubmitSitemap, searchPerformance, setupSearchConsole, siteHomeUrl } from "@/lib/seo/search-console";
 
 export const maxDuration = 60;
 
@@ -9,7 +9,7 @@ export async function GET() {
   const a = await importAccess("read");
   if ("error" in a) return a.error;
   const { data: i } = await a.admin.from("tenant_integrations")
-    .select("ga_oauth_refresh_token, ga_oauth_connected_email, google_scopes, gsc_site_url, gsc_verified_at, gsc_sitemap_at, gsc_error, gsc_index")
+    .select("ga_oauth_refresh_token, ga_oauth_connected_email, google_scopes, gsc_site_url, gsc_verified_at, gsc_sitemap_at, gsc_error, gsc_index, gsc_platform")
     .eq("tenant_id", a.tenantId).maybeSingle();
   const siteUrl = await siteHomeUrl(a.admin, a.tenantId);
   const base = {
@@ -23,6 +23,9 @@ export async function GET() {
     sitemapAt: i?.gsc_sitemap_at ?? null,
     error: i?.gsc_error ?? null,
     index: i?.gsc_index ?? null,
+    // Run by Passive Coder's Google account (no Google connection needed here).
+    managed: !!i?.gsc_platform,
+    platformReady: await platformGoogleReady().catch(() => false),
   };
   if (!base.setUp || !siteUrl) return NextResponse.json(base);
   try {
@@ -32,13 +35,13 @@ export async function GET() {
   }
 }
 
-/** Actions: setup (verify + add + sitemap), sitemap (resubmit), inspect (index status of pages). */
+/** Actions: setup (verify + add + sitemap), sitemap (resubmit), inspect (index status of every sitemap page, up to 100 per run). */
 export async function POST(req: Request) {
   const a = await importAccess("write");
   if ("error" in a) return a.error;
-  const { action } = await req.json().catch(() => ({})) as { action?: string };
+  const { action, via } = await req.json().catch(() => ({})) as { action?: string; via?: "owner" | "platform" };
   try {
-    if (action === "setup") return NextResponse.json(await setupSearchConsole(a.admin, a.tenantId));
+    if (action === "setup") return NextResponse.json(await setupSearchConsole(a.admin, a.tenantId, { via: via === "owner" || via === "platform" ? via : undefined }));
     const { data: i } = await a.admin.from("tenant_integrations").select("gsc_site_url").eq("tenant_id", a.tenantId).maybeSingle();
     const siteUrl = i?.gsc_site_url as string | undefined;
     if (!siteUrl) return NextResponse.json({ error: "Set up Search Console first." }, { status: 400 });
@@ -47,7 +50,7 @@ export async function POST(req: Request) {
       await a.admin.from("tenant_integrations").update({ gsc_sitemap_at: new Date().toISOString() }).eq("tenant_id", a.tenantId);
       return NextResponse.json({ ok: true });
     }
-    if (action === "inspect") return NextResponse.json({ pages: await inspectPages(a.admin, a.tenantId, siteUrl) });
+    if (action === "inspect") return NextResponse.json({ index: await inspectPages(a.admin, a.tenantId, siteUrl) });
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Google request failed" }, { status: 502 });

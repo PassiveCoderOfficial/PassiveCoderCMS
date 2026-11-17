@@ -64,9 +64,17 @@ import { EligibilityCheckerSettings } from "./eligibility-checker-settings";
 import { StatusTrackerSettings } from "./status-tracker-settings";
 import { DonorRequestsSettings } from "./donor-requests-settings";
 import { Layers } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import { useBlockDisplayName } from "../block-display-name";
 import type { Block } from "@/types/cms";
 import { toFamilyBlock } from "@/lib/blocks/cards";
 import { CollectionSourceSettings } from "./collection-source-settings";
+
+/** "Menu settings", "Classic header settings"... in the dashboard language. */
+function BlockSettingsTitle({ type }: { type: string }) {
+  const t = useT();
+  return <>{t("builder.blockSettings", { name: useBlockDisplayName(type) })}</>;
+}
 
 export function SettingsPanel() {
   // Subscribe to `blocks` (not just call getBlock()) so this panel re-renders
@@ -90,7 +98,7 @@ export function SettingsPanel() {
       <SettingsBreadcrumb blockId={block.id} />
       <div className="px-3 py-2 border-b">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {block.type.replace(/_/g, " ")} settings
+          <BlockSettingsTitle type={block.type} />
         </p>
       </div>
       <Tabs defaultValue="content" className="flex-1 flex flex-col overflow-hidden">

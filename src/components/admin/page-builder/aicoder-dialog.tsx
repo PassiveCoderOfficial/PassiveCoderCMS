@@ -34,7 +34,7 @@ const SUPPORTED: { type: BlockType; label: string }[] = [
   { type: "team", label: "Team" },
   { type: "pricing", label: "Pricing" },
   { type: "contact", label: "Contact Form" },
-  { type: "navigation", label: "Menu Bar" },
+  { type: "navigation", label: "Classic header" },
   { type: "footer", label: "Footer" },
   { type: "timeline", label: "Timeline" },
 ];

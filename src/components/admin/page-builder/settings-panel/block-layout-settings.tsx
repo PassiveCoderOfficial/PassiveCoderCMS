@@ -260,7 +260,8 @@ export function BlockLayoutSettings({ block }: LayoutSettingsProps) {
         </div>
       </div>
 
-      {(block.type === "navigation" || block.type === "header_nav") && <NavTypography block={block} />}
+      {/* A Menu block in the new look (menus P2) sets its text in its own Look panel. */}
+      {(block.type === "navigation" || (block.type === "header_nav" && !block.data.layout)) && <NavTypography block={block} />}
 
       {/* Section image focus: every cropped photo in this block (.pc-if in globals.css). */}
       {block.type !== "navigation" && block.type !== "footer" && (

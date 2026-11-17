@@ -19,6 +19,7 @@ import type { Block } from "@/types/cms";
 import { useT } from "@/lib/i18n/language-provider";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { MobileEditorShell } from "@/components/admin/page-builder/mobile-editor-shell";
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 
 export type HeaderTarget = "header" | "footer";
 
@@ -179,7 +180,10 @@ export default function HeaderBuilderClient({
               </Button>
             </>
           }
-          banner={studioLive && !returnTo ? studioLiveBanner : returnTo ? (
+          banner={studioLive && !returnTo ? studioLiveBanner : !returnTo ? (
+            // Menus P5: move this classic header/footer to the Studio (before/after first, a draft until published).
+            <div className="border-b px-3 py-2 shrink-0"><SwitchToStudioButton area={target} variant="banner" /></div>
+          ) : returnTo ? (
             <div className="flex items-center gap-2 border-b bg-primary/5 px-3 py-1.5 shrink-0">
               <CornerUpLeft className="h-3.5 w-3.5 text-primary shrink-0" />
               <p className="text-[11px] text-muted-foreground min-w-0 truncate flex-1">{t("headerBuilder.editingSite", { label: label.toLowerCase() })}</p>
@@ -248,6 +252,8 @@ export default function HeaderBuilderClient({
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Menus P5: convert this classic header/footer into a Studio draft (before/after first). */}
+          {!studioLive && <SwitchToStudioButton area={target} className="max-w-[16rem]" />}
           {target === "header" && (
             <Button size="sm" variant="outline" className="h-8 gap-1.5" asChild title={t("headerStudio.openStudioHint")}>
               <Link href="/dashboard/header-builder/studio"><LayoutTemplate className="h-3.5 w-3.5" />{t("headerStudio.openStudio")}</Link>

@@ -14,16 +14,42 @@
  *
  * Class names follow the legacy renderer so a studio item sits next to a
  * legacy item without looking different.
+ *
+ * Menus P1 (Nov 2026): inside the new menu renderer (menu-renderer.tsx) the
+ * same components take their look from CSS variables instead (MenuLookContext,
+ * styles in app/menus.css). Outside it, MenuLookContext is false and the markup
+ * is byte for byte what it was (test: nav-studio-render.test.ts). Items shown
+ * only to guests or only to signed-in customers (audience) are filtered here,
+ * in the browser, so cached pages stay shared.
+ *
+ * Menus P4 (Nov 2026): the mega builder's fields (modules/navigation/mega):
+ * 0-2 featured cards, full-width panels, 6 columns, double-width columns,
+ * column images and heading-only columns; on phones such a mega menu folds
+ * open column by column (MegaAccordion). A menu without those fields renders
+ * byte for byte as in v1.0.927 (test: menus-p4.test.ts).
  */
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import type { NavItem } from "@/types/cms";
+import type { NavItem, NavMegaFeatured } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { hrefFor, useAlternates } from "@/components/site/use-alternates";
-import { filterForDevice, isMegaItem } from "@/modules/navigation/menu-model";
+import { filterForAudience, filterForDevice, hasAudience, isMegaItem } from "@/modules/navigation/menu-model";
+import { isActivePath } from "@/modules/navigation/menu-style";
+import { cardShows, megaCards, megaGridColumns, splitMega, usesMegaBuilder } from "@/modules/navigation/mega";
+import { useSignedIn } from "@/components/site/use-signed-in";
+
+/** True inside the menu renderer (menus P1): cells and panels take the menu's CSS-variable look. */
+export const MenuLookContext = createContext(false);
+
+/** The item as this visitor sees it (audience), or null when it is hidden from them. */
+function useAudienceItem(raw: NavItem): NavItem | null {
+  const signedIn = useSignedIn(hasAudience([raw]));
+  const seen = filterForAudience([raw], signedIn);
+  return seen[0] ?? null;
+}
 
 const Icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
 
@@ -65,6 +91,8 @@ const MEGA_COL_CLASS: Record<number, string> = {
   3: "sm:grid-cols-3 lg:grid-cols-3",
   4: "sm:grid-cols-3 lg:grid-cols-4",
   5: "sm:grid-cols-3 lg:grid-cols-5",
+  // Mega builder (menus P4).
+  6: "sm:grid-cols-3 lg:grid-cols-6",
 };
 
 const isPure = (i: NavItem) => !i.url || i.url === "#";
@@ -106,9 +134,12 @@ function focusSiblingTop(from: HTMLElement, dir: -1 | 1): boolean {
 
 // ── Desktop ─────────────────────────────────────────────────────────────
 
-export function StudioNavItemDesktop({ item: raw, currentColor }: { item: NavItem; currentColor: string }) {
+export function StudioNavItemDesktop({ item: given, currentColor }: { item: NavItem; currentColor: string }) {
   const alts = useAlternates();
   const pathname = usePathname();
+  const styled = useContext(MenuLookContext);
+  const seen = useAudienceItem(given);
+  const raw = seen ?? given;
   const item = filterForDevice([raw], "desktop")[0] ?? raw;
   const kids = item.children ?? [];
   const hasChildren = kids.length > 0;
@@ -119,7 +150,9 @@ export function StudioNavItemDesktop({ item: raw, currentColor }: { item: NavIte
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelId = useId();
   const hover = (item.openOn ?? "hover") === "hover";
-  const isActive = item.url !== "/" && item.url !== "#" && !!pathname && pathname.startsWith(item.url.split("#")[0] || "");
+  const isActive = styled
+    ? isActivePath(item.url, pathname)
+    : item.url !== "/" && item.url !== "#" && !!pathname && pathname.startsWith(item.url.split("#")[0] || "");
 
   useEffect(() => {
     if (!open) return;
@@ -141,13 +174,16 @@ export function StudioNavItemDesktop({ item: raw, currentColor }: { item: NavIte
     }
   };
 
+  // Hidden from this visitor (audience). After every hook, so hook order never changes.
+  if (!seen) return null;
+
   if (!hasChildren) {
-    const style = item.highlight ? HIGHLIGHT_STYLE[item.highlight] : { color: currentColor, fontWeight: isActive ? 700 : 500, opacity: isActive ? 1 : 0.85 };
+    const style = item.highlight ? HIGHLIGHT_STYLE[item.highlight] : styled ? undefined : { color: currentColor, fontWeight: isActive ? 700 : 500, opacity: isActive ? 1 : 0.85 };
     return (
       <li data-nav-top="">
         <Link href={hrefFor(item, alts)} target={item.target} onKeyDown={topKeys}
-          aria-current={isActive ? "page" : undefined}
-          className={item.highlight ? cn(HIGHLIGHT_CLASS, "gap-1.5") : cn(CELL, "group gap-1.5")} style={style}>
+          aria-current={isActive ? "page" : undefined} data-active={styled && isActive ? "" : undefined}
+          className={item.highlight ? cn(HIGHLIGHT_CLASS, "gap-1.5") : styled ? "pcm-cell group gap-1.5" : cn(CELL, "group gap-1.5")} style={style}>
           <Label item={item} />
         </Link>
       </li>
@@ -177,7 +213,8 @@ export function StudioNavItemDesktop({ item: raw, currentColor }: { item: NavIte
     if (liRef.current && e.relatedTarget && !liRef.current.contains(e.relatedTarget as Node)) setOpen(false);
   };
 
-  const triggerStyle = item.highlight ? HIGHLIGHT_STYLE[item.highlight] : { color: currentColor, opacity: 0.85 };
+  const triggerStyle = item.highlight ? HIGHLIGHT_STYLE[item.highlight] : styled ? undefined : { color: currentColor, opacity: 0.85 };
+  const cell = styled ? "pcm-cell" : CELL;
   const chevron = <ChevronDown aria-hidden className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />;
 
   return (
@@ -186,12 +223,13 @@ export function StudioNavItemDesktop({ item: raw, currentColor }: { item: NavIte
       {isPure(item) ? (
         <button ref={triggerRef} type="button" aria-expanded={open} aria-controls={panelId} aria-haspopup="true"
           onClick={() => (hover ? openNow() : setOpen((o) => !o))} onKeyDown={triggerKeys}
-          className={item.highlight ? cn(HIGHLIGHT_CLASS, "gap-1") : cn(CELL, "flex items-center gap-1")} style={triggerStyle}>
+          className={item.highlight ? cn(HIGHLIGHT_CLASS, "gap-1") : cn(cell, "flex items-center gap-1")} style={triggerStyle}>
           <Label item={item} />
           {chevron}
         </button>
       ) : (
-        <span className={item.highlight ? cn(HIGHLIGHT_CLASS, "gap-0.5 pe-1") : cn(CELL, "flex items-center gap-0.5 pe-1.5")} style={triggerStyle}>
+        <span className={item.highlight ? cn(HIGHLIGHT_CLASS, "gap-0.5 pe-1") : cn(cell, "flex items-center gap-0.5 pe-1.5")} style={triggerStyle}
+          data-active={styled && isActive ? "" : undefined}>
           <Link href={hrefFor(item, alts)} target={item.target} onKeyDown={triggerKeys} onClick={() => setOpen(false)} className="inline-flex items-center gap-1.5">
             <Label item={item} />
           </Link>
@@ -214,9 +252,10 @@ export function StudioNavItemDesktop({ item: raw, currentColor }: { item: NavIte
 export function DropdownPanel({ items, onMouseEnter, onMouseLeave, onNavigate }: {
   items: NavItem[]; onMouseEnter?: () => void; onMouseLeave?: () => void; onNavigate: () => void;
 }) {
+  const styled = useContext(MenuLookContext);
   return (
-    <div className="absolute left-0 top-full pt-2.5 z-[9999] animate-in fade-in slide-in-from-top-1 duration-150" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <ul className="min-w-[220px] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground shadow-[var(--shadow-lg)] rounded-2xl border border-border p-1.5 normal-case tracking-normal">
+    <div className={styled ? "pcm-pop absolute start-0 top-full pt-2.5 z-[9999]" : "absolute left-0 top-full pt-2.5 z-[9999] animate-in fade-in slide-in-from-top-1 duration-150"} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <ul className={cn("min-w-[220px] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground shadow-[var(--shadow-lg)] rounded-2xl border border-border p-1.5 normal-case tracking-normal", styled && "pcm-dd")}>
         {items.map((child) => <DropdownRow key={child.id} item={child} onNavigate={onNavigate} />)}
       </ul>
     </div>
@@ -240,6 +279,7 @@ function RowBody({ item }: { item: NavItem }) {
 /** A dropdown row; a row with children opens a side flyout (hover, focus, ArrowRight). */
 function DropdownRow({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
   const alts = useAlternates();
+  const styled = useContext(MenuLookContext);
   const [open, setOpen] = useState(false);
   const flyId = useId();
   const liRef = useRef<HTMLLIElement>(null);
@@ -286,7 +326,7 @@ function DropdownRow({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
       )}
       <div id={flyId} role="group" aria-label={item.label} hidden={!open} onKeyDown={flyKeys}
         className="absolute top-0 start-full ps-1.5 z-[10000]">
-        <ul className="min-w-[220px] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground shadow-[var(--shadow-lg)] rounded-2xl border border-border p-1.5">
+        <ul className={cn("min-w-[220px] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground shadow-[var(--shadow-lg)] rounded-2xl border border-border p-1.5", styled && "pcm-dd")}>
           {kids.map((g) => (
             <li key={g.id}>
               <Link data-menu-focus="" href={hrefFor(g, alts)} target={g.target} onClick={onNavigate} className={ROW}>
@@ -300,9 +340,8 @@ function DropdownRow({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
   );
 }
 
-function FeaturedCard({ item, onNavigate, compact }: { item: NavItem; onNavigate: () => void; compact?: boolean }) {
-  const f = item.mega?.featured;
-  if (!f || !(f.title?.trim() || f.image)) return null;
+function FeaturedCard({ card: f, fallbackLabel, onNavigate, compact }: { card: NavMegaFeatured | undefined; fallbackLabel: string; onNavigate: () => void; compact?: boolean }) {
+  if (!cardShows(f)) return null;
   const body = (
     <>
       {f.image && (
@@ -311,7 +350,7 @@ function FeaturedCard({ item, onNavigate, compact }: { item: NavItem; onNavigate
       )}
       {f.title && <span className="mt-3 block text-sm font-semibold text-foreground">{f.title}</span>}
       {f.text && <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{f.text}</span>}
-      {f.url && <span className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">{f.ctaLabel?.trim() || item.label}<span aria-hidden>→</span></span>}
+      {f.url && <span className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">{f.ctaLabel?.trim() || fallbackLabel}<span aria-hidden>→</span></span>}
     </>
   );
   const cls = "block rounded-2xl bg-muted/60 border border-border p-3";
@@ -320,21 +359,48 @@ function FeaturedCard({ item, onNavigate, compact }: { item: NavItem; onNavigate
     : <div className={cls}>{body}</div>;
 }
 
-export function MegaPanel({ item, onMouseEnter, onMouseLeave, onNavigate }: {
-  item: NavItem; onMouseEnter?: () => void; onMouseLeave?: () => void; onNavigate: () => void;
+/**
+ * The open mega menu. `inline` (the editor's live preview) draws it in the
+ * page flow instead of floating under the menu bar. Menus without mega
+ * builder fields (menus P4) render exactly as before.
+ */
+export function MegaPanel({ item, onMouseEnter, onMouseLeave, onNavigate, inline }: {
+  item: NavItem; onMouseEnter?: () => void; onMouseLeave?: () => void; onNavigate: () => void; inline?: boolean;
 }) {
   const alts = useAlternates();
-  const kids = item.children ?? [];
-  const groups = kids.filter((c) => (c.children?.length ?? 0) > 0);
-  const singles = kids.filter((c) => (c.children?.length ?? 0) === 0);
-  const featured = item.mega?.featured && (item.mega.featured.title?.trim() || item.mega.featured.image);
+  const styled = useContext(MenuLookContext);
+  const { columns: groups, singles } = splitMega(item);
+  const cards = megaCards(item);
   const linksAsColumn = item.megaLinksAs === "column";
+  const full = item.mega?.width === "full";
+  const pos = inline ? "relative" : "absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-[9999]";
+  const width = inline ? "w-full" : full ? "w-screen max-w-[100vw]" : "w-[min(1120px,calc(100vw-2rem))]";
+  const fullRef = useRef<HTMLDivElement>(null);
+  // Full width (menus P4): the panel hangs from the menu bar, which may not
+  // start at the window's edge, and 100vw counts the scroll bar. Pin it to the
+  // visible page width and the window's left edge, so it never overflows
+  // (no sideways scroll, no layout shift).
+  useLayoutEffect(() => {
+    const el = fullRef.current;
+    if (!full || inline || !el) return;
+    const place = () => {
+      const parent = el.offsetParent as HTMLElement | null;
+      if (!parent) return;
+      el.style.width = `${document.documentElement.clientWidth}px`;
+      el.style.maxWidth = "none";
+      el.style.left = `${-parent.getBoundingClientRect().left}px`;
+      el.style.translate = "none";
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [full, inline]);
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-[9999] w-[min(1120px,calc(100vw-2rem))] animate-in fade-in slide-in-from-top-2 duration-200"
+    <div ref={full && !inline ? fullRef : undefined} className={styled ? `pcm-pop ${pos} ${width}` : `${pos} ${width}${inline ? "" : " animate-in fade-in slide-in-from-top-2 duration-200"}`}
       onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <div className="bg-popover text-popover-foreground shadow-[var(--shadow-xl)] rounded-[1.75rem] border border-border overflow-hidden normal-case tracking-normal">
+      <div className={cn("bg-popover text-popover-foreground shadow-[var(--shadow-xl)]", full && !inline ? "rounded-none border-y border-border" : "rounded-[1.75rem] border border-border", "overflow-hidden normal-case tracking-normal", styled && "pcm-dd pcm-mega")}>
         {singles.length > 0 && !linksAsColumn && (
-          <ul className="flex flex-wrap gap-x-6 gap-y-1 px-7 py-3.5 bg-muted/70 border-b border-border">
+          <ul className={cn("flex flex-wrap gap-x-6 gap-y-1 px-7 py-3.5 bg-muted/70 border-b border-border", full && "mx-auto max-w-[1280px]")}>
             {singles.map((s) => (
               <li key={s.id}>
                 <Link data-menu-focus="" href={hrefFor(s, alts)} target={s.target} onClick={onNavigate} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:opacity-70">
@@ -344,10 +410,14 @@ export function MegaPanel({ item, onMouseEnter, onMouseLeave, onNavigate }: {
             ))}
           </ul>
         )}
-        <div className={cn("flex flex-col lg:flex-row gap-6 p-7 max-h-[70vh] overflow-y-auto")}>
-          <div className={cn("grid grid-cols-2 gap-x-8 gap-y-7 min-w-0 flex-1", MEGA_COL_CLASS[item.megaColumns ?? (featured ? 4 : 5)] ?? MEGA_COL_CLASS[5])}>
+        <div className={cn("flex flex-col lg:flex-row gap-6 p-7 max-h-[70vh] overflow-y-auto", full && "mx-auto max-w-[1280px]")}>
+          <div className={cn("grid grid-cols-2 gap-x-8 gap-y-7 min-w-0 flex-1", MEGA_COL_CLASS[megaGridColumns(item)] ?? MEGA_COL_CLASS[5])}>
             {groups.map((group) => (
-              <div key={group.id} className="min-w-0">
+              <div key={group.id} className={cn("min-w-0", group.megaSpan === 2 && "col-span-2")}>
+                {group.megaImage && (
+                  // eslint-disable-next-line @next/next/no-img-element -- owner's media URL, any host
+                  <img src={group.megaImage} alt="" loading="lazy" className="mb-3 h-28 w-full rounded-xl object-cover" />
+                )}
                 {isPure(group) ? (
                   <p className="flex items-center gap-2.5 mb-3">
                     {group.icon && <GroupIcon name={group.icon} />}
@@ -362,20 +432,22 @@ export function MegaPanel({ item, onMouseEnter, onMouseLeave, onNavigate }: {
                   </Link>
                 )}
                 {group.description && <p className="-mt-2 mb-3 text-xs text-muted-foreground">{group.description}</p>}
-                <ul className="space-y-1.5">
-                  {(group.children ?? []).map((child) => (
-                    <li key={child.id}>
-                      <Link data-menu-focus="" href={hrefFor(child, alts)} target={child.target} onClick={onNavigate}
-                        className="flex items-start gap-2 text-sm text-muted-foreground hover:text-primary focus-visible:text-primary transition-colors">
-                        {child.showIcon && child.icon && <NavIcon name={child.icon} className="mt-0.5" />}
-                        <span className="min-w-0">
-                          <span className="inline-flex items-center">{child.label}<NavBadge text={child.badge} /></span>
-                          {child.description && <span className="block text-xs text-muted-foreground/80">{child.description}</span>}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                {(group.children?.length ?? 0) > 0 && (
+                  <ul className="space-y-1.5">
+                    {(group.children ?? []).map((child) => (
+                      <li key={child.id}>
+                        <Link data-menu-focus="" href={hrefFor(child, alts)} target={child.target} onClick={onNavigate}
+                          className="flex items-start gap-2 text-sm text-muted-foreground hover:text-primary focus-visible:text-primary transition-colors">
+                          {child.showIcon && child.icon && <NavIcon name={child.icon} className="mt-0.5" />}
+                          <span className="min-w-0">
+                            <span className="inline-flex items-center">{child.label}<NavBadge text={child.badge} /></span>
+                            {child.description && <span className="block text-xs text-muted-foreground/80">{child.description}</span>}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ))}
             {linksAsColumn && singles.length > 0 && (
@@ -394,7 +466,12 @@ export function MegaPanel({ item, onMouseEnter, onMouseLeave, onNavigate }: {
               </div>
             )}
           </div>
-          {featured && <div className="w-full lg:w-72 shrink-0"><FeaturedCard item={item} onNavigate={onNavigate} /></div>}
+          {cards.length === 1 && <div className="w-full lg:w-72 shrink-0"><FeaturedCard card={cards[0]} fallbackLabel={item.label} onNavigate={onNavigate} /></div>}
+          {cards.length > 1 && (
+            <div className="grid w-full shrink-0 gap-4 sm:grid-cols-2 lg:w-72 lg:grid-cols-1">
+              {cards.map((c, i) => <FeaturedCard key={i} card={c} fallbackLabel={item.label} onNavigate={onNavigate} compact />)}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -413,11 +490,14 @@ function GroupIcon({ name }: { name?: string }) {
 
 // ── Mobile drawer ───────────────────────────────────────────────────────
 
-export function StudioMobileItem({ item: raw, expanded, onToggle, onNavigate }: {
+export function StudioMobileItem({ item: given, expanded, onToggle, onNavigate }: {
   item: NavItem; expanded: boolean; onToggle: () => void; onNavigate: () => void;
 }) {
   const alts = useAlternates();
   const panelId = useId();
+  const styled = useContext(MenuLookContext);
+  const seen = useAudienceItem(given);
+  const raw = seen ?? given;
   const item = filterForDevice([raw], "mobile")[0] ?? raw;
   const kids = item.children ?? [];
   const hasChildren = kids.length > 0;
@@ -430,19 +510,22 @@ export function StudioMobileItem({ item: raw, expanded, onToggle, onNavigate }: 
       </span>
     </Link>
   );
+  if (!seen) return null;
+  const megaBuilder = usesMegaBuilder(item) && isMegaItem(item);
+  const rowCls = styled ? "pcm-mcell" : "px-3.5 py-3 rounded-lg text-[0.95rem] font-medium text-foreground hover:bg-muted transition-colors";
   return (
     <li>
       <div className="flex items-center">
         {hasChildren && isPure(item) ? (
           <button type="button" onClick={onToggle} aria-expanded={expanded} aria-controls={panelId}
-            className="flex-1 flex items-center gap-2 text-start px-3.5 py-3 rounded-lg text-[0.95rem] font-medium text-foreground hover:bg-muted transition-colors">
+            className={`flex-1 flex items-center gap-2 text-start ${rowCls}`}>
             {item.highlight
               ? <span className="inline-flex px-3 py-1 rounded-full font-semibold" style={HIGHLIGHT_STYLE[item.highlight]}>{item.label}</span>
               : <Label item={item} />}
           </button>
         ) : (
           <Link href={hrefFor(item, alts)} target={item.target} onClick={() => { if (!hasChildren) onNavigate(); }}
-            className="flex-1 flex items-center gap-2 px-3.5 py-3 rounded-lg text-[0.95rem] font-medium text-foreground hover:bg-muted transition-colors">
+            className={`flex-1 flex items-center gap-2 ${rowCls}`}>
             {item.highlight
               ? <span className="inline-flex px-3 py-1 rounded-full font-semibold" style={HIGHLIGHT_STYLE[item.highlight]}>{item.label}</span>
               : <Label item={item} />}
@@ -455,7 +538,13 @@ export function StudioMobileItem({ item: raw, expanded, onToggle, onNavigate }: 
           </button>
         )}
       </div>
-      {hasChildren && (
+      {hasChildren && megaBuilder && (
+        // Mega builder menus (P4): each column folds open on its own.
+        <div id={panelId} hidden={!expanded} className="ms-4 mt-1 border-s-2 border-border ps-3 space-y-3 pb-2">
+          {expanded && <MegaAccordion item={item} onNavigate={onNavigate} />}
+        </div>
+      )}
+      {hasChildren && !megaBuilder && (
         <div id={panelId} hidden={!expanded} className="ml-4 mt-1 border-l-2 border-border pl-3 space-y-3 pb-2">
           {expanded && (
             <>
@@ -475,11 +564,100 @@ export function StudioMobileItem({ item: raw, expanded, onToggle, onNavigate }: 
                   </li>
                 ))}
               </ul>
-              <FeaturedCard item={item} onNavigate={onNavigate} compact />
+              <FeaturedCard card={item.mega?.featured} fallbackLabel={item.label} onNavigate={onNavigate} compact />
             </>
           )}
         </div>
       )}
     </li>
+  );
+}
+
+const M_LINK = "flex items-start gap-2 px-2 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
+const M_HEAD = "flex items-center gap-2 px-2 py-2 text-[13px] font-semibold uppercase tracking-wide text-foreground";
+
+/**
+ * A mega menu in the phone drawer (menus P4): single links first (or last,
+ * under their heading, when they are a column on desktop), then each column
+ * as its own fold-open section (heading button with aria-expanded), then the
+ * featured cards.
+ */
+function MegaAccordion({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+  const alts = useAlternates();
+  const baseId = useId();
+  const [open, setOpen] = useState<string | null>(null);
+  const { columns, singles } = splitMega(item);
+  const cards = megaCards(item);
+  const linksAsColumn = item.megaLinksAs === "column";
+  const link = (c: NavItem, cls: string) => (
+    <Link href={hrefFor(c, alts)} target={c.target} onClick={onNavigate} className={cls}>
+      {c.showIcon && <NavIcon name={c.icon} />}
+      <span className="min-w-0">
+        <span className="inline-flex items-center">{c.label}<NavBadge text={c.badge} /></span>
+        {c.description && <span className="block text-xs font-normal text-muted-foreground/80">{c.description}</span>}
+      </span>
+    </Link>
+  );
+  const singleList = singles.length > 0 && (
+    <ul className="space-y-0.5">{singles.map((s) => <li key={s.id}>{link(s, M_LINK)}</li>)}</ul>
+  );
+  return (
+    <>
+      {!linksAsColumn && singleList}
+      {columns.length > 0 && (
+        <ul className="space-y-0.5">
+          {columns.map((col) => {
+            const links = col.children ?? [];
+            const id = `${baseId}-${col.id}`;
+            const isOpen = open === col.id;
+            const toggle = () => setOpen((o) => (o === col.id ? null : col.id));
+            const heading = <>{col.showIcon && <NavIcon name={col.icon} />}<span className="min-w-0">{col.label}</span><NavBadge text={col.badge} /></>;
+            return (
+              <li key={col.id}>
+                <div className="flex items-center">
+                  {links.length > 0 && isPure(col) ? (
+                    // A heading that is not a link: the whole row is one fold-open button.
+                    <button type="button" onClick={toggle} aria-expanded={isOpen} aria-controls={id} className={cn(M_HEAD, "flex-1 text-start rounded-lg hover:bg-muted")}>
+                      {heading}
+                      <ChevronDown aria-hidden className={cn("ms-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+                    </button>
+                  ) : isPure(col) ? (
+                    <p className={cn(M_HEAD, "flex-1")}>{heading}</p>
+                  ) : (
+                    <Link href={hrefFor(col, alts)} target={col.target} onClick={onNavigate} className={cn(M_HEAD, "flex-1 rounded-lg hover:bg-muted")}>{heading}</Link>
+                  )}
+                  {links.length > 0 && !isPure(col) && (
+                    <button type="button" onClick={toggle} aria-expanded={isOpen} aria-controls={id} aria-label={col.label}
+                      className="px-3 py-2 rounded-lg text-muted-foreground hover:bg-muted">
+                      <ChevronDown aria-hidden className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                    </button>
+                  )}
+                </div>
+                {links.length > 0 && (
+                  <div id={id} hidden={!isOpen} className="ps-2 pb-1">
+                    {isOpen && (
+                      <>
+                        {col.megaImage && (
+                          // eslint-disable-next-line @next/next/no-img-element -- owner's media URL, any host
+                          <img src={col.megaImage} alt="" loading="lazy" className="mb-2 h-24 w-full rounded-xl object-cover" />
+                        )}
+                        <ul className="space-y-0.5">{links.map((g) => <li key={g.id}>{link(g, M_LINK)}</li>)}</ul>
+                      </>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {linksAsColumn && singles.length > 0 && (
+        <div>
+          {item.megaLinksTitle && <p className={M_HEAD}>{item.megaLinksTitle}</p>}
+          {singleList}
+        </div>
+      )}
+      {cards.map((c, i) => <FeaturedCard key={i} card={c} fallbackLabel={item.label} onNavigate={onNavigate} compact />)}
+    </>
   );
 }

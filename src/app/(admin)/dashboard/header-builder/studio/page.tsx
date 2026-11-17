@@ -7,6 +7,7 @@ import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity"
 import { buildSiteTheme, type SiteThemeInput } from "@/modules/themes/site-theme";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
 import { classicHeaderItems } from "@/modules/header-studio/classic-links";
+import { getDefaultMenu } from "@/lib/site/default-menu";
 import { normalizeMenu } from "@/modules/navigation/menu-model";
 import { normalizeDoc } from "@/modules/header-studio/doc";
 import type { SiteFacts } from "@/modules/header-studio/presets";
@@ -46,6 +47,8 @@ export default async function HeaderStudioPage() {
   // The classic header's links: what the menu shows when no saved menu is in the header.
   const classic = classicHeaderItems((identityRes.data as { global_header?: unknown } | null)?.global_header);
   const classicItems = classic ? await expandDynamicChildren(admin, tenantId, classic) as NavItem[] : null;
+  // Nothing at all: the automatic menu from the site's pages (menus P3).
+  const defaultItems = !classicItems && !(menusRes.data ?? []).length ? await getDefaultMenu(tenantId) : [];
 
   let siteName = identity?.site_name ?? "";
   if (!siteName) {
@@ -76,6 +79,7 @@ export default async function HeaderStudioPage() {
         unavailable={unavailable}
         menus={menus}
         classicItems={classicItems}
+        defaultItems={defaultItems}
         pages={((pagesRes.data ?? []) as { slug: string; title: string | null }[]).map((p) => ({ path: p.slug === "home" ? "/" : `/${p.slug}`, title: p.title || p.slug }))}
         facts={facts}
         contact={contact}

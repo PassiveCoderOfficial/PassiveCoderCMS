@@ -1,5 +1,6 @@
 "use client";
 
+import { SwitchToStudioButton } from "@/components/admin/studio-switch/switch-to-studio";
 import { useEffect, useMemo, useState } from "react";
 import { menuUsage, type MenuPlace, type MenuReaders } from "@/modules/navigation/menu-usage";
 import { mergeAfterSave, saveOrder } from "@/modules/navigation/menu-save";
@@ -9,7 +10,9 @@ import {
   Plus, Trash2, Loader2, Save, MapPin, AlertTriangle, Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { collectDeepIds, normalizeMenu, prepareForSave } from "@/modules/navigation/menu-model";
+import { attachRefs, collectDeepIds, normalizeMenu, prepareForSave } from "@/modules/navigation/menu-model";
+import { MenuPreview } from "./menu-preview";
+import { MenuHistoryPanel, type RestoredMenu } from "./menu-history-panel";
 import type { NavItem } from "@/types/cms";
 import { MenuTreeEditor } from "./menu-tree-editor";
 import type { LinkTarget } from "@/app/api/navigation/link-targets/route";
@@ -63,10 +66,18 @@ export default function NavigationClient({ initialMenus, importable, readers: in
   const [readers, setReaders] = useState<MenuReaders>(initialReaders);
   const [pendingImport, setPendingImport] = useState<ImportableNav[]>(importable);
   const [activeId, setActiveId] = useState<string | null>(initialMenus[0]?.id ?? null);
+  // ?menu=<id>: opened from a placement's "Edit this menu" / "Create a menu" (menus P2).
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get("menu");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read the address once after mount
+    if (want && initialMenus.some((m) => m.id === want)) setActiveId(want);
+  }, [initialMenus]);
   const [targets, setTargets] = useState<LinkTarget[]>([]);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [importingLocation, setImportingLocation] = useState<string | null>(null);
+  // Bumped after each save so the history list reloads (menus P1).
+  const [historyRev, setHistoryRev] = useState(0);
   // Menus with unsaved edits, by id. Switching menus keeps every menu's
   // edits, and Save saves them all (before P0 only the open menu was sent and
   // the refetch wiped the others' edits).
@@ -95,7 +106,7 @@ export default function NavigationClient({ initialMenus, importable, readers: in
         ? r
         : { ...r, byLocation: { ...r.byLocation, [location]: [...new Set([...(r.byLocation[location] ?? []), location])] } });
       setActiveId(data.menu.id);
-      toast.success(t("navPage.importedMenu", { location }));
+      toast.success(t("navPage.importedMenu", { location: (location === "header" ? t("navPage.locHeader") : t("navPage.locFooter")).toLowerCase() }));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("navPage.importFailed"));
     } finally {
@@ -137,7 +148,9 @@ export default function NavigationClient({ initialMenus, importable, readers: in
         const res = await fetch("/api/navigation", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: menu.id, name: menu.name, location: menu.location, items: prepareForSave(menu.items, legacyDeep.get(menu.id)) }),
+          // Links that match one of the site's pages (products, categories...)
+          // are linked by id, so renaming the page later never breaks them.
+          body: JSON.stringify({ id: menu.id, name: menu.name, location: menu.location, items: attachRefs(prepareForSave(menu.items, legacyDeep.get(menu.id)), targets) }),
         });
         const data = await res.json() as { error?: string; menu?: NavMenuRow };
         if (!res.ok) throw new Error(data.error ?? t("navPage.failedToSaveMenu"));
@@ -160,6 +173,7 @@ export default function NavigationClient({ initialMenus, importable, readers: in
     } catch { /* keep the local list */ }
     setDirtyIds(failed);
     setSaving(false);
+    setHistoryRev((n) => n + 1);
     if (lastError) toast.error(lastError);
     if (saved) toast.success(saved > 1 ? t("navPage.savedCount", { count: saved }) : t("navPage.menuSaved"));
   }
@@ -198,12 +212,20 @@ export default function NavigationClient({ initialMenus, importable, readers: in
     }
   }
 
+  /** A version put back from the history: it is live now, so it is the saved state. */
+  function onRestored(menu: RestoredMenu) {
+    setMenus((prev) => prev.map((m) => (m.id === menu.id ? { ...m, ...menu, items: normalizeMenu(menu.items) } : m)));
+    setDirtyIds((prev) => { if (!prev.has(menu.id)) return prev; const next = new Set(prev); next.delete(menu.id); return next; });
+  }
+
   const assignedElsewhere = active
     ? menus.find((m) => m.id !== active.id && m.location === active.location && active.location !== "none")
     : null;
 
   return (
     <div className="p-6 space-y-6">
+      {/* Menus P5: a classic header can move to the Studio (menus by id, before/after first, a draft until published). */}
+      {readers.studioHeaderRefs === null && <SwitchToStudioButton area="header" variant="banner" />}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{t("navPage.title")}</h1>
@@ -333,9 +355,12 @@ export default function NavigationClient({ initialMenus, importable, readers: in
 
                 <div className="sm:col-span-2">
                   {usage[active.id]?.length ? (
-                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                      {t("navPage.shownWhere", { places: usage[active.id].map((p) => t(PLACE_KEY[p])).join(", ") })}
-                    </p>
+                    <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2.5">
+                      <p className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">{t("navPage.usedIn")}</p>
+                      <ul className="mt-1 list-disc space-y-0.5 ps-4 text-[11px] text-emerald-700 dark:text-emerald-400">
+                        {usage[active.id].map((p) => <li key={p}>{t(PLACE_KEY[p])}</li>)}
+                      </ul>
+                    </div>
                   ) : (
                     <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5" role="status">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
@@ -362,6 +387,10 @@ export default function NavigationClient({ initialMenus, importable, readers: in
                 targets={targets}
                 onChange={(items) => patchActive((m) => ({ ...m, items }))}
               />
+
+              <MenuPreview items={active.items} />
+
+              <MenuHistoryPanel key={active.id} menuId={active.id} rev={historyRev} dirty={dirtyIds.has(active.id)} onRestored={onRestored} />
 
               <button
                 onClick={() => deleteMenu(active.id)}

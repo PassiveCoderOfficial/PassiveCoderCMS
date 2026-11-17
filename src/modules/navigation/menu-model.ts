@@ -14,7 +14,7 @@
  * Pure functions only (no React, no Supabase), so tests and the dashboard
  * editor share them.
  */
-import type { NavItem, NavChildSource } from "@/types/cms";
+import type { NavItem, NavChildSource, NavLinkKind, NavAudience, NavMegaConfig, NavMegaFeatured } from "@/types/cms";
 
 /** Top level = 1, dropdown / mega column = 2, links inside a column or flyout = 3. */
 export const MAX_MENU_DEPTH = 3;
@@ -22,6 +22,11 @@ export const MAX_MENU_DEPTH = 3;
 const DEVICES = new Set(["all", "desktop", "mobile"]);
 const OPEN_ON = new Set(["hover", "click"]);
 const SOURCES = new Set<NavChildSource>(["manual", "services", "service_groups", "product_categories", "pages", "blog_categories", "products", "posts"]);
+export const LINK_KINDS: readonly NavLinkKind[] = ["custom", "page", "post", "product", "service", "service_group", "category"];
+const KINDS = new Set<string>(LINK_KINDS);
+const AUDIENCES = new Set<string>(["guests", "members"]);
+/** Language codes a per-language label may use ("bn", "ar", "zh-hk"...). */
+const LANG_RE = /^[a-z]{2,3}(-[a-z0-9]{2,8})?$/;
 
 /** Auto-list sources only the studio renderer knows. */
 const STUDIO_SOURCES = new Set<NavChildSource>(["products", "posts"]);
@@ -39,6 +44,13 @@ function ownStudioField(i: NavItem): boolean {
     (i.device && i.device !== "all") ||
     i.openOn ||
     i.mega ||
+    // Mega builder (menus P4): 6 columns (legacy draws at most 5) and column fields.
+    (i.megaColumns as number) === 6 ||
+    i.megaColumn === true ||
+    i.megaSpan === 2 ||
+    (typeof i.megaImage === "string" && !!i.megaImage.trim()) ||
+    // Menus P1: who sees the item is decided in the browser, by the studio renderer.
+    (i.audience && AUDIENCES.has(i.audience)) ||
     (i.childIds && i.childIds.length) ||
     (i.childSource && STUDIO_SOURCES.has(i.childSource))
   );
@@ -98,6 +110,19 @@ export function normalizeMenu(input: unknown, depth = 1): NavItem[] {
       else item.childIds = item.childIds.filter((x): x is string => typeof x === "string" && !!x);
     }
     if (item.mega !== undefined && (typeof item.mega !== "object" || item.mega === null || Array.isArray(item.mega))) delete item.mega;
+    // Mega builder (menus P4): only checked when present, so older menus come back untouched.
+    if (item.mega && ((item.mega as Record<string, unknown>).cards !== undefined || (item.mega as Record<string, unknown>).width !== undefined)) item.mega = cleanMegaConfig(item.mega);
+    if (item.megaColumn !== undefined && item.megaColumn !== true) delete item.megaColumn;
+    if (item.megaSpan !== undefined && item.megaSpan !== 2) delete item.megaSpan;
+    if (item.megaImage !== undefined && (typeof item.megaImage !== "string" || !item.megaImage.trim())) delete item.megaImage;
+    // Menus P1 fields: only checked when present, so older menus come back untouched.
+    if (item.kind !== undefined && !KINDS.has(item.kind as string)) { delete item.kind; delete item.ref; }
+    if (item.ref !== undefined && (typeof item.ref !== "string" || !item.ref || !item.kind || item.kind === "custom")) delete item.ref;
+    if (item.audience !== undefined && !AUDIENCES.has(item.audience as string)) delete item.audience;
+    if (item.labels !== undefined) {
+      const clean = cleanLabels(item.labels);
+      if (clean) item.labels = clean; else delete item.labels;
+    }
     if (item.children !== undefined) {
       if (!Array.isArray(item.children)) delete item.children;
       else if (depth >= MAX_MENU_DEPTH) item.children = item.children.length ? [] : item.children;
@@ -106,6 +131,169 @@ export function normalizeMenu(input: unknown, depth = 1): NavItem[] {
     out.push(item);
   }
   return out;
+}
+
+const CARD_FIELDS = ["image", "title", "text", "url", "ctaLabel"] as const;
+/** Most featured cards a mega menu shows (menus P4). */
+export const MAX_MEGA_CARDS = 2;
+
+/** One featured card with only its text fields (empty ones dropped). */
+export function cleanMegaCard(input: unknown): NavMegaFeatured {
+  const out: NavMegaFeatured = {};
+  if (!input || typeof input !== "object" || Array.isArray(input)) return out;
+  for (const k of CARD_FIELDS) {
+    const v = (input as Record<string, unknown>)[k];
+    if (typeof v === "string" && v.trim()) out[k] = v;
+  }
+  return out;
+}
+
+/** The mega builder fields of `mega` checked: up to 2 cards, a known width. Other keys are kept as they are. */
+function cleanMegaConfig(mega: NavMegaConfig): NavMegaConfig {
+  const next = { ...mega } as NavMegaConfig & Record<string, unknown>;
+  if (next.cards !== undefined) {
+    if (!Array.isArray(next.cards)) delete next.cards;
+    else next.cards = next.cards.filter((c) => c && typeof c === "object" && !Array.isArray(c)).slice(0, MAX_MEGA_CARDS).map(cleanMegaCard);
+  }
+  if (next.width !== undefined && next.width !== "container" && next.width !== "full") delete next.width;
+  return next;
+}
+
+/** Per-language labels: lower-case language codes to non-empty text. Null when nothing usable is left. */
+function cleanLabels(input: unknown): Record<string, string> | null {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    const code = k.trim().toLowerCase();
+    if (LANG_RE.test(code) && typeof v === "string" && v.trim()) out[code] = v;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+// ── Menus P1: links by id, per-language labels, audience ─────────────────
+
+/** A link the renderer looks up by id ("page:<uuid>"). */
+export function refKey(kind: NavLinkKind, id: string): string {
+  return `${kind}:${id}`;
+}
+
+/** Every id-based link in the tree, grouped by kind (for one query per kind). */
+export function collectRefs(items: NavItem[], out: Map<NavLinkKind, Set<string>> = new Map()): Map<NavLinkKind, Set<string>> {
+  for (const i of items) {
+    if (i.kind && i.kind !== "custom" && i.ref) {
+      const set = out.get(i.kind) ?? new Set<string>();
+      set.add(i.ref);
+      out.set(i.kind, set);
+    }
+    if (i.children?.length) collectRefs(i.children, out);
+  }
+  return out;
+}
+
+/**
+ * Fills each id-based link's `url` with its live address. A record that is
+ * gone (deleted, unpublished) keeps the stored url, the last known one.
+ * Items without a ref are returned as the same objects, and the same array
+ * comes back when nothing changed, so menus saved before P1 are untouched.
+ */
+export function applyRefUrls(items: NavItem[], urls: Map<string, string>): NavItem[] {
+  let changed = false;
+  const out = items.map((i) => {
+    let next = i;
+    if (i.kind && i.kind !== "custom" && i.ref) {
+      const live = urls.get(refKey(i.kind, i.ref));
+      if (live !== undefined && live !== i.url) next = { ...next, url: live };
+    }
+    if (i.children?.length) {
+      const kids = applyRefUrls(i.children, urls);
+      if (kids !== i.children) next = { ...next, children: kids };
+    }
+    if (next !== i) changed = true;
+    return next;
+  });
+  return changed ? out : items;
+}
+
+/**
+ * Labels in the page's language: an item with a label for `lang` shows it,
+ * every other item keeps `label`. Same array back when nothing changes.
+ */
+export function localizeMenu(items: NavItem[], lang: string | null | undefined): NavItem[] {
+  const code = lang?.trim().toLowerCase();
+  if (!code) return items;
+  const base = code.split("-")[0];
+  let changed = false;
+  const out = items.map((i) => {
+    let next = i;
+    const own = i.labels?.[code] ?? i.labels?.[base];
+    if (own && own.trim() && own !== i.label) next = { ...next, label: own };
+    if (i.children?.length) {
+      const kids = localizeMenu(i.children, code);
+      if (kids !== i.children) next = { ...next, children: kids };
+    }
+    if (next !== i) changed = true;
+    return next;
+  });
+  return changed ? out : items;
+}
+
+/** Does any item (any level) show only to guests or only to signed-in customers? */
+export function hasAudience(items: NavItem[] | undefined): boolean {
+  return !!items?.some((i) => (i.audience && AUDIENCES.has(i.audience)) || hasAudience(i.children));
+}
+
+/**
+ * Items this visitor sees. `signedIn` null = not known yet (first paint):
+ * guest-only items show, customer-only items wait, so a signed-out visitor
+ * (most of them) never sees a flash. Same array back when nothing is hidden.
+ */
+export function filterForAudience(items: NavItem[], signedIn: boolean | null): NavItem[] {
+  let changed = false;
+  const out: NavItem[] = [];
+  for (const i of items) {
+    const a = i.audience as NavAudience | undefined;
+    if (a === "members" && signedIn !== true) { changed = true; continue; }
+    if (a === "guests" && signedIn === true) { changed = true; continue; }
+    if (i.children?.length) {
+      const kids = filterForAudience(i.children, signedIn);
+      if (kids !== i.children) { changed = true; out.push({ ...i, children: kids }); continue; }
+    }
+    out.push(i);
+  }
+  return changed ? out : items;
+}
+
+/** A link-picker choice (see /api/navigation/link-targets). */
+export type RefTarget = { url: string; kind?: NavLinkKind; ref?: string };
+
+/**
+ * On save from the Navigation screen: items whose URL is exactly one of the
+ * site's pages (or products, categories...) and that are not linked by id
+ * yet get that id, so a later rename follows. The URL itself is not
+ * changed, so the live menu looks the same. Ambiguous URLs are left alone.
+ */
+export function attachRefs(items: NavItem[], targets: RefTarget[]): NavItem[] {
+  const byUrl = new Map<string, RefTarget | null>();
+  for (const t of targets) {
+    if (!t.kind || t.kind === "custom" || !t.ref) continue;
+    byUrl.set(t.url, byUrl.has(t.url) ? null : t);
+  }
+  if (!byUrl.size) return items;
+  let changed = false;
+  const out = items.map((i) => {
+    let next = i;
+    if (!i.kind && !i.lang && !i.ref) {
+      const hit = byUrl.get(i.url);
+      if (hit) next = { ...next, kind: hit.kind, ref: hit.ref };
+    }
+    if (i.children?.length) {
+      const kids = attachRefs(i.children, targets);
+      if (kids !== i.children) next = { ...next, children: kids };
+    }
+    if (next !== i) changed = true;
+    return next;
+  });
+  return changed ? out : items;
 }
 
 /** Items shown on one device: desktop menu bar or phone drawer. Unset / "all" shows on both. */
@@ -291,8 +479,39 @@ export function structureLostByFlatReplace(items: unknown): string[] {
     if (i.children?.length) out.add("sub-menus");
     if (i.childSource && i.childSource !== "manual") out.add("auto lists");
     if (usesStudio(i)) out.add("menu settings (mega menu, icons, badges or similar)");
+    if (hasLabels(i)) out.add("labels in other languages");
   }
   return [...out];
+}
+
+/** What one item carries that a careless replace could wipe (its own level only, not its sub-items). */
+function itemFeatures(i: NavItem): string[] {
+  const out: string[] = [];
+  if (i.children?.length) out.push("sub-menus");
+  if (i.childSource && i.childSource !== "manual") out.push("auto lists");
+  if (ownStudioField(i)) out.push("menu settings (mega menu, icons, badges or similar)");
+  if (i.labels && Object.keys(i.labels).length) out.push("labels in other languages");
+  return out;
+}
+
+/**
+ * What replacing `existing` with `next` would lose (menus P1, MCP): for every
+ * item of the old menu (any level), each of its sub-menu / auto list / studio
+ * settings / translations that the item with the same id in the new menu no
+ * longer has (a removed item loses them all). Empty = safe to replace.
+ */
+export function structureLostByReplace(existing: unknown, next: unknown): string[] {
+  const after = new Map(flattenTree(normalizeMenu(next)).map((f) => [f.id, new Set(itemFeatures(f.item))]));
+  const out = new Set<string>();
+  for (const f of flattenTree(normalizeMenu(existing))) {
+    const kept = after.get(f.id);
+    for (const feat of itemFeatures(f.item)) if (!kept?.has(feat)) out.add(feat);
+  }
+  return [...out];
+}
+
+function hasLabels(i: NavItem): boolean {
+  return !!(i.labels && Object.keys(i.labels).length) || (i.children ?? []).some(hasLabels);
 }
 
 /** True when the item is first among its siblings, so "nest under the item above" has nothing to nest under. */

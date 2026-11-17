@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import type { Block, ContainerBlockProps } from "@/types/cms";
+import { isMenuPlacement } from "@/modules/navigation/nav-blocks";
 
 /**
  * True when this block is site-chrome — either the legacy `navigation`/
@@ -23,8 +24,11 @@ export function isChromeBlock(b: Block, kind: "header" | "footer"): boolean {
   if (kind === "footer" && b.type === "footer") return true;
   if (b.type !== "container") return false;
   const container = b as ContainerBlockProps;
+  // A page "Menu" block (menus P2: header_nav with a layout) is page content,
+  // so a section holding one is not a header. Blocks saved before P2 have no
+  // layout and count exactly as before.
   const subTypes = new Set(
-    container.data.columns?.flatMap((c) => c.blocks?.map((cb) => cb.type) ?? []) ?? [],
+    container.data.columns?.flatMap((c) => c.blocks?.filter((cb) => !isMenuPlacement(cb)).map((cb) => cb.type) ?? []) ?? [],
   );
   if (kind === "header") {
     return subTypes.has("header_logo") || subTypes.has("header_nav") || subTypes.has("header_cta") || subTypes.has("header_booking")

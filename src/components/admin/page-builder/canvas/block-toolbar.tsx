@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { SavePresetDialog } from "./save-preset-dialog";
 import { useBlockActions } from "./use-block-actions";
 import { useEditSiteChrome } from "./site-chrome-context";
+import { useBlockDisplayName } from "../block-display-name";
 
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { DraggableAttributes } from "@dnd-kit/core";
@@ -22,6 +23,15 @@ interface BlockToolbarProps {
   /** Keep visible without hover — set when this block is the current selection,
    *  so editors can tell what's selected without having to keep the mouse over it. */
   pinned?: boolean;
+  /**
+   * Where the bar sits (2026-11-17). "inside" (tall blocks): over the block's
+   * top edge, as before. A short block (a Menu bar is about 35px tall) was
+   * hidden completely under its own bar, so the wrapper places the bar flush
+   * against the block's outer edge instead: "above", or "flow" (inside a
+   * stack the wrapper positions below the block, e.g. for the first block,
+   * which has no room above it).
+   */
+  placement?: "inside" | "above" | "flow";
 }
 
 const DEVICES = [
@@ -30,7 +40,8 @@ const DEVICES = [
   { key: "mobile" as const, icon: Smartphone, label: "Mobile" },
 ];
 
-export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned }: BlockToolbarProps) {
+export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinned, placement = "inside" }: BlockToolbarProps) {
+  const name = useBlockDisplayName(block.type);
   const { updateBlock } = useBuilderStore();
   const [saveOpen, setSaveOpen] = useState(false);
   const hideOn = block.hideOn ?? [];
@@ -63,7 +74,13 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
           // Sitting inside the block removes both classes of failure instead
           // of patching around them — there is no gap to lose hover over and
           // no space outside the block to run out of.
-          "absolute top-1 left-1 right-1 z-20 flex items-center gap-0.5 rounded-lg px-1 py-1 transition-opacity shadow-lg overflow-x-auto",
+          "z-20 flex items-center gap-0.5 rounded-lg px-1 py-1 transition-opacity shadow-lg overflow-x-auto",
+          // Outside a short block the bar is flush with its edge (no gap to
+          // lose hover over, see above) and only as wide as its buttons, so
+          // it hides as little of the neighbouring block as possible.
+          placement === "inside" && "absolute top-1 left-1 right-1",
+          placement === "above" && "absolute bottom-full left-0 w-max max-w-full rounded-b-none",
+          placement === "flow" && "relative w-max max-w-full rounded-t-none",
           // opacity-0 alone still leaves the bar in the hit-testing tree, so a
           // stray click could land on an invisible control; pair it with
           // pointer-events so only a visible toolbar is interactive.
@@ -77,7 +94,7 @@ export function BlockToolbar({ block, dragListeners, dragAttributes, path, pinne
         data-block-type={block.type}
       >
         <span className="hidden lg:inline text-[10px] text-gray-400 mr-1 select-none px-1 truncate max-w-[100px] shrink-0">
-          {block.type.replace(/_/g, " ")}
+          {name}
         </span>
         <div className="flex items-center gap-0.5 shrink-0 ml-auto lg:ml-0">
           {actions.map((action, i) => (

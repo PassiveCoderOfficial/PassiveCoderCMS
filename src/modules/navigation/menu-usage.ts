@@ -13,10 +13,12 @@
  * - a live Studio header menu element (by menu id; no id = the menu placed in
  *   "header");
  * - a live Studio footer menu widget (by id; no id = "footer", then "header").
+ * - since P2: a menu block (page Menu block, container header menu) or a
+ *   classic footer column that names the menu by id.
  * When a Studio header (footer) is live, the classic header (footer) blocks
  * are not drawn, so their reads do not count.
  */
-import { locationsReadBy } from "./nav-blocks";
+import { locationsReadBy, menuIdsReadBy } from "./nav-blocks";
 
 export type MenuPlace = "header" | "footer" | "prefooter" | "pages" | "studioHeader" | "studioFooter";
 
@@ -35,6 +37,8 @@ export interface ReaderInput {
 /** What reads menus on the live site: per location, the places that read it; plus the live studios' menu refs. Serialisable. */
 export interface MenuReaders {
   byLocation: Record<string, MenuPlace[]>;
+  /** Places that name a menu by id (menus P2). Optional: readers built before P2 have none. */
+  byId?: Record<string, MenuPlace[]>;
   studioHeaderRefs: string[] | null;
   studioFooterRefs: string[] | null;
 }
@@ -42,9 +46,14 @@ export interface MenuReaders {
 /** Built once on the server from the site's block trees and studio documents. */
 export function menuReaders(input: ReaderInput): MenuReaders {
   const byLocation: Record<string, MenuPlace[]> = {};
+  const byId: Record<string, MenuPlace[]> = {};
   const read = (trees: unknown[], place: MenuPlace) => {
     for (const loc of locationsReadBy(trees)) {
       const list = (byLocation[loc] ??= []);
+      if (!list.includes(place)) list.push(place);
+    }
+    for (const id of menuIdsReadBy(trees)) {
+      const list = (byId[id] ??= []);
       if (!list.includes(place)) list.push(place);
     }
   };
@@ -52,7 +61,7 @@ export function menuReaders(input: ReaderInput): MenuReaders {
   if (!input.studioFooterRefs) read([input.classicFooter], "footer");
   read([input.classicPrefooter], "prefooter");
   read(input.pages, "pages");
-  return { byLocation, studioHeaderRefs: input.studioHeaderRefs, studioFooterRefs: input.studioFooterRefs };
+  return { byLocation, byId, studioHeaderRefs: input.studioHeaderRefs, studioFooterRefs: input.studioFooterRefs };
 }
 
 /**
@@ -69,6 +78,7 @@ export function menuUsage(menus: { id: string; location: string | null }[], read
   };
   const atLocation = (loc: string) => menus.find((m) => m.location === loc)?.id;
   for (const [loc, places] of Object.entries(readers.byLocation)) for (const p of places) add(atLocation(loc), p);
+  for (const [id, places] of Object.entries(readers.byId ?? {})) for (const p of places) add(id, p);
   const own = (ref: string) => (ref && menus.some((m) => m.id === ref) ? ref : undefined);
   for (const ref of readers.studioHeaderRefs ?? []) add(own(ref) ?? atLocation("header"), "studioHeader");
   for (const ref of readers.studioFooterRefs ?? []) add(own(ref) ?? atLocation("footer") ?? atLocation("header"), "studioFooter");

@@ -16,7 +16,8 @@ import Link from "next/link";
 import type { NavItem } from "@/types/cms";
 import { cn } from "@/lib/utils";
 import { hrefFor, useAlternates } from "@/components/site/use-alternates";
-import { menuToLinks } from "@/modules/navigation/menu-model";
+import { filterForAudience, hasAudience, menuToLinks } from "@/modules/navigation/menu-model";
+import { useSignedIn } from "@/components/site/use-signed-in";
 import { NavBadge, NavIcon } from "./nav-menu-studio";
 
 export function MenuLinkList({ items, levels = 1, className, linkClassName, linkStyle }: {
@@ -27,7 +28,9 @@ export function MenuLinkList({ items, levels = 1, className, linkClassName, link
   linkStyle?: React.CSSProperties;
 }) {
   const alts = useAlternates();
-  const links = menuToLinks(items, { levels });
+  // Guest-only / customer-only links (menus P1), decided in the browser.
+  const signedIn = useSignedIn(hasAudience(items));
+  const links = menuToLinks(filterForAudience(items, signedIn), { levels });
   if (!links.length) return null;
   return (
     <ul className={cn("space-y-2", className)}>

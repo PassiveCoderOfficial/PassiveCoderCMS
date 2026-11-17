@@ -28,8 +28,9 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavItem } from "@/types/cms";
 import { MobileNavList } from "@/components/blocks/navigation/nav-menu-core";
+import { MenuRenderer } from "@/components/blocks/navigation/menu-renderer";
 import {
-  ROW_KEYS, ZONES, allElements, drawerMenuElement, firstOfType, transparentOn,
+  ROW_KEYS, ZONES, allElements, colorIsDark, drawerMenuElement, firstOfType, transparentOn,
   type HeaderConfig, type HeaderElement, type HeaderRow, type HeaderRowKey,
 } from "@/modules/header-studio/model";
 import { HeaderElementView, SearchPanel, ICON_BTN, type ElementCtx } from "./header-elements";
@@ -43,6 +44,15 @@ const BG: Record<HeaderRow["background"], { bg: string; fg: string; dark: boolea
   dark: { bg: "#0f172a", fg: "#f8fafc", dark: true },
   transparent: { bg: "transparent", fg: "hsl(var(--foreground))", dark: false },
 };
+
+/** A row's colours: its own (menus P5, e.g. a converted classic bar) over the background preset. */
+function rowPalette(row: HeaderRow): { bg: string; fg: string; dark: boolean } {
+  const base = BG[row.background];
+  if (!row.bgColor && !row.fgColor) return base;
+  const fgDark = colorIsDark(row.fgColor);
+  const dark = colorIsDark(row.bgColor) ?? (fgDark === null ? null : !fgDark) ?? base.dark;
+  return { bg: row.bgColor ?? base.bg, fg: row.fgColor ?? base.fg, dark };
+}
 
 const SIZE: Record<HeaderRow["size"], string> = {
   sm: "min-h-9 py-1 text-[13px]",
@@ -122,6 +132,20 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
     return () => window.removeEventListener("scroll", onScroll);
   }, [preview, b.hideOnScroll]);
 
+  // Top bar that scrolls away (menus P5): the sticky header sits above the
+  // screen by the visible top row's height, so only the rows below stay pinned.
+  const scrollsAway = !preview && b.sticky && !!b.topScrolls && config.rows.top.enabled;
+  const [topH, setTopH] = useState(0);
+  useEffect(() => {
+    if (!scrollsAway || typeof ResizeObserver === "undefined") return;
+    const rows = [...(rootRef.current?.querySelectorAll<HTMLElement>('[data-hs-row="top"]') ?? [])];
+    const measure = () => setTopH(Math.max(0, ...rows.map((r) => r.offsetHeight)));
+    const ro = new ResizeObserver(measure);
+    rows.forEach((r) => ro.observe(r));
+    measure();
+    return () => ro.disconnect();
+  }, [scrollsAway, config]);
+
   const closeDrawer = useCallback((restoreFocus = true) => {
     setDrawerOpen(false);
     if (restoreFocus) requestAnimationFrame(() => toggleRef.current?.focus());
@@ -162,7 +186,7 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
   const isHidden = b.hideOnScroll && hidden && !drawerOpen && !searchOpen;
 
   const ctxFor = useCallback((row: HeaderRow): ElementCtx => {
-    const pal = clear ? { bg: "transparent", fg: "#ffffff", dark: true } : BG[row.background];
+    const pal = clear ? { bg: "transparent", fg: "#ffffff", dark: true } : rowPalette(row);
     return {
       fg: pal.fg, onDark: pal.dark, logoUrl, logoDarkUrl, siteName, menus,
       uppercase: config.style.uppercase, logoScale: shrunk ? 0.8 : 1,
@@ -173,12 +197,12 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
   const container = config.style.container;
   const inner = container === "full" ? "mx-auto w-full max-w-7xl px-4 sm:px-6" : "w-full px-4 sm:px-5";
 
-  const rowView = (key: HeaderRowKey) => {
+  const rowView = (key: HeaderRowKey, device: "desktop" | "mobile" = "desktop") => {
     const row = config.rows[key];
     if (!row.enabled) return null;
-    const zones = Object.fromEntries(ZONES.map((z) => [z, row.zones[z].filter((e) => visibleOn(e, "desktop"))])) as Record<(typeof ZONES)[number], HeaderElement[]>;
+    const zones = Object.fromEntries(ZONES.map((z) => [z, row.zones[z].filter((e) => visibleOn(e, device))])) as Record<(typeof ZONES)[number], HeaderElement[]>;
     if (!zones.left.length && !zones.center.length && !zones.right.length) return null;
-    const pal = clear ? { bg: "transparent", fg: "#ffffff", dark: true } : BG[row.background];
+    const pal = clear ? { bg: "transparent", fg: "#ffffff", dark: true } : rowPalette(row);
     const ctx = ctxFor(row);
     const hasCenter = zones.center.length > 0;
     const size = key === "main" && shrunk ? "min-h-14 py-1.5" : SIZE[row.size];
@@ -204,7 +228,7 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
   // ── Phone bar ─────────────────────────────────────────────────────────
   const main = config.rows.main;
   const phoneCtx = ctxFor(main);
-  const phonePal = clear ? { bg: "transparent", fg: "#ffffff" } : BG[main.background];
+  const phonePal = clear ? { bg: "transparent", fg: "#ffffff" } : rowPalette(main);
   const logoEl = firstOfType(config, "logo");
   const menuEl = drawerMenuElement(config, (e) => visibleOn(e, "mobile"));
   const drawerItems = menuEl ? menus[menuEl.menuId ?? ""] ?? menus[""] ?? [] : [];
@@ -238,11 +262,14 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
   const drawerCtx: ElementCtx = { ...phoneCtx, fg: "hsl(var(--foreground))", onDark: false };
   const drawerBody = (
     <>
-      {drawerItems.length > 0 && (
-        <nav aria-label={menuEl?.label || "Main"} className={cn(config.style.uppercase && "uppercase tracking-wide")}>
-          <MobileNavList items={drawerItems} onNavigate={() => closeDrawer(false)} />
-        </nav>
-      )}
+      {drawerItems.length > 0 && (menuEl?.menuStyle
+        // Menus P2: the menu's own look, as a folding list.
+        ? <div className="p-2"><MenuRenderer items={drawerItems} layout="accordion" style={menuEl.menuStyle} label={menuEl.label || "Main"} /></div>
+        : (
+          <nav aria-label={menuEl?.label || "Main"} className={cn(config.style.uppercase && "uppercase tracking-wide")}>
+            <MobileNavList items={drawerItems} onNavigate={() => closeDrawer(false)} />
+          </nav>
+        ))}
       {(actions.length > 0 || contactEls.length > 0 || langEl || socialsEl) && (
         <div className="space-y-4 border-t border-border px-5 py-5">
           {actions.length > 0 && (
@@ -298,6 +325,7 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
   const floating = container === "floating";
   const boxed = container === "boxed";
   const position = preview ? "relative" : overlay ? "fixed inset-x-0 top-0" : b.sticky ? "sticky top-0" : "relative";
+  const stickyTop: React.CSSProperties | undefined = scrollsAway && !overlay && topH ? { top: -topH } : undefined;
   const frame = cn(
     floating && "mx-auto max-w-6xl overflow-hidden rounded-2xl",
     boxed && "mx-auto max-w-7xl overflow-hidden rounded-b-2xl",
@@ -313,14 +341,17 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
       </a>
       <header
         className={cn(position, "z-50 w-full transition-transform duration-300", floating && "px-3 pt-3", isHidden && "-translate-y-full")}
+        style={stickyTop}
         data-transparent={clear ? "" : undefined}>
         {showDesktop && (
           <div className={cn(!preview && bp.desktop)}>
-            <div className={frame}>{ROW_KEYS.map(rowView)}</div>
+            <div className={frame}>{ROW_KEYS.map((k) => rowView(k))}</div>
           </div>
         )}
         {showPhone && (
           <div className={cn(!preview && bp.phone)}>
+            {/* Menus P5: the top bar row above the phone bar, when the owner keeps it on phones. */}
+            {config.mobile.topBar && <div data-hs-phone-top="" className="overflow-hidden">{rowView("top", "mobile")}</div>}
             <div className={cn(floating && "overflow-hidden rounded-2xl", (config.style.shadow || floating) && !clear && "shadow-lg")}>{phoneBar}</div>
             {drawer}
           </div>

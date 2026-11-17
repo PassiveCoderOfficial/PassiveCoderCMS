@@ -5,6 +5,7 @@ import { SearchBlock } from "@/components/blocks/search/search-block";
 import { toFamilyBlock } from "@/lib/blocks/cards";
 import { useHydratedBlock } from "@/lib/collections/use-collection";
 import { useSavedMenuPreview } from "@/components/admin/page-builder/saved-menus";
+import { MenuBlockPlaceholder } from "./menu-block-placeholder";
 import React, { useMemo } from "react";
 import { useTrialSanitizer } from "@/components/admin/trial-site-context";
 import { HeaderBookingBlock } from "@/components/blocks/header-booking/header-booking-block";
@@ -116,7 +117,8 @@ export function BlockRenderer({ block: rawBlock, isPreview = false, path }: Bloc
       case "slider": return <SliderBlock block={block} />;
       case "navigation": return <NavigationBlock block={block} />;
       case "header_logo": return <HeaderLogoBlock block={block} />;
-      case "header_nav": return <HeaderNavBlock block={block} />;
+      // An empty page Menu block (menus P2) offers saved menus / "Create a menu" here; the site draws nothing.
+      case "header_nav": return block.data.layout && !(block.data.items?.length) && !isPreview ? <MenuBlockPlaceholder block={block} /> : <HeaderNavBlock block={block} />;
       case "header_cta": return <HeaderCtaBlock block={block} />;
       case "header_booking": return <HeaderBookingBlock block={block} />;
       case "header_cart": return <HeaderCartBlock block={block} />;

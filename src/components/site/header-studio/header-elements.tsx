@@ -20,7 +20,9 @@ import { SocialIcon, SOCIAL_LABELS } from "@/components/blocks/_primitives/socia
 import { LanguageSwitch } from "@/components/site/language-switch";
 import { SearchSuggestions } from "@/components/site/search-suggestions";
 import { NavItemDesktop } from "@/components/blocks/navigation/nav-menu-core";
+import { MenuRenderer } from "@/components/blocks/navigation/menu-renderer";
 import { splitItems, type ButtonVariant, type HeaderElement } from "@/modules/header-studio/model";
+import { TOP_BAR_ICON_COMPONENTS } from "@/components/blocks/navigation/nav-top-bar";
 
 export const ICON_BTN = "relative inline-flex items-center justify-center h-10 w-10 shrink-0 rounded-lg hover:bg-current/10 transition-colors";
 
@@ -55,6 +57,18 @@ export function buttonStyle(variant: ButtonVariant | undefined, onDark: boolean)
   }
 }
 
+/** A button's own colours (menus P5) on top of its variant, the way the classic header button did it. */
+export function elementButtonStyle(e: HeaderElement, onDark: boolean): { className: string; style?: React.CSSProperties } {
+  const s = buttonStyle(e.variant, onDark);
+  if (!e.color && !e.textColor) return s;
+  const style: React.CSSProperties = { ...s.style };
+  if (e.color) {
+    if (e.variant === "outline") Object.assign(style, { borderColor: e.color, color: e.textColor || e.color });
+    else Object.assign(style, { background: e.color, backgroundImage: "none", color: e.textColor || "#ffffff" });
+  } else if (e.textColor) style.color = e.textColor;
+  return { className: s.className, style };
+}
+
 export function contactValue(e: HeaderElement, contact: ReturnType<typeof useSiteContact>): string | null {
   if (e.value) return e.value;
   if (e.type === "phone") return contact.phone ?? null;
@@ -67,12 +81,12 @@ export function LogoElement({ e, ctx }: { e: HeaderElement; ctx: ElementCtx }) {
   const h = Math.round((e.height ?? 36) * ctx.logoScale);
   const src = e.imageUrl || (ctx.onDark && ctx.logoDarkUrl) || ctx.logoUrl || null;
   return (
-    <Link href="/" aria-label={ctx.siteName ? `${ctx.siteName}, home` : "Home"} className="flex items-center gap-2 min-w-0 shrink-0" data-hs-logo="">
+    <Link href="/" aria-label={ctx.siteName ? `${ctx.siteName}, home` : "Home"} className={e.shrink ? "flex items-center gap-2 min-w-0 shrink" : "flex items-center gap-2 min-w-0 shrink-0"} data-hs-logo="">
       {src ? (
         <Image src={src} alt={ctx.siteName || "Logo"} width={Math.round(h * 3.4)} height={h} style={{ height: h, maxWidth: "100%", transition: "height .2s" }} className="w-auto min-w-0 object-contain" />
       ) : null}
       {(!src || e.showName) && (
-        <span className="text-[1.15rem] font-extrabold tracking-tight truncate" style={{ fontFamily: "var(--heading-font, inherit)" }}>{ctx.siteName || "Your Business"}</span>
+        <span className="text-[1.15rem] font-extrabold tracking-tight truncate" style={{ fontFamily: "var(--heading-font, inherit)" }}>{e.label || ctx.siteName || "Your Business"}</span>
       )}
     </Link>
   );
@@ -82,9 +96,12 @@ export function MenuElement({ e, ctx }: { e: HeaderElement; ctx: ElementCtx }) {
   // A menu that no longer exists falls back to the header menu (same rule as the server's pickMenu).
   const items = splitItems(ctx.menus[e.menuId ?? ""] ?? ctx.menus[""] ?? [], e.menuPart);
   if (!items.length) return null;
+  // Menus P2: an element with its own look uses the menu renderer; without
+  // one it keeps the markup every Studio header had before.
+  if (e.menuStyle) return <MenuRenderer items={items} layout="bar" style={e.menuStyle} label={e.label || "Main"} className="min-w-0" />;
   return (
     <nav aria-label={e.label || "Main"} className={cn("min-w-0", ctx.uppercase && "uppercase tracking-wide")}>
-      <ul className="flex flex-wrap items-center gap-0.5">
+      <ul className={e.noWrap ? "flex items-center gap-0.5" : "flex flex-wrap items-center gap-0.5"}>
         {items.map((item) => <NavItemDesktop key={item.id} item={item} currentColor={ctx.fg} />)}
       </ul>
     </nav>
@@ -146,7 +163,7 @@ export function HeaderElementView({ e, ctx, compact = false }: { e: HeaderElemen
       return <MenuElement e={e} ctx={ctx} />;
     case "button": {
       if (!e.label) return null;
-      const s = buttonStyle(e.variant, ctx.onDark);
+      const s = elementButtonStyle(e, ctx.onDark);
       return (
         <Link href={e.url || "/contact"} target={e.newTab ? "_blank" : undefined} rel={e.newTab ? "noopener noreferrer" : undefined}
           className={cn(s.className, compact && "px-3 py-1.5 text-xs")} style={s.style}>
@@ -155,7 +172,7 @@ export function HeaderElementView({ e, ctx, compact = false }: { e: HeaderElemen
       );
     }
     case "booking": {
-      const s = buttonStyle(e.variant, ctx.onDark);
+      const s = elementButtonStyle(e, ctx.onDark);
       const label = e.label || "Book now";
       return (
         <Link href={e.url || "/book"} aria-label={label} className={cn(s.className, compact && "px-2.5 py-1.5 text-xs")} style={s.style}>
@@ -216,7 +233,7 @@ export function HeaderElementView({ e, ctx, compact = false }: { e: HeaderElemen
     }
     case "language":
       return (
-        <LanguageSwitch other={e.lang || "bn"} mode={e.langMode} short={compact}
+        <LanguageSwitch other={e.lang || "bn"} mode={e.langMode} url={e.url} short={compact}
           className="inline-flex items-center gap-1 h-8 px-2.5 shrink-0 rounded-full text-xs font-semibold border border-current/30 hover:bg-current/10 whitespace-nowrap" />
       );
     case "socials": {
@@ -235,11 +252,21 @@ export function HeaderElementView({ e, ctx, compact = false }: { e: HeaderElemen
         </ul>
       );
     }
-    case "text":
+    case "text": {
       if (!e.label) return null;
+      // Menus P5: an icon (converted classic top bar items keep theirs).
+      if (e.icon) {
+        const Icon = TOP_BAR_ICON_COMPONENTS[e.icon];
+        const inner = <><Icon className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{e.label}</span></>;
+        const cls = "inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap text-sm";
+        return e.url
+          ? <a href={e.url} className={cn(cls, "underline-offset-4 hover:underline")} {...(/^https?:/i.test(e.url) ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{inner}</a>
+          : <span className={cls}>{inner}</span>;
+      }
       return e.url
         ? <Link href={e.url} className="text-sm font-medium underline-offset-4 hover:underline">{e.label}</Link>
         : <span className="text-sm">{e.label}</span>;
+    }
     case "divider":
       return <span aria-hidden className="mx-1 inline-block h-5 w-px bg-current opacity-25" />;
     default:

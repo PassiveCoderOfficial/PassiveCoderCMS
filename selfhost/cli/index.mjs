@@ -42,7 +42,8 @@ ${c.bold("Passive Coder CMS: self-hosted installer")}
             address, checks them, writes .env.local, makes the secret keys,
             loads the database, and can start the site for you.
   doctor    Check an install. Says what is wrong and how to fix it.
-  start     Build the app if needed, then run it.
+  start     Build the app if needed, then run it. --detach: run it in the
+            background and return once it answers (log: selfhost/site.log).
   update    Get the new version, update the database, rebuild.
 
 For AI agents (selfhost/AI-INSTALL.md); none of these prints a secret:
@@ -449,19 +450,35 @@ async function start({ settings = null, announce = null } = {}) {
 
   step(`Starting the site on port ${port}`);
   const env = { ...process.env, ...settings, NEXT_PUBLIC_CMS_MODE: "standalone", NEXT_TELEMETRY_DISABLED: "1", PORT: String(port) };
-  const child = spawn(process.execPath, [path.join(root, "node_modules", "next", "dist", "bin", "next"), "start", "-p", String(port)], { stdio: "inherit", cwd: root, env });
-  for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => child.kill(sig));
-  child.on("exit", (code) => process.exit(code ?? 0));
+  const nextArgs = [path.join(root, "node_modules", "next", "dist", "bin", "next"), "start", "-p", String(port)];
+  // --detach: the site runs in its own background process and this command
+  // returns once the site answers (for AI agents and scripts, whose shell
+  // would otherwise wait forever). Output goes to selfhost/site.log.
+  const detach = !!args.detach;
+  let child = null;
+  if (detach) {
+    const { openSync } = await import("node:fs");
+    const log = openSync(path.join(root, "selfhost", "site.log"), "a");
+    const bg = spawn(process.execPath, nextArgs, { detached: true, stdio: ["ignore", log, log], cwd: root, env, windowsHide: true });
+    bg.unref();
+    note(`Running in the background (process ${bg.pid}). Log: selfhost/site.log. Stop it with your system's task manager or \`kill ${bg.pid}\`.`);
+  } else {
+    child = spawn(process.execPath, nextArgs, { stdio: "inherit", cwd: root, env });
+    for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => child.kill(sig));
+    child.on("exit", (code) => process.exit(code ?? 0));
+  }
 
   // Wait until it answers, then say where to go.
   const base = `http://127.0.0.1:${port}`;
+  let up = false;
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     try {
       const res = await fetch(`${base}/login`, { redirect: "manual", signal: AbortSignal.timeout(3000) });
-      if (res.status < 500) break;
+      if (res.status < 500) { up = true; break; }
     } catch { /* not up yet */ }
   }
+  if (detach && !up) fail(`The site did not answer on port ${port} within 90 seconds. Read selfhost/site.log for the reason.`);
   say();
   if (announce) {
     say(c.green(c.bold("The site is running. Finish in your browser:")));
@@ -478,6 +495,7 @@ async function start({ settings = null, announce = null } = {}) {
   } else {
     say(c.green(c.bold(`The site is running: ${settings.NEXT_PUBLIC_APP_URL}`)));
   }
+  if (detach) process.exit(0);
   say(c.dim("  Press Ctrl+C to stop."));
 }
 

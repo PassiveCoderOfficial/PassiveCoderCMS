@@ -56,5 +56,5 @@ export async function countRedirectHit(id: string) {
 }
 
 /** Paths a redirect may never take over (dashboard, auth, system routes). */
-export const RESERVED_PREFIXES = ["dashboard", "login", "signup", "register", "auth", "api", "_next", "onboarding", "super-admin", "staff", "forgot-password", "reset-password", "pm", "sitemap.xml", "robots.txt", "llms.txt", "favicon.ico"];
+export const RESERVED_PREFIXES = ["dashboard", "login", "signup", "register", "auth", "api", "_next", "onboarding", "super-admin", "staff", "forgot-password", "reset-password", "pm", "sitemap.xml", "sitemap.xsl", "sitemap.html", "robots.txt", "llms.txt", "favicon.ico"];
 export const isReservedPath = (p: string) => { const k = normPath(p); return !k || RESERVED_PREFIXES.some((r) => k === r || k.startsWith(`${r}/`)); };

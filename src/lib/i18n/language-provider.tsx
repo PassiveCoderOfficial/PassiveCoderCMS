@@ -65,7 +65,8 @@ export function LanguageProvider({ children, storageKey = "cms-admin-language" }
     let str = DICTS[language][key] ?? en[key] ?? key;
     if (vars) {
       for (const [k, v] of Object.entries(vars)) {
-        str = str.replace(`{${k}}`, String(v));
+        // Every occurrence: some strings use a placeholder twice ("{location} menu ... your {location}").
+        str = str.split(`{${k}}`).join(String(v));
       }
     }
     return str;

@@ -15,6 +15,7 @@ export const BLOCK_DESCRIPTIONS_BN: Record<string, string> = {
   "Rotating photos with optional text on top": "ঘুরে ঘুরে আসা ছবি, চাইলে ওপরে লেখাসহ",
   "The strip at the very top with your logo and page links": "একদম ওপরের সারি, যেখানে আপনার লোগো আর পেজের লিংক থাকে",
   "Your site's logo — uses your uploaded logo automatically, or set one just for this header": "আপনার সাইটের লোগো — আপলোড করা লোগো নিজে থেকেই বসে, চাইলে শুধু এই হেডারের জন্য আলাদা লোগো দিন",
+  "One of your saved menus: a bar, sidebar list, inline links, folding list or menu button": "আপনার সেভ করা একটি মেনু: বার, সাইডবারের তালিকা, এক সারির লিংক, ভাঁজ করা তালিকা বা মেনু বাটন",
   "The menu links themselves — dropdowns, mega menus, mobile menu": "মেনুর লিংকগুলো — ড্রপডাউন, মেগা মেনু, মোবাইল মেনু",
   "A single call-to-action button, e.g. \"Book Now\" or \"Get a Quote\"": "একটি কল-টু-অ্যাকশন বাটন, যেমন \"এখনই বুক করুন\" বা \"কোটেশন নিন\"",
   "Opens your booking page so visitors can pick a time. Shows on phones too.": "আপনার বুকিং পেজ খোলে, ভিজিটর সময় বেছে নিতে পারেন। ফোনেও দেখা যায়।",

@@ -18,8 +18,50 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HeaderNavBlockProps } from "@/types/cms";
 import { NavItemDesktop, MobileNavList } from "../navigation/nav-menu-core";
+import { MenuRenderer } from "../navigation/menu-renderer";
 
+/**
+ * The block, both looks (menus P2). `layout` set = the page-builder "Menu"
+ * block drawn by the new menu renderer; unset = the legacy header links,
+ * markup unchanged since v1.0.925. Two components so switching the look in
+ * the editor never changes the hook order inside a mounted block.
+ */
 export function HeaderNavBlock({ block }: { block: HeaderNavBlockProps }) {
+  return block.data.layout ? <MenuBlockView block={block} /> : <LegacyHeaderNav block={block} />;
+}
+
+const ALIGN = { start: "justify-start", center: "justify-center", end: "justify-end" } as const;
+
+/**
+ * Menu block (menus P2): a saved menu (by id, resolved on the server like
+ * every menu block) in one of five layouts, styled by its MenuStyle. A bar
+ * turns into a menu button on phones unless `phoneLayout` is "same". With no
+ * links it renders nothing on the site (the builder shows a placeholder).
+ */
+function MenuBlockView({ block }: { block: HeaderNavBlockProps }) {
+  const d = block.data;
+  const items = d.items ?? [];
+  if (!items.length) return null;
+  const layout = d.layout ?? "bar";
+  const label = d.label || "Menu";
+  const align = ALIGN[d.align ?? "start"];
+  const common = { items, style: d.menuStyle, label, buttonLabel: d.buttonLabel, levels: d.levels };
+  if (layout === "bar" && d.phoneLayout !== "same") {
+    return (
+      <div className={cn("flex w-full min-w-0", align)} data-pc-menu="bar" data-align={d.align}>
+        <div className="hidden md:block min-w-0"><MenuRenderer {...common} layout="bar" /></div>
+        <div className="md:hidden"><MenuRenderer {...common} layout="drawer" /></div>
+      </div>
+    );
+  }
+  return (
+    <div className={cn("flex w-full min-w-0", layout === "vertical" || layout === "accordion" ? "flex-col" : align)} data-pc-menu={layout} data-align={d.align}>
+      <MenuRenderer {...common} layout={layout} />
+    </div>
+  );
+}
+
+function LegacyHeaderNav({ block }: { block: HeaderNavBlockProps }) {
   const { data } = block;
   const { items, style, textColor } = data;
   const [mobileOpen, setMobileOpen] = useState(false);

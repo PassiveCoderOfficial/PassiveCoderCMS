@@ -3,7 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "@/components/ui/smart-image";
-import type { FooterBlockProps } from "@/types/cms";
+import type { FooterBlockProps, FooterColumn } from "@/types/cms";
+import { filterForAudience, hasAudience, menuToLinks, type MenuLink } from "@/modules/navigation/menu-model";
+import { useSignedIn } from "@/components/site/use-signed-in";
+import { cn } from "@/lib/utils";
 import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/site/brand-logo";
 import { useSiteContact } from "@/components/site/site-contact-context";
@@ -11,6 +14,21 @@ import { hrefFor, useAlternates } from "@/components/site/use-alternates";
 import { resolveCredit, DEFAULT_CREDIT_URL } from "@/lib/site/footer-credit-shared";
 import { SOCIAL_BRAND_COLORS, SOCIAL_PLATFORMS, SocialIcon } from "@/components/blocks/_primitives/social-icons";
 import { uiText } from "@/modules/page-builder/ui-text";
+
+/**
+ * The links of one column (menus P2): a column that shows a saved menu
+ * (menuItems, filled on the server from menuId) lists that menu's links in
+ * the column's own link style; every other column keeps its typed links,
+ * rendered by the caller exactly as before.
+ */
+function MenuColumnLinks({ col, render }: { col: FooterColumn & { menuItems: NonNullable<FooterColumn["menuItems"]> }; render: (l: MenuLink) => React.ReactNode }) {
+  const signedIn = useSignedIn(hasAudience(col.menuItems));
+  const links = menuToLinks(filterForAudience(col.menuItems, signedIn), { levels: col.menuLevels ?? 1 });
+  return <>{links.map(render)}</>;
+}
+
+/** Classes for a menu link's device setting and depth (menu columns only). */
+const menuLinkCls = (l: MenuLink) => cn(l.device === "desktop" && "hidden md:list-item", l.device === "mobile" && "md:hidden", l.depth > 0 && "ps-3") || undefined;
 
 // Social glyphs live in _primitives/social-icons (shared with the header top bar).
 const SOCIAL_ICONS: Record<string, React.ReactNode> = Object.fromEntries(
@@ -51,7 +69,11 @@ function FooterRetail({ block }: { block: FooterBlockProps }) {
               <p className="uppercase text-[16px] font-medium m-0 mb-6">{c.heading}</p>
               {c.text && <p className="text-[16px] opacity-80 whitespace-pre-line m-0 mb-3">{c.text}</p>}
               <ul className="list-none m-0 p-0 space-y-[11px]">
-                {c.links.map((l) => (
+                {c.menuItems ? (
+                  <MenuColumnLinks col={{ ...c, menuItems: c.menuItems }} render={(l) => (
+                    <li key={l.id} className={menuLinkCls(l)}><Link href={hrefFor(l, alts)} target={l.target} rel={l.target === "_blank" ? "noopener noreferrer" : undefined} className="text-[16px] opacity-80 hover:opacity-100 hover:underline">{l.label}</Link></li>
+                  )} />
+                ) : c.links.map((l) => (
                   <li key={l.id}><Link href={hrefFor(l, alts)} className="text-[16px] opacity-80 hover:opacity-100 hover:underline">{l.label}</Link></li>
                 ))}
               </ul>
@@ -273,7 +295,21 @@ function FooterClassic({ block, identityLogo, identityLogoDark }: { block: Foote
               </h3>
               {col.text && <p className="text-sm leading-relaxed whitespace-pre-line mb-3" style={{ color: mutedFg }}>{col.text}</p>}
               <ul className={data.largeTapTargets ? "max-md:space-y-0 md:space-y-2.5" : "space-y-2.5"}>
-                {col.links.map((link) => (
+                {col.menuItems ? (
+                  <MenuColumnLinks col={{ ...col, menuItems: col.menuItems }} render={(link) => (
+                    <li key={link.id} className={menuLinkCls(link)}>
+                      <Link
+                        href={hrefFor(link, alts)}
+                        target={link.target}
+                        rel={link.target === "_blank" ? "noopener noreferrer" : undefined}
+                        className={data.largeTapTargets ? "text-sm transition-colors hover:opacity-100 max-md:inline-flex max-md:items-center max-md:min-h-11" : "text-sm transition-colors hover:opacity-100"}
+                        style={{ color: mutedFg }}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  )} />
+                ) : col.links.map((link) => (
                   <li key={link.id}>
                     <Link
                       href={hrefFor(link, alts)}

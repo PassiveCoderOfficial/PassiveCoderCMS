@@ -812,6 +812,8 @@ const navItem: Field[] = [
   hidden("children"), hidden("icon"), hidden("highlight"), hidden("lang"), hidden("megaMenu"), hidden("megaColumns"), hidden("megaLinksAs"), hidden("megaLinksTitle"), hidden("childSource"), hidden("childLimit"),
   // Menu Studio fields (Navigation screen): kept as-is when an inline item is edited here.
   hidden("description"), hidden("badge"), hidden("showIcon"), hidden("device"), hidden("openOn"), hidden("mega"), hidden("childIds"), hidden("studio"),
+  // Mega builder (menus P4) column fields.
+  hidden("megaColumn"), hidden("megaSpan"), hidden("megaImage"),
 ];
 
 const navigation: BlockFieldSchema = {
@@ -1041,6 +1043,17 @@ const headerNav: BlockFieldSchema = {
     list("items", L("Menu links", "মেনু লিংক"), navItem, { label: "", url: "/" }, ["label", "url"]),
     sel("style", T.style, opts(["default", "Default", "ডিফল্ট"], ["centered", "Centred", "মাঝে"], ["split", "Split", "দুই পাশে"], ["minimal", "Minimal", "সাধারণ"], ["logo-center", "Logo in the middle", "লোগো মাঝে"]), { group: "style" }),
     hidden("menuLocation"),
+    // Menu block (menus P2): a saved menu by id in the new menu renderer.
+    hidden("menuId"),
+    sel("layout", L("Menu layout (unset = classic header links)", "মেনুর লেআউট (খালি = পুরনো হেডার লিংক)"), opts(
+      ["bar", "Menu bar", "মেনু বার"], ["vertical", "Sidebar list", "সাইডবার তালিকা"], ["inline", "Inline links", "এক লাইনে লিংক"],
+      ["accordion", "Folding list", "ভাঁজ করা তালিকা"], ["drawer", "Menu button", "মেনু বাটন"]), { group: "style" }),
+    hidden("menuStyle"),
+    sel("align", L("Alignment", "অবস্থান"), opts(["start", "Start", "শুরুতে"], ["center", "Centre", "মাঝে"], ["end", "End", "শেষে"]), { group: "style" }),
+    sel("phoneLayout", L("On phones (menu bar)", "ফোনে (মেনু বার)"), opts(["drawer", "Menu button", "মেনু বাটন"], ["same", "Same bar", "একই বার"]), { group: "style" }),
+    num("levels", L("Levels shown (lists)", "কয় ধাপ দেখাবে (তালিকা)"), { group: "style" }),
+    text("buttonLabel", L("Menu button text", "মেনু বাটনের লেখা"), { group: "advanced" }),
+    text("label", L("Menu name for screen readers", "স্ক্রিন রিডারের জন্য মেনুর নাম"), { group: "advanced" }),
   ],
   custom: true,
 };

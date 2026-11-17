@@ -18,6 +18,7 @@ import { ArrowRight, ArrowUp, Check, Clock, Mail, MapPin, Phone } from "lucide-r
 import { cn } from "@/lib/utils";
 import type { NavItem } from "@/types/cms";
 import { MenuLinkList } from "@/components/blocks/navigation/menu-link-list";
+import { MenuRenderer } from "@/components/blocks/navigation/menu-renderer";
 import { useSiteContact, waLink, telLink, mapLinks } from "@/components/site/site-contact-context";
 import { WaIcon } from "@/components/blocks/_primitives/showcase";
 import { SocialIcon, SOCIAL_LABELS } from "@/components/blocks/_primitives/social-icons";
@@ -75,10 +76,19 @@ function WidgetTitle({ w }: { w: FooterWidget }) {
 function LinkList({ items, w, ctx, label, small }: { items: NavItem[]; w: FooterWidget; ctx: WidgetCtx; label: string; small?: boolean }) {
   if (!items.length) return null;
   const inline = w.layout === "inline";
+  // Menus P2: a menu widget with its own look uses the menu renderer
+  // (list, inline row or two columns); without one, the footer's own links.
+  if (w.type === "menu" && w.menuStyle) {
+    return (
+      <MenuRenderer items={items} layout={inline ? "inline" : "vertical"} levels={w.levels ?? 1} style={w.menuStyle} label={label}
+        className={cn(w.layout === "columns" && "pcm-cols", inline && "pcm-justify", inline && justify(ctx))} />
+    );
+  }
+  const cols = w.layout === "columns";
   return (
     <nav aria-label={label}>
       <MenuLinkList items={items} levels={w.levels ?? 1}
-        className={cn(inline ? "flex flex-wrap gap-x-5 gap-y-2 space-y-0" : "space-y-2", inline && justify(ctx))}
+        className={cn(inline ? "flex flex-wrap gap-x-5 gap-y-2 space-y-0" : cols ? "columns-2 gap-x-6 space-y-0 [&>li]:mb-2 [&>li]:break-inside-avoid" : "space-y-2", inline && justify(ctx))}
         linkClassName={cn("hover:opacity-100", small && "text-xs")} linkStyle={{ color: ctx.muted }} />
     </nav>
   );
@@ -86,14 +96,15 @@ function LinkList({ items, w, ctx, label, small }: { items: NavItem[]; w: Footer
 
 export function AboutWidget({ w, ctx }: { w: FooterWidget; ctx: WidgetCtx }) {
   const h = w.height ?? 40;
-  const src = w.imageUrl || (ctx.onDark && ctx.logoDarkUrl) || ctx.logoUrl || null;
+  // An own text logo (menus P5) shows instead of the site's logo image, unless an own image is set.
+  const src = w.imageUrl || (w.name ? null : (ctx.onDark && ctx.logoDarkUrl) || ctx.logoUrl) || null;
   return (
     <div className="space-y-3">
       {!w.hideLogo && (
         <Link href="/" aria-label={ctx.siteName ? `${ctx.siteName}, home` : "Home"} className={cn("inline-flex items-center gap-2 max-w-full", justify(ctx))} data-fs-logo="">
           {src
             ? <Image src={src} alt={ctx.siteName || "Logo"} width={Math.round(h * 3.4)} height={h} style={{ height: h, maxWidth: "100%" }} className="w-auto object-contain" />
-            : <span className="text-xl font-extrabold tracking-tight" style={{ fontFamily: "var(--heading-font, inherit)" }}>{ctx.siteName || "Your Business"}</span>}
+            : <span className="text-xl font-extrabold tracking-tight" style={{ fontFamily: "var(--heading-font, inherit)" }}>{w.name || ctx.siteName || "Your Business"}</span>}
         </Link>
       )}
       {w.text && <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: ctx.muted }}>{w.text}</p>}
@@ -148,7 +159,9 @@ export function HoursWidget({ w, ctx }: { w: FooterWidget; ctx: WidgetCtx }) {
 }
 
 export function SocialsWidget({ w, ctx, small }: { w: FooterWidget; ctx: WidgetCtx; small?: boolean }) {
-  const list = useSiteContact().socials ?? [];
+  const site = useSiteContact().socials ?? [];
+  // Own links (menus P5: a converted classic footer's list) win over the site's.
+  const list = w.socials?.length ? w.socials : site;
   if (!list.length) return null;
   return (
     <div>

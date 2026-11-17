@@ -10,7 +10,8 @@ import { SettingsPanel } from "./settings-panel/settings-panel";
 import { PreviewFrame } from "./canvas/preview-frame";
 import { useBlockActions } from "./canvas/use-block-actions";
 import { useEditSiteChrome } from "./canvas/site-chrome-context";
-import { getBlockDefinition } from "@/modules/page-builder/block-registry";
+import { blockDisplayName } from "@/modules/page-builder/block-display-name";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Sheet } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
@@ -58,13 +59,15 @@ function pathOf(entries: { id: string; columnIndex?: number }[] | undefined): Co
   return entries.slice(0, -1).map((e) => ({ containerId: e.id, columnIndex: e.columnIndex ?? 0 }));
 }
 
-function blockLabel(block: Block) {
-  return getBlockDefinition(block.type)?.label ?? block.type.replace(/_/g, " ");
+/** The block's catalog name ("Menu", "Classic header"...), in Bangla on a Bangla dashboard. */
+function blockLabel(block: Block, lang?: string) {
+  return blockDisplayName(block.type, lang);
 }
 
 /** Bar for the selected block, above the tab bar. */
 function SelectionBar({ block, path }: { block: Block; path: ContainerPath | undefined }) {
   const { selectBlock, setMobileSheet } = useBuilderStore();
+  const { language } = useLanguage();
   const editSiteChrome = useEditSiteChrome();
   const actions = useBlockActions(block, path, () => toast.info("Save as section is on the desktop editor"), editSiteChrome)
     .filter((a) => !a.isDragHandle && a.label !== "Edit settings" && a.label !== "Save as section" && a.onClick);
@@ -73,7 +76,7 @@ function SelectionBar({ block, path }: { block: Block; path: ContainerPath | und
     <div className="border-t bg-background shrink-0 animate-in slide-in-from-bottom-2 duration-150">
       <div className="flex items-center gap-2 px-3 pt-2">
         <span className="h-2 w-2 rounded-full bg-orange-500 shrink-0" />
-        <p className="text-xs font-semibold truncate flex-1 min-w-0">{blockLabel(block)}</p>
+        <p className="text-xs font-semibold truncate flex-1 min-w-0">{blockLabel(block, language)}</p>
         <button type="button" onClick={() => setMobileSheet("settings")} className="rounded-full bg-primary text-primary-foreground text-xs font-semibold px-3.5 py-1.5 shrink-0">
           Edit
         </button>
@@ -120,6 +123,7 @@ export function MobileEditorShell({
   title, status, backHref, onBack, actions, banner, addPanel, layersPanel, extraTab, surfaceClassName, compactCanvas, children,
 }: MobileEditorShellProps) {
   const { mode, setMode, mobileSheet, setMobileSheet, selectedBlockId, getBlock, getBlockPath, blocks } = useBuilderStore();
+  const { language } = useLanguage();
   const [view, setView] = useState<"phone" | "desktop">("phone");
   const isPreview = mode === "preview";
   const selected = selectedBlockId ? getBlock(selectedBlockId) : undefined;
@@ -209,7 +213,7 @@ export function MobileEditorShell({
       <Sheet open={mobileSheet === "layers"} onOpenChange={(o) => !o && setMobileSheet(null)} title="Layers">
         <div className="h-[70vh] flex flex-col">{layersPanel}</div>
       </Sheet>
-      <Sheet open={mobileSheet === "settings"} onOpenChange={(o) => !o && setMobileSheet(null)} title={selected ? blockLabel(selected) : "Block settings"}>
+      <Sheet open={mobileSheet === "settings"} onOpenChange={(o) => !o && setMobileSheet(null)} title={selected ? blockLabel(selected, language) : "Block settings"}>
         <div className="h-[78vh] flex flex-col"><SettingsPanel /></div>
       </Sheet>
     </div>

@@ -96,7 +96,7 @@ const headerSchema = z.object({
     items: z.array(menuItem.extend({
       highlight: z.enum(["gold", "brand", "dark"]).optional().describe("Show this item as a pill."),
       lang: z.string().min(2).max(10).optional().describe("Language switch: opens the current page in this language (e.g. bn)."),
-    })).max(50).optional().describe("Inline menu items (replaces the list; used when no location is set). Flat links only: dropdowns and mega menus are built on the dashboard Navigation screen (upsert_menu also takes flat items)."),
+    })).max(50).optional().describe("Inline menu items (replaces the list; used when no location is set). Flat links only. For dropdowns use a saved menu: upsert_menu takes nested items (3 levels) and the header reads it through location."),
     style: z.enum(["default", "centered", "split", "minimal"]).optional().describe("Header builder only: menu style."),
     textColor: colorIn,
     activeColor: colorIn,

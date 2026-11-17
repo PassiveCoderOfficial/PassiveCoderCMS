@@ -113,3 +113,13 @@ test("page: per-page nav blocks are stripped exactly as before when there is no 
   assert.ok(src.includes("const hasGlobalHeader = (header.length > 0 || !!studioHeader) && !lang;"));
   assert.ok(src.includes("chrome={studioHeader ? studioLangChrome(studioHeader.config) : header}"));
 });
+
+test("404 page: classic header unless a studio header is live", () => {
+  // Same shared site chrome as the footer: live Studio header first, else the classic header blocks.
+  const page = read("src/app/not-found.tsx");
+  assert.ok(page.includes("const chrome = await chromeFor(tenantId);"), "a client site's 404 loads that site's chrome");
+  assert.match(page, /<Shell chrome=\{chrome\}>/);
+  const chrome = read("src/lib/site/site-chrome.tsx");
+  assert.ok(chrome.includes("getStudioHeader(tenantId)"), "loads the live Studio header (null unless published and enabled)");
+  assert.ok(chrome.includes("{chrome?.studio ? <StudioSiteHeader tenantId={chrome.tenantId} data={chrome.studio} /> : chrome && chrome.header.length > 0 && <PageRenderer blocks={chrome.header} />}"));
+});

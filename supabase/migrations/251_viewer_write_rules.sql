@@ -1,53 +1,4 @@
--- 251: view-only members can no longer write, plus three small follow-ups
--- from the 2026-11-17 security review (pass 2).
--- NOT applied yet. Additive and reversible (rollback_251_viewer_write_rules.sql).
---
--- BEFORE APPLYING ON PRODUCTION: the policy names and expressions below are
--- taken from selfhost/schema.sql. Compare them with pg_policies first (the
--- read-only queries are in the hand-over notes of this change): a
--- "drop policy if exists" on a name that differs leaves the old policy in
--- place, and the old one still lets view-only members write.
---
--- 1. Team members with the "viewer" role (shown as "view only" in Users)
---    could still insert, update and delete rows in the tables below straight
---    through PostgREST with their own session: the write policies asked
---    is_tenant_member(), which is true for every role. They now ask
---    is_tenant_editor() (owner, admin, editor). Both helpers cover the
---    assigned agent and active Passive Coder staff in exactly the same way
---    (staff_can_edit_site), so the ONLY people who lose anything are members
---    whose role is "viewer", and all they lose is writing. Every
---    is_super_admin() branch and every other branch (template owners, content
---    grants) is kept as it was.
---
---    Reading is unchanged. Where the write policy was "for all" and was also
---    the only thing that let a member read the table, a "<table>_member_read"
---    select policy with the ORIGINAL expression is added beside it, so a
---    view-only member still sees exactly what they saw before.
---
---    Left out on purpose:
---    - site_settings, site_identity, booking_appointments, orders (update and
---      delete): migration 250 already makes this same change for them.
---    - Policies that do not use is_tenant_member() at all: customer, vendor,
---      rider, donor and public-visitor policies (orders_customer_read_own,
---      products_vendor_manage, sub_orders_vendor_update, the *_public_read
---      policies ...). View-only members never wrote through those, and
---      customers, sellers and riders are not tenant_members, so their own
---      flows are untouched.
---    - Tables written only with the service role (contact form and booking
---      submissions from the public site, orders at checkout, restaurant
---      reservations): the service role bypasses RLS, nothing changes there.
---    Checked 2026-11-17: tenant_members.role is one of owner / admin /
---    editor / viewer, and no screen or API lets a viewer change any of these
---    tables through their own session ("Can see the dashboard and reports.
---    Cannot change anything.").
 
-drop policy if exists accounts_tenant_all on public.accounts;
-create policy accounts_tenant_all on public.accounts for all
-  using (public.is_super_admin() OR public.is_tenant_editor(tenant_id))
-  with check (public.is_super_admin() OR public.is_tenant_editor(tenant_id));
-drop policy if exists accounts_member_read on public.accounts;
-create policy accounts_member_read on public.accounts for select
-  using (public.is_super_admin() OR public.is_tenant_member(tenant_id));
 
 drop policy if exists tenant_write on public.booking_availability;
 create policy tenant_write on public.booking_availability for all
@@ -112,14 +63,6 @@ drop policy if exists forms_tenant_all on public.forms;
 create policy forms_tenant_all on public.forms for all
   using (public.is_super_admin() OR public.is_tenant_editor(tenant_id))
   with check (public.is_super_admin() OR public.is_tenant_editor(tenant_id));
-
-drop policy if exists marketplace_payout_settings_tenant_all on public.marketplace_payout_settings;
-create policy marketplace_payout_settings_tenant_all on public.marketplace_payout_settings for all
-  using (public.is_super_admin() OR public.is_tenant_editor(tenant_id))
-  with check (public.is_super_admin() OR public.is_tenant_editor(tenant_id));
-drop policy if exists marketplace_payout_settings_member_read on public.marketplace_payout_settings;
-create policy marketplace_payout_settings_member_read on public.marketplace_payout_settings for select
-  using (public.is_super_admin() OR public.is_tenant_member(tenant_id));
 
 drop policy if exists media_tenant_all on public.media;
 create policy media_tenant_all on public.media for all
@@ -274,14 +217,6 @@ create policy transactions_tenant_all on public.transactions for all
   with check (public.is_super_admin() OR public.is_tenant_editor(tenant_id));
 drop policy if exists transactions_member_read on public.transactions;
 create policy transactions_member_read on public.transactions for select
-  using (public.is_super_admin() OR public.is_tenant_member(tenant_id));
-
-drop policy if exists vendor_payouts_tenant_all on public.vendor_payouts;
-create policy vendor_payouts_tenant_all on public.vendor_payouts for all
-  using (public.is_super_admin() OR public.is_tenant_editor(tenant_id))
-  with check (public.is_super_admin() OR public.is_tenant_editor(tenant_id));
-drop policy if exists vendor_payouts_member_read on public.vendor_payouts;
-create policy vendor_payouts_member_read on public.vendor_payouts for select
   using (public.is_super_admin() OR public.is_tenant_member(tenant_id));
 
 -- 2. publish_due_scheduled(p_tenant, p_all) is SECURITY DEFINER and was

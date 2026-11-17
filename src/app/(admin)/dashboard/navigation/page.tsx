@@ -4,11 +4,7 @@ import NavigationClient from "./navigation-client";
 import type { NavMenuRow, ImportableNav } from "./navigation-client";
 import { normalizeMenu } from "@/modules/navigation/menu-model";
 import { findImportableNav } from "@/modules/navigation/nav-blocks";
-import { menuReaders } from "@/modules/navigation/menu-usage";
-import { resolveLiveHeader } from "@/modules/header-studio/doc";
-import { menuRefs } from "@/modules/header-studio/model";
-import { resolveLiveFooter } from "@/modules/footer-studio/doc";
-import { footerMenuRefs } from "@/modules/footer-studio/model";
+import { loadMenuReaders } from "@/lib/site/menu-readers";
 
 /**
  * Links a header/footer shows from its own block (no saved menu behind them),
@@ -35,14 +31,9 @@ export default async function NavigationPage() {
   }
 
   const admin = await createAdminClient();
-  const [{ data: menus }, { data: identity }, { data: pages }, { data: studios }] = await Promise.all([
+  const [{ data: menus }, { readers, identity }] = await Promise.all([
     admin.from("nav_menus").select("*").eq("tenant_id", tenantId).order("location", { ascending: true }),
-    admin.from("site_identity").select("global_header, global_footer, global_prefooter").eq("tenant_id", tenantId).maybeSingle(),
-    // Pages can carry their own header copy (translations, imports), which
-    // may read a saved menu: counted for "where is this menu shown".
-    admin.from("pages").select("blocks").eq("tenant_id", tenantId).eq("status", "published").is("deleted_at", null).limit(400),
-    // Own query: the studio columns may be missing (migrations 240/241), which only means "classic".
-    admin.from("site_identity").select("header_studio, footer_studio").eq("tenant_id", tenantId).maybeSingle().then((r) => r, () => ({ data: null })),
+    loadMenuReaders(admin, tenantId),
   ]);
 
   // A menu built through the Header/Footer Builder lives inline on the
@@ -56,17 +47,6 @@ export default async function NavigationPage() {
     findInlineNav(identity?.global_header, "header", takenLocations),
     findInlineNav(identity?.global_footer, "footer", takenLocations),
   ].filter((x): x is ImportableNav => x !== null && !takenLocations.has(x.location));
-
-  const liveHeader = resolveLiveHeader((studios as { header_studio?: unknown } | null)?.header_studio);
-  const liveFooter = resolveLiveFooter((studios as { footer_studio?: unknown } | null)?.footer_studio);
-  const readers = menuReaders({
-    classicHeader: identity?.global_header,
-    classicFooter: identity?.global_footer,
-    classicPrefooter: (identity as { global_prefooter?: unknown } | null)?.global_prefooter,
-    pages: (pages ?? []).map((p) => (p as { blocks?: unknown }).blocks),
-    studioHeaderRefs: liveHeader ? menuRefs(liveHeader) : null,
-    studioFooterRefs: liveFooter ? footerMenuRefs(liveFooter) : null,
-  });
 
   const rows = ((menus ?? []) as NavMenuRow[]).map((m) => ({ ...m, items: normalizeMenu(m.items) }));
   return <NavigationClient initialMenus={rows} importable={importable} readers={readers} />;

@@ -20,6 +20,7 @@ import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
 import type { Block } from "@/types/cms";
 import { normalizeMenu } from "@/modules/navigation/menu-model";
 import { findImportableNav, pointNavBlocksAt } from "@/modules/navigation/nav-blocks";
+import { recordNewMenu, type MenuRow } from "@/modules/navigation/menu-versions";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -85,6 +86,8 @@ export async function POST(req: Request) {
     .select("*")
     .single();
   if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
+  // First version in the menu's history (menus P1), so later edits can be undone back to it.
+  await recordNewMenu(admin, menu as MenuRow, user.id, "import");
 
   // Point every copy that shows exactly these links at the new menu (a
   // container header's desktop/phone pair); a block already pointing here

@@ -21,7 +21,7 @@ export async function layoutLockedFor(admin: SupabaseClient, userId: string, ten
 /** AI / MCP tools that change pages, header/footer or menus. */
 export const LAYOUT_TOOLS = new Set([
   "save_page_blocks", "publish_page", "create_page", "create_post", "trash_page", "update_page_meta",
-  "set_site_header", "upsert_menu", "find_replace_text", "set_block_image", "generate_page_content",
+  "set_site_header", "upsert_menu", "restore_menu_version", "place_menu", "switch_to_studio", "find_replace_text", "set_block_image", "generate_page_content",
 ]);
 
 /** Dashboard areas hidden and blocked on a locked site. */

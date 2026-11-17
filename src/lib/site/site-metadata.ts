@@ -45,8 +45,9 @@ export interface ResolvedSiteMetadata {
   ogImage: string | undefined;
   /** The site's uploaded logo, if any (no favicon fallback). */
   logoUrl?: string;
-  /** Google Search Console HTML-tag verification code. */
-  googleVerification?: string;
+  /** Google Search Console HTML-tag verification codes: the owner's and the
+   *  platform's (Search Console run by Passive Coder's Google account). */
+  googleVerification?: string[];
   bingVerification?: string;
 }
 
@@ -86,7 +87,7 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
 
   const admin = await createAdminClient();
   const [{ data: settings }, { data: identity }] = await Promise.all([
-    admin.from("site_settings").select("site_name, meta_title, meta_description, site_description, favicon_url, logo_url, google_site_verification, bing_site_verification").eq("tenant_id", tenantId).maybeSingle(),
+    admin.from("site_settings").select("site_name, meta_title, meta_description, site_description, favicon_url, logo_url, google_site_verification, platform_google_verification, bing_site_verification").eq("tenant_id", tenantId).maybeSingle(),
     admin.from("site_identity").select("site_name, favicon_url, logo_url, tagline").eq("tenant_id", tenantId).maybeSingle(),
   ]);
 
@@ -123,7 +124,8 @@ export async function resolveSiteMetadata(tenantId: string | null | undefined): 
   const logoUrl = firstNonEmpty(identity?.logo_url, settings?.logo_url as string | null | undefined);
   const ogImage = logoUrl ?? uploadedFavicon;
 
-  const googleVerification = firstNonEmpty(settings?.google_site_verification as string | null | undefined);
+  const googleVerification = [settings?.google_site_verification, settings?.platform_google_verification]
+    .map((v) => firstNonEmpty(v as string | null | undefined)).filter((v): v is string => !!v);
   // Bing Webmaster Tools: ChatGPT search and Copilot answer from Bing's index.
   const bingVerification = firstNonEmpty(settings?.bing_site_verification as string | null | undefined);
   return { siteName, homeTitle, description, faviconUrl, ogImage, logoUrl, googleVerification, bingVerification };
@@ -148,9 +150,9 @@ export async function buildSiteMetadata(tenantId: string | null | undefined): Pr
     title: { default: homeTitle ?? siteName, template: `%s | ${siteName}` },
     description,
     icons: { icon: faviconUrl, shortcut: faviconUrl, apple: faviconUrl },
-    ...(googleVerification || bingVerification ? {
+    ...(googleVerification?.length || bingVerification ? {
       verification: {
-        ...(googleVerification ? { google: googleVerification } : {}),
+        ...(googleVerification?.length ? { google: googleVerification } : {}),
         ...(bingVerification ? { other: { "msvalidate.01": bingVerification } } : {}),
       },
     } : {}),
