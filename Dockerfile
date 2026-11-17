@@ -73,7 +73,8 @@ RUN --mount=type=secret,id=build_env,required=false \
       export NEXT_PUBLIC_SUPABASE_URL=https://pcplaceholdersupabase.supabase.co \
              NEXT_PUBLIC_SUPABASE_ANON_KEY=pcplaceholder_supabase_public_key \
              NEXT_PUBLIC_ROOT_DOMAIN=pcplaceholderrootdomain.invalid \
-             NEXT_PUBLIC_APP_URL=https://pcplaceholderappurl.invalid; \
+             NEXT_PUBLIC_APP_URL=https://pcplaceholderappurl.invalid \
+             SUPABASE_SERVICE_ROLE_KEY=pcplaceholder_build_only_service_key; \
       echo generic > /app/.pc-image-kind; \
     else echo site > /app/.pc-image-kind; fi; \
     for v in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_ROOT_DOMAIN NEXT_PUBLIC_APP_URL \
