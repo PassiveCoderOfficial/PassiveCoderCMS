@@ -35,7 +35,7 @@ import { IconPicker } from "@/components/ui/icon-picker";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import {
   MAX_MENU_DEPTH, flattenTree, projectDrop, moveItem, removeItem, updateItem, indentItem, outdentItem,
-  shiftItem, isMegaItem, newNavId, findItem, type FlatNavItem,
+  shiftItem, isMegaItem, newNavId, findItem, isFirstAmongSiblings, type FlatNavItem,
 } from "@/modules/navigation/menu-model";
 
 const INDENT = 28;
@@ -146,10 +146,19 @@ export function MenuTreeEditor({ items, targets, onChange }: {
                   open={openIds.includes(f.id)}
                   onToggle={() => toggle(f.id)}
                   onPatch={(p) => patch(f.id, p)}
-                  onRemove={() => onChange(removeItem(items, f.id))}
+                  onRemove={() => {
+                    // A whole sub-menu goes with the item: ask first.
+                    const under = flattenTree(f.item.children ?? []).length;
+                    if (under > 0 && !window.confirm(t("navPage.removeWithChildren", { label: f.item.label || t("navPage.newLinkLabel"), count: under, plural: under === 1 ? "" : "s" }))) return;
+                    onChange(removeItem(items, f.id));
+                  }}
                   onUp={() => apply(shiftItem(items, f.id, -1), false)}
                   onDown={() => apply(shiftItem(items, f.id, 1), false)}
-                  onIndent={() => apply(indentItem(items, f.id))}
+                  onIndent={() => {
+                    // Nothing above it at its level: say so, not "3 levels".
+                    if (isFirstAmongSiblings(items, f.id)) { toast.error(t("navPage.cannotNestFirst")); return; }
+                    apply(indentItem(items, f.id));
+                  }}
                   onOutdent={() => apply(outdentItem(items, f.id), false)}
                   onAddChild={() => addChild(f.id)}
                 />
@@ -501,7 +510,10 @@ export function LinkField({ value, targets, onChange, small }: {
   small?: boolean;
 }) {
   const t = useT();
-  const known = targets.some((tg) => tg.url === value);
+  // "Custom URL" chosen while the link still matches a page: keep the text
+  // box open so the URL can be edited (before P0 the choice did nothing).
+  const [customOpen, setCustomOpen] = useState(false);
+  const known = !customOpen && targets.some((tg) => tg.url === value);
   const groups = Array.from(new Set(targets.map((tg) => tg.group)));
 
   return (
@@ -510,7 +522,11 @@ export function LinkField({ value, targets, onChange, small }: {
         className={cn("min-w-0 flex-1 rounded border bg-background px-2 text-xs", small ? "py-1" : "py-1.5")}
         value={known ? value : "__custom__"}
         aria-label={t("navPage.linkTo")}
-        onChange={(e) => { if (e.target.value !== "__custom__") onChange(e.target.value); }}
+        onChange={(e) => {
+          if (e.target.value === "__custom__") { setCustomOpen(true); return; }
+          setCustomOpen(false);
+          onChange(e.target.value);
+        }}
       >
         {groups.map((g) => (
           <optgroup key={g} label={g}>

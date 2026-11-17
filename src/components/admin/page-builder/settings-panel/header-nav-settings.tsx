@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useSavedMenus } from "../saved-menus";
 import Link from "next/link";
 import { useBuilderStore } from "@/lib/store/builder";
 import { Label } from "@/components/ui/label";
@@ -10,36 +11,50 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { NavItemsEditor } from "./nav-items-editor";
 import type { HeaderNavBlockProps, NavigationBlockProps } from "@/types/cms";
 
-/** Shown above a menu editor when the block reads a managed menu instead of its own links. */
-export function ManagedMenuNote({ location }: { location?: string }) {
-  if (!location) return null;
-  return (
-    <p className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900">
-      These links come from the &quot;{location.replace(/_/g, " ")}&quot; menu. Edit them in <Link href="/dashboard/navigation" className="underline font-medium">Dashboard &gt; Navigation</Link>; the list below is only used if that menu is missing.
-    </p>
-  );
-}
-
 type MenuLocation = NonNullable<NavigationBlockProps["data"]["menuLocation"]>;
 const LOCATION_LABEL: Record<MenuLocation, string> = {
   header: "Header", footer: "Footer", footer_secondary: "Footer (second)", mobile: "Phone menu", sidebar: "Sidebar", legal: "Legal links",
 };
-type SavedMenu = { id: string; name?: string; location?: string; items?: unknown[] };
-let menusPromise: Promise<SavedMenu[]> | null = null;
-/** The site's saved menus (Dashboard > Navigation), fetched once per editor session. */
-function fetchMenus(): Promise<SavedMenu[]> {
-  menusPromise ??= fetch("/api/navigation").then((r) => (r.ok ? r.json() : { menus: [] })).then((j) => (Array.isArray(j?.menus) ? j.menus : [])).catch(() => []);
-  return menusPromise;
+
+/**
+ * Shown above a menu editor when the block reads a saved menu instead of its
+ * own links. Says plainly when that menu does not exist (or is empty), since
+ * the block then shows something other than what the owner may expect.
+ */
+export function ManagedMenuNote({ location }: { location?: string }) {
+  const menus = useSavedMenus(!!location);
+  if (!location) return null;
+  const label = LOCATION_LABEL[location as MenuLocation] ?? location.replace(/_/g, " ");
+  const menu = menus?.find((m) => m.location === location);
+  if (menus && !menu) {
+    return (
+      <p className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900" role="status">
+        This block is set to show the saved &quot;{label}&quot; menu, but no menu is placed there, so the live site shows the links below. Create or import it in <Link href="/dashboard/navigation" target="_blank" className="underline font-medium">Dashboard &gt; Navigation</Link>, or choose &quot;The links below&quot;.
+      </p>
+    );
+  }
+  if (menu && !(menu.items?.length)) {
+    return (
+      <p className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900" role="status">
+        The saved &quot;{label}&quot; menu{menu.name ? ` (${menu.name})` : ""} has no links, so this block shows no links on the live site. Add links in <Link href="/dashboard/navigation" target="_blank" className="underline font-medium">Dashboard &gt; Navigation</Link>.
+      </p>
+    );
+  }
+  return (
+    <p className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900">
+      These links come from the &quot;{label}&quot; menu{menu?.name ? ` (${menu.name})` : ""}. Edit them in <Link href="/dashboard/navigation" target="_blank" className="underline font-medium">Dashboard &gt; Navigation</Link>; the list below is only used if that menu is missing.
+    </p>
+  );
 }
 
 /**
  * Which managed menu (Dashboard > Navigation) the block shows. The live site
- * swaps the block's own links for that menu's (page-renderer resolveNavBlocks);
- * "None" keeps the links typed below.
+ * and this builder's preview swap the block's own links for that menu's
+ * (page-renderer resolveNavBlocks, at any depth since P0); "None" keeps the
+ * links typed below.
  */
 export function MenuLocationPicker({ value, onChange }: { value?: MenuLocation; onChange: (v: MenuLocation | undefined) => void }) {
-  const [menus, setMenus] = useState<SavedMenu[] | null>(null);
-  useEffect(() => { let live = true; fetchMenus().then((m) => live && setMenus(m)); return () => { live = false; }; }, []);
+  const menus = useSavedMenus();
   const assigned = (menus ?? []).filter((m) => m.location && m.location !== "none" && m.location in LOCATION_LABEL);
   const options = [...new Set([...assigned.map((m) => m.location as MenuLocation), ...(value ? [value] : [])])];
   return (
@@ -56,7 +71,7 @@ export function MenuLocationPicker({ value, onChange }: { value?: MenuLocation; 
         </SelectContent>
       </Select>
       <p className="text-[10px] text-muted-foreground mt-0.5">
-        {menus && !assigned.length ? "No saved menus yet. " : ""}Menus are made in <Link href="/dashboard/navigation" target="_blank" className="underline">Dashboard &gt; Navigation</Link>. The live site shows the chosen menu; this preview shows the links below.
+        {menus && !assigned.length ? "No saved menus yet. " : ""}Menus are made in <Link href="/dashboard/navigation" target="_blank" className="underline">Dashboard &gt; Navigation</Link>. The live site and this preview show the chosen menu (auto lists fill in on the live site).
       </p>
     </div>
   );

@@ -265,6 +265,42 @@ export function indentItem(items: NavItem[], id: string): NavItem[] {
   return moveItem(items, id, prev.id, (prev.children ?? []).length);
 }
 
+/**
+ * One list entry moved up (-1) or down (+1). Nothing else changes: the
+ * entries are the same objects, so a menu stored on a block keeps its exact
+ * shape (the Menu Bar block's own link editor uses this). Same array back
+ * when the move would leave the list.
+ */
+export function moveInList<T>(list: T[], index: number, dir: -1 | 1): T[] {
+  const to = index + dir;
+  if (index < 0 || index >= list.length || to < 0 || to >= list.length) return list;
+  const next = [...list];
+  [next[index], next[to]] = [next[to], next[index]];
+  return next;
+}
+
+/**
+ * What a flat list of links would lose if it replaced this menu: sub-menus,
+ * auto lists or Menu Studio settings (mega, icons, badges...). Empty = the
+ * menu is flat and plain, safe to replace with a flat list.
+ */
+export function structureLostByFlatReplace(items: unknown): string[] {
+  const menu = normalizeMenu(items);
+  const out = new Set<string>();
+  for (const i of menu) {
+    if (i.children?.length) out.add("sub-menus");
+    if (i.childSource && i.childSource !== "manual") out.add("auto lists");
+    if (usesStudio(i)) out.add("menu settings (mega menu, icons, badges or similar)");
+  }
+  return [...out];
+}
+
+/** True when the item is first among its siblings, so "nest under the item above" has nothing to nest under. */
+export function isFirstAmongSiblings(items: NavItem[], id: string): boolean {
+  const path = findPath(items, id);
+  return !!path && path[path.length - 1] === 0;
+}
+
 /** Moves the item out one level, right after its parent. */
 export function outdentItem(items: NavItem[], id: string): NavItem[] {
   const path = findPath(items, id);

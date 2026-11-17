@@ -1,0 +1,51 @@
+# Keep the Docker build context small and free of secrets.
+# Secrets reach the build only through `--secret id=build_env` (Dockerfile).
+
+# Never send secrets, keys or site data into the image
+.env*
+!selfhost/.env.example
+*.pem
+*.key
+licence.json
+licence-private*
+data/
+import/
+backups/
+
+# Build output and dependencies (rebuilt inside the image)
+node_modules
+**/node_modules
+.next
+out
+build
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Tooling and VCS
+.git
+.github
+.vercel
+.claude
+.vscode
+.idea
+*.log
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Not part of the web app
+apps
+mobile
+wordpress-plugin
+proxy
+docs
+tests
+open-source
+seed-*.cjs
+upload-*.cjs
+add-child-nameservers.cjs
+*-urls.json
+_t.html
+undefined
+_incoming

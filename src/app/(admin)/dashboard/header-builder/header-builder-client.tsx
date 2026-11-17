@@ -13,7 +13,7 @@ import { BuilderCanvas } from "@/components/admin/page-builder/canvas/builder-ca
 import { BlocksPanel } from "@/components/admin/page-builder/blocks-panel/blocks-panel";
 import { HEADER_BLOCK_TYPES, FOOTER_BLOCK_TYPES, HEADER_BLOCK_DISPLAY, FOOTER_BLOCK_DISPLAY } from "@/modules/page-builder/header-blocks";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, Loader2, Undo2, Redo2, PanelLeft, CornerUpLeft, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Undo2, Redo2, PanelLeft, CornerUpLeft, LayoutTemplate, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/cms";
 import { useT } from "@/lib/i18n/language-provider";
@@ -36,6 +36,7 @@ export default function HeaderBuilderClient({
   initialBlocks,
   tenantId,
   returnTo,
+  studioLive = false,
 }: {
   target: HeaderTarget;
   initialBlocks: Block[];
@@ -43,6 +44,8 @@ export default function HeaderBuilderClient({
   /** Page editor to return to, when the user arrived from one. Already
    *  validated server-side; null when they came in via the normal nav. */
   returnTo?: string | null;
+  /** A Studio header (or footer, per target) is live, so visitors do not see what is edited here. */
+  studioLive?: boolean;
 }) {
   const t = useT();
   const { blocks, isDirty, setBlocks, setTenantId, setDirty, undo, redo, canUndo, canRedo } = useBuilderStore();
@@ -55,6 +58,16 @@ export default function HeaderBuilderClient({
   // having to notice a button.
   const [offerReturn, setOfferReturn] = useState(false);
   const isMobile = useIsMobile();
+  const studioHref = target === "header" ? "/dashboard/header-builder/studio" : "/dashboard/header-builder/footer-studio";
+  const studioLiveBanner = studioLive ? (
+    <div className="flex items-start gap-2 border-b border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 shrink-0" role="status">
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      <p className="min-w-0 flex-1">
+        {t(target === "header" ? "headerBuilder.studioLiveHeader" : "headerBuilder.studioLiveFooter")}{" "}
+        <Link href={studioHref} className="font-medium underline">{t(target === "header" ? "headerStudio.openStudio" : "footerStudio.openStudio")}</Link>
+      </p>
+    </div>
+  ) : null;
 
   useEffect(() => {
     // No pageId — this isn't a page. Settings panels that need tenant context
@@ -166,7 +179,7 @@ export default function HeaderBuilderClient({
               </Button>
             </>
           }
-          banner={returnTo ? (
+          banner={studioLive && !returnTo ? studioLiveBanner : returnTo ? (
             <div className="flex items-center gap-2 border-b bg-primary/5 px-3 py-1.5 shrink-0">
               <CornerUpLeft className="h-3.5 w-3.5 text-primary shrink-0" />
               <p className="text-[11px] text-muted-foreground min-w-0 truncate flex-1">{t("headerBuilder.editingSite", { label: label.toLowerCase() })}</p>
@@ -209,6 +222,8 @@ export default function HeaderBuilderClient({
           </Button>
         </div>
       )}
+
+      {studioLiveBanner}
 
       <div className="flex items-center gap-2 border-b bg-background px-3 py-2 shrink-0">
         <Button

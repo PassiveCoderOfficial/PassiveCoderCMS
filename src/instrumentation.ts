@@ -8,6 +8,14 @@ export async function register() {
   // pg_timezone_names). It took the database down twice on 2026-10-19.
   // Those migrations were applied long ago; schema changes go through
   // supabase/migrations only.
+
+  // Self-hosted installs only: settings the web installer saved to the data
+  // folder (email key, AI key) go into the environment before the first
+  // request. Hosted (SaaS) mode skips this entirely.
+  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PUBLIC_CMS_MODE !== "saas" && !process.env.VERCEL) {
+    const { loadLocalSettings } = await import("@/lib/installer/local-settings");
+    loadLocalSettings();
+  }
 }
 
 /**

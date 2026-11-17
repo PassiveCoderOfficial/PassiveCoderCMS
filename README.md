@@ -25,20 +25,52 @@ More about the project: https://passivecoder.com/open-source-cms
 - **AI tools** (optional): write and rewrite text, translate, build pages.
 - **Backups**, import and export, and an importer for WordPress sites.
 
+## Install with one prompt
+
+Open your AI coding agent (Claude Code, OpenAI Codex, Cursor, Windsurf,
+Gemini CLI or GitHub Copilot) in an empty folder and paste:
+
+```text
+Install Passive Coder CMS for me from https://github.com/PassiveCoderOfficial/PassiveCoderCMS: clone it and follow selfhost/AI-INSTALL.md step by step. Ask me where it should run first, never ask me to paste keys into this chat, and stop and ask before anything that costs money, needs a login or deletes something.
+```
+
+It asks where the site should run (Vercel + Supabase, your own server, or
+this computer), sets up Supabase after you log in in your browser, deploys,
+loads the database and opens the setup page. Keys go into a file on your
+computer, never into the chat. Prompts per agent:
+[selfhost/AI-PROMPTS.md](selfhost/AI-PROMPTS.md). Agent instructions:
+[AGENTS.md](AGENTS.md) and [selfhost/AI-INSTALL.md](selfhost/AI-INSTALL.md).
+
+Rather not do it yourself? We install it for you on your own accounts:
+[cloud, $99](https://passivecoder.com/api/open-source/checkout?item=install_cloud) or
+[your server, $199](https://passivecoder.com/api/open-source/checkout?item=install_server).
+
 ## Quick start
 
-You need Node.js 20 or newer and a Supabase project (the free plan works).
+You need a Supabase project (supabase.com, the free plan works). Then pick
+one way:
 
-1. `npm ci`
-2. Copy `.env.example` to `.env.local` and fill in the required settings.
-3. Load the database: `node selfhost/setup-db.mjs`
-4. `npm run build`, then `npm start`
-5. Open the site and finish the setup screen to create the owner account.
+**One click, no server.** Deploy to Vercel, then open `/setup` on your new
+site:
 
-The full guide, including updates and scheduled jobs, is in
-[selfhost/README.md](selfhost/README.md). If this repository has `INSTALL`
-guides for a specific host (for example `selfhost/INSTALL-*.md`), follow the
-one for your host.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPassiveCoderOfficial%2FPassiveCoderCMS&project-name=passivecoder-cms&repository-name=passivecoder-cms&env=NEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_ANON_KEY%2CSUPABASE_SERVICE_ROLE_KEY%2CDATABASE_URL%2CSETUP_TOKEN%2CCRON_SECRET&envDescription=Four+values+from+your+Supabase+project%2C+and+two+passwords+you+make+up+now.+The+guide+shows+where+each+one+is.&envLink=https%3A%2F%2Fgithub.com%2FPassiveCoderOfficial%2FPassiveCoderCMS%2Fblob%2Fmain%2Fselfhost%2FINSTALL-CLOUD.md%232-click-deploy)
+
+**One command on a server** (Ubuntu 22.04+ or Debian 12+), with HTTPS,
+scheduled jobs and daily backups:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/PassiveCoderOfficial/PassiveCoderCMS/main/selfhost/install.sh | sudo sh
+```
+
+**One command anywhere** with Node.js 22:
+
+```bash
+git clone https://github.com/PassiveCoderOfficial/PassiveCoderCMS.git && cd PassiveCoderCMS
+node selfhost/cli/index.mjs init
+```
+
+Each way ends on a setup page that checks everything, sets up the database
+and creates your admin login. Details: [selfhost/README.md](selfhost/README.md).
 
 ## AI features and the Passive Coder AI key
 

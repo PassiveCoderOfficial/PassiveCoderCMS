@@ -1,0 +1,33 @@
+# Passive Coder CMS
+
+> Self-hosted website builder and business dashboard for one business: pages and a block page builder, blog, single-store shop, bookings, CRM, invoices, site chat and optional AI tools. Next.js 16 + Supabase (Postgres, auth, storage). Open-source core under the GNU AGPL v3.
+
+One install serves one site. It runs on Vercel + Supabase, on a Linux server with Docker (one-command installer), or on any computer with Node.js 22. Every path ends on a web setup page (/setup) that checks the install, loads the database and creates the admin login.
+
+## Install
+
+- [AI-INSTALL.md](selfhost/AI-INSTALL.md): runbook for AI coding agents. Step-by-step install per target (cloud, own server, local) with checks, stop-and-ask points, secret rules and a failure table.
+- [AI-PROMPTS.md](selfhost/AI-PROMPTS.md): one copy-paste prompt per agent (Claude Code, Codex, Cursor, Windsurf, Gemini CLI, Copilot).
+- [selfhost/README.md](selfhost/README.md): the three ways to install, the setup page, settings, AI keys, licences.
+- [INSTALL-CLOUD.md](selfhost/INSTALL-CLOUD.md): Vercel + Supabase, no server.
+- [INSTALL-SERVER.md](selfhost/INSTALL-SERVER.md): one command on Ubuntu 22.04+ / Debian 12+ (Docker, HTTPS, backups).
+- [.env.example](.env.example): every setting, required ones first.
+
+## Working in the code
+
+- [AGENTS.md](AGENTS.md): instructions for AI agents: run, test, layout, open-core boundary, secrets, conventions.
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute (CLA required).
+- [selfhost/cli/README.md](selfhost/cli/README.md): the command-line installer (init, doctor, start, update, agent helpers).
+
+## Policies
+
+- [LICENSE](LICENSE): GNU AGPL v3.
+- [TRADEMARK.md](TRADEMARK.md): use of the Passive Coder name and logo.
+- [SECURITY.md](SECURITY.md): report security problems privately.
+
+## Optional
+
+- [Hosted version and 7-day trial](https://passivecoder.com)
+- [Plans and pricing](https://passivecoder.com/pricing)
+- [Open-source page](https://passivecoder.com/open-source-cms)
+- [Issues](https://github.com/PassiveCoderOfficial/PassiveCoderCMS/issues)

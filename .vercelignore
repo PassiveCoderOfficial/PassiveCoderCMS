@@ -1,0 +1,8 @@
+# Files `vercel deploy` never uploads (settings and secrets stay on this computer).
+.env
+.env.*
+!.env.example
+licence.json
+node_modules
+.next
+backups

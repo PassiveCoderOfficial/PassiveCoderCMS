@@ -243,3 +243,23 @@ test("normalizeDoc repairs stored garbage without enabling anything", () => {
   assert.equal(d.history.length, 1);
   assert.deepEqual(d.history[0].config, defaultConfig());
 });
+
+// ── Phone drawer menu (menus P0, 2026-11-17) ───────────────────────────
+
+test("phone drawer: main-bar menu beats a top-bar utility menu; the Phone tab choice wins; normalize keeps it only if valid", async () => {
+  const { drawerMenuElement } = await import("../model");
+  let c = defaultConfig();
+  c.rows.top.enabled = true;
+  c = addElement(c, "top", "right", makeElement("menu", { menuId: "utility" }));
+  c = addElement(c, "main", "center", makeElement("menu", { menuId: "main" }));
+  assert.equal(drawerMenuElement(c)?.menuId, "main", "before P0 the top bar's menu filled the drawer");
+  const utilityId = allElements(c).find((e) => e.menuId === "utility")!.id;
+  const picked = { ...c, mobile: { ...c.mobile, drawerMenu: utilityId } };
+  assert.equal(drawerMenuElement(picked)?.menuId, "utility");
+  assert.equal(normalizeHeaderConfig(JSON.parse(JSON.stringify(picked))).mobile.drawerMenu, utilityId);
+  const stale = { ...c, mobile: { ...c.mobile, drawerMenu: "he-gone" } };
+  assert.equal("drawerMenu" in normalizeHeaderConfig(stale).mobile, false, "an id that no longer exists is dropped");
+  assert.equal("drawerMenu" in normalizeHeaderConfig(c).mobile, false, "unset stays unset (old configs unchanged)");
+  // Hidden on phones: skipped.
+  assert.equal(drawerMenuElement(c, (e) => e.menuId !== "main")?.menuId, "utility");
+});

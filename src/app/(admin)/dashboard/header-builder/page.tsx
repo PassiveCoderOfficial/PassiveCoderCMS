@@ -5,6 +5,8 @@ import { toBlocks } from "@/lib/site/global-blocks";
 import { safeReturnTo } from "@/lib/site/return-to";
 import { resolveDbTemplateIdentity } from "@/modules/templates/resolve-identity";
 import { buildSiteTheme, type SiteThemeInput } from "@/modules/themes/site-theme";
+import { resolveLiveHeader } from "@/modules/header-studio/doc";
+import { resolveLiveFooter } from "@/modules/footer-studio/doc";
 import HeaderBuilderClient, { type HeaderTarget } from "./header-builder-client";
 
 export default async function HeaderBuilderPage({
@@ -33,6 +35,19 @@ export default async function HeaderBuilderPage({
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
+  // Is a Studio header/footer live? Then visitors do not see the classic one
+  // edited here: the builder says so (P0). Own query: the studio columns may
+  // be missing (migrations 240/241), which only means "classic".
+  const { data: studios } = await admin
+    .from("site_identity")
+    .select("header_studio, footer_studio")
+    .eq("tenant_id", tenantId)
+    .maybeSingle()
+    .then((r) => r, () => ({ data: null }));
+  const studioLive = target === "header"
+    ? !!resolveLiveHeader((studios as { header_studio?: unknown } | null)?.header_studio)
+    : !!resolveLiveFooter((studios as { footer_studio?: unknown } | null)?.footer_studio);
+
   const initialBlocks = toBlocks(
     target === "header" ? data?.global_header : data?.global_footer,
   );
@@ -59,6 +74,7 @@ export default async function HeaderBuilderPage({
         initialBlocks={initialBlocks}
         tenantId={tenantId}
         returnTo={returnTo}
+        studioLive={studioLive}
       />
     </>
   );

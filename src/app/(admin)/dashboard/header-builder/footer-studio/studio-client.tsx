@@ -32,6 +32,7 @@ import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { MapLocationInput, MAP_LOCATION_LABELS, MAP_LOCATION_LABELS_BN } from "@/components/map/map-location-input";
 import { loadSiteBusinessAddress } from "@/components/map/business-address";
 import { useLanguage, useT } from "@/lib/i18n/language-provider";
+import { useUnsavedGuard } from "@/lib/hooks/use-unsaved-guard";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 import type { NavItem } from "@/types/cms";
 import { SiteContactProvider, type SiteContact } from "@/components/site/site-contact-context";
@@ -134,12 +135,8 @@ export default function FooterStudioClient({
     return () => window.removeEventListener("keydown", onKey);
   }, [saveDraft]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const onLeave = (e: BeforeUnloadEvent) => { e.preventDefault(); };
-    window.addEventListener("beforeunload", onLeave);
-    return () => window.removeEventListener("beforeunload", onLeave);
-  }, [dirty]);
+  // Closing, reloading or following a dashboard link with unsaved work asks first.
+  useUnsavedGuard(dirty, t("footerStudio.unsavedLeave"));
 
   function applyPreset(id: string) {
     const next = buildFooterPreset(id, facts);
@@ -539,7 +536,7 @@ function WidgetEditor({ config, widget: w, onChange, onClose, menus, contact, ho
               <option value={2}>{t("footerStudio.levels2")}</option>
             </select>
           </Field>
-          <Link href="/dashboard/navigation" className="text-xs text-primary underline-offset-4 hover:underline">{t("footerStudio.editMenus")}</Link>
+          <a href="/dashboard/navigation" target="_blank" rel="noopener" title={t("headerStudio.editMenusHint")} className="text-xs text-primary underline-offset-4 hover:underline">{t("footerStudio.editMenus")}</a>
         </>
       )}
       {(w.type === "menu" || w.type === "links") && inColumn && (

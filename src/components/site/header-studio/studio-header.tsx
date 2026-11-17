@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import type { NavItem } from "@/types/cms";
 import { MobileNavList } from "@/components/blocks/navigation/nav-menu-core";
 import {
-  ROW_KEYS, ZONES, allElements, firstOfType, transparentOn,
+  ROW_KEYS, ZONES, allElements, drawerMenuElement, firstOfType, transparentOn,
   type HeaderConfig, type HeaderElement, type HeaderRow, type HeaderRowKey,
 } from "@/modules/header-studio/model";
 import { HeaderElementView, SearchPanel, ICON_BTN, type ElementCtx } from "./header-elements";
@@ -206,7 +206,7 @@ export function StudioHeader({ config, menus, logoUrl, logoDarkUrl, siteName, pr
   const phoneCtx = ctxFor(main);
   const phonePal = clear ? { bg: "transparent", fg: "#ffffff" } : BG[main.background];
   const logoEl = firstOfType(config, "logo");
-  const menuEl = allElements(config, { enabledOnly: true }).find((e) => e.type === "menu" && visibleOn(e, "mobile"));
+  const menuEl = drawerMenuElement(config, (e) => visibleOn(e, "mobile"));
   const drawerItems = menuEl ? menus[menuEl.menuId ?? ""] ?? menus[""] ?? [] : [];
   const iconEls = config.mobile.icons
     .map((t) => firstOfType(config, t) ?? ({ id: `m-${t}`, type: t } as HeaderElement))

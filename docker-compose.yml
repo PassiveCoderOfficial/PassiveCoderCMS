@@ -1,0 +1,78 @@
+# Passive Coder CMS, self-hosted (one site), built from this copy of the code.
+# Full guide: selfhost/INSTALL-SERVER.md. The easy way on a server is
+# selfhost/install.sh, which writes its own compose file and uses the
+# ready-made image instead of building.
+#
+# The database is a Supabase project (supabase.com, the free tier is fine to
+# start). Settings live in .env.local next to this file (copy
+# selfhost/.env.example, or run `node selfhost/cli/index.mjs init --no-start`).
+# Then:
+#
+#   docker compose build          # needs about 8 GB RAM; or set PC_IMAGE to a built image
+#   docker compose run --rm app node selfhost/setup-db.mjs --if-empty   # or use /setup
+#   docker compose up -d
+#
+# The image is the ready-made kind (PC_GENERIC=1): your settings go in when
+# the container starts, so changing .env.local needs a restart, not a build.
+#
+# HTTPS: put Caddy (or another reverse proxy) in front of port 3000. The
+# optional "caddy" service below does it for you: start with
+#   docker compose --profile https up -d
+
+name: passivecoder
+
+services:
+  app:
+    image: ${PC_IMAGE:-passivecoder-cms:latest}
+    build:
+      context: .
+      target: runner
+      args:
+        PC_GENERIC: "1"
+    env_file: .env.local
+    environment:
+      NEXT_PUBLIC_CMS_MODE: standalone
+      PASSIVECODER_LICENCE_FILE: /app/data/licence.json
+    volumes:
+      # licence.json (paid modules) goes here; site packages to import too.
+      - ./data:/app/data
+    ports:
+      # Only this machine can reach the app directly; the world goes through HTTPS.
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+
+  cron:
+    image: ${PC_CRON_IMAGE:-passivecoder-cron:latest}
+    build:
+      context: .
+      target: cron
+    # CRON_SECRET comes from .env.local; the jobs call the app directly.
+    env_file: .env.local
+    environment:
+      SITE_URL: http://app:3000
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  # Optional HTTPS front door for NEXT_PUBLIC_ROOT_DOMAIN (from .env.local).
+  # Point the domain's DNS at this server first. For more than one name (www
+  # and the bare domain), use your own Caddyfile: see INSTALL-SERVER.md.
+  caddy:
+    image: caddy:2
+    profiles: ["https"]
+    env_file: .env.local
+    command: ["sh", "-c", "exec caddy reverse-proxy --from \"$$NEXT_PUBLIC_ROOT_DOMAIN\" --to app:3000"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, Pencil, Check, X, Navigation, Footprints, ChevronDown, ChevronRight, Phone } from "lucide-react";
+import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, X, Footprints, Phone } from "lucide-react";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import {
   CONTACT_FORM_FIELDS, CTA_FORM_FIELDS, buildFooterSave, buildPrefooterSave, changedIdentityFields, footerFormState, prefooterFormState,
@@ -20,250 +20,11 @@ interface SiteIdentity {
   tagline: string | null;
 }
 
-interface NavItem {
-  id?: string;
-  label: string;
-  url: string;
-  target?: string;
-  children?: NavItem[];
-}
-
-interface NavMenu {
-  id: string;
-  name: string;
-  slug: string;
-  items: NavItem[];
-}
-
-
 function uid() { return Math.random().toString(36).slice(2, 8); }
-function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
 
 function api(method: string, body?: unknown, params?: Record<string, string>) {
   const url = params ? `/api/identity?${new URLSearchParams(params)}` : "/api/identity";
   return fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
-}
-
-// ─── NAV ITEM EDITOR ───────────────────────────────────────────────────────
-
-function NavItemEditor({ item, onChange, onDelete, depth = 0 }: {
-  item: NavItem; onChange: (item: NavItem) => void; onDelete: () => void; depth?: number;
-}) {
-  const [open, setOpen] = useState(false);
-  const addChild = () => onChange({ ...item, children: [...(item.children ?? []), { id: uid(), label: "New Link", url: "/" }] });
-  const updateChild = (i: number, updated: NavItem) => { const c = [...(item.children ?? [])]; c[i] = updated; onChange({ ...item, children: c }); };
-  const deleteChild = (i: number) => onChange({ ...item, children: item.children?.filter((_, j) => j !== i) });
-
-  return (
-    <div className={depth > 0 ? "ml-4 border-l border-border pl-3" : ""}>
-      <div className="flex items-center gap-2 py-1">
-        {depth === 0 && (
-          <button onClick={() => setOpen(o => !o)} className="text-muted-foreground hover:text-foreground w-5 flex-shrink-0">
-            {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-          </button>
-        )}
-        <input value={item.label} onChange={e => onChange({ ...item, label: e.target.value })}
-          className="w-32 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="Label" />
-        <input value={item.url} onChange={e => onChange({ ...item, url: e.target.value })}
-          className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="/page" />
-        <select value={item.target ?? "_self"} onChange={e => onChange({ ...item, target: e.target.value })}
-          className="bg-muted border border-border rounded px-1 py-1 text-xs text-foreground focus:outline-none">
-          <option value="_self">Same tab</option>
-          <option value="_blank">New tab</option>
-        </select>
-        {depth === 0 && (
-          <button onClick={() => { setOpen(true); addChild(); }}
-            title="Add sub-menu item"
-            className="text-muted-foreground hover:text-primary text-xs border border-border rounded px-1.5 py-1 hover:border-primary">
-            + Sub
-          </button>
-        )}
-        <button onClick={onDelete} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
-      </div>
-      {open && depth === 0 && (
-        <div className="mt-1 mb-2 space-y-1">
-          {(item.children ?? []).map((child, i) => (
-            <NavItemEditor key={child.id ?? i} item={child} depth={1}
-              onChange={u => updateChild(i, u)} onDelete={() => deleteChild(i)} />
-          ))}
-          <button onClick={addChild} className="ml-4 text-xs text-primary hover:text-indigo-300 flex items-center gap-1 mt-1">
-            <Plus className="w-3 h-3" /> Add sub-link
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── LEGACY NAV MENUS (nav_menus table) ────────────────────────────────────
-
-function MenuCard({ menu, onUpdate, onDelete }: {
-  menu: NavMenu; onUpdate: (m: NavMenu) => void; onDelete: (id: string) => void;
-}) {
-  const [items, setItems] = useState<NavItem[]>(menu.items);
-  const [editingName, setEditingName] = useState(false);
-  const [name, setName] = useState(menu.name);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  async function saveMenu() {
-    setSaving(true);
-    await api("PATCH", { _type: "menu", id: menu.id, items, name, slug: slugify(name) });
-    setSaving(false); setSaved(true);
-    onUpdate({ ...menu, name, slug: slugify(name), items });
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  const addItem = () => setItems(prev => [...prev, { id: uid(), label: "New Link", url: "/" }]);
-  const updateItem = (i: number, u: NavItem) => setItems(prev => { const a = [...prev]; a[i] = u; return a; });
-  const deleteItem = (i: number) => setItems(prev => prev.filter((_, j) => j !== i));
-
-  return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        {editingName ? (
-          <div className="flex items-center gap-2">
-            <input autoFocus value={name} onChange={e => setName(e.target.value)}
-              className="bg-muted border border-primary rounded px-2 py-1 text-sm text-foreground focus:outline-none" />
-            <button onClick={() => setEditingName(false)}><Check className="w-4 h-4 text-primary" /></button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-foreground">{name}</span>
-            <span className="text-xs text-muted-foreground">/{slugify(name)}</span>
-            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-muted-foreground" /></button>
-          </div>
-        )}
-        <div className="flex gap-2">
-          <button onClick={saveMenu} disabled={saving}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : saved ? <CheckCircle className="w-3 h-3" /> : <Save className="w-3 h-3" />}
-            {saved ? "Saved" : "Save"}
-          </button>
-          <button onClick={() => { if (confirm(`Delete menu "${menu.name}"?`)) { api("DELETE", undefined, { id: menu.id }); onDelete(menu.id); } }}
-            className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
-        </div>
-      </div>
-      <div className="space-y-1">
-        {items.map((item, i) => (
-          <NavItemEditor key={item.id ?? i} item={item} onChange={u => updateItem(i, u)} onDelete={() => deleteItem(i)} />
-        ))}
-      </div>
-      <button onClick={addItem}
-        className="flex items-center gap-2 text-xs text-primary hover:text-indigo-300 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 w-full transition-colors">
-        <Plus className="w-3.5 h-3.5" /> Add Link
-      </button>
-    </div>
-  );
-}
-
-// ─── GLOBAL NAV EDITOR ─────────────────────────────────────────────────────
-
-function GlobalNavEditor({ initialBlock }: { initialBlock: Record<string, unknown> | null }) {
-  const navData = (initialBlock?.data ?? {}) as Record<string, unknown>;
-  const [logoText, setLogoText] = useState((navData.logoText as string) ?? "");
-  const [logoUrl, setLogoUrl] = useState((navData.logo as string) ?? "");
-  const [ctaLabel, setCtaLabel] = useState((navData.ctaLabel as string) ?? "Free Consultation");
-  const [ctaUrl, setCtaUrl] = useState((navData.ctaUrl as string) ?? "#contact");
-  const [bg, setBg] = useState((navData.backgroundColor as string) ?? "#1a5c38");
-  const [fg, setFg] = useState((navData.textColor as string) ?? "#ffffff");
-  const [sticky, setSticky] = useState((navData.sticky as boolean) ?? true);
-  const [items, setItems] = useState<NavItem[]>((navData.items as NavItem[]) ?? []);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const save = useCallback(async () => {
-    setSaving(true);
-    const block = {
-      id: (initialBlock?.id as string) ?? uid(),
-      type: "navigation",
-      order: 0, visible: true, width: "full",
-      padding: { top: 0, right: 0, bottom: 0, left: 0 },
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-      background: { type: "color", color: bg },
-      templateVariant: "solid-with-cta",
-      data: { logoText, logo: logoUrl || undefined, items, sticky, transparent: false, style: "default", backgroundColor: bg, textColor: fg, showCta: !!(ctaLabel && ctaUrl), ctaLabel, ctaUrl },
-    };
-    await api("POST", { _type: "global_layout", global_header: block });
-    setSaving(false); setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  }, [initialBlock, logoText, logoUrl, items, sticky, bg, fg, ctaLabel, ctaUrl]);
-
-  const addItem = () => setItems(prev => [...prev, { id: uid(), label: "New Link", url: "/", children: [] }]);
-  const updateItem = (i: number, u: NavItem) => setItems(prev => { const a = [...prev]; a[i] = u; return a; });
-  const deleteItem = (i: number) => setItems(prev => prev.filter((_, j) => j !== i));
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold text-foreground flex items-center gap-2"><Navigation className="w-4 h-4 text-primary" /> Global Navigation</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
-        </div>
-        <button onClick={save} disabled={saving}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          {saved ? "Saved!" : "Save Nav"}
-        </button>
-      </div>
-
-      <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-        {/* Logo */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5">Nav Logo Image (overrides text)</label>
-          <MediaPickerInput value={logoUrl} onChange={v => setLogoUrl(v ?? "")} placeholder="https://... or pick from media" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Logo Text (shown if no image)</label>
-            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
-          </div>
-          <div className="flex items-end pb-0.5">
-            <label className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
-              <input type="checkbox" checked={sticky} onChange={e => setSticky(e.target.checked)} className="rounded" />
-              Sticky on scroll
-            </label>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">CTA Button Label</label>
-            <input value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">CTA Button URL</label>
-            <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Background</label>
-            <div className="flex gap-2">
-              <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
-              <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Text Color</label>
-            <div className="flex gap-2">
-              <input type="color" value={fg} onChange={e => setFg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
-              <input value={fg} onChange={e => setFg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
-            </div>
-          </div>
-        </div>
-
-        {/* Nav items */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-2">Menu Items <span className="text-muted-foreground">— click ▶ to add sub-menu items</span></label>
-          <div className="space-y-1">
-            {items.map((item, i) => (
-              <NavItemEditor key={item.id ?? i} item={item} onChange={u => updateItem(i, u)} onDelete={() => deleteItem(i)} />
-            ))}
-          </div>
-          <button onClick={addItem}
-            className="mt-2 flex items-center gap-2 text-xs text-primary hover:text-indigo-300 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 w-full transition-colors">
-            <Plus className="w-3.5 h-3.5" /> Add Nav Item
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ─── GLOBAL FOOTER EDITOR ──────────────────────────────────────────────────
@@ -602,10 +363,8 @@ function GlobalPrefooterEditor({ initialCta, initialContact }: {
 
 // ─── MAIN CLIENT ───────────────────────────────────────────────────────────
 
-export default function IdentityClient({ initialIdentity, initialMenus, initialGlobalHeader, initialGlobalFooter, footerHasOtherBlocks = false, initialPrefooterCta, initialPrefooterContact }: {
+export default function IdentityClient({ initialIdentity, initialGlobalFooter, footerHasOtherBlocks = false, initialPrefooterCta, initialPrefooterContact }: {
   initialIdentity: SiteIdentity | null;
-  initialMenus: NavMenu[];
-  initialGlobalHeader: Record<string, unknown> | null;
   initialGlobalFooter: Record<string, unknown> | null;
   /** The footer area holds blocks other than the standard footer. */
   footerHasOtherBlocks?: boolean;
@@ -616,12 +375,9 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
     logo_url: null, logo_dark_url: null, logo_width: 160, logo_alt: null,
     favicon_url: null, site_name: null, tagline: null,
   });
-  const [menus, setMenus] = useState(initialMenus);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [creatingMenu, setCreatingMenu] = useState(false);
-  const [newMenuName, setNewMenuName] = useState("");
-  const [activeTab, setActiveTab] = useState<"identity" | "nav" | "footer" | "prefooter" | "menus">("footer");
+  const [activeTab, setActiveTab] = useState<"identity" | "footer" | "prefooter">("footer");
 
   const set = (k: keyof SiteIdentity, v: unknown) => { setIdentity(p => ({ ...p, [k]: v })); setSaved(false); };
 
@@ -656,19 +412,11 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
     }
   }
 
-  async function createMenu() {
-    if (!newMenuName.trim()) return;
-    const res = await api("POST", { _type: "menu", name: newMenuName.trim(), slug: slugify(newMenuName.trim()), items: [] });
-    const data = await res.json();
-    setMenus(prev => [...prev, data]);
-    setNewMenuName(""); setCreatingMenu(false);
-  }
-
   // "Global Nav" and "Nav Menus (Legacy)" used to live here. Both edited
   // navigation in different storage, which is how the same site ended up with
-  // two menus that disagreed. Navigation now has its own screen backed by
-  // nav_menus — see /dashboard/navigation. The editors below are unreachable
-  // and kept only until the next cleanup pass.
+  // two menus that disagreed. Navigation has its own screen backed by
+  // nav_menus (/dashboard/navigation); the unreachable editors were removed
+  // in the menus P0 pass (2026-11-17).
   const TABS = [
     { key: "footer" as const, label: "Global Footer", icon: <Footprints className="w-4 h-4" /> },
     { key: "prefooter" as const, label: "Pre-Footer (CTA + Contact)", icon: <Phone className="w-4 h-4" /> },
@@ -693,9 +441,6 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
           </button>
         ))}
       </div>
-
-      {/* Global Nav */}
-      {activeTab === "nav" && <GlobalNavEditor initialBlock={initialGlobalHeader} />}
 
       {/* Global Footer */}
       {activeTab === "footer" && <GlobalFooterEditor initialBlock={initialGlobalFooter} hasOtherBlocks={footerHasOtherBlocks} />}
@@ -751,47 +496,6 @@ export default function IdentityClient({ initialIdentity, initialMenus, initialG
         </section>
       )}
 
-      {/* Legacy nav menus */}
-      {activeTab === "menus" && (
-        <section className="space-y-4">
-          <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-3 text-xs text-yellow-400">
-            Legacy nav_menus table. Use &quot;Global Nav&quot; tab to manage the site-wide navigation instead.
-          </div>
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-foreground">Navigation Menus</h2>
-            <button onClick={() => setCreatingMenu(true)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">
-              <Plus className="w-4 h-4" /> New Menu
-            </button>
-          </div>
-          {creatingMenu && (
-            <div className="flex items-center gap-3 bg-card border border-primary/40 rounded-xl p-4">
-              <input autoFocus value={newMenuName} onChange={e => setNewMenuName(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") createMenu(); if (e.key === "Escape") setCreatingMenu(false); }}
-                placeholder='Menu name (e.g. "Main Nav", "Footer")'
-                className="flex-1 bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
-              <button onClick={createMenu} disabled={!newMenuName.trim()}
-                className="flex items-center gap-1.5 bg-indigo-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
-                <Check className="w-4 h-4" /> Create
-              </button>
-              <button onClick={() => setCreatingMenu(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
-            </div>
-          )}
-          {menus.length === 0 && !creatingMenu ? (
-            <div className="text-center py-10 border border-dashed border-border rounded-xl">
-              <p className="text-muted-foreground text-sm">No menus yet.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {menus.map(m => (
-                <MenuCard key={m.id} menu={m}
-                  onUpdate={u => setMenus(prev => prev.map(x => x.id === u.id ? u : x))}
-                  onDelete={id => setMenus(prev => prev.filter(x => x.id !== id))} />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
     </div>
   );
 }

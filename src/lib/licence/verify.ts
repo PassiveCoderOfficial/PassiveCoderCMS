@@ -76,6 +76,14 @@ function configuredPublicKey(): KeyObject | null {
   }
 }
 
+/** Check a licence file's text with this build's public key: no file, no
+ *  environment, no cache. The web installer uses it for an uploaded file. */
+export function checkLicenceText(text: string): { ok: true; licence: LicencePayload } | { ok: false; reason: string } {
+  const key = configuredPublicKey();
+  if (!key) return { ok: false, reason: "this build has no licence public key" };
+  return verifyLicenceText(text, key);
+}
+
 function readLicenceText(): { text: string; source: string } | null {
   const inline = process.env.PASSIVECODER_LICENCE?.trim();
   if (inline) {

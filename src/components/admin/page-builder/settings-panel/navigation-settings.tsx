@@ -15,7 +15,7 @@ import { ItemsEditor, TextField } from "./showcase-fields";
 import { TOP_BAR_ICONS } from "@/components/blocks/navigation/nav-top-bar";
 import { TRANSLATE_LANGS } from "@/components/site/language-switch";
 import { UiTextFields } from "./ui-text-fields";
-import { ManagedMenuNote } from "./header-nav-settings";
+import { ManagedMenuNote, MenuLocationPicker } from "./header-nav-settings";
 
 export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
   const { updateBlock } = useBuilderStore();
@@ -176,6 +176,7 @@ export function NavigationSettings({ block }: { block: NavigationBlockProps }) {
       </div>
 
       <div className="border-t pt-3 space-y-2">
+        <MenuLocationPicker value={block.data.menuLocation} onChange={(v) => update("menuLocation", v)} />
         <ManagedMenuNote location={block.data.menuLocation} />
         <NavItemsEditor items={block.data.items} onChange={(items) => update("items", items)} />
       </div>

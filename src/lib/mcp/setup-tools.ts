@@ -7,6 +7,7 @@ import { toBlocks } from "@/lib/site/global-blocks";
 import { LINK_RE } from "@/lib/mcp/layout-patch";
 import { createBlock } from "@/modules/page-builder/block-registry";
 import type { Block, BlockType, NavItem } from "@/types/cms";
+import { structureLostByFlatReplace } from "@/modules/navigation/menu-model";
 
 /**
  * MCP tools for preparing a site without the dashboard: menus, the site
@@ -83,21 +84,27 @@ export const SETUP_TOOLS: McpTool[] = [
   {
     name: "upsert_menu",
     title: "Create or update menu",
-    description: "Create a menu (omit id) or replace an existing one's name, location and items. Each item links to the home page, a page of this site (pageId) or a URL. A location holds one menu: assigning one that is taken unassigns the menu that had it. location null = not shown anywhere. The live header/footer show the menu at their location.",
+    description: "Create a menu (omit id) or replace an existing one's name, location and items. Items are a flat list (no dropdowns): each links to the home page, a page of this site (pageId) or a URL. Replacing a menu that has dropdowns, auto lists or mega-menu settings is refused unless replace: true (they would be lost; edit those on the Navigation screen). A location holds one menu: assigning one that is taken unassigns the menu that had it. location null = not placed. A header or block shows the menu at a location only when it is set to read that location (get_site_layout shows this).",
     schema: z.object({
       id: z.string().uuid().optional(),
       name: z.string().min(1).max(80),
       location: z.enum(LOCATIONS).nullable(),
       items: z.array(menuItem).max(50),
+      replace: z.boolean().optional().describe("Confirm replacing a menu that has dropdowns, auto lists or mega-menu settings with this flat list (they are lost)."),
     }),
     write: true,
-    run: async (a: { id?: string; name: string; location: (typeof LOCATIONS)[number] | null; items: MenuItemIn[] }, ctx) => {
+    run: async (a: { id?: string; name: string; location: (typeof LOCATIONS)[number] | null; items: MenuItemIn[]; replace?: boolean }, ctx) => {
       const location = a.location ?? "none";
       const items = await toNavItems(ctx, a.items);
       const now = new Date().toISOString();
       if (a.id) {
-        const { data: existing } = await ctx.supabase.from("nav_menus").select("id").eq("id", a.id).eq("tenant_id", ctx.tenantId).maybeSingle();
+        const { data: existing } = await ctx.supabase.from("nav_menus").select("id, items").eq("id", a.id).eq("tenant_id", ctx.tenantId).maybeSingle();
         if (!existing) fail("Menu not found on this site");
+        // Flat items would silently wipe dropdowns and studio settings.
+        const lost = structureLostByFlatReplace((existing as { items?: unknown }).items);
+        if (lost.length && a.replace !== true) {
+          fail(`This menu has ${lost.join(", ")}, which a flat list of items would delete. Edit it on the Navigation screen, or send replace: true to replace it anyway.`);
+        }
       }
       // One menu per location, as on the Navigation screen: free the slot.
       if (location !== "none") {

@@ -1,6 +1,8 @@
 // Reusable transactional email helper (Resend).
 // No-ops (returns { ok: false }) when RESEND_API_KEY is unset so local/dev
-// without a key doesn't throw.
+// without a key doesn't throw. Self-hosted (standalone) installs without a
+// Resend key may send through their own mail server instead (SMTP_HOST,
+// lib/email/smtp.ts); the hosted platform always uses Resend.
 
 interface EmailAttachment {
   filename: string;
@@ -26,10 +28,13 @@ export interface SendEmailInput {
 }
 
 /** EMAIL_FROM ("Name <address>") on self-hosted installs; Passive Coder's sender otherwise. */
-const DEFAULT_FROM = process.env.EMAIL_FROM || "Passive Coder <contact@noreply.passivecoder.com>";
+// Read when an email is sent, not when this file loads: the self-host web
+// installer can save the sender while the app is running.
+const defaultFrom = () => process.env.EMAIL_FROM || "Passive Coder <contact@noreply.passivecoder.com>";
 
 export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; error?: string }> {
   const key = process.env.RESEND_API_KEY;
+  if (!key && process.env.NEXT_PUBLIC_CMS_MODE !== "saas" && process.env.SMTP_HOST?.trim()) return sendViaSmtp(input);
   if (!key) {
     console.warn("[email] RESEND_API_KEY not set — skipping send to", input.to);
     return { ok: false, error: "email_not_configured" };
@@ -61,7 +66,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; e
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: input.from ?? DEFAULT_FROM,
+        from: input.from ?? defaultFrom(),
         to: Array.isArray(input.to) ? input.to : [input.to],
         subject: input.subject,
         ...(input.html ? { html: input.html } : {}),
@@ -78,5 +83,30 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; e
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "send_failed" };
+  }
+}
+
+/** Self-hosted installs only: send through the install's own SMTP server. */
+async function sendViaSmtp(input: SendEmailInput): Promise<{ ok: boolean; error?: string }> {
+  const to = (Array.isArray(input.to) ? input.to : [input.to]).filter(Boolean);
+  if (!to.length) return { ok: false, error: "no_recipient" };
+  try {
+    const { sendSmtp, smtpConfigFromEnv } = await import("@/lib/email/smtp");
+    const cfg = smtpConfigFromEnv();
+    if (!cfg) return { ok: false, error: "email_not_configured" };
+    await sendSmtp(cfg, {
+      from: input.from ?? defaultFrom(),
+      to,
+      subject: input.subject,
+      html: input.html,
+      text: input.text,
+      replyTo: input.replyTo,
+      headers: input.headers,
+      attachments: input.attachments,
+    });
+    return { ok: true };
+  } catch (e) {
+    const code = (e as { code?: string })?.code;
+    return { ok: false, error: `${code ?? "smtp_failed"}: ${e instanceof Error ? e.message.slice(0, 200) : "send_failed"}` };
   }
 }

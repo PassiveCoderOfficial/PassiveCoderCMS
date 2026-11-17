@@ -1,0 +1,16 @@
+{
+  "name": "create-passivecoder",
+  "version": "0.1.0",
+  "description": "Install Passive Coder CMS (self-hosted, one site) with one command.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "create-passivecoder": "./index.mjs",
+    "passivecoder": "./index.mjs"
+  },
+  "files": ["index.mjs", "ui.mjs", "agent.mjs", "README.md"],
+  "engines": { "node": ">=20.12" },
+  "repository": { "type": "git", "url": "https://github.com/PassiveCoderOfficial/PassiveCoderCMS.git", "directory": "selfhost/cli" },
+  "homepage": "https://passivecoder.com/open-source-cms"
+}

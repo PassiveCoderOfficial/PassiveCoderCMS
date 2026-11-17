@@ -88,6 +88,10 @@ export interface HeaderMobile {
   icons: MobileBarType[];
   /** Below this width the phone layout is used. */
   breakpoint: "md" | "lg";
+  /** Id of the menu element whose menu fills the phone drawer. Unset = the
+   *  first menu in the main bar, then the menu row, then the top bar (P0:
+   *  before, a top-bar utility menu could replace the main menu). */
+  drawerMenu?: string;
 }
 
 export interface HeaderBehaviour {
@@ -253,6 +257,7 @@ export function normalizeHeaderConfig(input: unknown): HeaderConfig {
       drawer: oneOf(m.drawer, ["side", "full", "dropdown"] as const, "side"),
       icons: [...new Set(icons)].slice(0, MAX_MOBILE_ICONS),
       breakpoint: oneOf(m.breakpoint, ["md", "lg"] as const, "lg"),
+      ...(typeof m.drawerMenu === "string" && seen.has(m.drawerMenu) ? { drawerMenu: m.drawerMenu } : {}),
     },
     behaviour: {
       sticky: b.sticky !== false,
@@ -326,6 +331,20 @@ export function allElements(cfg: HeaderConfig, opts: { enabledOnly?: boolean } =
 /** First element of a type (its settings drive the phone bar icon of that type). */
 export function firstOfType(cfg: HeaderConfig, type: HeaderElementType): HeaderElement | undefined {
   return allElements(cfg, { enabledOnly: true }).find((e) => e.type === type);
+}
+
+/** Rows in the order the phone drawer looks for its menu: the main bar first, the top bar last. */
+const DRAWER_ROW_ORDER: HeaderRowKey[] = ["main", "menu", "top"];
+
+/**
+ * The menu element whose menu fills the phone drawer: the one picked in the
+ * Phone tab, else the first menu shown on phones in the main bar, the menu
+ * row, then the top bar.
+ */
+export function drawerMenuElement(cfg: HeaderConfig, shownOnPhone: (e: HeaderElement) => boolean = () => true): HeaderElement | undefined {
+  const menus = DRAWER_ROW_ORDER.flatMap((k) => (cfg.rows[k].enabled ? ZONES.flatMap((z) => cfg.rows[k].zones[z]) : []))
+    .filter((e) => e.type === "menu" && shownOnPhone(e));
+  return (cfg.mobile.drawerMenu ? menus.find((e) => e.id === cfg.mobile.drawerMenu) : undefined) ?? menus[0];
 }
 
 /** The menu ids a header uses ("" = the default header menu). */

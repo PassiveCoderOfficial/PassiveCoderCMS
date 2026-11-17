@@ -77,7 +77,17 @@ async function standaloneProxy(request: NextRequest, event?: NextFetchEvent) {
   try {
     tenant = await getStandaloneTenant();
   } catch {
-    return new NextResponse("Database unavailable", { status: 503, headers: { "Retry-After": "30" } });
+    // The installer must still open when the database does not answer or has
+    // no tables yet: its system check is what tells the owner why. Its routes
+    // decide for themselves who may use them (lib/installer/server.ts) and
+    // refuse once a site exists.
+    if (SETUP_PATH.test(pathname)) {
+      const bare = new Headers(request.headers);
+      for (const h of ["x-tenant-id", "x-tenant-slug", "x-tenant-plan"]) bare.delete(h);
+      // No session refresh: Supabase itself may be what is missing.
+      return NextResponse.next({ request: { headers: bare } });
+    }
+    return new NextResponse("Database unavailable. If you are installing this site, open /setup to see what is wrong.", { status: 503, headers: { "Retry-After": "30" } });
   }
 
   const headers = new Headers(request.headers);

@@ -11,7 +11,7 @@ import type { DnsRecord } from "./business-email";
  */
 const RESEND = "https://api.resend.com";
 /** Platform sender address; self-hosted installs set EMAIL_FROM_ADDRESS to an address on their own Resend-verified domain. */
-const PLATFORM_FROM_ADDR = process.env.EMAIL_FROM_ADDRESS || "contact@noreply.passivecoder.com";
+const platformFromAddr = () => process.env.EMAIL_FROM_ADDRESS || "contact@noreply.passivecoder.com";
 
 async function resend<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${RESEND}${path}`, {
@@ -96,5 +96,5 @@ export async function getSiteSender(tenantId: string): Promise<{ from: string; r
     const local = (s.sender_local || "hello").replace(/[^a-z0-9._+-]/gi, "") || "hello";
     return { from: `${name || t.custom_domain} <${local}@${t.custom_domain}>` };
   }
-  return { from: name ? `${name} <${PLATFORM_FROM_ADDR}>` : `Passive Coder <${PLATFORM_FROM_ADDR}>` };
+  return { from: name ? `${name} <${platformFromAddr()}>` : `Passive Coder <${platformFromAddr()}>` };
 }

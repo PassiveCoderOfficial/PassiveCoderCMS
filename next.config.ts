@@ -32,7 +32,26 @@ if (process.env.NEXT_PUBLIC_CMS_MODE !== "saas" && process.env.NEXT_PUBLIC_CMS_M
   console.warn(`[config] NEXT_PUBLIC_CMS_MODE is ${process.env.NEXT_PUBLIC_CMS_MODE ? `"${process.env.NEXT_PUBLIC_CMS_MODE}"` : "not set"}: running as a single-site (standalone) install. Set it to "saas" or "standalone".`);
 }
 
+// Self-hosted (standalone) builds only; the hosted build skips both blocks.
+const selfHosted = process.env.NEXT_PUBLIC_CMS_MODE !== "saas";
+
+// On Vercel, a self-hosted install does not have to say what its address is:
+// the build takes the project's own production domain (the custom domain once
+// one is connected, the *.vercel.app name before that). Setting
+// NEXT_PUBLIC_ROOT_DOMAIN / NEXT_PUBLIC_APP_URL by hand still wins. This is
+// what lets the "Deploy to Vercel" button work before the project exists.
+const vercelDomain = selfHosted && process.env.VERCEL ? (process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "").replace(/^https?:\/\//, "").replace(/\/+$/, "") : "";
+const selfHostAddress: Record<string, string> = {};
+if (vercelDomain) {
+  if (!process.env.NEXT_PUBLIC_ROOT_DOMAIN) selfHostAddress.NEXT_PUBLIC_ROOT_DOMAIN = vercelDomain;
+  if (!process.env.NEXT_PUBLIC_APP_URL) selfHostAddress.NEXT_PUBLIC_APP_URL = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || vercelDomain}`;
+  if (!process.env.NEXT_PUBLIC_CMS_MODE) selfHostAddress.NEXT_PUBLIC_CMS_MODE = "standalone";
+}
+
 const nextConfig: NextConfig = {
+  // The web installer (/setup) loads the database from these files, so they
+  // must travel with its routes (Vercel functions, the Docker image).
+  ...(selfHosted ? { outputFileTracingIncludes: { "/api/setup/**": ["./selfhost/schema.sql", "./supabase/migrations/*.sql"] } } : {}),
   // Self-hosted Docker image only (Dockerfile sets NEXT_OUTPUT_STANDALONE=1):
   // a self-contained .next/standalone server. Unset on Vercel, so the hosted
   // build is exactly as before.
@@ -42,6 +61,7 @@ const nextConfig: NextConfig = {
     // single source of truth, bump it on every push (see CLAUDE.md).
     NEXT_PUBLIC_APP_VERSION: version,
     ROOT_STATIC_SEGMENTS: topLevelRouteSegments().join(","),
+    ...selfHostAddress,
   },
   experimental: {
     serverActions: {

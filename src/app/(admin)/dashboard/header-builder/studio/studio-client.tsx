@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MediaPickerInput } from "@/components/admin/media-picker-input";
 import { useT } from "@/lib/i18n/language-provider";
+import { useUnsavedGuard } from "@/lib/hooks/use-unsaved-guard";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 import type { NavItem } from "@/types/cms";
 import { CartProvider } from "@/lib/cart/cart-context";
@@ -129,12 +130,8 @@ export default function HeaderStudioClient({
     return () => window.removeEventListener("keydown", onKey);
   }, [saveDraft]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const onLeave = (e: BeforeUnloadEvent) => { e.preventDefault(); };
-    window.addEventListener("beforeunload", onLeave);
-    return () => window.removeEventListener("beforeunload", onLeave);
-  }, [dirty]);
+  // Closing, reloading or following a dashboard link with unsaved work asks first.
+  useUnsavedGuard(dirty, t("headerStudio.unsavedLeave"));
 
   function applyPreset(id: string) {
     const next = buildPreset(id, facts);
@@ -223,7 +220,7 @@ export default function HeaderStudioClient({
             {tab === "layout" && config && (
               <LayoutPanel config={config} onChange={setConfig} selected={selected} onSelect={setSelected} menus={menus} contact={contact} />
             )}
-            {tab === "phone" && config && <PhonePanel config={config} onChange={setConfig} />}
+            {tab === "phone" && config && <PhonePanel config={config} menus={menus} onChange={setConfig} />}
             {tab === "behaviour" && config && <BehaviourPanel config={config} onChange={setConfig} pages={pages} />}
             {tab === "history" && (
               <HistoryPanel doc={doc} busy={!!busy || unavailable}
@@ -527,7 +524,7 @@ function ElementEditor({ config, element: e, onChange, onClose, menus, contact }
               <option value="second">{t("headerStudio.menuPartSecond")}</option>
             </select>
           </Field>
-          <Link href="/dashboard/navigation" className="text-xs text-primary underline-offset-4 hover:underline">{t("headerStudio.editMenus")}</Link>
+          <a href="/dashboard/navigation" target="_blank" rel="noopener" title={t("headerStudio.editMenusHint")} className="text-xs text-primary underline-offset-4 hover:underline">{t("headerStudio.editMenus")}</a>
         </>
       )}
       {(e.type === "button" || e.type === "booking" || e.type === "text" || e.type === "account" || e.type === "search") && (
@@ -596,7 +593,7 @@ function ElementEditor({ config, element: e, onChange, onClose, menus, contact }
 
 // ── Phone ───────────────────────────────────────────────────────────────
 
-function PhonePanel({ config, onChange }: { config: HeaderConfig; onChange: (c: HeaderConfig) => void }) {
+function PhonePanel({ config, menus, onChange }: { config: HeaderConfig; menus: StudioMenu[]; onChange: (c: HeaderConfig) => void }) {
   const t = useT();
   const m = config.mobile;
   const set = (patch: Partial<HeaderConfig["mobile"]>) => onChange({ ...config, mobile: { ...m, ...patch } });
@@ -604,8 +601,23 @@ function PhonePanel({ config, onChange }: { config: HeaderConfig; onChange: (c: 
     const icons = on ? [...m.icons, type].slice(0, MAX_MOBILE_ICONS) : m.icons.filter((x) => x !== type);
     set({ icons });
   };
+  // Menu elements that could fill the phone drawer, main bar first.
+  const menuEls = (["main", "menu", "top"] as const).flatMap((row) => (config.rows[row].enabled
+    ? ZONES.flatMap((z) => config.rows[row].zones[z].filter((e) => e.type === "menu").map((e) => ({ e, row, z })))
+    : []));
+  const menuName = (id?: string) => menus.find((x) => x.id === id)?.name ?? t("headerStudio.drawerMenuDefault");
   return (
     <div className="space-y-4">
+      {menuEls.length > 1 && (
+        <Field label={t("headerStudio.drawerMenu")} hint={t("headerStudio.drawerMenuHint")}>
+          <select className={SELECT} value={m.drawerMenu ?? ""} onChange={(e) => set({ drawerMenu: e.target.value || undefined })}>
+            <option value="">{t("headerStudio.drawerMenuAuto")}</option>
+            {menuEls.map(({ e, row, z }) => (
+              <option key={e.id} value={e.id}>{menuName(e.menuId)} · {t(k(`headerStudio.row.${row}`))}, {t(k(`headerStudio.zone.${z}`))}</option>
+            ))}
+          </select>
+        </Field>
+      )}
       <Field label={t("headerStudio.phoneLayout")}>
         <select className={SELECT} value={m.layout} onChange={(e) => set({ layout: e.target.value as typeof m.layout })}>
           {(["logo-left", "logo-center", "menu-left"] as const).map((v) => <option key={v} value={v}>{t(k(`headerStudio.phoneLayout.${v}`))}</option>)}

@@ -1,35 +1,46 @@
 #!/usr/bin/env node
 /**
  * Load the database into a new, empty Supabase project.
- *   node selfhost/setup-db.mjs
- * Needs DATABASE_URL (Supabase: Project Settings > Database > connection
- * string, "Session pooler"). Reads .env.local if present. Refuses to run on a
- * database that already has the tables. After this, start the app and open
- * /setup (or import a site package with selfhost/import-site.mjs).
+ *   node selfhost/setup-db.mjs [--if-empty]
+ * Needs DATABASE_URL (Supabase: Connect > "Session pooler" connection
+ * string). Reads .env.local or .env if present. Refuses to run on a database
+ * that already has tables; with --if-empty, a database that already has the
+ * Passive Coder tables is fine and nothing is done. All in one transaction,
+ * so it is safe to run again after a failure.
+ *
+ * The web installer (/setup) and `node selfhost/cli/index.mjs init` do the
+ * same thing through selfhost/lib/db.mjs.
  */
 import { readFileSync, existsSync } from "node:fs";
 import pg from "pg";
+import { connect, loadSchema, inspect, DatabaseNotEmptyError } from "./lib/db.mjs";
 
-if (existsSync(".env.local")) process.loadEnvFile(".env.local");
+for (const f of [".env.local", ".env"]) if (existsSync(f)) process.loadEnvFile(f);
 const url = process.env.DATABASE_URL;
 if (!url) { console.error("DATABASE_URL is required"); process.exit(2); }
-const local = /localhost|127\.0\.0\.1/.test(url);
-const db = new pg.Client({ connectionString: url, ssl: local ? false : { rejectUnauthorized: false } });
+const ifEmpty = process.argv.includes("--if-empty");
+
+let db;
 try {
-  await db.connect();
-  const { rows } = await db.query(`select to_regclass('public.tenants') is not null as has`);
-  if (rows[0].has) throw new Error("This database already has the Passive Coder tables. Use selfhost/migrate.mjs to update it.");
-  const sql = readFileSync(new URL("./schema.sql", import.meta.url), "utf8");
-  await db.query("begin");
-  await db.query(sql);
-  await db.query("commit");
-  await db.query("notify pgrst, 'reload schema'");
-  const t = await db.query(`select count(*)::int n from information_schema.tables where table_schema = 'public'`);
-  console.log(`database ready: ${t.rows[0].n} tables. Next: start the app and open /setup.`);
+  db = await connect(pg, url);
+  if (ifEmpty && (await inspect(db)).state === "ours") {
+    console.log("database already set up: nothing to do.");
+  } else {
+    const sql = readFileSync(new URL("./schema.sql", import.meta.url), "utf8");
+    let last = -1;
+    const res = await loadSchema(db, sql, {
+      onProgress: (done, total) => {
+        const pct = Math.floor((done / total) * 10) * 10;
+        if (pct !== last) { last = pct; process.stdout.write(`  ${pct}%\n`); }
+      },
+    });
+    console.log(`database ready: ${res.tables} tables. Next: start the app and open /setup.`);
+  }
 } catch (e) {
-  await db.query("rollback").catch(() => {});
-  console.error(`setup failed: ${e.message}`);
+  console.error(e instanceof DatabaseNotEmptyError && e.state === "ours"
+    ? "setup failed: this database already has the Passive Coder tables. Use selfhost/migrate.mjs to update it."
+    : `setup failed: ${e.message}`);
   process.exitCode = 1;
 } finally {
-  await db.end().catch(() => {});
+  await db?.end().catch(() => {});
 }

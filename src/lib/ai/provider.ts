@@ -56,6 +56,11 @@ function build(id: AiProviderId): AiProvider | null {
   }
 }
 
+/** One AI service by id, when its key is set (ignores AI_PROVIDER). */
+export function providerById(id: AiProviderId): AiProvider | null {
+  return build(id);
+}
+
 /** The configured AI service, or null when none is set up. */
 export function aiProvider(): AiProvider | null {
   if (isSaaS) {

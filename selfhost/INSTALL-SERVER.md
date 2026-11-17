@@ -1,303 +1,203 @@
-# Install on your own server (Docker)
+# Install on your own server (one command)
 
-This guide puts one Passive Coder CMS site on your own Linux server with
-Docker. The database, logins and files stay on Supabase (supabase.com), which
-is the simplest and safest choice. Running Supabase on your own server is
-possible but is not covered here.
+This puts one Passive Coder CMS site on your own Linux server. The app runs
+in Docker, with HTTPS, scheduled jobs and daily backups set up for you. The
+database, logins and files stay on Supabase (supabase.com), which is the
+simplest and safest choice.
 
-Time: about 1 to 2 hours, most of it waiting for the build.
+Time: about 10 minutes.
 
 ## What you need
 
-- A server (VPS) with **Ubuntu 22.04 or later**, and root or sudo access.
-  - To run the site: 2 CPU cores, 2 GB RAM (4 GB is better), 20 GB disk.
-  - To build the app on the same server: 8 GB of RAM, or 4 GB plus 8 GB of
-    swap (step 4). You can also build on another machine (see "Build
-    elsewhere").
+- A server (VPS) with **Ubuntu 22.04 or newer** or **Debian 12 or newer**,
+  x86_64, with root or sudo access. 1 CPU and 1 GB of RAM is enough to
+  start (2 GB is better); 10 GB of disk. A fresh server is best: ports 80
+  and 443 must be free.
 - A domain name, with access to its DNS settings.
-- A Supabase account.
-- Your private copy of the Passive Coder CMS code on GitHub.
+- A Supabase project (supabase.com, the free plan works).
+
+Nothing is built on the server: it downloads the ready-made app. (An ARM
+server, or `--build`, builds the app on the server instead, which needs
+about 8 GB of memory.)
 
 ## 1. Point your domain at the server
 
 At your domain registrar, create an **A record** for your site's name (for
-example `www`) with the server's IP address. Add an **AAAA record** too if
-the server has IPv6. DNS changes can take up to an hour.
+example `www`, or `@` for the bare domain) with the server's IP address.
+If you want both `example.com` and `www.example.com`, point both at the
+server: the installer makes the second one redirect to the first.
 
-## 2. Install Docker and a firewall
+You can do this while the install runs. HTTPS starts by itself once the
+domain points to the server.
 
-Log in to the server with SSH, then:
+## 2. Get four values from Supabase
 
-```bash
-sudo apt update && sudo apt upgrade -y
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker $USER      # log out and back in after this
+In your Supabase project:
 
-sudo ufw allow OpenSSH
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 443/udp
-sudo ufw enable
-```
+| Question | Where it is |
+|---|---|
+| Project URL | **Project Settings > API (Data API)**, like `https://abcdefgh.supabase.co` |
+| Publishable key | **Project Settings > API Keys** (`sb_publishable_...`) |
+| Secret key | Same page (`sb_secret_...`). Never share it. |
+| Connection string | **Connect** (top of the project) > **Session pooler**. Replace `[YOUR-PASSWORD]` with your database password. |
 
-The app itself listens only inside the server (port 3000 on 127.0.0.1). The
-world reaches it through HTTPS on ports 80 and 443.
+## 3. Run the installer
 
-## 3. Get the code
+Log in to the server with SSH and run:
 
 ```bash
-sudo mkdir -p /opt/passivecoder && sudo chown $USER /opt/passivecoder
-git clone <your private copy's address> /opt/passivecoder
-cd /opt/passivecoder
-mkdir -p data && sudo chown 1001:1001 data
+curl -fsSL https://raw.githubusercontent.com/PassiveCoderOfficial/PassiveCoderCMS/main/selfhost/install.sh | sudo sh
 ```
 
-`data/` holds your licence file and site packages to import. The app runs
-as user 1001, so it must own the folder.
+It checks the server, installs Docker if needed, asks for your domain and
+the four Supabase values (and checks them with Supabase), then sets up
+everything in `/opt/passivecoder`. At the end it prints a link like:
 
-## 4. Add swap (only if the server has less than 8 GB RAM)
+```
+https://www.example.com/setup#code=3f9c...
+```
+
+## 4. Finish in your browser
+
+Open that link. The installer checks everything once more, then asks for
+your admin email and password, the site name, language, time zone and
+currency, and optional extras: a starter design, outgoing email (with a
+test email), a Passive Coder AI key and a paid-modules licence. These are
+saved on the server for you. Then `/setup` locks itself for good.
+
+One more thing, in Supabase: **Authentication > URL Configuration**. Set
+**Site URL** to your address and add `https://www.example.com/**` to
+**Redirect URLs**, so password-reset links work.
+
+## What is where
+
+| | |
+|---|---|
+| `/opt/passivecoder/.env` | all settings and secret keys. Keep a copy somewhere safe. |
+| `/opt/passivecoder/data/` | saved installer settings, `licence.json` |
+| `/opt/passivecoder/backups/` | daily backups (newest 14 kept) |
+| `/opt/passivecoder/install.sh` | run again to change settings |
+| `/opt/passivecoder/update.sh` | install a new version |
+
+Running parts: `app` (the site), `caddy` (HTTPS), `cron` (scheduled jobs).
+See them with `docker compose -f /opt/passivecoder/compose.yml ps`.
+
+## Change a setting
+
+Edit `/opt/passivecoder/.env`, then run:
 
 ```bash
-sudo fallocate -l 8G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile && sudo swapon /swapfile
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+sudo sh /opt/passivecoder/install.sh
 ```
 
-## 5. Create the Supabase project
+It asks only what is missing (press Enter to keep a value), keeps your
+secret keys, and restarts the site. Changing the domain or the Supabase
+project needs nothing else: there is no rebuild.
 
-1. In Supabase, click **New project**. Pick the region closest to your
-   server. Save the database password.
-2. **Project Settings > API**: copy the Project URL, the **publishable** key
-   and the **secret** key.
-3. **Connect** (top of the project): copy the **Session pooler** connection
-   string, with your password in it.
-4. **Authentication > URL Configuration**: set **Site URL** to your address
-   (`https://www.example.com`) and add `https://www.example.com/**` to
-   **Redirect URLs**.
-5. For a real site, set your own SMTP server under **Authentication >
-   Emails > SMTP Settings**. The built-in sender allows only a few emails an
-   hour.
-
-## 6. Settings
+## Updates
 
 ```bash
-cp selfhost/.env.example .env.local
-chmod 600 .env.local
-nano .env.local
+sudo sh /opt/passivecoder/update.sh
 ```
 
-Fill in everything under **Required**, and `DATABASE_URL`. Make each secret
-with `openssl rand -base64 32`. `NEXT_PUBLIC_ROOT_DOMAIN` must be exactly the
-name from step 1 (for example `www.example.com`): the HTTPS step uses it.
+It makes a backup, downloads the new version, updates the database, and
+restarts. If the database update fails, the site keeps running the old
+version.
 
-Settings that start with `NEXT_PUBLIC_` are built into the app. If you
-change one later, build again (step 7).
+## Backups
 
-## 7. Build
+Every night at 03:30 (server time) `backup.sh` saves a copy of the
+database (`db-*.sql.gz`) and of your settings and data folder
+(`files-*.tar.gz`). Run it by hand any time:
 
 ```bash
-docker compose build
+sudo sh /opt/passivecoder/backup.sh
 ```
 
-This takes 15 to 40 minutes. It builds two images: the web app and a small
-one that runs the scheduled jobs. Your `.env.local` is used during the build
-but is not stored in the image.
+Copy the backups off the server now and then (they hold customer data and
+keys: keep them private). Uploaded images live in Supabase Storage; the
+app's own backup (Dashboard > Backups) covers your pages, products, orders
+and files. Supabase paid plans also keep daily database backups.
 
-## 8. Load the database (first time only)
+The database copy is plain SQL (the `public`, `auth` and `storage`
+schemas). To restore it into a new Supabase project, follow Supabase's
+guide "Backup and restore using the CLI"; test a restore once, before you
+need it.
+
+## No questions (for scripts)
+
+Every answer can be an option (or environment variable). With `--yes`
+nothing is asked:
 
 ```bash
-docker compose run --rm app node selfhost/setup-db.mjs
+curl -fsSL https://raw.githubusercontent.com/PassiveCoderOfficial/PassiveCoderCMS/main/selfhost/install.sh | sudo sh -s -- --yes \
+  --domain www.example.com \
+  --supabase-url https://abcdefgh.supabase.co \
+  --anon-key sb_publishable_... \
+  --service-key sb_secret_... \
+  --database-url 'postgresql://postgres.abcdefgh:PASSWORD@aws-0-region.pooler.supabase.com:5432/postgres'
 ```
 
-It prints `database ready`. It refuses to run on a database that already
-has the tables, so you cannot overwrite a site by mistake.
-
-## 9. Start
-
-```bash
-docker compose --profile https up -d
-docker compose ps
-```
-
-You should see three services running: `app`, `cron` and `caddy`. Caddy
-gets the HTTPS certificate by itself within a minute and renews it
-automatically.
-
-Open `https://<your domain>`. It sends you to `/setup`. Enter your email, a
-password and the site name. After that, `/setup` locks itself.
-
-### Both www and the bare domain
-
-The built-in HTTPS service covers one name. To serve `example.com` and
-`www.example.com` (one redirecting to the other), create a file named
-`Caddyfile`:
-
-```
-www.example.com {
-    reverse_proxy app:3000
-}
-example.com {
-    redir https://www.example.com{uri} permanent
-}
-```
-
-Point both names at the server (step 1), then add this to the `caddy`
-service in `docker-compose.yml`:
-
-```yaml
-    command: caddy run --config /etc/caddy/Caddyfile
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-```
-
-### Already have nginx or another proxy?
-
-Skip the `--profile https` part. Point your proxy at `http://127.0.0.1:3000`
-and pass the `Host` and `X-Forwarded-*` headers.
-
-## Scheduled jobs
-
-The `cron` service calls the app's jobs (nightly backup, reminders,
-scheduled posts and so on) on the times in `selfhost/crontab.example`,
-using your `CRON_SECRET`. Times are UTC. Check them with:
-
-```bash
-docker compose logs cron --tail 50
-```
+More: `--email` (for HTTPS certificate notices), `--build` (build on the
+server), `--dir` (another folder than `/opt/passivecoder`). Environment
+names: `PC_DOMAIN`, `PC_SUPABASE_URL`, `PC_ANON_KEY`, `PC_SERVICE_KEY`,
+`PC_DATABASE_URL`, `PC_EMAIL`, `PC_BUILD=1`, `PC_DIR`, `PC_YES=1`.
 
 ## Paid modules (licence)
 
-If you bought paid modules, Passive Coder gives you a `licence.json` file.
-It works for your domain only.
+Upload `licence.json` in the web installer. Later, or by hand:
 
 ```bash
-cp licence.json /opt/passivecoder/data/licence.json
+sudo cp licence.json /opt/passivecoder/data/licence.json
 sudo chown 1001:1001 /opt/passivecoder/data/licence.json
-docker compose restart app
+sudo sh /opt/passivecoder/update.sh --restart
 ```
 
 The modules appear under **Dashboard > Modules**. The licence is checked
 inside your server, with no call to Passive Coder. If the app cannot use it,
 the log says why and the site keeps working with the free modules:
-
-```bash
-docker compose logs app | grep licence
-```
+`docker compose -f /opt/passivecoder/compose.yml logs app | grep licence`.
 
 ## Moving a site from Passive Coder hosting
 
-Do this on a fresh install, after step 8 and **before** opening `/setup`.
-
-```bash
-# copy the package folder to the server first, e.g. with scp, then:
-sudo mv <package folder> /opt/passivecoder/data/import
-sudo chown -R 1001:1001 /opt/passivecoder/data/import
-docker compose run --rm app node selfhost/import-site.mjs /app/data/import --dry-run
-docker compose run --rm app node selfhost/import-site.mjs /app/data/import --owner-password '<new password>'
-```
-
-If the package has a licence, the import puts it in `data/licence.json` for
-you. Then start the site (step 9). When it works, delete the package:
-
-```bash
-sudo rm -rf /opt/passivecoder/data/import
-```
-
-It holds customer data and keys.
-
-## Backups
-
-Keep three things safe:
-
-1. **The database.** Supabase paid plans keep daily backups. Also keep your
-   own copy. Create `/opt/passivecoder/backup.sh`:
-
-   ```bash
-   #!/bin/sh
-   set -e
-   cd /opt/passivecoder
-   mkdir -p backups
-   DB=$(grep '^DATABASE_URL=' .env.local | cut -d= -f2-)
-   docker run --rm postgres:17 pg_dump "$DB" --no-owner -Fc > backups/db-$(date +%F).dump
-   find backups -name 'db-*.dump' -mtime +14 -delete
-   ```
-
-   Then run it every night at 03:00:
-
-   ```bash
-   chmod +x /opt/passivecoder/backup.sh
-   (crontab -l 2>/dev/null; echo "0 3 * * * /opt/passivecoder/backup.sh") | crontab -
-   ```
-
-   Copy the `backups` folder off the server now and then (another machine
-   or cloud storage). A backup on the same server is lost with the server.
-2. **Files** (images and uploads) live in Supabase Storage. **Dashboard >
-   Backups** in the app makes a nightly backup and lets you download your
-   pages, products, orders and files.
-3. **`.env.local` and `data/licence.json`.** Without `COURIER_SECRET_KEY`,
-   saved payment and courier keys cannot be read.
-
-To restore the database into a new, empty Supabase project:
-
-```bash
-docker run --rm -i postgres:17 pg_restore --no-owner -d "<new DATABASE_URL>" < backups/db-YYYY-MM-DD.dump
-```
-
-## Updates
+Do this after step 3 and **before** step 4 (opening `/setup`):
 
 ```bash
 cd /opt/passivecoder
-docker tag passivecoder-cms:latest passivecoder-cms:previous    # keep the old version
-git pull
-docker compose build
-docker compose run --rm app node selfhost/migrate.mjs --dry-run   # shows what will change
-docker compose run --rm app node selfhost/migrate.mjs
-docker compose --profile https up -d
+# copy the package folder to the server first (for example with scp), then:
+sudo mv <package folder> data/import && sudo chown -R 1001:1001 data/import
+sudo docker compose run --rm app node selfhost/import-site.mjs /app/data/import --dry-run
+sudo docker compose run --rm app node selfhost/import-site.mjs /app/data/import --owner-password '<new password>'
+sudo rm -rf data/import
 ```
 
-To go back to the old version of the app:
-
-```bash
-docker tag passivecoder-cms:previous passivecoder-cms:latest
-docker compose --profile https up -d
-```
-
-Database changes are made to add things, so the old app version keeps
-working with them. Take a database backup before every update anyway.
-
-## Build elsewhere
-
-Building needs about 8 GB of RAM. If your server is smaller, build the
-images on GitHub instead: `.github/workflows/selfhost-image.yml` does it.
-
-1. In your GitHub copy, set the repository variables the workflow file
-   lists (`NEXT_PUBLIC_SUPABASE_URL` and the others).
-2. Run **Actions > Self-host image** with **Push** ticked. GitHub's
-   standard runners may not have enough memory: set `SELFHOST_RUNNER` to a
-   larger runner if the build stops with "out of memory".
-3. On the server, log in to the registry
-   (`docker login ghcr.io`, with a GitHub token that can read packages) and
-   create `/opt/passivecoder/.env` with:
-
-   ```
-   PC_IMAGE=ghcr.io/<owner>/<repo>:latest
-   PC_CRON_IMAGE=ghcr.io/<owner>/<repo>-cron:latest
-   ```
-4. Use `docker compose pull` instead of `docker compose build`.
+The package holds customer data and keys: delete it once the site works.
 
 ## Something wrong?
 
-- **See what the app says**: `docker compose logs app --tail 100`.
-- **"Database unavailable"**: check the Supabase URL and keys in
-  `.env.local`, and that the project is not paused.
-- **The build stops with "Killed" or "heap out of memory"**: the server
-  needs more memory. Add swap (step 4) or build elsewhere.
-- **No HTTPS certificate**: check the domain points at this server
-  (`dig +short www.example.com`) and ports 80 and 443 are open. Then
-  `docker compose logs caddy`.
-- **Jobs do not run**: `docker compose logs cron`. A `401` means
-  `CRON_SECRET` differs between the app and the job runner; both read it
-  from `.env.local`, so restart both after changing it.
+- **Before setup is finished**, open `https://<your domain>/setup`: its
+  system check names each problem and the fix.
+- **See what the app says**: `docker compose -f /opt/passivecoder/compose.yml logs --tail 100 app`
+- **No HTTPS**: check the domain points to this server
+  (`getent hosts www.example.com`) and that ports 80 and 443 are open in
+  your provider's firewall. Then look at `... logs caddy`.
+- **Jobs do not run**: `... logs cron`. A `401` means `CRON_SECRET` differs;
+  run `install.sh` again to restart everything with the same settings.
+- **"Port 80 is used by apache2/nginx"**: this install brings its own web
+  server. Use a fresh server, or stop the other one first.
+
+## Without the installer
+
+If you prefer to do it by hand (your own reverse proxy, another Linux, or a
+Docker host you already run), use `Dockerfile` and `docker-compose.yml` in
+the code:
+
+```bash
+git clone https://github.com/PassiveCoderOfficial/PassiveCoderCMS.git && cd PassiveCoderCMS
+node selfhost/cli/index.mjs init --no-start   # asks the questions, writes .env.local, loads the database
+docker compose build                          # about 8 GB of memory; or set PC_IMAGE to the ready-made image
+docker compose --profile https up -d          # without --profile https if you have your own proxy
+```
+
+The image built there is the ready-made kind: settings go in when the
+container starts, so changing `.env.local` needs a restart, not a build.

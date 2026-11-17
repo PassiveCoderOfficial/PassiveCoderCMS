@@ -4,6 +4,7 @@ import { EcommerceProductsPreview } from "@/components/blocks/ecommerce/ecommerc
 import { SearchBlock } from "@/components/blocks/search/search-block";
 import { toFamilyBlock } from "@/lib/blocks/cards";
 import { useHydratedBlock } from "@/lib/collections/use-collection";
+import { useSavedMenuPreview } from "@/components/admin/page-builder/saved-menus";
 import React, { useMemo } from "react";
 import { useTrialSanitizer } from "@/components/admin/trial-site-context";
 import { HeaderBookingBlock } from "@/components/blocks/header-booking/header-booking-block";
@@ -92,7 +93,7 @@ export function BlockRenderer({ block: rawBlock, isPreview = false, path }: Bloc
   // being edited is untouched; only this render-only copy is cleaned.
   const trialGuard = useTrialSanitizer();
   // Blocks bound to a collection show its entries, as on the live site.
-  const hydrated = useHydratedBlock(rawBlock);
+  const hydrated = useHydratedBlock(useSavedMenuPreview(rawBlock));
   const trialSafe = useMemo(
     () => (trialGuard.lib ? trialGuard.lib.sanitizeTrialContent(hydrated) : hydrated),
     [trialGuard.lib, hydrated],

@@ -75,6 +75,7 @@ import { ContainerBlock } from "@/components/blocks/container/container-block";
 import { googleFontsHref } from "@/modules/themes/fonts";
 import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
 import { expandDynamicChildren } from "@/modules/navigation/dynamic-children";
+import { collectNavBlocks, hasNestedNavToResolve, mapNavBlocks, pickNavItems } from "@/modules/navigation/nav-blocks";
 
 interface PageBlockProps {
   block: Block;
@@ -338,6 +339,13 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
 
       resolved = await resolveNavBlocks(admin, tenantId, visible);
     }
+  } else if (hasNestedNavToResolve(visible)) {
+    // A container header or page section whose menu block names a saved
+    // menu or holds an auto list (P0, 2026-11-17: these were ignored). The
+    // identity logo is deliberately not fetched here, so logo fallbacks on
+    // pages without a top-level header block stay exactly as they were.
+    const tenantId = (await headers()).get("x-tenant-id");
+    if (tenantId) resolved = await resolveNavBlocks(await createAdminClient(), tenantId, visible);
   }
 
   return (
@@ -350,13 +358,17 @@ export async function PageRenderer({ blocks }: { blocks: Block[] }) {
 }
 
 /**
- * Fills navigation blocks from the tenant's saved menus.
+ * Fills menu blocks from the tenant's saved menus.
  *
- * A nav block that names a `menuLocation` renders whatever menu is assigned
+ * A menu block that names a `menuLocation` renders whatever menu is assigned
  * there, so the header and footer read the same source instead of each holding
  * their own copy that quietly drifts. Blocks without one keep their inline
  * items, and a missing menu falls back to those items too — a nav bar with
  * slightly stale links beats one with no links at all.
+ *
+ * Menu blocks inside containers (every container header, page sections) are
+ * filled too (modules/navigation/nav-blocks.ts); a nested block that names no
+ * menu and has no auto list is left untouched, object and all.
  *
  * Dynamic sub-menus (all services, product categories) are expanded here as
  * well, which is why this runs server-side per request rather than at save time.
@@ -366,36 +378,24 @@ async function resolveNavBlocks(
   tenantId: string,
   blocks: Block[],
 ): Promise<Block[]> {
-  // header_nav (2026-09-06) is the new independent nav sub-block — same
-  // menuLocation/dynamic-children resolution as the legacy navigation block,
-  // just a different type tag. Handled in the same pass so both read from
-  // the same nav_menus source and never diverge.
-  const navBlocks = blocks.filter(
-    (b) => b.type === "navigation" || b.type === "header_nav",
-  );
+  const navBlocks = collectNavBlocks(blocks);
   if (navBlocks.length === 0) return blocks;
 
-  const { data: menus } = await admin
-    .from("nav_menus")
-    .select("location, items")
-    .eq("tenant_id", tenantId);
-
+  // Saved menus are only read when some block asks for one.
   const byLocation = new Map<string, import("@/types/cms").NavItem[]>();
-  for (const m of menus ?? []) {
-    byLocation.set(m.location as string, (m.items ?? []) as import("@/types/cms").NavItem[]);
+  if (navBlocks.some(({ block }) => !!(block.data as { menuLocation?: string }).menuLocation)) {
+    const { data: menus } = await admin
+      .from("nav_menus")
+      .select("location, items")
+      .eq("tenant_id", tenantId);
+    for (const m of menus ?? []) {
+      byLocation.set(m.location as string, (m.items ?? []) as import("@/types/cms").NavItem[]);
+    }
   }
 
-  return Promise.all(
-    blocks.map(async (block) => {
-      if (block.type !== "navigation" && block.type !== "header_nav") return block;
-      const nav = block as import("@/types/cms").NavigationBlockProps | import("@/types/cms").HeaderNavBlockProps;
-
-      const source = nav.data.menuLocation
-        ? byLocation.get(nav.data.menuLocation) ?? nav.data.items
-        : nav.data.items;
-
-      const items = await expandDynamicChildren(admin, tenantId, source ?? []);
-      return { ...nav, data: { ...nav.data, items } } as Block;
-    }),
-  );
+  return mapNavBlocks(blocks, async (block) => {
+    const nav = block as import("@/types/cms").NavigationBlockProps | import("@/types/cms").HeaderNavBlockProps;
+    const items = await expandDynamicChildren(admin, tenantId, pickNavItems(nav.data, byLocation) ?? []);
+    return { ...nav, data: { ...nav.data, items } } as Block;
+  });
 }

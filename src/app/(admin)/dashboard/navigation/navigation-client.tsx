@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { menuUsage, type MenuPlace, type MenuReaders } from "@/modules/navigation/menu-usage";
+import { mergeAfterSave, saveOrder } from "@/modules/navigation/menu-save";
+import { useUnsavedGuard } from "@/lib/hooks/use-unsaved-guard";
 import { toast } from "sonner";
 import {
   Plus, Trash2, Loader2, Save, MapPin, AlertTriangle, Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { collectDeepIds, prepareForSave } from "@/modules/navigation/menu-model";
+import { collectDeepIds, normalizeMenu, prepareForSave } from "@/modules/navigation/menu-model";
 import type { NavItem } from "@/types/cms";
 import { MenuTreeEditor } from "./menu-tree-editor";
 import type { LinkTarget } from "@/app/api/navigation/link-targets/route";
@@ -28,6 +31,17 @@ export type NavMenuRow = {
 export type ImportableNav = {
   location: "header" | "footer";
   items: NavItem[];
+  /** The block already points at this location, but no saved menu is there yet. */
+  missingMenu?: boolean;
+};
+
+const PLACE_KEY: Record<MenuPlace, TranslationKey> = {
+  header: "navPage.placeHeader",
+  footer: "navPage.placeFooter",
+  prefooter: "navPage.placePrefooter",
+  pages: "navPage.placePages",
+  studioHeader: "navPage.placeStudioHeader",
+  studioFooter: "navPage.placeStudioFooter",
 };
 
 function locations(t: (k: TranslationKey) => string): { value: string; label: string; hint: string }[] {
@@ -42,17 +56,22 @@ function locations(t: (k: TranslationKey) => string): { value: string; label: st
   ];
 }
 
-export default function NavigationClient({ initialMenus, importable }: { initialMenus: NavMenuRow[]; importable: ImportableNav[] }) {
+export default function NavigationClient({ initialMenus, importable, readers: initialReaders }: { initialMenus: NavMenuRow[]; importable: ImportableNav[]; readers: MenuReaders }) {
   const t = useT();
   const LOCATIONS = locations(t);
   const [menus, setMenus] = useState<NavMenuRow[]>(initialMenus);
+  const [readers, setReaders] = useState<MenuReaders>(initialReaders);
   const [pendingImport, setPendingImport] = useState<ImportableNav[]>(importable);
   const [activeId, setActiveId] = useState<string | null>(initialMenus[0]?.id ?? null);
   const [targets, setTargets] = useState<LinkTarget[]>([]);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [importingLocation, setImportingLocation] = useState<string | null>(null);
-  const [dirty, setDirty] = useState(false);
+  // Menus with unsaved edits, by id. Switching menus keeps every menu's
+  // edits, and Save saves them all (before P0 only the open menu was sent and
+  // the refetch wiped the others' edits).
+  const [dirtyIds, setDirtyIds] = useState<Set<string>>(() => new Set());
+  const dirty = dirtyIds.size > 0;
   // Third-level items each menu already had when the page loaded: the legacy
   // renderer hid them under plain dropdowns, so saving must not start showing
   // them (prepareForSave). Only levels the owner adds now switch on flyouts.
@@ -68,8 +87,13 @@ export default function NavigationClient({ initialMenus, importable }: { initial
       });
       const data = await res.json() as { error?: string; menu?: NavMenuRow };
       if (!res.ok || !data.menu) throw new Error(data.error ?? t("navPage.importFailed"));
-      setMenus((prev) => [...prev, data.menu!]);
+      setMenus((prev) => [...prev, { ...data.menu!, items: normalizeMenu(data.menu!.items) }]);
       setPendingImport((prev) => prev.filter((p) => p.location !== location));
+      // The imported block now reads this location, so the menu is shown there.
+      // (Not when a Studio header/footer is live: the classic one is not drawn.)
+      setReaders((r) => (location === "header" ? r.studioHeaderRefs : r.studioFooterRefs)
+        ? r
+        : { ...r, byLocation: { ...r.byLocation, [location]: [...new Set([...(r.byLocation[location] ?? []), location])] } });
       setActiveId(data.menu.id);
       toast.success(t("navPage.importedMenu", { location }));
     } catch (err) {
@@ -91,32 +115,53 @@ export default function NavigationClient({ initialMenus, importable }: { initial
   function patchActive(fn: (m: NavMenuRow) => NavMenuRow) {
     if (!activeId) return;
     setMenus((prev) => prev.map((m) => (m.id === activeId ? fn(m) : m)));
-    setDirty(true);
+    setDirtyIds((prev) => (prev.has(activeId) ? prev : new Set(prev).add(activeId)));
   }
 
+  // Closing the tab, reloading or following a dashboard link with unsaved
+  // edits asks first.
+  useUnsavedGuard(dirty, t("navPage.unsavedLeave"));
+
+  // Where each menu shows on the live site, from the menus' current (unsaved too) locations.
+  const usage = useMemo(() => menuUsage(menus, readers), [menus, readers]);
+
   async function save() {
-    if (!active) return;
+    if (!dirty) return;
     setSaving(true);
+    const failed = new Set<string>();
+    let saved = 0;
+    let lastError: string | null = null;
+    for (const id of saveOrder(dirtyIds, menus, activeId)) {
+      const menu = menus.find((m) => m.id === id)!;
+      try {
+        const res = await fetch("/api/navigation", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: menu.id, name: menu.name, location: menu.location, items: prepareForSave(menu.items, legacyDeep.get(menu.id)) }),
+        });
+        const data = await res.json() as { error?: string; menu?: NavMenuRow };
+        if (!res.ok) throw new Error(data.error ?? t("navPage.failedToSaveMenu"));
+        saved++;
+      } catch (err) {
+        failed.add(id);
+        lastError = err instanceof Error ? err.message : t("navPage.failedToSaveMenu");
+      }
+    }
     try {
-      const res = await fetch("/api/navigation", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: active.id, name: active.name, location: active.location, items: prepareForSave(active.items, legacyDeep.get(active.id)) }),
-      });
-      const data = await res.json() as { error?: string; menu?: NavMenuRow };
-      if (!res.ok) throw new Error(data.error ?? t("navPage.failedToSaveMenu"));
       // A location move can unassign another menu server-side; refetch so the
-      // list reflects that rather than showing two menus in one slot.
+      // list reflects that rather than showing two menus in one slot. A menu
+      // whose save failed keeps its edits.
       const listRes = await fetch("/api/navigation");
       const listData = await listRes.json() as { menus?: NavMenuRow[] };
-      if (listData.menus) setMenus(listData.menus);
-      setDirty(false);
-      toast.success(t("navPage.menuSaved"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("navPage.failedToSaveMenu"));
-    } finally {
-      setSaving(false);
-    }
+      if (listData.menus) {
+        const server = listData.menus.map((m) => ({ ...m, items: normalizeMenu(m.items) }));
+        setMenus((local) => mergeAfterSave(local, server, failed));
+      }
+    } catch { /* keep the local list */ }
+    setDirtyIds(failed);
+    setSaving(false);
+    if (lastError) toast.error(lastError);
+    if (saved) toast.success(saved > 1 ? t("navPage.savedCount", { count: saved }) : t("navPage.menuSaved"));
   }
 
   async function createMenu() {
@@ -145,6 +190,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
       const res = await fetch(`/api/navigation?id=${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(t("navPage.failedToDeleteMenu"));
       setMenus((prev) => prev.filter((m) => m.id !== id));
+      setDirtyIds((prev) => { if (!prev.has(id)) return prev; const next = new Set(prev); next.delete(id); return next; });
       if (activeId === id) setActiveId(null);
       toast.success(t("navPage.menuDeleted"));
     } catch (err) {
@@ -176,7 +222,7 @@ export default function NavigationClient({ initialMenus, importable }: { initial
           </button>
           <button
             onClick={() => void save()}
-            disabled={saving || !dirty || !active}
+            disabled={saving || !dirty}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold",
               dirty ? "bg-primary text-primary-foreground hover:opacity-90" : "border text-muted-foreground",
@@ -196,10 +242,14 @@ export default function NavigationClient({ initialMenus, importable }: { initial
               <Download className="h-4 w-4 shrink-0 text-primary" />
               <div className="flex-1 min-w-[240px]">
                 <p className="text-sm font-semibold">
-                  {t("navPage.alreadyHasMenu", { location: p.location })}
+                  {p.missingMenu
+                    ? t("navPage.missingMenuTitle", { location: p.location })
+                    : t("navPage.alreadyHasMenu", { location: p.location })}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("navPage.linksBuiltIn", { count: p.items.length, plural: p.items.length === 1 ? "" : "s", builder: p.location === "header" ? t("navPage.locHeader") : t("navPage.locFooter") })}
+                  {p.missingMenu
+                    ? t("navPage.missingMenuBody", { count: p.items.length, plural: p.items.length === 1 ? "" : "s" })
+                    : t("navPage.linksBuiltIn", { count: p.items.length, plural: p.items.length === 1 ? "" : "s", builder: p.location === "header" ? t("navPage.locHeader") : t("navPage.locFooter") })}
                 </p>
               </div>
               <button
@@ -238,7 +288,11 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                     activeId === m.id ? "border-primary ring-1 ring-primary/30" : "hover:border-primary/40",
                   )}
                 >
-                  <p className="truncate text-sm font-semibold">{m.name}</p>
+                  <p className="flex items-center gap-1.5 text-sm font-semibold">
+                    <span className="truncate">{m.name}</span>
+                    {dirtyIds.has(m.id) && <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">{t("navPage.unsavedBadge")}</span>}
+                    {!usage[m.id]?.length && <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{t("navPage.notShownBadge")}</span>}
+                  </p>
                   <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     {loc?.label ?? m.location}
@@ -275,6 +329,22 @@ export default function NavigationClient({ initialMenus, importable }: { initial
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     {LOCATIONS.find((l) => l.value === active.location)?.hint}
                   </p>
+                </div>
+
+                <div className="sm:col-span-2">
+                  {usage[active.id]?.length ? (
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                      {t("navPage.shownWhere", { places: usage[active.id].map((p) => t(PLACE_KEY[p])).join(", ") })}
+                    </p>
+                  ) : (
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5" role="status">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <div className="text-[11px] text-amber-700 dark:text-amber-400">
+                        <p className="font-semibold">{t("navPage.notShownTitle")}</p>
+                        <p className="mt-0.5">{t("navPage.notShownBody")}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {assignedElsewhere && (

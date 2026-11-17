@@ -1,0 +1,216 @@
+PASSIVE CODER PAID MODULES LICENCE
+Single-site licence. Version 1.0.
+
+Read this licence before you install or use the Paid Modules. By installing,
+copying or using them, you agree to it. If you do not agree, do not install
+or use them.
+
+
+1. WHO THIS IS BETWEEN
+
+1.1 This licence is between Passive Coder, a business based in Dhaka,
+    Bangladesh ("Passive Coder", "we", "us"), and the person or organisation
+    that the Paid Modules are licensed to ("you").
+
+1.2 If you accept this licence for an organisation, you confirm that you have
+    the authority to bind it.
+
+
+2. WORDS USED IN THIS LICENCE
+
+2.1 "Core" means the open-source Passive Coder CMS, which is licensed
+    separately under the GNU Affero General Public License, version 3
+    ("AGPL").
+
+2.2 "Paid Modules" means the software modules, extensions, source code,
+    object code, database schema, templates, assets and documentation that
+    Passive Coder supplies to you under this licence, and that are not part
+    of the Core. It includes updates and fixes we choose to give you.
+
+2.3 "Licence File" means the file named licence.json, digitally signed by
+    Passive Coder, that names the Licensed Site and lists the Paid Modules
+    licensed to it.
+
+2.4 "Licensed Site" means the one website identified in the Licence File by
+    its domain name and its site identifier, together with its www. form.
+
+
+3. WHAT YOU MAY DO
+
+3.1 Passive Coder grants you a non-exclusive, non-transferable,
+    non-sublicensable, worldwide licence to install, run and use the Paid
+    Modules listed in your Licence File, only for the Licensed Site.
+
+3.2 You may make the copies reasonably needed for that use: on the servers
+    that run the Licensed Site, in a test or staging copy of the Licensed
+    Site that is not open to the public, and in backups.
+
+3.3 You may change the Paid Modules for the Licensed Site's own use. Your
+    changes stay subject to this licence.
+
+3.4 You may let a hosting provider, contractor or employee install, run or
+    maintain the Paid Modules for you, only on your behalf and only for the
+    Licensed Site. You are responsible for their compliance with this
+    licence.
+
+3.5 The licence lasts with no end date, unless it ends under section 9.
+
+
+4. WHAT YOU MAY NOT DO
+
+    Unless Passive Coder agrees in writing, you must not:
+
+4.1 use the Paid Modules for any website, domain, application or business
+    other than the Licensed Site, including other sites you own;
+
+4.2 sell, rent, lend, share, publish, give away, sublicense or otherwise
+    distribute the Paid Modules or any part of them, changed or not, in
+    source or compiled form, including in a public code repository, a
+    package registry, a template or theme marketplace, or a container image
+    that others can download;
+
+4.3 use the Paid Modules to provide a hosted service, a website builder or
+    any other service to third parties, other than running the Licensed
+    Site itself;
+
+4.4 change, forge, copy to another site, or work around the Licence File or
+    the licence check in the software, or help anyone else do so;
+
+4.5 remove or change any copyright notice, licence notice or trade mark in
+    the Paid Modules; or
+
+4.6 transfer or assign this licence, except under section 7.
+
+4.7 Nothing in this section stops you from doing anything that the law
+    allows you to do even though a contract says otherwise.
+
+
+5. OWNERSHIP
+
+5.1 Passive Coder and its licensors own the Paid Modules, and every
+    copyright and other intellectual property right in them. You are given a
+    licence to use the Paid Modules, not ownership of them. Passive Coder
+    keeps every right that this licence does not expressly give you.
+
+5.2 Your website content and your data belong to you. Passive Coder claims
+    no rights in them.
+
+
+6. THE OPEN-SOURCE CORE
+
+6.1 The Core is licensed to you under the AGPL, not under this licence.
+    Nothing in this licence limits the rights the AGPL gives you in the
+    Core.
+
+6.2 The Paid Modules are separate works that are not licensed under the
+    AGPL. Running them together with the Core does not place them under the
+    AGPL.
+
+
+7. CHANGE OF DOMAIN OR OWNER
+
+7.1 If the Licensed Site moves to a new domain name, ask Passive Coder for a
+    new Licence File for the new domain. The old Licence File then stops
+    being valid. We will not unreasonably refuse a request for the same
+    site.
+
+7.2 You may transfer this licence only together with the Licensed Site
+    itself (for example, when you sell the business that the site belongs
+    to), only with Passive Coder's written consent, and only if the new
+    owner accepts this licence. After a transfer you must not keep any copy
+    of the Paid Modules.
+
+
+8. NO WARRANTY, AND LIMITS ON LIABILITY
+
+8.1 The Paid Modules are provided "as is" and "as available". To the full
+    extent the law allows, Passive Coder gives no warranty of any kind,
+    express or implied, including any warranty of merchantability, fitness
+    for a particular purpose, accuracy, or non-infringement, and does not
+    promise that the Paid Modules will be free of errors or will run without
+    interruption.
+
+8.2 To the full extent the law allows, Passive Coder is not liable for any
+    indirect, incidental, special, consequential or punitive loss, or for
+    any loss of profit, revenue, data, goodwill or business, arising from
+    this licence or from using or being unable to use the Paid Modules, even
+    if we were told such loss was possible.
+
+8.3 To the full extent the law allows, Passive Coder's total liability under
+    or in connection with this licence is limited to the amount you paid
+    Passive Coder for the Paid Modules in the 12 months before the event
+    that caused the claim.
+
+8.4 Nothing in this licence limits liability that cannot be limited by law.
+
+8.5 You are responsible for backing up your data, and for the security of
+    the servers and accounts that run the Licensed Site.
+
+
+9. END OF THE LICENCE
+
+9.1 This licence ends automatically if you break it and do not put the
+    breach right within 30 days after Passive Coder tells you about it in
+    writing. It ends at once, with no time to put it right, if you break
+    section 4.2, 4.3 or 4.4.
+
+9.2 When the licence ends, you must stop using the Paid Modules and delete
+    every copy you or anyone acting for you holds. The Licensed Site may
+    keep running on the Core alone, and your data stays yours.
+
+9.3 Sections 4, 5, 8, 9, 10 and 11 continue after the licence ends.
+
+
+10. HOW THE LICENCE IS CHECKED
+
+10.1 The software checks the Licence File on your own server, using a
+     digital signature. It does not contact Passive Coder or send any data
+     to Passive Coder. If Passive Coder stops trading, a valid Licence File
+     keeps working.
+
+10.2 The check is only a technical aid. This licence applies whether or
+     not the check is in place or working.
+
+
+11. GENERAL
+
+11.1 Governing law. This licence, and any dispute or claim arising out of
+     or in connection with it or its subject matter (including
+     non-contractual disputes or claims), is governed by the laws of the
+     People's Republic of Bangladesh, without regard to its conflict-of-law
+     rules.
+
+11.2 Courts. The courts of Dhaka, Bangladesh, have exclusive jurisdiction
+     over any such dispute or claim. Either party may still ask any court
+     with jurisdiction for urgent relief to protect its intellectual
+     property or confidential information.
+
+11.3 Before going to court, both sides will try in good faith to settle the
+     dispute by talking for at least 14 days, except where urgent relief is
+     needed.
+
+11.4 Entire agreement. This licence, the Licence File and the order or
+     invoice for the Paid Modules are the whole agreement about the Paid
+     Modules. If they conflict, this licence wins, except that the Licence
+     File decides which site and which modules are licensed.
+
+11.5 Changes. Passive Coder may publish new versions of this licence for
+     future releases. The version that came with a release applies to that
+     release. A change applies to a release you already have only if you
+     agree to it in writing.
+
+11.6 Severability. If a court finds any part of this licence unenforceable,
+     that part is changed to the minimum extent needed to make it
+     enforceable, and the rest stays in force.
+
+11.7 No waiver. If Passive Coder does not enforce a right at once, it does
+     not give up that right.
+
+11.8 Assignment by Passive Coder. Passive Coder may transfer its rights and
+     duties under this licence to a business that takes over the Paid
+     Modules. Your rights under this licence stay the same.
+
+11.9 Notices. Notices to Passive Coder go to the contact address shown on
+     passivecoder.com. Notices to you go to the email address on your order.
+
+Copyright (c) Passive Coder. All rights reserved.

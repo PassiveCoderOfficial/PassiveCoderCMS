@@ -7,15 +7,19 @@
  *
  * Does both halves needed for this to actually take effect, in one request:
  * 1. Creates the nav_menus row from the block's current items.
- * 2. Points the navigation block at it (data.menuLocation) so the header/
+ * 2. Points the menu block(s) at it (data.menuLocation) so the header/
  *    footer switches to reading the managed copy — without this the import
  *    would just be a second copy that immediately goes stale.
+ * Finds menu blocks at any depth (container headers, 2026-11-17), and blocks
+ * already pointing at a location that has no saved menu yet.
  */
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/tenant/current";
 import { checkTenantEditAccess } from "@/modules/tenant/can-edit";
-import type { Block, NavigationBlockProps } from "@/types/cms";
+import type { Block } from "@/types/cms";
+import { normalizeMenu } from "@/modules/navigation/menu-model";
+import { findImportableNav, pointNavBlocksAt } from "@/modules/navigation/nav-blocks";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -47,20 +51,27 @@ export async function POST(req: Request) {
     .maybeSingle();
 
   const blocks = ((identity as Record<string, Block[] | null> | null)?.[column] as Block[] | null) ?? [];
-  const navIndex = blocks.findIndex((b) => b.type === "navigation");
-  if (navIndex === -1) return NextResponse.json({ error: "No navigation block found" }, { status: 404 });
-  const nav = blocks[navIndex] as NavigationBlockProps;
-  if (nav.data.menuLocation) {
-    return NextResponse.json({ error: "This nav already reads from a managed menu" }, { status: 409 });
+  // Any depth: container headers keep their menu in a header_nav inside a
+  // column. A block pointing at this location with no saved menu there yet
+  // shows its own links, so those are importable too.
+  const { data: existing } = await admin.from("nav_menus").select("location").eq("tenant_id", tenantId);
+  const saved = new Set(((existing ?? []) as { location: string }[]).map((m) => m.location));
+  const hit = findImportableNav(blocks, saved);
+  if (!hit) return NextResponse.json({ error: "No menu with its own links found" }, { status: 404 });
+  if (hit.pointsAt && hit.pointsAt !== location) {
+    return NextResponse.json({ error: "This menu points at another location" }, { status: 409 });
   }
-  const items = nav.data.items ?? [];
+  const rawItems = hit.items;
+  // Cleaned like every other saved menu (ids filled, depth capped); a valid
+  // legacy menu comes back unchanged, so the live header looks the same.
+  const items = normalizeMenu(rawItems);
   if (items.length === 0) return NextResponse.json({ error: "Nothing to import — this menu is empty" }, { status: 400 });
 
-  const { data: clash } = await admin
-    .from("nav_menus").select("id, name").eq("tenant_id", tenantId).eq("location", location).maybeSingle();
-  if (clash) {
+  if (saved.has(location)) {
+    const { data: clash } = await admin
+      .from("nav_menus").select("id, name").eq("tenant_id", tenantId).eq("location", location).maybeSingle();
     return NextResponse.json(
-      { error: `"${clash.name}" already occupies ${location}. Move or delete it first.` },
+      { error: `"${clash?.name ?? "Another menu"}" already occupies ${location}. Move or delete it first.` },
       { status: 409 },
     );
   }
@@ -75,9 +86,11 @@ export async function POST(req: Request) {
     .single();
   if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
 
-  const nextBlocks = blocks.map((b, i) =>
-    i === navIndex ? { ...b, data: { ...(b as NavigationBlockProps).data, menuLocation: location } } : b,
-  );
+  // Point every copy that shows exactly these links at the new menu (a
+  // container header's desktop/phone pair); a block already pointing here
+  // (missing menu) needs no change.
+  const { blocks: nextBlocks, count } = pointNavBlocksAt(blocks, rawItems, location);
+  if (count === 0) return NextResponse.json({ menu });
   const { error: updateError } = await admin
     .from("site_identity")
     .update({ [column]: nextBlocks, updated_at: new Date().toISOString() })

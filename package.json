@@ -1,6 +1,6 @@
 {
   "name": "cms",
-  "version": "1.0.923",
+  "version": "1.0.924",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,7 +14,8 @@
     "test:builder": "tsx --test src/modules/page-builder/__tests__/*.test.ts",
     "test:nav": "tsx --test src/modules/navigation/__tests__/*.test.ts",
     "test:header": "tsx --test src/modules/header-studio/__tests__/*.test.ts",
-    "test:footer": "tsx --test src/modules/footer-studio/__tests__/*.test.ts"
+    "test:footer": "tsx --test src/modules/footer-studio/__tests__/*.test.ts",
+    "test:installer": "tsx --test tests/installer/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

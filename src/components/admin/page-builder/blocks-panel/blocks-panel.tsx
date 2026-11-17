@@ -63,7 +63,8 @@ export function BlocksPanel({
   };
   // A freshly-added nav block ships with placeholder links (Home/About/
   // Services/Contact) — if the tenant already has a real header menu saved,
-  // use that instead so the block isn't obviously fake the moment it lands.
+  // show that instead (linked to it) so the block isn't obviously fake the
+  // moment it lands.
   async function addBlockSmart(block: Block, afterId?: string, path?: Parameters<typeof addBlockRaw>[2]) {
     block = asCardsIfFamily(block);
     if (block.type === "navigation" && tenantId) {
@@ -77,7 +78,11 @@ export function BlocksPanel({
           .maybeSingle();
         const items = (data?.items as NavigationBlockProps["data"]["items"] | null) ?? null;
         if (items && items.length > 0) {
+          // Linked, not just copied (P0): the block reads the saved header
+          // menu, so later menu edits show here too. The copy stays as the
+          // fallback should that menu ever be removed.
           (block as NavigationBlockProps).data.items = items;
+          (block as NavigationBlockProps).data.menuLocation = "header";
         }
       } catch {
         // Fall through with the placeholder items — never block adding the section.

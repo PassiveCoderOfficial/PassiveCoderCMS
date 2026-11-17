@@ -1,0 +1,125 @@
+# Builds the self-hosted Docker images (web app + scheduled jobs) and, if
+# asked, pushes them to GitHub Container Registry (ghcr.io/<owner>/<repo>).
+#
+# By default the web image is the READY-MADE one that works for every site
+# (PC_GENERIC=1): it holds placeholder values, and each server puts its own
+# settings in when the container starts (selfhost/docker-entrypoint.mjs).
+# This is the image selfhost/install.sh pulls, so make the package public
+# (GitHub > Packages > the image > Package settings > Change visibility).
+#
+# To build an image for ONE site instead, set these repository variables
+# (Settings > Secrets and variables > Actions > Variables) and run this by
+# hand with "generic" turned off:
+#   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY (publishable key),
+#   NEXT_PUBLIC_ROOT_DOMAIN, NEXT_PUBLIC_APP_URL
+#   optional: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+#   NEXT_PUBLIC_LOGO_URL, NEXT_PUBLIC_WHATSAPP_NUMBER
+# Always optional: SELFHOST_RUNNER (a runner label with 8 GB+ RAM; default
+# ubuntu-latest), BUILD_HEAP_MB (default 6144). No secret keys are needed.
+#
+# Runs only when started by hand or by a tag such as selfhost-v1.0.0. It
+# never runs on ordinary pushes and does not touch the hosted platform.
+name: Self-host image
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push the images to ghcr.io"
+        type: boolean
+        default: false
+      generic:
+        description: "Ready-made image for every site (off = one site, from repository variables)"
+        type: boolean
+        default: true
+  push:
+    tags: ["selfhost-v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: selfhost-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ vars.SELFHOST_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    env:
+      PUSH: ${{ github.event_name == 'push' || inputs.push }}
+      GENERIC: ${{ github.event_name == 'push' || inputs.generic }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check build settings
+        if: env.GENERIC != 'true'
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_ROOT_DOMAIN: ${{ vars.NEXT_PUBLIC_ROOT_DOMAIN }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+        run: |
+          missing=""
+          for v in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_ROOT_DOMAIN NEXT_PUBLIC_APP_URL; do
+            [ -n "${!v}" ] || missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then echo "::error::Set these repository variables first:$missing"; exit 1; fi
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ghcr.io
+        if: env.PUSH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image names
+        id: names
+        run: |
+          repo="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          version="$(node -p "require('./package.json').version")"
+          echo "app=${repo}" >> "$GITHUB_OUTPUT"
+          echo "cron=${repo}-cron" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Build web app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runner
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: |
+            ${{ steps.names.outputs.app }}:${{ steps.names.outputs.version }}
+            ${{ steps.names.outputs.app }}:latest
+          build-args: |
+            PC_GENERIC=${{ env.GENERIC == 'true' && '1' || '0' }}
+            NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            NEXT_PUBLIC_ROOT_DOMAIN=${{ vars.NEXT_PUBLIC_ROOT_DOMAIN }}
+            NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+            NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+            NEXT_PUBLIC_LOGO_URL=${{ vars.NEXT_PUBLIC_LOGO_URL }}
+            NEXT_PUBLIC_WHATSAPP_NUMBER=${{ vars.NEXT_PUBLIC_WHATSAPP_NUMBER }}
+            BUILD_HEAP_MB=${{ vars.BUILD_HEAP_MB || '6144' }}
+          cache-from: type=gha,scope=selfhost-app
+          cache-to: type=gha,mode=max,scope=selfhost-app
+
+      - name: Build scheduled-jobs image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: cron
+          platforms: linux/amd64,linux/arm64
+          push: ${{ env.PUSH == 'true' }}
+          tags: |
+            ${{ steps.names.outputs.cron }}:${{ steps.names.outputs.version }}
+            ${{ steps.names.outputs.cron }}:latest
+          cache-from: type=gha,scope=selfhost-cron
+          cache-to: type=gha,mode=max,scope=selfhost-cron

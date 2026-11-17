@@ -25,7 +25,10 @@ export async function getStandaloneTenant(): Promise<Tenant | null> {
   const pinned = process.env.STANDALONE_TENANT_ID?.trim();
   const query = supabase.from("tenants").select(TENANT_COLS).order("created_at", { ascending: true }).limit(1);
   const { data, error } = pinned ? await query.eq("id", pinned) : await query;
-  if (error) throw new Error(error.message);
+  // No tables yet (a brand-new database, before the installer has loaded it):
+  // that is "no site yet", not "database down", so visitors land on /setup.
+  const noTables = !!error && (error.code === "PGRST205" || error.code === "42P01");
+  if (error && !noTables) throw new Error(error.message);
   const tenant = ((data ?? [])[0] as Tenant | undefined) ?? null;
   // A missing site is not cached for long: /setup is about to create it.
   cached = { tenant, expiresAt: Date.now() + (tenant ? CACHE_TTL_MS : 2_000) };
