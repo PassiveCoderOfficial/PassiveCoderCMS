@@ -1,0 +1,410 @@
+@import "tailwindcss";
+@import "./worlds.css";
+@import "./pro.css";
+
+/* dark: utilities. Inside the admin worlds they follow the world's own toggle
+   (class on <html>), so a dark: colour can't fire on a light panel or the other
+   way round. Everywhere else, and inside a site preview, they stay on the
+   visitor's OS setting: Tailwind's default, which public sites were built on.
+   :where keeps the specificity of a plain utility. */
+@custom-variant dark {
+  &:where(html[data-world].dark *):not(:where(.cms-canvas-light, .cms-canvas-light *)) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(html:not([data-world]) *), &:where(.cms-canvas-light, .cms-canvas-light *) {
+      @slot;
+    }
+  }
+}
+
+/* UAE Dirham sign (U+20C3). Few fonts have it yet, so a one-glyph font is
+   put first in every font stack; unicode-range keeps it to that character. */
+@font-face { font-family: "AED Dirham"; src: url("/fonts/aed-dirham.otf") format("opentype"); unicode-range: U+20C3; font-display: block; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --sidebar: 0 0% 98%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar: 222.2 84% 6%;
+  }
+
+  /* A block's custom color/gradient background (--pc-block-bg, set inline
+   * per block by getBlockBackground in block-utils.ts) is a literal value
+   * the editor picked — it has no light/dark awareness, but the block's own
+   * text mostly does (theme-aware Tailwind classes with no explicit color).
+   * A "system"-theme tenant with any custom block background color got
+   * white text stuck on a background that stayed white when the OS/browser
+   * was in dark mode. Only override in dark mode — light mode (and a
+   * light-locked tenant, which never gets .dark at all) shows the editor's
+   * picked color exactly as chosen. */
+  .pc-block-bg {
+    background-color: var(--pc-block-bg);
+  }
+  .pc-block-bg-gradient {
+    background: var(--pc-block-bg);
+  }
+  .dark .pc-block-bg,
+  .dark .pc-block-bg-gradient {
+    background: hsl(var(--background));
+  }
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-console-bar: hsl(var(--console-bar));
+  --color-console-bar-foreground: hsl(var(--console-bar-foreground));
+  --color-console-bar-muted: hsl(var(--console-bar-muted));
+  --font-sans: "AED Dirham", var(--font-inter), var(--font-anek, "Anek Bangla"), system-ui, sans-serif;
+  --font-arabic-stack: var(--font-arabic, "IBM Plex Sans Arabic"), "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
+  --radius: var(--radius);
+
+  /* Extended design-system tokens — surfaces, soft fills, shadows.
+     These map the CSS custom properties emitted by template-css.ts into
+     Tailwind utilities (bg-surface-1, bg-primary-soft, shadow-lg, …) so
+     every block can consume brand-aware design values as classes. The
+     var fallbacks keep the admin dashboard (no template injection) sane. */
+  --color-surface-1: hsl(var(--surface-1, var(--card)));
+  --color-surface-2: hsl(var(--surface-2, var(--muted)));
+  --color-primary-soft: hsl(var(--primary-soft, var(--muted)));
+  --color-accent-soft: hsl(var(--accent-soft, var(--muted)));
+  --shadow-xs: var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  --shadow-sm: var(--shadow-sm, 0 1px 3px 0 rgb(0 0 0 / 0.08));
+  --shadow-md: var(--shadow-md, 0 4px 12px -2px rgb(0 0 0 / 0.10));
+  --shadow-lg: var(--shadow-lg, 0 12px 28px -6px rgb(0 0 0 / 0.14));
+  --shadow-xl: var(--shadow-xl, 0 24px 48px -12px rgb(0 0 0 / 0.20));
+  --shadow-primary: var(--shadow-primary, 0 8px 24px -6px rgb(0 0 0 / 0.20));
+  --ease-out: var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+@layer base {
+  * { border-color: hsl(var(--border)); }
+  body { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+  html, body { height: 100%; }
+}
+
+/* ── Reusable brand-gradient + surface utilities ────────────────────────── */
+.bg-brand-gradient { background-image: var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)); }
+.bg-brand-gradient-soft { background-image: var(--brand-gradient-soft, linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%)); }
+.text-gradient {
+  background-image: var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.shadow-brand { box-shadow: var(--shadow-primary); }
+
+/* ── Scroll-reveal: elements fade+rise in when they enter the viewport.
+   Opt-in via the `data-reveal` attribute; a tiny IntersectionObserver in
+   ScrollReveal (src/components/site/scroll-reveal.tsx) toggles
+   `data-revealed`. Respects reduced-motion. ─────────────────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--dur-slow, 400ms) var(--ease-out, ease), transform var(--dur-slow, 400ms) var(--ease-out, ease);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal][data-revealed] { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}
+/* The page builder canvas has no observer: show everything while editing. */
+.cms-builder-canvas [data-reveal] { opacity: 1; transform: none; transition: none; }
+
+/* Shimmer for skeleton loaders */
+@keyframes pc-shimmer { 100% { transform: translateX(100%); } }
+.pc-skeleton {
+  position: relative; overflow: hidden;
+  background: hsl(var(--muted));
+}
+.pc-skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, hsl(var(--card) / 0.6), transparent);
+  animation: pc-shimmer 1.5s infinite;
+}
+
+/* Subtle float for hero accents */
+@keyframes pc-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.pc-float { animation: pc-float 5s ease-in-out infinite; }
+
+/* Prose styling for rich text blocks */
+.prose h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 1.5rem; margin-top: 0; }
+.prose h2 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1rem; margin-top: 2rem; }
+.prose h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; margin-top: 1.5rem; }
+.prose p { margin-bottom: 1rem; line-height: 1.75; }
+.prose ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+.prose ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
+.prose a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+.prose strong { font-weight: 600; }
+.prose blockquote { border-left: 4px solid hsl(var(--primary)); padding-left: 1rem; font-style: italic; margin: 1rem 0; color: hsl(var(--muted-foreground)); }
+.prose code { background: hsl(var(--muted)); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; }
+.prose img { border-radius: 0.5rem; margin: 1rem 0; }
+.prose hr { border-color: hsl(var(--border)); margin: 1.5rem 0; }
+
+/* Page-builder canvas: the dashboard's colours never repaint site content. The
+ * palette reset lives in worlds.css (.cms-canvas-light); here a block's own
+ * custom background survives a dark dashboard, as it does on the published page. */
+.dark .cms-canvas-light .pc-block-bg { background: none; background-color: var(--pc-block-bg); }
+.dark .cms-canvas-light .pc-block-bg-gradient { background: var(--pc-block-bg); }
+
+/**
+ * Blocks previewed inside a builder canvas must not use viewport-fixed
+ * positioning.
+ *
+ * Some blocks are legitimately `position: fixed` on a real page — the
+ * navigation bar's overlay-hero mode floats over the hero rather than
+ * consuming layout height above it. Inside the builder that is wrong twice
+ * over: the element escapes the canvas frame, and because a fixed element is
+ * out of flow it contributes zero height, so the canvas collapses to nothing
+ * and the block overlaps whatever is rendered below it.
+ *
+ * Containing it with a transformed ancestor fixes the first half only — the
+ * height is still zero. Rendering it static inside the canvas fixes both, and
+ * is also the more honest preview: the builder shows the bar in its own space
+ * rather than pretending there is a hero underneath.
+ *
+ * Scoped to the canvas, so the published site is untouched.
+ */
+.cms-builder-canvas nav.fixed,
+.cms-builder-canvas header.fixed,
+.cms-builder-canvas > * .fixed.top-0 {
+  position: static;
+}
+
+/* Per-device section padding — see getBlockWrapperStyle in block-utils.ts.
+   Mobile-first: mobile values, then tablet from 640px, desktop from 1024px. */
+/* Header builder "Menu text" — beats template stylesheets, only when set. */
+.pc-nav-fs ul > li > :is(a, button) { font-size: var(--nav-fs) !important; }
+.pc-nav-fw ul > li > :is(a, button) { font-weight: var(--nav-fw) !important; }
+.pc-nav-cta a[class*="--nav-cta-fs"] { font-size: var(--nav-cta-fs) !important; }
+.pc-rpad { padding-top: var(--pc-pt-m); padding-bottom: var(--pc-pb-m); }
+@media (min-width: 640px) { .pc-rpad { padding-top: var(--pc-pt-t); padding-bottom: var(--pc-pb-t); } }
+@media (min-width: 1024px) { .pc-rpad { padding-top: var(--pc-pt); padding-bottom: var(--pc-pb); } }
+
+/* Section text colour (Style panel) — light surfaces inside the section keep
+   their own card text colour instead of inheriting the section's. */
+.pc-tc :is(.bg-card, .bg-white, .bg-background) { color: hsl(var(--card-foreground)); --foreground: var(--pc-fg-root); --muted-foreground: var(--pc-muted-root); --border: var(--pc-border-root); }
+/* Brand-coloured accents (numbers, rules) follow a recoloured section text. */
+.pc-tc .pc-rule { border-color: hsl(var(--foreground) / .35); }
+.pc-tc .pc-num { color: hsl(var(--foreground) / .75); }
+/* Dark sections: primary-coloured text/icons/borders take the accent so they stay visible; cards inside keep theirs. */
+.pc-on-dark .text-primary:not(:is(.bg-card, .bg-white, .bg-background) *) { color: hsl(var(--accent)); }
+.pc-on-dark .border-primary:not(:is(.bg-card, .bg-white, .bg-background) *) { border-color: hsl(var(--accent) / .55); }
+.pc-on-dark :is(.bg-primary\/10, .bg-primary\/5):not(:is(.bg-card, .bg-white, .bg-background) *) { background-color: hsl(var(--accent) / .14); }
+
+/* Stat values: never push the page sideways, whatever the owner typed. */
+.stat-value { overflow-wrap: anywhere; min-width: 0; }
+
+/* Dark image fade tinted with the site's own primary colour. Replaces the old
+   fade-to-card (which washed photos out to white on light themes). */
+.theme-image-fade {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, hsl(var(--primary)) 55%, #05070f) 0%,
+    color-mix(in srgb, hsl(var(--primary)) 35%, rgb(5 7 15 / 0.35)) 38%,
+    transparent 72%
+  );
+}
+
+/* Order packing slip: print only the order, not the dashboard chrome. */
+@media print {
+  body:has(.order-print-root) aside,
+  body:has(.order-print-root) header,
+  body:has(.order-print-root) [data-sidebar] { display: none !important; }
+}
+
+/* ── Showcase variants (pricing spec-cards, hero spec-card, services bento…) ──
+   One set of utilities shared by every "showcase" block variant. Colours come
+   from the theme by default; a block can override via --sc-dark / --sc-accent
+   (set inline from its optional colour pickers). */
+.sc-root { --sc-dark-c: var(--sc-dark, hsl(var(--pc-fg-root, var(--foreground)))); --sc-accent-c: var(--sc-accent, hsl(var(--accent))); }
+.sc-dark-bg { background: var(--sc-dark-c); }
+.sc-dark-grad { background: linear-gradient(160deg, color-mix(in srgb, var(--sc-dark-c) 82%, hsl(var(--primary))), var(--sc-dark-c)); }
+.sc-accent { color: var(--sc-accent-c); }
+.sc-grad { background: linear-gradient(90deg, hsl(var(--primary)), var(--sc-accent-c)); }
+.sc-grad-text { background: linear-gradient(90deg, var(--sc-accent-c), color-mix(in srgb, var(--sc-accent-c) 45%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .08em; }
+.sc-btn { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; padding: .95rem 1.6rem; border-radius: calc(var(--radius) + 2px); font-weight: 700; font-size: .95rem; line-height: 1; text-decoration: none; transition: transform .2s, box-shadow .2s, border-color .2s, color .2s, background .2s; }
+.sc-btn-grad { background: linear-gradient(90deg, hsl(var(--primary)), var(--sc-accent-c)); color: #fff; box-shadow: 0 14px 34px -12px color-mix(in srgb, var(--sc-accent-c) 65%, transparent); }
+.sc-btn-grad:hover { transform: translateY(-2px); }
+.sc-btn-ghost-dark { border: 1.5px solid rgba(255,255,255,.35); color: #fff; }
+.sc-btn-ghost-dark:hover { border-color: var(--sc-accent-c); color: var(--sc-accent-c); }
+.sc-btn-ghost { border: 1.5px solid hsl(var(--border)); color: hsl(var(--foreground)); background: hsl(var(--card)); }
+.sc-btn-ghost:hover { border-color: hsl(var(--primary)); color: hsl(var(--primary)); }
+.sc-eyebrow { display: inline-block; font-size: .74rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: hsl(var(--primary)); }
+.sc-on-dark .sc-eyebrow { color: var(--sc-accent-c); }
+.sc-meter-track { height: 7px; border-radius: 99px; background: hsl(var(--muted)); overflow: hidden; }
+.sc-on-dark .sc-meter-track { background: rgba(255,255,255,.12); }
+.sc-meter-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, hsl(var(--primary)), var(--sc-accent-c)); }
+.sc-glass { background: color-mix(in srgb, var(--sc-dark-c) 55%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid color-mix(in srgb, var(--sc-accent-c) 28%, transparent); }
+.sc-zoom img { transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+.sc-zoom:hover img { transform: scale(1.06); }
+
+/* ── Boutique variant family (luxury retail look: serif headings, thin
+   frames, pill buttons). Colours follow the theme; blocks can override
+   --bq-accent (buttons, eyebrows) and --bq-ink (text) via data.colors. ── */
+.bq { --bq-accent-c: var(--bq-accent, hsl(var(--primary))); --bq-ink-c: var(--bq-ink, hsl(var(--foreground))); color: var(--bq-ink-c); }
+.bq-wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+.bq-h { font-family: var(--heading-font, inherit); font-weight: 600; letter-spacing: .3px; line-height: 1.12; color: inherit; }
+.bq-upper { text-transform: uppercase; }
+.bq-eyebrow { display: block; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; }
+.bq-eyebrow-serif { display: block; font-family: var(--heading-font, inherit); font-weight: 600; font-size: 16px; letter-spacing: .3px; text-transform: uppercase; }
+.bq-btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--bq-accent-c); color: #fff; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; font-size: 10.5px; padding: 15px 32px; transition: opacity .2s; text-decoration: none; }
+.bq-btn:hover { opacity: .88; }
+.bq-rule { width: 54px; height: 1px; background: var(--bq-accent-c); opacity: .7; margin: 26px auto 28px; }
+.bq-prose p { margin: 0 0 1em; } .bq-prose p:last-child { margin-bottom: 0; }
+.bq-prose a { color: var(--bq-accent-c); text-decoration: underline; }
+.bq-prose ul { list-style: disc; padding-left: 1.2em; margin: 0 0 1em; }
+
+/* Sticky site header: flatten the renderer's wrappers around the nav so its
+   own position: sticky is relative to the page, not a box its own height. */
+[data-site-chrome="header"] > [data-pc-block="navigation"],
+[data-site-chrome="header"] > [data-pc-block="navigation"] > div { display: contents; }
+/* Body is h-full (dashboard panes need it), which ends a sticky header after
+   one screen. Site pages let the body grow with the content instead. */
+body:has([data-site-chrome="header"]) { height: auto; min-height: 100%; }
+
+/* ── Block Style: typography & alignment (block-utils getBlockWrapperStyle) ──
+   Overrides whatever sizes/alignment a block variant hard-codes, so one set of
+   controls works on every block. h1/h2 = section heading, h3/h4 = card titles. */
+.pc-hf :is(h1, h2, h3, h4) { font-family: var(--pc-hf) !important; }
+.pc-h2 :is(h1, h2) { font-size: var(--pc-h2) !important; line-height: 1.15 !important; }
+@media (max-width: 639.98px) { .pc-h2m :is(h1, h2) { font-size: var(--pc-h2-m) !important; line-height: 1.15 !important; } }
+.pc-h3 :is(h3, h4) { font-size: var(--pc-h3) !important; line-height: 1.25 !important; }
+.pc-tx :is(p, li, dd) { font-size: var(--pc-tx) !important; }
+.pc-tt :is(h3, h4) { text-transform: var(--pc-tt) !important; }
+
+/* Card motion & hover (Style panel: "Card motion", "Card hover").
+   Cards = direct children of the section's grid or wrapping row. */
+.pc-cm-float :is(.grid, .flex-wrap) > * { animation: pc-float 4.5s ease-in-out infinite; }
+.pc-cm-float :is(.grid, .flex-wrap) > :nth-child(4n+2) { animation-delay: .6s; }
+.pc-cm-float :is(.grid, .flex-wrap) > :nth-child(4n+3) { animation-delay: 1.2s; }
+.pc-cm-float :is(.grid, .flex-wrap) > :nth-child(4n) { animation-delay: 1.8s; }
+.pc-cm-float :is(.grid, .flex-wrap) > :hover { animation-play-state: paused; }
+:is(.pc-ch-lift, .pc-ch-lift-color) :is(.grid, .flex-wrap) > * { transition: transform .3s ease, box-shadow .3s ease, background .3s ease, color .3s ease; }
+.pc-ch-lift :is(.grid, .flex-wrap) > :hover { transform: translateY(-6px); box-shadow: 0 14px 32px rgb(0 0 0 / .14); }
+.pc-ch-lift-color :is(.grid, .flex-wrap) > :hover {
+  transform: translateY(-6px); box-shadow: 0 14px 32px rgb(0 0 0 / .18);
+  background: var(--pc-hc, hsl(var(--primary))) !important; color: #fff !important;
+}
+.pc-ch-lift-color :is(.grid, .flex-wrap) > :hover :is(p, span, h3, h4, svg) { color: #fff !important; }
+.cms-builder-canvas .pc-cm-float :is(.grid, .flex-wrap) > * { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .pc-cm-float :is(.grid, .flex-wrap) > * { animation: none; }
+  :is(.pc-ch-lift, .pc-ch-lift-color) :is(.grid, .flex-wrap) > :hover { transform: none; }
+}
+/* Section image focus (block.style.imageFocus): every cropped photo in the
+   section, beating Tailwind object-* classes; a per-image inline focus wins. */
+.pc-if img.object-cover { object-position: var(--pc-if); }
+.pc-if .bg-cover { background-position: var(--pc-if); }
+.pc-al-left :is(h1, h2), .pc-al-left :is(h1, h2) ~ p { text-align: left !important; margin-left: 0 !important; margin-right: auto !important; }
+.pc-al-center :is(h1, h2), .pc-al-center :is(h1, h2) ~ p, .pc-al-center :is(h1, h2) + * > p { text-align: center !important; margin-left: auto !important; margin-right: auto !important; }
+.pc-al-right :is(h1, h2), .pc-al-right :is(h1, h2) ~ p { text-align: right !important; margin-left: auto !important; margin-right: 0 !important; }
+.pc-al-left :has(> h2), .pc-al-left :has(> div > h2) { text-align: left !important; justify-content: flex-start !important; }
+.pc-al-center :has(> h2), .pc-al-center :has(> div > h2) { text-align: center !important; justify-content: center !important; }
+.pc-al-right :has(> h2), .pc-al-right :has(> div > h2) { text-align: right !important; justify-content: flex-end !important; }
+.pc-ca-left :has(> :is(h3, h4)) { text-align: left !important; align-items: flex-start !important; }
+.pc-ca-center :has(> :is(h3, h4)) { text-align: center !important; align-items: center !important; }
+.pc-ca-right :has(> :is(h3, h4)) { text-align: right !important; align-items: flex-end !important; }
+
+/* Phone editor (mobile-editor-shell.tsx): the selection bar replaces the
+   in-canvas block toolbar and type tags, which covered the content on a
+   phone; the floating AI / chat buttons would cover the tab bar. */
+.mobile-editor [data-block-toolbar],
+.mobile-editor [data-block-label] { display: none !important; }
+body[data-mobile-editor] [data-floating-launcher] { display: none !important; }
+
+/* Report button (support-capture.tsx) in the phone editor: out of the way of
+   the selection and tab bars. */
+body[data-mobile-editor] [data-support-btn] { top: 64px !important; bottom: auto !important; right: 8px !important; left: auto !important; width: 40px !important; height: 40px !important; }
+
+/* Header builder rows on phones (container-block.tsx data-header-col):
+   the bar keeps the logo, one compact action button, icons (cart, account)
+   and the menu toggle. Further buttons move into the mobile menu
+   (header-nav-block.tsx), and a long brand name shortens with "..." instead
+   of pushing the bar past the screen. */
+@media (max-width: 767.98px) {
+  [data-header-col="actions"] > :is([data-pc-block="header_cta"], [data-pc-block="header_booking"]) ~ :is([data-pc-block="header_cta"], [data-pc-block="header_booking"]) { display: none !important; }
+  [data-header-col="actions"] > :is([data-pc-block="header_cta"], [data-pc-block="header_booking"]) :is(a, button) { padding: 0.4rem 0.8rem !important; font-size: 0.75rem !important; white-space: nowrap; }
+  [data-header-col="actions"] { gap: 0.25rem; }
+  [data-header-col="logo"], [data-header-col="logo"] > [data-pc-block], [data-header-col="logo"] > [data-pc-block] > div { min-width: 0; }
+  [data-header-col="logo"] a { max-width: 100%; }
+  [data-header-col="logo"] a :is(span, p, div):not(:has(img)) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+@media (max-width: 359.98px) {
+  /* Very small phones: the action button shows its icon only when it has one. */
+  [data-header-col="actions"] > :is([data-pc-block="header_cta"], [data-pc-block="header_booking"]) :is(a, button):has(svg) { font-size: 0 !important; gap: 0 !important; padding: 0.5rem !important; }
+}
+
+/* Site text: balanced headings and no single-word last lines. */
+[data-pc-block] :is(h1, h2, h3) { text-wrap: balance; }
+[data-pc-block] :is(p, li, blockquote) { text-wrap: pretty; }
+
+/* Arabic pages (/sa, /ae/ar, ...): Arabic-capable font for everything in the
+   page, including headings whose block/template font has no Arabic glyphs. */
+[lang="ar"], [lang="ar"] :is(h1, h2, h3, h4, h5, h6, p, a, li, span, button, input, textarea, label) {
+  font-family: var(--font-arabic-stack);
+}

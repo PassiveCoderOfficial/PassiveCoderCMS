@@ -1,0 +1,148 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { CheckCircle, Layout, Sparkles, Loader2 } from "lucide-react";
+import { TEMPLATE_CATEGORIES, type Template } from "@/lib/templates/templates-data";
+
+export interface TemplateSelectValue {
+  templateId: string;
+  templateMode: "theme" | "full";
+}
+
+/**
+ * Compact template picker for site-creation forms outside the full onboarding
+ * wizard (SA "New Site", staff "New Site"). Same published templates + blank
+ * option as onboarding Step5, just without the wizard chrome.
+ *
+ * Loads from /api/templates rather than a bundled list so a site can only ever
+ * be created from a template that actually exists.
+ */
+export function TemplateSelect({ value, onChange }: {
+  value: TemplateSelectValue;
+  onChange: (v: TemplateSelectValue) => void;
+}) {
+  const [category, setCategory] = useState("All");
+  const [templates, setTemplates] = useState<Template[] | null>(null);
+
+  useEffect(() => {
+    fetch("/api/templates")
+      .then((r) => r.json())
+      .then((d: Template[]) => setTemplates(Array.isArray(d) ? d : []))
+      .catch(() => setTemplates([]));
+  }, []);
+
+  const all = templates ?? [];
+  const filtered = category === "All" ? all : all.filter(t => t.category === category);
+
+  const cardBase = "border-border hover:border-muted-foreground/30";
+  const cardSelected = "border-primary shadow-md shadow-primary/20";
+  const labelMuted = "text-muted-foreground";
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1.5 flex-wrap">
+        {["All", ...TEMPLATE_CATEGORIES.filter(c => c !== "All").slice(0, 8)].map(cat => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setCategory(cat)}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all whitespace-nowrap border ${
+              category === cat
+                ? "bg-primary text-primary-foreground border-primary"
+                : `border-border ${labelMuted} hover:border-primary/40`
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {templates === null && (
+        <div className={`flex items-center gap-2 py-6 text-xs ${labelMuted}`}>
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading templates…
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
+        {category === "All" && (
+          <div
+            onClick={() => onChange({ templateId: "blank", templateMode: "full" })}
+            className={`rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+              value.templateId === "blank" ? cardSelected : cardBase
+            }`}
+          >
+            <div className={`h-20 flex items-center justify-center bg-muted`}>
+              {value.templateId === "blank"
+                ? <CheckCircle className="w-7 h-7 text-primary" />
+                : <span className="text-2xl">⬜</span>}
+            </div>
+            <div className={`p-2 bg-card`}>
+              <p className="text-xs font-bold">Blank Site</p>
+              <p className={`text-[10px] ${labelMuted}`}>Start from scratch</p>
+            </div>
+          </div>
+        )}
+
+        {filtered.map(t => {
+          const selected = value.templateId === t.slug;
+          return (
+            <div
+              key={t.slug}
+              onClick={() => onChange({ templateId: t.slug, templateMode: value.templateMode })}
+              className={`rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+                selected ? cardSelected : cardBase
+              }`}
+            >
+              <div
+                className="h-20 relative overflow-hidden bg-muted"
+                style={t.heroImage ? undefined : { background: `linear-gradient(135deg, ${t.thumbFrom}, ${t.thumbTo})` }}
+              >
+                {/* Falls back to the palette gradient — most templates have no
+                    screenshot yet, and a broken <img> looked like a bug. */}
+                {t.heroImage && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={t.heroImage}
+                    alt={`${t.name} preview`}
+                    className="w-full h-full object-cover object-top"
+                  />
+                )}
+                {selected && (
+                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                    <CheckCircle className="w-7 h-7 text-primary drop-shadow-lg" />
+                  </div>
+                )}
+              </div>
+              <div className={`p-2 bg-card`}>
+                <p className="text-xs font-bold truncate">{t.name}</p>
+                <p className={`text-[10px] truncate ${labelMuted}`}>{t.category}</p>
+                {selected && (
+                  <div className="mt-1.5 flex gap-1" onClick={e => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ templateId: t.slug, templateMode: "theme" })}
+                      className={`flex-1 flex items-center justify-center gap-0.5 text-[9px] font-semibold py-1 rounded-md border transition-all ${
+                        value.templateMode === "theme" ? "bg-primary text-primary-foreground border-primary" : `border-border ${labelMuted}`
+                      }`}
+                    >
+                      <Layout className="w-2.5 h-2.5" /> Theme
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ templateId: t.slug, templateMode: "full" })}
+                      className={`flex-1 flex items-center justify-center gap-0.5 text-[9px] font-semibold py-1 rounded-md border transition-all ${
+                        value.templateMode === "full" ? "bg-primary text-primary-foreground border-primary" : `border-border ${labelMuted}`
+                      }`}
+                    >
+                      <Sparkles className="w-2.5 h-2.5" /> Full Demo
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

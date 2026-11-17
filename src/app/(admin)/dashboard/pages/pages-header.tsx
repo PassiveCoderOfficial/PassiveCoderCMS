@@ -1,0 +1,56 @@
+"use client";
+
+// The list page itself (page.tsx) is a server component — it queries
+// Supabase directly for the page rows. useT() needs the client-side
+// LanguageProvider (localStorage-persisted, no server-readable signal), so
+// the translatable header/empty-state text is split out into this small
+// client wrapper instead of converting the whole data-fetching page to a
+// client component. Same split used wherever a server-fetched list needs
+// translated chrome.
+
+import type React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { Plus, FileText } from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+
+export function PagesHeader({ count }: { count: number }) {
+  const t = useT();
+  return (
+    <PageHeader
+      className="mb-4"
+      title={t("pages.title")}
+      description={t("pages.count", { count })}
+      actions={<Button asChild><Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> {t("pages.newPage")}</Link></Button>}
+    />
+  );
+}
+
+export function PagesEmptyState({ inTrash }: { inTrash: boolean }) {
+  const t = useT();
+  return (
+    <EmptyState
+      className="m-4"
+      icon={FileText}
+      title={inTrash ? t("pages.trashEmpty") : t("pages.noPagesYet")}
+      description={inTrash ? undefined : t("pages.createFirstPage")}
+      action={inTrash ? undefined : <Button asChild><Link href="/dashboard/pages/new"><Plus className="h-4 w-4 mr-2" /> {t("pages.createPage")}</Link></Button>}
+    />
+  );
+}
+
+export function PagesTableHead({ selectAll }: { selectAll?: React.ReactNode } = {}) {
+  const t = useT();
+  return (
+    <tr className="border-b text-xs text-muted-foreground">
+      {selectAll !== undefined && <th className="pl-4 py-3 w-8 text-left">{selectAll}</th>}
+      <th className="px-4 py-3 text-left font-medium">{t("pages.colTitle")}</th>
+      <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">{t("pages.colSlug")}</th>
+      <th className="px-4 py-3 text-left font-medium hidden md:table-cell">{t("pages.colStatus")}</th>
+      <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">{t("pages.colUpdated")}</th>
+      <th className="px-4 py-3 text-right font-medium">{t("pages.colActions")}</th>
+    </tr>
+  );
+}

@@ -1,0 +1,820 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import {
+  Plus, Package, Loader2, Pencil, Trash2, Eye, EyeOff,
+  Star, ExternalLink, Upload, Check, X,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useEcommerceCurrency } from "@/lib/hooks/use-ecommerce-currency";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
+
+type TFn = ReturnType<typeof useT>;
+const PRODUCT_STATUS_KEYS: Record<string, TranslationKey> = {
+  active: "products.statusActive", draft: "products.statusDraft", archived: "products.statusArchived",
+};
+
+interface Category { id: string; name: string; }
+
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number | null;
+  compare_price: number | null;
+  status: "active" | "draft" | "archived";
+  stock_quantity: number;
+  track_inventory: boolean;
+  images: string[];
+  featured: boolean;
+  category_ids: string[];
+  created_at: string;
+  vendor_id?: string | null;
+  approval_status?: string | null;
+}
+
+export interface SellerOption { id: string; name: string; status: string }
+
+const STATUS_VARIANT: Record<string, string> = {
+  active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
+  draft: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+  archived: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+};
+
+const supabase = createClient();
+
+// ─── Inline editable cell ──────────────────────────────────────────────────────
+function EditableCell({
+  value,
+  onSave,
+  type = "text",
+  className,
+}: {
+  value: string;
+  onSave: (v: string) => Promise<void>;
+  type?: "text" | "number";
+  className?: string;
+}) {
+  const t = useT();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setDraft(value); }, [value]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  async function commit() {
+    if (draft === value) { setEditing(false); return; }
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false);
+    setEditing(false);
+  }
+
+  function cancel() { setDraft(value); setEditing(false); }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          ref={inputRef}
+          type={type}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") cancel(); }}
+          className="border rounded px-2 py-1 text-xs w-24 outline-none focus:ring-1 focus:ring-primary"
+        />
+        {saving
+          ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+          : <>
+            <button onClick={commit} className="p-0.5 text-green-600 hover:text-green-700"><Check className="h-3.5 w-3.5" /></button>
+            <button onClick={cancel} className="p-0.5 text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+          </>}
+      </div>
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setEditing(true)}
+      title={t("products.clickToEdit")}
+      className={cn("cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none", className)}
+    >
+      {value}
+    </span>
+  );
+}
+
+// ─── Inline status select ──────────────────────────────────────────────────────
+function StatusCell({ product, onUpdate }: { product: Product; onUpdate: (p: Partial<Product>) => void }) {
+  const t = useT();
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function set(status: Product["status"]) {
+    setSaving(true);
+    await supabase.from("products").update({ status }).eq("id", product.id);
+    onUpdate({ status });
+    setSaving(false);
+    setEditing(false);
+    toast.success(t("products.statusChanged", { status: t(PRODUCT_STATUS_KEYS[status]) }));
+  }
+
+  if (saving) return <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />;
+
+  if (editing) {
+    return (
+      <div className="flex flex-col gap-1 bg-background border rounded-lg shadow-lg p-1 z-10 absolute">
+        {(["active", "draft", "archived"] as const).map((s) => (
+          <button key={s} onClick={() => set(s)}
+            className={cn("text-xs px-3 py-1.5 rounded-md text-left hover:bg-muted", product.status === s && "font-bold")}>
+            {t(PRODUCT_STATUS_KEYS[s])}
+          </button>
+        ))}
+        <button onClick={() => setEditing(false)} className="text-xs px-3 py-1.5 text-muted-foreground">{t("products.cancel")}</button>
+      </div>
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setEditing(true)}
+      title={t("products.clickToChangeStatus")}
+      className={cn("text-xs font-medium px-2 py-1 rounded-full cursor-pointer select-none", STATUS_VARIANT[product.status])}
+    >
+      {t(PRODUCT_STATUS_KEYS[product.status])}
+    </span>
+  );
+}
+
+// ─── Inline category cell ──────────────────────────────────────────────────────
+function CategoryCell({
+  product,
+  categories,
+  onUpdate,
+}: {
+  product: Product;
+  categories: Category[];
+  onUpdate: (p: Partial<Product>) => void;
+}) {
+  const t = useT();
+  const [editing, setEditing] = useState(false);
+  const [selected, setSelected] = useState<string[]>(product.category_ids ?? []);
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setEditing(false);
+    }
+    if (editing) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [editing]);
+
+  function toggle(id: string) {
+    setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+
+  async function save() {
+    setSaving(true);
+    await supabase.from("products").update({ category_ids: selected }).eq("id", product.id);
+    onUpdate({ category_ids: selected });
+    setSaving(false);
+    setEditing(false);
+  }
+
+  const names = (product.category_ids ?? [])
+    .map((id) => categories.find((c) => c.id === id)?.name)
+    .filter(Boolean);
+
+  return (
+    <div className="relative" ref={ref}>
+      <span
+        onClick={() => setEditing(true)}
+        title={t("products.clickToEditCategories")}
+        className="text-xs cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none text-muted-foreground"
+      >
+        {names.length > 0 ? names.join(", ") : <span className="opacity-40">—</span>}
+      </span>
+
+      {editing && (
+        <div className="absolute left-0 top-6 z-20 bg-background border rounded-xl shadow-xl p-3 min-w-[180px] space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">{t("products.categories")}</p>
+          {categories.length === 0
+            ? <p className="text-xs text-muted-foreground">{t("products.noCategoriesYet")}</p>
+            : categories.map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer hover:text-foreground">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(c.id)}
+                  onChange={() => toggle(c.id)}
+                  className="accent-primary"
+                />
+                {c.name}
+              </label>
+            ))
+          }
+          <div className="flex gap-2 pt-2 border-t mt-2">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="flex-1 text-xs bg-primary text-primary-foreground rounded-lg py-1.5 font-medium hover:opacity-90 disabled:opacity-60"
+            >
+              {saving ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : t("products.save")}
+            </button>
+            <button onClick={() => setEditing(false)} className="text-xs text-muted-foreground px-2">{t("products.cancel")}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Inline stock cell (In Stock / tracked quantity) ───────────────────────────
+function StockCell({ product, onUpdate }: { product: Product; onUpdate: (p: Partial<Product>) => void }) {
+  const t = useT();
+  const [editing, setEditing] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
+  const [qty, setQty] = useState(String(product.stock_quantity ?? 0));
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Popover is ~200px tall. Open upward only if not enough space below AND
+  // there IS enough space above — otherwise open downward (default).
+  function openEditor() {
+    const POP = 220;
+    const rect = ref.current?.getBoundingClientRect();
+    if (rect) {
+      const below = window.innerHeight - rect.bottom;
+      const above = rect.top;
+      setDropUp(below < POP && above > below);
+    }
+    setEditing(true);
+  }
+
+  useEffect(() => { setQty(String(product.stock_quantity ?? 0)); }, [product.stock_quantity]);
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setEditing(false);
+    }
+    if (editing) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [editing]);
+
+  async function setInStock() {
+    setSaving(true);
+    await supabase.from("products").update({ track_inventory: false }).eq("id", product.id);
+    onUpdate({ track_inventory: false });
+    setSaving(false);
+    setEditing(false);
+    toast.success(t("products.markedInStockUntracked"));
+  }
+
+  async function setTracked() {
+    const n = parseInt(qty, 10);
+    if (isNaN(n) || n < 0) { toast.error(t("products.enterValidQuantity")); return; }
+    setSaving(true);
+    await supabase.from("products").update({ track_inventory: true, stock_quantity: n }).eq("id", product.id);
+    onUpdate({ track_inventory: true, stock_quantity: n });
+    setSaving(false);
+    setEditing(false);
+    toast.success(t("products.stockUpdated"));
+  }
+
+  // Display
+  const tracked = product.track_inventory;
+  const display = !tracked ? (
+    <span className="text-sm font-medium text-green-600">{t("products.inStock")}</span>
+  ) : product.stock_quantity === 0 ? (
+    <span className="text-sm font-medium text-red-600">0 <span className="text-xs">{t("products.outOfStock")}</span></span>
+  ) : product.stock_quantity <= 5 ? (
+    <span className="text-sm font-medium text-amber-600">{product.stock_quantity} <span className="text-xs">{t("products.low")}</span></span>
+  ) : (
+    <span className="text-sm font-medium">{product.stock_quantity}</span>
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <span
+        onClick={openEditor}
+        title={t("products.clickToEditStock")}
+        className="cursor-pointer rounded px-1 -mx-1 hover:bg-muted/60 transition-colors select-none inline-block"
+      >
+        {display}
+      </span>
+
+      {editing && (
+        <div className={cn(
+          "absolute left-0 z-30 bg-background border rounded-xl shadow-xl p-3 min-w-[220px] space-y-3",
+          dropUp ? "bottom-full mb-1" : "top-full mt-1",
+        )}>
+          {/* In Stock (untracked) */}
+          <button
+            onClick={setInStock}
+            disabled={saving}
+            className={cn(
+              "w-full text-left text-xs px-3 py-2 rounded-lg border transition-colors",
+              !tracked ? "border-green-500 bg-green-50 dark:bg-green-900/20 font-semibold" : "border-border hover:bg-muted"
+            )}
+          >
+            <span className="text-green-600">{t("products.inStockUntracked")}</span>
+            <span className="block text-[10px] text-muted-foreground mt-0.5">{t("products.inStockUntrackedHint")}</span>
+          </button>
+
+          {/* Track quantity */}
+          <div className={cn(
+            "rounded-lg border p-2.5 space-y-2",
+            tracked ? "border-primary bg-primary/5" : "border-border"
+          )}>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{t("products.trackQuantity")}</p>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min="0"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") setTracked(); }}
+                className="border rounded px-2 py-1 text-xs w-full outline-none focus:ring-1 focus:ring-primary"
+                placeholder="0"
+              />
+              <button
+                onClick={setTracked}
+                disabled={saving}
+                className="text-xs bg-primary text-primary-foreground rounded-lg px-3 py-1.5 font-medium hover:opacity-90 disabled:opacity-60 shrink-0"
+              >
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : t("products.set")}
+              </button>
+            </div>
+            <p className="text-[10px] text-muted-foreground">{t("products.zeroMeansOutOfStock")}</p>
+          </div>
+
+          <button onClick={() => setEditing(false)} className="text-xs text-muted-foreground w-full text-center">{t("products.cancel")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Bulk action bar (shown when rows selected) ─────────────────────────────────
+function BulkBar({
+  count, categories, busy,
+  onSetStatus, onSetStock, onSetCategories, onDelete, onClear,
+}: {
+  count: number;
+  categories: Category[];
+  busy: boolean;
+  onSetStatus: (s: Product["status"]) => void;
+  onSetStock: (qty: number, tracked: boolean) => void;
+  onSetCategories: (ids: string[]) => void;
+  onDelete: () => void;
+  onClear: () => void;
+}) {
+  const t = useT();
+  const [menu, setMenu] = useState<null | "status" | "stock" | "category">(null);
+  const [stockQty, setStockQty] = useState("0");
+  const [catSel, setCatSel] = useState<string[]>([]);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setMenu(null); }
+    if (menu) document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [menu]);
+
+  return (
+    <div ref={ref} className="sticky top-0 z-20 flex items-center gap-2 flex-wrap bg-primary text-primary-foreground rounded-xl px-4 py-2.5 mb-3 shadow-md">
+      <span className="text-sm font-semibold">{t("products.selectedCount", { count })}</span>
+      {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+      <div className="h-4 w-px bg-primary-foreground/30 mx-1" />
+
+      {/* Status */}
+      <div className="relative">
+        <button onClick={() => setMenu(menu === "status" ? null : "status")} className="text-xs bg-primary-foreground/15 hover:bg-primary-foreground/25 rounded-lg px-3 py-1.5 font-medium">{t("products.setStatus")}</button>
+        {menu === "status" && (
+          <div className="absolute left-0 top-9 z-30 bg-background text-foreground border rounded-lg shadow-xl p-1 min-w-[140px]">
+            {(["active", "draft", "archived"] as const).map((s) => (
+              <button key={s} onClick={() => { onSetStatus(s); setMenu(null); }} className="w-full text-left text-xs px-3 py-1.5 rounded hover:bg-muted">{t(PRODUCT_STATUS_KEYS[s])}</button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Stock */}
+      <div className="relative">
+        <button onClick={() => setMenu(menu === "stock" ? null : "stock")} className="text-xs bg-primary-foreground/15 hover:bg-primary-foreground/25 rounded-lg px-3 py-1.5 font-medium">{t("products.setStock")}</button>
+        {menu === "stock" && (
+          <div className="absolute left-0 top-9 z-30 bg-background text-foreground border rounded-lg shadow-xl p-3 min-w-[220px] space-y-2">
+            <button onClick={() => { onSetStock(0, false); setMenu(null); }} className="w-full text-left text-xs px-3 py-2 rounded-lg border hover:bg-muted">
+              <span className="text-green-600 font-medium">{t("products.inStockUntracked")}</span> <span className="text-muted-foreground">{t("products.inStockUntrackedLabel")}</span>
+            </button>
+            <div className="flex items-center gap-1.5">
+              <input type="number" min="0" value={stockQty} onChange={(e) => setStockQty(e.target.value)} className="border rounded px-2 py-1 text-xs w-full outline-none focus:ring-1 focus:ring-primary" placeholder="Qty" />
+              <button onClick={() => { const n = parseInt(stockQty, 10); if (!isNaN(n)) { onSetStock(n, true); setMenu(null); } }} className="text-xs bg-primary text-primary-foreground rounded-lg px-3 py-1.5 font-medium shrink-0">{t("products.set")}</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Category */}
+      <div className="relative">
+        <button onClick={() => { setMenu(menu === "category" ? null : "category"); setCatSel([]); }} className="text-xs bg-primary-foreground/15 hover:bg-primary-foreground/25 rounded-lg px-3 py-1.5 font-medium">{t("products.setCategory")}</button>
+        {menu === "category" && (
+          <div className="absolute left-0 top-9 z-30 bg-background text-foreground border rounded-xl shadow-xl p-3 min-w-[200px] space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">{t("products.assignCategories")}</p>
+            {categories.length === 0 ? <p className="text-xs text-muted-foreground">{t("products.noCategories")}</p> : categories.map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer hover:text-foreground">
+                <input type="checkbox" checked={catSel.includes(c.id)} onChange={() => setCatSel((p) => p.includes(c.id) ? p.filter((x) => x !== c.id) : [...p, c.id])} className="accent-primary" />
+                {c.name}
+              </label>
+            ))}
+            <button onClick={() => { onSetCategories(catSel); setMenu(null); }} className="w-full text-xs bg-primary text-primary-foreground rounded-lg py-1.5 font-medium mt-2">{t("products.applyToCount", { count })}</button>
+          </div>
+        )}
+      </div>
+
+      <button onClick={onDelete} className="text-xs bg-red-500/90 hover:bg-red-500 rounded-lg px-3 py-1.5 font-medium">{t("products.delete")}</button>
+      <button onClick={onClear} className="text-xs ml-auto opacity-80 hover:opacity-100 underline underline-offset-2">{t("products.clear")}</button>
+    </div>
+  );
+}
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
+/** marketplace: sellers add products (Seller Centre), so no Add buttons here
+ *  and each row shows its seller. Set by the server page.tsx. */
+export default function ProductsPage({ marketplace = false, sellers = [], note = null, initialSeller = "" }: {
+  marketplace?: boolean; sellers?: SellerOption[]; note?: string | null; initialSeller?: string;
+}) {
+  const t = useT();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"" | "active" | "draft" | "archived">("");
+  const [search, setSearch] = useState("");
+  const [stockFilter, setStockFilter] = useState<"" | "low" | "out">("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [sellerFilter, setSellerFilter] = useState(initialSeller);
+  const sellerName = new Map(sellers.map((s) => [s.id, s.name]));
+  const { format } = useEcommerceCurrency();
+
+  useEffect(() => {
+    getClientTenantId().then((tenantId) => {
+      // Load products
+      let pq = supabase
+        .from("products")
+        .select("id,name,slug,price,compare_price,status,stock_quantity,track_inventory,images,featured,category_ids,created_at,vendor_id,approval_status")
+        .order("created_at", { ascending: false });
+      if (tenantId) pq = pq.eq("tenant_id", tenantId);
+      pq.then(({ data }) => { setProducts((data as Product[]) ?? []); setLoading(false); });
+
+      // Load product categories
+      let cq = supabase.from("categories").select("id,name").eq("type", "product").order("name");
+      if (tenantId) cq = cq.eq("tenant_id", tenantId);
+      cq.then(({ data }) => setCategories((data as Category[]) ?? []));
+    });
+  }, []);
+
+  function updateProduct(id: string, patch: Partial<Product>) {
+    setProducts((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
+  }
+
+  async function inlineUpdate(id: string, patch: Record<string, unknown>) {
+    await supabase.from("products").update(patch).eq("id", id);
+    updateProduct(id, patch as Partial<Product>);
+  }
+
+  async function toggleFeatured(p: Product) {
+    await supabase.from("products").update({ featured: !p.featured }).eq("id", p.id);
+    updateProduct(p.id, { featured: !p.featured });
+  }
+
+  async function toggleStatus(p: Product) {
+    const next = p.status === "active" ? "draft" : "active";
+    await supabase.from("products").update({ status: next }).eq("id", p.id);
+    updateProduct(p.id, { status: next });
+    toast.success(t("products.isNowStatus", { name: p.name, status: t(PRODUCT_STATUS_KEYS[next]) }));
+  }
+
+  async function remove(p: Product) {
+    if (!confirm(t("products.deleteConfirm", { name: p.name }))) return;
+    setDeleting(p.id);
+    await supabase.from("products").delete().eq("id", p.id);
+    setProducts((prev) => prev.filter((x) => x.id !== p.id));
+    setDeleting(null);
+    toast.success(t("products.productDeleted"));
+  }
+
+  // ── Bulk selection + edit ──────────────────────────────────────────────────
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll(ids: string[]) {
+    setSelectedIds((prev) => {
+      const allSelected = ids.every((id) => prev.has(id));
+      return allSelected ? new Set() : new Set(ids);
+    });
+  }
+
+  async function bulkUpdate(patch: Record<string, unknown>) {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    setBulkBusy(true);
+    await supabase.from("products").update(patch).in("id", ids);
+    setProducts((prev) => prev.map((p) => ids.includes(p.id) ? { ...p, ...(patch as Partial<Product>) } : p));
+    setBulkBusy(false);
+    toast.success(t("products.updatedCount", { count: ids.length, plural: ids.length > 1 ? "s" : "" }));
+  }
+
+  async function bulkDelete() {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    if (!confirm(t("products.bulkDeleteConfirm", { count: ids.length, plural: ids.length > 1 ? "s" : "" }))) return;
+    setBulkBusy(true);
+    await supabase.from("products").delete().in("id", ids);
+    setProducts((prev) => prev.filter((p) => !ids.includes(p.id)));
+    setSelectedIds(new Set());
+    setBulkBusy(false);
+    toast.success(t("products.productsDeleted"));
+  }
+
+  const term = search.trim().toLowerCase();
+  const filtered = products.filter((p) =>
+    (!filter || p.status === filter) &&
+    (!sellerFilter || (sellerFilter === "store" ? !p.vendor_id : p.vendor_id === sellerFilter)) &&
+    (stockFilter === "" || (p.track_inventory && (stockFilter === "out" ? p.stock_quantity <= 0 : p.stock_quantity > 0 && p.stock_quantity <= 5))) &&
+    (!term || p.name.toLowerCase().includes(term) || p.slug.toLowerCase().includes(term)));
+  const lowCount = products.filter((p) => p.track_inventory && p.stock_quantity > 0 && p.stock_quantity <= 5).length;
+  const outCount = products.filter((p) => p.track_inventory && p.stock_quantity <= 0).length;
+  const counts = {
+    all: products.length,
+    active: products.filter((p) => p.status === "active").length,
+    draft: products.filter((p) => p.status === "draft").length,
+    archived: products.filter((p) => p.status === "archived").length,
+  };
+
+  return (
+    <div className="p-6 space-y-5 max-w-6xl">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Package className="w-6 h-6" /> {t("products.title")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("products.totalClickToEdit", { count: products.length })}</p>
+        </div>
+        {!marketplace && <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/ecommerce/products/bulk-upload">
+              <Upload className="h-4 w-4 mr-2" /> {t("products.addMultiple")}
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/ecommerce/products/new"><Plus className="h-4 w-4 mr-2" /> {t("products.addProduct")}</Link>
+          </Button>
+        </div>}
+        {marketplace && (
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/ecommerce/sellers/review">Listing review</Link>
+          </Button>
+        )}
+      </div>
+
+      {(note || marketplace) && (
+        <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          {note ?? "Sellers add and manage their products from the Seller Centre. You can review, edit and moderate them here."}
+        </p>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products by name…" />
+        {marketplace && (
+          <select value={sellerFilter} onChange={(e) => setSellerFilter(e.target.value)} aria-label="Filter by seller"
+            className="h-9 rounded-md border bg-background px-3 text-sm sm:w-60">
+            <option value="">All sellers</option>
+            <option value="store">Store (no seller)</option>
+            {sellers.map((s) => <option key={s.id} value={s.id}>{s.name}{s.status !== "approved" ? ` (${s.status})` : ""}</option>)}
+          </select>
+        )}
+      </div>
+
+      {/* Filter tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {([["", t("products.filterAll")], ["active", t("products.filterActive")], ["draft", t("products.filterDraft")], ["archived", t("products.filterArchived")]] as const).map(([val, label]) => (
+          <button key={val} onClick={() => setFilter(val)}
+            className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border",
+              filter === val
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground")}>
+            {label} <span className="ml-1 opacity-60">{val === "" ? counts.all : counts[val as keyof typeof counts]}</span>
+          </button>
+        ))}
+        {(["low", "out"] as const).map((v) => (
+          <button key={v} onClick={() => setStockFilter(stockFilter === v ? "" : v)}
+            className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border",
+              stockFilter === v ? "bg-amber-600 text-white border-amber-600" : "border-border text-muted-foreground hover:border-amber-500/50 hover:text-foreground")}>
+            {v === "low" ? "Low stock" : "Out of stock"} <span className="ml-1 opacity-60">{v === "low" ? lowCount : outCount}</span>
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed rounded-xl">
+          <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-40" />
+          <h3 className="font-semibold mb-2">{filter ? t("products.noFilteredProducts", { filter: t(PRODUCT_STATUS_KEYS[filter]) }) : t("products.noProductsYet")}</h3>
+          {!filter && !marketplace && (
+            <Button asChild>
+              <Link href="/dashboard/ecommerce/products/new"><Plus className="h-4 w-4 mr-2" /> {t("products.addFirstProduct")}</Link>
+            </Button>
+          )}
+        </div>
+      ) : (
+        <>
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <BulkBar
+            count={selectedIds.size}
+            categories={categories}
+            busy={bulkBusy}
+            onSetStatus={(s) => bulkUpdate({ status: s })}
+            onSetStock={(qty, tracked) => bulkUpdate(tracked ? { track_inventory: true, stock_quantity: qty } : { track_inventory: false })}
+            onSetCategories={(ids) => bulkUpdate({ category_ids: ids })}
+            onDelete={bulkDelete}
+            onClear={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-xl border overflow-hidden overflow-x-auto bg-card">
+          <table className="w-full text-sm min-w-[740px]">
+            <thead>
+              <tr className="border-b bg-muted/40">
+                <th className="px-3 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    aria-label={t("products.selectAll")}
+                    className="accent-primary"
+                    checked={filtered.length > 0 && filtered.every((p) => selectedIds.has(p.id))}
+                    onChange={() => toggleSelectAll(filtered.map((p) => p.id))}
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">{t("products.colProduct")}</th>
+                {marketplace && <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden sm:table-cell">Seller</th>}
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden sm:table-cell">{t("products.colPrice")}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">{t("products.colStock")}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">{t("products.colCategory")}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">{t("products.colStatus")}</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">{t("products.colActions")}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {filtered.map((product) => {
+                const firstImage = Array.isArray(product.images) ? product.images[0] : undefined;
+                const isSelected = selectedIds.has(product.id);
+                return (
+                  <tr key={product.id} className={cn("hover:bg-muted/20 transition-colors", isSelected && "bg-primary/5")}>
+                    {/* Select */}
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        aria-label={t("products.selectProduct", { name: product.name })}
+                        className="accent-primary"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(product.id)}
+                      />
+                    </td>
+                    {/* Product name */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-lg bg-muted overflow-hidden shrink-0 border">
+                          {firstImage
+                            ? <img src={firstImage} alt={product.name} className="object-cover w-full h-full" /> // eslint-disable-line @next/next/no-img-element
+                            : <div className="w-full h-full flex items-center justify-center"><Package className="h-4 w-4 text-muted-foreground" /></div>
+                          }
+                        </div>
+                        <div>
+                          <Link href={`/dashboard/ecommerce/products/${product.id}`} className="font-medium hover:text-primary transition-colors">
+                            {product.name}
+                          </Link>
+                          {product.featured && (
+                            <span className="ml-1.5 text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded font-medium">{t("products.featured")}</span>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-0.5 md:hidden">{product.price == null ? "Ask for price" : format(product.price)}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {marketplace && (
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        {product.vendor_id ? (
+                          <Link href={`/dashboard/ecommerce/sellers/${product.vendor_id}`} className="text-sm hover:text-primary">
+                            {sellerName.get(product.vendor_id) ?? "Seller"}
+                          </Link>
+                        ) : <span className="text-xs text-muted-foreground">Store</span>}
+                        {product.approval_status && product.approval_status !== "approved" && (
+                          <span className={cn("block w-fit mt-0.5 text-[10px] px-1.5 py-0.5 rounded font-medium",
+                            product.approval_status === "rejected" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400")}>
+                            {product.approval_status === "pending" ? "Awaiting review" : product.approval_status}
+                          </span>
+                        )}
+                      </td>
+                    )}
+
+                    {/* Price — click to edit */}
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <EditableCell
+                        value={product.price == null ? "" : String(product.price)}
+                        type="number"
+                        onSave={async (v) => {
+                          // Empty = no price (shop shows Message / Request for price).
+                          const price = v.trim() === "" ? null : parseFloat(v);
+                          if (price !== null && isNaN(price)) return;
+                          await inlineUpdate(product.id, { price });
+                          toast.success(t("products.priceUpdated"));
+                        }}
+                        className="font-medium"
+                      />
+                      <span className="text-xs text-muted-foreground ml-1">
+                        {product.price == null ? "Ask for price" : format(product.price)}
+                      </span>
+                      {product.compare_price && (
+                        <span className="text-xs text-muted-foreground line-through ml-1.5">{format(product.compare_price)}</span>
+                      )}
+                    </td>
+
+                    {/* Stock — click to edit */}
+                    <td className="px-4 py-3 hidden md:table-cell relative">
+                      <StockCell
+                        product={product}
+                        onUpdate={(patch) => updateProduct(product.id, patch)}
+                      />
+                    </td>
+
+                    {/* Category — click to edit */}
+                    <td className="px-4 py-3 hidden md:table-cell relative">
+                      <CategoryCell
+                        product={product}
+                        categories={categories}
+                        onUpdate={(patch) => updateProduct(product.id, patch)}
+                      />
+                    </td>
+
+                    {/* Status — click to edit */}
+                    <td className="px-4 py-3 hidden md:table-cell relative">
+                      <StatusCell
+                        product={product}
+                        onUpdate={(patch) => updateProduct(product.id, patch)}
+                      />
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => toggleFeatured(product)} title={product.featured ? t("products.removeFeatured") : t("products.markAsFeatured")}
+                          className={cn("p-1.5 rounded-lg transition-colors", product.featured
+                            ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                            : "text-muted-foreground hover:text-amber-500 hover:bg-muted")}>
+                          <Star className="h-3.5 w-3.5" fill={product.featured ? "currentColor" : "none"} />
+                        </button>
+                        <button onClick={() => toggleStatus(product)} title={product.status === "active" ? t("products.setToDraft") : t("products.setToActive")}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                          {product.status === "active" ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        </button>
+                        {product.status === "active" && (
+                          <Link href={`/products/${product.slug}`} target="_blank"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            title={t("products.viewProduct")}>
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
+                        <Link href={`/dashboard/ecommerce/products/${product.id}`}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Link>
+                        <button onClick={() => remove(product)} disabled={deleting === product.id}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors">
+                          {deleting === product.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        </>
+      )}
+    </div>
+  );
+}

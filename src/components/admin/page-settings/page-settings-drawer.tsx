@@ -1,0 +1,280 @@
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Settings, X, Loader2, Globe, Code, Layout, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { createClient } from "@/lib/supabase/client";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import { toast } from "sonner";
+import type { Page } from "@/types/cms";
+import { cn } from "@/lib/utils";
+import { RedirectsManager } from "@/components/admin/redirects-manager";
+import { PageTranslations } from "@/components/admin/page-translations";
+import { ParentPageSelect, useParentOptions } from "@/components/admin/parent-page-select";
+import { setPageParent } from "@/lib/pages/page-parent";
+
+/** Character count with an ideal range, like Yoast/Shopify. */
+function CharCount({ n, ideal }: { n: number; ideal: [number, number] }) {
+  const tone = n === 0 ? "text-muted-foreground" : n < ideal[0] ? "text-amber-600" : n > ideal[1] ? "text-red-600" : "text-green-600";
+  const hint = n === 0 ? "" : n < ideal[0] ? " · a bit short" : n > ideal[1] ? " · too long, Google will cut it" : " · good length";
+  return <p className={cn("text-xs", tone)}>{n} characters (aim for {ideal[0]}–{ideal[1]}){hint}</p>;
+}
+
+function slugify(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9-/]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
+export function PageSettingsDrawer({ page, open, onClose }: { page: Page; open: boolean; onClose: () => void }) {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"general" | "seo" | "layout" | "code">("general");
+
+  const [title, setTitle] = useState(page.title);
+  // Site pages (not blog posts, not root-site pages) can sit under a parent page.
+  const canHaveParent = !!page.tenant_id && page.type !== "post" && page.slug !== "home";
+  const parentOptions = useParentOptions(canHaveParent && open ? page.tenant_id : null);
+  const origParentId = page.parent_id ?? null;
+  const [parentId, setParentId] = useState<string | null>(origParentId);
+  const parentSlug = parentOptions.find((p) => p.id === parentId)?.slug ?? null;
+  // With a parent, the slug box holds only this page's own part (after
+  // /parent/); the database builds the full address from the parent's slug.
+  const [slug, setSlug] = useState(origParentId ? (page.slug.split("/").pop() ?? page.slug) : page.slug);
+  const fullSlug = parentId ? `${parentSlug ?? "…"}/${slug}` : slug;
+  const [excerpt, setExcerpt] = useState(page.excerpt ?? "");
+  const [featuredImage, setFeaturedImage] = useState(page.featured_image ?? "");
+
+  const seo = (page.seo ?? {}) as Record<string, string | boolean>;
+  const settings = (page.settings ?? {}) as Record<string, unknown>;
+
+  const [seoTitle, setSeoTitle] = useState((seo.title as string) ?? "");
+  const [seoDesc, setSeoDesc] = useState((seo.description as string) ?? "");
+  const [seoKeywords, setSeoKeywords] = useState((seo.keywords as string) ?? "");
+  const [ogTitle, setOgTitle] = useState((seo.og_title as string) ?? "");
+  const [ogDesc, setOgDesc] = useState((seo.og_description as string) ?? "");
+  const [ogImage, setOgImage] = useState((seo.og_image as string) ?? "");
+  const [noIndex, setNoIndex] = useState(!!(seo.no_index));
+  const [canonical, setCanonical] = useState((seo.canonical as string) ?? "");
+
+  const [showHeader, setShowHeader] = useState(settings.show_header !== false);
+  const [showFooter, setShowFooter] = useState(settings.show_footer !== false);
+  const [customCss, setCustomCss] = useState((settings.custom_css as string) ?? "");
+  const [customJs, setCustomJs] = useState((settings.custom_js as string) ?? "");
+
+  async function save() {
+    setSaving(true);
+    const supabase = createClient();
+    // Blank slug shouldn't clear it and accidentally make this the homepage —
+    // fall back to a slug derived from the title, matching how new pages get one.
+    const finalSlug = slug.trim() ? slug.replace(/^\/+|\/+$/g, "") : (slugify(title) || page.slug.split("/").pop() || page.slug);
+    if (finalSlug !== slug) setSlug(finalSlug);
+    // Parent or address changes go through set_page_parent (migration 215) so
+    // sub-pages follow and old addresses redirect. It runs first: if it is
+    // refused (clash, cycle), nothing else is saved.
+    const parentChanged = canHaveParent && parentId !== origParentId;
+    const slugChanged = origParentId || parentId ? finalSlug !== (page.slug.split("/").pop() ?? page.slug) : finalSlug !== page.slug;
+    if (canHaveParent && (parentChanged || slugChanged)) {
+      const res = await setPageParent(supabase, [page.id], parentId, finalSlug);
+      if (res.error) { setSaving(false); toast.error(res.error); return; }
+    }
+    const { error } = await supabase.from("pages").update({
+      title,
+      ...(canHaveParent ? {} : { slug: finalSlug }),
+      excerpt,
+      featured_image: featuredImage || null,
+      seo: { title: seoTitle, description: seoDesc, keywords: seoKeywords, og_title: ogTitle, og_description: ogDesc, og_image: ogImage, no_index: noIndex, canonical },
+      settings: { show_header: showHeader, show_footer: showFooter, custom_css: customCss, custom_js: customJs },
+    }).eq("id", page.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Page settings saved");
+    router.refresh();
+    onClose();
+  }
+
+  const TABS = [
+    { id: "general", label: "General", icon: Globe },
+    { id: "seo", label: "SEO", icon: Search },
+    { id: "layout", label: "Layout", icon: Layout },
+    { id: "code", label: "Code", icon: Code },
+  ] as const;
+
+  return (
+    <>
+      {open && <div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />}
+      <div className={cn(
+        "fixed top-0 right-0 h-full w-full sm:w-[380px] z-50 bg-background border-l shadow-2xl flex flex-col transition-transform duration-200",
+        open ? "translate-x-0" : "translate-x-full"
+      )}>
+        <div className="flex items-center justify-between px-4 h-12 border-b shrink-0">
+          <span className="font-semibold text-sm flex items-center gap-2"><Settings className="w-4 h-4" /> Page Settings</span>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex border-b shrink-0">
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2",
+                tab === t.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+              )}>
+              <t.icon className="w-3.5 h-3.5" />{t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {tab === "general" && (
+            <>
+              <div className="space-y-1.5">
+                <Label>Page Title</Label>
+                <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Page title" />
+              </div>
+              {canHaveParent && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="page-parent">Parent page</Label>
+                  <ParentPageSelect id="page-parent" options={parentOptions} value={parentId} onChange={setParentId} exclude={[page.id]} />
+                  <p className="text-xs text-muted-foreground">Sub-pages live at /parent/page and move with their parent.</p>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label>URL Slug</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground shrink-0 max-w-[55%] truncate">domain.com/{parentId ? `${parentSlug ?? "…"}/` : ""}</span>
+                  <Input value={slug} onChange={e => setSlug(slugify(e.target.value))} placeholder="page-slug" className="font-mono text-sm" />
+                </div>
+                {!parentId && <p className="text-xs text-muted-foreground">Use <span className="font-mono">home</span> for the homepage.</p>}
+                {fullSlug !== page.slug && page.slug && (
+                  <p className="text-xs text-green-700 dark:text-green-400">Links to the old address (/{page.slug}) will redirect here automatically{canHaveParent ? ", and any sub-pages move with it" : ""}.</p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Excerpt</Label>
+                <Textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} placeholder="Short description..." rows={3} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Featured Image</Label>
+                <MediaPickerInput value={featuredImage} onChange={setFeaturedImage} placeholder="https://…" />
+                <p className="text-xs text-muted-foreground">Used as a fallback image (e.g. Item Box, Blog cards) when no block-level image is set.</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Also reachable at (short links)</Label>
+                <p className="text-xs text-muted-foreground">Extra addresses that open this page, e.g. /offer for ads or WhatsApp. All redirects: Settings &gt; Redirects.</p>
+                <RedirectsManager pageId={page.id} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Translations</Label>
+                <PageTranslations pageId={page.id} />
+              </div>
+            </>
+          )}
+
+          {tab === "seo" && (
+            <>
+              <div className="space-y-1.5">
+                <Label>SEO Title</Label>
+                <Input value={seoTitle} onChange={e => setSeoTitle(e.target.value)} placeholder={title || "Page title"} />
+                <CharCount n={(seoTitle || title).length} ideal={[30, 60]} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Meta Description</Label>
+                <Textarea value={seoDesc} onChange={e => setSeoDesc(e.target.value)} placeholder="Describe this page..." rows={3} />
+                <CharCount n={seoDesc.length} ideal={[70, 160]} />
+              </div>
+              {/* Google result preview — what searchers actually see */}
+              <div className="rounded-lg border bg-background p-3 space-y-0.5">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Google preview</p>
+                <p className="text-xs text-[#202124] dark:text-slate-300 truncate">{typeof window !== "undefined" ? window.location.host : ""}{fullSlug === "home" ? "" : ` › ${fullSlug}`}</p>
+                <p className="text-[#1a0dab] dark:text-blue-400 text-base leading-snug truncate">{(seoTitle || title || "Page title").slice(0, 60)}{(seoTitle || title).length > 60 ? "…" : ""}</p>
+                <p className="text-xs text-[#4d5156] dark:text-slate-400 line-clamp-2">{seoDesc ? seoDesc.slice(0, 160) + (seoDesc.length > 160 ? "…" : "") : "Add a meta description, or Google will pick some text from the page."}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Keywords</Label>
+                <Input value={seoKeywords} onChange={e => setSeoKeywords(e.target.value)} placeholder="keyword1, keyword2" />
+              </div>
+              <div className="border-t pt-4 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Open Graph</p>
+                <div className="space-y-1.5">
+                  <Label>OG Title</Label>
+                  <Input value={ogTitle} onChange={e => setOgTitle(e.target.value)} placeholder={seoTitle || title} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>OG Description</Label>
+                  <Textarea value={ogDesc} onChange={e => setOgDesc(e.target.value)} placeholder={seoDesc} rows={2} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Share image</Label>
+                  <MediaPickerInput compact value={ogImage} onChange={(url) => setOgImage(url)} />
+                  <p className="text-xs text-muted-foreground">Shown when the page is shared on WhatsApp, Facebook or LinkedIn. Best size 1200×630.</p>
+                </div>
+              </div>
+              <div className="border-t pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>No Index</Label>
+                    <p className="text-xs text-muted-foreground">Hide from search engines</p>
+                  </div>
+                  <Switch checked={noIndex} onCheckedChange={setNoIndex} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Canonical URL</Label>
+                  <Input value={canonical} onChange={e => setCanonical(e.target.value)} placeholder="https://..." />
+                </div>
+              </div>
+            </>
+          )}
+
+          {tab === "layout" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
+                <div>
+                  <p className="text-sm font-medium">Show Header</p>
+                  <p className="text-xs text-muted-foreground">Display site navigation</p>
+                </div>
+                <Switch checked={showHeader} onCheckedChange={setShowHeader} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
+                <div>
+                  <p className="text-sm font-medium">Show Footer</p>
+                  <p className="text-xs text-muted-foreground">Display site footer</p>
+                </div>
+                <Switch checked={showFooter} onCheckedChange={setShowFooter} />
+              </div>
+            </div>
+          )}
+
+          {tab === "code" && (
+            <>
+              <div className="space-y-1.5">
+                <Label>Custom CSS</Label>
+                <p className="text-xs text-muted-foreground">Injected into this page only</p>
+                <Textarea value={customCss} onChange={e => setCustomCss(e.target.value)}
+                  placeholder=".my-class { color: red; }" rows={8} className="font-mono text-xs" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Custom JavaScript</Label>
+                <p className="text-xs text-muted-foreground">Runs at end of page</p>
+                <Textarea value={customJs} onChange={e => setCustomJs(e.target.value)}
+                  placeholder="console.log('hello');" rows={8} className="font-mono text-xs" />
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="px-4 py-3 border-t shrink-0 flex gap-2">
+          <Button onClick={save} disabled={saving} className="flex-1">
+            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Save Settings
+          </Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+        </div>
+      </div>
+    </>
+  );
+}

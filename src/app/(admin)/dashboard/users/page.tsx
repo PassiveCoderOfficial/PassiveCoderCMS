@@ -1,0 +1,362 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { UserPlus, Trash2, Shield, Edit2, Check, X, Loader2, KeyRound, Copy, Mail } from "lucide-react";
+import { TransferSiteDialog } from "@/components/admin/transfer-site-dialog";
+import { generatePassword } from "@/lib/password";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
+
+type Role = "admin" | "editor" | "viewer";
+interface Member {
+  user_id: string;
+  role: Role;
+  joined_at: string;
+  profiles: { email: string; full_name: string | null; avatar_url: string | null } | null;
+}
+
+const ROLE_COLORS: Record<Role, string> = {
+  admin: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  editor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  viewer: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+};
+
+const ROLE_GUIDE: { role: Role; labelKey: TranslationKey; descKey: TranslationKey }[] = [
+  { role: "admin", labelKey: "usersPage.roleAdmin", descKey: "usersPage.roleAdminDesc" },
+  { role: "editor", labelKey: "usersPage.roleEditor", descKey: "usersPage.roleEditorDesc" },
+  { role: "viewer", labelKey: "usersPage.roleAuthor", descKey: "usersPage.roleAuthorDesc" },
+];
+
+export default function UsersPage() {
+  const t = useT();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<Role>("editor");
+  const [inviting, setInviting] = useState(false);
+  // "password" creates an account that is active immediately instead of
+  // emailing an invite; the details are shown once so they can be handed over.
+  const [mode, setMode] = useState<"invite" | "password">("invite");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [creds, setCreds] = useState<{ email: string; password: string } | null>(null);
+  const [pwFor, setPwFor] = useState<string | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editRole, setEditRole] = useState<Role>("editor");
+  const [canManage, setCanManage] = useState(false);
+  const [canTransfer, setCanTransfer] = useState(false);
+  const [me, setMe] = useState<string | null>(null);
+  const [siteUrl, setSiteUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      // Server-resolved (subdomain-aware) rather than a tenant_members lookup:
+      // a super admin has no membership row, so .single() returned HTTP 406 and
+      // the Users page rendered empty — no members listed, nobody invitable —
+      // on the very screen used to manage site access.
+      const res = await fetch("/api/tenant/current");
+      const { tenantId: currentTenantId } = await res.json().catch(() => ({ tenantId: null }));
+      if (!currentTenantId) return;
+      setTenantId(currentTenantId);
+      loadMembers();
+    })();
+  }, []);
+
+  async function loadMembers() {
+    setLoading(true);
+    const res = await fetch("/api/users/members");
+    const data = await res.json().catch(() => ({})) as { members?: Member[]; canManage?: boolean; canTransfer?: boolean; me?: string; siteUrl?: string | null };
+    setMembers(data.members ?? []);
+    setCanManage(!!data.canManage);
+    setCanTransfer(!!data.canTransfer);
+    setMe(data.me ?? null);
+    setSiteUrl(data.siteUrl ?? null);
+    setLoading(false);
+  }
+
+
+  async function savePassword(m: Member) {
+    if (pwValue.length < 8) { toast.error(t("usersPage.passwordTooShort")); return; }
+    setPwSaving(true);
+    try {
+      const res = await fetch("/api/users/password", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: m.user_id, password: pwValue }),
+      });
+      const data = await res.json().catch(() => ({})) as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? t("usersPage.failed"));
+      toast.success(t("usersPage.passwordChanged"));
+      setCreds({ email: m.profiles?.email ?? "", password: pwValue });
+      setPwFor(null); setPwValue("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("usersPage.failed"));
+    } finally {
+      setPwSaving(false);
+    }
+  }
+
+  const pwButton = (m: Member) => canManage && m.user_id !== me && (
+    <button onClick={() => { setPwFor(pwFor === m.user_id ? null : m.user_id); setPwValue(""); }}
+      className="text-muted-foreground hover:text-foreground" aria-label={t("usersPage.setPassword")} title={t("usersPage.setPassword")}>
+      <KeyRound className="w-3.5 h-3.5" />
+    </button>
+  );
+
+  async function invite() {
+    if (!inviteEmail.trim() || !tenantId) return;
+    if (mode === "password" && password.length < 8) { toast.error(t("usersPage.passwordTooShort")); return; }
+    setInviting(true);
+    try {
+      const res = await fetch("/api/users/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteEmail.trim(), role: inviteRole,
+          ...(mode === "password" && { password, fullName: fullName.trim() }),
+        }),
+      });
+      const data = await res.json() as { error?: string; existing?: boolean; created?: boolean };
+      if (!res.ok) throw new Error(data.error ?? t("usersPage.failed"));
+      const email = inviteEmail.trim();
+      if (data.created) {
+        toast.success(t("usersPage.userCreated", { email }));
+        setCreds({ email, password });
+      } else if (mode === "password" && data.existing) {
+        toast.success(t("usersPage.addedExisting", { email }));
+      } else {
+        toast.success(t("usersPage.invitedEmail", { email }));
+      }
+      setInviteEmail(""); setPassword(""); setFullName("");
+      loadMembers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("usersPage.inviteFailed"));
+    } finally {
+      setInviting(false);
+    }
+  }
+
+  async function updateRole(userId: string, role: Role) {
+    const res = await fetch("/api/users/members", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, role }) });
+    const data = await res.json().catch(() => ({})) as { error?: string };
+    if (!res.ok) { toast.error(data.error ?? t("usersPage.failed")); return; }
+    toast.success(t("usersPage.roleUpdated"));
+    setEditingId(null);
+    loadMembers();
+  }
+
+  async function removeMember(userId: string) {
+    if (!confirm(t(userId === me ? "usersPage.leaveConfirm" : "usersPage.removeConfirm"))) return;
+    const res = await fetch(`/api/users/members?userId=${encodeURIComponent(userId)}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({})) as { error?: string };
+    if (!res.ok) { toast.error(data.error ?? t("usersPage.failed")); return; }
+    if (userId === me) { window.location.href = "/dashboard"; return; }
+    toast.success(t("usersPage.memberRemoved"));
+    loadMembers();
+  }
+
+  return (
+    <div className="p-6 space-y-6 max-w-4xl">
+      <div>
+        <h1 className="text-2xl font-bold">{t("usersPage.title")}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t("usersPage.subtitle")}</p>
+      </div>
+
+      {/* Ownership handover. Separate from the invite box below because it does
+          something categorically different — invite grants access, this changes
+          who the site belongs to. */}
+      {tenantId && canTransfer && (
+        <TransferSiteDialog tenantId={tenantId} onDone={() => loadMembers()} />
+      )}
+
+      {/* Invite */}
+      {canManage && <div className="rounded-xl border bg-card p-5 space-y-4">
+        <h2 className="font-semibold flex items-center gap-2"><UserPlus className="w-4 h-4" /> {t("usersPage.inviteTeamMember")}</h2>
+        <div className="inline-flex rounded-lg border p-1 bg-muted/40 text-sm">
+          {([["invite", Mail, "usersPage.modeInvite"], ["password", KeyRound, "usersPage.modePassword"]] as const).map(([m, Icon, key]) => (
+            <button key={m} type="button" onClick={() => setMode(m)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${mode === m ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+              <Icon className="w-3.5 h-3.5" /> {t(key)}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-3 flex-wrap">
+          <div className="flex-1 min-w-48">
+            <Label className="text-xs mb-1 block">{t("usersPage.emailAddress")}</Label>
+            <Input
+              type="email"
+              placeholder="colleague@example.com"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && invite()}
+            />
+          </div>
+          {mode === "password" && (
+            <div className="flex-1 min-w-40">
+              <Label className="text-xs mb-1 block">{t("usersPage.fullName")}</Label>
+              <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jane Tan" />
+            </div>
+          )}
+          <div>
+            <Label className="text-xs mb-1 block">{t("usersPage.role")}</Label>
+            <select
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={inviteRole}
+              onChange={e => setInviteRole(e.target.value as Role)}
+            >
+              <option value="admin">{t("usersPage.roleAdminFull")}</option>
+              <option value="editor">{t("usersPage.roleEditorContent")}</option>
+              <option value="viewer">{t("usersPage.roleAuthorPosts")}</option>
+            </select>
+          </div>
+          {mode === "password" && (
+            <div className="flex-1 min-w-56 basis-full sm:basis-auto">
+              <Label className="text-xs mb-1 block">{t("usersPage.password")}</Label>
+              <div className="flex gap-2">
+                <Input type="text" autoComplete="new-password" spellCheck={false} className="font-mono"
+                  value={password} onChange={e => setPassword(e.target.value)} placeholder="min. 8 characters" />
+                <Button type="button" variant="outline" onClick={() => setPassword(generatePassword())}>{t("usersPage.generate")}</Button>
+              </div>
+            </div>
+          )}
+          <div className="flex items-end">
+            <Button onClick={invite} disabled={inviting || !inviteEmail.trim() || (mode === "password" && password.length < 8)}>
+              {inviting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
+              {t(mode === "password" ? "usersPage.createUser" : "usersPage.sendInvite")}
+            </Button>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">{t(mode === "password" ? "usersPage.passwordHint" : "usersPage.inviteHint")}</p>
+        {creds && (
+          <div className="rounded-lg border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 p-4 space-y-2 text-sm">
+            <p className="font-medium">{t("usersPage.loginDetails")}</p>
+            <pre className="font-mono text-xs whitespace-pre-wrap bg-background/70 rounded p-2 border">{`${t("usersPage.loginUrl")}: ${siteUrl ?? window.location.origin}/login
+Email: ${creds.email}
+${t("usersPage.password")}: ${creds.password}`}</pre>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => {
+                navigator.clipboard.writeText(`${t("usersPage.loginUrl")}: ${siteUrl ?? window.location.origin}/login
+Email: ${creds.email}
+${t("usersPage.password")}: ${creds.password}`)
+                  .then(() => toast.success(t("usersPage.copied")));
+              }}><Copy className="w-3.5 h-3.5 mr-1.5" />{t("usersPage.copy")}</Button>
+              <Button size="sm" variant="ghost" onClick={() => setCreds(null)}>{t("usersPage.dismiss")}</Button>
+            </div>
+          </div>
+        )}
+      </div>}
+
+      {/* Role guide */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+        {ROLE_GUIDE.map(({ role, labelKey, descKey }) => (
+          <div key={role} className="rounded-lg border p-3 space-y-1 bg-card">
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[role]}`}>{t(labelKey)}</span>
+            <p className="text-xs text-muted-foreground mt-1">{t(descKey)}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Members list */}
+      <div className="rounded-xl border overflow-hidden bg-card">
+        <div className="bg-muted/50 px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {t("usersPage.currentMembers", { count: members.length })}
+        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+        ) : members.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground text-sm">{t("usersPage.noTeamMembersYet")}</div>
+        ) : (
+          <div className="divide-y">
+            {members.map(m => {
+              const profile = m.profiles;
+              const initials = (profile?.full_name ?? profile?.email ?? "?").slice(0, 2).toUpperCase();
+              return (
+                <div key={m.user_id}>
+                <div className="flex items-center gap-4 px-4 py-3">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                    {profile?.avatar_url
+                      ? <img src={profile.avatar_url} className="w-9 h-9 rounded-full object-cover" alt="" />
+                      : initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{profile?.full_name ?? profile?.email ?? m.user_id}</p>
+                    <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
+                  </div>
+                  {editingId === m.user_id ? (
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="h-8 rounded border border-input bg-background px-2 text-xs"
+                        value={editRole}
+                        onChange={e => setEditRole(e.target.value as Role)}
+                      >
+                        <option value="admin">{t("usersPage.roleAdmin")}</option>
+                        <option value="editor">{t("usersPage.roleEditor")}</option>
+                        <option value="viewer">{t("usersPage.roleAuthor")}</option>
+                      </select>
+                      <button onClick={() => updateRole(m.user_id, editRole)} className="text-green-600 hover:text-green-700"><Check className="w-4 h-4" /></button>
+                      <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+                    </div>
+                  ) : (m.role as string) === "owner" ? (
+                    // The site owner: shown as such (it used to fall through to
+                    // the "editor" label), and not editable or removable here —
+                    // ownership only changes through "Transfer to client".
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        {t("usersPage.roleOwner")}
+                      </span>
+                      {pwButton(m)}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[m.role as Role] ?? ""}`}>
+                        {t(ROLE_GUIDE.find(r => r.role === m.role)?.labelKey ?? "usersPage.roleEditor")}
+                      </span>
+                      {canManage && (
+                        <button onClick={() => { setEditingId(m.user_id); setEditRole(m.role as Role); }} className="text-muted-foreground hover:text-foreground" aria-label={t("usersPage.changeRole")}>
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {pwButton(m)}
+                      {(canManage || m.user_id === me) && (
+                        <button onClick={() => removeMember(m.user_id)} className="text-muted-foreground hover:text-red-500" aria-label={m.user_id === me ? t("usersPage.leaveSite") : t("usersPage.removeMember")}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground hidden sm:block">
+                    {t("usersPage.joined", { date: new Date(m.joined_at).toLocaleDateString() })}
+                  </p>
+                </div>
+                {pwFor === m.user_id && (
+                  <div className="px-4 pb-4 pl-[4.25rem] space-y-2">
+                    <Label className="text-xs block">{t("usersPage.newPasswordFor", { email: m.profiles?.email ?? "" })}</Label>
+                    <div className="flex gap-2 flex-wrap">
+                      <Input type="text" autoComplete="new-password" spellCheck={false} className="font-mono flex-1 min-w-48"
+                        value={pwValue} onChange={e => setPwValue(e.target.value)} placeholder="min. 8 characters"
+                        onKeyDown={e => e.key === "Enter" && savePassword(m)} />
+                      <Button type="button" variant="outline" onClick={() => setPwValue(generatePassword())}>{t("usersPage.generate")}</Button>
+                      <Button onClick={() => savePassword(m)} disabled={pwSaving || pwValue.length < 8}>
+                        {pwSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}{t("usersPage.savePassword")}
+                      </Button>
+                      <Button variant="ghost" onClick={() => setPwFor(null)}>{t("usersPage.cancel")}</Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("usersPage.setPasswordHint")}</p>
+                  </div>
+                )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

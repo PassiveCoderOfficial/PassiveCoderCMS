@@ -1,0 +1,225 @@
+"use client";
+
+import React from "react";
+import { SearchSettings } from "./search-settings";
+import type { HeaderCtaBlockProps } from "@/types/cms";
+import { useBuilderStore } from "@/lib/store/builder";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HeroSettings, HeroStyleSettings } from "./hero-settings";
+import { SliderSettings } from "./slider-settings";
+import { TextSettings } from "./text-settings";
+import { ServicesSettings } from "./services-settings";
+import { ItemBoxSettings } from "./item-box-settings";
+import { BlogSettings } from "./blog-settings";
+import { GallerySettings } from "./gallery-settings";
+import { CTASettings } from "./cta-settings";
+import { NavigationSettings } from "./navigation-settings";
+import { HeaderLogoSettings } from "./header-logo-settings";
+import { HeaderNavSettings } from "./header-nav-settings";
+import { HeaderCtaSettings } from "./header-cta-settings";
+import { HeaderCartSettings } from "./header-cart-settings";
+import { HeaderAccountSettings } from "./header-account-settings";
+import { FooterSettings, FooterStyleSettings } from "./footer-settings";
+import { SpacerSettings } from "./spacer-settings";
+import { EcommerceProductsSettings } from "./ecommerce-products-settings";
+import { AccountingFeedSettings } from "./accounting-feed-settings";
+import { TeamSettings } from "./team-settings";
+import { FAQSettings } from "./faq-settings";
+import { PricingSettings } from "./pricing-settings";
+import { FeaturesSettings } from "./features-settings";
+import { StatsSettings } from "./stats-settings";
+import { ContactSettings } from "./contact-settings";
+import { VideoSettings } from "./video-settings";
+import { EmbedSettings } from "./embed-settings";
+import { TimelineSettings } from "./timeline-settings";
+import { ColumnsSettings } from "./columns-settings";
+import { NewsletterSettings } from "./newsletter-settings";
+import { CountdownSettings } from "./countdown-settings";
+import { PricingCatalogSettings } from "@/modules/registry/blocks/pricing-catalog-client";
+import { StepsSettings } from "./steps-settings";
+import { IconGridSettings } from "./icon-grid-settings";
+import { BookingSettings } from "./booking-settings";
+import { MarketplaceBookingSettings } from "./marketplace-booking-settings";
+import { RealEstateSettings } from "./real-estate-settings";
+import { ResultsBlockSettings } from "./results-settings";
+import { TableSettings } from "./table-settings";
+import { ScrollStorySettings } from "./scroll-story-settings";
+import { MarqueeSettings } from "./marquee-settings";
+import { CodeSettings, MediaTabsSettings, SectionNavSettings } from "./pro-block-settings";
+import { BottomBarSettings } from "./bottom-bar-settings";
+import { OptionPreviewSettings } from "./option-preview-settings";
+import { DonorGroupCardsSettings, DonorListSettings, DonorMapSettings } from "./donor-settings";
+import { BlockLayoutSettings } from "./block-layout-settings";
+import { ContainerSettings } from "./container-settings";
+import { SettingsBreadcrumb } from "./settings-breadcrumb";
+import { VariantPicker } from "./variant-picker";
+import { TestimonialsSettings } from "./testimonials-settings";
+import { DividerSettings } from "./divider-settings";
+import { SocialLinksSettings } from "./social-links-settings";
+import { CustomHtmlSettings } from "./custom-html-settings";
+import { EcommerceCartSettings } from "./ecommerce-cart-settings";
+import { CountryGridSettings } from "./country-grid-settings";
+import { EligibilityCheckerSettings } from "./eligibility-checker-settings";
+import { StatusTrackerSettings } from "./status-tracker-settings";
+import { DonorRequestsSettings } from "./donor-requests-settings";
+import { Layers } from "lucide-react";
+import type { Block } from "@/types/cms";
+import { toFamilyBlock } from "@/lib/blocks/cards";
+import { CollectionSourceSettings } from "./collection-source-settings";
+
+export function SettingsPanel() {
+  // Subscribe to `blocks` (not just call getBlock()) so this panel re-renders
+  // when the selected block's data changes, including edits to blocks nested
+  // inside a container column.
+  const { selectedBlockId, blocks, getBlock } = useBuilderStore();
+  void blocks;
+  const block = selectedBlockId ? getBlock(selectedBlockId) : undefined;
+
+  if (!block) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <Layers className="h-10 w-10 text-muted-foreground mb-3" />
+        <p className="text-sm font-medium text-muted-foreground">Select a block to edit its settings</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <SettingsBreadcrumb blockId={block.id} />
+      <div className="px-3 py-2 border-b">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {block.type.replace(/_/g, " ")} settings
+        </p>
+      </div>
+      <Tabs defaultValue="content" className="flex-1 flex flex-col overflow-hidden">
+        <TabsList className="mx-3 mt-2 mb-0">
+          <TabsTrigger value="content" className="text-xs flex-1">Content</TabsTrigger>
+          <TabsTrigger value="layout" className="text-xs flex-1">Style</TabsTrigger>
+        </TabsList>
+        {/* Radix wraps content in display:table, so one wide control (a phone or
+            link input row) pushed the whole panel sideways and cut every field. */}
+        <ScrollArea className="flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
+          <TabsContent value="content" className="p-3 mt-0">
+            <BlockContentSettings block={block} />
+          </TabsContent>
+          <TabsContent value="layout" className="p-3 mt-0 space-y-5">
+            {/* Layout variant first — it's the biggest visual lever, and the
+                per-block settings below often only apply to some variants. */}
+            <VariantPicker block={block} />
+            <BlockStyleSettings block={block} />
+            <BlockLayoutSettings block={block} />
+          </TabsContent>
+        </ScrollArea>
+      </Tabs>
+    </div>
+  );
+}
+
+function BlockContentSettings({ block }: { block: Block }) {
+  // Cards: the settings of the family that draws the chosen layout. Edits land
+  // on the Cards block (same id); the store keeps its fields in sync.
+  //
+  // Must not call itself: a self-calling component got nested inside
+  // SettingsPanel by the production minifier, so it was a new function on
+  // every render and React re-mounted every block's settings on each
+  // keystroke (inputs lost focus, panel jumped to the top). The switch lives
+  // in a plain function instead.
+  return (
+    <>
+      {/* Cards / Team / Gallery / Table can show a collection's entries instead of typed items. */}
+      <CollectionSourceSettings block={block} />
+      {settingsFor(block.type === "cards" ? toFamilyBlock(block) : block)}
+    </>
+  );
+}
+
+function settingsFor(block: Block): React.ReactNode {
+  switch (block.type) {
+    case "hero": return <HeroSettings block={block} />;
+    case "slider": return <SliderSettings block={block} />;
+    case "text": return <TextSettings block={block} />;
+    case "services": return <ServicesSettings block={block} />;
+    case "item_box": return <ItemBoxSettings block={block} />;
+    case "blog": return <BlogSettings block={block} />;
+    case "gallery": return <GallerySettings block={block} />;
+    case "cta": return <CTASettings block={block} />;
+    case "navigation": return <NavigationSettings block={block} />;
+    case "footer": return <FooterSettings block={block} />;
+    case "header_logo": return <HeaderLogoSettings block={block} />;
+    case "header_nav": return <HeaderNavSettings block={block} />;
+    case "header_cta": return <HeaderCtaSettings block={block} />;
+    // Same fields as the header Button (label, link, style); the link defaults to /book.
+    case "header_booking": return <HeaderCtaSettings block={block as unknown as HeaderCtaBlockProps} />;
+    case "header_cart": return <HeaderCartSettings block={block} />;
+    case "header_account": return <HeaderAccountSettings block={block} />;
+    case "search": return <SearchSettings block={block} />;
+    case "spacer": return <SpacerSettings block={block} />;
+    case "ecommerce_products": return <EcommerceProductsSettings block={block} />;
+    case "accounting_feed": return <AccountingFeedSettings block={block} />;
+    case "team": return <TeamSettings block={block} />;
+    case "faq": return <FAQSettings block={block} />;
+    case "pricing": return <PricingSettings block={block} />;
+    case "features": return <FeaturesSettings block={block} />;
+    case "stats": return <StatsSettings block={block} />;
+    case "contact": return <ContactSettings block={block} />;
+    case "video": return <VideoSettings block={block} />;
+    case "embed": return <EmbedSettings block={block} />;
+    case "timeline": return <TimelineSettings block={block} />;
+    case "columns": return <ColumnsSettings block={block} />;
+    case "newsletter": return <NewsletterSettings block={block} />;
+    case "booking": return <BookingSettings block={block} />;
+    case "marketplace_booking": return <MarketplaceBookingSettings block={block} />;
+    case "marketplace_request": return <MarketplaceBookingSettings block={block} />;
+    case "marketplace_vendor_directory": return <MarketplaceBookingSettings block={block} />;
+    case "marquee": return <MarqueeSettings block={block} />;
+    case "bottom_bar": return <BottomBarSettings block={block} />;
+    case "option_preview": return <OptionPreviewSettings block={block} />;
+    case "scroll_story": return <ScrollStorySettings block={block} />;
+    case "re_search": return <RealEstateSettings block={block} />;
+    case "re_listings": return <RealEstateSettings block={block} />;
+    case "re_communities": return <RealEstateSettings block={block} />;
+    case "re_developers": return <RealEstateSettings block={block} />;
+    case "re_calculator": return <RealEstateSettings block={block} />;
+    case "re_lead_form": return <RealEstateSettings block={block} />;
+    case "table": return <TableSettings block={block} />;
+    case "code": return <CodeSettings block={block} />;
+    case "media_tabs": return <MediaTabsSettings block={block} />;
+    case "section_nav": return <SectionNavSettings block={block} />;
+    case "results_search":
+    case "results_alumni":
+    case "results_courses": return <ResultsBlockSettings block={block} />;
+    case "donor_group_cards": return <DonorGroupCardsSettings block={block} />;
+    case "donor_list": return <DonorListSettings block={block} />;
+    case "donor_map": return <DonorMapSettings block={block} />;
+    case "countdown": return <CountdownSettings block={block} />;
+    case "pricing_catalog": return <PricingCatalogSettings block={block} />;
+    case "steps": return <StepsSettings block={block} />;
+    case "icon_grid": return <IconGridSettings block={block} />;
+    case "container": return <ContainerSettings block={block} />;
+    case "testimonials": return <TestimonialsSettings block={block} />;
+    case "divider": return <DividerSettings block={block} />;
+    case "social_links": return <SocialLinksSettings block={block} />;
+    case "custom_html": return <CustomHtmlSettings block={block} />;
+    case "ecommerce_cart": return <EcommerceCartSettings block={block} />;
+    case "country_grid": return <CountryGridSettings block={block} />;
+    case "eligibility_checker": return <EligibilityCheckerSettings block={block} />;
+    case "status_tracker": return <StatusTrackerSettings block={block} />;
+    case "donor_requests": return <DonorRequestsSettings block={block} />;
+    default:
+      return <p className="text-xs text-muted-foreground">No settings for this block type.</p>;
+  }
+}
+
+// Per-block color/style controls shown above the generic Layout controls on
+// the Style tab. Only Hero has one so far (badge/overlay/button/typography
+// colors) — this is the pattern other blocks migrate to incrementally, not a
+// claim that every block has been split yet.
+function BlockStyleSettings({ block }: { block: Block }) {
+  switch (block.type) {
+    case "hero": return <HeroStyleSettings block={block} />;
+    case "footer": return <FooterStyleSettings block={block} />;
+    default: return null;
+  }
+}

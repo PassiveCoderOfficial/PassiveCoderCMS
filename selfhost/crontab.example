@@ -1,0 +1,28 @@
+# Passive Coder CMS (self-hosted): scheduled jobs for a VPS / Docker install.
+#
+# Vercel runs these from vercel.json by itself. On your own server, install this
+# file with `crontab -e` (or a cron container such as supercronic) after
+# setting the two values below. Times are in the server's time zone (UTC is
+# assumed; the schedules match the hosted platform).
+#
+#   SITE_URL     your site address, e.g. https://www.example.com
+#   CRON_SECRET  the same value as CRON_SECRET in the app's environment
+#
+# Generated from vercel.json by selfhost/README.md instructions; core jobs only.
+SITE_URL=https://www.example.com
+CRON_SECRET=change-me
+
+0 20 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/backups" >/dev/null 2>&1
+0 8 * * *       curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/crm-reminders" >/dev/null 2>&1
+45 7 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/crm-sequences" >/dev/null 2>&1
+0 9 * * *       curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/booking-reminders" >/dev/null 2>&1
+0 10 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/campaign-sender" >/dev/null 2>&1
+*/15 * * * *    curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/publish-scheduled" >/dev/null 2>&1
+0 12 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/escalate-requests" >/dev/null 2>&1
+0 14 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/low-stock" >/dev/null 2>&1
+30 21 * * *     curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/indexnow" >/dev/null 2>&1
+5 18 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/end-promos" >/dev/null 2>&1
+15 19 * * *     curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/booking-chrome" >/dev/null 2>&1
+40 20 * * *     curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/support-media-cleanup" >/dev/null 2>&1
+50 2 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/account-deletions" >/dev/null 2>&1
+20 4 * * *      curl -fsS -m 300 -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/visitor-cleanup" >/dev/null 2>&1

@@ -1,0 +1,291 @@
+"use client";
+
+import { useState } from "react";
+import {
+  FileText, Plus, X, Loader2, Send, Check, Trash2, ExternalLink, Copy,
+} from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
+import { DateTimeField } from "@/components/ui/date-time-field";
+
+interface InvoiceItem { description: string; quantity: number; unit_price: number }
+interface Invoice {
+  id: string; invoice_number: string; public_token: string;
+  status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
+  currency: string; customer_name: string; customer_email: string | null;
+  customer_phone: string | null; items: InvoiceItem[];
+  subtotal: number; discount: number; tax: number; total: number;
+  notes: string | null; issue_date: string; due_date: string | null;
+  sent_at: string | null; paid_at: string | null; created_at: string;
+  payment_reference?: string | null; payment_reported_at?: string | null; payment_reported_method?: string | null;
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground border-border",
+  sent: "bg-blue-900/50 text-blue-300 border-blue-700/50",
+  paid: "bg-green-900/50 text-green-300 border-green-700/50",
+  overdue: "bg-red-900/50 text-red-300 border-red-700/50",
+  cancelled: "bg-muted text-muted-foreground border-border",
+};
+
+const inputCls = "w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40";
+const btnPrimary = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
+const btnGhost = "inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground/80 px-3 py-2 rounded-lg text-sm transition-colors";
+
+function money(n: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(Number(n));
+  } catch {
+    return `${currency} ${Number(n).toFixed(2)}`;
+  }
+}
+
+function NewInvoiceModal({ baseCurrency, onClose, onCreated }: {
+  baseCurrency: string; onClose: () => void; onCreated: (inv: Invoice) => void;
+}) {
+  const t = useT();
+  const [customer, setCustomer] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
+  const [items, setItems] = useState<InvoiceItem[]>([{ description: "", quantity: 1, unit_price: 0 }]);
+  const [discount, setDiscount] = useState(0);
+  const [tax, setTax] = useState(0);
+  const [currency, setCurrency] = useState(baseCurrency);
+  const [dueDate, setDueDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const subtotal = items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.unit_price) || 0), 0);
+  const total = Math.max(0, subtotal - discount + tax);
+
+  const setItem = (idx: number, patch: Partial<InvoiceItem>) =>
+    setItems(list => list.map((it, i) => i === idx ? { ...it, ...patch } : it));
+
+  async function save() {
+    setSaving(true); setError(null);
+    const res = await fetch("/api/invoices", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...customer, items: items.filter(i => i.description.trim()),
+        discount, tax, currency, due_date: dueDate || null, notes,
+      }),
+    });
+    const d = await res.json();
+    setSaving(false);
+    if (!res.ok) { setError(d.error ?? t("invoices.failed")); return; }
+    onCreated(d); onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background border border-border rounded-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-foreground">{t("invoices.newInvoice")}</h2>
+          <button onClick={onClose} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-3">
+          <input className={inputCls} placeholder={t("invoices.customerNamePlaceholder")} value={customer.customer_name}
+            onChange={(e) => setCustomer(c => ({ ...c, customer_name: e.target.value }))} />
+          <input className={inputCls} placeholder={t("invoices.email")} value={customer.customer_email}
+            onChange={(e) => setCustomer(c => ({ ...c, customer_email: e.target.value }))} />
+          <input className={inputCls} placeholder={t("invoices.phone")} value={customer.customer_phone}
+            onChange={(e) => setCustomer(c => ({ ...c, customer_phone: e.target.value }))} />
+        </div>
+
+        <div className="space-y-2">
+          <div className="grid grid-cols-[1fr_70px_100px_32px] gap-2 text-xs text-muted-foreground px-1">
+            <span>{t("invoices.colDescription")}</span><span>{t("invoices.colQty")}</span><span>{t("invoices.colUnitPrice")}</span><span />
+          </div>
+          {items.map((item, i) => (
+            <div key={i} className="grid grid-cols-[1fr_70px_100px_32px] gap-2">
+              <input className={inputCls} placeholder={t("invoices.serviceOrProduct")} value={item.description}
+                onChange={(e) => setItem(i, { description: e.target.value })} />
+              <input className={inputCls} type="number" min={1} value={item.quantity}
+                onChange={(e) => setItem(i, { quantity: Number(e.target.value) })} />
+              <input className={inputCls} type="number" min={0} step="0.01" value={item.unit_price}
+                onChange={(e) => setItem(i, { unit_price: Number(e.target.value) })} />
+              <button onClick={() => setItems(l => l.filter((_, j) => j !== i))}
+                disabled={items.length === 1}
+                className="text-muted-foreground hover:text-red-400 disabled:opacity-30"><Trash2 className="w-4 h-4 mx-auto" /></button>
+            </div>
+          ))}
+          <button onClick={() => setItems(l => [...l, { description: "", quantity: 1, unit_price: 0 }])}
+            className={btnGhost}><Plus className="w-4 h-4" /> {t("invoices.lineItem")}</button>
+        </div>
+
+        <div className="grid sm:grid-cols-4 gap-3">
+          <div>
+            <label className="text-xs text-muted-foreground">{t("invoices.discount")}</label>
+            <input className={inputCls} type="number" min={0} step="0.01" value={discount} onChange={(e) => setDiscount(Number(e.target.value) || 0)} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">{t("invoices.tax")}</label>
+            <input className={inputCls} type="number" min={0} step="0.01" value={tax} onChange={(e) => setTax(Number(e.target.value) || 0)} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">{t("invoices.currency")}</label>
+            <input className={inputCls} value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">{t("invoices.dueDate")}</label>
+            <DateTimeField className={inputCls} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          </div>
+        </div>
+
+        <textarea className={inputCls} rows={2} placeholder={t("invoices.notesPlaceholder")} value={notes} onChange={(e) => setNotes(e.target.value)} />
+
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <span className="text-sm text-muted-foreground">{t("invoices.total")} <span className="text-foreground font-bold">{money(total, currency)}</span></span>
+          <div className="flex items-center gap-3">
+            {error && <p className="text-sm text-red-400">{error}</p>}
+            <button onClick={save} disabled={saving} className={btnPrimary}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} {t("invoices.createInvoice")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const STATUS_KEY: Record<string, TranslationKey> = {
+  all: "invoices.statusAll", draft: "invoices.statusDraft", sent: "invoices.statusSent",
+  paid: "invoices.statusPaid", overdue: "invoices.statusOverdue", cancelled: "invoices.statusCancelled",
+};
+
+export default function InvoicesClient({ initialInvoices, baseCurrency }: {
+  initialInvoices: Invoice[]; baseCurrency: string;
+}) {
+  const t = useT();
+  const [invoices, setInvoices] = useState(initialInvoices);
+  const [filter, setFilter] = useState<string>("all");
+  const [showNew, setShowNew] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const patchLocal = (inv: Invoice) => setInvoices(l => l.map(i => i.id === inv.id ? inv : i));
+
+  async function action(inv: Invoice, body: Record<string, unknown>) {
+    setBusy(inv.id);
+    const res = await fetch(`/api/invoices/${inv.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    });
+    if (res.ok) patchLocal(await res.json());
+    else alert((await res.json()).error ?? t("invoices.failed"));
+    setBusy(null);
+  }
+
+  async function del(inv: Invoice) {
+    if (!confirm(t("invoices.deleteConfirm", { number: inv.invoice_number }))) return;
+    const res = await fetch(`/api/invoices/${inv.id}`, { method: "DELETE" });
+    if (res.ok) setInvoices(l => l.filter(i => i.id !== inv.id));
+  }
+
+  function copyLink(inv: Invoice) {
+    navigator.clipboard.writeText(`${window.location.origin}/invoice/${inv.public_token}`);
+    setCopied(inv.id);
+    setTimeout(() => setCopied(null), 1500);
+  }
+
+  const shown = filter === "all" ? invoices : invoices.filter(i => i.status === filter);
+  const outstanding = invoices.filter(i => ["sent", "overdue"].includes(i.status))
+    .reduce((s, i) => s + Number(i.total), 0);
+  const paidThisMonth = invoices.filter(i =>
+    i.status === "paid" && i.paid_at && new Date(i.paid_at).getMonth() === new Date().getMonth()
+    && new Date(i.paid_at).getFullYear() === new Date().getFullYear())
+    .reduce((s, i) => s + Number(i.total), 0);
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <FileText className="w-6 h-6 text-primary" /> {t("invoices.title")}
+        </h1>
+        <button onClick={() => setShowNew(true)} className={btnPrimary}><Plus className="w-4 h-4" /> {t("invoices.newInvoice")}</button>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4 max-w-lg">
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">{t("invoices.outstanding")}</p>
+          <p className="text-xl font-bold text-foreground">{money(outstanding, baseCurrency)}</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">{t("invoices.paidThisMonth")}</p>
+          <p className="text-xl font-bold text-green-400">{money(paidThisMonth, baseCurrency)}</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {(["all", "draft", "sent", "paid", "overdue", "cancelled"] as const).map(s => (
+          <button key={s} onClick={() => setFilter(s)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              filter === s ? "bg-indigo-600 border-indigo-600 text-white" : "border-border text-muted-foreground hover:border-gray-500"
+            }`}>{t(STATUS_KEY[s])}</button>
+        ))}
+      </div>
+
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        {shown.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground text-sm">{t("invoices.noInvoicesYet")}</div>
+        ) : (
+          <div className="divide-y divide-border">
+            {shown.map((inv) => (
+              <div key={inv.id} className="flex items-center gap-4 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">{inv.invoice_number}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[inv.status]}`}>{t(STATUS_KEY[inv.status] ?? "invoices.statusDraft")}</span>
+                    {inv.status !== "paid" && inv.payment_reported_at && (
+                      <span title={`${inv.payment_reported_method ?? ""} ${inv.payment_reference ?? ""}`.trim()} className="text-xs px-2 py-0.5 rounded-full border bg-amber-50 text-amber-900 border-amber-200">{t("invoices.paymentReported")}{inv.payment_reference ? `: ${inv.payment_reference}` : ""}</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {inv.customer_name}{inv.due_date ? t("invoices.dueDateInline", { date: inv.due_date }) : ""}
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-foreground shrink-0">{money(inv.total, inv.currency)}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                  {inv.status !== "paid" && inv.status !== "cancelled" && (
+                    <>
+                      {inv.customer_email && (
+                        <button title={inv.sent_at ? t("invoices.resend") : t("invoices.sendToCustomer")} disabled={busy === inv.id}
+                          onClick={() => action(inv, { action: "send" })}
+                          className="p-2 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted">
+                          {busy === inv.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button title={t("invoices.markPaid")} disabled={busy === inv.id}
+                        onClick={() => action(inv, { status: "paid" })}
+                        className="p-2 text-muted-foreground hover:text-green-400 rounded-lg hover:bg-muted">
+                        <Check className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  <button title={copied === inv.id ? t("invoices.copied") : t("invoices.copyPublicLink")}
+                    onClick={() => copyLink(inv)}
+                    className={`p-2 rounded-lg hover:bg-muted ${copied === inv.id ? "text-green-400" : "text-muted-foreground hover:text-foreground"}`}>
+                    <Copy className="w-4 h-4" />
+                  </button>
+                  <a title={t("invoices.openPublicView")} href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer"
+                    className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted">
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <button title={t("invoices.delete")} onClick={() => del(inv)}
+                    className="p-2 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-muted">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showNew && (
+        <NewInvoiceModal baseCurrency={baseCurrency} onClose={() => setShowNew(false)}
+          onCreated={(inv) => setInvoices(l => [inv, ...l])} />
+      )}
+    </div>
+  );
+}

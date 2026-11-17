@@ -1,0 +1,369 @@
+import { z } from "zod";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getSiteLinks } from "@/lib/mcp/site-links";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { isSupportedBlockType } from "@/lib/aicoder/schemas";
+import { generateBlockContent, AiCoderError } from "@/lib/aicoder/generate";
+import { mergeContentIntoBlock, resolveBlockImages } from "@/lib/aicoder/merge";
+import { reserveCredits, refundCredits, AiCreditsError, type CreditReservation } from "@/lib/ai/credits";
+import type { Block } from "@/types/cms";
+import { linkPageTranslation } from "@/lib/i18n-site/link-translation";
+
+export type AgentToolContext = {
+  tenantId: string;
+  userId: string;
+  /** Admin (service-role) client — every tool query is manually tenant-scoped
+   *  by the tool itself, mirroring the rest of the codebase's admin-client +
+   *  explicit `.eq("tenant_id", …)` pattern rather than relying on RLS here. */
+  supabase: SupabaseClient;
+};
+
+export type AgentToolContextKind = "general" | "editor";
+
+export interface AgentTool {
+  name: string;
+  description: string;
+  argsSchema: z.ZodTypeAny;
+  readOnly: boolean;
+  contexts: AgentToolContextKind[];
+  run: (args: unknown, ctx: AgentToolContext) => Promise<unknown>;
+}
+
+/** Renders a short, human-readable description of a pending write action for
+ *  the confirm/cancel UI — kept here (next to the tool that produced the
+ *  args) so the two never drift apart. */
+function describe(tool: string, args: Record<string, unknown>): string {
+  switch (tool) {
+    case "update_page_meta":
+      return `Update page metadata (${Object.keys(args).filter(k => k !== "pageId").join(", ") || "no fields"})`;
+    case "add_lead_note":
+      return `Add a note to a lead: "${String(args.body ?? "").slice(0, 120)}"`;
+    case "change_lead_stage":
+      return args.stageId ? "Change this lead's stage" : "Clear this lead's stage";
+    case "generate_page_content":
+      return `Generate "${args.blockType}" content for this page and add it as a new section`;
+    default:
+      return `Run ${tool}`;
+  }
+}
+
+export const AGENT_TOOLS: AgentTool[] = [
+  {
+    name: "get_tenant_settings",
+    description: "Get the site's settings and addresses: name, plan, status, live URL, default subdomain URL (always works), custom domain and status, dashboard URL. No args.",
+    argsSchema: z.object({}),
+    readOnly: true,
+    contexts: ["general", "editor"],
+    run: async (_args, ctx) => {
+      const { data, error } = await ctx.supabase
+        .from("tenants")
+        .select("name, plan, status")
+        .eq("id", ctx.tenantId)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      const links = await getSiteLinks(await createAdminClient(), ctx.tenantId);
+      return data ? { ...data, ...(links ?? {}) } : null;
+    },
+  },
+  {
+    name: "list_pages",
+    description: "List this site's pages: id, title, slug, status, order_index, parent_id (sub-pages live at /<parent slug>/<own slug>). No args.",
+    argsSchema: z.object({}),
+    readOnly: true,
+    contexts: ["general", "editor"],
+    run: async (_args, ctx) => {
+      const { data, error } = await ctx.supabase
+        .from("pages")
+        .select("id, title, slug, status, order_index, parent_id")
+        .eq("tenant_id", ctx.tenantId)
+        .order("order_index", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  },
+  {
+    name: "get_page",
+    description: "Get the full row for one page by id (must belong to this site). Args: { pageId: string }.",
+    argsSchema: z.object({ pageId: z.string().uuid() }),
+    readOnly: true,
+    contexts: ["editor"],
+    run: async (args, ctx) => {
+      const { pageId } = args as { pageId: string };
+      const { data, error } = await ctx.supabase
+        .from("pages")
+        .select("*")
+        .eq("id", pageId)
+        .eq("tenant_id", ctx.tenantId)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error("Page not found on this site.");
+      return data;
+    },
+  },
+  {
+    name: "update_page_meta",
+    description:
+      "Propose updating a page's metadata. Args: { pageId: string, title?: string, status?: 'draft'|'published'|'scheduled'|'archived', excerpt?: string, seoTitle?: string, seoDescription?: string, lang?: string, translationOf?: string }. lang (e.g. 'ar') marks this page as that language's version of the main-language page translationOf (or the page found from the slug: 'ar' = home, 'ar/about' = about): it shows its own header/footer, right-to-left for Arabic, gets hreflang links, the language is added to the site and the Google Translate widget is switched off. Requires confirmation before it takes effect.",
+    argsSchema: z.object({
+      pageId: z.string().uuid(),
+      title: z.string().min(1).optional(),
+      status: z.enum(["draft", "published", "scheduled", "archived"]).optional(),
+      excerpt: z.string().optional(),
+      seoTitle: z.string().optional(),
+      seoDescription: z.string().optional(),
+      lang: z.string().min(2).max(10).optional(),
+      translationOf: z.string().uuid().optional(),
+    }),
+    readOnly: false,
+    contexts: ["editor"],
+    run: async (args, ctx) => {
+      const { pageId, title, status, excerpt, seoTitle, seoDescription, lang, translationOf } = args as {
+        pageId: string; title?: string; status?: string; excerpt?: string; seoTitle?: string; seoDescription?: string; lang?: string; translationOf?: string;
+      };
+
+      const { data: page, error: fetchError } = await ctx.supabase
+        .from("pages")
+        .select("id, seo, published_at")
+        .eq("id", pageId)
+        .eq("tenant_id", ctx.tenantId)
+        .maybeSingle();
+      if (fetchError) throw new Error(fetchError.message);
+      if (!page) throw new Error("Page not found on this site.");
+
+      const patch: Record<string, unknown> = {};
+      if (title !== undefined) patch.title = title;
+      if (status !== undefined) {
+        patch.status = status;
+        if (status === "published" && !page.published_at) patch.published_at = new Date().toISOString();
+      }
+      if (excerpt !== undefined) patch.excerpt = excerpt;
+      if (seoTitle !== undefined || seoDescription !== undefined) {
+        const seo = (page.seo ?? {}) as Record<string, unknown>;
+        patch.seo = {
+          ...seo,
+          ...(seoTitle !== undefined ? { title: seoTitle } : {}),
+          ...(seoDescription !== undefined ? { description: seoDescription } : {}),
+        };
+      }
+
+      if (Object.keys(patch).length) {
+        const { error } = await ctx.supabase.from("pages").update(patch).eq("id", pageId).eq("tenant_id", ctx.tenantId);
+        if (error) throw new Error(error.message);
+      }
+      // After the patch, so its copy of seo can't drop the language fields.
+      const translation = lang ? await linkPageTranslation(ctx.supabase, ctx.tenantId, pageId, lang, translationOf) : undefined;
+      const { data, error } = await ctx.supabase
+        .from("pages")
+        .select("id, title, slug, status, excerpt, seo")
+        .eq("id", pageId)
+        .eq("tenant_id", ctx.tenantId)
+        .single();
+      if (error) throw new Error(error.message);
+      return translation ? { ...data, translation } : data;
+    },
+  },
+  {
+    name: "get_domain_status",
+    description: "Get this site's custom domain and connection status, plus the default subdomain URL that always works and the current live URL. No args.",
+    argsSchema: z.object({}),
+    readOnly: true,
+    contexts: ["general", "editor"],
+    run: async (_args, ctx) => {
+      const { data, error } = await ctx.supabase
+        .from("tenants")
+        .select("custom_domain, domain_status")
+        .eq("id", ctx.tenantId)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      const links = await getSiteLinks(await createAdminClient(), ctx.tenantId);
+      return data ? { ...data, default_url: links?.defaultUrl ?? null, live_url: links?.liveUrl ?? null, dashboard_url: links?.dashboardUrl ?? null } : null;
+    },
+  },
+  {
+    name: "list_leads",
+    description: "List up to 20 most recently active leads/contacts. No args.",
+    argsSchema: z.object({}),
+    readOnly: true,
+    contexts: ["general"],
+    run: async (_args, ctx) => {
+      const { data, error } = await ctx.supabase
+        .from("contacts")
+        .select("id, first_name, last_name, email, phone, company, stage_id, last_activity_at")
+        .eq("tenant_id", ctx.tenantId)
+        .order("last_activity_at", { ascending: false })
+        .limit(20);
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  },
+  {
+    name: "get_lead",
+    description: "Get a lead/contact's full details plus its 10 most recent activity events. Args: { contactId: string }.",
+    argsSchema: z.object({ contactId: z.string().uuid() }),
+    readOnly: true,
+    contexts: ["general"],
+    run: async (args, ctx) => {
+      const { contactId } = args as { contactId: string };
+      const [{ data: contact, error: contactError }, { data: events, error: eventsError }] = await Promise.all([
+        ctx.supabase.from("contacts").select("*, crm_stages(id, name, color)")
+          .eq("id", contactId).eq("tenant_id", ctx.tenantId).maybeSingle(),
+        ctx.supabase.from("contact_events").select("*")
+          .eq("contact_id", contactId).eq("tenant_id", ctx.tenantId)
+          .order("created_at", { ascending: false }).limit(10),
+      ]);
+      if (contactError) throw new Error(contactError.message);
+      if (eventsError) throw new Error(eventsError.message);
+      if (!contact) throw new Error("Lead not found on this site.");
+      return { contact, events: events ?? [] };
+    },
+  },
+  {
+    name: "add_lead_note",
+    description: "Propose adding a note to a lead/contact's timeline. Args: { contactId: string, body: string }. Requires confirmation.",
+    argsSchema: z.object({ contactId: z.string().uuid(), body: z.string().min(1) }),
+    readOnly: false,
+    contexts: ["general"],
+    run: async (args, ctx) => {
+      const { contactId, body } = args as { contactId: string; body: string };
+
+      const { data: contact, error: contactError } = await ctx.supabase
+        .from("contacts").select("id").eq("id", contactId).eq("tenant_id", ctx.tenantId).maybeSingle();
+      if (contactError) throw new Error(contactError.message);
+      if (!contact) throw new Error("Lead not found on this site.");
+
+      const { data, error } = await ctx.supabase
+        .from("contact_events")
+        .insert({
+          tenant_id: ctx.tenantId,
+          contact_id: contactId,
+          type: "note",
+          title: "Note",
+          body,
+          actor_user_id: ctx.userId,
+        })
+        .select("*")
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  },
+  {
+    name: "change_lead_stage",
+    description: "Propose changing a lead/contact's CRM stage. Args: { contactId: string, stageId: string | null }. Requires confirmation.",
+    argsSchema: z.object({ contactId: z.string().uuid(), stageId: z.string().uuid().nullable() }),
+    readOnly: false,
+    contexts: ["general"],
+    run: async (args, ctx) => {
+      const { contactId, stageId } = args as { contactId: string; stageId: string | null };
+
+      const { data: prev, error: prevError } = await ctx.supabase
+        .from("contacts")
+        .select("stage_id, crm_stages(name)")
+        .eq("id", contactId).eq("tenant_id", ctx.tenantId).maybeSingle();
+      if (prevError) throw new Error(prevError.message);
+      if (!prev) throw new Error("Lead not found on this site.");
+
+      if (prev.stage_id !== stageId) {
+        const { data: newStage } = stageId
+          ? await ctx.supabase.from("crm_stages").select("name").eq("id", stageId).maybeSingle()
+          : { data: null };
+        await ctx.supabase.from("contact_events").insert({
+          tenant_id: ctx.tenantId,
+          contact_id: contactId,
+          type: "stage_change",
+          title: `Stage → ${newStage?.name ?? "None"}`,
+          meta: { from_stage: prev.stage_id, to_stage: stageId },
+          actor_user_id: ctx.userId,
+        });
+      }
+
+      const { data, error } = await ctx.supabase
+        .from("contacts")
+        .update({ stage_id: stageId, updated_at: new Date().toISOString() })
+        .eq("id", contactId).eq("tenant_id", ctx.tenantId)
+        .select("*, crm_stages(id, name, color)")
+        .single();
+      if (error) throw new Error(error.message);
+      // Moved into a Won stage: Experts review link (Pro/Biz sites with a listing; checked inside, never throws).
+      if (stageId && prev.stage_id !== stageId) {
+        const [{ inviteAfterWon }, { createAdminClient }] = await Promise.all([import("@/lib/experts/reviews"), import("@/lib/supabase/server")]);
+        await inviteAfterWon(await createAdminClient(), ctx.tenantId, contactId);
+      }
+      return data;
+    },
+  },
+  {
+    name: "generate_page_content",
+    description:
+      "Propose generating AI copy for a new page section and adding it to the page. Args: { pageId: string, blockType: string, instructions: string }. Uses 10 of the site's AI Credits. Requires confirmation.",
+    argsSchema: z.object({
+      pageId: z.string().uuid(),
+      blockType: z.string().min(1),
+      instructions: z.string().min(1),
+    }),
+    readOnly: false,
+    contexts: ["editor"],
+    run: async (args, ctx) => {
+      const { pageId, blockType, instructions } = args as { pageId: string; blockType: string; instructions: string };
+      if (!isSupportedBlockType(blockType)) {
+        throw new Error(`Unsupported block type for AiCoder: ${blockType}`);
+      }
+
+      const { data: page, error: pageError } = await ctx.supabase
+        .from("pages")
+        .select("id, blocks")
+        .eq("id", pageId)
+        .eq("tenant_id", ctx.tenantId)
+        .maybeSingle();
+      if (pageError) throw new Error(pageError.message);
+      if (!page) throw new Error("Page not found on this site.");
+
+      const { data: settings } = await ctx.supabase
+        .from("site_settings")
+        .select("site_name, site_description")
+        .eq("tenant_id", ctx.tenantId)
+        .maybeSingle();
+      const businessContext = [settings?.site_name, settings?.site_description].filter(Boolean).join(" — ");
+
+      let reservation: CreditReservation;
+      try {
+        reservation = await reserveCredits(ctx.tenantId, "section", { userId: ctx.userId, detail: blockType });
+      } catch (err) {
+        throw new Error(err instanceof AiCreditsError ? err.message : "Failed to check AiCoder usage");
+      }
+
+      try {
+        const content = await generateBlockContent(blockType, businessContext, instructions);
+        const block = mergeContentIntoBlock(blockType, content);
+        await resolveBlockImages(block, content);
+
+        // Hand the block to the open editor instead of writing the page
+        // here. This tool only runs in the editor, and writing behind the
+        // editor's back lost the block: the editor loads blocks once per
+        // page, never saw it, and its next autosave overwrote it — after
+        // the tenant had already paid credits for it. The editor adds
+        // it to its own state and saves it through the normal path (a draft,
+        // on a live page).
+        const existingBlocks = Array.isArray(page.blocks) ? (page.blocks as Block[]) : [];
+        const newBlock = { ...block, order: existingBlocks.length };
+        return { block: newBlock, pageId };
+      } catch (err) {
+        await refundCredits(reservation).catch(() => {});
+        if (err instanceof AiCoderError) throw new Error(err.message);
+        throw err;
+      }
+    },
+  },
+];
+
+export function toolsForContext(context: AgentToolContextKind): AgentTool[] {
+  return AGENT_TOOLS.filter(t => t.contexts.includes(context));
+}
+
+export function findTool(name: string): AgentTool | undefined {
+  return AGENT_TOOLS.find(t => t.name === name);
+}
+
+export function describePendingAction(toolName: string, args: Record<string, unknown>): string {
+  return describe(toolName, args);
+}

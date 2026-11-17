@@ -1,0 +1,207 @@
+"use client";
+
+import { EcommerceProductsPreview } from "@/components/blocks/ecommerce/ecommerce-products-preview";
+import { SearchBlock } from "@/components/blocks/search/search-block";
+import { toFamilyBlock } from "@/lib/blocks/cards";
+import { useHydratedBlock } from "@/lib/collections/use-collection";
+import React, { useMemo } from "react";
+import { useTrialSanitizer } from "@/components/admin/trial-site-context";
+import { HeaderBookingBlock } from "@/components/blocks/header-booking/header-booking-block";
+import { cn } from "@/lib/utils";
+import type { Block } from "@/types/cms";
+import { HeroBlock } from "@/components/blocks/hero/hero-block";
+import { SliderBlock } from "@/components/blocks/slider/slider-block";
+import { NavigationBlock } from "@/components/blocks/navigation/navigation-block";
+import { TextBlock } from "@/components/blocks/text/text-block";
+import { ServicesBlockClient } from "@/components/blocks/services/services-block-client";
+import { ItemBoxBlockClient } from "@/components/blocks/item-box/item-box-block-client";
+import { GalleryBlockCanvas } from "@/components/blocks/gallery/gallery-block-canvas";
+import { CTABlock } from "@/components/blocks/cta/cta-block";
+import { TestimonialsBlock } from "@/components/blocks/testimonials/testimonials-block";
+import { DividerBlock } from "@/components/blocks/divider/divider-block";
+import { SocialLinksBlock } from "@/components/blocks/social-links/social-links-block";
+import { SpacerBlock } from "@/components/blocks/spacer/spacer-block";
+import { CustomHtmlBlock } from "@/components/blocks/custom-html/custom-html-block";
+import { TeamBlock } from "@/components/blocks/team/team-block";
+import { FAQBlock } from "@/components/blocks/faq/faq-block";
+import { PricingBlock } from "@/components/blocks/pricing/pricing-block";
+import { FeaturesBlock } from "@/components/blocks/features/features-block";
+import { StatsBlock } from "@/components/blocks/stats/stats-block";
+import { ContactBlock } from "@/components/blocks/contact/contact-block";
+import { EmbedBlock } from "@/components/blocks/embed/embed-block";
+import { VideoBlock } from "@/components/blocks/video/video-block";
+import { TimelineBlock } from "@/components/blocks/timeline/timeline-block";
+import { ColumnsBlock } from "@/components/blocks/columns/columns-block";
+import { NewsletterBlock } from "@/components/blocks/newsletter/newsletter-block";
+import { CountdownBlock } from "@/components/blocks/countdown/countdown-block";
+import { PricingCatalogCanvas } from "@/modules/registry/blocks/pricing-catalog-client";
+import { StepsBlock } from "@/components/blocks/steps/steps-block";
+import { IconGridBlock } from "@/components/blocks/icon-grid/icon-grid-block";
+import { FooterBlock } from "@/components/blocks/footer/footer-block";
+import { CountryGridBlock } from "@/components/blocks/country-grid/country-grid-block";
+import { EligibilityCheckerBlock } from "@/components/blocks/eligibility-checker/eligibility-checker-block";
+import { StatusTrackerBlock } from "@/components/blocks/status-tracker/status-tracker-block";
+import { BookingBlock } from "@/components/blocks/booking/booking-block";
+import { MarketplaceBookingBlock, MarketplaceRequestBlock, MarketplaceVendorDirectoryBlock } from "@/modules/registry/blocks/marketplace";
+import { ScrollStoryBlock } from "@/components/blocks/scroll-story/scroll-story-block";
+import { MarqueeBlock } from "@/components/blocks/marquee/marquee-block";
+import { BottomBarBlock } from "@/components/blocks/bottom-bar/bottom-bar-block";
+import { OptionPreviewBlock } from "@/components/blocks/option-preview/option-preview-block";
+import { ReSearchBlock, ReListingsBlock, ReCommunitiesBlock, ReDevelopersBlock, ReCalculatorBlock, ReLeadFormBlock } from "@/modules/registry/blocks/real-estate";
+import { TableBlock } from "@/components/blocks/table/table-block";
+import { CodeBlock } from "@/components/blocks/code/code-block";
+import { MediaTabsBlock } from "@/components/blocks/media-tabs/media-tabs-block";
+import { SectionNavBlock } from "@/components/blocks/section-nav/section-nav-block";
+import { ResultsAlumniBlock, ResultsSearchBlock, ResultsCoursesBlock } from "@/modules/registry/blocks/results";
+import { DonorGroupCardsBlock, DonorListBlock, DonorMapBlock, DonorRequestsBlock } from "@/modules/registry/blocks/donors";
+import { ContainerBlock } from "./container-block";
+import { HeaderLogoBlock } from "@/components/blocks/header-logo/header-logo-block";
+import { HeaderNavBlock } from "@/components/blocks/header-nav/header-nav-block";
+import { HeaderCtaBlock } from "@/components/blocks/header-cta/header-cta-block";
+import { HeaderCartBlock } from "@/components/blocks/header-cart/header-cart-block";
+import { HeaderAccountBlock } from "@/components/blocks/header-account/header-account-block";
+import { googleFontsHref } from "@/modules/themes/fonts";
+import { applyHiddenElements, getBlockBackground, getBlockWrapperStyle, getContainerClass, withHeroOverlay } from "@/modules/page-builder/block-utils";
+import type { FooterBlockProps, ContainerBlockProps } from "@/types/cms";
+import type { ContainerPath } from "@/lib/store/builder";
+import { BookOpen, ShoppingBag, Heart } from "lucide-react";
+
+interface BlockRendererProps {
+  block: Block;
+  isPreview?: boolean;
+  /** This block's OWN path — where IT sits in the tree. Only meaningful when
+   *  `block` is itself a container, so it can resolve itself and build its
+   *  columns' paths correctly if it's nested inside another container. */
+  path?: ContainerPath;
+}
+
+// Placeholder for server-data blocks in the client builder
+function DataBlockPlaceholder({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+  return (
+    <div className="max-w-5xl mx-auto flex flex-col items-center justify-center py-16 border-2 border-dashed border-blue-200 rounded-xl bg-blue-50/50">
+      <Icon className="h-10 w-10 text-blue-400 mb-3" />
+      <p className="text-sm font-medium text-blue-600">{label}</p>
+      <p className="text-xs text-blue-400 mt-1">Renders live data on the public site</p>
+    </div>
+  );
+}
+
+export function BlockRenderer({ block: rawBlock, isPreview = false, path }: BlockRendererProps) {
+  // Trial site: its HTML is drawn sanitised, so opening its builder never runs
+  // its code in the viewer's session (lib/security/trial-html.ts). The block
+  // being edited is untouched; only this render-only copy is cleaned.
+  const trialGuard = useTrialSanitizer();
+  // Blocks bound to a collection show its entries, as on the live site.
+  const hydrated = useHydratedBlock(rawBlock);
+  const trialSafe = useMemo(
+    () => (trialGuard.lib ? trialGuard.lib.sanitizeTrialContent(hydrated) : hydrated),
+    [trialGuard.lib, hydrated],
+  );
+  // Sanitiser still loading: nothing is drawn, never the raw HTML.
+  if (!trialGuard.ready) return null;
+  let block = trialSafe;
+  // Hidden elements (Style panel) blanked on a render-only copy, as on the live site.
+  block = applyHiddenElements(block);
+  // Cards draws each layout with the original block's component.
+  if (block.type === "cards") block = toFamilyBlock(block);
+  const { style: bgStyle, className: bgClassName } = getBlockBackground(withHeroOverlay(block));
+  // Same wrapper styling as the live site (padding, margin, Style panel).
+  // Tolerates null padding/margin — seen on blocks from older write paths.
+  const { style: wrapStyle, className: wrapClassName } = getBlockWrapperStyle(block);
+
+  const renderBlock = () => {
+    switch (block.type) {
+      case "hero": return <HeroBlock block={block} />;
+      case "slider": return <SliderBlock block={block} />;
+      case "navigation": return <NavigationBlock block={block} />;
+      case "header_logo": return <HeaderLogoBlock block={block} />;
+      case "header_nav": return <HeaderNavBlock block={block} />;
+      case "header_cta": return <HeaderCtaBlock block={block} />;
+      case "header_booking": return <HeaderBookingBlock block={block} />;
+      case "header_cart": return <HeaderCartBlock block={block} />;
+      // Editor canvas has no visitor session — always previews signed-out,
+      // the correct default state for what a real visitor sees first.
+      case "header_account": return <HeaderAccountBlock block={block} />;
+      case "search": return <SearchBlock block={block} />;
+      case "text": return <TextBlock block={block} />;
+      case "services": return <ServicesBlockClient block={block} />;
+      case "item_box": return <ItemBoxBlockClient block={block} />;
+      case "gallery": return <GalleryBlockCanvas block={block} />;
+      case "cta": return <CTABlock block={block} />;
+      case "testimonials": return <TestimonialsBlock block={block} />;
+      case "divider": return <DividerBlock block={block} />;
+      case "social_links": return <SocialLinksBlock block={block} editor />;
+      case "spacer": return <SpacerBlock block={block} />;
+      case "custom_html": return <CustomHtmlBlock block={block} />;
+      case "team": return <TeamBlock block={block} />;
+      case "faq": return <FAQBlock block={block} />;
+      case "pricing": return <PricingBlock block={block} />;
+      case "features": return <FeaturesBlock block={block} />;
+      case "stats": return <StatsBlock block={block} />;
+      case "contact": return <ContactBlock block={block} />;
+      case "embed": return <EmbedBlock block={block} />;
+      case "video": return <VideoBlock block={block} />;
+      case "timeline": return <TimelineBlock block={block} />;
+      case "columns": return <ColumnsBlock block={block} />;
+      case "newsletter": return <NewsletterBlock block={block} />;
+      case "countdown": return <CountdownBlock block={block} />;
+      case "pricing_catalog": return <PricingCatalogCanvas block={block} />;
+      case "steps": return <StepsBlock block={block} />;
+      case "icon_grid": return <IconGridBlock block={block} />;
+      case "footer": return <FooterBlock block={block as FooterBlockProps} />;
+      case "country_grid": return <CountryGridBlock block={block} />;
+      case "eligibility_checker": return <EligibilityCheckerBlock block={block} />;
+      case "status_tracker": return <StatusTrackerBlock block={block} />;
+      case "booking": return <BookingBlock block={block} />;
+      case "marketplace_booking": return <MarketplaceBookingBlock block={block} />;
+      case "marketplace_request": return <MarketplaceRequestBlock block={block} />;
+      case "marketplace_vendor_directory": return <MarketplaceVendorDirectoryBlock block={block} />;
+      case "marquee": return <MarqueeBlock block={block} />;
+      case "bottom_bar": return <BottomBarBlock block={block} preview />;
+      case "option_preview": return <OptionPreviewBlock block={block} />;
+      case "scroll_story": return <ScrollStoryBlock block={block} />;
+      case "re_search": return <ReSearchBlock block={block} />;
+      case "re_listings": return <ReListingsBlock block={block} />;
+      case "re_communities": return <ReCommunitiesBlock block={block} />;
+      case "re_developers": return <ReDevelopersBlock block={block} />;
+      case "re_calculator": return <ReCalculatorBlock block={block} />;
+      case "re_lead_form": return <ReLeadFormBlock block={block} />;
+      case "table": return <TableBlock block={block} />;
+      case "code": return <CodeBlock block={block} />;
+      case "media_tabs": return <MediaTabsBlock block={block} />;
+      case "section_nav": return <SectionNavBlock block={block} />;
+      case "results_search": return <ResultsSearchBlock block={block} />;
+      case "results_alumni": return <ResultsAlumniBlock block={block} />;
+      case "results_courses": return <ResultsCoursesBlock block={block} />;
+      case "donor_group_cards": return <DonorGroupCardsBlock block={block} />;
+      case "donor_list": return <DonorListBlock block={block} />;
+      case "donor_map": return <DonorMapBlock block={block} />;
+      case "donor_requests": return <DonorRequestsBlock block={block} />;
+      case "container": return <ContainerBlock block={block as ContainerBlockProps} isPreview={isPreview} path={path} />;
+      // Server data blocks show placeholders in builder
+      case "ecommerce_cart":
+        return <DataBlockPlaceholder icon={ShoppingBag} label="Shopping Cart — live cart on the public site" />;
+      case "blog":
+        return <DataBlockPlaceholder icon={BookOpen} label="Blog Posts Block — live data in preview" />;
+      case "ecommerce_products":
+        return <EcommerceProductsPreview block={block as import("@/types/cms").EcommerceProductsBlockProps} />;
+      case "accounting_feed":
+        return <DataBlockPlaceholder icon={Heart} label="Donation / Transaction Feed — live data in preview" />;
+      default:
+        return (
+          <div className="flex items-center justify-center h-20 bg-muted text-muted-foreground text-sm border-2 border-dashed rounded">
+            Unknown block: {(block as Block).type}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div style={{ ...bgStyle, ...wrapStyle }} className={cn("w-full", bgClassName, wrapClassName)}>
+      {block.style?.headingFont && googleFontsHref([block.style.headingFont]) && (
+        <link rel="stylesheet" href={googleFontsHref([block.style.headingFont])!} precedence="pc-block-font" />
+      )}
+      <div className={cn("w-full", getContainerClass(block.width))}>{renderBlock()}</div>
+    </div>
+  );
+}

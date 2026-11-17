@@ -1,0 +1,274 @@
+/* The two admin worlds (lib/theme/worlds.ts).
+ *
+ * Everything here sits under html[data-world], which the head script in
+ * app/layout.tsx and ThemeProvider set only on /dashboard, /staff and
+ * /super-admin. Public sites, marketing and login never carry it, so their
+ * palette in globals.css stays exactly as it was. Being on <html>, these also
+ * reach Radix popovers, selects and dialogs that portal to <body>.
+ *
+ * Page builder canvases (.cms-canvas-light) get a clean light baseline below,
+ * then the site's own palette on top, so no dashboard colour reaches a preview.
+ */
+@layer base {
+  /* ── Console: Staff Portal + Super Admin. Cool indigo-violet. ── */
+  html[data-world="console"] {
+    --background: 248 40% 97%;
+    --foreground: 250 45% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 250 45% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 250 45% 11%;
+    --primary: 252 68% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 38% 93%;
+    --secondary-foreground: 252 50% 22%;
+    --muted: 250 34% 94%;
+    --muted-foreground: 250 14% 37%;
+    --accent: 251 60% 94.5%;
+    --accent-foreground: 252 62% 30%;
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 250 26% 88%;
+    --input: 250 22% 83%;
+    --ring: 252 68% 50%;
+    --sidebar: 250 34% 95%;
+    --console-bar: 253 52% 19%;
+    --console-bar-foreground: 0 0% 100%;
+    --console-bar-muted: 250 45% 84%;
+    --shadow-sm: 0 1px 2px 0 hsl(252 45% 20% / 0.06), 0 1px 3px 0 hsl(252 45% 20% / 0.05);
+    --shadow-md: 0 4px 12px -2px hsl(252 45% 20% / 0.10);
+    --shadow-lg: 0 12px 28px -6px hsl(252 45% 20% / 0.16);
+    --shadow-xl: 0 24px 48px -12px hsl(252 45% 20% / 0.24);
+  }
+  html[data-world="console"].dark {
+    --background: 252 32% 8%;
+    --foreground: 250 40% 96%;
+    --card: 252 28% 11.5%;
+    --card-foreground: 250 40% 96%;
+    --popover: 252 28% 13%;
+    --popover-foreground: 250 40% 96%;
+    --primary: 252 90% 76%;
+    --primary-foreground: 253 55% 11%;
+    --secondary: 252 22% 19%;
+    --secondary-foreground: 250 40% 94%;
+    --muted: 252 22% 16%;
+    --muted-foreground: 250 18% 72%;
+    --accent: 252 30% 20%;
+    --accent-foreground: 250 50% 92%;
+    --destructive: 0 80% 68%;
+    --destructive-foreground: 0 60% 9%;
+    --border: 252 20% 20%;
+    --input: 252 20% 24%;
+    --ring: 252 90% 76%;
+    --sidebar: 252 32% 7%;
+    --console-bar: 253 42% 13%;
+    --console-bar-foreground: 0 0% 100%;
+    --console-bar-muted: 250 40% 82%;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.45);
+    --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.55);
+    --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.65);
+  }
+
+  /* ── Site dashboard: a client's own workspace. Warm paper and clay. ── */
+  html[data-world="site"] {
+    --background: 38 30% 96.5%;
+    --foreground: 24 18% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 24 18% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 18% 12%;
+    --primary: 16 74% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 34 26% 92%;
+    --secondary-foreground: 22 30% 18%;
+    --muted: 34 26% 93%;
+    --muted-foreground: 25 11% 36%;
+    --accent: 28 52% 92.5%;
+    --accent-foreground: 18 62% 26%;
+    --destructive: 0 72% 44%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 32 20% 87%;
+    --input: 32 16% 82%;
+    --ring: 16 74% 40%;
+    --sidebar: 36 32% 94%;
+    --console-bar: 253 52% 19%;
+    --console-bar-foreground: 0 0% 100%;
+    --console-bar-muted: 250 45% 84%;
+    --shadow-sm: 0 1px 2px 0 hsl(24 30% 20% / 0.06), 0 1px 3px 0 hsl(24 30% 20% / 0.05);
+    --shadow-md: 0 4px 12px -2px hsl(24 30% 20% / 0.10);
+    --shadow-lg: 0 12px 28px -6px hsl(24 30% 20% / 0.14);
+    --shadow-xl: 0 24px 48px -12px hsl(24 30% 20% / 0.20);
+  }
+  html[data-world="site"].dark {
+    --background: 24 11% 8%;
+    --foreground: 36 28% 94%;
+    --card: 24 10% 11.5%;
+    --card-foreground: 36 28% 94%;
+    --popover: 24 10% 13%;
+    --popover-foreground: 36 28% 94%;
+    --primary: 22 92% 62%;
+    --primary-foreground: 20 70% 8%;
+    --secondary: 24 9% 18%;
+    --secondary-foreground: 36 28% 93%;
+    --muted: 24 9% 15.5%;
+    --muted-foreground: 32 12% 70%;
+    --accent: 22 18% 18%;
+    --accent-foreground: 30 60% 88%;
+    --destructive: 2 78% 66%;
+    --destructive-foreground: 0 60% 8%;
+    --border: 24 8% 19%;
+    --input: 24 8% 24%;
+    --ring: 22 92% 62%;
+    --sidebar: 24 11% 6.5%;
+    --console-bar: 253 42% 16%;
+    --console-bar-foreground: 0 0% 100%;
+    --console-bar-muted: 250 40% 82%;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.45);
+    --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.55);
+    --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.65);
+  }
+
+  /* A site preview inside either world starts from the plain light palette and
+     light controls. The site's own theme CSS (buildSiteTheme scoped to this
+     class) is unlayered, so it always wins over this. Shadows go back to their
+     defaults for the same reason. */
+  .cms-canvas-light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --sidebar: 0 0% 98%;
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.10);
+    --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.14);
+    --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.20);
+    color: hsl(var(--foreground));
+    color-scheme: light;
+  }
+}
+
+/* ── Status colours, readable in both modes ──────────────────────────────
+   Pages pick a colour for one mode: text-amber-400 was written against the old
+   always-dark Super Admin and is unreadable on a light panel; text-green-800 on
+   bg-green-100 was written for light and glares on a dark one. One fix here
+   instead of hundreds of per-page edits. Never touches a site preview, or a
+   screen that is dark by design (POS, kitchen: data-fixed-dark). */
+html[data-world]:not(.dark) :is(.text-red-300, .text-red-400, .text-red-500, .text-red-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #b91c1c; }
+html[data-world]:not(.dark) :is(.text-orange-300, .text-orange-400, .text-orange-500, .text-orange-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #9a3412; }
+html[data-world]:not(.dark) :is(.text-amber-300, .text-amber-400, .text-amber-500, .text-amber-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #92400e; }
+html[data-world]:not(.dark) :is(.text-yellow-300, .text-yellow-400, .text-yellow-500, .text-yellow-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #854d0e; }
+html[data-world]:not(.dark) :is(.text-green-300, .text-green-400, .text-green-500, .text-green-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #166534; }
+html[data-world]:not(.dark) :is(.text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #065f46; }
+html[data-world]:not(.dark) :is(.text-teal-300, .text-teal-400, .text-teal-500, .text-teal-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #115e59; }
+html[data-world]:not(.dark) :is(.text-cyan-300, .text-cyan-400, .text-cyan-500, .text-cyan-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #155e75; }
+html[data-world]:not(.dark) :is(.text-sky-300, .text-sky-400, .text-sky-500, .text-sky-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #0369a1; }
+html[data-world]:not(.dark) :is(.text-blue-300, .text-blue-400, .text-blue-500, .text-blue-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #1d4ed8; }
+html[data-world]:not(.dark) :is(.text-indigo-300, .text-indigo-400, .text-indigo-500, .text-indigo-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #4338ca; }
+html[data-world]:not(.dark) :is(.text-violet-300, .text-violet-400, .text-violet-500, .text-violet-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #6d28d9; }
+html[data-world]:not(.dark) :is(.text-purple-300, .text-purple-400, .text-purple-500, .text-purple-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #7e22ce; }
+html[data-world]:not(.dark) :is(.text-pink-300, .text-pink-400, .text-pink-500, .text-pink-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #be185d; }
+html[data-world]:not(.dark) :is(.text-rose-300, .text-rose-400, .text-rose-500, .text-rose-600):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #be123c; }
+
+html[data-world].dark :is(.text-red-600, .text-red-700, .text-red-800, .text-red-900, .text-red-950, [class~="text-red-800/80"], [class~="text-red-900/80"], [class~="text-red-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #fca5a5; }
+html[data-world].dark :is(.bg-red-50, .bg-red-100, .bg-red-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(239 68 68 / 0.14); }
+html[data-world].dark :is(.border-red-100, .border-red-200, .border-red-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(239 68 68 / 0.32); }
+html[data-world].dark :is(.text-orange-600, .text-orange-700, .text-orange-800, .text-orange-900, .text-orange-950, [class~="text-orange-800/80"], [class~="text-orange-900/80"], [class~="text-orange-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #fdba74; }
+html[data-world].dark :is(.bg-orange-50, .bg-orange-100, .bg-orange-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(249 115 22 / 0.14); }
+html[data-world].dark :is(.border-orange-100, .border-orange-200, .border-orange-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(249 115 22 / 0.32); }
+html[data-world].dark :is(.text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950, [class~="text-amber-800/80"], [class~="text-amber-900/80"], [class~="text-amber-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #fcd34d; }
+html[data-world].dark :is(.bg-amber-50, .bg-amber-100, .bg-amber-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(245 158 11 / 0.14); }
+html[data-world].dark :is(.border-amber-100, .border-amber-200, .border-amber-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(245 158 11 / 0.32); }
+html[data-world].dark :is(.text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-yellow-950, [class~="text-yellow-800/80"], [class~="text-yellow-900/80"], [class~="text-yellow-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #fde047; }
+html[data-world].dark :is(.bg-yellow-50, .bg-yellow-100, .bg-yellow-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(234 179 8 / 0.14); }
+html[data-world].dark :is(.border-yellow-100, .border-yellow-200, .border-yellow-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(234 179 8 / 0.32); }
+html[data-world].dark :is(.text-green-600, .text-green-700, .text-green-800, .text-green-900, .text-green-950, [class~="text-green-800/80"], [class~="text-green-900/80"], [class~="text-green-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #86efac; }
+html[data-world].dark :is(.bg-green-50, .bg-green-100, .bg-green-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(34 197 94 / 0.14); }
+html[data-world].dark :is(.border-green-100, .border-green-200, .border-green-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(34 197 94 / 0.32); }
+html[data-world].dark :is(.text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950, [class~="text-emerald-800/80"], [class~="text-emerald-900/80"], [class~="text-emerald-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #6ee7b7; }
+html[data-world].dark :is(.bg-emerald-50, .bg-emerald-100, .bg-emerald-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(16 185 129 / 0.14); }
+html[data-world].dark :is(.border-emerald-100, .border-emerald-200, .border-emerald-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(16 185 129 / 0.32); }
+html[data-world].dark :is(.text-teal-600, .text-teal-700, .text-teal-800, .text-teal-900, .text-teal-950, [class~="text-teal-800/80"], [class~="text-teal-900/80"], [class~="text-teal-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #5eead4; }
+html[data-world].dark :is(.bg-teal-50, .bg-teal-100, .bg-teal-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(20 184 166 / 0.14); }
+html[data-world].dark :is(.border-teal-100, .border-teal-200, .border-teal-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(20 184 166 / 0.32); }
+html[data-world].dark :is(.text-cyan-600, .text-cyan-700, .text-cyan-800, .text-cyan-900, .text-cyan-950, [class~="text-cyan-800/80"], [class~="text-cyan-900/80"], [class~="text-cyan-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #67e8f9; }
+html[data-world].dark :is(.bg-cyan-50, .bg-cyan-100, .bg-cyan-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(6 182 212 / 0.14); }
+html[data-world].dark :is(.border-cyan-100, .border-cyan-200, .border-cyan-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(6 182 212 / 0.32); }
+html[data-world].dark :is(.text-sky-600, .text-sky-700, .text-sky-800, .text-sky-900, .text-sky-950, [class~="text-sky-800/80"], [class~="text-sky-900/80"], [class~="text-sky-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #7dd3fc; }
+html[data-world].dark :is(.bg-sky-50, .bg-sky-100, .bg-sky-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(14 165 233 / 0.14); }
+html[data-world].dark :is(.border-sky-100, .border-sky-200, .border-sky-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(14 165 233 / 0.32); }
+html[data-world].dark :is(.text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900, .text-blue-950, [class~="text-blue-800/80"], [class~="text-blue-900/80"], [class~="text-blue-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #93c5fd; }
+html[data-world].dark :is(.bg-blue-50, .bg-blue-100, .bg-blue-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(59 130 246 / 0.14); }
+html[data-world].dark :is(.border-blue-100, .border-blue-200, .border-blue-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(59 130 246 / 0.32); }
+html[data-world].dark :is(.text-indigo-600, .text-indigo-700, .text-indigo-800, .text-indigo-900, .text-indigo-950, [class~="text-indigo-800/80"], [class~="text-indigo-900/80"], [class~="text-indigo-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #a5b4fc; }
+html[data-world].dark :is(.bg-indigo-50, .bg-indigo-100, .bg-indigo-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(99 102 241 / 0.14); }
+html[data-world].dark :is(.border-indigo-100, .border-indigo-200, .border-indigo-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(99 102 241 / 0.32); }
+html[data-world].dark :is(.text-violet-600, .text-violet-700, .text-violet-800, .text-violet-900, .text-violet-950, [class~="text-violet-800/80"], [class~="text-violet-900/80"], [class~="text-violet-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #c4b5fd; }
+html[data-world].dark :is(.bg-violet-50, .bg-violet-100, .bg-violet-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(139 92 246 / 0.14); }
+html[data-world].dark :is(.border-violet-100, .border-violet-200, .border-violet-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(139 92 246 / 0.32); }
+html[data-world].dark :is(.text-purple-600, .text-purple-700, .text-purple-800, .text-purple-900, .text-purple-950, [class~="text-purple-800/80"], [class~="text-purple-900/80"], [class~="text-purple-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #d8b4fe; }
+html[data-world].dark :is(.bg-purple-50, .bg-purple-100, .bg-purple-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(168 85 247 / 0.14); }
+html[data-world].dark :is(.border-purple-100, .border-purple-200, .border-purple-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(168 85 247 / 0.32); }
+html[data-world].dark :is(.text-pink-600, .text-pink-700, .text-pink-800, .text-pink-900, .text-pink-950, [class~="text-pink-800/80"], [class~="text-pink-900/80"], [class~="text-pink-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #f9a8d4; }
+html[data-world].dark :is(.bg-pink-50, .bg-pink-100, .bg-pink-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(236 72 153 / 0.14); }
+html[data-world].dark :is(.border-pink-100, .border-pink-200, .border-pink-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(236 72 153 / 0.32); }
+html[data-world].dark :is(.text-rose-600, .text-rose-700, .text-rose-800, .text-rose-900, .text-rose-950, [class~="text-rose-800/80"], [class~="text-rose-900/80"], [class~="text-rose-900/70"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #fda4af; }
+html[data-world].dark :is(.bg-rose-50, .bg-rose-100, .bg-rose-200):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: rgb(244 63 94 / 0.14); }
+html[data-world].dark :is(.border-rose-100, .border-rose-200, .border-rose-300):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: rgb(244 63 94 / 0.32); }
+
+/* Too dark to read on a dark panel, unlike the other 500s. */
+html[data-world].dark :is(.text-indigo-500, .text-violet-500, .text-blue-500):not(.cms-canvas-light *, [data-fixed-dark] *) { color: #a5b4fc; }
+
+/* Many dashboard screens hard-code indigo as "the button colour". Indigo is the
+   Console's colour now: on a client's dashboard these wear its clay instead. */
+html[data-world="site"] :is([class~="bg-indigo-500"], [class~="bg-indigo-600"]):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+html[data-world="site"] :is([class~="hover:bg-indigo-500"], [class~="hover:bg-indigo-700"]):hover:not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: hsl(var(--primary) / 0.88); }
+html[data-world="site"] :is([class~="text-indigo-300"], [class~="text-indigo-400"], [class~="text-indigo-500"], [class~="text-indigo-600"], [class~="text-indigo-700"]):not(.cms-canvas-light *, [data-fixed-dark] *) { color: hsl(var(--primary)); }
+html[data-world="site"] :is([class~="hover:text-indigo-300"], [class~="hover:text-indigo-400"]):hover:not(.cms-canvas-light *, [data-fixed-dark] *) { color: hsl(var(--primary)); }
+html[data-world="site"] :is([class~="border-indigo-400"], [class~="border-indigo-500"], [class~="border-indigo-600"]):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: hsl(var(--primary)); }
+html[data-world="site"] :is([class~="border-indigo-200"], [class~="border-indigo-500/30"], [class~="border-indigo-500/50"], [class~="border-indigo-600/40"], [class~="border-indigo-800/50"]):not(.cms-canvas-light *, [data-fixed-dark] *) { border-color: hsl(var(--primary) / 0.4); }
+html[data-world="site"] :is([class~="bg-indigo-50"], [class~="bg-indigo-500/10"], [class~="bg-indigo-500/15"], [class~="bg-indigo-600/20"], [class~="bg-indigo-900/50"], [class~="bg-indigo-950/20"]):not(.cms-canvas-light *, [data-fixed-dark] *) { background-color: hsl(var(--primary) / 0.1); }
+html[data-world="site"] :is([class~="focus:ring-indigo-500/40"], [class~="ring-indigo-500/40"]):not(.cms-canvas-light *, [data-fixed-dark] *) { --tw-ring-color: hsl(var(--primary) / 0.4); }
+
+/* ── Shared look of hand-written lists, titles and cards ──────────────────
+   Dashboard pages build tables and titles by hand (no shared component), so the
+   common treatment lives here and reaches every page at once. */
+html[data-world] main h1:is(.text-2xl, .text-xl):not(.cms-canvas-light *) { font-size: 1.375rem; line-height: 1.75rem; font-weight: 650; letter-spacing: -0.015em; }
+html[data-world] main h1 > svg:first-child:not(.cms-canvas-light *) { width: 1.25rem; height: 1.25rem; color: hsl(var(--primary)); }
+html[data-world] main :is(.bg-card.border, .border.bg-card):not(.cms-canvas-light *, .shadow-none) { box-shadow: var(--shadow-sm); }
+
+html[data-world] :is([class~="text-muted-foreground/50"], [class~="text-muted-foreground/60"], [class~="text-muted-foreground/70"], [class~="text-muted-foreground/80"]):not(.cms-canvas-light *) { color: hsl(var(--muted-foreground)); }
+/* A strip that only scrolls sideways never shows a stray vertical scrollbar. */
+html[data-world] main .overflow-x-auto:not([class*="overflow-y"], [class*="max-h"], [class*="h-["], .cms-canvas-light *) { overflow-y: hidden; }
+
+html[data-world] main table:not(.cms-canvas-light *) { font-variant-numeric: tabular-nums; }
+html[data-world] main thead:not(.cms-canvas-light *) th { background: hsl(var(--muted) / 0.55); color: hsl(var(--muted-foreground)); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em; text-transform: none; white-space: nowrap; }
+html[data-world] main tbody:not(.cms-canvas-light *) tr { transition: background-color 120ms ease; }
+html[data-world] main tbody:not(.cms-canvas-light *) tr:hover { background: hsl(var(--accent) / 0.45); }
+
+/* The top bar leaves the whole width: page columns sit centred, not stuck to the left. */
+html[data-world="console"] main > [class*="max-w-"] { margin-inline: auto; }
+
+html[data-world] :focus-visible:is(a, button, [role="button"], [role="tab"]):not(.cms-canvas-light *) { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+html[data-world] ::selection { background: hsl(var(--primary) / 0.22); }
+html[data-world] :not(.cms-canvas-light, .cms-canvas-light *)::-webkit-scrollbar { width: 9px; height: 9px; }
+html[data-world] :not(.cms-canvas-light, .cms-canvas-light *)::-webkit-scrollbar-track { background: transparent; }
+html[data-world] :not(.cms-canvas-light, .cms-canvas-light *)::-webkit-scrollbar-button { display: none; }
+html[data-world] :not(.cms-canvas-light, .cms-canvas-light *)::-webkit-scrollbar-thumb { background: hsl(var(--foreground) / 0.18); border: 2px solid transparent; border-radius: 99px; background-clip: padding-box; }

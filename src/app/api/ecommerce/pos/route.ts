@@ -1,0 +1,165 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getApiCaller } from "@/lib/auth/api-caller";
+import { upsertContact } from "@/lib/crm/upsertContact";
+import { requireModule } from "@/lib/modules/resolve-modules";
+import { siteAccess } from "@/lib/mcp/auth";
+
+interface PosItem { product_id: string; name: string; price: number; quantity: number }
+
+/** In-person quick sale: paid order + stock decrement + accounting income. */
+export async function POST(req: NextRequest) {
+  // Web: cookie session (unchanged). Mobile (Passive Coder Admin app):
+  // Authorization: Bearer <token> + X-Tenant-Id; getApiCaller verifies the
+  // membership. Viewers can't ring up sales on either.
+  const caller = await getApiCaller(req);
+  const tenantId = caller?.tenantId ?? null;
+  if (caller) {
+    const access = await siteAccess(await createAdminClient(), caller.userId, caller.tenantId);
+    if (access !== "write") return NextResponse.json({ error: "Your role can't record sales on this site." }, { status: 403 });
+  }
+  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Nav-hiding and the page-level redirect aren't enough on their own — a
+  // Pro tenant could still POST directly here. Same "pos" module the sidebar
+  // gates on (docs/business/04-pricing-and-packaging.md, Biz price cut).
+  if (!(await requireModule(tenantId, "pos"))) {
+    return NextResponse.json({ error: "POS is not available on your plan" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const items: PosItem[] = Array.isArray(body.items) ? body.items : [];
+  if (!items.length) return NextResponse.json({ error: "No items" }, { status: 400 });
+  if (items.some((i) => !Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 9999)) {
+    return NextResponse.json({ error: "Each item needs a whole-number quantity of at least 1." }, { status: 400 });
+  }
+
+  // Restaurant vertical (docs/business/06-restaurant-vertical.md phase 3):
+  // staff can ring up a dine-in order directly on the POS (no QR scan) by
+  // picking the table themselves, so this needs the same branch/table/
+  // fulfillment fields the web checkout gained in phase 2. All optional —
+  // a plain retail tenant's POS keeps working exactly as before.
+  const branchId: string | null = body.branch_id || null;
+  const tableId: string | null = body.table_id || null;
+  const fulfillmentType: string = ["delivery", "pickup", "dine_in"].includes(body.fulfillment_type)
+    ? body.fulfillment_type
+    // A branch was picked but no table — staff rang up a takeaway/pickup
+    // sale at the counter, not a dine-in one.
+    : (tableId ? "dine_in" : branchId ? "pickup" : "delivery");
+
+  const admin = await createAdminClient();
+
+  // Branch and table must be this site's own.
+  if (branchId) {
+    const { data: b } = await admin.from("restaurant_branches").select("id").eq("id", branchId).eq("tenant_id", tenantId).maybeSingle();
+    if (!b) return NextResponse.json({ error: "Branch not found" }, { status: 400 });
+  }
+  if (tableId) {
+    const { data: tb } = await admin.from("restaurant_tables").select("id").eq("id", tableId).eq("tenant_id", tenantId).maybeSingle();
+    if (!tb) return NextResponse.json({ error: "Table not found" }, { status: 400 });
+  }
+
+  // Server-side prices
+  const ids = [...new Set(items.map(i => i.product_id))];
+  const { data: products } = await admin.from("products")
+    .select("id, name, price, stock_quantity, track_inventory")
+    .eq("tenant_id", tenantId).in("id", ids);
+  if (!products?.length) return NextResponse.json({ error: "Products not found" }, { status: 400 });
+
+  const priceMap = new Map(products.map(p => [p.id, p]));
+  // Every line must be one of this site's products, priced from the database.
+  // Unknown ids used to fall back to the price the client sent.
+  if (items.some((i) => !priceMap.has(i.product_id))) {
+    return NextResponse.json({ error: "One or more products weren't found. Refresh the POS and try again." }, { status: 400 });
+  }
+  const verified = items.map(i => {
+    const p = priceMap.get(i.product_id)!;
+    return { product_id: i.product_id, quantity: i.quantity, name: p.name, price: Number(p.price) };
+  });
+
+  const subtotal = verified.reduce((s, i) => s + i.price * i.quantity, 0);
+  const discount = Math.max(0, Number(body.discount) || 0);
+  const total = Math.max(0, subtotal - discount);
+  const paymentMethod = body.payment_method || "cash";
+
+  const { data: order, error } = await admin.from("orders")
+    .insert({
+      tenant_id: tenantId,
+      order_number: `POS-${Date.now()}`,
+      customer_name: body.customer_name?.trim() || "Walk-in customer",
+      customer_email: body.customer_email?.trim().toLowerCase() || "walkin@pos.local",
+      status: "completed",
+      payment_status: "paid",
+      payment_method: paymentMethod,
+      items: verified,
+      billing_address: { first_name: body.customer_name ?? "Walk-in", last_name: "", email: body.customer_email ?? "" },
+      subtotal,
+      discount,
+      shipping_cost: 0,
+      tax: 0,
+      total,
+      notes: body.notes ?? null,
+      branch_id: branchId,
+      table_id: tableId,
+      fulfillment_type: fulfillmentType,
+      // Split-bill (Tier 3 restaurant vertical, migration 097) — both
+      // optional, only ever set when this sale is one piece of a table's
+      // cart split into several sub-bills. A normal sale leaves both null.
+      split_group_id: body.split_group_id || null,
+      split_label: body.split_label || null,
+      // POS sales are rung up as already paid/completed, but a dine-in
+      // table order still needs to pass through the kitchen — a plain
+      // walk-in retail sale (no branch) has nothing for a kitchen to make.
+      kitchen_status: branchId ? "pending" : null,
+    })
+    .select("id, order_number")
+    .single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Stock decrement for tracked items, summed per product (the same product
+  // on two lines used to be decremented only once).
+  const qtyByProduct = new Map<string, number>();
+  for (const item of verified) qtyByProduct.set(item.product_id, (qtyByProduct.get(item.product_id) ?? 0) + item.quantity);
+  for (const [id, qty] of qtyByProduct) {
+    const p = priceMap.get(id);
+    if (!p?.track_inventory) continue;
+    await admin.from("products")
+      .update({ stock_quantity: Math.max(0, (p.stock_quantity ?? 0) - qty), updated_at: new Date().toISOString() })
+      .eq("id", p.id).eq("tenant_id", tenantId);
+  }
+
+  // Accounting income entry
+  const { data: settings } = await admin.from("site_settings")
+    .select("currency").eq("tenant_id", tenantId).maybeSingle();
+  await admin.from("transactions").insert({
+    tenant_id: tenantId,
+    type: "income",
+    status: "completed",
+    amount: total,
+    currency: settings?.currency || "USD",
+    description: `POS sale ${order.order_number}`,
+    category: "sales",
+    order_id: order.id,
+    customer_name: body.customer_name ?? "Walk-in",
+    is_public: false,
+    date: new Date().toISOString().slice(0, 10),
+  }).then(() => {}, () => {});
+
+  // Optional CRM contact when the customer left a phone/email
+  if (body.customer_phone || (body.customer_email && !body.customer_email.endsWith("@pos.local"))) {
+    await upsertContact({
+      tenantId,
+      name: body.customer_name,
+      phone: body.customer_phone,
+      email: body.customer_email,
+      source: "order",
+      tags: ["customer", "pos"],
+      event: {
+        type: "order",
+        title: `POS sale ${order.order_number} — ${total}`,
+        meta: { order_id: order.id, total, payment_method: paymentMethod },
+      },
+    }).catch(() => null);
+  }
+
+  return NextResponse.json({ ok: true, orderId: order.id, orderNumber: order.order_number, total });
+}

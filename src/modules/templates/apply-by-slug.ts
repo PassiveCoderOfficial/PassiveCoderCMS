@@ -1,0 +1,58 @@
+/**
+ * Applies a template to a tenant given a *slug* rather than an id.
+ *
+ * Site creation (onboarding, staff, super admin) and the dashboard's apply
+ * button all know a slug, not a template id — this is the one place that
+ * resolves it and decides what happens when it doesn't resolve. Replaces
+ * `seedTemplate()`, which generated sites from the hardcoded TEMPLATE_REGISTRY.
+ *
+ * "blank" or an unknown slug seeds the minimal starter site rather than
+ * failing, so a new tenant is never left with zero pages.
+ */
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { applyDbTemplate, isDbTemplate, type ApplyMode, type ApplyResult } from "./apply";
+import { seedStarterSite } from "./starter-site";
+import { seedRealEstateSample } from "@/modules/real-estate/sample-data";
+
+export async function applyTemplateBySlug(
+  supabase: SupabaseClient,
+  tenantId: string,
+  slug: string | null | undefined,
+  mode: ApplyMode,
+  options: { archiveExistingPages?: boolean; siteName?: string } = {},
+): Promise<ApplyResult & { source: "db" | "starter" }> {
+  const templateId = slug && slug !== "blank" ? await isDbTemplate(supabase, slug) : null;
+
+  if (!templateId) {
+    if (slug && slug !== "blank") {
+      console.warn(`[applyTemplateBySlug] unknown template slug "${slug}" — seeding starter site instead`);
+    }
+    // Theme-only mode has no pages to create, so there's nothing to seed.
+    if (mode === "full") {
+      await seedStarterSite(supabase, tenantId, options.siteName ?? "Your Site");
+    }
+    return { pagesCreated: 0, pagesArchived: 0, source: "starter" };
+  }
+
+  const result = await applyDbTemplate(supabase, tenantId, templateId, mode, {
+    archiveExistingPages: options.archiveExistingPages ?? false,
+  });
+
+  // A full apply that created nothing (template with no pages, or every page
+  // rejected by the plan's page limit) must not leave a brand-new site empty:
+  // onboarding swallows errors from this call, so the owner would land on a
+  // dashboard with no pages and a live site that says "create your first page".
+  if (mode === "full" && result.pagesCreated === 0) {
+    console.warn(`[applyTemplateBySlug] template "${slug}" produced no pages for tenant=${tenantId} — seeding starter site`);
+    await seedStarterSite(supabase, tenantId, options.siteName ?? "Your Site");
+  }
+
+  // Real estate templates are built from listing blocks that read the
+  // tenant's own catalogue, so without data they render empty. Seed the
+  // sample catalogue (a no-op once the tenant has any properties).
+  if (mode === "full") {
+    const { data: tpl } = await supabase.from("templates").select("category").eq("id", templateId).maybeSingle();
+    if (tpl?.category === "Real Estate") await seedRealEstateSample(supabase, tenantId).catch(() => null);
+  }
+  return { ...result, source: "db" };
+}

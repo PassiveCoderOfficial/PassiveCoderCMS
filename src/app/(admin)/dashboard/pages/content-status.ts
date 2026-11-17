@@ -1,0 +1,118 @@
+"use client";
+
+import { createClient } from "@/lib/supabase/client";
+import { generateId } from "@/lib/utils";
+import { friendlyPageLimitMessage } from "@/lib/usage/page-limit";
+
+// ─── Shared page/post status + trash helpers (build once, reuse everywhere) ──
+// Used by both /dashboard/pages and /dashboard/posts row components. Trash is
+// deleted_at IS NOT NULL, not a status value — keeps the pages_status_check
+// constraint and every existing status branch untouched.
+
+export async function updateStatus(id: string, status: string) {
+  const supabase = createClient();
+  const updates: Record<string, unknown> = { status };
+  if (status === "published") updates.published_at = new Date().toISOString();
+  return supabase.from("pages").update(updates).eq("id", id);
+}
+
+export async function updateScheduledAt(id: string, isoDateTime: string) {
+  const supabase = createClient();
+  const picked = new Date(isoDateTime);
+  const now = new Date();
+  if (picked.getTime() > now.getTime()) {
+    // Future time: schedule it — the publish-scheduled cron flips this to
+    // published once scheduled_at <= now.
+    return supabase.from("pages").update({ status: "scheduled", scheduled_at: picked.toISOString() }).eq("id", id);
+  }
+  // Past/now: just adjust the displayed timestamp, don't silently publish.
+  return supabase.from("pages").update({ published_at: picked.toISOString() }).eq("id", id);
+}
+
+export async function moveToTrash(id: string) {
+  const supabase = createClient();
+  return supabase.from("pages").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+}
+
+type Client = ReturnType<typeof createClient>;
+type RestoreResult = { error: { message: string } | null; renamedTo?: string };
+
+// A trashed page gives up its address (pages_tenant_slug_unique only covers
+// live rows), so a new page may now hold the same slug — the classic case is
+// a re-created Home. Restoring then hits the unique index (23505). Instead of
+// failing, bring the page back at "<slug>-restored" as a draft: nothing live
+// changes and the owner can rename or publish it when ready.
+async function restoreOne(supabase: Client, id: string): Promise<RestoreResult> {
+  const first = await supabase.from("pages").update({ deleted_at: null }).eq("id", id);
+  if (!first.error) return { error: null };
+  if (first.error.code !== "23505") return { error: first.error };
+  const { data: page } = await supabase.from("pages").select("slug").eq("id", id).maybeSingle();
+  if (!page) return { error: first.error };
+  const base = `${page.slug}-restored`;
+  for (const slug of [base, `${base}-${generateId(4)}`]) {
+    const { error } = await supabase.from("pages").update({ deleted_at: null, slug, status: "draft" }).eq("id", id);
+    if (!error) return { error: null, renamedTo: slug };
+    if (error.code !== "23505") return { error };
+  }
+  return { error: first.error };
+}
+
+export async function restoreFromTrash(id: string): Promise<RestoreResult> {
+  return restoreOne(createClient(), id);
+}
+
+export async function deletePermanently(id: string) {
+  const supabase = createClient();
+  return supabase.from("pages").delete().eq("id", id);
+}
+
+export async function duplicatePage(id: string): Promise<{ id: string | null; error: string | null }> {
+  const supabase = createClient();
+  const { data: page } = await supabase.from("pages").select("*").eq("id", id).single();
+  if (!page) return { id: null, error: "Page not found" };
+  const newSlug = `${page.slug}-copy-${generateId(4)}`;
+  const { data: inserted, error } = await supabase
+    .from("pages")
+    .insert({
+      ...page, id: undefined, title: `${page.title} (Copy)`, slug: newSlug, status: "draft", deleted_at: null, created_at: undefined, updated_at: undefined,
+      // Generated column (migration 106): inserting a value fails.
+      has_draft: undefined,
+      // Copy what the editor shows — unpublished edits if there are any —
+      // as the new page's plain content. The copy starts unpublished, and
+      // drafts only apply to live pages (migration 105).
+      blocks: page.draft_blocks ?? page.blocks,
+      draft_blocks: null,
+      draft_rev: 0,
+    })
+    .select("id")
+    .single();
+  if (error) return { id: null, error: friendlyPageLimitMessage(error) ?? error.message };
+  return { id: inserted.id as string, error: null };
+}
+
+// ─── Bulk versions (pages list bulk actions) ────────────────────────────────
+export async function bulkUpdateStatus(ids: string[], status: "published" | "draft") {
+  const supabase = createClient();
+  const updates: Record<string, unknown> = { status };
+  if (status === "published") updates.published_at = new Date().toISOString();
+  return supabase.from("pages").update(updates).in("id", ids);
+}
+
+export async function bulkMoveToTrash(ids: string[]) {
+  return createClient().from("pages").update({ deleted_at: new Date().toISOString() }).in("id", ids);
+}
+
+export async function bulkRestore(ids: string[]): Promise<{ error: { message: string } | null; renamed: string[] }> {
+  const supabase = createClient();
+  const renamed: string[] = [];
+  for (const id of ids) {
+    const r = await restoreOne(supabase, id);
+    if (r.error) return { error: r.error, renamed };
+    if (r.renamedTo) renamed.push(r.renamedTo);
+  }
+  return { error: null, renamed };
+}
+
+export async function bulkDeletePermanently(ids: string[]) {
+  return createClient().from("pages").delete().in("id", ids);
+}

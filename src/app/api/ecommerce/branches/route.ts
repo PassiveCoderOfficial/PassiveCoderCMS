@@ -1,0 +1,81 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getApiCaller } from "@/lib/auth/api-caller";
+import { canWriteSite } from "@/lib/auth/site-write";
+import { requireModule } from "@/lib/modules/resolve-modules";
+
+/** Create a branch for the current tenant. */
+export async function POST(req: NextRequest) {
+  const tenantId = (await getApiCaller())?.tenantId ?? null;
+  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
+  // Restaurant stack is on the Pro and Biz plans (moved down from Biz-only 2026-10-04; see docs/business/04-pricing-and-packaging.md,
+  // "pos" module). Nav-hiding alone doesn't stop a direct POST from a Pro
+  // tenant creating branches the sidebar never showed them.
+  if (!(await requireModule(tenantId, "restaurant"))) {
+    return NextResponse.json({ error: "Branches are not available on your plan" }, { status: 403 });
+  }
+
+  const { name, address, phone } = await req.json();
+  if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
+
+  const admin = await createAdminClient();
+  const { data, error } = await admin
+    .from("restaurant_branches")
+    .insert({ tenant_id: tenantId, name: name.trim(), address: address?.trim() || null, phone: phone?.trim() || null })
+    .select("id, name, address, phone, is_active")
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ branch: data });
+}
+
+/** Update a branch's own fields (name/address/phone/is_active). */
+export async function PATCH(req: NextRequest) {
+  const tenantId = (await getApiCaller())?.tenantId ?? null;
+  if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canWriteSite(tenantId))) return NextResponse.json({ error: "Your role can't make changes on this site." }, { status: 403 });
+  if (!(await requireModule(tenantId, "restaurant"))) {
+    return NextResponse.json({ error: "Branches are not available on your plan" }, { status: 403 });
+  }
+
+  const { branch_id, ...patch } = await req.json();
+  if (!branch_id) return NextResponse.json({ error: "Missing branch_id" }, { status: 400 });
+
+  const allowed: Record<string, unknown> = {};
+  if (typeof patch.name === "string") allowed.name = patch.name.trim();
+  if (typeof patch.address === "string") allowed.address = patch.address.trim() || null;
+  if (typeof patch.phone === "string") allowed.phone = patch.phone.trim() || null;
+  if (typeof patch.is_active === "boolean") allowed.is_active = patch.is_active;
+  // Pickup pin (food delivery): both numbers in range, or both null to clear.
+  if ("lat" in patch || "lng" in patch) {
+    const ok = typeof patch.lat === "number" && typeof patch.lng === "number"
+      && Math.abs(patch.lat) <= 90 && Math.abs(patch.lng) <= 180 && !(patch.lat === 0 && patch.lng === 0);
+    if (ok) { allowed.lat = patch.lat; allowed.lng = patch.lng; }
+    else if (patch.lat === null && patch.lng === null) { allowed.lat = null; allowed.lng = null; }
+    else return NextResponse.json({ error: "Invalid location" }, { status: 400 });
+  }
+  // Per-branch screen toggles (migration 092, docs/business/06-restaurant-vertical.md
+  // Phase 6) — manager picks which of KITCHEN/MONITOR/TABLE this branch
+  // actually runs. Kitchen defaults on; the other two default off since
+  // they need a physical screen/tablets the branch may not have yet.
+  if (typeof patch.kitchen_screen_enabled === "boolean") allowed.kitchen_screen_enabled = patch.kitchen_screen_enabled;
+  if (typeof patch.monitor_screen_enabled === "boolean") allowed.monitor_screen_enabled = patch.monitor_screen_enabled;
+  if (typeof patch.table_screen_enabled === "boolean") allowed.table_screen_enabled = patch.table_screen_enabled;
+  allowed.updated_at = new Date().toISOString();
+
+  const admin = await createAdminClient();
+  // .eq("tenant_id", ...) in the same update is the ownership check — a
+  // branch_id belonging to another tenant simply matches zero rows.
+  const { data, error } = await admin
+    .from("restaurant_branches")
+    .update(allowed)
+    .eq("id", branch_id)
+    .eq("tenant_id", tenantId)
+    .select("id, kitchen_screen_enabled, monitor_screen_enabled, table_screen_enabled, lat, lng")
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (!data) return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+  return NextResponse.json({ ok: true, branch: data });
+}

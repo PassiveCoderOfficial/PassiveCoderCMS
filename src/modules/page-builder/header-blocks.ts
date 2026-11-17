@@ -1,0 +1,85 @@
+/**
+ * Blocks offered in the header builder.
+ *
+ * A header is a narrow, always-visible strip — a pricing table or blog roll in
+ * there is almost certainly a mistake rather than a choice, so the palette is
+ * restricted rather than showing all 52 block types. These are the ones that
+ * genuinely appear in real site headers: the nav bar itself, a top announcement
+ * strip, a logo/text lockup, a call-to-action, and layout primitives for
+ * arranging them.
+ */
+import type { BlockType } from "@/types/cms";
+import type { BlockDefinition } from "@/modules/page-builder/block-registry";
+
+export const HEADER_BLOCK_TYPES: readonly BlockType[] = [
+  "navigation",
+  // Independent header sub-blocks (2026-09-06) — compose these instead of
+  // (or alongside) the legacy navigation block. See project_block_editor_bugs
+  // memory: header_nav reuses the exact same menu core as navigation, just
+  // without owning logo/CTA/cart, so a header can be built either the old
+  // way (one navigation block) or the new way (separate Logo/Nav/CTA/Cart/
+  // Account blocks arranged in a container) — both remain fully supported.
+  "header_logo",
+  "header_nav",
+  "header_cta",
+  "header_booking",
+  "header_cart",
+  "header_account",
+  "search",
+  "text",
+  "cta",
+  "columns",
+  "container",
+  "spacer",
+  "divider",
+  "social_links",
+  "custom_html",
+] as const;
+
+/** Same idea for the footer, which carries more than a header does — link
+ *  columns, a newsletter signup, contact details. */
+export const FOOTER_BLOCK_TYPES: readonly BlockType[] = [
+  "footer",
+  "navigation",
+  "text",
+  "newsletter",
+  "contact",
+  "columns",
+  "container",
+  "spacer",
+  "divider",
+  "social_links",
+  "icon_grid",
+  "bottom_bar",
+  "custom_html",
+] as const;
+
+/**
+ * Relabels for this restricted palette. The registry's own names ("Menu Bar",
+ * "Action Banner", "Side-by-Side Text"…) are written for the general page
+ * builder — accurate there, but they don't read as header/footer elements
+ * out of that context, which was confusing on its own screen. Only entries
+ * that actually needed a clearer name are listed; everything else keeps its
+ * normal registry label.
+ */
+type DisplayOverrides = Partial<Record<BlockType, Partial<Pick<BlockDefinition, "label" | "description" | "icon">>>>;
+
+export const HEADER_BLOCK_DISPLAY: DisplayOverrides = {
+  navigation: { label: "Nav Menu", description: "Logo, menu links and an optional button — the header itself." },
+  header_booking: { label: "Booking Button", description: "Opens your booking page (/book). Visible on phones too." },
+  cta: { label: "Announcement Bar", description: "A slim banner above or below the nav — a promo, notice, or extra call-to-action." },
+  columns: { label: "Side-by-Side Layout", description: "Two columns for arranging header content, e.g. a logo beside a phone number." },
+  container: { label: "Grouping Box", description: "Groups other blocks together so they can be styled or aligned as one." },
+  spacer: { label: "Blank Space", description: "Adds vertical gap between blocks." },
+  divider: { label: "Divider Line", description: "A thin horizontal rule." },
+};
+
+export const FOOTER_BLOCK_DISPLAY: DisplayOverrides = {
+  ...HEADER_BLOCK_DISPLAY,
+  footer: { label: "Footer Columns", description: "Logo, link columns, socials and copyright — the standard footer layout." },
+  navigation: { label: "Extra Nav Links", description: "A second link row, separate from the footer's own columns." },
+  newsletter: { label: "Newsletter Signup", description: "An email capture form." },
+  contact: { label: "Contact Details", description: "Phone, email, address — or a short contact form." },
+  bottom_bar: { label: "Mobile Bottom Bar", description: "App-style bar fixed to the bottom of the screen: home, categories, search, cart, WhatsApp. Choose phones only, phones + tablets, or every screen." },
+  icon_grid: { label: "Badges / Certifications", description: "A row of small icons with labels, e.g. payment methods or licenses." },
+};

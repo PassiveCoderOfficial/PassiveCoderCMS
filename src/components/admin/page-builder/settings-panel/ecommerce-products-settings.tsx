@@ -1,0 +1,393 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useBuilderStore } from "@/lib/store/builder";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { createClient } from "@/lib/supabase/client";
+import { getClientTenantId } from "@/lib/tenant/client";
+import { cn } from "@/lib/utils";
+import type { EcommerceProductsBlockProps } from "@/types/cms";
+import { UiTextFields } from "./ui-text-fields";
+
+type Category = { id: string; name: string };
+
+export function EcommerceProductsSettings({ block }: { block: EcommerceProductsBlockProps }) {
+  const { updateBlock, tenantId: pageTenantId } = useBuilderStore();
+  const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
+  const d = block.data;
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => {
+    const supabase = createClient();
+    // Scope to the tenant that owns the page, not the viewer's own tenant —
+    // they differ when a super admin edits another tenant's page.
+    const resolveTenant = pageTenantId
+      ? Promise.resolve(pageTenantId)
+      : getClientTenantId();
+    resolveTenant.then((tenantId) => {
+      let q = supabase.from("categories").select("id,name").eq("type", "product").order("name");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      q.then(({ data }) => setCategories((data as Category[]) ?? []));
+    });
+  }, [pageTenantId]);
+
+  // Legacy blocks stored a single categoryId; treat it as a one-item selection.
+  const selected = d.categoryIds ?? (d.categoryId ? [d.categoryId] : []);
+  const toggleCategory = (id: string) => {
+    const next = selected.includes(id) ? selected.filter((c) => c !== id) : [...selected, id];
+    updateBlock(block.id, { data: { ...d, categoryIds: next, categoryId: undefined } });
+  };
+  // Which settings the chosen layout actually draws (show only those).
+  const cats = d.showAs === "categories";
+  const layout = d.layout ?? "grid";
+  const cardLayout = !["list", "featured", "minimal", "wide-cards", "carousel"].includes(layout) || layout === "carousel" || layout === "featured";
+  const styleKind = d.cardStyle ?? "default";
+  const fancyCard = cardLayout && (styleKind === "boutique" || styleKind === "retail");
+  const setName = (id: string, v: string) => {
+    const names = { ...(d.categoryNames ?? {}) };
+    if (v.trim()) names[id] = v; else delete names[id];
+    update("categoryNames", Object.keys(names).length ? names : undefined);
+  };
+  const named = selected.length ? categories.filter((c) => selected.includes(c.id)) : categories;
+
+  return (
+    <div className="space-y-4">
+      {/* ── Content ── */}
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Content</p>
+      <p className="text-[10px] text-muted-foreground">
+        {cats ? "Category photos and names come from " : "Products, prices and photos come from "}
+        <Link href={cats ? "/dashboard/ecommerce/categories" : "/dashboard/ecommerce/products"} className="underline">
+          {cats ? "Dashboard > Shop > Categories" : "Dashboard > Shop > Products"}
+        </Link>. This block only picks which ones and how they look.
+      </p>
+
+      <div>
+        <Label className="text-xs">Section Title</Label>
+        <Input value={d.title ?? ""} onChange={(e) => update("title", e.target.value)} className="h-8 text-xs mt-1" placeholder="Our Products" />
+      </div>
+      <div>
+        <Label className="text-xs">Subtitle</Label>
+        <Input value={d.subtitle ?? ""} onChange={(e) => update("subtitle", e.target.value)} className="h-8 text-xs mt-1" placeholder="Browse our collection" />
+      </div>
+      {!cats && (
+      <div>
+        <Label className="text-xs">Display Count</Label>
+        <Input type="number" value={d.displayCount} onChange={(e) => update("displayCount", Number(e.target.value))} className="h-8 text-xs mt-1" min={1} max={48} />
+      </div>
+      )}
+      <div>
+        <Label className="text-xs">Categories</Label>
+        {categories.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground mt-1">No product categories yet. Add them in <Link href="/dashboard/ecommerce/categories" className="underline">Dashboard &gt; Shop &gt; Categories</Link>.</p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => toggleCategory(c.id)}
+                  className={cn(
+                    "px-2 py-1 rounded-full text-[11px] font-medium border transition-colors",
+                    selected.includes(c.id)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40",
+                  )}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5">
+              {selected.length === 0 ? "Showing all categories" : `Filtering to ${selected.length} selected`}
+            </p>
+          </>
+        )}
+      </div>
+      {!cats && (
+      <div>
+        <Label className="text-xs">Sort By</Label>
+        <Select value={d.sortBy} onValueChange={(v) => update("sortBy", v)}>
+          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="latest" className="text-xs">Latest</SelectItem>
+            <SelectItem value="featured" className="text-xs">Featured First</SelectItem>
+            <SelectItem value="price_asc" className="text-xs">Price: Low → High</SelectItem>
+            <SelectItem value="price_desc" className="text-xs">Price: High → Low</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      )}
+      <div>
+        <Label className="text-xs">Show</Label>
+        <select value={d.showAs ?? "products"} onChange={(e) => update("showAs", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2 mt-1">
+          <option value="products">Products</option>
+          <option value="categories">Categories as photo tiles (pick them under Categories)</option>
+        </select>
+        {d.showAs === "categories" && (
+          <Input value={d.categoryButtonLabel ?? ""} onChange={(e) => update("categoryButtonLabel", e.target.value)} className="h-8 text-xs mt-1.5" placeholder="Button text (Shop now; '-' hides it)" />
+        )}
+      </div>
+      {cats && named.length > 0 && (
+        <div className="space-y-1.5 rounded-lg border p-2.5">
+          <p className="text-[10px] font-semibold uppercase text-muted-foreground">Names on this block (optional)</p>
+          <p className="text-[10px] text-muted-foreground">Empty = the category&apos;s own name (its translation on language pages).</p>
+          {named.map((c) => (
+            <Input key={c.id} value={d.categoryNames?.[c.id] ?? ""} placeholder={c.name} onChange={(e) => setName(c.id, e.target.value)} className="h-7 text-xs" />
+          ))}
+        </div>
+      )}
+      {d.showAs === "categories" && <CategoryTileSettings d={d} update={update} />}
+      {!cats && (<>
+      <div>
+        <Label className="text-xs">Heading style</Label>
+        <select value={d.headingStyle ?? "default"} onChange={(e) => update("headingStyle", e.target.value)} className="w-full h-8 text-xs rounded-md border bg-background px-2 mt-1">
+          <option value="default">Large title</option>
+          <option value="compact">Small upper-case title + link under it</option>
+        </select>
+      </div>
+      {d.headingStyle === "compact" && (
+        <div className="grid grid-cols-2 gap-2">
+          <Input value={d.headerLink?.label ?? ""} onChange={(e) => update("headerLink", { ...d.headerLink, label: e.target.value })} className="h-8 text-xs" placeholder="Link text (SHOP NOW)" />
+          <Input value={d.headerLink?.url ?? ""} onChange={(e) => update("headerLink", { ...d.headerLink, url: e.target.value })} className="h-8 text-xs" placeholder="/shop" />
+        </div>
+      )}
+      <div>
+        <Label className="text-xs">CTA Button Label</Label>
+        <Input value={d.ctaLabel ?? ""} onChange={(e) => update("ctaLabel", e.target.value)} className="h-8 text-xs mt-1" placeholder="View all products" />
+      </div>
+      <div>
+        <Label className="text-xs">CTA Button URL</Label>
+        <Input value={d.ctaUrl ?? ""} onChange={(e) => update("ctaUrl", e.target.value)} className="h-8 text-xs mt-1" placeholder="/products" />
+      </div>
+      <p className="text-[10px] text-muted-foreground -mt-2">The button shows when both are filled in.</p>
+      </>)}
+
+      <UiTextFields block={block} title="Words on this section" />
+
+      <hr className="border-border" />
+
+      {/* ── Layout ── */}
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Layout</p>
+
+      {!cats && (
+      <div>
+        <Label className="text-xs">Layout Style</Label>
+        <Select value={d.layout} onValueChange={(v) => update("layout", v)}>
+          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="grid" className="text-xs">Grid — equal cards</SelectItem>
+            <SelectItem value="featured" className="text-xs">Featured — hero + grid</SelectItem>
+            <SelectItem value="list" className="text-xs">List — horizontal rows</SelectItem>
+            <SelectItem value="wide-cards" className="text-xs">Wide Cards — horizontal cards</SelectItem>
+            <SelectItem value="carousel" className="text-xs">Carousel — sliding row with arrows</SelectItem>
+            <SelectItem value="minimal" className="text-xs">Minimal — compact list</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      )}
+
+      {((!cats && (d.layout === "grid" || d.layout === "minimal" || d.layout === "carousel")) || (cats && (d.tileShape ?? "classic") === "classic")) && (
+        <div>
+          <Label className="text-xs">{d.layout === "carousel" && !cats ? "Cards per view (desktop)" : "Columns"}</Label>
+          <Select value={String(d.columns ?? 3)} onValueChange={(v) => update("columns", Number(v))}>
+            <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["2","3","4","5"].map((c) => <SelectItem key={c} value={c} className="text-xs">{c} columns</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {!cats && d.layout === "wide-cards" && (
+        <div>
+          <Label className="text-xs">Columns (desktop)</Label>
+          <Select value={String(d.wideCols ?? 2)} onValueChange={(v) => update("wideCols", Number(v))}>
+            <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["2","3"].map((c) => <SelectItem key={c} value={c} className="text-xs">{c} columns</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div>
+        <Label className="text-xs">Title Alignment</Label>
+        <Select value={d.titleAlignment ?? "center"} onValueChange={(v) => update("titleAlignment", v)}>
+          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="left" className="text-xs">Left</SelectItem>
+            <SelectItem value="center" className="text-xs">Center</SelectItem>
+            <SelectItem value="right" className="text-xs">Right</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-xs">Section Padding</Label>
+        <Select value={d.sectionPadding ?? "md"} onValueChange={(v) => update("sectionPadding", v)}>
+          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none" className="text-xs">None</SelectItem>
+            <SelectItem value="sm" className="text-xs">Small</SelectItem>
+            <SelectItem value="md" className="text-xs">Medium</SelectItem>
+            <SelectItem value="lg" className="text-xs">Large</SelectItem>
+            <SelectItem value="xl" className="text-xs">Extra Large</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-xs">Background Color</Label>
+        <div className="flex items-center gap-2 mt-1">
+          <ColorPicker value={d.backgroundColor ?? "#ffffff"} onChange={(v) => update("backgroundColor", v)} className="flex-1" />
+          {d.backgroundColor && (
+            <button onClick={() => update("backgroundColor", undefined)} className="text-xs text-muted-foreground hover:text-foreground shrink-0">Clear</button>
+          )}
+        </div>
+      </div>
+
+      {(!cats || (d.tileShape ?? "classic") === "classic") && (<>
+      <hr className="border-border" />
+
+      {/* ── Card Design ── */}
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Card Design</p>
+
+      {!cats && layout !== "minimal" && layout !== "list" && (
+      <div>
+        <Label className="text-xs">Card Style</Label>
+        <Select value={d.cardStyle ?? "default"} onValueChange={(v) => update("cardStyle", v)}>
+          <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default" className="text-xs">Default — border + hover shadow</SelectItem>
+            <SelectItem value="flat" className="text-xs">Flat — subtle fill</SelectItem>
+            <SelectItem value="shadow" className="text-xs">Shadow — elevated</SelectItem>
+            <SelectItem value="bordered" className="text-xs">Bordered — accent on hover</SelectItem>
+            <SelectItem value="boutique" className="text-xs">Boutique — centred serif title, pill button</SelectItem>
+            <SelectItem value="retail" className="text-xs">Retail — no frame, size chips, Best Seller badge</SelectItem>
+            <SelectItem value="minimal" className="text-xs">Minimal — no border</SelectItem>
+          </SelectContent>
+        </Select>
+        {layout === "wide-cards" && <p className="text-[10px] text-muted-foreground mt-1">Wide cards use Default, Shadow or Bordered.</p>}
+      </div>
+      )}
+
+      {((!cats && cardLayout && layout !== "featured") || cats) && (
+        <div>
+          <Label className="text-xs">Image Ratio</Label>
+          <Select value={d.imageRatio ?? (cats ? "portrait" : "square")} onValueChange={(v) => update("imageRatio", v)}>
+            <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="square" className="text-xs">Square (1:1)</SelectItem>
+              <SelectItem value="portrait" className="text-xs">Portrait (3:4)</SelectItem>
+              <SelectItem value="landscape" className="text-xs">Landscape (16:9)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      </>)}
+
+      {!cats && (<>
+      <hr className="border-border" />
+
+      {/* ── Options ── */}
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Options</p>
+
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Show Add to Cart</Label>
+        <Switch checked={d.showAddToCart !== false} onCheckedChange={(v) => update("showAddToCart", v)} />
+      </div>
+      {fancyCard && (
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Show Size Picker on Cards</Label>
+          <Switch checked={d.showVariantPicker !== false} onCheckedChange={(v) => update("showVariantPicker", v)} />
+        </div>
+      )}
+      {layout !== "minimal" && !fancyCard && (
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Show Description</Label>
+          <Switch checked={d.showDescription !== false} onCheckedChange={(v) => update("showDescription", v)} />
+        </div>
+      )}
+      {cardLayout && (
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Show Sale Badges</Label>
+          <Switch checked={d.showBadges !== false} onCheckedChange={(v) => update("showBadges", v)} />
+        </div>
+      )}
+      </>)}
+    </div>
+  );
+}
+
+const tileSelect = "w-full h-8 text-xs rounded-md border bg-background px-2 mt-1";
+
+/** Category tile options (Show = Categories). */
+function CategoryTileSettings({ d, update }: { d: EcommerceProductsBlockProps["data"]; update: (f: string, v: unknown) => void }) {
+  const shape = d.tileShape ?? "classic";
+  const num = (f: string, v: string) => update(f, v === "" ? undefined : Number(v));
+  const color = (label: string, f: "tileBg" | "tileBorderColor" | "labelColor") => (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-2 mt-1">
+        <ColorPicker value={d[f] ?? "#ffffff"} onChange={(v) => update(f, v)} className="flex-1" />
+        {d[f] ? <button onClick={() => update(f, undefined)} className="text-xs text-muted-foreground hover:text-foreground shrink-0">Theme</button> : <span className="text-[10px] text-muted-foreground shrink-0">theme</span>}
+      </div>
+    </div>
+  );
+  return (
+    <div className="space-y-3 rounded-lg border p-3">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Category tiles</p>
+      <div>
+        <Label className="text-xs">Tile shape</Label>
+        <select className={tileSelect} value={shape} onChange={(e) => update("tileShape", e.target.value)}>
+          <option value="classic">Classic: tall photo + button</option>
+          <option value="circle">Circle</option>
+          <option value="rounded">Rounded square</option>
+          <option value="square">Square</option>
+        </select>
+      </div>
+      {shape !== "classic" && (
+        <>
+          {shape === "rounded" && (
+            <div><Label className="text-xs">Corner radius ({d.tileRadius ?? 18}px)</Label>
+              <input type="range" min={0} max={60} value={d.tileRadius ?? 18} onChange={(e) => update("tileRadius", Number(e.target.value))} className="w-full mt-1" /></div>
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            <div><Label className="text-[11px]">Phone cols</Label><Input type="number" min={1} max={6} value={d.colsMobile ?? 3} onChange={(e) => num("colsMobile", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-[11px]">Tablet cols</Label><Input type="number" min={1} max={8} value={d.colsTablet ?? 4} onChange={(e) => num("colsTablet", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-[11px]">Desktop cols</Label><Input type="number" min={1} max={10} value={d.colsDesktop ?? 6} onChange={(e) => num("colsDesktop", e.target.value)} className="h-8 text-xs mt-1" /></div>
+          </div>
+          <div className="flex items-center justify-between"><Label className="text-xs">Phones: swipe row instead of grid</Label><Switch checked={!!d.mobileScroll} onCheckedChange={(v) => update("mobileScroll", v)} /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label className="text-xs">Gap (px)</Label><Input type="number" min={0} max={60} value={d.tileGap ?? 16} onChange={(e) => num("tileGap", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-xs">Max image size (px)</Label><Input type="number" min={48} max={400} value={d.tileMaxWidth ?? 140} onChange={(e) => num("tileMaxWidth", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-xs">Image fit</Label>
+              <select className={tileSelect} value={d.imageFit ?? "cover"} onChange={(e) => update("imageFit", e.target.value)}><option value="cover">Fill (crop)</option><option value="contain">Fit (no crop)</option></select></div>
+            <div><Label className="text-xs">Image padding (px)</Label><Input type="number" min={0} max={40} value={d.imagePadding ?? 0} onChange={(e) => num("imagePadding", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-xs">Hover</Label>
+              <select className={tileSelect} value={d.tileHover ?? "zoom"} onChange={(e) => update("tileHover", e.target.value)}><option value="zoom">Zoom photo</option><option value="lift">Lift tile</option><option value="none">None</option></select></div>
+          </div>
+          {color("Tile background", "tileBg")}
+          {color("Tile border", "tileBorderColor")}
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-1">Name</p>
+          <div className="grid grid-cols-3 gap-2">
+            <div><Label className="text-[11px]">Size (px)</Label><Input type="number" min={9} max={24} value={d.labelSize ?? 13} onChange={(e) => num("labelSize", e.target.value)} className="h-8 text-xs mt-1" /></div>
+            <div><Label className="text-[11px]">Weight</Label>
+              <select className={tileSelect} value={d.labelWeight ?? 600} onChange={(e) => update("labelWeight", Number(e.target.value))}>{[400, 500, 600, 700, 800].map((w) => <option key={w} value={w}>{w}</option>)}</select></div>
+            <div><Label className="text-[11px]">Case</Label>
+              <select className={tileSelect} value={d.labelCase ?? "none"} onChange={(e) => update("labelCase", e.target.value)}><option value="none">As typed</option><option value="upper">UPPER</option><option value="capitalize">Title</option></select></div>
+          </div>
+          {color("Name colour", "labelColor")}
+          <div className="flex items-center justify-between"><Label className="text-xs">Show product count</Label><Switch checked={!!d.showCount} onCheckedChange={(v) => update("showCount", v)} /></div>
+          <p className="text-[10px] text-muted-foreground">Button text above: leave empty for no button on these tiles.</p>
+        </>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,330 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import type { StatsBlockProps } from "@/types/cms";
+import { cn } from "@/lib/utils";
+
+/** Stat values are usually short numbers ("500+"), but owners also write
+ *  words ("Islandwide"). At the numeric display size a word is wider than a
+ *  phone and pushes the page sideways — seen live. Long values step down. */
+function statValueFit(display: unknown): string {
+  const len = String(display ?? "").length;
+  // 5-6 characters ("99.9%") still wrapped inside a half-width phone card.
+  return len > 9 ? "text-2xl! sm:text-3xl! md:text-4xl!" : len > 6 ? "text-3xl! sm:text-4xl!" : len > 4 ? "text-3xl! sm:text-4xl! md:text-5xl!" : "";
+}
+import * as LucideIcons from "lucide-react";
+
+function DynIcon({ name, className }: { name?: string; className?: string }) {
+  if (!name) return null;
+  const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name];
+  return Icon ? <Icon className={className} /> : null;
+}
+
+function useCountUp(target: number, animate: boolean, duration = 1500) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(false);
+  useEffect(() => {
+    if (!animate || ref.current) return;
+    ref.current = true;
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [target, animate, duration]);
+  return animate ? count : target;
+}
+
+/** Stat values are a single combined string like "4.9★" or "4,200+" — there's
+ *  no separate numeric field. Split off the leading number (decimals allowed)
+ *  from whatever text surrounds it, so the count-up animation can tick the
+ *  number while keeping the rest ("★", "+", "%", "yr") as a static suffix. */
+function parseStatValue(value: string): { number: number; suffix: string } {
+  const match = /^(\d[\d,]*\.?\d*)/.exec(value.trim());
+  if (!match) return { number: 0, suffix: value };
+  const number = parseFloat(match[1].replace(/,/g, "")) || 0;
+  const suffix = value.slice(match[1].length);
+  return { number, suffix };
+}
+
+/** The item's prefix / suffix fields ("$", "+", "%"), skipped when the value
+ *  already starts / ends with them so "500+" with suffix "+" stays "500+". */
+export function statAffixes(item: Pick<StatItem, "value" | "prefix" | "suffix">): { pre: string; suf: string } {
+  const v = String(item.value ?? "").trim();
+  const pre = item.prefix && !v.startsWith(item.prefix) ? item.prefix : "";
+  const suf = item.suffix && !v.endsWith(item.suffix) ? item.suffix : "";
+  return { pre, suf };
+}
+
+function useStatDisplay(item: StatItem, animate: boolean, allText = true): string {
+  const { number, suffix } = parseStatValue(item.value);
+  const isDecimal = !Number.isInteger(number);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const count = useCountUp(number, animate && !isDecimal);
+  if (!allText) {
+    // Saved blocks from before Nov 2026: exactly the old output.
+    if (!animate || number === 0 || isDecimal) return item.value;
+    const shownOld = /\d,\d/.test(item.value) ? count.toLocaleString() : String(count);
+    return `${item.prefix ?? ""}${shownOld}${suffix}`;
+  }
+  // Prefix / suffix fields were shown only while counting up (prefix) or never
+  // (suffix), so "5000" + suffix "+" printed "5000". Fixed Nov 2026.
+  const { pre, suf } = statAffixes(item);
+  if (!animate || number === 0 || isDecimal) return `${pre}${item.value}${suf}`;
+  // Only group thousands when the author did ("1,500" yes, "2009" no — a year).
+  const shown = /\d,\d/.test(item.value) ? count.toLocaleString() : String(count);
+  return `${pre}${shown}${suffix}${suf}`;
+}
+
+/** Section title + subtitle. Every design shows them now (only the default
+ *  design did before, though the panel always offered them); nothing is
+ *  rendered when both are empty, so blocks without a title are unchanged. */
+function StatsHeading({ data, always = false }: { data: StatsBlockProps["data"]; always?: boolean }) {
+  const { title, subtitle } = data;
+  if (!title && !subtitle) return null;
+  // Named designs ignored the title before Nov 2026; keep that for untouched saved blocks.
+  if (!always && data.showAllText !== true) return null;
+  return (
+    <div className="text-center mb-10">
+      {title && <h2 className="text-3xl font-bold mb-3">{title}</h2>}
+      {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+type StatItem = StatsBlockProps["data"]["items"][number];
+
+// ─── Variant: colored-row ─────────────────────────────────────────────────────
+// Bold gradient banner with floating cream stat tiles — real visual weight,
+// not a thin grey-divided grid. Warm palette: brand-gradient bg, cream cards.
+function StatsColoredRow({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StatsHeading data={data} />
+      <div
+        className="rounded-[1.75rem] p-6 sm:p-10 shadow-xl"
+        style={{ backgroundImage: "var(--brand-gradient, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%))" }}
+      >
+        <div className={cn("grid grid-cols-2 gap-4", colClass)}>
+          {data.items.map((item) => {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const display = useStatDisplay(item, data.animate, data.showAllText === true);
+            return (
+              <div key={item.id} className="stat-value-wrap bg-card/95 backdrop-blur-sm rounded-2xl flex flex-col items-center text-center p-6 sm:p-7 shadow-sm">
+                {item.icon && <DynIcon name={item.icon} className="w-6 h-6 mb-2 text-primary" />}
+                <p className={cn("stat-value text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight", statValueFit(display))} style={{ fontFamily: "var(--heading-font, inherit)" }}>{display}</p>
+                <p className="text-sm mt-1.5 text-foreground/70 font-medium">{item.label}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: plain-dark ──────────────────────────────────────────────────────
+// No cards, plain text on dark bg — spa/luxury
+function StatsPlainDark({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="max-w-5xl mx-auto">
+      <StatsHeading data={data} />
+      <div className={cn("grid grid-cols-2 gap-8", colClass)}>
+        {data.items.map((item) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, data.animate, data.showAllText === true);
+          return (
+            <div key={item.id} className="flex flex-col items-center text-center">
+              <p className={cn("stat-value text-5xl font-light text-primary", statValueFit(display))}>{display}</p>
+              <div className="w-8 h-px bg-primary/40 my-3" />
+              <p className="text-xs tracking-[0.15em] uppercase text-muted-foreground">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: navy-row ────────────────────────────────────────────────────────
+// Navy background row — law firm
+function StatsNavyRow({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StatsHeading data={data} />
+      <div className={cn("grid grid-cols-2 gap-8", colClass)}>
+        {data.items.map((item) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, data.animate, data.showAllText === true);
+          return (
+            <div key={item.id} className="text-center">
+              <p className={cn("stat-value text-4xl md:text-5xl font-bold text-primary", statValueFit(display))}>{display}</p>
+              <p className="text-sm mt-2 text-muted-foreground">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: gradient-numbers ────────────────────────────────────────────────
+// Gradient text values — tech agency dark
+function StatsGradientNumbers({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StatsHeading data={data} />
+      <div className={cn("grid grid-cols-2 gap-8", colClass)}>
+        {data.items.map((item) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, data.animate, data.showAllText === true);
+          return (
+            <div key={item.id} className="flex flex-col items-center text-center p-6 border border-border rounded-xl">
+              {item.icon && (
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                  <DynIcon name={item.icon} className="w-5 h-5 text-primary" />
+                </div>
+              )}
+              <p className={cn("stat-value text-4xl md:text-5xl font-black text-primary", statValueFit(display))}>{display}</p>
+              <p className="text-xs mt-2 text-muted-foreground uppercase tracking-widest font-medium">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: bold-dark-row ────────────────────────────────────────────────────
+// Bold, uppercase, dark — gym
+function StatsBoldDarkRow({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StatsHeading data={data} />
+      <div className={cn("grid grid-cols-2 gap-1 bg-border", colClass)}>
+        {data.items.map((item) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, data.animate, data.showAllText === true);
+          return (
+            <div key={item.id} className="bg-card flex flex-col items-center text-center p-8">
+              <p className={cn("stat-value text-5xl font-black text-primary", statValueFit(display))}>{display}</p>
+              <p className="text-xs mt-2 uppercase tracking-[0.15em] text-muted-foreground font-semibold">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: warm-row ────────────────────────────────────────────────────────
+// Warm tones — restaurant
+function StatsWarmRow({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  return (
+    <div className="max-w-5xl mx-auto">
+      <StatsHeading data={data} />
+      <div className={cn("grid grid-cols-2 gap-8", colClass)}>
+        {data.items.map((item) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, data.animate, data.showAllText === true);
+          return (
+            <div key={item.id} className="text-center">
+              <p className={cn("stat-value text-4xl md:text-5xl font-bold text-primary italic", statValueFit(display))}>{display}</p>
+              <div className="w-12 h-0.5 bg-primary/30 mx-auto my-3" />
+              <p className="text-sm text-muted-foreground">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Variant: dark-band ───────────────────────────────────────────────────────
+// Full-bleed solid brand-color band, white text, vertical dividers between
+// cells — manufacturing/corporate/B2B.
+function StatsDarkBand({ data }: { data: StatsBlockProps["data"] }) {
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[data.columns] ?? "sm:grid-cols-4";
+  const heading = <StatsHeading data={data} />;
+  return (
+    <>
+    {(data.title || data.subtitle) && data.showAllText === true && <div className="max-w-6xl mx-auto">{heading}</div>}
+    <div className="w-full bg-primary" style={data.bandColor ? { background: data.bandColor } : undefined}>
+      <div className={cn("max-w-6xl mx-auto grid grid-cols-2", colClass)}>
+        {data.items.map((item, i) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, data.animate, data.showAllText === true);
+          return (
+            <div
+              key={item.id}
+              className={cn(
+                "px-6 py-8 text-center border-white/10",
+                i < data.items.length - 1 && "border-r",
+              )}
+            >
+              <p className={cn("stat-value text-3xl font-black text-primary-foreground", statValueFit(display))}>{display}</p>
+              <p className="text-primary-foreground/60 text-xs mt-1.5 font-medium uppercase tracking-wider">{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+    </>
+  );
+}
+
+// ─── Legacy fallback ──────────────────────────────────────────────────────────
+
+function StatsLegacy({ data }: { data: StatsBlockProps["data"] }) {
+  const { layout, columns, items, style, animate } = data;
+  const colClass = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[columns];
+  return (
+    <div className="max-w-6xl mx-auto">
+      <StatsHeading data={data} always />
+      <div className={cn("grid grid-cols-2 gap-6", layout === "row" ? "sm:grid-cols-4" : colClass)}>
+        {items.map(item => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const display = useStatDisplay(item, animate, data.showAllText === true);
+          return (
+            <div key={item.id} className={cn(
+              "flex flex-col items-center text-center p-6",
+              style === "cards" && "bg-card border rounded-xl shadow-sm",
+              style === "colored" && "bg-primary text-primary-foreground rounded-xl",
+            )}>
+              {item.icon && (
+                <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-3", style === "colored" ? "bg-card/20" : "bg-primary/10")}>
+                  <DynIcon name={item.icon} className={cn("w-6 h-6", style === "colored" ? "text-primary-foreground" : "text-primary")} />
+                </div>
+              )}
+              <p className="text-4xl font-bold tracking-tight">{display}</p>
+              <p className={cn("text-sm mt-1", style === "colored" ? "text-primary-foreground/80" : "text-muted-foreground")}>{item.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ─────────────────────────────────────────────────────────────
+
+export function StatsBlock({ block }: { block: StatsBlockProps }) {
+  const variant = block.templateVariant;
+  if (variant === "colored-row") return <StatsColoredRow data={block.data} />;
+  if (variant === "plain-dark") return <StatsPlainDark data={block.data} />;
+  if (variant === "navy-row") return <StatsNavyRow data={block.data} />;
+  if (variant === "gradient-numbers") return <StatsGradientNumbers data={block.data} />;
+  if (variant === "bold-dark-row") return <StatsBoldDarkRow data={block.data} />;
+  if (variant === "warm-row") return <StatsWarmRow data={block.data} />;
+  if (variant === "dark-band") return <StatsDarkBand data={block.data} />;
+  return <StatsLegacy data={block.data} />;
+}

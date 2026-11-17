@@ -1,0 +1,43 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { useBuilderStore } from "@/lib/store/builder";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { ColorPicker } from "@/components/ui/color-picker";
+import type { BookingBlockProps } from "@/types/cms";
+import { UiTextFields } from "./ui-text-fields";
+
+export function BookingSettings({ block }: { block: BookingBlockProps }) {
+  const { updateBlock } = useBuilderStore();
+  const update = (f: string, v: unknown) => updateBlock(block.id, { data: { ...block.data, [f]: v } });
+
+  return (
+    <div className="space-y-3">
+      <div><Label className="text-xs">Title</Label><Input value={block.data.title ?? ""} onChange={e => update("title", e.target.value)} className="h-8 text-xs mt-1" /></div>
+      <div><Label className="text-xs">Subtitle</Label><Input value={block.data.subtitle ?? ""} onChange={e => update("subtitle", e.target.value)} className="h-8 text-xs mt-1" /></div>
+      <div><Label className="text-xs">Button Label</Label><Input value={block.data.submitLabel ?? ""} placeholder="Book Appointment" onChange={e => update("submitLabel", e.target.value)} className="h-8 text-xs mt-1" /></div>
+      <div>
+        <Label className="text-xs">Accent Color</Label>
+        <ColorPicker value={block.data.accentColor ?? ""} onChange={v => update("accentColor", v || undefined)} className="mt-1" />
+      </div>
+      <div>
+        <Label className="text-xs">Days Shown</Label>
+        <Input type="number" min={3} max={60} value={block.data.daysToShow}
+          onChange={e => update("daysToShow", parseInt(e.target.value, 10) || 14)} className="h-8 text-xs mt-1" />
+      </div>
+      {/* No phone switch: the form always asks for a phone, since it can be the
+          only contact a customer gives (the old switch was never read). */}
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Message field</Label>
+        <Switch checked={block.data.showMessage} onCheckedChange={v => update("showMessage", v)} />
+      </div>
+      <UiTextFields block={block} title="Form and confirmation words" />
+      <p className="text-[11px] text-muted-foreground">
+        Hours, slot length, the message shown after booking, deposits and whether email and phone are both required are set in <Link href="/dashboard/bookings" className="underline">Dashboard &gt; Bookings</Link>.
+      </p>
+    </div>
+  );
+}

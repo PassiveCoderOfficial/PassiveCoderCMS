@@ -1,0 +1,549 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Calendar, Clock, User, Phone, Mail, MessageSquare,
+  Check, X, Loader2, Save, CheckCircle, Plus, Trash2,
+  ChevronLeft, ChevronRight, Settings
+} from "lucide-react";
+import { useT } from "@/lib/i18n/language-provider";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
+import { DateTimeField } from "@/components/ui/date-time-field";
+
+interface BookingSettings {
+  id?: string;
+  enabled: boolean;
+  service_name: string;
+  slot_duration_mins: number;
+  buffer_mins: number;
+  advance_days: number;
+  min_notice_hours: number;
+  confirmation_mode: "auto" | "manual";
+  success_message: string;
+  notify_email: string | null;
+  contact_requirement: "either" | "both";
+  deposit_required?: boolean;
+  deposit_amount?: number | null;
+  deposit_currency?: string | null;
+  deposit_note?: string | null;
+}
+
+interface Availability {
+  id?: string;
+  day_of_week: number;
+  open_time: string;
+  close_time: string;
+  is_open: boolean;
+}
+
+interface BlockedDate {
+  id: string;
+  blocked_date: string;
+  reason: string | null;
+}
+
+interface Appointment {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  customer_name: string;
+  customer_email: string | null;
+  customer_phone: string | null;
+  message: string | null;
+  status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
+  admin_note: string | null;
+  deposit_status?: "none" | "due" | "reported" | "received";
+  payment_reference?: string | null;
+  created_at: string;
+  /** From the website chat: what the site calls it ("site visit"), and the chat it came from. */
+  visit_label?: string | null;
+  chat_conversation_id?: string | null;
+}
+
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const STATUS_COLORS: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60",
+  confirmed: "bg-green-50 text-green-900 border-green-200 dark:bg-green-950/40 dark:text-green-200 dark:border-green-800/60",
+  cancelled: "bg-red-50 text-red-900 border-red-200 dark:bg-red-950/40 dark:text-red-200 dark:border-red-800/60",
+  completed: "bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-800/60",
+  no_show: "bg-muted text-muted-foreground border-border",
+};
+
+function api(method: string, body?: unknown, params?: Record<string, string>) {
+  const url = params ? `/api/bookings?${new URLSearchParams(params)}` : "/api/bookings";
+  return fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
+}
+
+const DEFAULT_AVAILABILITY: Availability[] = DAYS.map((_, i) => ({
+  day_of_week: i,
+  open_time: "09:00",
+  close_time: "17:00",
+  is_open: i > 0 && i < 6, // Mon–Fri
+}));
+
+function SettingsTab({ settings: initial, onSave }: {
+  settings: BookingSettings | null;
+  onSave: (s: BookingSettings) => void;
+}) {
+  const t = useT();
+  const [s, setS] = useState<BookingSettings>({
+    enabled: false, service_name: "Appointment",
+    slot_duration_mins: 60, buffer_mins: 15, advance_days: 30,
+    min_notice_hours: 2, confirmation_mode: "manual",
+    success_message: "Your appointment request has been received!",
+    notify_email: null,
+    contact_requirement: "either",
+    deposit_required: false, deposit_amount: null, deposit_currency: "BDT", deposit_note: "",
+    ...(initial ?? {}),
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const set = (k: keyof BookingSettings, v: unknown) => { setS(p => ({ ...p, [k]: v })); setSaved(false); };
+
+  async function save() {
+    setSaving(true);
+    await api("POST", { _type: "settings", ...s });
+    setSaving(false); setSaved(true); onSave(s);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" className="sr-only peer" checked={s.enabled} onChange={e => set("enabled", e.target.checked)} />
+            <div className="w-11 h-6 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600" />
+          </label>
+          <span className="text-sm text-foreground font-medium">{s.enabled ? t("bookings.bookingSystemEnabled") : t("bookings.bookingSystemDisabled")}</span>
+        </div>
+        <button onClick={save} disabled={saving}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saved ? t("bookings.saved") : t("bookings.saveSettings")}
+        </button>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.serviceName")}</label>
+            <input value={s.service_name} onChange={e => set("service_name", e.target.value)}
+              className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.notificationEmail")}</label>
+            <input value={s.notify_email ?? ""} onChange={e => set("notify_email", e.target.value || null)}
+              className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" placeholder="you@example.com" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.slotDuration")}</label>
+            <input type="number" value={s.slot_duration_mins} onChange={e => set("slot_duration_mins", Number(e.target.value))}
+              className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.bufferBetweenSlots")}</label>
+            <input type="number" value={s.buffer_mins} onChange={e => set("buffer_mins", Number(e.target.value))}
+              className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.bookUpTo")}</label>
+            <input type="number" value={s.advance_days} onChange={e => set("advance_days", Number(e.target.value))}
+              className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.minNotice")}</label>
+            <input type="number" value={s.min_notice_hours} onChange={e => set("min_notice_hours", Number(e.target.value))}
+              className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">{t("bookings.confirmationMode")}</label>
+          <div className="flex gap-3">
+            {(["auto", "manual"] as const).map(mode => (
+              <label key={mode} className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" value={mode} checked={s.confirmation_mode === mode} onChange={() => set("confirmation_mode", mode)} className="w-4 h-4" />
+                <span className="text-sm text-foreground/80">{mode === "auto" ? t("bookings.modeAuto") : t("bookings.modeManual")} — {mode === "auto" ? t("bookings.modeAutoHint") : t("bookings.modeManualHint")}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">{t("bookings.requiredContact")}</label>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {(["either", "both"] as const).map(req => (
+              <label key={req} className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" value={req} checked={s.contact_requirement === req} onChange={() => set("contact_requirement", req)} className="w-4 h-4" />
+                <span className="text-sm text-foreground/80">{req === "either" ? t("bookings.contactEither") : t("bookings.contactBoth")}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border p-3 space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={!!s.deposit_required} onChange={e => set("deposit_required", e.target.checked)} className="w-4 h-4" />
+            <span className="text-sm text-foreground font-medium">{t("bookings.depositRequired")}</span>
+          </label>
+          <p className="text-xs text-muted-foreground">{t("bookings.depositHint")}</p>
+          {s.deposit_required && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">{t("bookings.depositAmount")}</label>
+                <input type="number" min="0" value={s.deposit_amount ?? ""} onChange={e => set("deposit_amount", e.target.value === "" ? null : Number(e.target.value))}
+                  className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">{t("bookings.depositCurrency")}</label>
+                <select value={s.deposit_currency ?? "BDT"} onChange={e => set("deposit_currency", e.target.value)} className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none">
+                  {["BDT", "USD", "AED", "SAR", "QAR", "OMR", "MYR", "SGD", "GBP", "EUR"].map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs text-muted-foreground mb-1">{t("bookings.depositNote")}</label>
+                <input value={s.deposit_note ?? ""} onChange={e => set("deposit_note", e.target.value)} placeholder={t("bookings.depositNotePlaceholder")}
+                  className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">{t("bookings.successMessage")}</label>
+          <textarea rows={2} value={s.success_message} onChange={e => set("success_message", e.target.value)}
+            className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AvailabilityTab({ availability: initial, blocked: initialBlocked }: {
+  availability: Availability[];
+  blocked: BlockedDate[];
+}) {
+  const t = useT();
+  const merged = DAYS.map((_, i) => initial.find(a => a.day_of_week === i) ?? DEFAULT_AVAILABILITY[i]);
+  const [rows, setRows] = useState<Availability[]>(merged);
+  const [blocked, setBlocked] = useState(initialBlocked);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [newDate, setNewDate] = useState("");
+  const [newReason, setNewReason] = useState("");
+
+  const setRow = (i: number, k: keyof Availability, v: unknown) => {
+    setRows(prev => prev.map((r, j) => j === i ? { ...r, [k]: v } : r));
+    setSaved(false);
+  };
+
+  async function saveAvailability() {
+    setSaving(true);
+    await api("POST", { _type: "availability", rows });
+    setSaving(false); setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function blockDate() {
+    if (!newDate) return;
+    const res = await api("POST", { _type: "blocked", blocked_date: newDate, reason: newReason || null });
+    const data = await res.json();
+    setBlocked(prev => [...prev, data]);
+    setNewDate(""); setNewReason("");
+  }
+
+  async function unblockDate(id: string) {
+    await api("DELETE", undefined, { type: "blocked", id });
+    setBlocked(prev => prev.filter(b => b.id !== id));
+  }
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div className="bg-card border border-border rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-medium text-foreground">{t("bookings.weeklySchedule")}</h3>
+          <button onClick={saveAvailability} disabled={saving}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {saved ? t("bookings.saved") : t("bookings.saveSchedule")}
+          </button>
+        </div>
+        <div className="space-y-3">
+          {rows.map((row, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <label className="flex items-center gap-2 w-28 cursor-pointer">
+                <input type="checkbox" checked={row.is_open} onChange={e => setRow(i, "is_open", e.target.checked)} className="w-4 h-4 rounded" />
+                <span className={`text-sm ${row.is_open ? "text-foreground" : "text-muted-foreground"}`}>{DAYS[i].slice(0, 3)}</span>
+              </label>
+              <DateTimeField type="time" value={row.open_time} onChange={e => setRow(i, "open_time", e.target.value)}
+                disabled={!row.is_open}
+                className="bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed" />
+              <span className="text-muted-foreground text-sm">–</span>
+              <DateTimeField type="time" value={row.close_time} onChange={e => setRow(i, "close_time", e.target.value)}
+                disabled={!row.is_open}
+                className="bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed" />
+              {!row.is_open && <span className="text-xs text-muted-foreground">{t("bookings.closed")}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="font-medium text-foreground mb-4">{t("bookings.blockedDates")}</h3>
+        <div className="flex items-center gap-3 mb-4">
+          <DateTimeField type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
+            className="bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          <input value={newReason} onChange={e => setNewReason(e.target.value)}
+            placeholder={t("bookings.reasonOptional")}
+            className="flex-1 bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          <button onClick={blockDate} disabled={!newDate}
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
+            <Plus className="w-4 h-4" /> {t("bookings.block")}
+          </button>
+        </div>
+        {blocked.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("bookings.noBlockedDates")}</p>
+        ) : (
+          <div className="space-y-2">
+            {blocked.map(b => (
+              <div key={b.id} className="flex items-center justify-between py-1.5 border-b border-border">
+                <div>
+                  <span className="text-sm text-foreground">{new Date(b.blocked_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</span>
+                  {b.reason && <span className="text-xs text-muted-foreground ml-2">— {b.reason}</span>}
+                </div>
+                <button onClick={() => unblockDate(b.id)} className="text-muted-foreground hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const APPT_STATUS_KEY: Record<Appointment["status"], TranslationKey> = {
+  pending: "bookings.statusPending", confirmed: "bookings.statusConfirmed",
+  completed: "bookings.statusCompleted", cancelled: "bookings.statusCancelled", no_show: "bookings.statusNoShow",
+};
+
+function AppointmentCard({ appt, onUpdate }: { appt: Appointment; onUpdate: (a: Appointment) => void }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState(appt.admin_note ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function updateStatus(status: Appointment["status"]) {
+    setSaving(true);
+    await api("PATCH", { _type: "appointment", id: appt.id, status });
+    setSaving(false);
+    onUpdate({ ...appt, status });
+  }
+
+  async function markDeposit() {
+    setSaving(true);
+    await api("PATCH", { _type: "appointment", id: appt.id, deposit_status: "received" });
+    onUpdate({ ...appt, deposit_status: "received" });
+    setSaving(false);
+  }
+  async function saveNote() {
+    await api("PATCH", { _type: "appointment", id: appt.id, admin_note: note || null });
+    onUpdate({ ...appt, admin_note: note || null });
+  }
+
+  const nextStatus: Record<string, string> = {
+    pending: t("bookings.confirm"),
+    confirmed: t("bookings.markComplete"),
+    completed: "",
+    cancelled: "",
+    no_show: "",
+  };
+
+  const nextStatusValue: Record<string, Appointment["status"]> = {
+    pending: "confirmed",
+    confirmed: "completed",
+  };
+
+  return (
+    <div className={`border rounded-xl overflow-hidden ${STATUS_COLORS[appt.status]}`}>
+      <button onClick={() => setOpen(o => !o)} className="w-full text-left p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-medium text-foreground">{appt.customer_name}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[appt.status]}`}>{t(APPT_STATUS_KEY[appt.status])}</span>
+              {appt.visit_label && <span className="text-xs px-2 py-0.5 rounded-full border border-border bg-background capitalize">{appt.visit_label}</span>}
+            </div>
+            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(appt.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{appt.start_time} – {appt.end_time}</span>
+              {appt.customer_email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{appt.customer_email}</span>}
+              {appt.customer_phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{appt.customer_phone}</span>}
+            </div>
+          </div>
+          <ChevronRight className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
+          {appt.message && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">{t("bookings.messageFromCustomer")}</p>
+              <p className="text-sm text-foreground bg-black/20 rounded-lg p-3 whitespace-pre-wrap break-words">{appt.message}</p>
+              {appt.chat_conversation_id && <a href={`/dashboard/chat?c=${appt.chat_conversation_id}`} className="mt-1 inline-block text-xs text-primary hover:underline">Read the website chat and see the photos</a>}
+            </div>
+          )}
+
+          {appt.deposit_status && appt.deposit_status !== "none" && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${appt.deposit_status === "received" ? "bg-green-50 text-green-900 border-green-200" : appt.deposit_status === "reported" ? "bg-amber-50 text-amber-900 border-amber-200" : "bg-muted text-muted-foreground border-border"}`}>
+                {appt.deposit_status === "received" ? t("bookings.depositReceived") : appt.deposit_status === "reported" ? t("bookings.depositReported") : t("bookings.depositDue")}
+              </span>
+              {appt.payment_reference && <span className="text-xs text-muted-foreground">{t("bookings.reference")}: <span className="font-mono text-foreground">{appt.payment_reference}</span></span>}
+              {appt.deposit_status !== "received" && (
+                <button onClick={() => void markDeposit()} disabled={saving} className="text-xs px-2.5 py-1 rounded bg-green-700 hover:bg-green-600 text-white disabled:opacity-50">{t("bookings.markDepositReceived")}</button>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">{t("bookings.adminNote")}</label>
+            <div className="flex gap-2">
+              <textarea rows={2} value={note} onChange={e => setNote(e.target.value)}
+                className="flex-1 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
+              <button onClick={saveNote} className="text-primary hover:text-indigo-300 p-1 self-start mt-1"><Save className="w-4 h-4" /></button>
+            </div>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {nextStatus[appt.status] && (
+              <button onClick={() => updateStatus(nextStatusValue[appt.status])} disabled={saving}
+                className="flex items-center gap-1.5 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                {nextStatus[appt.status]}
+              </button>
+            )}
+            {appt.status !== "cancelled" && appt.status !== "completed" && (
+              <button onClick={() => updateStatus("cancelled")} disabled={saving}
+                className="flex items-center gap-1.5 bg-red-800 hover:bg-red-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
+                <X className="w-3 h-3" /> {t("bookings.cancel")}
+              </button>
+            )}
+            {appt.status === "confirmed" && (
+              <button onClick={() => updateStatus("no_show")} disabled={saving}
+                className="flex items-center gap-1.5 bg-muted-foreground/30 hover:bg-gray-600 disabled:opacity-50 text-foreground text-xs px-3 py-1.5 rounded">
+                {t("bookings.noShow")}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const FILTER_KEY: Record<"all" | Appointment["status"], TranslationKey> = {
+  all: "bookings.statusAll", pending: "bookings.statusPending", confirmed: "bookings.statusConfirmed",
+  completed: "bookings.statusCompleted", cancelled: "bookings.statusCancelled", no_show: "bookings.statusNoShow",
+};
+
+function AppointmentsTab({ appointments: initial }: { appointments: Appointment[] }) {
+  const t = useT();
+  const [appointments, setAppointments] = useState(initial);
+  const [filter, setFilter] = useState<"all" | Appointment["status"]>("all");
+
+  const [q, setQ] = useState("");
+  const term = q.trim().toLowerCase();
+  const filtered = appointments.filter(a =>
+    (filter === "all" || a.status === filter) &&
+    (!term || [a.customer_name, a.customer_email, a.customer_phone].some(v => String(v ?? "").toLowerCase().includes(term))));
+  // Today / Upcoming (soonest first) / Past (latest first), like Calendly.
+  const today = new Date().toLocaleDateString("en-CA");
+  const groups = [
+    { key: "today", label: "Today", items: filtered.filter(a => a.date === today).sort((x, y) => x.start_time.localeCompare(y.start_time)) },
+    { key: "upcoming", label: "Upcoming", items: filtered.filter(a => a.date > today).sort((x, y) => (x.date + x.start_time).localeCompare(y.date + y.start_time)) },
+    { key: "past", label: "Past", items: filtered.filter(a => a.date < today).sort((x, y) => (y.date + y.start_time).localeCompare(x.date + x.start_time)) },
+  ].filter(g => g.items.length > 0);
+  const pending = appointments.filter(a => a.status === "pending").length;
+
+  return (
+    <div className="space-y-4">
+      {appointments.length > 0 && (
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search by customer name, email or phone…"
+          className="w-full h-9 rounded-md border border-border bg-background px-3 text-sm focus:border-primary focus:outline-none" />
+      )}
+      <div className="flex gap-2 flex-wrap">
+        {(["all", "pending", "confirmed", "completed", "cancelled", "no_show"] as const).map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === f ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            {t(FILTER_KEY[f])}{f === "pending" && pending > 0 ? ` (${pending})` : ""}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-border rounded-xl">
+          <Calendar className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{t("bookings.noAppointments", { filter: filter !== "all" ? t("bookings.withStatus", { status: t(FILTER_KEY[filter]) }) : "" })}</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {groups.map(g => (
+            <section key={g.key} className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.label} <span className="opacity-70">({g.items.length})</span></h3>
+              {g.items.map(a => (
+                <AppointmentCard key={a.id} appt={a}
+                  onUpdate={updated => setAppointments(prev => prev.map(x => x.id === updated.id ? updated : x))} />
+              ))}
+            </section>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function BookingsClient({ initialSettings, initialAvailability, initialBlocked, initialAppointments }: {
+  initialSettings: BookingSettings | null;
+  initialAvailability: Availability[];
+  initialBlocked: BlockedDate[];
+  initialAppointments: Appointment[];
+}) {
+  const t = useT();
+  const [settings, setSettings] = useState(initialSettings);
+  const [tab, setTab] = useState<"appointments" | "availability" | "settings">("appointments");
+  const pending = initialAppointments.filter(a => a.status === "pending").length;
+
+  const TAB_KEY: Record<typeof tab, TranslationKey> = {
+    appointments: "bookings.tabAppointments", availability: "bookings.tabAvailability", settings: "bookings.tabSettings",
+  };
+
+  return (
+    <div className="p-6 max-w-4xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-primary" /> {t("bookings.title")}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("bookings.subtitle")}</p>
+      </div>
+
+      <div className="flex gap-1 border-b border-border">
+        {(["appointments", "availability", "settings"] as const).map(tb => (
+          <button key={tb} onClick={() => setTab(tb)}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${tab === tb ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}>
+            {t(TAB_KEY[tb])}
+            {tb === "appointments" && pending > 0 && (
+              <span className="ml-1.5 bg-yellow-500 text-black text-xs px-1.5 py-0.5 rounded-full font-bold">{pending}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {tab === "settings" && <SettingsTab settings={settings} onSave={setSettings} />}
+      {tab === "availability" && <AvailabilityTab availability={initialAvailability} blocked={initialBlocked} />}
+      {tab === "appointments" && <AppointmentsTab appointments={initialAppointments} />}
+    </div>
+  );
+}

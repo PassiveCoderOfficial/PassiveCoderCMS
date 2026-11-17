@@ -1,0 +1,106 @@
+
+/* ── "Pro" family (hero product, features pro-bento, pricing pro-tiers, cta
+   pro-band, table compare, code, media tabs, section nav) ──────────────────
+   One calm, high-contrast look shared by these layouts. Colours come from the
+   site theme. A block on a dark section background gets .pcx-dark (set by the
+   block from its own Background colour), which flips the text and line tones.
+   "Accent ink" is the brand colour darkened until it is readable as text on a
+   light ground, so bright brand colours still pass contrast. */
+/* In the components layer, so Tailwind utilities on the same element (hidden,
+   sm:inline-flex, !text-xs...) still win. */
+@layer components {
+.pcx {
+  --pcx-fg: hsl(var(--pc-fg-root, var(--foreground)));
+  --pcx-sub: color-mix(in srgb, var(--pcx-fg) 70%, transparent);
+  --pcx-faint: color-mix(in srgb, var(--pcx-fg) 55%, transparent);
+  --pcx-line: color-mix(in srgb, var(--pcx-fg) 12%, transparent);
+  --pcx-line-strong: color-mix(in srgb, var(--pcx-fg) 22%, transparent);
+  --pcx-soft: color-mix(in srgb, var(--pcx-fg) 4%, transparent);
+  --pcx-card: hsl(var(--card));
+  --pcx-accent: hsl(var(--primary));
+  --pcx-on-accent: hsl(var(--primary-foreground));
+  --pcx-accent-ink: color-mix(in srgb, hsl(var(--primary)) 62%, #000);
+  --pcx-accent-soft: color-mix(in srgb, hsl(var(--primary)) 10%, transparent);
+  --pcx-code-bg: #0b1020;
+  --pcx-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color: var(--pcx-fg);
+}
+.pcx-dark {
+  --pcx-fg: #fff;
+  --pcx-sub: rgb(255 255 255 / .72);
+  --pcx-faint: rgb(255 255 255 / .56);
+  --pcx-line: rgb(255 255 255 / .12);
+  --pcx-line-strong: rgb(255 255 255 / .24);
+  --pcx-soft: rgb(255 255 255 / .05);
+  --pcx-card: rgb(255 255 255 / .04);
+  --pcx-accent-ink: color-mix(in srgb, hsl(var(--primary)) 82%, #fff);
+  --pcx-accent-soft: color-mix(in srgb, hsl(var(--primary)) 16%, transparent);
+  --pcx-code-bg: rgb(0 0 0 / .35);
+}
+.pcx-wrap { width: 100%; max-width: 75rem; margin-inline: auto; }
+.pcx-eyebrow { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--pcx-mono); font-size: .8125rem; line-height: 1.2; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--pcx-accent-ink); }
+.pcx-h1 { font-size: clamp(2.25rem, 4.6vw, 3.875rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; color: var(--pcx-fg); text-wrap: balance; }
+.pcx-h2 { font-size: clamp(1.875rem, 3.2vw, 2.75rem); line-height: 1.1; letter-spacing: -.03em; font-weight: 700; color: var(--pcx-fg); text-wrap: balance; }
+.pcx-h3 { font-size: 1.125rem; line-height: 1.3; letter-spacing: -.01em; font-weight: 600; color: var(--pcx-fg); }
+.pcx-lead { font-size: clamp(1.0625rem, 1.3vw, 1.25rem); line-height: 1.6; color: var(--pcx-sub); text-wrap: pretty; }
+.pcx-body { font-size: 1rem; line-height: 1.65; color: var(--pcx-sub); }
+.pcx-small { font-size: .875rem; line-height: 1.55; color: var(--pcx-sub); }
+.pcx-accent-text { color: var(--pcx-accent-ink); }
+:lang(bn) :is(.pcx-h1, .pcx-h2, .pcx-h3), :lang(ar) :is(.pcx-h1, .pcx-h2, .pcx-h3) { letter-spacing: 0; line-height: 1.3; }
+:lang(bn) .pcx-eyebrow, :lang(ar) .pcx-eyebrow { font-family: inherit; letter-spacing: 0; font-size: .875rem; font-weight: 600; }
+.pcx-head { max-width: 46rem; margin-bottom: 3rem; }
+.pcx-head-center { margin-inline: auto; text-align: center; }
+.pcx-head .pcx-eyebrow { margin-bottom: 1rem; }
+.pcx-head .pcx-lead { margin-top: 1rem; }
+.pcx-head-center .pcx-lead { text-wrap: balance; }
+@media (max-width: 639px) { .pcx-head { margin-bottom: 2rem; } }
+
+.pcx-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: .625rem 1.125rem; border-radius: .625rem; border: 1px solid transparent; font-size: .9375rem; line-height: 1.2; font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; }
+.pcx-btn-lg { min-height: 3rem; padding: .75rem 1.375rem; font-size: 1rem; }
+.pcx-btn-primary { background: var(--pcx-accent); color: var(--pcx-on-accent); box-shadow: 0 1px 0 rgb(255 255 255 / .25) inset, 0 1px 2px rgb(11 16 32 / .18); }
+.pcx-btn-primary:hover { background: color-mix(in srgb, var(--pcx-accent) 90%, #000); }
+.pcx-btn-outline { background: var(--pcx-card); color: var(--pcx-fg); border-color: var(--pcx-line-strong); }
+.pcx-btn-outline:hover { border-color: var(--pcx-fg); }
+.pcx-btn-solid { background: var(--pcx-fg); color: hsl(var(--background)); }
+.pcx-dark .pcx-btn-solid { color: #0b1020; }
+.pcx-btn-solid:hover { opacity: .9; }
+.pcx-link { display: inline-flex; align-items: center; gap: .375rem; font-weight: 600; font-size: .9375rem; color: var(--pcx-accent-ink); text-decoration: none; }
+.pcx-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.pcx :is(a, button, summary, [tabindex]):focus-visible { outline: 2px solid var(--pcx-accent); outline-offset: 2px; border-radius: .375rem; }
+.pcx-card { background: var(--pcx-card); border: 1px solid var(--pcx-line); border-radius: .875rem; }
+.pcx-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .3125rem .75rem; border-radius: 999px; border: 1px solid var(--pcx-line-strong); background: var(--pcx-soft); font-size: .8125rem; line-height: 1.3; font-weight: 500; color: var(--pcx-sub); }
+.pcx-chip-dot { width: .4375rem; height: .4375rem; border-radius: 999px; background: var(--pcx-accent); flex: none; }
+
+/* Screenshot frame: a quiet browser window. */
+.pcx-frame { border-radius: .875rem; border: 1px solid var(--pcx-line-strong); background: var(--pcx-card); overflow: hidden; box-shadow: 0 30px 60px -30px rgb(11 16 32 / .35), 0 12px 24px -16px rgb(11 16 32 / .2); }
+.pcx-dark .pcx-frame { background: #121a30; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .7); }
+.pcx-frame-bar { display: flex; align-items: center; gap: .75rem; height: 2.25rem; padding-inline: .875rem; border-bottom: 1px solid var(--pcx-line); background: var(--pcx-soft); }
+.pcx-frame-dots { display: flex; gap: .375rem; flex: none; }
+.pcx-frame-dots i { width: .5625rem; height: .5625rem; border-radius: 999px; background: var(--pcx-line-strong); }
+.pcx-frame-url { flex: 1; min-width: 0; max-width: 22rem; margin-inline: auto; padding: .1875rem .75rem; border-radius: 999px; background: var(--pcx-soft); border: 1px solid var(--pcx-line); font-family: var(--pcx-mono); font-size: .6875rem; line-height: 1.3; color: var(--pcx-faint); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcx-frame img { display: block; width: 100%; height: auto; }
+
+/* Code and terminal windows are always dark, on any section. */
+.pcx-code { border-radius: .875rem; border: 1px solid var(--pcx-line-strong); background: var(--pcx-code-bg); color: #e6e9f2; overflow: hidden; }
+.pcx:not(.pcx-dark) .pcx-code { border-color: #0b1020; }
+.pcx-code-bar { display: flex; align-items: center; gap: .25rem; min-height: 2.75rem; padding: 0 .5rem 0 .875rem; border-bottom: 1px solid rgb(255 255 255 / .1); overflow-x: auto; scrollbar-width: none; }
+.pcx-code-tab { flex: none; padding: .5rem .75rem; border-radius: .5rem; font-family: var(--pcx-mono); font-size: .8125rem; line-height: 1.2; color: rgb(255 255 255 / .6); background: none; border: 0; cursor: pointer; }
+.pcx-code-tab[aria-selected="true"] { color: #fff; background: rgb(255 255 255 / .1); }
+.pcx-code-tab:hover { color: #fff; }
+.pcx-code pre { margin: 0; padding: 1.125rem 1.25rem 1.25rem; overflow-x: auto; font-family: var(--pcx-mono); font-size: .8438rem; line-height: 1.75; tab-size: 2; white-space: pre; }
+.pcx-code .tk-c { color: rgb(255 255 255 / .45); }
+.pcx-code .tk-p { color: color-mix(in srgb, hsl(var(--primary)) 82%, #fff); user-select: none; }
+.pcx-code .tk-o { color: #8fd6a3; }
+.pcx-code-copy { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: .375rem; padding: .375rem .625rem; border-radius: .5rem; border: 1px solid rgb(255 255 255 / .16); background: none; color: rgb(255 255 255 / .75); font-size: .75rem; cursor: pointer; }
+.pcx-code-copy:hover { color: #fff; border-color: rgb(255 255 255 / .4); }
+.pcx-cmd { display: inline-flex; align-items: center; gap: .75rem; max-width: 100%; padding: .5rem .5rem .5rem .875rem; border-radius: .625rem; border: 1px solid var(--pcx-line-strong); background: var(--pcx-soft); font-family: var(--pcx-mono); font-size: .8438rem; line-height: 1.4; color: var(--pcx-fg); }
+.pcx-cmd code { min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+.pcx-cmd button { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: .4375rem; border: 0; background: none; color: var(--pcx-sub); cursor: pointer; }
+.pcx-cmd button:hover { background: var(--pcx-line); color: var(--pcx-fg); }
+/* Soft dot grid and glow for hero grounds; decoration only. */
+.pcx-grid-bg { background-image: radial-gradient(var(--pcx-line-strong) 1px, transparent 1px); background-size: 24px 24px; mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 20%, transparent 75%); }
+.pcx-glow { background: radial-gradient(ellipse 50% 50% at 50% 50%, color-mix(in srgb, hsl(var(--primary)) 26%, transparent), transparent 70%); }
+@media (prefers-reduced-motion: no-preference) {
+  .pcx-btn, .pcx-code-tab, .pcx-code-copy, .pcx-card-hover { transition: background-color .15s, border-color .15s, color .15s, opacity .15s; }
+}
+}

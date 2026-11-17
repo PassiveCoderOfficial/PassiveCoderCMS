@@ -1,0 +1,320 @@
+/**
+ * Apply a DB-backed template to a tenant.
+ *
+ * This is the counterpart to `snapshot.ts`, and replaced
+ * `lib/templates/seed-template.ts`, which built sites from the hardcoded
+ * TEMPLATE_REGISTRY. Callers with a slug rather than an id go through
+ * `apply-by-slug.ts`.
+ *
+ * Copy-on-apply, always: the tenant gets its own copies of the template's
+ * pages. Later edits to the template never reach tenants that already applied
+ * it, and a tenant editing its pages never affects the template.
+ */
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Block, NavItem } from "@/types/cms";
+import type { TemplatePalette, TemplateTypography } from "@/modules/themes/template-types";
+import { resolveNavItems } from "@/modules/navigation/resolve-links";
+import { friendlyPageLimitMessage, isPageLimitError } from "@/lib/usage/page-limit";
+
+/**
+ * Templates are authored with a real, specific brand name baked into their
+ * copy — headings, nav logo text, footer blurb ("Torque Garage", "ShieldGuard
+ * Security", etc) — because that's what makes them read as a real site while
+ * being designed, not a fill-in-the-blanks shell. Applying a template to a
+ * tenant must not leave the template's own name sitting in the tenant's live
+ * copy, so every exact occurrence of the template's name is swapped for the
+ * tenant's real site name at apply-time, recursively across whatever JSON
+ * shape the block/nav data happens to be.
+ *
+ * Deliberately an exact string match — never a fuzzy/partial one — so this
+ * can never mangle unrelated text that happens to share a word with the
+ * template name.
+ */
+export const TEMPLATE_BRAND_PLACEHOLDER = "Your Business";
+
+function rebrand<T>(value: T, templateName: string, siteName: string): T {
+  if (!templateName || templateName === siteName) return value;
+  if (typeof value === "string") {
+    return value.split(templateName).join(siteName) as unknown as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => rebrand(v, templateName, siteName)) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = rebrand(v, templateName, siteName);
+    return out as T;
+  }
+  return value;
+}
+
+export type ApplyMode = "theme" | "full";
+
+export type ApplyOptions = {
+  /** Archive the tenant's current pages instead of leaving them alongside. */
+  archiveExistingPages?: boolean;
+};
+
+export type ApplyResult = {
+  pagesCreated: number;
+  pagesArchived: number;
+  /** Set when the plan's page limit stopped the copy part-way: the owner-facing
+   *  message (see lib/usage/page-limit), so the UI can say why pages are missing. */
+  pageLimitMessage?: string;
+};
+
+type TemplateRow = {
+  id: string;
+  slug: string;
+  name: string;
+  palette: TemplatePalette | null;
+  typography: TemplateTypography | null;
+  custom_css: string | null;
+  logo_url: string | null;
+  favicon_url: string | null;
+  global_header: Block[] | null;
+  global_footer: Block[] | null;
+  nav_items: NavItem[] | null;
+};
+
+/**
+ * Applies `templateId` to `tenantId`.
+ *
+ * "theme" mode replaces the site's visual identity only — colours, fonts,
+ * nav, header/footer — leaving existing pages untouched. "full" additionally
+ * copies the template's pages in.
+ *
+ * Deliberately preserved on the tenant (never overwritten by a template):
+ * site_name, contact details, and anything outside site_identity's visual
+ * columns. Those are the tenant's own business facts, not template design.
+ */
+export async function applyDbTemplate(
+  supabase: SupabaseClient,
+  tenantId: string,
+  templateId: string,
+  mode: ApplyMode,
+  options: ApplyOptions = {},
+): Promise<ApplyResult> {
+  const { data: template } = await supabase
+    .from("templates")
+    .select("id, slug, name, palette, typography, custom_css, logo_url, favicon_url, global_header, global_footer, nav_items")
+    .eq("id", templateId)
+    .maybeSingle();
+
+  if (!template) throw new Error("Template not found");
+  const tpl = template as TemplateRow;
+
+  const { data: tenantRow } = await supabase
+    .from("tenants")
+    .select("name")
+    .eq("id", tenantId)
+    .maybeSingle();
+  const siteName = tenantRow?.name?.trim();
+  // Template copy carries the neutral placeholder "Your Business" (templates
+  // are named by industry, never like a real company — migration 114), so
+  // that's what gets swapped for the client's name. The template-name swap is
+  // kept for any template authored the older way. With no tenant name yet
+  // (mid-onboarding) the placeholder simply stays.
+  const rb = <T,>(v: T): T => siteName
+    ? rebrand(rebrand(v, TEMPLATE_BRAND_PLACEHOLDER, siteName), tpl.name, siteName)
+    : v;
+
+  // ── 1. Visual identity ──────────────────────────────────────────────────
+  // template_id is what (site)/layout.tsx resolves the palette from, so
+  // pointing it at this template is the whole of "apply the theme".
+  //
+  // This used to copy the template's palette into `color_overrides` instead,
+  // because the live CSS-var pipeline only understood registry slugs. That
+  // field holds the tenant's *own* manual colour tweaks, so writing to it
+  // both clobbered their customisations and made later edits to the template
+  // unable to take effect. Overrides are left alone now and continue to layer
+  // on top of the template palette, which is what they were always for.
+  const identityPatch: Record<string, unknown> = {
+    tenant_id: tenantId,
+    template_id: tpl.id,
+    active_template_slug: tpl.slug,
+    updated_at: new Date().toISOString(),
+  };
+  if (tpl.palette) {
+    identityPatch.primary_color = tpl.palette.primary;
+    identityPatch.secondary_color = tpl.palette.secondary;
+  }
+  if (tpl.logo_url) identityPatch.logo_url = tpl.logo_url;
+  if (tpl.favicon_url) identityPatch.favicon_url = tpl.favicon_url;
+  if (tpl.global_header) identityPatch.global_header = rb(tpl.global_header);
+  if (tpl.global_footer) identityPatch.global_footer = rb(tpl.global_footer);
+
+  const { error: identityError } = await supabase
+    .from("site_identity")
+    .upsert(identityPatch, { onConflict: "tenant_id" });
+  // Previously ignored — a failed write here left the tenant on its old theme
+  // while the UI reported success.
+  if (identityError) throw new Error(`Failed to apply theme: ${identityError.message}`);
+
+  // ── 2. Navigation ───────────────────────────────────────────────────────
+  // Templates authored as one-page designs carry "#services"-style fragment
+  // links. Applied to a tenant that gets real pages, those go nowhere from
+  // any page but home — resolve them against the slugs this template actually
+  // ships before the menu is written.
+  if (tpl.nav_items?.length) {
+    const { data: navPages } = await supabase
+      .from("pages")
+      .select("slug")
+      .eq("template_id", templateId)
+      .is("deleted_at", null);
+    const templateSlugs = (navPages ?? []).map((p) => p.slug as string);
+
+    // Update the site's header menu, else create it. This used to be one
+    // upsert on (tenant_id, location), which never saved: nav_menus.slug is
+    // NOT NULL with no default and the upsert sent none, and the unique index
+    // on (tenant_id, location) is partial (location <> 'none'), so Postgres
+    // cannot use it as an ON CONFLICT target. The error was not checked.
+    const menu = {
+      name: "Main Navigation",
+      items: rb(resolveNavItems(tpl.nav_items, templateSlugs)),
+      updated_at: new Date().toISOString(),
+    };
+    const { data: headerMenu } = await supabase
+      .from("nav_menus").select("id").eq("tenant_id", tenantId).eq("location", "header").limit(1).maybeSingle();
+    const { error: menuError } = headerMenu
+      ? await supabase.from("nav_menus").update(menu).eq("id", headerMenu.id).eq("tenant_id", tenantId)
+      : await supabase.from("nav_menus").insert({ ...menu, tenant_id: tenantId, template_id: null, slug: "main-navigation", location: "header" });
+    // Not fatal: the theme and pages still apply; the menu can be set on the Navigation screen.
+    if (menuError) console.error(`[templates/apply] header menu not saved for ${tenantId}: ${menuError.message}`);
+  }
+
+  await supabase.from("tenant_template_imports").insert({
+    tenant_id: tenantId,
+    template_id: tpl.id,
+    template_slug: tpl.slug,
+    mode,
+    applied_at: new Date().toISOString(),
+  });
+
+  if (mode === "theme") {
+    return { pagesCreated: 0, pagesArchived: 0 };
+  }
+
+  // ── 3. Pages (full mode) ────────────────────────────────────────────────
+  // Archiving is soft and reversible by design — a template apply must never
+  // be the thing that destroys a customer's existing content.
+  let pagesArchived = 0;
+  // Ids of rows this apply archived, so they can be put back if the insert
+  // below fails — otherwise a failure leaves the site with nothing live.
+  const archivedByThisApply: string[] = [];
+  if (options.archiveExistingPages) {
+    const { data: archived } = await supabase
+      .from("pages")
+      .update({ status: "archived", updated_at: new Date().toISOString() })
+      .eq("tenant_id", tenantId)
+      .is("deleted_at", null)
+      .neq("status", "archived")
+      .select("id");
+    pagesArchived = archived?.length ?? 0;
+    archivedByThisApply.push(...(archived ?? []).map((r) => r.id as string));
+  }
+
+  const { data: templatePages } = await supabase
+    .from("pages")
+    .select("title, slug, type, blocks, seo, settings, order_index, featured_image, excerpt")
+    .eq("template_id", templateId)
+    .is("deleted_at", null)
+    .order("order_index", { ascending: true });
+
+  const pages = templatePages ?? [];
+  if (pages.length === 0) return { pagesCreated: 0, pagesArchived };
+
+  // A tenant can't have two live pages on the same slug. Anything colliding
+  // with an incoming template page is archived rather than overwritten, so
+  // the old version stays recoverable.
+  const incomingSlugs = pages.map((p) => p.slug as string);
+  const { data: collisions } = await supabase
+    .from("pages")
+    .update({ status: "archived", updated_at: new Date().toISOString() })
+    .eq("tenant_id", tenantId)
+    .in("slug", incomingSlugs)
+    .is("deleted_at", null)
+    .neq("status", "archived")
+    .select("id");
+  pagesArchived += collisions?.length ?? 0;
+  archivedByThisApply.push(...(collisions ?? []).map((r) => r.id as string));
+
+  // Same fragment problem as the menu above, but for nav blocks embedded in
+  // the pages themselves — which is where every migrated template keeps its
+  // navigation.
+  const pageSlugs = pages.map((p) => p.slug as string);
+  const resolveBlockNav = (blocks: Block[]): Block[] =>
+    blocks.map((b) => {
+      if (b.type !== "navigation") return b;
+      const data = b.data as { items?: NavItem[] };
+      if (!Array.isArray(data.items)) return b;
+      return { ...b, data: { ...data, items: resolveNavItems(data.items, pageSlugs) } } as Block;
+    });
+
+  const now = new Date().toISOString();
+  const rows = pages.map((p, i) => ({
+    tenant_id: tenantId,
+    template_id: null,
+    title: rb(p.title),
+    slug: p.slug,
+    type: p.type ?? "page",
+    status: "published",
+    blocks: rb(resolveBlockNav((p.blocks as Block[] | null) ?? [])),
+    seo: rb(p.seo ?? {}),
+    settings: p.settings ?? {},
+    featured_image: p.featured_image ?? null,
+    excerpt: rb(p.excerpt ?? null),
+    order_index: p.order_index ?? i,
+    created_at: now,
+    updated_at: now,
+  }));
+
+  let { error } = await supabase.from("pages").insert(rows);
+  if (error && isPageLimitError(error)) {
+    // The plan's page limit rejected the whole batch (Postgres inserts are
+    // all-or-nothing). Fall back to one page at a time, home page first, so
+    // the tenant ends up with as many template pages as the plan allows
+    // instead of none. Each insert is checked by the trigger on its own, so
+    // the limit still holds.
+    const ordered = [...rows].sort((a, b) => (a.slug === "home" ? -1 : b.slug === "home" ? 1 : 0));
+    let created = 0;
+    for (const row of ordered) {
+      const { error: one } = await supabase.from("pages").insert(row);
+      if (one) {
+        if (isPageLimitError(one)) break;
+        error = one;
+        break;
+      }
+      created++;
+    }
+    if (created > 0 && (!error || isPageLimitError(error))) {
+      console.warn(`[applyDbTemplate] tenant=${tenantId}: page limit hit, copied ${created}/${rows.length} template pages`);
+      return { pagesCreated: created, pagesArchived, pageLimitMessage: friendlyPageLimitMessage(error) ?? undefined };
+    }
+  }
+  if (error) {
+    // The archive above already ran. Leaving it as-is would strand the site
+    // with every page archived and nothing live, which is what happened to
+    // a client site — so put the tenant's own pages back before reporting.
+    if (archivedByThisApply.length) {
+      await supabase
+        .from("pages")
+        .update({ status: "published", updated_at: new Date().toISOString() })
+        .in("id", archivedByThisApply);
+    }
+    throw new Error(friendlyPageLimitMessage(error) ?? `Failed to copy template pages: ${error.message}`);
+  }
+
+  return { pagesCreated: rows.length, pagesArchived };
+}
+
+/** True when `slug` resolves to a DB-authored template rather than a registry one. */
+export async function isDbTemplate(supabase: SupabaseClient, slug: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("templates")
+    .select("id")
+    .eq("slug", slug)
+    .not("owner_id", "is", null)
+    .maybeSingle();
+  return data?.id ?? null;
+}

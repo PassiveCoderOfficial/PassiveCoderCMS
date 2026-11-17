@@ -1,0 +1,422 @@
+import { create } from "zustand";
+import { syncCards } from "@/lib/blocks/cards";
+import { immer } from "zustand/middleware/immer";
+import type { Block, BuilderState, BuilderMode, Breakpoint, ContainerBlockProps, MobileSheet } from "@/types/cms";
+import { deepClone, generateId } from "@/lib/utils";
+
+const MAX_HISTORY = 50;
+
+/** One "step" into a container: which container, which of its columns.
+ *  A full path is a chain of these, root-first, so a block nested three
+ *  containers deep has a 3-entry path. Empty/undefined means page root. */
+export interface ContainerStep {
+  containerId: string;
+  columnIndex: number;
+}
+
+/**
+ * Identifies a block list inside arbitrarily nested containers.
+ *
+ * Was a single flat `{containerId, columnIndex}` — exactly one level, by
+ * construction. Containers now nest inside containers (Elementor-style,
+ * 2026-09-06), so a path is an array of steps instead: walk into the first
+ * step's column, find the container named by the second step inside THAT
+ * column, walk into its column, and so on. `[]` and `undefined` both mean
+ * root. Every function below that used to do one `.find()` on `state.blocks`
+ * now walks this chain instead.
+ */
+export type ContainerPath = ContainerStep[];
+
+interface BuilderStore extends BuilderState {
+  // Actions
+  setBlocks: (blocks: Block[], isInitialLoad?: boolean) => void;
+  addBlock: (block: Block, afterId?: string, path?: ContainerPath) => void;
+  updateBlock: (id: string, data: Partial<Block>, path?: ContainerPath) => void;
+  removeBlock: (id: string, path?: ContainerPath) => void;
+  moveBlock: (activeId: string, overId: string, path?: ContainerPath) => void;
+  /** Relocates a block from wherever it currently lives into a container
+   *  column (root -> column, or column -> a different column). Appends to
+   *  the end of the destination column. */
+  moveBlockToColumn: (blockId: string, to: ContainerPath) => void;
+  duplicateBlock: (id: string, path?: ContainerPath) => void;
+  selectBlock: (id: string | undefined) => void;
+  hoverBlock: (id: string | undefined) => void;
+  setMode: (mode: BuilderMode) => void;
+  setBreakpoint: (breakpoint: Breakpoint) => void;
+  setPageId: (id: string) => void;
+  setTenantId: (id: string | undefined) => void;
+  setDirty: (dirty: boolean) => void;
+  setMobileSheet: (sheet: MobileSheet) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  getBlock: (id: string) => Block | undefined;
+  getBlockPath: (id: string) => BlockPathEntry[] | undefined;
+  reset: () => void;
+}
+
+/**
+ * Walks a chain of container steps and returns the block array the LAST step
+ * points at — a container column's list, or the top-level page blocks when
+ * the path is empty/undefined. Each intermediate step must resolve to an
+ * actual container at that point in the chain, or the walk fails (returns
+ * undefined) rather than guessing.
+ */
+function targetArray(state: BuilderState, path?: ContainerPath): Block[] | undefined {
+  if (!path || path.length === 0) return state.blocks;
+  let arr: Block[] = state.blocks;
+  for (const step of path) {
+    const container = arr.find((b) => b.id === step.containerId) as ContainerBlockProps | undefined;
+    const column = container?.data.columns[step.columnIndex];
+    if (!column) return undefined;
+    arr = column.blocks;
+  }
+  return arr;
+}
+
+/** Same walk as targetArray, but returns the container BLOCK the last step
+ *  names (not its column's contents) — needed by callers that mutate the
+ *  column list itself (filter/reassign), not just read from it. */
+function targetContainerAndColumn(
+  state: BuilderState,
+  path: ContainerPath,
+): { container: ContainerBlockProps; columnIndex: number } | undefined {
+  if (path.length === 0) return undefined;
+  let arr: Block[] = state.blocks;
+  for (let i = 0; i < path.length - 1; i++) {
+    const step = path[i];
+    const container = arr.find((b) => b.id === step.containerId) as ContainerBlockProps | undefined;
+    const column = container?.data.columns[step.columnIndex];
+    if (!column) return undefined;
+    arr = column.blocks;
+  }
+  const last = path[path.length - 1];
+  const container = arr.find((b) => b.id === last.containerId) as ContainerBlockProps | undefined;
+  if (!container || !container.data.columns[last.columnIndex]) return undefined;
+  return { container, columnIndex: last.columnIndex };
+}
+
+/** Recursively regenerates a block's id and those of any blocks nested in its
+ *  container columns, so a copy never shares an id with its source. */
+export function withFreshIds(block: Block): Block {
+  block.id = generateId();
+  if (block.type === "container") {
+    for (const col of (block as ContainerBlockProps).data.columns) {
+      col.blocks = col.blocks.map(withFreshIds);
+    }
+  }
+  return block;
+}
+
+/** Finds the array (root, or a container column, at ANY depth) that directly
+ *  holds the block with this id — searching recursively rather than one
+ *  level, now that containers can nest inside containers. */
+function findArrayContaining(blocks: Block[], id: string): Block[] | undefined {
+  if (blocks.some((b) => b.id === id)) return blocks;
+  for (const b of blocks) {
+    if (b.type === "container") {
+      for (const col of (b as ContainerBlockProps).data.columns) {
+        const found = findArrayContaining(col.blocks, id);
+        if (found) return found;
+      }
+    }
+  }
+  return undefined;
+}
+
+/** Depth-first search for a block by id, through arbitrarily nested
+ *  container columns. */
+function findBlockDeep(blocks: Block[], id: string): Block | undefined {
+  const direct = blocks.find((b) => b.id === id);
+  if (direct) return direct;
+  for (const b of blocks) {
+    if (b.type === "container") {
+      for (const col of (b as ContainerBlockProps).data.columns) {
+        const found = findBlockDeep(col.blocks, id);
+        if (found) return found;
+      }
+    }
+  }
+  return undefined;
+}
+
+/** A single crumb in a block's ancestry, root-first. The last entry is
+ *  always the block itself; every earlier entry is an ancestor container
+ *  (with the column index the NEXT crumb lives in). Depth is no longer
+ *  capped — a block nested three containers deep produces a 4-entry path. */
+export interface BlockPathEntry {
+  id: string;
+  type: string;
+  columnIndex?: number;
+}
+
+/** Root -> ...ancestor containers... -> block, however deep it's nested. */
+function getBlockPathDeep(blocks: Block[], id: string): BlockPathEntry[] | undefined {
+  const direct = blocks.find((b) => b.id === id);
+  if (direct) return [{ id: direct.id, type: direct.type }];
+  for (const b of blocks) {
+    if (b.type === "container") {
+      const columns = (b as ContainerBlockProps).data.columns;
+      for (let i = 0; i < columns.length; i++) {
+        const rest = getBlockPathDeep(columns[i].blocks, id);
+        if (rest) return [{ id: b.id, type: b.type, columnIndex: i }, ...rest];
+      }
+    }
+  }
+  return undefined;
+}
+
+const initialState: BuilderState = {
+  pageId: undefined,
+  tenantId: undefined,
+  blocks: [],
+  selectedBlockId: undefined,
+  hoveredBlockId: undefined,
+  isDragging: false,
+  mode: "edit",
+  breakpoint: "desktop",
+  history: [],
+  historyIndex: -1,
+  isDirty: false,
+  mobileSheet: null,
+};
+
+export const useBuilderStore = create<BuilderStore>()(
+  immer((set, get) => ({
+    ...initialState,
+
+    /**
+     * Replaces the whole block list.
+     *
+     * Two different callers with opposite needs:
+     *  - Loading a page into the editor (`isInitialLoad`): this IS the baseline,
+     *    so history is seeded with it and the page is not dirty. Without the
+     *    seed, `history` stayed empty and the FIRST edit was permanently
+     *    un-undoable — `pushHistory` left historyIndex at 0 while `undo`
+     *    guards on `historyIndex > 0`, so there was nothing to step back to.
+     *  - Replacing content wholesale (templates, import, AiCoder): a real edit,
+     *    which pushes the previous blocks onto history so it can be undone.
+     */
+    setBlocks: (blocks, isInitialLoad) =>
+      set((state) => {
+        if (isInitialLoad) {
+          state.blocks = blocks;
+          state.history = [];
+          state.historyIndex = -1;
+          state.isDirty = false;
+          return;
+        }
+        pushHistory(state);
+        state.blocks = blocks;
+        state.isDirty = true;
+      }),
+
+    addBlock: (block, afterId, path) =>
+      set((state) => {
+        pushHistory(state);
+        const arr = targetArray(state, path);
+        if (!arr) return;
+        if (afterId) {
+          const idx = arr.findIndex((b) => b.id === afterId);
+          arr.splice(idx + 1, 0, block);
+        } else {
+          arr.push(block);
+        }
+        reorderBlocks(arr);
+        state.selectedBlockId = block.id;
+        state.isDirty = true;
+      }),
+
+    updateBlock: (id, data, path) =>
+      set((state) => {
+        pushHistory(state);
+        // Existing per-block settings panels don't know about container
+        // nesting and never pass a path — auto-locate the block at whatever
+        // depth it actually lives, so editing a block inside a column (at
+        // any nesting level) still writes to the right place instead of
+        // silently no-op'ing.
+        const arr = path && path.length > 0 ? targetArray(state, path) : findArrayContaining(state.blocks, id);
+        const idx = arr?.findIndex((b) => b.id === id) ?? -1;
+        if (arr && idx !== -1) {
+          Object.assign(arr[idx], data);
+          if (arr[idx].type === "cards") arr[idx].data = syncCards(arr[idx]).data as never;
+          state.isDirty = true;
+        }
+      }),
+
+    removeBlock: (id, path) =>
+      set((state) => {
+        pushHistory(state);
+        if (path && path.length > 0) {
+          const target = targetContainerAndColumn(state, path);
+          const col = target?.container.data.columns[target.columnIndex];
+          if (!col) return;
+          col.blocks = col.blocks.filter((b) => b.id !== id);
+          reorderBlocks(col.blocks);
+        } else {
+          state.blocks = state.blocks.filter((b) => b.id !== id);
+          reorderBlocks(state.blocks);
+        }
+        if (state.selectedBlockId === id) state.selectedBlockId = undefined;
+        state.isDirty = true;
+      }),
+
+    moveBlock: (activeId, overId, path) =>
+      set((state) => {
+        pushHistory(state);
+        const arr = targetArray(state, path);
+        if (!arr) return;
+        const activeIdx = arr.findIndex((b) => b.id === activeId);
+        const overIdx = arr.findIndex((b) => b.id === overId);
+        if (activeIdx !== -1 && overIdx !== -1) {
+          const [moved] = arr.splice(activeIdx, 1);
+          arr.splice(overIdx, 0, moved);
+          reorderBlocks(arr);
+          state.isDirty = true;
+        }
+      }),
+
+    moveBlockToColumn: (blockId, to) =>
+      set((state) => {
+        pushHistory(state);
+        const sourceArr = findArrayContaining(state.blocks, blockId);
+        const destArr = targetArray(state, to);
+        if (!sourceArr || !destArr) return;
+        // Already in the destination column — nothing to relocate.
+        if (sourceArr === destArr) return;
+        const idx = sourceArr.findIndex((b) => b.id === blockId);
+        if (idx === -1) return;
+        const [moved] = sourceArr.splice(idx, 1);
+        destArr.push(moved);
+        reorderBlocks(sourceArr);
+        reorderBlocks(destArr);
+        state.isDirty = true;
+      }),
+
+    duplicateBlock: (id, path) =>
+      set((state) => {
+        pushHistory(state);
+        const arr = targetArray(state, path);
+        if (!arr) return;
+        const idx = arr.findIndex((b) => b.id === id);
+        if (idx === -1) return;
+        // Every id has to be regenerated, not just the top one: duplicating a
+        // container otherwise leaves its nested blocks sharing ids with the
+        // original, so React reuses keys and editing one copy edits both.
+        const clone = withFreshIds(deepClone(arr[idx]));
+        arr.splice(idx + 1, 0, clone);
+        reorderBlocks(arr);
+        state.selectedBlockId = clone.id;
+        state.isDirty = true;
+      }),
+
+    selectBlock: (id) =>
+      set((state) => {
+        state.selectedBlockId = id;
+      }),
+
+    hoverBlock: (id) =>
+      set((state) => {
+        state.hoveredBlockId = id;
+      }),
+
+    setMode: (mode) =>
+      set((state) => {
+        state.mode = mode;
+        if (mode !== "edit") state.selectedBlockId = undefined;
+      }),
+
+    setBreakpoint: (breakpoint) =>
+      set((state) => {
+        state.breakpoint = breakpoint;
+      }),
+
+    setPageId: (id) =>
+      set((state) => {
+        state.pageId = id;
+      }),
+
+    setTenantId: (id) =>
+      set((state) => {
+        state.tenantId = id;
+      }),
+
+    setDirty: (dirty) =>
+      set((state) => {
+        state.isDirty = dirty;
+      }),
+
+    setMobileSheet: (sheet) =>
+      set((state) => {
+        state.mobileSheet = sheet;
+      }),
+
+    /**
+     * History holds PRE-EDIT snapshots; the live `blocks` is the newest state
+     * and is deliberately not in the array. Stepping back therefore has to
+     * record the current blocks first, or there would be nothing for redo to
+     * return to — that missing append is why redo previously did nothing.
+     */
+    undo: () =>
+      set((state) => {
+        if (state.historyIndex < 0) return;
+        if (state.historyIndex === state.history.length - 1) {
+          state.history.push(deepClone(state.blocks));
+        }
+        state.blocks = deepClone(state.history[state.historyIndex]);
+        state.historyIndex--;
+        state.isDirty = true;
+      }),
+
+    /** Steps forward into the snapshot one past the cursor — the last entry is
+     *  the state undo captured on its way out, so the tail is off by one. */
+    redo: () =>
+      set((state) => {
+        if (state.historyIndex >= state.history.length - 2) return;
+        state.historyIndex++;
+        state.blocks = deepClone(state.history[state.historyIndex + 1]);
+        state.isDirty = true;
+      }),
+
+    canUndo: () => get().historyIndex >= 0,
+    canRedo: () => get().historyIndex < get().history.length - 2,
+
+    getBlock: (id) => findBlockDeep(get().blocks, id),
+    getBlockPath: (id) => getBlockPathDeep(get().blocks, id),
+
+    reset: () => set(() => ({ ...initialState })),
+  })),
+);
+
+/**
+ * Records the CURRENT blocks as an undo point, before the caller mutates them.
+ *
+ * History stores PRE-EDIT snapshots only; the live `blocks` is always the
+ * newest state and is not kept here. `undo` appends the live state on its way
+ * out so redo has a destination — see the comment there.
+ *
+ * Previously this left `historyIndex` one short whenever the array was
+ * trimmed, and `undo` guarded on `historyIndex > 0`, which together made the
+ * very first edit after loading a page impossible to undo.
+ */
+function pushHistory(state: BuilderState) {
+  // An edit made after undoing discards the redo tail — the future it led to
+  // no longer exists.
+  if (state.historyIndex < state.history.length - 1) {
+    state.history = state.history.slice(0, state.historyIndex + 1);
+  }
+  state.history.push(deepClone(state.blocks));
+  state.historyIndex = state.history.length - 1;
+  if (state.history.length > MAX_HISTORY) {
+    // Dropping the oldest entry shifts every index down by one.
+    state.history.shift();
+    state.historyIndex--;
+  }
+}
+
+function reorderBlocks(blocks: Block[]) {
+  blocks.forEach((b, i) => {
+    b.order = i;
+  });
+}

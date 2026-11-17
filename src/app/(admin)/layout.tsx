@@ -1,0 +1,576 @@
+import { layoutLockedFor, LAYOUT_PATHS } from "@/lib/tenant/layout-lock";
+import { SuspendedGate } from "@/components/admin/suspended-gate";
+import { PanelTimeZoneProvider } from "@/components/providers/panel-time-zone";
+import { normalizeTimeZone } from "@/lib/time/panel-tz";
+import { WhiteLabelProvider } from "@/components/admin/white-label-context";
+import { TrialSiteProvider } from "@/components/admin/trial-site-context";
+import { isTrialSite } from "@/lib/sites/trial-site";
+import { brandForTenant } from "@/lib/partners/brand";
+import { SupportCapture } from "@/components/support/support-capture";
+import { ShowMe } from "@/components/guide/show-me";
+import { redirect } from "next/navigation";
+import { cookies, headers } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { PLATFORM_ICONS } from "@/lib/site/site-metadata";
+import { tenantChrome } from "@/lib/site/tenant-chrome";
+import { AdminSidebar } from "@/components/admin/sidebar/sidebar";
+import { AdminTopbar } from "@/components/admin/topbar/topbar";
+import { TrialBanner } from "@/components/admin/trial-banner";
+import { ViewingStrip } from "@/components/admin/viewing-strip";
+import { staffSites } from "@/lib/staff";
+import { SetupWizard } from "@/components/admin/setup-wizard";
+import { SA_VIEWING_COOKIE, STAFF_VIEWING_COOKIE } from "@/lib/tenant/current";
+import { resolveEnabledModules } from "@/lib/modules/resolve-modules";
+import { resolveModuleKeyForPath } from "@/components/admin/sidebar/nav-items";
+import { AgentContextProvider } from "@/components/agent/agent-context";
+import { AiLauncher } from "@/components/agent/ai-launcher";
+import { renderProfileBrief } from "@/lib/aicoder/profile-brief";
+import { apiTenantId } from "@/lib/tenant/api";
+import { crossPortalAccess } from "@/lib/admin-shell/cross-portal-access";
+import { LanguageProvider } from "@/lib/i18n/language-provider";
+import type { CMSUser } from "@/types/cms";
+import type { Metadata } from "next";
+import { ROOT_TENANT_SLUG, isSaaS } from "@/lib/flags";
+import { cancelOnSignIn } from "@/lib/account/deletion";
+
+// Every dashboard page's tab read as just the tenant name, with no way to
+// tell pages apart across tabs. A `template` here means any child route's
+// plain-string `title` (see dashboard/pages/[id]/page.tsx) becomes
+// "<child title> | <site name>" — the same pattern the live site already
+// uses in (site)/layout.tsx.
+export async function generateMetadata(): Promise<Metadata> {
+  const reqHeaders = await headers();
+  const tenantId = reqHeaders.get("x-tenant-id");
+  let siteName = "Passive Coder";
+  if (tenantId) {
+    const admin = await createAdminClient();
+    const { data } = await admin.from("site_settings").select("site_name").eq("tenant_id", tenantId).maybeSingle();
+    siteName = data?.site_name ?? siteName;
+  }
+  // On a client's own host the dashboard wears the client's favicon (white
+  // label for the client and anyone they invite as an editor); on the
+  // platform's hosts it stays Passive Coder's.
+  const brand = await tenantChrome();
+  const icon = brand?.faviconUrl;
+  return {
+    title: { default: brand?.name ?? siteName, template: `%s | ${brand?.name ?? siteName}` },
+    icons: icon ? { icon, shortcut: icon, apple: icon } : PLATFORM_ICONS,
+  };
+}
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+
+  // Only a verified user gets in. This used to fall back to getSession() when
+  // getUser() failed, but getSession() returns whatever user the cookie
+  // claims without verifying the token — so everything below (profile,
+  // tenant membership, super-admin check) could run for an unverified id.
+  // The fallback existed to stop a redirect loop (middleware sees a session
+  // cookie and bounces /login back to /dashboard); the `?error=` param
+  // disables that bounce in middleware, so no loop and no trust in the
+  // cookie. Fixed 2026-09-27.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?error=session");
+  // Signing in again cancels a pending account deletion (free unless one is pending).
+  await cancelOnSignIn(user);
+
+  // Accounts created during a site handover can be flagged to pick their own
+  // password before doing anything else — otherwise whoever typed the initial
+  // password keeps working access to the client's site indefinitely. The flag
+  // is cleared by the update-password page once a new one is set.
+  if (user.user_metadata?.must_change_password) {
+    redirect("/login/update-password?first=1");
+  }
+
+  const adminClient = await createAdminClient();
+
+  const { data: rawProfile, error: profileError } = await adminClient
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError?.code === "42P01") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
+        <p className="text-red-400">Database not set up — run the migration SQL first.</p>
+      </div>
+    );
+  }
+
+  let profile = rawProfile;
+
+  if (!profile) {
+    if (profileError && profileError.code !== "PGRST116") {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
+          <p className="text-red-400">Failed to load profile. Please refresh.</p>
+        </div>
+      );
+    }
+    // PGRST116 = row missing. DB trigger may not have fired yet (race after signup).
+    // Upsert now so user lands on dashboard without needing to re-login.
+    const { data: upserted } = await adminClient
+      .from("profiles")
+      .upsert(
+        { id: user.id, email: user.email ?? "", full_name: user.user_metadata?.full_name ?? "", role: "subscriber", is_active: true },
+        { onConflict: "id" },
+      )
+      .select("*")
+      .single();
+    if (!upserted) redirect("/login?error=unauthorized");
+    profile = upserted;
+  }
+
+  const { data: sa } = await adminClient
+    .from("super_admins")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  // Tenant membership (owner/admin/editor) is what grants dashboard access in
+  // SaaS multi-tenancy — NOT the global profiles.role. New site owners get
+  // profiles.role = "subscriber" but a tenant_members "owner" row, so gating on
+  // profiles.role alone locked every client out of their own dashboard.
+  const { data: memberships } = await adminClient
+    .from("tenant_members")
+    .select("tenant_id, role, is_primary, tenants(id, name, slug, custom_domain)")
+    .eq("user_id", user.id)
+    .order("is_primary", { ascending: false });
+
+  const hasTenantAccess = (memberships ?? []).some((m) =>
+    ["owner", "admin", "editor"].includes(m.role as string),
+  );
+
+  // SA with no tenant goes to super-admin panel, not login
+  if (sa && !hasTenantAccess) redirect("/super-admin");
+
+  if (!sa && profile.role !== "pc_staff" && !hasTenantAccess) {
+    redirect("/login?error=unauthorized");
+  }
+
+  // Force-subdomain isolation: a tenant member on tenant A's subdomain must not
+  // see tenant B's dashboard just because they're logged in. If the subdomain
+  // being visited (x-tenant-id from middleware) isn't one of this user's
+  // memberships, bounce them to their own primary site's dashboard instead.
+  //
+  // Exception: a staff member can both own a site (tenant_members row, hasTenantAccess
+  // true) and be assigned/referred to other sites (no membership row, checked
+  // separately below via staffViewingTenantId). Without this carve-out, a
+  // staff member visiting an assigned site's subdomain was bounced straight back to
+  // their own owned site before the staff-viewing logic ever ran.
+  if (!sa && hasTenantAccess) {
+    const reqHeaders = await headers();
+    const subdomainTenantId = reqHeaders.get("x-tenant-id");
+    if (subdomainTenantId) {
+      const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
+      if (!memberTenantIds.has(subdomainTenantId)) {
+        let staffHasAccess = false;
+        if (profile.role === "pc_staff") {
+          const { data: staffRow } = await adminClient.from("pc_staff").select("id, status").eq("user_id", user.id).maybeSingle();
+          if (staffRow) {
+            const { data: assignedTenant } = await staffSites(
+              adminClient.from("tenants").select("id").eq("id", subdomainTenantId), staffRow,
+            ).maybeSingle();
+            staffHasAccess = !!assignedTenant;
+          }
+        }
+
+        if (!staffHasAccess) {
+          const ownTenant = (memberships ?? []).find(m => m.is_primary) ?? (memberships ?? [])[0];
+          const ownSlug = ownTenant
+            ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
+            : undefined;
+          const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+          const proto = rootDomain.includes("localhost") ? "http" : "https";
+          if (ownSlug) {
+            redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
+          }
+          redirect("/login?error=unauthorized");
+        }
+      }
+    }
+  }
+
+  // Check if SA is impersonating a tenant, or staff is viewing an
+  // assigned/referred site's dashboard under their own session.
+  const cookieStore = await cookies();
+  const viewingTenantId = sa ? cookieStore.get(SA_VIEWING_COOKIE)?.value : undefined;
+
+  // The viewing cookie is shared across every *.passivecoder.com subdomain —
+  // with two site tabs open it reflects whichever was clicked last, not the
+  // subdomain actually being browsed. The hostname (x-tenant-id, set by
+  // middleware from the real subdomain) must win whenever present; the
+  // cookie is only a fallback for root-domain /dashboard access.
+  let staffViewingTenantId: string | undefined;
+  if (!sa && profile.role === "pc_staff") {
+    const subdomainTenantId = (await headers()).get("x-tenant-id");
+    const candidateId = subdomainTenantId ?? cookieStore.get(STAFF_VIEWING_COOKIE)?.value;
+    // Only treat this as "staff viewing an assigned site" when it's NOT one of
+    // their own memberships — staff who also own a site already have full
+    // access to it via hasTenantAccess/memberships, and forcing it through the
+    // assigned-only lookup below (which doesn't check owner_id) would 404 it.
+    const memberTenantIds = new Set((memberships ?? []).map(m => m.tenant_id));
+    if (candidateId && !memberTenantIds.has(candidateId)) {
+      staffViewingTenantId = candidateId;
+    }
+  }
+
+  let viewingTenantName: string | null = null;
+  if (viewingTenantId) {
+    const { data: tenant } = await adminClient
+      .from("tenants")
+      .select("name")
+      .eq("id", viewingTenantId)
+      .single();
+    viewingTenantName = tenant?.name ?? null;
+  }
+
+  let staffViewingTenantName: string | null = null;
+  if (staffViewingTenantId) {
+    const { data: staffRow } = await adminClient.from("pc_staff").select("id, status").eq("user_id", user.id).maybeSingle();
+    const { data: tenant } = await staffSites(
+      adminClient.from("tenants").select("name").eq("id", staffViewingTenantId), staffRow,
+    ).maybeSingle();
+    staffViewingTenantName = tenant?.name ?? null;
+    if (!staffViewingTenantName) redirect("/staff");
+  } else if (!sa && profile.role === "pc_staff") {
+    // Staff with no viewing cookie and no tenant membership has nothing to
+    // show in /dashboard — send them to their own portal instead.
+    if (!hasTenantAccess) redirect("/staff");
+  }
+
+  // Fetch sites for switcher
+  let userSites: {
+    id: string; name: string; slug: string; is_primary: boolean;
+    owner_email?: string; custom_domain?: string;
+    status?: string; plan?: string; created_at?: string; is_own?: boolean; has_owner?: boolean; is_assigned?: boolean;
+  }[] = [];
+
+  if (sa) {
+    // SA sees all tenants — pull owner_id + custom_domain so the mega menu can
+    // filter by owner email / domain, not just site name. Newest first, not
+    // creation order — that's what "latest sites" means to an SA scanning
+    // for recent signups. status/plan/created_at power the switcher's filter
+    // chips (Active/Trial/Suspended, by plan, Latest/Oldest).
+    const { data: allTenants } = await adminClient
+      .from("tenants")
+      .select("id, name, slug, owner_id, custom_domain, status, plan, created_at")
+      .order("created_at", { ascending: false });
+
+    // "Current site" must reflect the subdomain actually being viewed, not
+    // a stale impersonation cookie — an SA browsing directly to
+    // a site's own subdomain without going through the switcher's "view as"
+    // flow left the topbar showing whatever tenant the cookie last held
+    // (or the fallback owned tenant), not that site.
+    //
+    // Root-domain fallback (no subdomain, no viewing cookie) must be the SA's
+    // OWN tenant specifically — allTenants[0] was "whatever tenant was
+    // created most recently across the entire platform", so an SA hitting
+    // passivecoder.com/dashboard landed on a random other tenant's dashboard
+    // instead of their own root site. Must match getCurrentTenantId()'s
+    // resolution exactly, or the switcher's "current site" highlight and the
+    // dashboard content it's showing drift apart (the actual bug reported).
+    const subdomainTenantId = (await headers()).get("x-tenant-id");
+    const currentViewingId = cookieStore.get(SA_VIEWING_COOKIE)?.value;
+    // Must match getCurrentTenantId()'s SA fallback exactly — slug matching
+    // the root domain (e.g. "passivecoder" for passivecoder.com) identifies
+    // the actual root site, since an SA can own many demo/test tenants
+    // created before it (oldest-first alone picked a random demo tenant).
+    const rootSlug = ROOT_TENANT_SLUG;
+    const { data: rootTenant } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("slug", rootSlug)
+      .maybeSingle();
+    let saOwnedId = rootTenant?.id;
+    if (!saOwnedId) {
+      const { data: oldestOwned } = await adminClient
+        .from("tenants")
+        .select("id")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      saOwnedId = oldestOwned?.id;
+    }
+    const activeTenantId = subdomainTenantId ?? currentViewingId ?? saOwnedId;
+
+    const ownerIds = [...new Set((allTenants ?? []).map(t => t.owner_id).filter(Boolean))] as string[];
+    const { data: owners } = ownerIds.length
+      ? await adminClient.from("profiles").select("id, email").in("id", ownerIds)
+      : { data: [] as { id: string; email: string }[] };
+    const ownerEmailById = new Map((owners ?? []).map(o => [o.id, o.email]));
+
+    userSites = (allTenants ?? []).map(t => ({
+      id: t.id, name: t.name, slug: t.slug,
+      is_primary: t.id === activeTenantId,
+      owner_email: t.owner_id ? ownerEmailById.get(t.owner_id) : undefined,
+      custom_domain: t.custom_domain ?? undefined,
+      status: t.status ?? undefined,
+      plan: t.plan ?? undefined,
+      created_at: t.created_at ?? undefined,
+      is_own: t.owner_id === user.id,
+      has_owner: !!t.owner_id,
+    }));
+  } else {
+    // is_primary here means "the site currently being viewed", which is what
+    // the switcher highlights — not the membership's own primary flag. A
+    // member of several tenants browsing a non-primary one would otherwise
+    // see the switcher naming a different site than the dashboard is showing.
+    const viewingTenantId = (await headers()).get("x-tenant-id")
+      ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
+      ?? (memberships ?? [])[0]?.tenant_id;
+    userSites = (memberships ?? []).map(m => {
+      const t = (Array.isArray(m.tenants) ? m.tenants[0] : m.tenants) as { id: string; name: string; slug: string; custom_domain: string | null } | null;
+      return t ? { id: t.id, name: t.name, slug: t.slug, custom_domain: t.custom_domain ?? undefined, is_primary: t.id === viewingTenantId } : null;
+    }).filter(Boolean) as { id: string; name: string; slug: string; custom_domain?: string; is_primary: boolean }[];
+  }
+
+  // Staff can own a site (tenant_members row, already in userSites above)
+  // AND be assigned/referred to others (no membership row) — the switcher
+  // must show all of them regardless of which one is currently being viewed,
+  // not just the owned ones or just the currently-viewed assigned one.
+  let staffAllSites = false;
+  if (!sa && profile.role === "pc_staff") {
+    const { data: staffRow } = await adminClient.from("pc_staff").select("id, status").eq("user_id", user.id).maybeSingle();
+    if (staffRow) {
+      const currentId = staffViewingTenantId ?? (userSites.find(s => s.is_primary)?.id);
+      const ownedIds = new Set(userSites.map(s => s.id));
+      if (staffRow.status === "active") {
+        // Active staff work on every site (same as their MCP access): the full
+        // list with the SA search and chips, tagged Own / Assigned.
+        staffAllSites = true;
+        const { data: allTenants } = await adminClient.from("tenants")
+          .select("id, name, slug, owner_id, custom_domain, status, plan, created_at, assigned_staff_id, referred_by_staff_id")
+          .order("created_at", { ascending: false });
+        const ownerIds = [...new Set((allTenants ?? []).map(t => t.owner_id).filter(Boolean))] as string[];
+        const { data: owners } = ownerIds.length
+          ? await adminClient.from("profiles").select("id, email").in("id", ownerIds)
+          : { data: [] as { id: string; email: string }[] };
+        const ownerEmailById = new Map((owners ?? []).map(o => [o.id, o.email]));
+        userSites = (allTenants ?? []).map(t => {
+          const linked = t.assigned_staff_id === staffRow.id || t.referred_by_staff_id === staffRow.id;
+          return {
+            id: t.id, name: t.name, slug: t.slug, is_primary: t.id === currentId,
+            owner_email: t.owner_id ? ownerEmailById.get(t.owner_id) : undefined,
+            custom_domain: t.custom_domain ?? undefined, status: t.status ?? undefined, plan: t.plan ?? undefined,
+            created_at: t.created_at ?? undefined,
+            is_own: ownedIds.has(t.id) && !linked, is_assigned: linked, has_owner: !!t.owner_id,
+          };
+        });
+      } else {
+        const [{ data: assigned }, { data: referred }] = await Promise.all([
+          adminClient.from("tenants").select("id, name, slug").eq("assigned_staff_id", staffRow.id),
+          adminClient.from("tenants").select("id, name, slug").eq("referred_by_staff_id", staffRow.id),
+        ]);
+        const extraSites = new Map<string, { id: string; name: string; slug: string }>();
+        for (const t of [...(assigned ?? []), ...(referred ?? [])]) {
+          if (!ownedIds.has(t.id)) extraSites.set(t.id, t);
+        }
+        userSites = [
+          ...userSites.map(s => ({ ...s, is_primary: s.id === currentId })),
+          ...[...extraSites.values()].map(t => ({ id: t.id, name: t.name, slug: t.slug, is_primary: t.id === currentId })),
+        ];
+      }
+    }
+  }
+
+  const cmsUser: CMSUser = {
+    id: profile.id,
+    email: profile.email,
+    full_name: profile.full_name,
+    avatar_url: profile.avatar_url,
+    role: profile.role,
+    is_active: profile.is_active,
+    created_at: profile.created_at,
+  };
+
+  // SA bypasses module gating entirely — only resolve for regular tenant
+  // members and staff viewing a specific site. Must be the tenant whose
+  // SUBDOMAIN is actually being visited (already validated as one of this
+  // user's memberships above), not just their primary site — a member of
+  // multiple tenants viewing a non-primary one would otherwise see that
+  // tenant's dashboard gated by the wrong tenant's plan.
+  const currentSubdomainTenantId = (await headers()).get("x-tenant-id");
+  const dashboardTenantId = staffViewingTenantId
+    ?? currentSubdomainTenantId
+    ?? (memberships ?? []).find(m => m.is_primary)?.tenant_id
+    ?? (memberships ?? [])[0]?.tenant_id;
+  // The sidebar always reflects the site's own module switches, super admins
+  // included — showing an SA every menu of a site with half its modules off
+  // made the dashboard look nothing like what the client sees. SAs still
+  // bypass the route guard below, so a direct URL keeps working for support.
+  const siteModules = dashboardTenantId ? await resolveEnabledModules(dashboardTenantId) : undefined;
+  // White-label: a reseller's clients see the reseller's brand. Our team
+  // (super admins, staff) always sees Passive Coder.
+  const brand = !sa && profile.role !== "pc_staff" && dashboardTenantId ? await brandForTenant(adminClient, dashboardTenantId) : null;
+  const enabledModules = sa ? undefined : siteModules;
+  // Collection types shown as their own menu items (Site Content).
+  const { data: collectionTypes } = siteModules?.collections && dashboardTenantId
+    ? await adminClient.from("collection_types").select("slug, name, icon").eq("tenant_id", dashboardTenantId).eq("show_in_sidebar", true).order("sort_order").order("created_at")
+    : { data: [] as { slug: string; name: string; icon: string }[] };
+  // Layout-locked site: the client edits data, our team edits the layout.
+  const layoutLocked = !sa && profile.role !== "pc_staff" && dashboardTenantId
+    ? await layoutLockedFor(adminClient, user!.id, dashboardTenantId) : false;
+  if (layoutLocked) {
+    const h = await headers();
+    const p = h.get("x-invoke-path") ?? h.get("x-pathname") ?? "";
+    if (LAYOUT_PATHS.some((lp) => p === lp || p.startsWith(lp + "/"))) redirect("/dashboard");
+  }
+
+  // First-login setup wizard (logo, favicon, site details) — only for the
+  // actual tenant owner/member on their own site, never for SA or staff
+  // viewing someone else's site (they didn't onboard this tenant).
+  let showSetupWizard = false;
+  let wizardDefaults = { site_name: "", site_description: "", logo_url: "", favicon_url: "" };
+  if (!sa && !staffViewingTenantId && dashboardTenantId) {
+    const [{ data: tenantRow }, { data: siteSettings }] = await Promise.all([
+      adminClient.from("tenants").select("setup_wizard_completed_at").eq("id", dashboardTenantId).maybeSingle(),
+      adminClient.from("site_settings").select("site_name, site_description, logo_url, favicon_url").eq("tenant_id", dashboardTenantId).maybeSingle(),
+    ]);
+    showSetupWizard = !tenantRow?.setup_wizard_completed_at;
+    wizardDefaults = {
+      site_name: siteSettings?.site_name ?? "",
+      site_description: siteSettings?.site_description ?? "",
+      logo_url: siteSettings?.logo_url ?? "",
+      favicon_url: siteSettings?.favicon_url ?? "",
+    };
+  }
+
+  // Direct-link enforcement: hiding a gated item from the sidebar isn't
+  // enough on its own — a bookmarked/typed URL must also be blocked.
+  // resolveModuleKeyForPath is the same lookup the sidebar's own filtering
+  // logic is built from, so this can't drift out of sync with what's hidden.
+  if (enabledModules) {
+    const currentPathname = (await headers()).get("x-invoke-path") ?? (await headers()).get("x-pathname") ?? "";
+    const guardKey = resolveModuleKeyForPath(currentPathname);
+    if (guardKey && !enabledModules[guardKey]) {
+      redirect("/dashboard");
+    }
+  }
+
+  // SA bypasses gating everywhere else in this layout, so the launcher does
+  // too. Regular tenants/staff need the ai_agent module explicitly enabled.
+  // !!sa, not sa — `sa` is the super-admin ROW, and these are passed as real
+  // boolean props now rather than only ever being used in a && short-circuit.
+  const agentEnabled = !!sa || !!enabledModules?.ai_agent;
+  const aiCoderEnabled = !!sa || !!enabledModules?.ai_coder;
+
+  // Additive cross-portal link only — doesn't gate anything, /vendor/dashboard
+  // re-checks its own vendor status regardless of this flag.
+  const isVendorUser = !sa ? (await crossPortalAccess(user.id)).vendor : false;
+
+  // Whether section generation has business context to work from. Uses
+  // renderProfileBrief — the exact function the generate route calls — rather
+  // than checking the profile row exists, because a row whose fields are all
+  // blank renders "" and is refused just like a missing one. Checking anything
+  // else here would let the panel promise a generation the API then rejects.
+  const hasBusinessProfile =
+    aiCoderEnabled ? await tenantHasProfileBrief() : false;
+
+  // Paused site (subscription ended, or dunning ran out): the owner's
+  // dashboard is blurred behind renew / ticket / WhatsApp options — see
+  // SuspendedGate. Read from tenants.status, which is what dunning and
+  // expiry actually set. (This replaced a check on subscriptions.status ===
+  // 'suspended', a value nothing ever writes, which redirected on an empty
+  // pathname and so could never have worked.) SA and staff are never gated.
+  let siteSuspended = false;
+  let suspendedSiteName: string | null = null;
+  if (!sa && profile.role !== "pc_staff" && dashboardTenantId) {
+    const { data: t } = await adminClient.from("tenants").select("status, name").eq("id", dashboardTenantId).maybeSingle();
+    siteSuspended = t?.status === "suspended";
+    suspendedSiteName = t?.name ?? null;
+  }
+
+  const activeSiteName = viewingTenantName ?? userSites.find((s) => s.is_primary)?.name ?? null;
+
+  // Every date in the dashboard is shown in the site's own time zone
+  // (Settings > General > Time zone), not the viewer's browser zone.
+  const siteTz = dashboardTenantId
+    ? normalizeTimeZone((await adminClient.from("site_settings").select("timezone").eq("tenant_id", dashboardTenantId).maybeSingle()).data?.timezone ?? "UTC")
+    : null;
+
+  // Free trial: the builder draws this site's HTML sanitised (so opening it
+  // never runs its code in a staff or super admin session) and the domain and
+  // custom-code screens show a notice.
+  const trialSite = await isTrialSite(dashboardTenantId);
+
+  return (
+    <LanguageProvider>
+    <AgentContextProvider>
+    <WhiteLabelProvider value={!!brand}>
+    <TrialSiteProvider value={trialSite}>
+    <MaybeSiteTimeZone tz={siteTz}>
+      <div className="flex h-screen overflow-hidden bg-background flex-col">
+        {showSetupWizard && (
+          <SetupWizard
+            initialSiteName={wizardDefaults.site_name}
+            initialSiteDescription={wizardDefaults.site_description}
+            initialLogoUrl={wizardDefaults.logo_url}
+            initialFaviconUrl={wizardDefaults.favicon_url}
+          />
+        )}
+        {/* Our team inside a dashboard always sees which site, and the way back. */}
+        {sa && activeSiteName && <ViewingStrip siteName={activeSiteName} home="super-admin" />}
+        {staffViewingTenantId && staffViewingTenantName && (
+          <ViewingStrip siteName={staffViewingTenantName} home="staff" />
+        )}
+        <SuspendedGate suspended={siteSuspended} siteName={suspendedSiteName}>
+        <div className="relative flex flex-1 overflow-hidden">
+          <AdminSidebar
+            brand={brand}
+            isSuperAdmin={!!sa}
+            isStaff={profile.role === "pc_staff"}
+            isVendor={isVendorUser}
+            enabledModules={siteModules}
+            collections={collectionTypes ?? []}
+            hiddenPaths={layoutLocked ? LAYOUT_PATHS : undefined}
+            activeSite={userSites.find((s) => s.is_primary) ?? null}
+          />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <AdminTopbar user={cmsUser} sites={userSites} isSuperAdmin={!!sa} allSites={staffAllSites} />
+            {isSaaS && <TrialBanner />}
+            <main className="flex-1 overflow-auto pl-0 lg:pl-0">
+              {children}
+            </main>
+          </div>
+        </div>
+        </SuspendedGate>
+        {/* Report a problem with screenshots (everyone in the dashboard).
+            White-label clients report to their reseller, not to us. */}
+        {isSaaS && !brand && <SupportCapture area="dashboard" team={!!sa || profile.role === "pc_staff"} />}
+        <ShowMe />
+        <AiLauncher
+          agentEnabled={agentEnabled}
+          aiCoderEnabled={aiCoderEnabled}
+          hasBusinessProfile={hasBusinessProfile}
+        />
+      </div>
+    </MaybeSiteTimeZone>
+    </TrialSiteProvider>
+    </WhiteLabelProvider>
+    </AgentContextProvider>
+    </LanguageProvider>
+  );
+}
+
+/** Mirrors how /api/aicoder/section resolves its tenant, so the launcher's
+ *  "no business profile" state matches what that route will actually do. */
+async function tenantHasProfileBrief(): Promise<boolean> {
+  try {
+    const id = await apiTenantId();
+    if (!id) return false;
+    return (await renderProfileBrief(id)).trim().length > 0;
+  } catch {
+    // Never let this optional hint break the dashboard shell. Assuming a
+    // profile exists degrades to the old behaviour: the button works, and a
+    // genuinely missing profile is reported by the API as before.
+    return true;
+  }
+}
+
+/** Site time zone for the dashboard; no wrapper when there is no site yet. */
+function MaybeSiteTimeZone({ tz, children }: { tz: string | null; children: React.ReactNode }) {
+  return tz ? <PanelTimeZoneProvider tz={tz}>{children}</PanelTimeZoneProvider> : <>{children}</>;
+}

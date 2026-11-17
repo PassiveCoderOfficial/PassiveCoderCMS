@@ -1,0 +1,236 @@
+import { createAdminClient } from "@/lib/supabase/server";
+import { createSlug } from "@/lib/utils";
+import type { Block } from "@/types/cms";
+import type { BusinessFacts } from "./brief";
+import { planPage, type SitePlan } from "./plan";
+import { buildPageFromPlan } from "./build-page";
+import { AiCoderError } from "./generate";
+import { AiCreditsError } from "@/lib/ai/credits";
+import { friendlyPageLimitMessage } from "@/lib/usage/page-limit";
+
+/**
+ * Whole-site generation: plan each page, write its sections, create the page
+ * rows, then wire the navigation and footer link lists to match what actually
+ * got created.
+ *
+ * Pages are created as DRAFTS. A generated site is a starting point the owner
+ * reviews and edits, not something that should appear on their live domain the
+ * moment the model finishes — publishing stays a deliberate human action.
+ */
+
+export interface BuiltSitePage {
+  title: string;
+  slug: string;
+  pageId?: string;
+  blockCount: number;
+  failedSections: number;
+  error?: string;
+}
+
+export interface BuildSiteResult {
+  pages: BuiltSitePage[];
+  generationsUsed: number;
+}
+
+/**
+ * Builds ONE page of a planned site and creates it.
+ *
+ * Single-page rather than whole-site because the platform caps a serverless
+ * call at 300s and a full site does not fit; the caller loops. `quotaExhausted`
+ * tells that caller to stop rather than burn planning calls on pages that can
+ * never be built.
+ */
+export async function buildSitePage(
+  sitePlan: SitePlan,
+  pageIndex: number,
+  facts: BusinessFacts,
+  tenantId: string,
+  userId: string | null,
+): Promise<{ page: BuiltSitePage; generationsUsed: number; quotaExhausted: boolean }> {
+  const admin = await createAdminClient();
+  const slugs = await resolveSlugs(tenantId, sitePlan);
+  const page = sitePlan.pages[pageIndex];
+  const slug = slugs[pageIndex];
+
+  try {
+    const plan = await planPage(facts, page.brief, page.isHome ? "home" : "interior");
+    const built = await buildPageFromPlan(plan.sections, facts, tenantId, userId);
+
+    if (built.blocks.length === 0) {
+      return {
+        page: {
+          title: page.title,
+          slug,
+          blockCount: 0,
+          failedSections: built.failedCount,
+          error: built.sections.find(s => s.error)?.error ?? "No sections could be generated",
+        },
+        generationsUsed: built.generationsUsed,
+        quotaExhausted: built.outOfCredits,
+      };
+    }
+
+    const { data: created, error } = await admin
+      .from("pages")
+      .insert({
+        tenant_id: tenantId,
+        title: page.title,
+        slug,
+        type: "page",
+        status: "draft",
+        blocks: built.blocks,
+        seo: { title: plan.pageTitle, description: plan.metaDescription },
+        settings: { show_header: true, show_footer: true },
+        order_index: pageIndex,
+        created_by: userId,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      return {
+        page: {
+          title: page.title, slug, blockCount: 0,
+          failedSections: built.failedCount,
+          error: friendlyPageLimitMessage(error) ?? `Couldn't create the page: ${error.message}`,
+        },
+        generationsUsed: built.generationsUsed,
+        quotaExhausted: built.outOfCredits,
+      };
+    }
+
+    return {
+      page: {
+        title: page.title,
+        slug,
+        pageId: created.id,
+        blockCount: built.blocks.length,
+        failedSections: built.failedCount,
+      },
+      generationsUsed: built.generationsUsed,
+      quotaExhausted: built.outOfCredits,
+    };
+  } catch (err) {
+    const quotaExhausted = err instanceof AiCreditsError;
+    return {
+      page: {
+        title: page.title, slug, blockCount: 0, failedSections: 0,
+        error: quotaExhausted
+          ? (err as AiCreditsError).message
+          : err instanceof AiCoderError ? err.message : "This page couldn't be generated",
+      },
+      generationsUsed: 0,
+      quotaExhausted,
+    };
+  }
+}
+
+/**
+ * Assigns a unique slug per planned page.
+ *
+ * `pages_tenant_slug_unique` is a hard database constraint, and it does NOT
+ * exclude soft-deleted rows — a page in the trash still owns its slug. So
+ * collisions are resolved against every existing row regardless of
+ * `deleted_at`, and against the other pages in this same run, before any insert
+ * is attempted. Losing a whole generated page to a unique-violation at insert
+ * time (after paying for all its generations) is the failure this prevents.
+ */
+async function resolveSlugs(tenantId: string, sitePlan: SitePlan): Promise<string[]> {
+  const admin = await createAdminClient();
+  const { data: existing } = await admin
+    .from("pages")
+    .select("slug")
+    .eq("tenant_id", tenantId);
+
+  const taken = new Set((existing ?? []).map(p => p.slug as string));
+  const out: string[] = [];
+
+  for (const page of sitePlan.pages) {
+    // The home page is conventionally slug "home" here; the planner is told to
+    // use it, but a model that ignored that shouldn't produce a stray page.
+    const base = createSlug(page.isHome ? "home" : page.slug) || createSlug(page.title) || "page";
+    let slug = base;
+    let n = 2;
+    while (taken.has(slug)) {
+      slug = `${base}-${n}`;
+      n++;
+    }
+    taken.add(slug);
+    out.push(slug);
+  }
+
+  return out;
+}
+
+/**
+ * Rewrites nav and footer link lists so they point at the pages that actually
+ * got created.
+ *
+ * Each page was planned in isolation, so its navigation block contains the
+ * links the model guessed at — plausible, but not necessarily matching the
+ * final page set or its collision-resolved slugs. Patching afterwards is what
+ * makes a generated site navigable rather than a set of pages with broken menus.
+ */
+export async function rewireNavigation(
+  /** The site whose pages are being wired. Every read and write below is
+   *  limited to it: the page ids come from the browser, and this runs with
+   *  the service role, so without the filter an id from another site would
+   *  have its menu and footer overwritten. */
+  tenantId: string,
+  /** Pages of this run, in menu order. Titles and addresses are read from the
+   *  database rows, never from the request. */
+  pages: { pageId?: string; isHome?: boolean }[],
+): Promise<void> {
+  const admin = await createAdminClient();
+  const ids = [...new Set(pages.map((p) => p.pageId).filter((id): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id)))].slice(0, 12);
+  if (ids.length < 2) return;
+
+  const { data: rows } = await admin
+    .from("pages")
+    .select("id, title, slug, blocks")
+    .eq("tenant_id", tenantId)
+    .in("id", ids);
+  const byId = new Map((rows ?? []).map((r) => [r.id as string, r]));
+  const own = ids.map((id) => byId.get(id)).filter((r): r is NonNullable<typeof r> => !!r);
+  if (own.length < 2) return;
+
+  const home = new Set(pages.filter((p) => p.isHome).map((p) => p.pageId));
+  const navTargets = own.map((r) => ({
+    label: String(r.title ?? ""),
+    url: home.has(r.id as string) ? "/" : `/${String(r.slug ?? "")}`,
+  }));
+
+  for (const row of own) {
+    const blocks = row.blocks as Block[];
+    let changed = false;
+
+    for (const block of blocks) {
+      if (block.type === "navigation") {
+        const data = block.data as { items?: unknown[] };
+        data.items = navTargets.map((t, i) => ({
+          id: `nav-${i}`,
+          label: t.label,
+          url: t.url,
+        }));
+        changed = true;
+      } else if (block.type === "footer") {
+        // Only the first footer column is treated as site navigation; later
+        // columns may hold service lists or other groupings the model wrote
+        // deliberately, and overwriting those would lose real content.
+        const data = block.data as { columns?: { id: string; heading: string; links: unknown[] }[] };
+        if (data.columns?.length) {
+          data.columns[0].links = navTargets.map((t, i) => ({
+            id: `foot-${i}`,
+            label: t.label,
+            url: t.url,
+          }));
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      await admin.from("pages").update({ blocks }).eq("id", row.id).eq("tenant_id", tenantId);
+    }
+  }
+}

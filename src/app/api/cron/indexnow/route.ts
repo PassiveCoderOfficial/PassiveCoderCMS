@@ -1,0 +1,82 @@
+import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { publicUrl } from "@/lib/tenant/site-urls";
+import { submitIndexNow } from "@/lib/seo/indexnow";
+import { resubmitSitemap } from "@/lib/seo/search-console";
+import { bingSubmitSitemap } from "@/lib/seo/bing";
+
+export const maxDuration = 120;
+
+/**
+ * Daily: tell Bing (via IndexNow) about every page, post and product
+ * published or updated in the last ~day, grouped per site host. ChatGPT
+ * search and Copilot answer from Bing's index, so new content reaches them
+ * in days instead of weeks. Demo sites are skipped (they're temporary).
+ */
+async function handle(req: Request) {
+  const bearer = req.headers.get("authorization");
+  const viaCron = !!process.env.CRON_SECRET && bearer === `Bearer ${process.env.CRON_SECRET}`;
+  const viaManual = !!process.env.INTERNAL_CRON_SECRET && req.headers.get("x-cron-secret") === process.env.INTERNAL_CRON_SECRET;
+  if (!viaCron && !viaManual) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const admin = await createAdminClient();
+  const since = new Date(Date.now() - 26 * 3600_000).toISOString();
+  const [{ data: pages }, { data: products }] = await Promise.all([
+    admin.from("pages").select("tenant_id, slug, seo").eq("status", "published").is("deleted_at", null)
+      .not("tenant_id", "is", null).gte("updated_at", since).limit(5000),
+    admin.from("products").select("tenant_id, slug").eq("status", "active").gte("updated_at", since).limit(5000),
+  ]);
+
+  const byTenant = new Map<string, Set<string>>();
+  const add = (t: string, path: string) => { if (!byTenant.has(t)) byTenant.set(t, new Set()); byTenant.get(t)!.add(path); };
+  for (const p of pages ?? []) {
+    if ((p.seo as { no_index?: boolean } | null)?.no_index) continue;
+    add(p.tenant_id as string, p.slug === "home" ? "/" : `/${p.slug}`);
+  }
+  for (const p of products ?? []) add(p.tenant_id as string, `/products/${p.slug}`);
+
+  const ids = [...byTenant.keys()];
+  const { data: tenants } = ids.length
+    ? await admin.from("tenants").select("id, slug, custom_domain, domain_status, demo_expires_at").in("id", ids)
+    : { data: [] };
+
+  const summary: { sites: number; urls: number; failed: number; google?: number; bing?: number } = { sites: 0, urls: 0, failed: 0 };
+  for (const t of tenants ?? []) {
+    if (t.demo_expires_at) continue;
+    const site = { slug: t.slug as string, custom_domain: t.domain_status === "active" ? (t.custom_domain as string | null) : null };
+    const urls = [...byTenant.get(t.id as string)!].map((p) => publicUrl(site, p));
+    const host = new URL(urls[0]).host;
+    const r = await submitIndexNow(host, urls);
+    summary.sites++; summary.urls += urls.length;
+    if (!r.ok) { summary.failed++; console.warn("[indexnow]", host, r.status); }
+  }
+  // Google: sites set up in Search Console get their sitemap resubmitted
+  // whenever something changed, so Google re-reads it promptly.
+  if (ids.length) {
+    const { data: gsc } = await admin.from("tenant_integrations").select("tenant_id, gsc_site_url").in("tenant_id", ids).not("gsc_site_url", "is", null);
+    for (const g of gsc ?? []) {
+      try {
+        if (await resubmitSitemap(g.tenant_id as string, g.gsc_site_url as string)) {
+          await admin.from("tenant_integrations").update({ gsc_sitemap_at: new Date().toISOString() }).eq("tenant_id", g.tenant_id);
+          summary.google = (summary.google ?? 0) + 1;
+        }
+      } catch (e) { console.warn("[gsc] sitemap", g.gsc_site_url, e instanceof Error ? e.message : e); }
+    }
+  }
+  // Bing: same for sites connected through Bing Webmaster Tools.
+  if (ids.length) {
+    const { data: bs } = await admin.from("tenant_integrations").select("tenant_id, bing_site_url").in("tenant_id", ids).not("bing_site_url", "is", null);
+    for (const b of bs ?? []) {
+      try {
+        await bingSubmitSitemap(b.tenant_id as string, b.bing_site_url as string);
+        await admin.from("tenant_integrations").update({ bing_sitemap_at: new Date().toISOString() }).eq("tenant_id", b.tenant_id);
+        summary.bing = (summary.bing ?? 0) + 1;
+      } catch (e) { console.warn("[bing] sitemap", b.bing_site_url, e instanceof Error ? e.message : e); }
+    }
+  }
+  console.log("[indexnow]", JSON.stringify(summary));
+  return NextResponse.json(summary);
+}
+
+export const GET = handle;
+export const POST = handle;

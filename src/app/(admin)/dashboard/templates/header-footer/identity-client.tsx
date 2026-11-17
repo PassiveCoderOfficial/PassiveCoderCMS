@@ -1,0 +1,797 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { Layers, Save, Loader2, CheckCircle, Plus, Trash2, Pencil, Check, X, Navigation, Footprints, ChevronDown, ChevronRight, Phone } from "lucide-react";
+import { MediaPickerInput } from "@/components/admin/media-picker-input";
+import {
+  CONTACT_FORM_FIELDS, CTA_FORM_FIELDS, buildFooterSave, buildPrefooterSave, changedIdentityFields, footerFormState, prefooterFormState,
+  type FooterFormColumn, type FooterFormLink, type FooterFormSocial, type FooterFormState, type FooterStyleChoice,
+  type IdentityPatch, type PrefooterFormState,
+} from "@/lib/site/footer-merge";
+
+interface SiteIdentity {
+  id?: string;
+  logo_url: string | null;
+  logo_dark_url: string | null;
+  logo_width: number | null;
+  logo_alt: string | null;
+  favicon_url: string | null;
+  site_name: string | null;
+  tagline: string | null;
+}
+
+interface NavItem {
+  id?: string;
+  label: string;
+  url: string;
+  target?: string;
+  children?: NavItem[];
+}
+
+interface NavMenu {
+  id: string;
+  name: string;
+  slug: string;
+  items: NavItem[];
+}
+
+
+function uid() { return Math.random().toString(36).slice(2, 8); }
+function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
+
+function api(method: string, body?: unknown, params?: Record<string, string>) {
+  const url = params ? `/api/identity?${new URLSearchParams(params)}` : "/api/identity";
+  return fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
+}
+
+// ─── NAV ITEM EDITOR ───────────────────────────────────────────────────────
+
+function NavItemEditor({ item, onChange, onDelete, depth = 0 }: {
+  item: NavItem; onChange: (item: NavItem) => void; onDelete: () => void; depth?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const addChild = () => onChange({ ...item, children: [...(item.children ?? []), { id: uid(), label: "New Link", url: "/" }] });
+  const updateChild = (i: number, updated: NavItem) => { const c = [...(item.children ?? [])]; c[i] = updated; onChange({ ...item, children: c }); };
+  const deleteChild = (i: number) => onChange({ ...item, children: item.children?.filter((_, j) => j !== i) });
+
+  return (
+    <div className={depth > 0 ? "ml-4 border-l border-border pl-3" : ""}>
+      <div className="flex items-center gap-2 py-1">
+        {depth === 0 && (
+          <button onClick={() => setOpen(o => !o)} className="text-muted-foreground hover:text-foreground w-5 flex-shrink-0">
+            {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+        )}
+        <input value={item.label} onChange={e => onChange({ ...item, label: e.target.value })}
+          className="w-32 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="Label" />
+        <input value={item.url} onChange={e => onChange({ ...item, url: e.target.value })}
+          className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" placeholder="/page" />
+        <select value={item.target ?? "_self"} onChange={e => onChange({ ...item, target: e.target.value })}
+          className="bg-muted border border-border rounded px-1 py-1 text-xs text-foreground focus:outline-none">
+          <option value="_self">Same tab</option>
+          <option value="_blank">New tab</option>
+        </select>
+        {depth === 0 && (
+          <button onClick={() => { setOpen(true); addChild(); }}
+            title="Add sub-menu item"
+            className="text-muted-foreground hover:text-primary text-xs border border-border rounded px-1.5 py-1 hover:border-primary">
+            + Sub
+          </button>
+        )}
+        <button onClick={onDelete} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+      </div>
+      {open && depth === 0 && (
+        <div className="mt-1 mb-2 space-y-1">
+          {(item.children ?? []).map((child, i) => (
+            <NavItemEditor key={child.id ?? i} item={child} depth={1}
+              onChange={u => updateChild(i, u)} onDelete={() => deleteChild(i)} />
+          ))}
+          <button onClick={addChild} className="ml-4 text-xs text-primary hover:text-indigo-300 flex items-center gap-1 mt-1">
+            <Plus className="w-3 h-3" /> Add sub-link
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── LEGACY NAV MENUS (nav_menus table) ────────────────────────────────────
+
+function MenuCard({ menu, onUpdate, onDelete }: {
+  menu: NavMenu; onUpdate: (m: NavMenu) => void; onDelete: (id: string) => void;
+}) {
+  const [items, setItems] = useState<NavItem[]>(menu.items);
+  const [editingName, setEditingName] = useState(false);
+  const [name, setName] = useState(menu.name);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function saveMenu() {
+    setSaving(true);
+    await api("PATCH", { _type: "menu", id: menu.id, items, name, slug: slugify(name) });
+    setSaving(false); setSaved(true);
+    onUpdate({ ...menu, name, slug: slugify(name), items });
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  const addItem = () => setItems(prev => [...prev, { id: uid(), label: "New Link", url: "/" }]);
+  const updateItem = (i: number, u: NavItem) => setItems(prev => { const a = [...prev]; a[i] = u; return a; });
+  const deleteItem = (i: number) => setItems(prev => prev.filter((_, j) => j !== i));
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        {editingName ? (
+          <div className="flex items-center gap-2">
+            <input autoFocus value={name} onChange={e => setName(e.target.value)}
+              className="bg-muted border border-primary rounded px-2 py-1 text-sm text-foreground focus:outline-none" />
+            <button onClick={() => setEditingName(false)}><Check className="w-4 h-4 text-primary" /></button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-foreground">{name}</span>
+            <span className="text-xs text-muted-foreground">/{slugify(name)}</span>
+            <button onClick={() => setEditingName(true)}><Pencil className="w-3 h-3 text-muted-foreground" /></button>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button onClick={saveMenu} disabled={saving}
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded">
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : saved ? <CheckCircle className="w-3 h-3" /> : <Save className="w-3 h-3" />}
+            {saved ? "Saved" : "Save"}
+          </button>
+          <button onClick={() => { if (confirm(`Delete menu "${menu.name}"?`)) { api("DELETE", undefined, { id: menu.id }); onDelete(menu.id); } }}
+            className="text-muted-foreground hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+        </div>
+      </div>
+      <div className="space-y-1">
+        {items.map((item, i) => (
+          <NavItemEditor key={item.id ?? i} item={item} onChange={u => updateItem(i, u)} onDelete={() => deleteItem(i)} />
+        ))}
+      </div>
+      <button onClick={addItem}
+        className="flex items-center gap-2 text-xs text-primary hover:text-indigo-300 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 w-full transition-colors">
+        <Plus className="w-3.5 h-3.5" /> Add Link
+      </button>
+    </div>
+  );
+}
+
+// ─── GLOBAL NAV EDITOR ─────────────────────────────────────────────────────
+
+function GlobalNavEditor({ initialBlock }: { initialBlock: Record<string, unknown> | null }) {
+  const navData = (initialBlock?.data ?? {}) as Record<string, unknown>;
+  const [logoText, setLogoText] = useState((navData.logoText as string) ?? "");
+  const [logoUrl, setLogoUrl] = useState((navData.logo as string) ?? "");
+  const [ctaLabel, setCtaLabel] = useState((navData.ctaLabel as string) ?? "Free Consultation");
+  const [ctaUrl, setCtaUrl] = useState((navData.ctaUrl as string) ?? "#contact");
+  const [bg, setBg] = useState((navData.backgroundColor as string) ?? "#1a5c38");
+  const [fg, setFg] = useState((navData.textColor as string) ?? "#ffffff");
+  const [sticky, setSticky] = useState((navData.sticky as boolean) ?? true);
+  const [items, setItems] = useState<NavItem[]>((navData.items as NavItem[]) ?? []);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const save = useCallback(async () => {
+    setSaving(true);
+    const block = {
+      id: (initialBlock?.id as string) ?? uid(),
+      type: "navigation",
+      order: 0, visible: true, width: "full",
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      background: { type: "color", color: bg },
+      templateVariant: "solid-with-cta",
+      data: { logoText, logo: logoUrl || undefined, items, sticky, transparent: false, style: "default", backgroundColor: bg, textColor: fg, showCta: !!(ctaLabel && ctaUrl), ctaLabel, ctaUrl },
+    };
+    await api("POST", { _type: "global_layout", global_header: block });
+    setSaving(false); setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  }, [initialBlock, logoText, logoUrl, items, sticky, bg, fg, ctaLabel, ctaUrl]);
+
+  const addItem = () => setItems(prev => [...prev, { id: uid(), label: "New Link", url: "/", children: [] }]);
+  const updateItem = (i: number, u: NavItem) => setItems(prev => { const a = [...prev]; a[i] = u; return a; });
+  const deleteItem = (i: number) => setItems(prev => prev.filter((_, j) => j !== i));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-foreground flex items-center gap-2"><Navigation className="w-4 h-4 text-primary" /> Global Navigation</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
+        </div>
+        <button onClick={save} disabled={saving}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saved ? "Saved!" : "Save Nav"}
+        </button>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+        {/* Logo */}
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1.5">Nav Logo Image (overrides text)</label>
+          <MediaPickerInput value={logoUrl} onChange={v => setLogoUrl(v ?? "")} placeholder="https://... or pick from media" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Logo Text (shown if no image)</label>
+            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div className="flex items-end pb-0.5">
+            <label className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
+              <input type="checkbox" checked={sticky} onChange={e => setSticky(e.target.checked)} className="rounded" />
+              Sticky on scroll
+            </label>
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">CTA Button Label</label>
+            <input value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">CTA Button URL</label>
+            <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Background</label>
+            <div className="flex gap-2">
+              <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+              <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Text Color</label>
+            <div className="flex gap-2">
+              <input type="color" value={fg} onChange={e => setFg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+              <input value={fg} onChange={e => setFg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Nav items */}
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2">Menu Items <span className="text-muted-foreground">— click ▶ to add sub-menu items</span></label>
+          <div className="space-y-1">
+            {items.map((item, i) => (
+              <NavItemEditor key={item.id ?? i} item={item} onChange={u => updateItem(i, u)} onDelete={() => deleteItem(i)} />
+            ))}
+          </div>
+          <button onClick={addItem}
+            className="mt-2 flex items-center gap-2 text-xs text-primary hover:text-indigo-300 border border-dashed border-border hover:border-primary rounded-lg px-3 py-2 w-full transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Add Nav Item
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── GLOBAL FOOTER EDITOR ──────────────────────────────────────────────────
+
+function GlobalFooterEditor({ initialBlock, hasOtherBlocks }: { initialBlock: Record<string, unknown> | null; hasOtherBlocks: boolean }) {
+  const [init] = useState(() => footerFormState(initialBlock));
+  // What the form showed when it opened (then at the last save). A save sends
+  // only the fields that differ from it and the server merges them into the
+  // footer as stored now, so everything this form has no control for (logo
+  // image, booking strip, credit, padding, other blocks in the footer area)
+  // stays, and so do edits made elsewhere since the page opened.
+  const [baseline, setBaseline] = useState<FooterFormState>(init);
+  // The footer's layout: Retail keeps it under custom colours.
+  const [storedStyle, setStoredStyle] = useState<unknown>((initialBlock?.data as Record<string, unknown> | undefined)?.style);
+  const [hasFooter, setHasFooter] = useState(!!initialBlock);
+  const [logoText, setLogoText] = useState(init.logoText);
+  const [tagline, setTagline] = useState(init.tagline);
+  const [copyright, setCopyright] = useState(init.copyright);
+  const [bg, setBg] = useState(init.bg);
+  const [accent, setAccent] = useState(init.accent);
+  // Footer style. "dark"/"light" let the footer derive its gradient and text
+  // colours from the active theme's tokens; "custom" keeps the explicit
+  // background/accent pickers below. Saved only when the user picks another.
+  const [footerStyle, setFooterStyle] = useState<FooterStyleChoice>(init.footerStyle);
+  const [newsletter, setNewsletter] = useState(init.newsletter);
+  const [columns, setColumns] = useState<FooterFormColumn[]>(init.columns);
+  const [socials, setSocials] = useState<FooterFormSocial[]>(init.socials);
+  const [bottomLinks, setBottomLinks] = useState<FooterFormLink[]>(init.bottomLinks);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const save = useCallback(async () => {
+    const current: FooterFormState = { logoText, tagline, copyright, footerStyle, bg, accent, newsletter, columns, socials, bottomLinks };
+    const payload = buildFooterSave(baseline, current, storedStyle);
+    setSaving(true);
+    try {
+      const res = await api("POST", { _type: "footer_form", save: payload });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error ?? "Couldn't save the footer. Please try again.");
+        return;
+      }
+      setBaseline(current);
+      if (payload.changed.includes("style")) setStoredStyle(payload.values.style);
+      if (payload.changed.length) setHasFooter(true);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      alert("Couldn't save the footer. Please check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
+  }, [baseline, storedStyle, logoText, tagline, copyright, bg, accent, footerStyle, columns, socials, bottomLinks, newsletter]);
+
+  const addColumn = () => setColumns(prev => [...prev, { id: uid(), heading: "Column", links: [] }]);
+  const updateColHeading = (id: string, heading: string) => setColumns(prev => prev.map(c => c.id === id ? { ...c, heading } : c));
+  const removeCol = (id: string) => setColumns(prev => prev.filter(c => c.id !== id));
+  const addLink = (colId: string) => setColumns(prev => prev.map(c => c.id === colId ? { ...c, links: [...c.links, { id: uid(), label: "Link", url: "/" }] } : c));
+  const updateLink = (colId: string, lid: string, field: "label" | "url", val: string) =>
+    setColumns(prev => prev.map(c => c.id === colId ? { ...c, links: c.links.map(l => l.id === lid ? { ...l, [field]: val } : l) } : c));
+  const removeLink = (colId: string, lid: string) => setColumns(prev => prev.map(c => c.id === colId ? { ...c, links: c.links.filter(l => l.id !== lid) } : c));
+
+  const PLATFORMS = ["facebook", "instagram", "twitter", "linkedin", "youtube", "tiktok", "whatsapp"];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-foreground flex items-center gap-2"><Footprints className="w-4 h-4 text-primary" /> Global Footer</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Appears on every page automatically. Editing here updates the whole site.</p>
+        </div>
+        <button onClick={save} disabled={saving}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saved ? "Saved!" : "Save Footer"}
+        </button>
+      </div>
+
+      {!hasFooter && (
+        <p className="text-xs text-muted-foreground bg-muted border border-border rounded-lg px-3 py-2">
+          {hasOtherBlocks
+            ? "Your footer area has other blocks (see the Footer Builder) but no standard footer. Saving a change here adds one after them."
+            : "This site has no footer yet. Saving a change here adds one."}
+        </p>
+      )}
+
+      <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Logo Text</label>
+            <input value={logoText} onChange={e => setLogoText(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Tagline</label>
+            <input value={tagline} onChange={e => setTagline(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs text-muted-foreground mb-1">Copyright Text <span className="text-muted-foreground">(use {"{year}"} for auto year)</span></label>
+            <input value={copyright} onChange={e => setCopyright(e.target.value)} className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" placeholder="© {year} Your Company. All rights reserved." />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs text-muted-foreground mb-1">Footer Style</label>
+            <div className="flex gap-2">
+              {([
+                { key: "dark" as const, label: "Dark" },
+                { key: "light" as const, label: "Light" },
+                { key: "custom" as const, label: "Custom colors" },
+              ]).map(opt => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setFooterStyle(opt.key)}
+                  className={`px-3 py-1.5 rounded text-xs border transition-colors ${
+                    footerStyle === opt.key
+                      ? "bg-indigo-600 border-primary text-white"
+                      : "bg-muted border-border text-foreground/80 hover:border-border"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Dark and Light build a gradient from this site&apos;s theme colors. Custom pins your own.
+            </p>
+            {storedStyle === "retail" && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                This footer uses the Retail layout. Custom colors keep it; Dark or Light switch it to the standard layout.
+              </p>
+            )}
+          </div>
+          {footerStyle === "custom" && (
+            <>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Background</label>
+                <div className="flex gap-2">
+                  <input type="color" value={bg} onChange={e => setBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+                  <input value={bg} onChange={e => setBg(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Accent / Heading Color</label>
+                <div className="flex gap-2">
+                  <input type="color" value={accent} onChange={e => setAccent(e.target.value)} className="h-8 w-12 rounded cursor-pointer border border-border bg-muted" />
+                  <input value={accent} onChange={e => setAccent(e.target.value)} className="flex-1 bg-muted border border-border rounded px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none" />
+                </div>
+              </div>
+            </>
+          )}
+          <div className="col-span-2 flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
+              <input type="checkbox" checked={newsletter} onChange={e => setNewsletter(e.target.checked)} className="rounded" />
+              Show newsletter signup
+            </label>
+          </div>
+        </div>
+
+        {/* Footer columns */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-muted-foreground">Link Columns</label>
+            <button onClick={addColumn} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Column</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {columns.map(col => (
+              <div key={col.id} className="border border-border rounded-lg p-3 space-y-2 bg-muted">
+                <div className="flex items-center gap-2">
+                  <input value={col.heading} onChange={e => updateColHeading(col.id, e.target.value)} className="flex-1 font-semibold text-xs bg-muted border border-border rounded px-2 py-1 text-foreground focus:border-primary focus:outline-none" placeholder="Heading" />
+                  <button onClick={() => removeCol(col.id)} className="text-muted-foreground hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                </div>
+                {col.links.map(link => (
+                  <div key={link.id} className="flex items-center gap-1.5">
+                    <input value={link.label} onChange={e => updateLink(col.id, link.id, "label", e.target.value)} className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1 text-foreground focus:border-primary focus:outline-none" placeholder="Label" />
+                    <input value={link.url} onChange={e => updateLink(col.id, link.id, "url", e.target.value)} className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1 text-foreground focus:border-primary focus:outline-none" placeholder="/url" />
+                    <button onClick={() => removeLink(col.id, link.id)} className="text-muted-foreground hover:text-red-400"><X className="w-3 h-3" /></button>
+                  </div>
+                ))}
+                <button onClick={() => addLink(col.id)} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add link</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Socials */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-muted-foreground">Social Links</label>
+            <button onClick={() => setSocials(prev => [...prev, { platform: "facebook", url: "" }])} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Social</button>
+          </div>
+          {socials.map((s, i) => (
+            <div key={i} className="flex items-center gap-2 mb-1.5">
+              <select value={s.platform} onChange={e => setSocials(prev => prev.map((p, j) => j === i ? { ...p, platform: e.target.value } : p))}
+                className="bg-muted border border-border rounded px-2 py-1.5 text-xs text-foreground focus:outline-none">
+                {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <input value={s.url} onChange={e => setSocials(prev => prev.map((p, j) => j === i ? { ...p, url: e.target.value } : p))}
+                placeholder="https://..." className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1.5 text-foreground focus:border-primary focus:outline-none" />
+              <button onClick={() => setSocials(prev => prev.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom links */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-muted-foreground">Bottom Bar Links <span className="text-muted-foreground">(Privacy, Terms etc.)</span></label>
+            <button onClick={() => setBottomLinks(prev => [...prev, { id: uid(), label: "", url: "/" }])} className="text-xs text-primary hover:text-indigo-300 flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
+          </div>
+          {bottomLinks.map((bl) => (
+            <div key={bl.id} className="flex items-center gap-2 mb-1.5">
+              <input value={bl.label} onChange={e => setBottomLinks(prev => prev.map(l => l.id === bl.id ? { ...l, label: e.target.value } : l))}
+                placeholder="Privacy Policy" className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1.5 text-foreground focus:border-primary focus:outline-none" />
+              <input value={bl.url} onChange={e => setBottomLinks(prev => prev.map(l => l.id === bl.id ? { ...l, url: e.target.value } : l))}
+                placeholder="/privacy" className="flex-1 text-xs bg-muted border border-border rounded px-2 py-1.5 text-foreground focus:border-primary focus:outline-none" />
+              <button onClick={() => setBottomLinks(prev => prev.filter(l => l.id !== bl.id))} className="text-muted-foreground hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── GLOBAL PRE-FOOTER EDITOR (CTA + Contact, shown on every page) ──────────
+
+function GlobalPrefooterEditor({ initialCta, initialContact }: {
+  initialCta: Record<string, unknown> | null;
+  initialContact: Record<string, unknown> | null;
+}) {
+  const [init] = useState(() => prefooterFormState(initialCta, initialContact));
+  // As in the footer form: a save sends only the fields changed since the form
+  // opened (or was last saved) and the server merges them into the stored
+  // pre-footer, so a banner's own colours, the contact form's fields and any
+  // other pre-footer block are kept (it used to be replaced by two rebuilt blocks).
+  const [baseline, setBaseline] = useState<PrefooterFormState>(init);
+  // The blocks the form edits, by the id it loaded (null: found by type, or missing).
+  const [ids] = useState<{ cta: string | null; contact: string | null }>(() => ({
+    cta: typeof initialCta?.id === "string" ? initialCta.id : null,
+    contact: typeof initialContact?.id === "string" ? initialContact.id : null,
+  }));
+  // Whether the site has any pre-footer yet (banner or form).
+  const [hasPrefooter, setHasPrefooter] = useState(!!initialCta || !!initialContact);
+
+  const [ctaTitle, setCtaTitle] = useState(init.ctaTitle);
+  const [ctaDesc, setCtaDesc] = useState(init.ctaDesc);
+  const [ctaPrimaryLabel, setCtaPrimaryLabel] = useState(init.ctaPrimaryLabel);
+  const [ctaPrimaryUrl, setCtaPrimaryUrl] = useState(init.ctaPrimaryUrl);
+  const [ctaSecondaryLabel, setCtaSecondaryLabel] = useState(init.ctaSecondaryLabel);
+  const [ctaSecondaryUrl, setCtaSecondaryUrl] = useState(init.ctaSecondaryUrl);
+
+  const [title, setTitle] = useState(init.title);
+  const [subtitle, setSubtitle] = useState(init.subtitle);
+  const [phone, setPhone] = useState(init.phone);
+  const [email, setEmail] = useState(init.email);
+  const [address, setAddress] = useState(init.address);
+  const [recipientEmail, setRecipientEmail] = useState(init.recipientEmail);
+
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const save = useCallback(async () => {
+    const current: PrefooterFormState = {
+      ctaTitle, ctaDesc, ctaPrimaryLabel, ctaPrimaryUrl, ctaSecondaryLabel, ctaSecondaryUrl,
+      title, subtitle, phone, email, address, recipientEmail,
+    };
+    const payload = buildPrefooterSave(baseline, current, ids);
+    // A site with no pre-footer at all gets both blocks, starter text
+    // included, on its first save (as this screen always did). Where one of
+    // them exists, a missing one is added only when a field of it is changed,
+    // so a banner removed in the Footer Builder is not brought back.
+    if (!hasPrefooter) {
+      payload.cta.changed = [...CTA_FORM_FIELDS];
+      payload.contact.changed = [...CONTACT_FORM_FIELDS];
+    }
+    setSaving(true);
+    try {
+      const res = await api("POST", { _type: "prefooter_form", save: payload });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error ?? "Couldn't save the pre-footer. Please try again.");
+        return;
+      }
+      setBaseline(current);
+      setHasPrefooter(true);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      alert("Couldn't save the pre-footer. Please check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
+  }, [baseline, ids, hasPrefooter, ctaTitle, ctaDesc, ctaPrimaryLabel, ctaPrimaryUrl, ctaSecondaryLabel, ctaSecondaryUrl, title, subtitle, phone, email, address, recipientEmail]);
+
+  const inputCls = "w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-foreground">Global Pre-Footer (CTA + Contact)</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Shows on every page above the footer. Edit once — updates the whole site. (Skipped on pages that already have their own contact form, like the Contact page.)</p>
+        </div>
+        <button onClick={save} disabled={saving}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saved ? "Saved!" : "Save"}
+        </button>
+      </div>
+
+      <section className="bg-card border border-border rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-primary">Call-to-Action Banner</h3>
+        <div><label className="block text-xs text-muted-foreground mb-1">Title</label><input value={ctaTitle} onChange={e => setCtaTitle(e.target.value)} className={inputCls} /></div>
+        <div><label className="block text-xs text-muted-foreground mb-1">Description</label><input value={ctaDesc} onChange={e => setCtaDesc(e.target.value)} className={inputCls} /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="block text-xs text-muted-foreground mb-1">Primary Button Label</label><input value={ctaPrimaryLabel} onChange={e => setCtaPrimaryLabel(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Primary Button URL</label><input value={ctaPrimaryUrl} onChange={e => setCtaPrimaryUrl(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Secondary Button Label</label><input value={ctaSecondaryLabel} onChange={e => setCtaSecondaryLabel(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Secondary Button URL</label><input value={ctaSecondaryUrl} onChange={e => setCtaSecondaryUrl(e.target.value)} className={inputCls} /></div>
+        </div>
+      </section>
+
+      <section className="bg-card border border-border rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-primary">Contact Form</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="block text-xs text-muted-foreground mb-1">Heading</label><input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Subheading</label><input value={subtitle} onChange={e => setSubtitle(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Phone</label><input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls} /></div>
+          <div><label className="block text-xs text-muted-foreground mb-1">Email (shown)</label><input value={email} onChange={e => setEmail(e.target.value)} className={inputCls} /></div>
+          <div className="col-span-2"><label className="block text-xs text-muted-foreground mb-1">Address</label><input value={address} onChange={e => setAddress(e.target.value)} className={inputCls} /></div>
+          <div className="col-span-2"><label className="block text-xs text-muted-foreground mb-1">Form submissions sent to (email)</label><input value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} placeholder="defaults to shown email" className={inputCls} /></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── MAIN CLIENT ───────────────────────────────────────────────────────────
+
+export default function IdentityClient({ initialIdentity, initialMenus, initialGlobalHeader, initialGlobalFooter, footerHasOtherBlocks = false, initialPrefooterCta, initialPrefooterContact }: {
+  initialIdentity: SiteIdentity | null;
+  initialMenus: NavMenu[];
+  initialGlobalHeader: Record<string, unknown> | null;
+  initialGlobalFooter: Record<string, unknown> | null;
+  /** The footer area holds blocks other than the standard footer. */
+  footerHasOtherBlocks?: boolean;
+  initialPrefooterCta: Record<string, unknown> | null;
+  initialPrefooterContact: Record<string, unknown> | null;
+}) {
+  const [identity, setIdentity] = useState<SiteIdentity>(initialIdentity ?? {
+    logo_url: null, logo_dark_url: null, logo_width: 160, logo_alt: null,
+    favicon_url: null, site_name: null, tagline: null,
+  });
+  const [menus, setMenus] = useState(initialMenus);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [creatingMenu, setCreatingMenu] = useState(false);
+  const [newMenuName, setNewMenuName] = useState("");
+  const [activeTab, setActiveTab] = useState<"identity" | "nav" | "footer" | "prefooter" | "menus">("footer");
+
+  const set = (k: keyof SiteIdentity, v: unknown) => { setIdentity(p => ({ ...p, [k]: v })); setSaved(false); };
+
+  // What the form showed when it opened (then at the last save). Only the
+  // fields changed since then are sent, so a logo or name set elsewhere
+  // meanwhile (phone app, AI connector) is not reverted to the loaded copy.
+  const [identityBaseline, setIdentityBaseline] = useState<SiteIdentity>(identity);
+
+  async function saveIdentity() {
+    const fields = changedIdentityFields(identityBaseline as unknown as IdentityPatch, identity as unknown as IdentityPatch);
+    const snapshot = identity;
+    if (!Object.keys(fields).length) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await api("POST", { _type: "identity", ...fields });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error ?? "Couldn't save site identity. Please try again.");
+        return;
+      }
+      setIdentityBaseline(snapshot);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      alert("Couldn't save site identity. Please check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function createMenu() {
+    if (!newMenuName.trim()) return;
+    const res = await api("POST", { _type: "menu", name: newMenuName.trim(), slug: slugify(newMenuName.trim()), items: [] });
+    const data = await res.json();
+    setMenus(prev => [...prev, data]);
+    setNewMenuName(""); setCreatingMenu(false);
+  }
+
+  // "Global Nav" and "Nav Menus (Legacy)" used to live here. Both edited
+  // navigation in different storage, which is how the same site ended up with
+  // two menus that disagreed. Navigation now has its own screen backed by
+  // nav_menus — see /dashboard/navigation. The editors below are unreachable
+  // and kept only until the next cleanup pass.
+  const TABS = [
+    { key: "footer" as const, label: "Global Footer", icon: <Footprints className="w-4 h-4" /> },
+    { key: "prefooter" as const, label: "Pre-Footer (CTA + Contact)", icon: <Phone className="w-4 h-4" /> },
+    { key: "identity" as const, label: "Site Identity", icon: <Layers className="w-4 h-4" /> },
+  ];
+
+  return (
+    <div className="p-6 max-w-4xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Layers className="w-6 h-6 text-primary" /> Identity & Navigation
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage global navigation, footer, site branding and menus.</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-border">
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+            {tab.icon}{tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Global Nav */}
+      {activeTab === "nav" && <GlobalNavEditor initialBlock={initialGlobalHeader} />}
+
+      {/* Global Footer */}
+      {activeTab === "footer" && <GlobalFooterEditor initialBlock={initialGlobalFooter} hasOtherBlocks={footerHasOtherBlocks} />}
+
+      {/* Global Pre-Footer */}
+      {activeTab === "prefooter" && <GlobalPrefooterEditor initialCta={initialPrefooterCta} initialContact={initialPrefooterContact} />}
+
+      {/* Site Identity */}
+      {activeTab === "identity" && (
+        <section className="bg-card border border-border rounded-xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-foreground">Site Identity</h2>
+            <button onClick={saveIdentity} disabled={saving}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              {saved ? "Saved!" : "Save"}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Site Name</label>
+              <input value={identity.site_name ?? ""} onChange={e => set("site_name", e.target.value)}
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Tagline</label>
+              <input value={identity.tagline ?? ""} onChange={e => set("tagline", e.target.value)}
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-muted-foreground mb-2">Logo (light mode)</label>
+              <MediaPickerInput value={identity.logo_url ?? ""} onChange={url => set("logo_url", url || null)} placeholder="https://..." />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-muted-foreground mb-2">Logo (dark mode) <span className="text-muted-foreground">— optional</span></label>
+              <MediaPickerInput value={identity.logo_dark_url ?? ""} onChange={url => set("logo_dark_url", url || null)} placeholder="https://..." />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Logo Alt Text</label>
+              <input value={identity.logo_alt ?? ""} onChange={e => set("logo_alt", e.target.value)}
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Logo Width (px)</label>
+              <input type="number" value={identity.logo_width ?? 160} onChange={e => set("logo_width", Number(e.target.value))}
+                className="w-full bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-muted-foreground mb-2">Favicon</label>
+              <MediaPickerInput value={identity.favicon_url ?? ""} onChange={url => set("favicon_url", url || null)} placeholder="https://..." />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Legacy nav menus */}
+      {activeTab === "menus" && (
+        <section className="space-y-4">
+          <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-3 text-xs text-yellow-400">
+            Legacy nav_menus table. Use &quot;Global Nav&quot; tab to manage the site-wide navigation instead.
+          </div>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-foreground">Navigation Menus</h2>
+            <button onClick={() => setCreatingMenu(true)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">
+              <Plus className="w-4 h-4" /> New Menu
+            </button>
+          </div>
+          {creatingMenu && (
+            <div className="flex items-center gap-3 bg-card border border-primary/40 rounded-xl p-4">
+              <input autoFocus value={newMenuName} onChange={e => setNewMenuName(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") createMenu(); if (e.key === "Escape") setCreatingMenu(false); }}
+                placeholder='Menu name (e.g. "Main Nav", "Footer")'
+                className="flex-1 bg-muted border border-border rounded px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+              <button onClick={createMenu} disabled={!newMenuName.trim()}
+                className="flex items-center gap-1.5 bg-indigo-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded">
+                <Check className="w-4 h-4" /> Create
+              </button>
+              <button onClick={() => setCreatingMenu(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
+            </div>
+          )}
+          {menus.length === 0 && !creatingMenu ? (
+            <div className="text-center py-10 border border-dashed border-border rounded-xl">
+              <p className="text-muted-foreground text-sm">No menus yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {menus.map(m => (
+                <MenuCard key={m.id} menu={m}
+                  onUpdate={u => setMenus(prev => prev.map(x => x.id === u.id ? u : x))}
+                  onDelete={id => setMenus(prev => prev.filter(x => x.id !== id))} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}

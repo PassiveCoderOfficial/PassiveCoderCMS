@@ -1,0 +1,172 @@
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { cookies, headers } from "next/headers";
+import { ROOT_TENANT_SLUG } from "@/lib/flags";
+import { staffSites } from "@/lib/staff";
+
+export const SA_VIEWING_COOKIE = "sa_viewing_tenant";
+export const STAFF_VIEWING_COOKIE = "staff_viewing_tenant";
+
+export async function getCurrentTenantId(): Promise<string> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const adminClient = await createAdminClient();
+
+  // Check if SA is impersonating a tenant
+  const { data: sa } = await adminClient
+    .from("super_admins")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (sa) {
+    // SA on a tenant subdomain — use the injected tenant id directly
+    const reqHeaders = await headers();
+    const subdomainTenantId = reqHeaders.get("x-tenant-id");
+    if (subdomainTenantId) return subdomainTenantId;
+
+    // SA impersonating a specific tenant via cookie
+    const cookieStore = await cookies();
+    const viewing = cookieStore.get(SA_VIEWING_COOKIE)?.value;
+    if (viewing) return viewing;
+
+    // SA on root domain — use the actual root site, identified purely by slug
+    // matching the root domain (e.g. "passivecoder" for passivecoder.com).
+    // Deliberately not scoped to owner_id: the root tenant belongs to whoever
+    // happened to create it, and a super admin is platform-wide. Requiring
+    // ownership meant an SA who didn't own it fell through to "oldest tenant
+    // I own" and landed on an unrelated site (the reported bug — /dashboard
+    // on the root domain showing a demo tenant's data).
+    const rootSlug = ROOT_TENANT_SLUG;
+    const { data: rootTenant } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("slug", rootSlug)
+      .maybeSingle();
+    if (rootTenant?.id) return rootTenant.id;
+
+    // Fallback: no tenant slug matches the root domain — use their oldest
+    // owned tenant rather than leaving the dashboard with nothing to show.
+    const { data: ownedTenant } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (ownedTenant?.id) return ownedTenant.id;
+    redirect("/super-admin");
+  }
+
+  // Staff viewing a tenant's dashboard under their own session (no credential
+  // swap). The cookie is shared across every *.passivecoder.com subdomain, so
+  // if the staff member has two sites open in different tabs the cookie
+  // reflects whichever was clicked last — not necessarily the subdomain
+  // actually being browsed. The hostname (x-tenant-id, set by middleware
+  // from the real subdomain) is the source of truth whenever present; the
+  // cookie is only a fallback for root-domain /dashboard access with no
+  // subdomain context.
+  const { data: staffRow } = await adminClient.from("pc_staff").select("id, status").eq("user_id", user.id).maybeSingle();
+  if (staffRow) {
+    const reqHeaders = await headers();
+    const subdomainTenantId = reqHeaders.get("x-tenant-id");
+    if (subdomainTenantId) {
+      // A staff member can both own a site directly (owner_id, e.g. built it
+      // for themselves) and be assigned/referred to other sites — check
+      // both, not just the assignment columns, or visiting their own owned
+      // site's subdomain incorrectly bounced them to /staff.
+      const { data: tenant } = await staffSites(
+        adminClient.from("tenants").select("id").eq("id", subdomainTenantId), staffRow, user.id,
+      ).maybeSingle();
+      if (tenant) return subdomainTenantId;
+      redirect("/staff");
+    }
+
+    const cookieStore = await cookies();
+    const viewingTenantId = cookieStore.get(STAFF_VIEWING_COOKIE)?.value;
+    if (viewingTenantId) {
+      const { data: tenant } = await staffSites(
+        adminClient.from("tenants").select("id").eq("id", viewingTenantId), staffRow, user.id,
+      ).maybeSingle();
+      if (tenant) return viewingTenantId;
+    }
+    redirect("/staff");
+  }
+
+  // Regular user — subdomain context takes priority
+  const reqHeaders = await headers();
+  const subdomainTenantId = reqHeaders.get("x-tenant-id");
+  if (subdomainTenantId) {
+    // Accept if user is a member of this tenant
+    const { data: membership } = await adminClient
+      .from("tenant_members")
+      .select("tenant_id")
+      .eq("user_id", user.id)
+      .eq("tenant_id", subdomainTenantId)
+      .maybeSingle();
+    if (membership) return subdomainTenantId;
+
+    // Also accept if user is the owner (owner_id may exist without tenant_members row)
+    const { data: owned } = await adminClient
+      .from("tenants")
+      .select("id")
+      .eq("id", subdomainTenantId)
+      .eq("owner_id", user.id)
+      .maybeSingle();
+    if (owned) return subdomainTenantId;
+
+    // No access to this subdomain's tenant — do NOT silently fall through to
+    // the user's own tenant (that serves their data under someone else's
+    // domain, which is confusing even if not a data leak). Send them home.
+    const { data: ownTenant } = await adminClient
+      .from("tenant_members")
+      .select("tenant_id, is_primary, tenants(slug)")
+      .eq("user_id", user.id)
+      .order("is_primary", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const ownSlug = ownTenant
+      ? (Array.isArray(ownTenant.tenants) ? ownTenant.tenants[0] : ownTenant.tenants)?.slug
+      : undefined;
+    if (ownSlug) {
+      const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "passivecoder.com";
+      const proto = rootDomain.includes("localhost") ? "http" : "https";
+      redirect(`${proto}://${ownSlug}.${rootDomain}/dashboard`);
+    }
+    redirect("/login?error=unauthorized");
+  }
+
+  // Regular user — resolve via tenant_members primary flag
+  const { data } = await supabase
+    .from("tenant_members")
+    .select("tenant_id")
+    .eq("user_id", user.id)
+    .eq("is_primary", true)
+    .maybeSingle();
+
+  if (data?.tenant_id) return data.tenant_id;
+
+  // Fallback: any membership
+  const { data: any } = await supabase
+    .from("tenant_members")
+    .select("tenant_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (!any?.tenant_id) {
+    // Staff users have no tenant membership — send them to the staff portal
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.role === "pc_staff") redirect("/staff");
+    redirect("/login?error=no_tenant");
+  }
+
+  return any.tenant_id;
+}
