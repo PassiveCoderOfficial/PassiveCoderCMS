@@ -80,12 +80,13 @@ RUN --mount=type=secret,id=build_env,required=false \
              NEXT_PUBLIC_GOOGLE_MAPS_API_KEY NEXT_PUBLIC_VAPID_PUBLIC_KEY NEXT_PUBLIC_LOGO_URL NEXT_PUBLIC_WHATSAPP_NUMBER; do \
       eval "val=\${$v:-}"; [ -n "$val" ] || unset "$v"; \
     done; \
-    node --env-file-if-exists=/run/secrets/build_env -e " \
+    eval "$(node selfhost/build-env.mjs /run/secrets/build_env)"; \
+    node -e " \
       const need = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_ROOT_DOMAIN', 'NEXT_PUBLIC_APP_URL']; \
       const miss = need.filter((k) => !process.env[k]); \
       if (miss.length) { console.error('Missing build settings: ' + miss.join(', ') + '. Pass --secret id=build_env,src=.env.local or --build-arg.'); process.exit(1); } \
       if (process.env.NEXT_PUBLIC_CMS_MODE !== 'standalone') { console.error('NEXT_PUBLIC_CMS_MODE must be standalone'); process.exit(1); }"; \
-    NEXT_PUBLIC_CMS_MODE=standalone node --env-file-if-exists=/run/secrets/build_env --max-old-space-size=${BUILD_HEAP_MB} \
+    NEXT_PUBLIC_CMS_MODE=standalone node --max-old-space-size=${BUILD_HEAP_MB} \
       ./node_modules/next/dist/bin/next build --webpack
 
 # --- 3. Web app ----------------------------------------------------------------
